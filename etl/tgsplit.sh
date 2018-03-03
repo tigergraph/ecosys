@@ -13,7 +13,7 @@ if [ $# -eq 0 ]; then
   echo "e.g. to generate 3 splits, each with a header line of abc.csv,  ./tgsplit abc.csv 3" 
   echo "OR"
   echo "./tgsplit filename split_count 1"
-  echo "e.g. to generate 3 splits, each split 1/3 size of abc.csv, ./tgsplit abc.csv 3 1" 
+  echo "e.g. to generate 3 splits, each split 1/3 size of abc.csv without header duplication, ./tgsplit abc.csv 3 1" 
   exit 0
 fi
 
