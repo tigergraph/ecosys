@@ -1,0 +1,5 @@
+sudo mkdir /tg/csv_data
+sudo chown ubuntu -R /tg/csv_data
+sudo mkdir /tg/logs
+sudo chown ubuntu -R /tg
+sudo chmod 777 /tg/logs
