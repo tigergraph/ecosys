@@ -4,7 +4,7 @@
 ##
 ## Requirement: aws command installed
 ##     ubtunu: sudo apt-get install awscli
-##     mac:    sudo easy_install pip; pip3 install awscli --upgrade --user; sudo ln -s /Users/zixuan/Library/Python/2.7/bin/aws /usr/local/bin/
+##     mac:    sudo easy_install pip; pip3 install awscli --upgrade --user; sudo ln -s /Users/user/Library/Python/2.7/bin/aws /usr/local/bin/
 ##
 ## Step:
 ##     Fill the aws access key and secret in aws_config file
