@@ -3,7 +3,7 @@
 ## Helps to get ec2 info using awscli
 ##
 ## Requirement: aws command installed
-##     ubtunu: sudo apt-get install awscli
+##     ubuntu: sudo apt-get install awscli
 ##     mac:    sudo easy_install pip; pip3 install awscli --upgrade --user; sudo ln -s /Users/user/Library/Python/2.7/bin/aws /usr/local/bin/
 ##
 ## Step:

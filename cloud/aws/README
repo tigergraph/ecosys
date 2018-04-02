@@ -1,4 +1,4 @@
-The script in this directory are to help user to get information of ec2 and run commands in all ec2 cluster.
+The scripts in this directory are to help users to get information of ec2 and run commands in a cluster of ec2s.
 =============================================================================================================================
 
 aws_cli.sh and aws_config
@@ -7,14 +7,15 @@ These two files are used to get public ip/dns and private ip of ec2 based on giv
 To get the info:
 1. put your aws key and secret to aws_config file
 2. source aws_cli.sh
-3. run get_all_public_ip or other command
+3. run get_all_public_ip or other commands
 
 run_all_ec2.sh
 ----------------
-This file is used to run command/script on all ec2 instance.
+This script is used to run command/script on all ec2 instances.
 To run the command:
-1. put all public ip/dns to pip.txt file (use aws_cli.sh to get the ips)
-2. run bash run_all_ec2.sh "your_command"
+1. change the pem file and login username in run_all_ec2.sh
+2. put all public ip/dns to pip.txt file (use aws_cli.sh to get the ips)
+3. run bash run_all_ec2.sh "your_command"
    or bash run_all_ec2.sh script_file
 
 script/
