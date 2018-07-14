@@ -162,6 +162,8 @@ bin/neo4j restart
 
 Run benchmark 
 ================
+Download all files in the README folder to a script folder.
+
 Before running the benchmark script below, please make sure the current user has the READ permission from the raw file, 
 and the WRITE permission on the folder where you put the benchmark script folder, since the random seed will be generted in this folder.
 
