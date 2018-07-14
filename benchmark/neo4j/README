@@ -29,6 +29,8 @@ Hardware & Major enviroment
 - OS Ubuntu 14.04.5 LTS
 - Java build 1.8.0_144-b01
 - Python 2.7.6
+- you need to install tornado by
+  pip install tornado
 
 
 - 32vCPUs
