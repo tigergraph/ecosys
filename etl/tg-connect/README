@@ -1,3 +1,5 @@
+This program reads records from a RDBMS and then posts to TigerGraph.
+
 PreRequisite
 ============
 1) TigerGraph has created the schema and the loading jobs
