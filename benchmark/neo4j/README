@@ -1,0 +1,208 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the 
+# acknowledgement to TigerGraph.
+# Author: Mingxi Wu mingxi.wu@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark result on Neo4j. 
+
+Data Sets
+===========
+
+- graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/graph500-22/graph500-22_unique_node
+- graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
+- graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
+
+- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.net_unique_node
+- twitter vertex header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-node-header.txt
+- twitter edge header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-edge-header.txt
+
+
+Hardware & Major enviroment
+================================
+- Amazon EC2 machine C3.8xlarge. 
+- OS Ubuntu 14.04.5 LTS
+- Java build 1.8.0_144-b01
+- Python 2.7.6
+- you need to install tornado by
+  pip install tornado
+
+
+- 32vCPUs
+- 60GiB memory
+- attached a 512G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 25.6k. 
+  Raw data and neo4j binary are put on this SSD. 
+
+Neo4j Version
+==============
+- 3.4.4 Community Edition downloaded from https://neo4j.com/download/other-releases/#releases
+- Graph library, we used apoc-3.4.0.1-all.jar  (obtained from https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/3.4.0.1)
+  Put under neo4j-community-3.4.4/plugins
+
+Install Neo4j 
+===============
+# untar to put under a folder. E.g. /ebs/install/neo4j/ folder, this is an installation point we will use through
+out this README. Replace it to your installation point when trying to reproduce.
+
+ tar -xf neo4j-community-3.4.4-unix.tar.gz
+
+It will create a neo4j-community-3.4.4 folder.
+
+# switch to root
+sudo bash
+
+# under this bin folder, you will see all neo4j server/client binaries.
+/ebs/install/neo4j/neo4j-community-3.4.4/bin/
+
+# start server. 
+/ebs/install/neo4j/neo4j-community-3.4.4/bin/neo4j start 
+
+# to stop server
+/ebs/install/neo4j/neo4j-community-3.4.4/bin/neo4j stop
+
+# download the latest apoc jar and put it in the plugins folder. Restart neo4j
+  wget https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/3.4.0.1
+
+#install apoc library , put apoc-3.4.0.1-all.jar under the plugins folder
+/ebs/install/neo4j/neo4j-community-3.4.1/plugins
+
+Loading data 
+==============
+- neo4j_load_graph500.sh:  bash script to load graph500 data. Description is inside.
+- neo4j_load_twitter.sh:  bash script to load twitter data. Description is inside.
+
+To load:
+- Load graph500 data
+nohup ./neo4j_load_graph500.sh  /install/neo4j-community-3.4.4  /datafolder
+Note: change /install to your installation point, and data folder to where you put the graph500 data
+
+- Load twitter data
+nohup ./neo4j_load_twitter.sh  /install/neo4j-community-3.4.4  /datafolder
+Note: change /install to your installation point, and data folder to where you put the twitter data
+
+Attach the loaded data store to Neo4j
+=========================================
+Startup graph database with the loaded data by creating a symbolic link to the loaded folder. 
+
+If you have not backup graph.db, backup it first by mv graph.db graph.db.bak
+
+# create a symbolic to the graph.db, the default neo4j database file
+cd /ebs/install/neo4j/neo4j-community-3.4.4/data/databases
+mv graph.db graph.db.bak
+
+#create a symbolic link of graph.db
+ln -s graph500.db/ graph.db
+
+Note: to run twitter graph after its loading, create a symbolic link of graph.db to twitter.db 
+ln -s twitter.db/ graph.db
+
+#change neo4j config
+cd /ebs/install/neo4j/neo4j-community-3.4.4/conf
+
+use an editor to edit neo4j.conf, add the following lines at the bottom
+
+###################################
+# benchmark config 
+###################################
+
+#put the following in neo4j.conf
+dbms.memory.heap.initial_size=22700m
+dbms.memory.heap.max_size=22700m
+dbms.memory.pagecache.size=26100m
+
+#set timeout to 300s
+dbms.transaction.timeout=300s
+
+#set apoc library
+dbms.security.procedures.unrestricted=apoc.*
+
+##############################################
+
+
+#restart neo4j by 
+bin/neo4j stop
+bin/neo4j start
+
+Create index using Cypher shell
+===================================
+Without index, neo4j run slow on all the benchmark workload.
+It is important for you to create an index for vertex id field
+to get faster benchmark result.
+
+bin/cypher-shell
+user:neo4j
+pass:neo4j
+
+#change password once in
+neo4j> CALL dbms.changePassword('benchmark')
+
+#exit shell
+neo4j> :exit
+
+#log in again
+cypher-shell -u neo4j -p benchmark
+
+# we need to build index in shell
+neo4j> create index on :MyNode(id);
+
+# wait until it's *online*. At the beginning, it's "populating" state
+neo4j> CALL db.indexes;
+
+
+#after index finishes populating, you can explain the query plan to see NodeIndexSeek is used.
+neo4j> explain match (n1:MyNode)-[:MyEdge*1 ]->(n2:MyNode) where n1.id=17330741 return count(distinct n2);
+
+Restart the server
+=======================
+bin/neo4j restart
+
+
+Run benchmark 
+================
+Download all files in the README folder to a script folder.
+
+Before running the benchmark script below, please make sure the current user has the READ permission from the raw file, 
+and the WRITE permission on the folder where you put the benchmark script folder, since the random seed will be generted in this folder.
+
+You may consider to make ssh config to keep it alive by following, since the benchmark will run long time during the first run to generate
+the random seed.
+https://www.howtogeek.com/howto/linux/keep-your-linux-ssh-session-from-disconnecting/
+
+Output folder
+-----------------
+Assuming you are in the script folder, the output produced will be in
+- ./result: the folder the benchmark result. 
+- ./seed: the random input seed will be placed in this folder. The first run will yield the seed file, so it may take longer.
+
+
+Graph500
+-----------------
+#khop, change graph500-22 and twitter_rv.net path to your raw data path below. 
+# here we assume they are put under /ebs/raw/...
+
+nohup python kn.py /ebs/raw/graph500-22/graph500-22  1000 neo4j  1 notes latency
+nohup python kn.py /ebs/raw/graph500-22/graph500-22  1000 neo4j  2 notes latency
+
+#wcc, 3 runs
+nohup python wcc.py graph500-22 neo4j 3
+
+#page rank, 3 runs, each run 10 iterations
+nohup python pg.py graph500-22 neo4j 10 3
+
+Twitter
+-------------
+#khop
+nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 tigergraph 1 notes latency
+nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 tigergraph 2 notes latency
+
+#wcc
+nohup python wcc.py twitter-rv tigergraph 3
+
+#page rank, 3 runs, each run 10 iterations.  
+#it will run very long
+python pg.py twitter tigergraph 10 3
