@@ -1,1 +1,0 @@
-nohup python kn.py $1/twitter_rv.net  1000 tigergraph 1 notes latency; nohup python kn.py $1/twitter_rv.net  1000 tigergraph 2 notes latency; nohup python wcc.py twitter-rv tigergraph 3;python pg.py twitter-rv tigergraph 10 3
