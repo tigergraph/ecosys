@@ -135,7 +135,7 @@ In bash shell
 ./benchmark-twitter.sh "path_to_twitter_raw_data_folder" 
 e.g. 
 
-./benchmark-twitter.sh "/ebs/raw/twitter_rv/twitter_rv.net" 
+./benchmark-twitter.sh "/ebs/raw/twitter_rv/" 
 
 A random seed folder for k-hop-path-neighbor-count query will be generated. 
 A result folder will be generated to keep the benchmark result.
