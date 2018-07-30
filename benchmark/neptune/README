@@ -1,0 +1,147 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the
+# acknowledgement to TigerGraph.
+# Author: Litong Shen litong.shen@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark result on Amazon Neptune.
+
+Data Sets
+================================
+- graph500 edge file and vertex file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500_neptune.tar.gz
+- random seed for graph500: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/randomGraph500
+ 
+- twitter edge file and vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_neptune.tar.gz
+- random seed for twitter: http://service.tigergraph.com/download/benchmark/dataset/twitter/randomTwitter
+
+Hardware & Major enviroment
+================================
+Client
+------
+- Amazon EC2 machine r4.xlarge
+- OS Amazon Linux AMI 2018.03
+- Java build 1.8.0_171-b10
+
+- 4vCPUs
+- 30.5GiB memory
+
+Neptune Server
+-------------
+- Neptune DB instance class db.r4.8xlarge
+
+- 32vCPUs
+- 244GiB memory
+- EBS throuput 6000 Mbps
+- Network Performance 10Gbps
+
+setup Neptune stack
+===============================
+step 1: Setup Neptune server and EC2 client in US East (N. Virginia) region
+- Launch the Neptune Stack at:
+ https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=NeptuneQuickStart&templateURL=https:%2F%2Fs3.amazonaws.com%2Fneptune-cfn-docs%2FNeptuneQuickStart.template- On the Select Template page, choose Next.
+- On the Specify Details page, choose a key pair for the EC2SSHKeyPairName, choose db.r4.8xlarge/ db.r4.4xlarge in DbInstanceType, choose r4.2xlarge in EC2ClientInstanceType.
+- Choose Next.
+- On the Options page, choose Next.
+- On the Review page, select the check box to acknowledge that AWS CloudFormation will create IAM resources. Then choose Create.
+
+Step 2: Prepare IAM Role and Amazon S3 Access, follow steps from https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-IAM.html#bulk-load-tutorial-IAM-CreateRole
+
+Step 3: Use AWS Access key and Secret Access Key to setup aws configure on EC2 client machine
+- use the following command to setup aws configure:
+	aws configure
+
+Loading data (switch to EC2 client)
+============
+- upload.sh: bash script to load data from client EC2 to S3. Description is inside. 
+- load.sh: bash script to load date from S3 to Neptune. Description is inside.
+- check_load.sh: bash script to check load status. Description is inside.
+- cancel_loading.sh: bash script to delete the loader job. Description is inside.
+
+Step 1: To upload Graph500 and twitter:
+nohup bash upload.sh path/to/local/datafile mydirectory/filename/in/S3 &
+Note: before upload data, modify parameters according to description inside.
+
+Step 2: To load Graph500 and twitter:
+nohup bash load.sh &
+Note: before load data, modify parameters according to description inside.
+
+Step 3: To check load job:
+bash check_load.sh jobId-return-from-step-2
+Note: before check load job, modify parameters according to description inside.
+
+Step 4: To cancel load job:
+bash check_loading.sh jobId-return-from-step-2
+Note: before cancel loading job, modify parameters according to description inside.
+
+Query timeout setting (Switch to AWS console)
+=====================
+Create a DB parameter Group
+- Sign in to the AWS Management Console, and open the Amazon Neptune console
+- Choose Parameter groups in the left navigation pane.
+- Choose Create DB parameter group. The Create DB parameter group page appears.
+- In the Type list, choose DB Parameter Group or DB Cluster Parameter Group.
+- In the Group name box, type the name of the new DB parameter group.
+- In the Description box, type a description for the new DB parameter group.
+- Choose Create.
+
+Link parameter Group to Neptune DB instance
+- Sign in to the AWS Management Console, and open the Amazon Neptune console
+- Choose Instances in the left navigation pane.
+- Check Neptune Instance then choose modify from Instance actions.
+- Under Database options, choose the parameter group created from previous step.
+- click continue, then click apply Immediately.
+
+Editing a DB Parameter Group
+- Sign in to the AWS Management Console, and open the Amazon Neptune console
+- Choose Parameter groups in the navigation pane.
+- Choose the Name link for the DB parameter group that you want to edit.
+- Choose Edit parameters.
+- Set the value for the parameters that you want to change.
+- Choose Save changes.
+- Reboot every Neptune DB instance in the Neptune cluster.
+
+Run benchmark (switch to EC2 client)
+=============
+Download all files in the README folder to a script folder.
+
+Before running the benchmark script below, please make sure the current user has the READ permission from the raw file,
+and the WRITE permission on the folder where you put the benchmark script folder, since the random seed will be generted in this folder.
+
+Output folder
+-----------------
+assume you are in the script folder, download random test seed in the same folder.
+assume you are in the script folder, then create a result folder using folowing cammand:
+	mkdir result
+
+Graph500
+-----------------
+before run khop, assume you are in the script folder, modify following parameters in kn.java:
+  static String URL (line 19): need neptune-end-point
+  static String depth (line 20): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedCount (line 21): set random seed you want to test, up to 10000.
+  File file (line 30): path/to/random-test-seed
+  String resultFileName (line 37): "KN-latency-Graph500-" + depth;
+  String resultFilePath (line 38): path/to/result-folder + resultFileName;
+
+use the following command line to compile and run khop:
+	javac -cp json.jar kn.java
+	nohup java -cp "json.jar:." kn &
+
+Twitter
+-------------
+before run khop, assume you are in the script folder, modify following parameters in kn.java:
+  static String URL (line 19): need neptune-end-point
+  static String depth (line 20): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedCount (line 21): set random seed you want to test, up to 10000.
+  File file (line 30): path/to/random-test-seed
+  String resultFileName (line 37): "KN-latency-Twitter-" + depth;
+  String resultFilePath (line 38): path/to/result-folder + resultFileName;
+
+use the following command line to compile and run khop:
+        javac -cp json.jar kn.java
+        nohup java -cp "json.jar:." kn &
+
+
