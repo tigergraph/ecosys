@@ -1,0 +1,23 @@
+# return the exact k-hop neighbors count. If a vertex have a path of less
+# than k-hop from the input vertex, we won't count it as k-hop neighbor
+CREATE QUERY khop(VERTEX<MyNode> start_node, INT depth) for graph graph500{
+
+    OrAccum          @visited = false;
+    SumAccum<int>    @@loop=0;
+
+    Start = {start_node};
+    Start = SELECT v
+            FROM Start:v
+            ACCUM v.@visited = true;
+
+    WHILE (@@loop < depth) DO
+        Start = SELECT v
+                FROM Start:u - (MyEdge:e)->:v
+                WHERE v.@visited == false
+                POST-ACCUM v.@visited = true;
+
+        @@loop += 1;
+   END;
+
+   PRINT Start.size();
+}
