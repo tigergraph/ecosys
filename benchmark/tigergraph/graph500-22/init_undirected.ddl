@@ -1,1 +1,0 @@
-../cit-Patents/init_undirected.ddl

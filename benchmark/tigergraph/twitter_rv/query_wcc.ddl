@@ -1,1 +1,0 @@
-../cit-Patents/query_wcc.ddl
