@@ -197,12 +197,12 @@ nohup python pg.py graph500-22 neo4j 10 3
 Twitter
 -------------
 #khop
-nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 tigergraph 1 notes latency
-nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 tigergraph 2 notes latency
+nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 neo4j 1 notes latency
+nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 neo4j 2 notes latency
 
 #wcc
-nohup python wcc.py twitter-rv tigergraph 3
+nohup python wcc.py twitter-rv neo4j 3
 
 #page rank, 3 runs, each run 10 iterations.  
 #it will run very long
-python pg.py twitter tigergraph 10 3
+python pg.py twitter neo4j 10 3
