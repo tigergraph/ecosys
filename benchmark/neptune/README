@@ -53,10 +53,13 @@ Step 3: Use AWS Access key and Secret Access Key to setup aws configure on EC2 c
 - use the following command to setup aws configure:
 	aws configure
 
+Step 4: Create a S3 bucket
+- follow steps: https://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html
+
 Loading data (switch to EC2 client)
 ============
 - upload.sh: bash script to load data from client EC2 to S3. Description is inside. 
-- load.sh: bash script to load date from S3 to Neptune. Description is inside.
+- load.sh: bash script to load data from S3 to Neptune. Description is inside.
 - check_load.sh: bash script to check load status. Description is inside.
 - cancel_loading.sh: bash script to delete the loader job. Description is inside.
 
