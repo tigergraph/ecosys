@@ -15,26 +15,31 @@ import java.lang.ProcessBuilder;
 import java.net.ConnectException;
 
 public class kn{
+  // need to modify URL, depth, seedCount
   static String URL = "http://your-neptune-endpoint:8182";
-  static String depth = "2";
+  static String depth = "6";
+  static double seedCount = 200;
 
   final static long OK = 0;
   final static long TIMEOUT = 1;
 
   public static void main(String[] args){
     try{
-
-      File file = new File("twitter-test-seed-path");
+      
+      // need to modify file for random seed
+      File file = new File("randomTwitter");
       FileReader fileReader = new FileReader(file);
       BufferedReader bufferedReader = new BufferedReader(fileReader);
       StringBuffer stringBuffer = new StringBuffer();
       String line = bufferedReader.readLine();
-
-      String resultFileName = "KN-latency-twitter-" + depth;
-      String resultFilePath = "your-result-file-path" + resultFileName;
+	
+      // need to modify resultFileName, resultFilePath
+      String resultFileName = "KN-latency-Twitter-" + depth;
+      String resultFilePath = "/home/ec2-user/r4_4xlarge/query/" + resultFileName;
 
       FileWriter writer = new FileWriter(resultFilePath);
       writer.write("start vertex,\tneighbor size,\tquery time (in ms)\n");
+      writer.flush();
 
       double totalTime = 0.0;
       long totalKNsize = 0;
@@ -47,10 +52,9 @@ public class kn{
       * calculate the k-hop distinct neighbor size and query time
       */
       String[] roots = line.split(" ");
-      int size = roots.length;
-
-      for(String root : roots) {
+      for(String root:roots) {
 	count ++;
+
         long[] queryResult = sendQuery(root, depth);
 
         // handle query timeout, http error, and normal query
@@ -65,16 +69,15 @@ public class kn{
 	writer.write(root + ",\t" + String.valueOf(queryResult[0])
 	  + ",\t" + String.valueOf(queryResult[1]) + "\n");
 	System.out.println(count + "\t" + root + "\t" + normal);
-	if(count % 10 == 0.0 || count == 1000){
-	  writer.flush();
-	  if(count == 1000){
+  
+        if(count % 10 == 0.0 || count == seedCount){
+          writer.flush();
+	  if(count == seedCount){
 	    break;
 	  }
-	}
+        }
       }
-
-      // write final result to file
-
+      
       writer.write("====================================================\n");
       writer.write("number of start vertex:\t" + (long) count + "\n"
 	+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
@@ -82,16 +85,17 @@ public class kn{
         + "total query time:\t" + totalTime + "\n"
 	+ "average neighbor size:\t" + totalKNsize/(count - errorQuery) + "\n"
 	+ "average query time:\t" + totalTime/(count - errorQuery) + "\n");
-
+   
       // print final result to screen
 
       System.out.println("====================================================\n"
-	+ "number of start vertex:\t" + (long) count + "\n"
-	+ "total neighbor size:\t" + totalKNsize + "\n"
-	+ "total query time:\t" + totalTime + "\n"
-	+ "average neighbor size:\t" + totalKNsize/(count - errorQuery) + "\n"
-	+ "average query time:\t" + totalTime/(count - errorQuery) + "\n");
+        + "number of start vertex:\t" + (long) count + "\n"
+        + "total neighbor size:\t" + totalKNsize + "\n"
+        + "total query time:\t" + totalTime + "\n"
+        + "average neighbor size:\t" + totalKNsize/(count - errorQuery) + "\n"
+        + "average query time:\t" + totalTime/(count - errorQuery) + "\n");
 
+ 
       writer.flush();
       writer.close();	
     }catch(Exception e){
@@ -138,7 +142,8 @@ public class kn{
 
       //3. get response
       if (conn.getResponseCode() != 200) {
-        throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+        throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode()
+	 + " error message : " + conn.getResponseMessage());
       }
 
       BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
@@ -151,15 +156,15 @@ public class kn{
       //4. close connection
       conn.disconnect();
       return ret;
-    } catch (ConnectException connectFailed) {
+    }catch (ConnectException connectFailed) {
       try{
-	Thread.sleep(70000);
-	return null;
+        Thread.sleep(70000);
+        return null;
       }catch(InterruptedException e){
-	e.printStackTrace();
-	return null;
+        e.printStackTrace();
+        return null;
       }
-    }catch(Exception e) {
+     } catch(Exception e) {
       e.printStackTrace();
       return null;
     }
@@ -214,3 +219,4 @@ public class kn{
   }
 
 }
+
