@@ -21,13 +21,12 @@ Hardware & Major enviroment
 ================================
 - Amazon EC2 machine r4.8xlarge. 
 - OS Ubuntu 14.04.5 LTS
-- Java build 1.8.0_144-b01
+- Java build 1.8.0_144-b01 (folow http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html)
 - Python 2.7.6
 
-
-- 32vCPUs
-- 60GiB memory
-- attached a 512G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 25.6k. 
+- 32 vCPUs
+- 244 GiB memory
+- attached a 250G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 50 IOPS/GiB
   Raw data and neo4j binary are put on this SSD. 
 
 TigerGraph Version

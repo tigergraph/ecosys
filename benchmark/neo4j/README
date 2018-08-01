@@ -33,9 +33,9 @@ Hardware & Major enviroment
   pip install tornado
 
 
-- 32vCPUs
-- 60GiB memory
-- attached a 512G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 25.6k. 
+- 32 vCPUs
+- 244 GiB memory
+- attached a 250G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 50 IOPS/GiB
   Raw data and neo4j binary are put on this SSD. 
 
 Neo4j Version
