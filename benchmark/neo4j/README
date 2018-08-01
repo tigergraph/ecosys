@@ -110,13 +110,14 @@ use an editor to edit neo4j.conf, add the following lines at the bottom
 # benchmark config 
 ###################################
 
-#put the following in neo4j.conf
-dbms.memory.heap.initial_size=22700m
-dbms.memory.heap.max_size=22700m
-dbms.memory.pagecache.size=26100m
+# run neo4j-admin memrec, and put the following in neo4j.conf
+# put the following in neo4j.conf
+dbms.memory.heap.initial_size=31g
+dbms.memory.heap.max_size=31g
+dbms.memory.pagecache.size=194000m
 
-#set timeout to 300s
-dbms.transaction.timeout=300s
+#set timeout to 2.5 hour=9000s
+dbms.transaction.timeout=9000s
 
 #set apoc library
 dbms.security.procedures.unrestricted=apoc.*
