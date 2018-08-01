@@ -197,7 +197,7 @@ nohup python pg.py graph500-22 neo4j 10 3
 Twitter
 -------------
 #khop
-nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 neo4j 1 notes latency
+nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  300 neo4j 1 notes latency
 nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  1000 neo4j 2 notes latency
 
 #wcc
