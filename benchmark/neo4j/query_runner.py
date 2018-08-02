@@ -82,11 +82,11 @@ class TigerGraphQueryRunner(QueryRunner):
 
   def PG(self, iteration):
       result = self.session.get(self.url + "/query/pagerank", params={'iteration': iteration, "dampingFactor":0.8}).json()
-      print result
+      print (result)
 
   def WCC(self):
       result = self.session.get(self.url + "/query/wcc").json()
-      print result
+      print (result)
 
 if __name__ == "__main__":
     runner = TigerGraphQueryRunner() 
