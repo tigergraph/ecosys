@@ -87,6 +87,10 @@ Note: change /install to your installation point, and data folder to where you p
 nohup ./neo4j_load_twitter.sh  /install/neo4j-community-3.4.4  /datafolder
 Note: change /install to your installation point, and data folder to where you put the twitter data
 
+#check final storage . change the path to your .db folder
+du -hc  /ebs/install/neo4j/neo4j-community-3.4.4/data/databases/graph500.db/*store.db*
+du -hc  /ebs/install/neo4j/neo4j-community-3.4.4/data/databases/twitter_rv.db/*store.db*
+
 Attach the loaded data store to Neo4j
 =========================================
 Startup graph database with the loaded data by creating a symbolic link to the loaded folder. 
