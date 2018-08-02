@@ -17,25 +17,27 @@ Data Sets
 - graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
 - graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
 
-- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
-- twitter vertex file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.net_unique_node
+- twitter edge file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node
 - twitter vertex header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-node-header.txt
 - twitter edge header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-edge-header.txt
 
 
 Hardware & Major enviroment
 ================================
-- Amazon EC2 machine C3.8xlarge. 
+- Amazon EC2 machine r4.8xlarge
 - OS Ubuntu 14.04.5 LTS
-- Java build 1.8.0_144-b01
-- Python 2.7.6
-- you need to install tornado by
-  pip install tornado
+- Java build 1.8.0_144-b01 (folow http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html)
+- Python 3.4: If you have multiple python version installed, link /usr/bin/python -> python3.4
+- Install pip for python3:  sudo apt-get install python3-pip
+- you need to install the following modules
+  sudo pip install tornado
+  sudo pip install neo4j-driver
 
 
-- 32vCPUs
-- 60GiB memory
-- attached a 512G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 25.6k. 
+- 32 vCPUs
+- 244 GiB memory
+- attached a 250G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 50 IOPS/GiB
   Raw data and neo4j binary are put on this SSD. 
 
 Neo4j Version
@@ -85,6 +87,10 @@ Note: change /install to your installation point, and data folder to where you p
 nohup ./neo4j_load_twitter.sh  /install/neo4j-community-3.4.4  /datafolder
 Note: change /install to your installation point, and data folder to where you put the twitter data
 
+#check final storage . change the path to your .db folder
+du -hc  /ebs/install/neo4j/neo4j-community-3.4.4/data/databases/graph500.db/*store.db*
+du -hc  /ebs/install/neo4j/neo4j-community-3.4.4/data/databases/twitter_rv.db/*store.db*
+
 Attach the loaded data store to Neo4j
 =========================================
 Startup graph database with the loaded data by creating a symbolic link to the loaded folder. 
@@ -110,13 +116,14 @@ use an editor to edit neo4j.conf, add the following lines at the bottom
 # benchmark config 
 ###################################
 
-#put the following in neo4j.conf
-dbms.memory.heap.initial_size=22700m
-dbms.memory.heap.max_size=22700m
-dbms.memory.pagecache.size=26100m
+# run neo4j-admin memrec, and put the following in neo4j.conf
+# put the following in neo4j.conf
+dbms.memory.heap.initial_size=31g
+dbms.memory.heap.max_size=31g
+dbms.memory.pagecache.size=194000m
 
-#set timeout to 300s
-dbms.transaction.timeout=300s
+#set timeout to 2.5 hour=9000s
+dbms.transaction.timeout=9000s
 
 #set apoc library
 dbms.security.procedures.unrestricted=apoc.*
@@ -182,11 +189,13 @@ Assuming you are in the script folder, the output produced will be in
 
 Graph500
 -----------------
-#khop, change graph500-22 and twitter_rv.net path to your raw data path below. 
-# here we assume they are put under /ebs/raw/...
+#khop, change graph500-22-seed and twitter_rv.net-seed path to your seed file path.
+# here we assume they are put under /home/ubuntu/ecosys/benchmark/neo4j/
 
-nohup python kn.py /ebs/raw/graph500-22/graph500-22  300 neo4j  1 notes latency
-nohup python kn.py /ebs/raw/graph500-22/graph500-22  300 neo4j  2 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/graph500-22-seed  300 neo4j  1 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/graph500-22-seed  300 neo4j  2 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/graph500-22-seed  10  neo4j  3 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/graph500-22-seed  10  neo4j  6 notes latency
 
 #wcc, 3 runs
 nohup python wcc.py graph500-22 neo4j 3
@@ -197,8 +206,10 @@ nohup python pg.py graph500-22 neo4j 10 3
 Twitter
 -------------
 #khop
-nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  300 neo4j 1 notes latency
-nohup python kn.py /ebs/raw/twitter_rv/twitter_rv.net  300 neo4j 2 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/twitter_rv.net-seed 300 neo4j 1 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/twitter_rv.net-seed 300 neo4j 2 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/twitter_rv.net-seed 10 neo4j 3 notes latency
+nohup python kn.py /home/ubuntu/ecosys/benchmark/neo4j/twitter_rv.net-seed 10 neo4j 6 notes latency
 
 #wcc
 nohup python wcc.py twitter-rv neo4j 3
