@@ -122,12 +122,12 @@ assume you are in the script folder, then create a result folder using folowing 
 Graph500
 -----------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
-  static String URL (line 19): need neptune-end-point
-  static String depth (line 20): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedCount (line 21): set random seed you want to test, up to 10000.
-  File file (line 30): path/to/random-test-seed
-  String resultFileName (line 37): "KN-latency-Graph500-" + depth;
-  String resultFilePath (line 38): path/to/result-folder + resultFileName;
+  static String URL (line 18): need neptune-end-point
+  static String depth (line 19): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedSize (line 20): set random seed you want to test, up to 10000.
+  File file (line 28): path/to/random-test-seed
+  String resultFileName (line 34): "KN-latency-Graph500-" + depth;
+  String resultFilePath (line 35): path/to/result-folder + resultFileName;
 
 use the following command line to compile and run khop:
 	javac -cp json.jar kn.java
@@ -136,12 +136,12 @@ use the following command line to compile and run khop:
 Twitter
 -------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
-  static String URL (line 19): need neptune-end-point
-  static String depth (line 20): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedCount (line 21): set random seed you want to test, up to 10000.
+  static String URL (line 18): need neptune-end-point
+  static String depth (line 19): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedSize (line 20): set random seed you want to test, up to 10000.
   File file (line 30): path/to/random-test-seed
-  String resultFileName (line 37): "KN-latency-Twitter-" + depth;
-  String resultFilePath (line 38): path/to/result-folder + resultFileName;
+  String resultFileName (line 34): "KN-latency-Twitter-" + depth;
+  String resultFilePath (line 35): path/to/result-folder + resultFileName;
 
 use the following command line to compile and run khop:
         javac -cp json.jar kn.java
