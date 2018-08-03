@@ -56,7 +56,7 @@ def RunWCC(filename, db_name, num_tests, notes = ""):
         report += line + "\n"
     report += "summary, avg time " + str(total_time/num_tests) + " seconds"
     ofile.write(report)
-    print report
+    print (report)
 
 
 if __name__ == "__main__":

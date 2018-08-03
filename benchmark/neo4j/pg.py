@@ -56,7 +56,7 @@ def RunPG(filename, db_name, num_iteration, num_tests, notes = ""):
         report += line + "\n"
     report += "summary," + str(num_iteration) + "," + str(total_time/num_tests) + " seconds"
     ofile.write(report)
-    print report
+    print (report)
 
 
 if __name__ == "__main__":
