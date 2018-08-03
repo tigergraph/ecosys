@@ -44,7 +44,7 @@ def RunPG(filename, db_name, num_iteration, num_tests, notes = ""):
         print("invalid db " + db_name)
     total_time = 0.0
     total_knsize = 0
-    report = "\n----------page rank " + str(datetime.datetime.now()) + "  " + notes + "  ----------\n"
+    report = "\n---------- " + str(datetime.datetime.now()) + "  " + notes + "  ----------\n"
     for i in range(0, num_tests):
         start = timer()
         runner.PG(num_iteration)
@@ -54,9 +54,9 @@ def RunPG(filename, db_name, num_iteration, num_tests, notes = ""):
         line = str(i) + "," + str(num_iteration) + "," + str(exe_time) + " seconds"
         print(line)
         report += line + "\n"
-    report += "summary," + str(num_iteration) + "," + str(total_time/num_tests) + " seconds \n"
+    report += "summary," + str(num_iteration) + "," + str(total_time/num_tests) + " seconds"
     ofile.write(report)
-    print report
+    print (report)
 
 
 if __name__ == "__main__":

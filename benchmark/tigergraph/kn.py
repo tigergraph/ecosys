@@ -29,6 +29,22 @@ from config import *
 # (2) run 1-step and 2-step path count query
 #######################################################################
 
+def GetRandomNodesSeedFile(seed_file_path, count):
+    nodes = []
+    if not os.path.exists(seed_file_path):
+        print("Seed file does not exists: " + seed_file_path)
+        sys.exit()
+    #open seed file 
+    if os.path.isfile(seed_file_path):
+        pre_nodes = open(seed_file_path, 'r').read().split()
+        if len(pre_nodes) >= count:
+            print("Use randome seeds from " + seed_file_path)
+            return pre_nodes[0:count]
+        else:
+         print("Seed file does not contain enough seeds.")
+         sys.exit()
+
+
 #########################################################################
 # return random number of vertices, if the random seed file does not exists, 
 # generate randome seed file and put under ./seed/ file, and return it.
@@ -138,7 +154,7 @@ def RunKNLatency(filename, roots, db_name, depth, notes = ""):
     report += "summary, avg knsize=" + avgKn + ", avg query time=" + avgQtime\
                + "s, timeout query cnt=" + str(timeout_query_cnt)
     ofile.write(report)
-    print report
+    print(report)
 
 
 bad_requests = 0
@@ -256,11 +272,11 @@ def RunKNThroughput(filename, roots, db_name, depth, notes = ""):
 if __name__ == "__main__":
     AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=20)
     if len(sys.argv) < 7:
-        print("Usage: python kn.py raw_file_name num_root db_name depth notes mode")
+        print("Usage: python kn.py seed_file_path num_root db_name depth notes mode")
         sys.exit()
     if sys.argv[6] == "latency":
-        print("\n");
         print(sys.argv[0] + " " + sys.argv[1] + " " +  sys.argv[2] + " " + sys.argv[3] + " " + sys.argv[4] + " " + sys.argv[5] + " " + sys.argv[6]);
-        RunKNLatency(os.path.basename(sys.argv[1]), GetRandomNodes(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
+        #RunKNLatency(os.path.basename(sys.argv[1]), GetRandomNodes(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
+        RunKNLatency(os.path.basename(sys.argv[1]), GetRandomNodesSeedFile(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
     else:
         RunKNThroughput(os.path.basename(sys.argv[1]), GetRandomNodes(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])

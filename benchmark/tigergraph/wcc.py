@@ -45,7 +45,7 @@ def RunWCC(filename, db_name, num_tests, notes = ""):
     else:
         print("invalid db " + db_name)
     total_time = 0.0
-    report = "\n----------wcc " + str(datetime.datetime.now()) + "  " + notes + "  ----------\n"
+    report = "\n---------- " + str(datetime.datetime.now()) + "  " + notes + "  ----------\n"
     for i in range(0, num_tests):
         start = timer()
         runner.WCC()
@@ -54,9 +54,9 @@ def RunWCC(filename, db_name, num_tests, notes = ""):
         total_time += exe_time
         line = str(i) + "," + str(exe_time)
         report += line + "\n"
-    report += "summary, avg time " + str(total_time/num_tests) + " seconds\n"
+    report += "summary, avg time " + str(total_time/num_tests) + " seconds"
     ofile.write(report)
-    print report
+    print (report)
 
 
 if __name__ == "__main__":
