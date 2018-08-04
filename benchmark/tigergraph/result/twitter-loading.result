@@ -1,0 +1,642 @@
+[Tip: Use "CTRL + C" to stop displaying the loading status update, then use "SHOW LOADING STATUS jobid" to track the loading progress again]
+[Tip: Manage loading jobs with "ABORT/RESUME LOADING JOB jobid"]
+Starting the following job, i.e.
+  JobName: load_twitter_edge, jobid: twitter_m1.1533263766226
+  Loading log: '/ebs/install/tigergraph/logs/restpp/restpp_loader_logs/twitter/twitter_m1.1533263766226.log'
+
+Job "twitter_m1.1533263766226" loading status
+[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+  [LOADING] /ebs/raw/twitter_rv.net
+  [=                                                                                                   ] 1%, 1386 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=                                                                                                   ] 1%, 1575 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==                                                                                                  ] 2%, 1710 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===                                                                                                 ] 3%, 1803 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===                                                                                                 ] 3%, 1848 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====                                                                                                ] 4%, 1895 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====                                                                                               ] 5%, 1930 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====                                                                                               ] 5%, 1928 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======                                                                                              ] 6%, 1940 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======                                                                                             ] 7%, 1944 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======                                                                                             ] 7%, 1940 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========                                                                                            ] 8%, 1951 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========                                                                                           ] 9%, 1957 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========                                                                                           ] 9%, 1968 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========                                                                                          ] 10%, 1969 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========                                                                                         ] 11%, 1970 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============                                                                                        ] 12%, 1978 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============                                                                                        ] 12%, 1975 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============                                                                                       ] 13%, 1973 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============                                                                                      ] 14%, 1970 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============                                                                                      ] 14%, 1968 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============                                                                                     ] 15%, 1961 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============                                                                                     ] 15%, 1958 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================                                                                                    ] 16%, 1963 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================                                                                                   ] 17%, 1957 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================                                                                                   ] 17%, 1959 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================                                                                                  ] 18%, 1958 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================                                                                                 ] 19%, 1956 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================                                                                                 ] 19%, 1952 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================                                                                                ] 20%, 1947 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================                                                                               ] 21%, 1944 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================                                                                               ] 21%, 1943 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================                                                                              ] 22%, 1940 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================                                                                             ] 23%, 1938 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================                                                                             ] 23%, 1937 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================                                                                            ] 24%, 1930 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================                                                                            ] 24%, 1922 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================                                                                           ] 25%, 1925 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================                                                                          ] 26%, 1919 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================                                                                          ] 26%, 1914 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================                                                                         ] 27%, 1915 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================                                                                        ] 28%, 1915 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================                                                                        ] 28%, 1914 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================                                                                       ] 29%, 1911 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================                                                                       ] 29%, 1908 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================                                                                      ] 30%, 1906 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================                                                                     ] 31%, 1907 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================                                                                     ] 31%, 1904 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================                                                                    ] 32%, 1904 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================                                                                   ] 33%, 1904 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================                                                                   ] 33%, 1902 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================                                                                  ] 34%, 1902 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================                                                                 ] 35%, 1902 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================                                                                 ] 35%, 1904 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================================                                                                ] 36%, 1901 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================================                                                                ] 36%, 1899 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================                                                               ] 37%, 1894 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================                                                              ] 38%, 1892 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================                                                              ] 38%, 1889 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================================                                                             ] 39%, 1890 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================                                                            ] 40%, 1888 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================                                                            ] 40%, 1883 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================================                                                           ] 41%, 1883 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================================                                                           ] 41%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================                                                          ] 42%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================                                                         ] 43%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================                                                         ] 43%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================                                                        ] 44%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================                                                        ] 44%, 1879 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================================                                                       ] 45%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================                                                      ] 46%, 1875 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================                                                      ] 46%, 1875 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================                                                     ] 47%, 1875 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================                                                    ] 48%, 1874 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================                                                    ] 48%, 1872 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================                                                   ] 49%, 1872 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================                                                   ] 49%, 1870 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================================                                                  ] 50%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================                                                 ] 51%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================                                                 ] 51%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================================================                                                ] 52%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================================                                               ] 53%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================================                                               ] 53%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================                                              ] 54%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================                                              ] 54%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================================================                                             ] 55%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================                                            ] 56%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================                                            ] 56%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================================================                                           ] 57%, 1865 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================                                          ] 58%, 1864 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================                                          ] 58%, 1864 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================================                                         ] 59%, 1865 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================================                                        ] 60%, 1865 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================================                                        ] 60%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================================================                                       ] 61%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================                                      ] 62%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================                                      ] 62%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================================                                     ] 63%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================================                                     ] 63%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================================                                    ] 64%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================                                   ] 65%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================                                   ] 65%, 1870 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================================================                                  ] 66%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================================                                 ] 67%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================================                                 ] 67%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================================================================                                ] 68%, 1865 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================================================                               ] 69%, 1864 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================================================                               ] 69%, 1863 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================================                              ] 70%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================================                              ] 70%, 1860 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================================================================                             ] 71%, 1860 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================================                            ] 72%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================================                            ] 72%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================================================================                           ] 73%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================================                          ] 74%, 1861 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================================                          ] 74%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================================================                         ] 75%, 1861 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================================================                         ] 75%, 1862 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================================================                        ] 76%, 1861 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================================================================                       ] 77%, 1863 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================================                      ] 78%, 1865 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================================                      ] 78%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================================================                     ] 79%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================================================                     ] 79%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================================================                    ] 80%, 1866 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================================                   ] 81%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================================                   ] 81%, 1867 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================================================================                  ] 82%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================================================                 ] 83%, 1868 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===================================================================================                 ] 83%, 1869 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [====================================================================================                ] 84%, 1871 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=====================================================================================               ] 85%, 1873 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================================================              ] 86%, 1872 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [======================================================================================              ] 86%, 1874 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=======================================================================================             ] 87%, 1876 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================================================            ] 88%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [========================================================================================            ] 88%, 1876 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=========================================================================================           ] 89%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================================================          ] 90%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==========================================================================================          ] 90%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===========================================================================================         ] 91%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================================================================        ] 92%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [============================================================================================        ] 92%, 1879 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=============================================================================================       ] 93%, 1880 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================================================      ] 94%, 1879 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==============================================================================================      ] 94%, 1879 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [===============================================================================================     ] 95%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================================================================    ] 96%, 1879 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [================================================================================================    ] 96%, 1878 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================================================   ] 97%, 1877 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================================================   ] 97%, 1875 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================================================================================  ] 98%, 1873 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [==================================================================================================  ] 98%, 1872 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 0 / Total: 1 )
+[2K  [LOADING] /ebs/raw/twitter_rv.net
+[2K  [=================================================================================================== ] 99%, 1873 kl/s
+[4A[2KJob "twitter_m1.1533263766226" loading status
+[2K[RUNNING] m1 ( Finished: 1 / Total: 1 )
+[2K  [LOADED]
+[2K  +-------------------------------------------------------------------+
+  |               FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/twitter_rv.net |     1468365182 |   1869 kl/s |   785.24 s|
+  +-------------------------------------------------------------------+
+[7A[2KJob "twitter_m1.1533263766226" loading status
+[2K[FINISHED] m1 ( Finished: 1 / Total: 1 )
+[2K  [LOADED]
+[2K  +-------------------------------------------------------------------+
+[2K  |               FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+[2K  |/ebs/raw/twitter_rv.net |     1468365182 |   1869 kl/s |   785.24 s|
+[2K  +-------------------------------------------------------------------+

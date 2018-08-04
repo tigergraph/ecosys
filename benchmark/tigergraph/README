@@ -1,0 +1,151 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the 
+# acknowledgement to TigerGraph.
+# Author: Mingxi Wu mingxi.wu@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark result on TigerGraph Dev Edtion.
+
+Data Sets
+===========
+
+- graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+
+- twitter edge file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
+
+
+Hardware & Major enviroment
+================================
+- Amazon EC2 machine r4.8xlarge. 
+- OS Ubuntu 14.04.5 LTS
+- Java build 1.8.0_144-b01 (folow http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html)
+- Python 3.4: If you have multiple python version installed, link /usr/bin/python -> python3.4
+- Install pip for python3:  sudo apt-get install python3-pip
+- you need to install the following modules
+  sudo pip install tornado
+  sudo pip install neo4j-driver
+
+
+- 32 vCPUs
+- 244 GiB memory
+- attached a 250G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 50 IOPS/GiB
+  Raw data and neo4j binary are put on this SSD. 
+
+TigerGraph Version
+===================
+- TigerGraph Devloper Editon downloaded from https://www.tigergraph.com/download
+
+Install TigerGraph 
+===================
+
+- installation video reference here https://www.youtube.com/watch?v=q-vAioBUwkI&t=3s
+
+- put the ExprFunctions.hpp under tigergraph/dev/gdk/gsql/src/QueryUdf/ folder.
+  It contains a udf for WCC use. 
+
+Open READ and WRITE permission for TigerGraph User
+==================================================
+If you installed TigerGraph with the default user, it's tigergraph.
+
+Grant Read and Write permission to the tigergraph user on 
+- raw data folder.
+- the script folder. 
+
+Configure timeout
+===================
+Setup timeout to 3600 s
+Use the following command to change Restpp.timeout_seconds to  3600
+ gadmin --configure timeout_seconds
+
+Use the following two commands to apply the config change.
+ gadmin config-apply
+ gadmin restart
+
+- use the following command to check TigerGraph service 
+gadmin status 
+
+
+Graph500 
+==================
+Setup schema  
+----------------
+On a bash shell, switch to the user you specified during TigerGraph installation. 
+By default, the user is tigergraph and password is tigergraph.
+
+When all TigerGraph service is up, install the schema, loading job and queries on 
+the bash command line.
+
+gsql graph500_setup.gsql
+
+Note: this setup takes up to several mintues.
+
+Load data
+---------------
+On a bash shell, make sure you have permission to READ the raw edge file. Then, run the loading job by
+
+nohup  gsql -g graph500 'run loading job load_graph500_edge using file1="/ebs/raw/graph500-22/graph500-22"'
+
+Note: In the above command, replace file1="your_raw_data_path"
+
+
+Run the benchmark 
+--------------------
+In bash shell 
+
+./benchmark-graph500.sh "path_to_graph500_raw_data_folder" 
+e.g. 
+
+./benchmark-graph500.sh "/ebs/raw/graph500/" 
+
+A random seed folder for k-hop-path-neighbor-count query will be generated. 
+A result folder will be generated to keep the benchmark result.
+This shell script will run the following workload in sequel.
+
+1. k=1 for k-hop-path-neighbor-count query over 1000 random selected vertices.
+2. k=2 for k-hop-path-neighbor-count query over 1000 random selected vertices.
+3. 3 times of the wcc algorithm over the graph500 data 
+4. 3 times of the page rank algorithm 10 iterations over the graph500 data 
+
+Twitter
+==================
+Setup schema  
+----------------
+On a bash shell, switch to the user you specified during TigerGraph installation. 
+By default, the user is tigergraph and password is tigergraph.
+
+When all TigerGraph service is up, install the schema, loading job and queries on 
+the bash command line.
+
+gsql twitter_setup.gsql
+
+Note: this setup takes up to several mintues.
+
+Load data
+---------------
+On a bash shell, make sure you have permission to READ the raw edge file. Then, run the loading job by
+
+nohup  gsql -g twitter 'run loading job load_twitter_edge using file1="/ebs/raw/twitter_rv/twitter_rv.net"'
+
+Note: In the above command, replace file1="your_raw_data_path"
+
+
+Run the benchmark 
+--------------------
+In bash shell 
+
+./benchmark-twitter.sh "path_to_twitter_raw_data_folder" 
+e.g. 
+
+./benchmark-twitter.sh "/ebs/raw/twitter_rv/" 
+
+A random seed folder for k-hop-path-neighbor-count query will be generated. 
+A result folder will be generated to keep the benchmark result.
+This shell script will run the following workload in sequel.
+
+1. k=1 for k-hop-path-neighbor-count query over 1000 random selected vertices.
+2. k=2 for k-hop-path-neighbor-count query over 1000 random selected vertices.
+3. 3 times of the wcc algorithm over the twitter data 
+4. 3 times of the page rank algorithm 10 iterations over the twitter-rv data 

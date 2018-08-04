@@ -1,0 +1,13 @@
+[Tip: Use "CTRL + C" to stop displaying the loading status update, then use "SHOW LOADING STATUS jobid" to track the loading progress again]
+[Tip: Manage loading jobs with "ABORT/RESUME LOADING JOB jobid"]
+Starting the following job, i.e.
+  JobName: load_graph500_edge, jobid: graph500_m1.1533257716589
+  Loading log: '/ebs/install/tigergraph/logs/restpp/restpp_loader_logs/graph500/graph500_m1.1533257716589.log'
+
+Job "graph500_m1.1533257716589" loading status
+[FINISHED] m1 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +----------------------------------------------------------------+
+  |            FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/graph500-22 |       67108864 |   1198 kl/s |    55.97 s|
+  +----------------------------------------------------------------+

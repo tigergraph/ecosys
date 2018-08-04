@@ -1,1 +1,0 @@
-../cit-Patents/load.ddl
