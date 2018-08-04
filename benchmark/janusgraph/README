@@ -1,0 +1,251 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the 
+# acknowledgement to TigerGraph.
+# Author: Litong Shen litong.shen@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark result on JanusGraph. 
+
+Data Sets
+===========
+
+- graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/graph500-22/graph500-22_unique_node
+- graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
+- graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
+
+- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.net_unique_node
+- twitter vertex header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-node-header.txt
+- twitter edge header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-edge-header.txt
+
+
+Hardware & Major enviroment
+================================
+- Amazon EC2 machine r4.8xlarge. 
+- OS Amazon Linux AMI 2018.03 
+- Java build 1.8.0_171-b10
+
+- 32vCPUs
+- 244GiB memory
+- attached a 512G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 25.6k. 
+  Raw data and JanusGraph binary are put on this SSD. 
+
+JanusGraph Version
+==================
+- JanusGraph v0.2.1 downloaded from 
+  https://github.com/JanusGraph/janusgraph/releases/download/v0.2.1/janusgraph-0.2.1-hadoop2.zip
+
+Install JanusGraph
+==================
+# unzip to put under a folder. E.g. /ebs/install/janusgraph/ folder, this is an installation point we will use through
+out this README. Replace it to your installation point when trying to reproduce.
+
+	unzip janusgraph-0.2.1-hadoop2.zip
+
+It will create a janusgraph-0.2.1-hadoop2 folder.
+
+Download scripts
+================
+# create a folder to store scripts, codes, configuration files, and README
+# suppose your folder locate in /ebs/benchmark/code/janusgraph/
+
+Move configuration files
+=======================
+# create a /conf folder under installation point /ebs/install/janusgraph/ by following command
+	cd /ebs/install/janusgraph/
+	mkdir conf
+
+# suppose your scipts and java code located in /ebs/benchmark/code/janusgraph/
+# move configuration files (*.properties) to conf folder by following command
+	mv /ebs/benchmark/code/janusgraph/graph500-janusgraph-cassandra.properties /ebs/install/janusgraph/conf/
+	mv /ebs/benchmark/code/janusgraph/twitter_generate_hashmap.properties /ebs/install/janusgraph/conf/
+
+Split twitter data
+==================
+need to split twitter data into 10 files then load each one by one
+# redirect to the folder contains twitter data
+# make a folder to store split twitter data
+	cd /ebs/raw/twitter_rv/
+	mkdir splited
+
+- copy FileSpliter.java to /splited folder
+	cp /ebs/benchmark/code/janusgraph/FileSplitor.java /ebs/raw/twitter_rv/splited/
+
+- split twitter data by following command
+	javac FileSplitor.java
+	java FileSplitor /ebs/raw/twitter_rv/twitter_rv.net
+
+Launch Cassandra backend
+========================
+# Tune MAX_HEAP_SIZE and HEAP_NEWSIZE of cassandra environment file: cassandra-env.sh
+# JVM setting: MAX_HEAP_SIZE="24G" HEAP_NEWSIZE = "2400M" line no: 143
+	cd /ebs/install/janusgraph/janusgraph-0.2.1-hadoop2/conf/cassandra/
+	vim cassandra-env.sh +143
+	
+- launch Cassandra under the respective installation location use following cammand lines
+	cd /ebs/install/janusgraph/janusgraph-0.2.1-hadoop2
+	./bin/cassandra
+
+Loading data 
+==============
+- compile_load_knn.sh: bash script to compile java codes for loading data and k-neighborhood query. Description is inside.
+- load_graph500.sh:  bash script to load graph500 data. Description is inside.
+- generate_hashMap.sh:  bash script to load twitter vertex and generate hashmap for internalId : externalId. Description is inside.
+- load_twitter_hashmap.sh: bash script to load twitter edge with hashmap generated from generate_hashMap.sh. Description is inside. 
+
+Before load:
+------------
+- compile java codes for loading data and k-neighborhood query.
+	bash compile_load_knn.sh
+Note: need to modify parameters in compile_load_knn.sh, description is inside.
+
+To load:
+------------
+- Load graph500 data
+	nohup bash load_graph500.sh &
+Note: need to modify parameters in load_graph500.sh, description is inside.
+
+- Load twitter data
+# before load, modify following parameters in generateVertexHashMap.java:
+  String hashMapName (line 59): name for generating hashmap
+  String hashMapPath (line 60): "/ebs/raw/twitter_rv/" + hashMapName // assume your twitter_rv located in /ebs/raw/twitter_rv/
+  
+- load twitter vertex file, write hashmap (vertexes' internalId : externalId) to disk use following command
+	nohup generate_hashMap.sh &
+Note: need to modify parameters in generate_hashMap.sh, description is inside.
+
+- retrieve hashmap then load partitioned edge files use following command
+	nohup load_twitter_hashmap.sh & 
+Note: need to modify parameters in load_twitter_hashmap.sh, description is inside.
+
+- check final storage . change the path to your .db folder
+	du -hc /ebs/install/janusgraph/janusgraph-0.2.1-hadoop2/db/cassandra/data/graph500/
+	du -hc /ebs/install/janusgraph/janusgraph-0.2.1-hadoop2/db/cassandra/data/twitter_hashMap/
+
+Run benchmark 
+================
+Before running the benchmark script below, please make sure the current user has the READ permission from the raw file, 
+and the WRITE permission on the folder where you put the benchmark script folder
+
+Output folder
+-----------------
+Assuming you are in the script folder /ebs/benchmark/code/janusgraph, create /result folder to store results by following command:
+	mkdir result 
+
+Graph500
+-----------------
+# khop
+**********
+redirect to the folder contains knn-graph500.sh by following command:
+	cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in JanusKNeighbor.java:
+  String resultFileName (line 53): "KN-latency-Graph500-" + steps
+  String resultFilePath (line 54): path/to/result/folder/ + resultFileName
+  // set timeout to 180s for 1-hop and 2-hops, set to 9000s for 3-hops and 6-hops
+  final Duration timeout (line 66): Duration.ofSeconds(180)
+
+- use the following command to compile k-hops java code:
+	bash compile_load_knn.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run k-hops query: 
+	nohup bash knn-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
+
+#wcc
+************
+# redirect to the folder contains compile_WCC.sh
+	cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in WCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
+  String resultFileName (line 42): "WCC-latency-graph500"
+  String resultFilePath (line 43): path/to/result/folder/ + resultFileName
+  final Duration timeout (line 49): set timeout in seconds
+
+- use the following command to compile WCC java code:
+	bash compile_WCC.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run WCC:
+	nohup bash WCC-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
+
+#page rank, run 10 iterations
+*****************************
+# redirect to the folder contains compile_PG.sh
+	cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in JanusPageRank.java (e.g. locate in /ebs/benchmark/code/janusgraph/PG)
+  String resultFileName (line 43): "PageRank-latency-Graph500"
+  String resultFilePath (line 44): path/to/result/folder/ + resultFileName
+  final Duration timeout (line 50): set timeout in seconds
+
+- use the following command to compile WCC java code:
+	bash compile_PG.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run PG:
+	nohup bash pg-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
+
+Twitter
+-------------
+#khop
+***********
+# redirect to the folder contains knn-graph500.sh by following command:
+        cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in JanusKNeighbor.java:
+  String resultFileName (line 53): "KN-latency-Twitter-" + steps
+  String resultFilePath (line 54): path/to/result/folder/ + resultFileName
+  // set to 180s for 1-hop and 2-hops, set to 9000s for 3-hops and 6-hops
+  final Duration timeout (line 66): Duration.ofSeconds(180) 
+
+- use the following command to compile k-hops java code:
+        bash compile_load_knn.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run k-hops query:
+        nohup bash knn-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
+
+#wcc
+************
+# redirect to the folder contains compile_WCC.sh
+        cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in WCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
+  String resultFileName (line 42): "WCC-latency-twitter"
+  String resultFilePath (line 43): path/to/result/folder/ + resultFileName
+  final Duration timeout (line 49): set timeout in seconds
+
+- use the following command to compile WCC java code:
+        bash compile_WCC.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run WCC:
+        nohup bash WCC-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
+
+#page rank, run 10 iterations.  
+*****************************
+# redirect to the folder contains compile_PG.sh
+        cd /ebs/benchmark/code/janusgraph
+
+# modify following parameters in JanusPageRank.java (e.g. locate in /ebs/benchmark/code/janusgraph/PG)
+  String resultFileName (line 43): "PageRank-latency-twitter"
+  String resultFilePath (line 44): path/to/result/folder/ + resultFileName
+  final Duration timeout (line 50): set timeout in seconds
+
+- use the following command to compile WCC java code:
+        bash compile_PG.sh
+Note: before running modify the parameters in scripts. Description is inside.
+
+- use the following command to run PG:
+        nohup bash pg-janus.sh &
+Note: before running modify the parameters in scripts. Description is inside.
