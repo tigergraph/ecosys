@@ -1,0 +1,17 @@
+start vertex,	neighbor size,	query time (in ms)
+3600312,	-1,	-1.0E-6
+2677094,	-1,	-1.0E-6
+2038005,	-1,	-1.0E-6
+3301167,	-1,	-1.0E-6
+704219,	-1,	-1.0E-6
+1779962,	-1,	-1.0E-6
+2681401,	-1,	-1.0E-6
+2277366,	-1,	-1.0E-6
+1649130,	-1,	-1.0E-6
+806220,	-1,	-1.0E-6
+number of start vertex: 10
+number of query didn't finish correctly:        10
+total neighbor size:    0
+total query time:       0.0
+average neighbor size:  -1.0
+average query time:     NaN
