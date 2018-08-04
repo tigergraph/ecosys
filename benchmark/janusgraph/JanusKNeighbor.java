@@ -50,8 +50,8 @@ public class JanusKNeighbor {
 		try {
 			// initialize output file 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(rootFile)));
-			String resultFileName = "KN-latency-twitter-Traversal-" + steps;
-			String resultFilePath = "/Ebs/benchmark/code/janusgraph/result/" + resultFileName;
+			String resultFileName = "KN-latency-graph500-Traversal-" + steps;
+			String resultFilePath = "/4ebs/benchmark/code/janusgraph/result/" + resultFileName;
 			FileWriter writer = new FileWriter(resultFilePath);
 			writer.write("start vertex,\tneighbor size,\tquery time (in ms)\n");
 			writer.flush();
@@ -81,7 +81,6 @@ public class JanusKNeighbor {
 				final Future<Long> handler = executor.submit(new Callable() {
 					@Override
 					 public Long call() throws Exception {
-				        	//return runKNeighbor(root) - 1;
 				        	return runKNeighbor(root);
 				    	}
 				});
@@ -111,12 +110,12 @@ public class JanusKNeighbor {
 				System.out.println(root + "," + Long.toString(neighbor_size) + "," + Double.toString((double)duration/1000000.0));
 			}
 			
-			
+			double avgNeighborSize = test_count == errorQuery ? -1.0 : (double)total_neighbor_size/(double)(test_count - errorQuery);		
 			writer.write("number of start vertex:\t" + test_count + "\n"
 		   	+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
 			+ "total neighbor size:\t" + total_neighbor_size + "\n"
 	   		+ "total query time:\t" + total_duration/1000000.0 + "\n"
-	  		+ "average neighbor size:\t" + total_neighbor_size/(test_count - errorQuery) + "\n"
+	  		+ "average neighbor size:\t" + avgNeighborSize + "\n"
 	  		+ "average query time:\t" + total_duration/1000000.0/(test_count - errorQuery) + "\n");
 			
 	
@@ -124,7 +123,7 @@ public class JanusKNeighbor {
 			System.out.println("######## number of timeout queries #######  " + errorQuery);
 			System.out.println("######## total time #######  " + Double.toString((double)total_duration/1000000.0) + " ms");
 			System.out.println("######## average time #######  " + Double.toString((double)total_duration/1000000.0/(double)(test_count - errorQuery)) + " ms");
-			System.out.println("######## average kneighbor #######  " + Double.toString((double)total_neighbor_size/(double)(test_count -errorQuery)));
+			System.out.println("######## average kneighbor #######  " + Double.toString(avgNeighborSize));
 
 			writer.flush();
 			writer.close();
