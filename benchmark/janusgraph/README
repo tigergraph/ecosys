@@ -180,6 +180,14 @@ Note: before running modify the parameters in scripts. Description is inside.
 # redirect to the folder contains compile_PG.sh
 	cd /ebs/benchmark/code/janusgraph
 
+# generate vertex id file to run pagerank
+  modify following generateId.java
+    String resultFileName (line 17): "graph500_ids"
+    String resultFilePath (line 18): path/to/result/result/folder + resultFileName;
+  use the following command to compile and run generateId.java:
+	javac generateId.java
+	java generateId path/to/graph500-22_unique_node/file
+
 # modify following parameters in JanusPageRank.java (e.g. locate in /ebs/benchmark/code/janusgraph/PG)
   String resultFileName (line 43): "PageRank-latency-Graph500"
   String resultFilePath (line 44): path/to/result/folder/ + resultFileName
@@ -236,6 +244,14 @@ Note: before running modify the parameters in scripts. Description is inside.
 *****************************
 # redirect to the folder contains compile_PG.sh
         cd /ebs/benchmark/code/janusgraph
+
+# generate vertex id file to run pagerank
+  modify following generateId.java 
+    String resultFileName (line 17): "twitter_ids"
+    String resultFilePath (line 18): path/to/result/result/folder + resultFileName;
+  use the following command to compile and run generateId.java:
+        javac generateId.java 
+        java generateId path/to/twitter_rv.net_unique_node/file
 
 # modify following parameters in JanusPageRank.java (e.g. locate in /ebs/benchmark/code/janusgraph/PG)
   String resultFileName (line 43): "PageRank-latency-twitter"
