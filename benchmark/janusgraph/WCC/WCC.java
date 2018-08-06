@@ -29,6 +29,9 @@ import java.util.Optional;
 import java.util.Set; 
 
 import java.util.concurrent.ConcurrentHashMap;
+/**
+ * @author Litong Shen
+ */
 
 public class WCC implements VertexProgram<Long> {
 	public static final String GROUP_ID = "WCC.groupId";
@@ -138,11 +141,6 @@ public class WCC implements VertexProgram<Long> {
 
 	@Override
 	public  void execute(final Vertex vertex, Messenger<Long> messenger, final Memory memory) {
-		/*
-		System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-		String ID = vertex.value("id");
-		System.out.println("vertex: " + ID);
-		*/
 
 		Long groupId = vertex.value(GROUP_ID);
 		boolean changedGroup = false;

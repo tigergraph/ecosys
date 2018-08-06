@@ -162,7 +162,7 @@ Note: before running modify the parameters in scripts. Description is inside.
 # redirect to the folder contains compile_WCC.sh
 	cd /ebs/benchmark/code/janusgraph
 
-# modify following parameters in WCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
+# modify following parameters in JanusWCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
   String resultFileName (line 42): "WCC-latency-graph500"
   String resultFilePath (line 43): path/to/result/folder/ + resultFileName
   final Duration timeout (line 49): set timeout in seconds
@@ -227,7 +227,7 @@ Note: before running modify the parameters in scripts. Description is inside.
 # redirect to the folder contains compile_WCC.sh
         cd /ebs/benchmark/code/janusgraph
 
-# modify following parameters in WCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
+# modify following parameters in JanusWCC.java (e.g. locate in /ebs/benchmark/code/janusgraph/WCC):
   String resultFileName (line 42): "WCC-latency-twitter"
   String resultFilePath (line 43): path/to/result/folder/ + resultFileName
   final Duration timeout (line 49): set timeout in seconds
