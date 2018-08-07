@@ -63,6 +63,7 @@ public class SparkConnector implements Serializable {
     TgConnector tc = new TgConnector(tg_ip, "9000", "tigergraph");
 
     try {
+      // assume you already installed queries: topCoLiked and topCoLiked_file
       // Get json response for a realtime query
       JSONObject json_res = tc.getJsonForQuery("topCoLiked?input_user=id1&topk=10");
       System.out.println("--------------------------");
@@ -86,15 +87,19 @@ public class SparkConnector implements Serializable {
       // Get json response for a data post
       StringBuilder payload = new StringBuilder("");
       payload.append("id100,id1000\n");
+      payload.append("id100,id2000\n");
+      payload.append("id100,id3000\n");
+      payload.append("id200,id4000\n");
       payload.append("id200,id1000\n");
-      payload.append("id300,id1000\n");
-      payload.append("id400,id1000\n");
-      payload.append("id500,id1000\n");
       JSONObject json_res3 = tc.getJsonForPost("load_cf", payload.toString());
       System.out.println("--------------------------");
       System.out.println(json_res3.toString(4));
       System.out.println("--------------------------");
       // validate
+      JSONObject json_res = tc.getJsonForQuery("topCoLiked?input_user=id1000&topk=10");
+      System.out.println("--------------------------");
+      System.out.println(json_res.toString(4));
+      System.out.println("--------------------------");
 
 
     } catch (Exception e) {
