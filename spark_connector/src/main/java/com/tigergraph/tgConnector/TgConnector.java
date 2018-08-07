@@ -44,7 +44,7 @@ public class TgConnector implements Serializable {
       String requestUrl = "http://" + this.tg_ip + ":" + this.tg_port +
           "/ddl?sep=,&tag=" + post_endpoint + "&eol=%0A";
       response = sendRequest(requestUrl, "POST", payload);
-    } catch (JSONException e) {
+    } catch (Exception e) {
       throw e;
     }
     return new JSONObject(response);

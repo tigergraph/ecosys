@@ -96,9 +96,9 @@ public class SparkConnector implements Serializable {
       System.out.println(json_res3.toString(4));
       System.out.println("--------------------------");
       // validate
-      JSONObject json_res = tc.getJsonForQuery("topCoLiked?input_user=id1000&topk=10");
+      JSONObject json_res4 = tc.getJsonForQuery("topCoLiked?input_user=id1000&topk=10");
       System.out.println("--------------------------");
-      System.out.println(json_res.toString(4));
+      System.out.println(json_res4.toString(4));
       System.out.println("--------------------------");
 
 
