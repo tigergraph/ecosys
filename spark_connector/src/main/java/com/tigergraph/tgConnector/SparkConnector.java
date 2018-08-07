@@ -32,13 +32,38 @@ public class SparkConnector implements Serializable {
     }
   }
 
+  // example for parse Spark dataset and post to TigerGraph
+  private void processHiveData(TgConnector tc, String post_endpoint, final Dataset<Row> hiveData) {
+    hiveData.foreachPartition(rowIterator -> {
+      int rowCount = 0;
+      StringBuilder payload = new StringBuilder("");
+      while (rowIterator.hasNext()) {
+        Row row = rowIterator.next();
+        rowCount++;
+        for (int i = 0; i < row.length(); i++){
+            payload.append(Objects.toString(row.get(i), "") + (i == row.length() - 1 ? "\n" : ","));
+        }
+
+        if (rowCount == 5000){
+          tc.getJsonForPost(post_endpoint, payload.toString());
+          payload.setLength(0);
+          rowCount = 0;
+        }
+      }
+      //handle case for the last batch
+      if (rowCount > 0){
+        tc.getJsonForPost(post_endpoint, payload.toString());
+      }
+    });
+  }
+
   public void run(String tg_ip) {
     // create spark context and spark sql instance
     // SparkSession sc = SparkSession.builder().appName("spark2TG").getOrCreate();
     TgConnector tc = new TgConnector(tg_ip, "9000", "tigergraph");
 
     try {
-      // Get json response for realtime query
+      // Get json response for a realtime query
       JSONObject json_res = tc.getJsonForQuery("topCoLiked?input_user=id1&topk=10");
       System.out.println("--------------------------");
       System.out.println(json_res.toString(4));
@@ -52,10 +77,25 @@ public class SparkConnector implements Serializable {
       // this require user increase RESTPP timeout limit.
       JSONObject json_res2  = tc.getJsonForQuery("topCoLiked_file?input_user=id1&topk=10&_f="+remote_file);
       // Copy the output file from TG server to spark local machine
+      // you need set up the ssh connection between TG machine and spark cluster before running
       tc.copyFileToLocal(remote_file, local_file);
       System.out.println("--------------------------");
       System.out.println(json_res2.toString(4));
       System.out.println("--------------------------");
+
+      // Get json response for a data post
+      StringBuilder payload = new StringBuilder("");
+      payload.append("id100,id1000\n");
+      payload.append("id200,id1000\n");
+      payload.append("id300,id1000\n");
+      payload.append("id400,id1000\n");
+      payload.append("id500,id1000\n");
+      JSONObject json_res3 = tc.getJsonForPost("load_cf", payload.toString());
+      System.out.println("--------------------------");
+      System.out.println(json_res3.toString(4));
+      System.out.println("--------------------------");
+      // validate
+
 
     } catch (Exception e) {
       throw e;
