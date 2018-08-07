@@ -91,7 +91,8 @@ public class SparkConnector implements Serializable {
       payload.append("id100,id3000\n");
       payload.append("id200,id4000\n");
       payload.append("id200,id1000\n");
-      JSONObject json_res3 = tc.getJsonForPost("load_cf", payload.toString());
+      // default fileVariable if f
+      JSONObject json_res3 = tc.getJsonForPost("load_cf", payload.toString(), "f");
       System.out.println("--------------------------");
       System.out.println(json_res3.toString(4));
       System.out.println("--------------------------");

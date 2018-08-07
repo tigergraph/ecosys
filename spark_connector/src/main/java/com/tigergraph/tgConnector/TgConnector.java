@@ -38,11 +38,11 @@ public class TgConnector implements Serializable {
     return new JSONObject(response);
   }
 
-  public JSONObject getJsonForPost(String post_endpoint, String payload) {
+  public JSONObject getJsonForPost(String post_endpoint, String payload, String fileVariable) {
     String response = "";
     try {
       String requestUrl = "http://" + this.tg_ip + ":" + this.tg_port +
-          "/ddl?sep=,&tag=" + post_endpoint + "&eol=%0A&filename=f";
+          "/ddl?sep=,&tag=" + post_endpoint + "&eol=%0A&filename=" + fileVariable;
       response = sendRequest(requestUrl, "POST", payload);
     } catch (Exception e) {
       throw e;
