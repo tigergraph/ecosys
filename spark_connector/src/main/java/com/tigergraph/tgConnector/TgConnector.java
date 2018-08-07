@@ -42,7 +42,7 @@ public class TgConnector implements Serializable {
     String response = "";
     try {
       String requestUrl = "http://" + this.tg_ip + ":" + this.tg_port +
-          "/ddl?sep=,&tag=" + post_endpoint + "&eol=%0A";
+          "/ddl?sep=,&tag=" + post_endpoint + "&eol=%0A&filename=f";
       response = sendRequest(requestUrl, "POST", payload);
     } catch (Exception e) {
       throw e;
