@@ -3,3 +3,5 @@ To instal this RDF solution to your TigerGraph system please follow steps:
 1. change the input path in your loader.gsql
 
 2. run bash install.sh (this will remove everything of your previous solution, please back up)
+
+You can download dbpedia RDF data from http://fragments.dbpedia.org/hdt/dbpedia2016-04en.hdt
