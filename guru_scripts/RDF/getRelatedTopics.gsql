@@ -7,12 +7,12 @@ CREATE QUERY getRelatedTopics(vertex<Predicate> input, int topK = 10) FOR GRAPH 
 
         Start (ANY) = {input};
 	
-	      Start = select t from Start:s-((ObjHasPred|PredHasObj):e)-:t
+	      Start = select t from Start:s-((ObjHasPred|PredHasObj):e)->:t
 	              post-accum t.@visited = true
 	              having t.outdegree() < 100000;
 
         While Start.size() > 0 and @@maxCnt < 100 do
-          Start = select t from Start:s-((HasObject|HasSubject):e)-:t
+          Start = select t from Start:s-((HasObject|HasSubject):e)->:t
                   accum t.@cnt += 1
           having t.outdegree() < 100000 and t.@visited == false;
           Start = select s from Start:s
