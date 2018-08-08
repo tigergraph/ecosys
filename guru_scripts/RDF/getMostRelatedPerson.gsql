@@ -11,18 +11,18 @@ CREATE QUERY getMostRelatedPerson(vertex<Entity> input, int k) FOR GRAPH RDF {
 
   Start = {input};
 
-  Start = select t from Start:s-((HasObject):e)-:t
+  Start = select t from Start:s-((HasObject):e)->:t
           accum t.@description += e.Predicate,
 	              t.@list += e
           post-accum t.@visited = true, s.@visited = true
           having t.outdegree() < 100000;
 
-  Start = select t from Start:s-((HasSubject):e)-:t
+  Start = select t from Start:s-((HasSubject):e)->:t
           where t.@visited == false
           accum t.@list += e, t.@list += s.@list
 	        having t.outdegree() < 100000;
 
-  person2 = select s from Start:s-(HasObject:e)-:t
+  person2 = select s from Start:s-(HasObject:e)->:t
             where t == person or t == natrualPerson
             order by s.@list.size() desc
             limit k;
