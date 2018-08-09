@@ -188,6 +188,8 @@ Use the following two commands to apply the config change.
  GPE: "LD_PRELOAD=/ebs/install/tigergraph/bin/libtcmalloc.so "
  gadmin restart all
 
+ - make sure all ports are open. As the installer will deploy binary to each cluster node.
+
 
 
 
