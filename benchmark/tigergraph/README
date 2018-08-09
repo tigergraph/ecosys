@@ -149,3 +149,38 @@ This shell script will run the following workload in sequel.
 2. k=2 for k-hop-path-neighbor-count query over 1000 random selected vertices.
 3. 3 times of the wcc algorithm over the twitter data 
 4. 3 times of the page rank algorithm 10 iterations over the twitter-rv data 
+
+
+Mutliple machines 
+=====================================
+Setup TigerGraph Enterprise Edition, you need a license key from TigerGraph
+
+Then, use  tgsplit.sh to split the twitter file into multiple files.
+https://github.com/tigergraph/ecosys/blob/master/etl/tgsplit.sh
+
+e.g. to generate two files out of the raw file.
+./tgsplit.sh twitter_rv.net 2
+
+Put each split in a directory (better of the same path on each machine). 
+
+Setup the schema, loading job and queries. 
+gsql twitter_setup.gsql
+
+Then, run the job on one of the node.
+
+gsql -g twitter 'run loading job load_twitter_edge using file1="all:/ebs/raw/split_twitter_rv.net/"'
+
+This will launch a loader on each machine. And the loading time should be much shorter comparing to load from one machine.
+
+Setup timeout to 3600 s
+Use the following command to change "Restpp.timeout_seconds" to  3600
+ gadmin --configure timeout_seconds
+
+Use the following two commands to apply the config change.
+ gadmin config-apply
+ gadmin restart
+
+
+
+
+
