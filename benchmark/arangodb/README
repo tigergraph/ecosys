@@ -1,0 +1,168 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the 
+# acknowledgement to TigerGraph.
+# Author: Ainur Smagulova ainur@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark result on Neo4j. 
+
+Data Sets
+===========
+
+- graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/graph500-22/graph500-22_unique_node
+
+- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.net_unique_node
+
+
+Hardware & Major enviroment
+================================
+- Amazon EC2 machine r4.8xlarge. 
+- OS Ubuntu 14.04.5 LTS
+- Java build 1.7.0_181
+- Python 2.7.6
+
+
+- 32vCPUs
+- 244GiB memory
+- attached a 300G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 15k. 
+  Raw data and arangodb datafiles are put on this SSD. 
+
+ArangoDB Version
+==================
+- 3.3.13 Community edition downloaded from https://download.arangodb.com/arangodb33/xUbuntu_14.04
+- Java driver arangodb-java-driver-4.7.0-SNAPSHOT-standalone.jar (downloaded from https://github.com/arangodb/arangodb-java-driver)
+- SLF4J loggig library slf4j-simple-1.7.25.jar (downloaded from https://www.slf4j.org/download.html)
+
+Install ArangoDB 
+==================
+# add repository key
+wget https://www.arangodb.com/repositories/arangodb33/xUbuntu_14.04/Release.key
+sudo apt-key add Release.key
+ 
+# add apt repository
+sudo apt-add-repository 'deb https://www.arangodb.com/repositories/arangodb33/xUbuntu_14.04/ /'
+sudo apt-get update
+ 
+# install ArangoDB
+#set password="root" for the root user
+#storage engine choose mmfiles or rocksdb (benchmark results provided for both storage options)
+sudo apt-get install arangodb3=3.3.13
+ 
+# check if installation went well
+curl http://root:root@localhost:8529/_api/version
+
+# output should look like this
+{"server":"arango","version":"3.3.13","license":"community"}
+
+Setup ebs volume as database directory for ArangoDB
+=====================================================
+# switch to root
+sudo bash
+ 
+# create new database directory
+mkdir /ebs/arangodb
+chmod 777 -R /ebs
+ 
+# create symbolic link to this directory from ArangoDB default database directory /var/lib/arangodb3
+cd /var/lib
+mv arangodb3 /ebs/arangodb
+ln -s /ebs/arangodb/arangodb3/ arangodb3
+ 
+# exit root
+exit
+
+Run benchmark 
+================
+Download all files in the README folder to a script folder.
+
+Before running the benchmark script below, please make sure the current user has the READ permission from the raw file, 
+and the WRITE permission on the folder where you put the benchmark script folder, since the random seed will be generted in this folder.
+
+You may consider to make ssh config to keep it alive by following, since the benchmark will run long time.
+https://www.howtogeek.com/howto/linux/keep-your-linux-ssh-session-from-disconnecting/
+
+Results
+----------------
+The "result" folder contains all the result files for reference. k-Neighborhood query results have format kHopResults_graphName_depth_storageEngine, wcc and pagerank results have format algorithmName_graphName_testNumber_storageEngine. Average result for pagerank/wcc is in file that has format: algorithmName_graphName_storageEngine.
+ - depth: 1, 2, 3 or 6 (depth for khop query)
+ - graphName: graph500, twitter
+ - testNumber: 0, 1 and 2 (pagerank and wcc are run 3 times to get an average)
+ - storageEngine (results correspoding to two different storage options that ArangoDB offers): mm (mmfiles) and rock (rocksdb)
+
+Load Data
+-----------------
+Download dataset in the same folder where all the benchmark files are.
+
+# download graph500 dataset
+wget http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+wget http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22_unique_node
+ 
+ 
+# download twitter dataset
+wget http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
+wget http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node
+tar -xzf twitter_rv.tar.gz
+
+ArangoDB requires input files to have headers.
+
+# Add headers to graph500 dataset files
+sed -i '1i _key' graph500-22_unique_node
+sed -i '1i _from\t_to' graph500-22
+ 
+# Add headers to twitter dataset files
+sed -i '1i _key' twitter_rv.net_unique_node
+sed -i '1i _from\t_to' twitter_rv.net
+
+RUN load scripts.
+
+# to load graph500 data
+ bash load_graph500.sh
+ 
+# to load twitter data
+ bash load_twitter.sh
+
+Graph500
+-----------------
+# khop 
+# compile
+javac -cp \* khop.java
+
+# to run k-hop neighborhood query on graph500 with k=1,2,3,6
+java -cp .:\* khop graph500 1
+java -cp .:\* khop graph500 2
+
+# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile
+java -cp .:\* khop graph500 3
+java -cp .:\* khop graph500 6
+
+
+# wcc, 3 runs
+bash run_pg_wcc.sh graph500 wcc
+
+# pagerank, 3 runs, each run max 10 iterations
+bash run_pg_wcc.sh graph500 pagerank
+
+Twitter
+-------------
+#khop 
+# compile
+javac -cp \* khop.java
+
+# to run k-hop neighborhood query on twitter with k=1,2,3,6
+java -cp .:\* khop twitter 1
+java -cp .:\* khop twitter 2
+
+# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile)
+java -cp .:\* khop twitter 3
+java -cp .:\* khop twitter 6
+
+# wcc, 3 runs
+bash run_pg_wcc.sh graph500 wcc
+
+# page rank, 3 runs, each run max 10 iterations.  
+bash run_pg_wcc.sh twitter wcc
