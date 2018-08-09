@@ -76,9 +76,6 @@ ln -s /ebs/arangodb/arangodb3/ arangodb3
 # exit root
 exit
 
-# restart arangodb
-sudo service arangodb3 restart
-
 Run benchmark 
 ================
 Download all files in the README folder to a script folder.
@@ -88,6 +85,14 @@ and the WRITE permission on the folder where you put the benchmark script folder
 
 You may consider to make ssh config to keep it alive by following, since the benchmark will run long time.
 https://www.howtogeek.com/howto/linux/keep-your-linux-ssh-session-from-disconnecting/
+
+Results
+----------------
+The "result" folder contains all the result files for reference. k-Neighborhood query results have format kHopResults_graphName_depth_storageEngine, wcc and pagerank results have format algorithmName_graphName_testNumber_storageEngine. Average result for pagerank/wcc is in file that has format: algorithmName_graphName_storageEngine.
+ - depth: 1, 2, 3 or 6 (depth for khop query)
+ - graphName: graph500, twitter
+ - testNumber: 0, 1 and 2 (pagerank and wcc are run 3 times to get an average)
+ - storageEngine (results correspoding to two different storage options that ArangoDB offers): mm (mmfiles) and rock (rocksdb)
 
 Load Data
 -----------------
@@ -123,7 +128,7 @@ RUN load scripts.
 
 Graph500
 -----------------
-#khop (output file has format khopResults_graph500_k)
+# khop 
 # compile
 javac -cp \* khop.java
 
@@ -131,20 +136,20 @@ javac -cp \* khop.java
 java -cp .:\* khop graph500 1
 java -cp .:\* khop graph500 2
 
-# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile)
+# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile
 java -cp .:\* khop graph500 3
 java -cp .:\* khop graph500 6
 
 
-#wcc, 3 runs
+# wcc, 3 runs
 bash run_pg_wcc.sh graph500 wcc
 
-#page rank, 3 runs, each run 10 iterations
+# pagerank, 3 runs, each run max 10 iterations
 bash run_pg_wcc.sh graph500 pagerank
 
 Twitter
 -------------
-#khop (output file has format khopResults_twitter_k)
+#khop 
 # compile
 javac -cp \* khop.java
 
@@ -156,8 +161,8 @@ java -cp .:\* khop twitter 2
 java -cp .:\* khop twitter 3
 java -cp .:\* khop twitter 6
 
-#wcc
+# wcc, 3 runs
 bash run_pg_wcc.sh graph500 wcc
 
-#page rank, 3 runs, each run 10 iterations.  
+# page rank, 3 runs, each run max 10 iterations.  
 bash run_pg_wcc.sh twitter wcc
