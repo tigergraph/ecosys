@@ -161,7 +161,7 @@ https://github.com/tigergraph/ecosys/blob/master/etl/tgsplit.sh
 e.g. to generate two files out of the raw file.
 ./tgsplit.sh twitter_rv.net 2
 
-Put each split in a directory (better of the same path on each machine). 
+Put each split in a directory (the same path on each machine). 
 
 Setup the schema, loading job and queries. 
 gsql twitter_setup.gsql
@@ -172,7 +172,10 @@ gsql -g twitter 'run loading job load_twitter_edge using file1="all:/ebs/raw/spl
 
 This will launch a loader on each machine. And the loading time should be much shorter comparing to load from one machine.
 
-Setup timeout to 3600 s
+Setup Configure
+--------------------
+- Setup timeout to 3600 s
+
 Use the following command to change "Restpp.timeout_seconds" to  3600
  gadmin --configure timeout_seconds
 
@@ -180,6 +183,10 @@ Use the following two commands to apply the config change.
  gadmin config-apply
  gadmin restart
 
+ - setup libtcmalloc. Find your installation folder, and the bin folder. E.g. /ebs/install/tigergraph/bin
+ gadmin --config runtime
+ GPE: "LD_PRELOAD=/ebs/install/tigergraph/bin/libtcmalloc.so "
+ gadmin restart all
 
 
 
