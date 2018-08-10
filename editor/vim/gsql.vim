@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language: GSQL DDL
-" Last Change:  2015 Oct 14
+" Last Change:  2018 May 14
 "
 " NOTE: Add following three lines to vimrc
 " au BufRead,BufNewFile *.gsql set filetype=gsql
