@@ -31,8 +31,11 @@ Hardware & Major enviroment
 - Python 3.4: If you have multiple python version installed, link /usr/bin/python -> python3.4
 - Install pip for python3:  sudo apt-get install python3-pip
 - you need to install the following modules
-  sudo pip install tornado
-  sudo pip install neo4j-driver
+$ sudo apt-get install python-pip python-dev build-essential 
+$ sudo pip install --upgrade pip 
+$ sudo pip install --upgrade virtualenv 
+$  sudo pip install tornado
+$  sudo pip install neo4j-driver
 
 
 - 32 vCPUs
