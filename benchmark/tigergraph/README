@@ -28,8 +28,8 @@ Hardware & Major enviroment
 $ sudo apt-get install python-pip python-dev build-essential 
 $ sudo pip install --upgrade pip 
 $ sudo pip install --upgrade virtualenv 
-$  sudo pip install tornado
-$  sudo pip install neo4j-driver
+$ sudo pip install tornado
+$ sudo pip install neo4j-driver
 
 
 - 32 vCPUs
@@ -177,6 +177,7 @@ This will launch a loader on each machine. And the loading time should be much s
 
 Setup Configure
 --------------------
+- setup segment size to 2^17. In GSQL, enter "set segsize_in_bits=17"
 - Setup timeout to 3600 s
 
 Use the following command to change "Restpp.timeout_seconds" to  3600
