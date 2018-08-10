@@ -1,0 +1,25 @@
+Job "twitter_m1.m2.m3.m4.1533859139726" loading status
+[FINISHED] m1 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +------------------------------------------------------------------------------------------+
+  |                                      FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/split_twitter_rv.net/twitter_rv.net00 |      376291808 |   1511 kl/s |   248.88 s|
+  +------------------------------------------------------------------------------------------+
+[FINISHED] m2 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +------------------------------------------------------------------------------------------+
+  |                                      FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/split_twitter_rv.net/twitter_rv.net01 |      364294268 |   1507 kl/s |   241.59 s|
+  +------------------------------------------------------------------------------------------+
+[FINISHED] m3 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +------------------------------------------------------------------------------------------+
+  |                                      FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/split_twitter_rv.net/twitter_rv.net02 |      363986053 |   1538 kl/s |   236.53 s|
+  +------------------------------------------------------------------------------------------+
+[FINISHED] m4 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +------------------------------------------------------------------------------------------+
+  |                                      FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/split_twitter_rv.net/twitter_rv.net03 |      363793059 |   1605 kl/s |   226.64 s|
+  +------------------------------------------------------------------------------------------+
