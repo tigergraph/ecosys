@@ -1,0 +1,57 @@
+tigergraph@ip-172-30-1-124:/ebs$ gsql -g twitter 'run loading job load_twitter_edge using file1="all:/ebs/split/"'
+[Tip: Use "CTRL + C" to stop displaying the loading status update, then use "SHOW LOADING STATUS jobid" to track the loading progress again]
+[Tip: Manage loading jobs with "ABORT/RESUME LOADING JOB jobid"]
+Starting the following job, i.e.
+  JobName: load_twitter_edge, jobid: twitter_m1.m2.m3.m4.m5.m6.m7.m8.1534206139284
+  Loading log: '/ebs/install/tigergraph/logs/restpp/restpp_loader_logs/twitter/twitter_m1.m2.m3.m4.m5.m6.m7.m8.1534206139284.log'
+
+Job "twitter_m1.m2.m3.m4.m5.m6.m7.m8.1534206139284" loading status
+Job "twitter_m1.m2.m3.m4.m5.m6.m7.m8.1534206139284" loading status
+[FINISHED] m1 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net00 |      193921391 |    500 kl/s |   387.51 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m2 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net01 |      182370417 |    445 kl/s |   408.93 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m3 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net02 |      182199790 |    459 kl/s |   396.62 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m4 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net03 |      182094476 |    484 kl/s |   375.72 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m5 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net04 |      182022370 |    466 kl/s |   390.54 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m6 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net05 |      181963681 |    491 kl/s |   370.29 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m7 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net06 |      181920198 |    514 kl/s |   353.68 s|
+  +-----------------------------------------------------------------------+
+[FINISHED] m8 ( Finished: 1 / Total: 1 )
+  [LOADED]
+  +-----------------------------------------------------------------------+
+  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/split/twitter_rv.net07 |      181872859 |    543 kl/s |   334.78 s|
+  +-----------------------------------------------------------------------+

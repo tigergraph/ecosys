@@ -156,6 +156,8 @@ This shell script will run the following workload in sequel.
 
 Mutliple machines 
 =====================================
+r4.2xlarge 8 vCPUs 61 GiB 
+
 Setup TigerGraph Enterprise Edition, you need a license key from TigerGraph
 
 Then, use  tgsplit.sh to split the twitter file into multiple files.
@@ -194,6 +196,10 @@ Use the following two commands to apply the config change.
 
  - make sure all ports are open. As the installer will deploy binary to each cluster node.
 
-
+Loading preparation
+-------------------------
+put all node info in a server-list file.
+parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/ssh-private-key"  'sudo mkdir  -p /ebs/split'
+ ./split_distribute.sh  ./raw   /ebs/split  net
 
 
