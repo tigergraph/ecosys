@@ -159,14 +159,10 @@ Mutliple machines
 r4.2xlarge 8 vCPUs 61 GiB 
 
 Setup TigerGraph Enterprise Edition, you need a license key from TigerGraph
-
-Then, use  tgsplit.sh to split the twitter file into multiple files.
-https://github.com/tigergraph/ecosys/blob/master/etl/tgsplit.sh
-
-e.g. to generate two files out of the raw file.
-./tgsplit.sh twitter_rv.net 2
-
-Put each split in a directory (the same path on each machine). 
+- Edit the cluster_config.json to put the node ips, and ssh private key file.
+- Make sure you open all ports.
+- Then install 
+./install.sh -cn 
 
 Setup the schema, loading job and queries. 
 gsql twitter_setup.gsql

@@ -1,0 +1,31 @@
+{
+  "tigergraph.user.name": "tigergraph",
+  "tigergraph.user.password": "tigergraph",
+  "tigergraph.root.dir": "/ebs/install/",
+  "license.key": "4cf99c76aa0e331b9477c635bc5c5a429f5915357578972761528a9335fe3d49654d9dca99f9f65989625f7e26d12ca840cd450081c0323bc9780ceaaa77a3d5b7846d7c5603cc",
+  "nodes.ip": {
+     	"m1":"18.206.164.89",
+     	"m2": "54.197.15.228",
+    	"m3": "18.207.223.109",
+	    "m4": "54.174.44.39",
+	    "m5": "54.86.142.246",
+	    "m6": "18.206.114.106"
+  },
+  "nodes.login": {
+    "supported.methods (this is a comment)": "P. SSH with password; K. SSH with key file (e.g. ec2_key.pem)",
+    "notes (this is a comment)": "All nodes must use the same sudo user, same password, or same key file",
+    "chosen.method": "K",
+    "P": {
+        "sudo.user.name": "sudoUserName",
+        "sudo.user.password": "sudoUserPassword"
+    },
+    "K": {
+      "sudo.user.name": "ubuntu",
+      "ssh.key.file": "/home/ubuntu/qa_release" 
+    }
+  },
+  "HA.option": {
+    "Notes of HA.option (this is a comment)": "option to install high-availability cluster (with at least 3 nodes), default value false",
+    "enable.HA": "false (or true)"
+  }
+}
