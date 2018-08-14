@@ -208,4 +208,5 @@ put all node info in a server-list file.
 parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/ssh-private-key"  'sudo mkdir  -p /ebs/split'
  ./split_distribute.sh  ./raw   /ebs/split  net
 
-
+Run the following to test page rank:
+nohup gsql twitter_setup.gsql;nohup gsql -g twitter 'run loading job load_twitter_edge using file1="all:/ebs/split"';nohup python pg.py twitter-rv tigergraph 10 3
