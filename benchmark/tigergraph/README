@@ -192,6 +192,16 @@ Use the following two commands to apply the config change.
 
  - make sure all ports are open. As the installer will deploy binary to each cluster node.
 
+ - the following are convinient parallel ssh commands you can refer to do some preparation.
+
+  parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/qa_release"  'sudo mount /dev/xvdb /ebs'
+
+  parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/qa_release"  'sudo apt-get install policycoreutils -y'
+
+  parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/qa_release"  'sudo mkdir  -p /ebs/raw/twitter'
+
+  parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /home/ubuntu/qa_release"  'sudo chown -R  tigergraph /ebs/raw’
+
 Loading preparation
 -------------------------
 put all node info in a server-list file.
