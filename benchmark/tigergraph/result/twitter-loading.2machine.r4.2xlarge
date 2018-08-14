@@ -1,0 +1,13 @@
+^[[13A^[[2KJob "twitter_m1.m2.1534229291046" loading status
+^[[2K[FINISHED] m1 ( Finished: 1 / Total: 1 )
+^[[2K  [LOADED]
+^[[2K  +-----------------------------------------------------------------------+
+^[[2K  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+^[[2K  |/ebs/split/twitter_rv.net00 |      740586074 |    625 kl/s |  1183.93 s|
+^[[2K  +-----------------------------------------------------------------------+
+^[[2K[FINISHED] m2 ( Finished: 1 / Total: 1 )
+^[[2K  [LOADED]
+^[[2K  +-----------------------------------------------------------------------+
+^[[2K  |                   FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+^[[2K  |/ebs/split/twitter_rv.net01 |      727779108 |    651 kl/s |  1116.64 s|
+^[[2K  +-----------------------------------------------------------------------+
