@@ -130,11 +130,12 @@ Graph500
 -----------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
   static String URL (line 26): need neptune-end-point
-  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 28): set random seed you want to test, up to 300.
+  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood, 3 for 3-neighborhood, 6 for 6-neighborhood
+  static double seedSize (line 28): 300 (1-neighborhood, 2-neighborhood), 10 (3-neighborhood, 6-neighborhood)
   File file (line 36): path/to/random-test-seed
   String resultFileName (line 42): "KN-latency-Graph500-" + depth;
   String resultFilePath (line 43): path/to/result-folder + resultFileName;
+Note: set query timeout to 180s for 1/2 neighbor, 9000s for 3/6 neighbors
 
 use the following command line to compile and run khop:
 	javac -cp json.jar kn.java
@@ -144,11 +145,12 @@ Twitter
 -------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
   static String URL (line 26): need neptune-end-point
-  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 28): set random seed you want to test, up to 300.
+  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood, 3 for 3-neighborhood, 6 for 6-neighborhood
+  static double seedSize (line 28): 300 (1-neighborhood, 2-neighborhood), 10 (3-neighborhood, 6-neighborhood)
   File file (line 36): path/to/random-test-seed
   String resultFileName (line 42): "KN-latency-Twitter-" + depth;
   String resultFilePath (line 43): path/to/result-folder + resultFileName;
+Note: set query timeout to 180s for 1/2 neighbor, 9000s for 3/6 neighbors
 
 use the following command line to compile and run khop:
         javac -cp json.jar kn.java
