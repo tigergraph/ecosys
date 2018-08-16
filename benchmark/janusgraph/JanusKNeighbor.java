@@ -53,7 +53,7 @@ public class JanusKNeighbor {
 			sample_step = Integer.parseInt(args[4]);
 		}
 
-                janusG = JanusGraphFactory.open(confPath);
+		janusG = JanusGraphFactory.open(confPath);
 
 		try {
 			// initialize output file 
@@ -72,9 +72,9 @@ public class JanusKNeighbor {
 
 			// Here set query timeout to 180s
 			final Duration timeout = Duration.ofSeconds(180);
-			
+
 			long total_neighbor_size = 0;
-                        long total_duration = 0;
+			long total_duration = 0;
 			int errorQuery = 0;
 
 			for(int i = 0; i < test_count; i += sample_step) {
@@ -88,11 +88,11 @@ public class JanusKNeighbor {
 				long startTime = System.nanoTime();
 				final Future<Long> handler = executor.submit(new Callable() {
 					@Override
-					 public Long call() throws Exception {
-				        	return runKNeighbor(root);
-				    	}
+					public Long call() throws Exception {
+						return runKNeighbor(root);
+					}
 				});
-	
+
 				try {
 					neighbor_size = handler.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
 				} catch (Exception e) {
@@ -112,21 +112,20 @@ public class JanusKNeighbor {
 				duration = error? -1:duration;
 				total_neighbor_size += error? 0: neighbor_size;
 				total_duration += error? 0:duration;			
-	
+
 				writer.write(root + ",\t" + neighbor_size + ",\t" + duration/1000000.0 + "\n");
 				writer.flush();
 				System.out.println(root + "," + Long.toString(neighbor_size) + "," + Double.toString((double)duration/1000000.0));
 			}
 			
 			double avgNeighborSize = test_count == errorQuery ? -1.0 : (double)total_neighbor_size/(double)(test_count - errorQuery);		
-			writer.write("number of start vertex:\t" + test_count + "\n"
-		   	+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
-			+ "total neighbor size:\t" + total_neighbor_size + "\n"
-	   		+ "total query time:\t" + total_duration/1000000.0 + "\n"
-	  		+ "average neighbor size:\t" + avgNeighborSize + "\n"
-	  		+ "average query time:\t" + total_duration/1000000.0/(test_count - errorQuery) + "\n");
-			
-	
+			writer.write("number of start vertex:\t" + test_count + "\n+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
+			+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
+			+ "total query time:\t" + total_duration/1000000.0 + "\n"
+			+ "average neighbor size:\t" + avgNeighborSize + "\n"
+			+ "average query time:\t" + total_duration/1000000.0/(test_count - errorQuery) + "\n");
+		
+
 			System.out.println("######## number of start vertex #######  " + test_count);
 			System.out.println("######## number of timeout queries #######  " + errorQuery);
 			System.out.println("######## total time #######  " + Double.toString((double)total_duration/1000000.0) + " ms");

@@ -43,8 +43,7 @@ public class JanusPageRank {
 	public static void main(String[] args){
 		// args 0: property file
 		String confPath = args[0];
-		// args 1: vertexId file
-		String rootFile = args[1];
+
                 JanusG = JanusGraphFactory.open(confPath);
 		try {
 			// initialize output file 
@@ -75,25 +74,6 @@ public class JanusPageRank {
 
 					writer.flush();
 					System.out.println("######## total time #######  " + Double.toString((double)duration/1000000.0) + " ms");
-
-					// print pagerank value for each vertex	
-		                        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(rootFile)));
-                		        final String line = reader.readLine();
-                        		String[] vertex = line.split("\t");
-	
-					double maxdiff = -1; 
-					for(String root : vertex){
-						Object check = tmp.traversal().V().has("id", root).values("gremlin.pageRankVertexProgram.pageRank").next(); 
-						double pgValue = (double) check;
-						maxdiff = maxdiff < pgValue ? pgValue : maxdiff;
-						writer.write("id: " + root + ",\t" + pgValue + "\n");
-						writer.flush();
-						System.out.println("id: " + root + ",\t" + pgValue + "\n");
-					}
-					writer.write("===================================================================\n" 
-						+ "maxdiff: " + maxdiff + "\n");
-					writer.flush();
-					System.out.println("complete");
 					return "complete"; 
 				}
 			});
