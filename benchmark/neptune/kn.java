@@ -1,3 +1,11 @@
+/*
+* Copyright (c)  2015-now, TigerGraph Inc.
+* All rights reserved
+* It is provided as it is for benchmark reproducible purpose.
+* anyone can use it for benchmark purpose with the
+* acknowledgement to TigerGraph.
+* Author: Litong Shen litong.shen@tigergraph.com
+*/
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.io.BufferedReader;

@@ -12,10 +12,8 @@ This article documents the details on how to reproduce the graph database benchm
 Data Sets
 ================================
 - graph500 edge file and vertex file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500_neptune.tar.gz
-- random seed for graph500: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/randomGraph500
  
 - twitter edge file and vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_neptune.tar.gz
-- random seed for twitter: http://service.tigergraph.com/download/benchmark/dataset/twitter/randomTwitter
 
 Hardware & Major enviroment
 ================================
@@ -31,6 +29,7 @@ Client
 Neptune Server
 -------------
 - Neptune DB instance class db.r4.8xlarge
+- engine version: 1.0.1.0.200233.0
 
 - 32vCPUs
 - 244GiB memory
@@ -49,7 +48,7 @@ step 1: Setup Neptune server and EC2 client in US East (N. Virginia) region
 
 Step 2: Prepare IAM Role and Amazon S3 Access, follow steps from https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-IAM.html#bulk-load-tutorial-IAM-CreateRole
 
-Step 3: Use AWS Access key and Secret Access Key to setup aws configure on EC2 client machine
+Step 3: Use AWS Access key and Secret Access Key to setup aws configure on EC2 client machine (set up your AWS CLI installation)
 - use the following command to setup aws configure:
 	aws configure
 
@@ -69,7 +68,11 @@ Note: before upload data, modify parameters according to description inside.
 
 Step 2: To load Graph500 and twitter:
 nohup bash load.sh &
-Note: before load data, modify parameters according to description inside.
+Note: 1. before load data, modify parameters according to description inside.
+      2. need to load vertex file first, then load edge file
+      3. when loading graph500 edge file, you need load graph500 edge file TWICE
+         duplicate edges will cause "insertErrors" and "LOAD_FAILED"
+         load graph500 edge file again will resolve the problem.
 
 Step 3: To check load job:
 bash check_load.sh jobId-return-from-step-2
@@ -102,7 +105,9 @@ Editing a DB Parameter Group
 - Choose Parameter groups in the navigation pane.
 - Choose the Name link for the DB parameter group that you want to edit.
 - Choose Edit parameters.
-- Set the value for the parameters that you want to change.
+- Set the value for the parameters of "neptune_query_timeout" that you want to change.
+	180000 ms for k-1-step-neighborhood, k-2-steps-neighborhood
+	9000000ms for k-3-steps-neighborhood, k-6-steps-neighborhood
 - Choose Save changes.
 - Reboot every Neptune DB instance in the Neptune cluster.
 
@@ -122,12 +127,12 @@ assume you are in the script folder, then create a result folder using folowing 
 Graph500
 -----------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
-  static String URL (line 18): need neptune-end-point
-  static String depth (line 19): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 20): set random seed you want to test, up to 10000.
-  File file (line 28): path/to/random-test-seed
-  String resultFileName (line 34): "KN-latency-Graph500-" + depth;
-  String resultFilePath (line 35): path/to/result-folder + resultFileName;
+  static String URL (line 26): need neptune-end-point
+  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedSize (line 28): set random seed you want to test, up to 10000.
+  File file (line 36): path/to/random-test-seed
+  String resultFileName (line 42): "KN-latency-Graph500-" + depth;
+  String resultFilePath (line 43): path/to/result-folder + resultFileName;
 
 use the following command line to compile and run khop:
 	javac -cp json.jar kn.java
@@ -136,12 +141,12 @@ use the following command line to compile and run khop:
 Twitter
 -------------
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
-  static String URL (line 18): need neptune-end-point
-  static String depth (line 19): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 20): set random seed you want to test, up to 10000.
-  File file (line 30): path/to/random-test-seed
-  String resultFileName (line 34): "KN-latency-Twitter-" + depth;
-  String resultFilePath (line 35): path/to/result-folder + resultFileName;
+  static String URL (line 26): need neptune-end-point
+  static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
+  static double seedSize (line 28): set random seed you want to test, up to 10000.
+  File file (line 36): path/to/random-test-seed
+  String resultFileName (line 42): "KN-latency-Twitter-" + depth;
+  String resultFilePath (line 43): path/to/result-folder + resultFileName;
 
 use the following command line to compile and run khop:
         javac -cp json.jar kn.java

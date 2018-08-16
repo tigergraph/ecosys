@@ -29,6 +29,7 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * modified by Litong Shen litong.shen@gmail.com
  */
 
 public class PG implements VertexProgram<Double> {
