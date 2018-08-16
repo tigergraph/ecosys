@@ -28,7 +28,7 @@ Client
 
 Neptune Server
 -------------
-- Neptune DB instance class db.r4.8xlarge
+- Neptune DB instance class db.r4.8xlarge / db.r4.4xlarge
 - engine version: 1.0.1.0.200233.0
 
 - 32vCPUs
@@ -38,6 +38,8 @@ Neptune Server
 
 setup Neptune stack
 ===============================
+# reference: https://docs.aws.amazon.com/neptune/latest/userguide/neptune-ug.pdf
+
 step 1: Setup Neptune server and EC2 client in US East (N. Virginia) region
 - Launch the Neptune Stack at:
  https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=NeptuneQuickStart&templateURL=https:%2F%2Fs3.amazonaws.com%2Fneptune-cfn-docs%2FNeptuneQuickStart.template- On the Select Template page, choose Next.
@@ -107,7 +109,7 @@ Editing a DB Parameter Group
 - Choose Edit parameters.
 - Set the value for the parameters of "neptune_query_timeout" that you want to change.
 	180000 ms for k-1-step-neighborhood, k-2-steps-neighborhood
-	9000000ms for k-3-steps-neighborhood, k-6-steps-neighborhood
+	9000000 ms for k-3-steps-neighborhood, k-6-steps-neighborhood
 - Choose Save changes.
 - Reboot every Neptune DB instance in the Neptune cluster.
 
@@ -129,7 +131,7 @@ Graph500
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
   static String URL (line 26): need neptune-end-point
   static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 28): set random seed you want to test, up to 10000.
+  static double seedSize (line 28): set random seed you want to test, up to 300.
   File file (line 36): path/to/random-test-seed
   String resultFileName (line 42): "KN-latency-Graph500-" + depth;
   String resultFilePath (line 43): path/to/result-folder + resultFileName;
@@ -143,7 +145,7 @@ Twitter
 before run khop, assume you are in the script folder, modify following parameters in kn.java:
   static String URL (line 26): need neptune-end-point
   static String depth (line 27): 1 for 1-neighborhood, 2 for 2-neighborhood...
-  static double seedSize (line 28): set random seed you want to test, up to 10000.
+  static double seedSize (line 28): set random seed you want to test, up to 300.
   File file (line 36): path/to/random-test-seed
   String resultFileName (line 42): "KN-latency-Twitter-" + depth;
   String resultFilePath (line 43): path/to/result-folder + resultFileName;
