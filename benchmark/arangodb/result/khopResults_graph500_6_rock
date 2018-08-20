@@ -1,19 +1,19 @@
 k-hop query with depth = 6
-start vertex,	neighbor size,	query time (in ms)
-3600312,	1649282,	36463
-2677094,	512849,	7035
-2038005,	1814773,	39151
-3301167,	2060912,	54945
-704219,	393973,	4826
-1779962,	1639073,	34296
-2681401,	2092778,	53639
-2277366,	1819349,	40828
-1649130,	2149194,	59426
-806220,	1628904,	31653
+start vertex,    neighbor size,    query time (in ms)
+3600312,    -1,    -1
+2677094,    -1,    -1
+2038005,    -1,    -1
+3301167,    -1,    -1
+704219,    -1,    -1
+1779962,    -1,    -1
+2681401,    -1,    -1
+2277366,    -1,    -1
+1649130,    -1,    -1
+806220,    -1,    -1
 ===================SUMMARY=================================
-Total number of queries:	10
-Total elapsed time, ms:	362262.0
-Total Neighbrhood size:	15761087
-Total number of failed queries:	0
-Average Neighborhood size:	1576108
-Average query time, ms:	36226.2
+Total number of queries:        10
+Total elapsed time, ms: 0.0
+Total Neighborhood size: 0
+Total number of failed queries: 10
+Average Neighborhood size:      -1.0
+Average query time, ms: -1.0
