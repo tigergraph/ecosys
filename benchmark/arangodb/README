@@ -130,7 +130,7 @@ javac -cp \* khop.java
 # to run all khop queries on graph500 (k=1,2 average over 300 seeds, k=3,6 average over 10 seeds)
 bash run_khop.sh graph500
 
-# OR alternatively to run one query provide following arguments 
+# OR alternatively to run one query only use the following command with arguments 
 java -cp .:\* khop graph_name depth timeout_seconds
 
 # examples
@@ -152,7 +152,7 @@ javac -cp \* khop.java
 # to run all khop queries on twitter (k=1,2 average over 300 seeds, k=3,6 average over 10 seeds)
 bash run_khop.sh twitter
 
-# OR alternatively to run one query provide following arguments 
+# OR alternatively to run one query only use the following command with arguments
 java -cp .:\* khop graph_name depth timeout_seconds
 
 # examples

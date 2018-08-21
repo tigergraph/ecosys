@@ -1,4 +1,3 @@
-#!/bin/sh
 echo "Load dataset: graph500"
  
 echo "Create database: graph500"
