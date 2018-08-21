@@ -34,7 +34,6 @@ while (!["done", "canceled"].includes(pregel.status(handle).state)) {
    fs.writeFileSync("pagerankResults_graph500_" + i, "Test#" + i + ", " + status.totalRuntime+" s");
  }
 
-pregel.cancel(handle);
 
 }
 

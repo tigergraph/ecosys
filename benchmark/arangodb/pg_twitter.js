@@ -35,7 +35,6 @@ while (!["done", "canceled"].includes(pregel.status(handle).state)) {
    fs.writeFileSync("pagerankResults_twitter_" + i, "Test#" + i + ", " + status.totalRuntime+" s");
  }
 
-pregel.cancel(handle);
 
 }
 
