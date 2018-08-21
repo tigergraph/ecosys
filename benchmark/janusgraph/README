@@ -13,12 +13,12 @@ Data Sets
 ===========
 
 - graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
-- graph500 vertex file: http://service.tigergraph.com/download/benchmark/graph500-22/graph500-22_unique_node
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22_unique_node
 - graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
 - graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
 
 - twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
-- twitter vertex file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.net_unique_node
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node
 - twitter vertex header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-node-header.txt
 - twitter edge header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-edge-header.txt
 

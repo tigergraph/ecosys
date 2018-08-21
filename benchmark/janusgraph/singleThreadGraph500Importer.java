@@ -4,7 +4,8 @@
 * It is provided as it is for benchmark reproducible purpose.
 * anyone can use it for benchmark purpose with the
 * acknowledgement to TigerGraph.
-* Author: Litong Shen litong.shen@tigergraph.com
+* Author: Weimo Liu weimo.liu@tigergraph.com
+* Modified by: Litong Shen litong.shen@tigergraph.com
 */
 import java.util.*;
 import java.io.BufferedReader;
@@ -23,7 +24,6 @@ import org.janusgraph.graphdb.configuration.GraphDatabaseConfiguration;
 import org.janusgraph.graphdb.database.management.*;
 
 import java.io.FileWriter; 
-
 
 
 public class singleThreadGraph500Importer {
