@@ -56,7 +56,7 @@ cd -
 o1="UserKnownHostsFile=/dev/null"
 o2="StrictHostKeyChecking=no"
 echo "=========== step two: distribute data ==========="
-grun all "mkdir -p $src_dir" || exit 1
+grun all "mkdir -p $tgt_dir" || exit 1
 n=0
 for node in "${cluster_list[@]}"; do
   node_ip=$(echo $node | cut -d':' -f2)

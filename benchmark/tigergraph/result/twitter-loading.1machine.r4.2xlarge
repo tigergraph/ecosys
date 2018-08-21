@@ -1,0 +1,16 @@
+ESC[2K  [LOADING] /ebs/raw/twitter_rv.net
+ESC[2K  [=================================================================================================== ] 99%, 755 kl/s
+ESC[4AESC[2KJob "twitter_m1.1534266308668" loading status
+ESC[2K[RUNNING] m1 ( Finished: 1 / Total: 1 )
+ESC[2K  [LOADED]
+ESC[2K  +-------------------------------------------------------------------+
+  |               FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+  |/ebs/raw/twitter_rv.net |     1468365182 |    755 kl/s |  1944.26 s|
+  +-------------------------------------------------------------------+
+ESC[7AESC[2KJob "twitter_m1.1534266308668" loading status
+ESC[2K[FINISHED] m1 ( Finished: 1 / Total: 1 )
+ESC[2K  [LOADED]
+ESC[2K  +-------------------------------------------------------------------+
+ESC[2K  |               FILENAME |   LOADED LINES |   AVG SPEED |   DURATION|
+ESC[2K  |/ebs/raw/twitter_rv.net |     1468365182 |    755 kl/s |  1944.26 s|
+ESC[2K  +-------------------------------------------------------------------+

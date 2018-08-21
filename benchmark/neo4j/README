@@ -28,9 +28,7 @@ Hardware & Major enviroment
 - Amazon EC2 machine r4.8xlarge
 - OS Ubuntu 14.04.5 LTS
 - Java build 1.8.0_144-b01 (folow http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html)
-- Python 3.4: If you have multiple python version installed, link /usr/bin/python -> python3.4
-- Install pip for python3:  sudo apt-get install python3-pip
-- you need to install the following modules
+- you need to install the following python modules
 $ sudo apt-get install python-pip python-dev build-essential 
 $ sudo pip install --upgrade pip 
 $ sudo pip install --upgrade virtualenv 

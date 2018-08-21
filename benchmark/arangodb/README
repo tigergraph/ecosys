@@ -7,7 +7,7 @@
 # Author: Ainur Smagulova ainur@tigergraph.com
 ############################################################
 
-This article documents the details on how to reproduce the graph database benchmark result on Neo4j. 
+This article documents the details on how to reproduce the graph database benchmark result on ArangoDB. 
 
 Data Sets
 ===========
@@ -29,7 +29,7 @@ Hardware & Major enviroment
 
 - 32vCPUs
 - 244GiB memory
-- attached a 300G  EBS-optimized Provisioned IOPS SSD (IO1), IOPS we set is 15k. 
+- attached a 300GiB  EBS-optimized Provisioned IOPS SSD (IO1), we set IOPS to 15k. 
   Raw data and arangodb datafiles are put on this SSD. 
 
 ArangoDB Version
@@ -49,8 +49,8 @@ sudo apt-add-repository 'deb https://www.arangodb.com/repositories/arangodb33/xU
 sudo apt-get update
  
 # install ArangoDB
-#set password="root" for the root user
-#storage engine choose mmfiles or rocksdb (benchmark results provided for both storage options)
+# set password="root" for the root user
+# storage engine choose mmfiles or rocksdb (benchmark results provided for both storage options)
 sudo apt-get install arangodb3=3.3.13
  
 # check if installation went well
@@ -76,6 +76,9 @@ ln -s /ebs/arangodb/arangodb3/ arangodb3
 # exit root
 exit
 
+# restart arangodb
+sudo service arangodb3 restart
+
 Run benchmark 
 ================
 Download all files in the README folder to a script folder.
@@ -85,14 +88,6 @@ and the WRITE permission on the folder where you put the benchmark script folder
 
 You may consider to make ssh config to keep it alive by following, since the benchmark will run long time.
 https://www.howtogeek.com/howto/linux/keep-your-linux-ssh-session-from-disconnecting/
-
-Results
-----------------
-The "result" folder contains all the result files for reference. k-Neighborhood query results have format kHopResults_graphName_depth_storageEngine, wcc and pagerank results have format algorithmName_graphName_testNumber_storageEngine. Average result for pagerank/wcc is in file that has format: algorithmName_graphName_storageEngine.
- - depth: 1, 2, 3 or 6 (depth for khop query)
- - graphName: graph500, twitter
- - testNumber: 0, 1 and 2 (pagerank and wcc are run 3 times to get an average)
- - storageEngine (results correspoding to two different storage options that ArangoDB offers): mm (mmfiles) and rock (rocksdb)
 
 Load Data
 -----------------
@@ -128,41 +123,44 @@ RUN load scripts.
 
 Graph500
 -----------------
-# khop 
-# compile
+# khop (output file has format khopResults_graph500_k)
+# compile (if necessary)
 javac -cp \* khop.java
 
-# to run k-hop neighborhood query on graph500 with k=1,2,3,6
-java -cp .:\* khop graph500 1
-java -cp .:\* khop graph500 2
+# to run all khop queries on graph500 (k=1,2 average over 300 seeds, k=3,6 average over 10 seeds)
+bash run_khop.sh graph500
 
-# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile
-java -cp .:\* khop graph500 3
-java -cp .:\* khop graph500 6
+# OR alternatively to run one query only use the following command with arguments 
+java -cp .:\* khop graph_name depth timeout_seconds
 
+# examples
+java -cp .:\* khop graph500 1 180
+java -cp .:\* khop graph500 3 9000
 
-# wcc, 3 runs
+# wcc
 bash run_pg_wcc.sh graph500 wcc
 
-# pagerank, 3 runs, each run max 10 iterations
+# pagerank
 bash run_pg_wcc.sh graph500 pagerank
 
 Twitter
 -------------
-#khop 
-# compile
+# khop (output file has format khopResults_twitter_k)
+# compile (if necessary)
 javac -cp \* khop.java
 
-# to run k-hop neighborhood query on twitter with k=1,2,3,6
-java -cp .:\* khop twitter 1
-java -cp .:\* khop twitter 2
+# to run all khop queries on twitter (k=1,2 average over 300 seeds, k=3,6 average over 10 seeds)
+bash run_khop.sh twitter
 
-# when running k=3 and k=6 change timeout, uncomment line 27 and comment out line 25 in khop.java file and recompile)
-java -cp .:\* khop twitter 3
-java -cp .:\* khop twitter 6
+# OR alternatively to run one query only use the following command with arguments
+java -cp .:\* khop graph_name depth timeout_seconds
 
-# wcc, 3 runs
-bash run_pg_wcc.sh graph500 wcc
+# examples
+java -cp .:\* khop twitter 1 180
+java -cp .:\* khop twitter 3 9000
 
-# page rank, 3 runs, each run max 10 iterations.  
+# wcc
 bash run_pg_wcc.sh twitter wcc
+
+# pagerank
+bash run_pg_wcc.sh twitter pagerank
