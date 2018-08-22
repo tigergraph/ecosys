@@ -121,6 +121,21 @@ RUN load scripts.
 # to load twitter data
  bash load_twitter.sh
 
+CHECK storage size.
+
+# mmfiles engine
+# run this arangosh command to find out the id of a database to use it later (replace database_name)
+arangosh --server.database "database_name" --server.password "root" --javascript.execute-string "print(db._id())"
+
+# and now run these commands under root user (use database id retrieved earlier instead of database_id_number)
+cd /ebs/arangodb/arangodb3/databases
+du -hc database-database_id_number
+
+# rocksdb engine
+# run under root user (datafiles from all databases stored under the same folder)
+cd /ebs/arangodb/arangodb3
+du -hc engine-rocksdb
+
 Graph500
 -----------------
 # khop (output file has format khopResults_graph500_k)
