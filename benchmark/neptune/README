@@ -28,13 +28,20 @@ Client
 
 Neptune Server
 -------------
-- Neptune DB instance class db.r4.8xlarge / db.r4.4xlarge
+- Neptune DB instance class db.r4.8xlarge or db.r4.4xlarge (benchmark results provided for both options)
 - engine version: 1.0.1.0.200233.0
 
-- 32vCPUs
-- 244GiB memory
-- EBS throuput 6000 Mbps
-- Network Performance 10Gbps
+- db.r4.8xlarge
+	- 32vCPUs
+	- 244GiB memory
+	- EBS throuput 6000 Mbps
+	- Network Performance 10Gbps
+
+- db.r4.4xlarge
+	- 16vCPUs
+	- 122GiB memory
+	- EBS throuput 3000 Mbps
+	- Network Performance up to 10Gbps
 
 setup Neptune stack
 ===============================
@@ -43,7 +50,7 @@ setup Neptune stack
 step 1: Setup Neptune server and EC2 client in US East (N. Virginia) region
 - Launch the Neptune Stack at:
  https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=NeptuneQuickStart&templateURL=https:%2F%2Fs3.amazonaws.com%2Fneptune-cfn-docs%2FNeptuneQuickStart.template- On the Select Template page, choose Next.
-- On the Specify Details page, choose a key pair for the EC2SSHKeyPairName, choose db.r4.8xlarge/ db.r4.4xlarge in DbInstanceType, choose r4.2xlarge in EC2ClientInstanceType.
+- On the Specify Details page, choose a key pair for the EC2SSHKeyPairName, choose db.r4.8xlarge or db.r4.4xlarge in DbInstanceType, choose r4.2xlarge in EC2ClientInstanceType.
 - Choose Next.
 - On the Options page, choose Next.
 - On the Review page, select the check box to acknowledge that AWS CloudFormation will create IAM resources. Then choose Create.
@@ -56,6 +63,9 @@ Step 3: Use AWS Access key and Secret Access Key to setup aws configure on EC2 c
 
 Step 4: Create a S3 bucket
 - follow steps: https://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html
+
+# NOTE: Neptune DB has build-in graph (does not allow user to create graph), for each dataset need to create their own Neptune DB cluster.
+# To launch an addtional Neptune cluster: https://docs.aws.amazon.com/neptune/latest/userguide/get-started-CreateInstance-Console.html
 
 Loading data (switch to EC2 client)
 ============
@@ -83,6 +93,14 @@ Note: before check load job, modify parameters according to description inside.
 Step 4: To cancel load job:
 bash check_loading.sh jobId-return-from-step-2
 Note: before cancel loading job, modify parameters according to description inside.
+
+Step 5: check final storage, switch to Amazon Cloudwatch Console 
+- Choose Metrics in the left navigation pane.
+- Choose Neptune
+- Choose Cluster Metrics
+- Search for VolumeBytesUsed
+- Choose your DBClusterIdentifier
+- the final storage size = value-show-in-graph/6 (the replication factor) 
 
 Query timeout setting (Switch to AWS console)
 =====================

@@ -17,7 +17,7 @@ Data Sets
 - graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
 - graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
 
-- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
+- twitter edge file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
 - twitter vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node
 - twitter vertex header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-node-header.txt
 - twitter edge header file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv-edge-header.txt
@@ -56,26 +56,25 @@ Download scripts
 Move configuration files
 =======================
 # create a /conf folder under installation point /ebs/install/janusgraph/ by following command
-	cd /ebs/install/janusgraph/
-	mkdir conf
+	mkdir /ebs/install/janusgraph/conf
 
 # suppose your scipts and java code located in /ebs/benchmark/code/janusgraph/
 # move configuration files (*.properties) to conf folder by following command
 	mv /ebs/benchmark/code/janusgraph/graph500-janusgraph-cassandra.properties /ebs/install/janusgraph/conf/
-	mv /ebs/benchmark/code/janusgraph/twitter_generate_hashmap.properties /ebs/install/janusgraph/conf/
+	mv /ebs/benchmark/code/janusgraph/twitter-janusgraph-cassandra.properties.properties /ebs/install/janusgraph/conf/
 
 Split twitter data
 ==================
 need to split twitter data into 10 files then load each one by one
 # redirect to the folder contains twitter data
 # make a folder to store split twitter data
-	cd /ebs/raw/twitter_rv/
-	mkdir splited
+	mkdir /ebs/raw/twitter_rv/splited
 
 - copy FileSpliter.java to /splited folder
 	cp /ebs/benchmark/code/janusgraph/FileSplitor.java /ebs/raw/twitter_rv/splited/
 
 - split twitter data by following command
+	cd /ebs/raw/twitter_rv/splited/
 	javac FileSplitor.java
 	java FileSplitor /ebs/raw/twitter_rv/twitter_rv.net
 
@@ -138,7 +137,7 @@ Note: need to modify parameters in vertex_loader.sh and edge_graph500_multi_thre
   # use following cammand lines to compile and load data
 	bash compile_load_knn.sh
 	nohup bash vertex_loader.sh &
-	nohup edge_loader_twitter.sh &
+	nohup bash edge_loader_twitter.sh &
 Note: need to modify parameters in vertex_loader.sh and edge_loader_twitter.sh
 
 2. multi thread
