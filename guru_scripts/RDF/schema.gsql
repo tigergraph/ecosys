@@ -1,0 +1,8 @@
+drop all
+
+create vertex Entity (primary_id eid string)
+create vertex Predicate (primary_id pid string)
+create directed edge HasObject (from Entity, to Entity, Predicate string) with reverse_edge="HasSubject"
+create directed edge ObjHasPred (from Entity, to Predicate) with reverse_edge="PredHasObj"
+create directed edge SubHasPred (from Entity, to Predicate) with reverse_edge="PredHasSub"
+create graph RDF(*)
