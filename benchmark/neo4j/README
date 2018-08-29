@@ -13,7 +13,7 @@ Data Sets
 ===========
 
 - graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
-- graph500 vertex file: http://service.tigergraph.com/download/benchmark/graph500-22/graph500-22_unique_node
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22_unique_node
 - graph500 vertex header file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-node-header.txt
 - graph500 edge header file:  http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22-edge-header.txt
 

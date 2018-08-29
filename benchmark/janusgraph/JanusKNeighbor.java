@@ -119,7 +119,7 @@ public class JanusKNeighbor {
 			}
 			
 			double avgNeighborSize = test_count == errorQuery ? -1.0 : (double)total_neighbor_size/(double)(test_count - errorQuery);		
-			writer.write("number of start vertex:\t" + test_count + "\n+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
+			writer.write("number of start vertex:\t" + test_count + "\n" + "number of query didn't finish correctly:\t" + errorQuery + "\n"
 			+ "number of query didn't finish correctly:\t" + errorQuery + "\n"
 			+ "total query time:\t" + total_duration/1000000.0 + "\n"
 			+ "average neighbor size:\t" + avgNeighborSize + "\n"

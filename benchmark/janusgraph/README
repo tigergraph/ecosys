@@ -115,6 +115,8 @@ Note: need to modify parameters in compile_load_knn.sh, description is inside.
 
 To load:
 ------------
+- NOTE: need to delete hashmap file before reload vertex file.
+
 - Load graph500 data
 1. single thread
 	nohup bash load_graph500_single_thread.sh &
