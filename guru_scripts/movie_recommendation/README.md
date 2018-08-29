@@ -10,7 +10,7 @@ To play with this movie recommendation solution in your TigerGraph system please
 
 5. At home page, Click "Import An Existing Solution"
 
-6. Choose "movie_recommend_solution.tar.gz" and confirm, wait for the import to complete
+6. Choose "movie_recommend_solution.tar.gz" and confirm, wait for the import to complete (WARNING: the solution is created in GraphStudio 2.1, so you cannot import it to GraphStudio of version < 2.1)
 
 7. Switch to Load Data page, and click "Start loading" button to load the data to the graph
 
