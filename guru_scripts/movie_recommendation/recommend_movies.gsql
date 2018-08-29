@@ -1,20 +1,18 @@
-CREATE QUERY RecommendMovies(
- vertex<person> p, int k1, int k2
-) FOR GRAPH MyGraph {
- OrAccum @rated;
- SumAccum<double> @ratingByP;
- SumAccum<double> @lengthASqr, @lengthBSqr, @dotProductAB;
- SumAccum<double> @cosineSimilarity;
- AvgAccum @recommendScore;
+CREATE QUERY RecommendMovies(vertex<person> p, int k1, int k2) FOR GRAPH MyGraph {
+  OrAccum @rated;
+  SumAccum<double> @ratingByP;
+  SumAccum<double> @lengthASqr, @lengthBSqr, @dotProductAB;
+  SumAccum<double> @cosineSimilarity;
+  AvgAccum @recommendScore;
 
- PSet = { p };
+  PSet = { p };
 	
- PRatedMovies =
+  PRatedMovies =
     SELECT m
     FROM PSet -(rate:r)-> movie:m
     ACCUM m.@rated = true, m.@ratingByP = r.rating;
 
- PeopleRatedSameMovies =
+  PeopleRatedSameMovies =
     SELECT tgt
     FROM PRatedMovies:m -(reverse_rate:r)-> person:tgt
     WHERE tgt != p
@@ -37,4 +35,3 @@ CREATE QUERY RecommendMovies(
 
   PRINT RecommendedMovies;
 }
-
