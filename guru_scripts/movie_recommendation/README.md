@@ -4,7 +4,7 @@ To play with this movie recommendation solution in your TigerGraph system please
 
 2. Decompress the files, and put movies.csv and ratings.csv to your "tigergraph_root_folder/loadingData/"
 
-3. Download the "movie_recommend_solution.tar.gz" 
+3. Download the "movie_recommendation_solution.tar.gz" 
 
 4. Open GraphStudio in your web browser
 
