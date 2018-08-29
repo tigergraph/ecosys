@@ -1,6 +1,6 @@
 To play with this movie recommendation solution in your TigerGraph system please follow the steps:
 
-1. Download MovieLens 20M dataset at this link: https://grouplens.org/datasets/movielens/20m/
+1. Download MovieLens 20M dataset at this link: [ MovieLens 20M Dataset ](https://grouplens.org/datasets/movielens/20m/)
 
 2. Decompress the files, and put movies.csv and ratings.csv to your "tigergraph_root_folder/loadingData/"
 
