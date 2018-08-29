@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class Hdfs2Tg {
-    public static class LineCountMapper extends
+    public static class LineMapper extends
         Mapper<Object, Text, Text, IntWritable> {
 
             HadoopTGWriter myTGWriter;
@@ -42,7 +42,6 @@ public class Hdfs2Tg {
                          *  Send each line to TG. Note the batch size is set
                          *  in configuration.
                          */
-
                         myTGWriter.BatchPost(value.toString());
                     }
                     catch (Exception ex)
@@ -73,7 +72,7 @@ public class Hdfs2Tg {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "HDFS to TG");
         job.setJarByClass(Hdfs2Tg.class);
-        job.setMapperClass(LineCountMapper.class);
+        job.setMapperClass(LineMapper.class);
         job.setNumReduceTasks(0);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
