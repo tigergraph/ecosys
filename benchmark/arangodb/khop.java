@@ -63,7 +63,7 @@ public class  khop {
         int timeout = Integer.parseInt(args[2]);
         String seedFile = "graph500-22-seed";
         if (dbName.equals("twitter")){
-            seedFile = "twitter_rv.net-see";
+            seedFile = "twitter_rv.net-seed";
         }
   try {     
         // reed seeds
