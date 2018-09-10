@@ -4,7 +4,7 @@
 # It is provided as it is for benchmark reproducible purpose.
 # anyone can use it for benchmark purpose with the 
 # acknowledgement to TigerGraph.
-# Author: Ainur Smagulova ainur@tigergraph.com
+# Author: Mingxi Wu mingxi.wu@tigergraph.com
 ############################################################
 
 This article documents the details on how to reproduce the graph database benchmark result on ArangoDB. 
