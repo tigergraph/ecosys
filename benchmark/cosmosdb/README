@@ -1,0 +1,209 @@
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the 
+# acknowledgement to TigerGraph.
+# Author: Mingxi Wu mingxi.wu@tigergraph.com
+############################################################
+
+This article documents the details on how to reproduce the graph database benchmark results on Azure CosmosDB (Graph API). 
+
+Data Sets
+===========
+
+- graph500 edge file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22
+- graph500 vertex file: http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22_unique_node
+
+- twitter edge file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
+- twitter vertex file: http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node
+
+
+Hardware & Major enviroment
+================================
+Server
+-------
+- Setup CosmosDB Gremlin API account in Azure Portal
+
+Client
+-------
+- Azure Windows VM machine Standard B8ms
+- Windows 10 Pro Version 1709
+- 8 vCPU
+- 32 GiB memory
+- 64 GiB storage (SSD)
+- install Visual Studio 2017 Community Edition (downloaded from https://visualstudio.microsoft.com/downloads/)
+
+Setup CosmosDB Account 
+==================
+Step 1: Login into Azure Portal: https://portal.azure.com/
+
+Step 2: Click Create a resource > Databases > Azure Cosmos DB
+In the New Account page enter settings:
+- ID: enter_your_account_name
+- API: Gremlin(graph)
+- Subscription:  Microsoft Azure Sponsorship
+- Resource Group: select Create new and enter some unique name
+- Location: East US (default setting)
+- Enable geo-redundancy: checked (default setting) 
+
+Step 3: Click create and wait for the portal to display “Congratulations! Your Azure Cosmos DB account was created page.”
+
+Run benchmark 
+================
+Download all files in the README folder. "loadGraph" and "khop" projects were written based on sample programs provided by Azure CosmosDB.
+
+Before running the benchmark script below, please make sure the current user has the READ permission from the raw file, 
+and the WRITE permission on the folder where you put the benchmark script folder, since the random seed will be generted in this folder.
+
+You may consider to make ssh config to keep it alive by following, since the benchmark will run long time.
+https://www.howtogeek.com/howto/linux/keep-your-linux-ssh-session-from-disconnecting/
+
+Load Data
+-----------------
+Step 1: Launch loadGraph C# solution in Visual Studio.
+Modify path to where loadSummary file should be saved in Program.cs file (line 30).
+
+Step 2: Download datasets into loadGraph folder or any other location of your choice using PowerShell.
+
+# download graph500 dataset
+Invoke-WebRequest -Uri http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22_unique_node -UseBasicParsing  -OutFile graph500-22_unique_node
+
+Invoke-WebRequest -Uri http://service.tigergraph.com/download/benchmark/dataset/graph500-22/graph500-22 -UseBasicParsing  -OutFile graph500-22
+ 
+ 
+# download twitter dataset
+Invoke-WebRequest -Uri http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.net_unique_node -UseBasicParsing  -OutFile twitter_rv.net_unique_node
+
+Invoke-WebRequest -Uri http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz -UseBasicParsing -OutFile twitter_rv.tar.gz
+
+#uncompress twitter edge file
+tar -xzf twitter_rv.tar.gz
+
+Step 3: To load graph500 vertices fill out the following parameters in App.config file. Then click save, and run the program.
+========================================================================================================
+key                 | value                                                                            | 
+========================================================================================================
+EndPointUrl         | paste URI value here (Keys tab of your CosmosDB account in Azure Portal)         |
+--------------------------------------------------------------------------------------------------------
+AuthorizationKey    | paste PRIMARY KEY value here (Keys tab of your CosmosDB account in Azure Portal) |
+--------------------------------------------------------------------------------------------------------
+DatabaseName        | graph500db                                                                       |
+--------------------------------------------------------------------------------------------------------
+CollectionName      | graph500                                                                         |
+--------------------------------------------------------------------------------------------------------
+InputFile           | path\to\file\graph500-22_unique_node                                             |
+--------------------------------------------------------------------------------------------------------
+FileSize            | 2396019                                                                          |
+--------------------------------------------------------------------------------------------------------
+VertexInsert        | true                                                                             |
+--------------------------------------------------------------------------------------------------------
+CollectionThroughput| 100000                                                                           |
+--------------------------------------------------------------------------------------------------------
+BatchSize           | 1000000                                                                          |
+--------------------------------------------------------------------------------------------------------
+ShouldCleanupOnStart| true                                                                             |
+--------------------------------------------------------------------------------------------------------
+
+Step 4: To load graph500 edges update only the following parameters from Step 3 in file App.config. Save and run.
+================================================
+key                 | value                    | 
+================================================
+InputFile           | path\to\file\graph500-22 |
+------------------------------------------------
+FileSize            | 67108864                 |
+------------------------------------------------
+VertexInsert        | false                    |
+------------------------------------------------
+CollectionThroughput| 100000                   |
+------------------------------------------------
+BatchSize           | 1000000                  |
+------------------------------------------------
+ShouldCleanupOnStart| false                    |
+------------------------------------------------
+
+PLEASE NOTE: Twitter dataset was not loaded, the loading process was stopped after running edge load for ~1hour. It was observed that in 1 hour only 8 batches were loaded, with average loading time 522 seconds. Considering there are 1469 batches in total, this would take around 213 hours or almost 9 days to finish. And with hourly price of 72$ for 900 000 RU/s throughput, it would cost around 15K $ to complete edge loading. Very long and expensive load. While TigerGraph only takes 785.24 seconds to load twitter dataset, which is 900x times faster.
+
+Estimation of RU/s for twitter collection was done based on results of loading graph500. The raw data size of graph500 is ~1GB, and collection size plus index size after loading it into Cosmos DB is 58GB. Raw size of twitter file is ~25GB. Therefore, if we can expect raw data size to roughly expand about 58 times, then twitter dataset would require around 1450 GB of storage when loaded into CosmosDB, this includes indexes created during load. Let's say that twitter data after loading would be 50 times its raw size, then it's 1250 GB. So,1500GB is probably a rough but good enough upper bound on the storage size. Based on this rough estimation, twitter dataset needs 150 partitions, since the size of each partition in Cosmos DB is 10GB. According to Cosmos DB's Bulk Executor page number of partitions is initially determined using this formula  max(10, floor(X/6000)) , where X is provisioned RU/s. If we want 150 partitions, then we need to provision 900 000 RU/s for twitter collection. Note, the pricing for this amount of throughput: 72$ per hour. Whereas, graph500 with 100 000 RU/s costs 8$ per hours. 
+
+Provisioning higher throughput for twitter collection, e.g. above 1 million RU/s, might improve loading time. However, higher throughput results in a lot more partitions being allocated for the collection, and so throughput per partition may not actually improve that much. Also, the price is going to go up as well as collection throughput increases.
+
+Step 5: To load twitter vertices provide the following parameter in App.cofing file.
+==============================================================
+key                 | value                                  | 
+==============================================================
+DatabaseName        | twitterdb                              |
+--------------------------------------------------------------
+CollectionName      | twitter                                |
+--------------------------------------------------------------
+InputFile           | path\to\file\twitter_rv.net_unique_node|
+--------------------------------------------------------------
+FileSize            | 41652230                               |
+--------------------------------------------------------------
+VertexInsert        | true                                   |
+--------------------------------------------------------------
+CollectionThroughput| 900000                                 |
+--------------------------------------------------------------
+BatchSize           | 1000000                                |
+--------------------------------------------------------------
+ShouldCleanupOnStart| true                                   |
+--------------------------------------------------------------
+
+Step 6: To load twitter edges update only the following parameters from Step 5 in file App.config.
+===================================================
+key                 | value                       | 
+===================================================
+InputFile           | path\to\file\twitter_rv.net |
+---------------------------------------------------
+FileSize            | 1468365182                  |
+---------------------------------------------------
+VertexInsert        | false                       |
+---------------------------------------------------
+CollectionThroughput| 900000                      |
+---------------------------------------------------
+BatchSize           | 1000000                     |
+---------------------------------------------------
+ShouldCleanupOnStart| false                       |
+---------------------------------------------------
+
+CHECK storage size.
+- Metrics page in Azure Portal displays storage information for each collection.
+
+
+Graph500
+-----------------
+# khop
+Launch khop C# solution in Visual Studio.
+
+Modify result folder path in Program.cs file (line 34).
+
+Update the following parameters in App.cofig file and run.
+======================================================================================================
+key                | value                                                                           | 
+======================================================================================================
+HostName           | paste URI value here (Keys tab of your CosmosDB account in Azure Portal)        |
+------------------------------------------------------------------------------------------------------
+AuthorizationKey   | paste PRIMARY KEY value here (Keys tab of your CosmosDB account in Azure Portal)|
+------------------------------------------------------------------------------------------------------
+DatabaseName       | graph500db                                                                      |
+------------------------------------------------------------------------------------------------------
+CollectionName     | graph500                                                                        |
+------------------------------------------------------------------------------------------------------
+SeedFile           | path\to\file\graph500-22-seed                                                   |
+------------------------------------------------------------------------------------------------------
+Depth              | 1 (2, 3 or 6)                                                                   |
+------------------------------------------------------------------------------------------------------
+TimeOutMilliseconds| 180000 (for depth 3 and 6 set it to 9000000)                                    |
+------------------------------------------------------------------------------------------------------
+
+
+# wcc
+Not supported by Azure Cosmos DB(GraphAPI).
+
+# pagerank
+Not supported by Azure Cosmos DB(GraphAPI). CosmosDB doesn't support Gremlin's VertexProgram that is used to implement OLAP queries. According to documentation Spark connector can be used to implement such analytic queries.  
+
+Twitter
+-------------
+N/A
+

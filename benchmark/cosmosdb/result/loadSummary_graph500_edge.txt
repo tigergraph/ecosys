@@ -1,0 +1,484 @@
+
+Summary for batch 1
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9869 writes/s, 47374 RU/s in 101.3253717 sec)
+Average RU consumption per insert: 4.80022898
+---------------------------------------------------------------------
+ 
+
+Summary for batch 2
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 10469 writes/s, 50301 RU/s in 95.5228448 sec)
+Average RU consumption per insert: 4.80490303
+---------------------------------------------------------------------
+ 
+
+Summary for batch 3
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 10170 writes/s, 48923 RU/s in 98.3243111 sec)
+Average RU consumption per insert: 4.81027137
+---------------------------------------------------------------------
+ 
+
+Summary for batch 4
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9830 writes/s, 47316 RU/s in 101.7313318 sec)
+Average RU consumption per insert: 4.8134864
+---------------------------------------------------------------------
+ 
+
+Summary for batch 5
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9436 writes/s, 45461 RU/s in 105.9807035 sec)
+Average RU consumption per insert: 4.81801631
+---------------------------------------------------------------------
+ 
+
+Summary for batch 6
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9340 writes/s, 45031 RU/s in 107.0690234 sec)
+Average RU consumption per insert: 4.82140071
+---------------------------------------------------------------------
+ 
+
+Summary for batch 7
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9051 writes/s, 43661 RU/s in 110.4875726 sec)
+Average RU consumption per insert: 4.82398631
+---------------------------------------------------------------------
+ 
+
+Summary for batch 8
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9211 writes/s, 44465 RU/s in 108.5612735 sec)
+Average RU consumption per insert: 4.82722662
+---------------------------------------------------------------------
+ 
+
+Summary for batch 9
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9264 writes/s, 44740 RU/s in 107.9418682 sec)
+Average RU consumption per insert: 4.82928077
+---------------------------------------------------------------------
+ 
+
+Summary for batch 10
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9010 writes/s, 43534 RU/s in 110.9817332 sec)
+Average RU consumption per insert: 4.83149219
+---------------------------------------------------------------------
+ 
+
+Summary for batch 11
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9020 writes/s, 43601 RU/s in 110.8611165 sec)
+Average RU consumption per insert: 4.83366139
+---------------------------------------------------------------------
+ 
+
+Summary for batch 12
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9113 writes/s, 44066 RU/s in 109.7384838 sec)
+Average RU consumption per insert: 4.83575749
+---------------------------------------------------------------------
+ 
+
+Summary for batch 13
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9181 writes/s, 44411 RU/s in 108.9216962 sec)
+Average RU consumption per insert: 4.83728355
+---------------------------------------------------------------------
+ 
+
+Summary for batch 14
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8880 writes/s, 42984 RU/s in 112.6119177 sec)
+Average RU consumption per insert: 4.84054485
+---------------------------------------------------------------------
+ 
+
+Summary for batch 15
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9089 writes/s, 44029 RU/s in 110.0258511 sec)
+Average RU consumption per insert: 4.84435211
+---------------------------------------------------------------------
+ 
+
+Summary for batch 16
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9224 writes/s, 44689 RU/s in 108.4127844 sec)
+Average RU consumption per insert: 4.84485888
+---------------------------------------------------------------------
+ 
+
+Summary for batch 17
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8928 writes/s, 43275 RU/s in 112.0102135 sec)
+Average RU consumption per insert: 4.84724629
+---------------------------------------------------------------------
+ 
+
+Summary for batch 18
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9056 writes/s, 43908 RU/s in 110.4209761 sec)
+Average RU consumption per insert: 4.84838155
+---------------------------------------------------------------------
+ 
+
+Summary for batch 19
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9075 writes/s, 44027 RU/s in 110.1933245 sec)
+Average RU consumption per insert: 4.85146469
+---------------------------------------------------------------------
+ 
+
+Summary for batch 20
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9062 writes/s, 43976 RU/s in 110.3543835 sec)
+Average RU consumption per insert: 4.8529307
+---------------------------------------------------------------------
+ 
+
+Summary for batch 21
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9114 writes/s, 44259 RU/s in 109.7182436 sec)
+Average RU consumption per insert: 4.85600747
+---------------------------------------------------------------------
+ 
+
+Summary for batch 22
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8927 writes/s, 43361 RU/s in 112.019915 sec)
+Average RU consumption per insert: 4.8573159
+---------------------------------------------------------------------
+ 
+
+Summary for batch 23
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9090 writes/s, 44166 RU/s in 110.0118852 sec)
+Average RU consumption per insert: 4.85882066
+---------------------------------------------------------------------
+ 
+
+Summary for batch 24
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8898 writes/s, 43243 RU/s in 112.3825987 sec)
+Average RU consumption per insert: 4.85979805
+---------------------------------------------------------------------
+ 
+
+Summary for batch 25
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9120 writes/s, 44343 RU/s in 109.6518631 sec)
+Average RU consumption per insert: 4.86231806
+---------------------------------------------------------------------
+ 
+
+Summary for batch 26
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8933 writes/s, 43450 RU/s in 111.9413796 sec)
+Average RU consumption per insert: 4.86387551
+---------------------------------------------------------------------
+ 
+
+Summary for batch 27
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8894 writes/s, 43269 RU/s in 112.437808 sec)
+Average RU consumption per insert: 4.86508592
+---------------------------------------------------------------------
+ 
+
+Summary for batch 28
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8956 writes/s, 43597 RU/s in 111.6549537 sec)
+Average RU consumption per insert: 4.86783732
+---------------------------------------------------------------------
+ 
+
+Summary for batch 29
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8999 writes/s, 43829 RU/s in 111.1245482 sec)
+Average RU consumption per insert: 4.87046318
+---------------------------------------------------------------------
+ 
+
+Summary for batch 30
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9658 writes/s, 47034 RU/s in 103.5455056 sec)
+Average RU consumption per insert: 4.87014785
+---------------------------------------------------------------------
+ 
+
+Summary for batch 31
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8921 writes/s, 43465 RU/s in 112.0936327 sec)
+Average RU consumption per insert: 4.87216605
+---------------------------------------------------------------------
+ 
+
+Summary for batch 32
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9194 writes/s, 44808 RU/s in 108.7660992 sec)
+Average RU consumption per insert: 4.87354165
+---------------------------------------------------------------------
+ 
+
+Summary for batch 33
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8983 writes/s, 43790 RU/s in 111.326567 sec)
+Average RU consumption per insert: 4.87499233
+---------------------------------------------------------------------
+ 
+
+Summary for batch 34
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9105 writes/s, 44397 RU/s in 109.8356777 sec)
+Average RU consumption per insert: 4.87639927
+---------------------------------------------------------------------
+ 
+
+Summary for batch 35
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8975 writes/s, 43773 RU/s in 111.4247091 sec)
+Average RU consumption per insert: 4.8773914
+---------------------------------------------------------------------
+ 
+
+Summary for batch 36
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8703 writes/s, 42460 RU/s in 114.9019709 sec)
+Average RU consumption per insert: 4.87870728
+---------------------------------------------------------------------
+ 
+
+Summary for batch 37
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9071 writes/s, 44271 RU/s in 110.2456384 sec)
+Average RU consumption per insert: 4.88063566
+---------------------------------------------------------------------
+ 
+
+Summary for batch 38
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8999 writes/s, 43933 RU/s in 111.1188547 sec)
+Average RU consumption per insert: 4.88183753
+---------------------------------------------------------------------
+ 
+
+Summary for batch 39
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8779 writes/s, 42863 RU/s in 113.9100695 sec)
+Average RU consumption per insert: 4.88255894
+---------------------------------------------------------------------
+ 
+
+Summary for batch 40
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 9009 writes/s, 44010 RU/s in 110.9952552 sec)
+Average RU consumption per insert: 4.8849108
+---------------------------------------------------------------------
+ 
+
+Summary for batch 41
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8569 writes/s, 41866 RU/s in 116.700464 sec)
+Average RU consumption per insert: 4.88572852
+---------------------------------------------------------------------
+ 
+
+Summary for batch 42
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8534 writes/s, 41694 RU/s in 117.1774687 sec)
+Average RU consumption per insert: 4.88555055
+---------------------------------------------------------------------
+ 
+
+Summary for batch 43
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8626 writes/s, 42165 RU/s in 115.9290365 sec)
+Average RU consumption per insert: 4.88811567
+---------------------------------------------------------------------
+ 
+
+Summary for batch 44
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8699 writes/s, 42528 RU/s in 114.9620126 sec)
+Average RU consumption per insert: 4.88912268
+---------------------------------------------------------------------
+ 
+
+Summary for batch 45
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8509 writes/s, 41610 RU/s in 117.5278835 sec)
+Average RU consumption per insert: 4.89034949
+---------------------------------------------------------------------
+ 
+
+Summary for batch 46
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8499 writes/s, 41585 RU/s in 117.661909 sec)
+Average RU consumption per insert: 4.89294941
+---------------------------------------------------------------------
+ 
+
+Summary for batch 47
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8452 writes/s, 41352 RU/s in 118.3084758 sec)
+Average RU consumption per insert: 4.89233883
+---------------------------------------------------------------------
+ 
+
+Summary for batch 48
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8361 writes/s, 40919 RU/s in 119.6076287 sec)
+Average RU consumption per insert: 4.89419877
+---------------------------------------------------------------------
+ 
+
+Summary for batch 49
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8482 writes/s, 41524 RU/s in 117.9028466 sec)
+Average RU consumption per insert: 4.89576907
+---------------------------------------------------------------------
+ 
+
+Summary for batch 50
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8429 writes/s, 41270 RU/s in 118.64108 sec)
+Average RU consumption per insert: 4.89631997
+---------------------------------------------------------------------
+ 
+
+Summary for batch 51
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8136 writes/s, 39847 RU/s in 122.91287 sec)
+Average RU consumption per insert: 4.89770671
+---------------------------------------------------------------------
+ 
+
+Summary for batch 52
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8161 writes/s, 39973 RU/s in 122.5303201 sec)
+Average RU consumption per insert: 4.89793841
+---------------------------------------------------------------------
+ 
+
+Summary for batch 53
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8174 writes/s, 40047 RU/s in 122.3438786 sec)
+Average RU consumption per insert: 4.89944707
+---------------------------------------------------------------------
+ 
+
+Summary for batch 54
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8251 writes/s, 40434 RU/s in 121.1937396 sec)
+Average RU consumption per insert: 4.90035246
+---------------------------------------------------------------------
+ 
+
+Summary for batch 55
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8230 writes/s, 40347 RU/s in 121.5001103 sec)
+Average RU consumption per insert: 4.90218868
+---------------------------------------------------------------------
+ 
+
+Summary for batch 56
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8150 writes/s, 39962 RU/s in 122.6995656 sec)
+Average RU consumption per insert: 4.90328409
+---------------------------------------------------------------------
+ 
+
+Summary for batch 57
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8163 writes/s, 40047 RU/s in 122.502883 sec)
+Average RU consumption per insert: 4.90589176
+---------------------------------------------------------------------
+ 
+
+Summary for batch 58
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8124 writes/s, 39854 RU/s in 123.0972185 sec)
+Average RU consumption per insert: 4.90585871
+---------------------------------------------------------------------
+ 
+
+Summary for batch 59
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8392 writes/s, 41191 RU/s in 119.1657857 sec)
+Average RU consumption per insert: 4.908605
+---------------------------------------------------------------------
+ 
+
+Summary for batch 60
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8603 writes/s, 42227 RU/s in 116.2394785 sec)
+Average RU consumption per insert: 4.90845987
+---------------------------------------------------------------------
+ 
+
+Summary for batch 61
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8314 writes/s, 40830 RU/s in 120.2786331 sec)
+Average RU consumption per insert: 4.91092986
+---------------------------------------------------------------------
+ 
+
+Summary for batch 62
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8244 writes/s, 40495 RU/s in 121.2961431 sec)
+Average RU consumption per insert: 4.91187816
+---------------------------------------------------------------------
+ 
+
+Summary for batch 63
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8201 writes/s, 40304 RU/s in 121.9344665 sec)
+Average RU consumption per insert: 4.91445165
+---------------------------------------------------------------------
+ 
+
+Summary for batch 64
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8083 writes/s, 39713 RU/s in 123.7161393 sec)
+Average RU consumption per insert: 4.91307939
+---------------------------------------------------------------------
+ 
+
+Summary for batch 65
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 7963 writes/s, 39148 RU/s in 125.586897 sec)
+Average RU consumption per insert: 4.91648903
+---------------------------------------------------------------------
+ 
+
+Summary for batch 66
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 7961 writes/s, 39134 RU/s in 125.6101161 sec)
+Average RU consumption per insert: 4.91564328
+---------------------------------------------------------------------
+ 
+
+Summary for batch 67
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 8020 writes/s, 39435 RU/s in 124.6909226 sec)
+Average RU consumption per insert: 4.91713719
+---------------------------------------------------------------------
+ 
+
+Summary for batch 68
+--------------------------------------------------------------------- 
+Inserted 108864 graph elements @ 7927 writes/s, 38988 RU/s in 13.7341708 sec)
+Average RU consumption per insert: 4.91867853468548
+---------------------------------------------------------------------
+ 
+TOTAL SUMMARY:
+Number of lines read from file: 67108864
+Number of batches submitted: 68
+Total number of documents imported: 67108864
+Total time taken, sec: 7636.0361
+Average number of document writes/s: 8788
+Average RU/s: 42811
+Average RU consumption per insert: 5

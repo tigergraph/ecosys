@@ -1,0 +1,29 @@
+
+Summary for batch 1
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 13782 writes/s, 50122 RU/s in 72.5589446 sec)
+Average RU consumption per insert: 3.636813
+---------------------------------------------------------------------
+ 
+
+Summary for batch 2
+--------------------------------------------------------------------- 
+Inserted 1000000 graph elements @ 14152 writes/s, 51449 RU/s in 70.660906 sec)
+Average RU consumption per insert: 3.63541689
+---------------------------------------------------------------------
+ 
+
+Summary for batch 3
+--------------------------------------------------------------------- 
+Inserted 396019 graph elements @ 14044 writes/s, 51037 RU/s in 28.1980295 sec)
+Average RU consumption per insert: 3.63403967991435
+---------------------------------------------------------------------
+ 
+TOTAL SUMMARY:
+Number of lines read from file: 2396019
+Number of batches submitted: 3
+Total number of documents imported: 2396019
+Total time taken, sec: 171.4178801
+Average number of document writes/s: 13978
+Average RU/s: 50820
+Average RU consumption per insert: 4

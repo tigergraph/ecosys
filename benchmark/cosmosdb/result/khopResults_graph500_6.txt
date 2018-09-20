@@ -1,0 +1,20 @@
+k-hop query with depth = 6
+start vertex,	neighbor size,	query time (in ms)
+3600312,	-1,	-1
+2677094,	-1,	-1
+2038005,	-1,	-1
+3301167,	-1,	-1
+704219,	-1,	-1
+1779962,	-1,	-1
+2681401,	-1,	-1
+2277366,	-1,	-1
+1649130,	-1,	-1
+806220,	-1,	-1
+===================SUMMARY=================================
+Total 6-hop Neighborhood size: 0
+Total elapsed time, ms: 0
+Total number of queries: 10
+Number of timeout queries: 10
+Number of failed queries: 0
+Average 6-hop Neighborhood size: -1
+Average query time, ms: -1
