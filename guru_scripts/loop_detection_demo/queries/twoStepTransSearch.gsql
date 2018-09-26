@@ -1,0 +1,139 @@
+drop query twoStepTransSearch
+CREATE QUERY twoStepTransSearch (datetime startTime, datetime endTime, double moneyLowLimit, int transLowLimit, bool isSend = false) FOR GRAPH poc_graph  {
+  Typedef tuple<EDGE e, VERTEX v, string vid, int date_time> EdgeTuple;
+  ListAccum<ListAccum<EdgeTuple>> @edgeTupleList;
+  ListAccum<ListAccum<EdgeTuple>> @newEdgeTupleList;
+  #OrAccum @isValidTarget = false;
+  int startDay =0;
+  int endDay = 0;
+  int edgeTypeId = 0;
+  double amountLowLimit;
+  //set amountLowLimit to lower limit of moneyLowLimit
+  amountLowLimit = moneyLowLimit - 0.000001;
+
+  startDay = datetime_to_epoch(startTime) / 86400;
+  endDay = datetime_to_epoch(endTime) / 86400;
+  
+  //filter out invalid oneDay vertices
+  DateSet = {oneDay.*};
+  DateSet = SELECT src
+            FROM DateSet:src
+            WHERE src.exid >= startDay and src.exid <= endDay
+            ;
+  PRINT startTime, startDay, endTime, endDay, DateSet.size();
+  //using valid Dates and amountLowLimt to filter out invalid transactions
+  TransSet = SELECT tgt
+             FROM DateSet:src - (oneDay_trans: e) -> transaction: tgt
+             WHERE tgt.amount > amountLowLimit and tgt.date_time >= startTime
+               and tgt.date_time <= endTime 
+             ;
+  PRINT TransSet.size();
+  //get Id for send edge
+  edgeTypeId = GetEdgeId(__ENGINE__SERVICEAPI, true);
+  //Do Aggregation from transactions to target account
+  IF isSend == true
+  THEN
+    X1  = SELECT src
+        FROM TransSet:src - (send: e) -> account:tgt
+        ACCUM
+          src.@edgeTupleList += [EdgeTuple(e, tgt, tgt.exid, datetime_to_epoch(src.date_time))]
+        ;
+
+    X2 = SELECT tgt
+        FROM TransSet:src - (rev_send: e) -> account:tgt
+        ACCUM
+          tgt.@newEdgeTupleList += src.@edgeTupleList.get(0) + [EdgeTuple(RevertEdge(e, edgeTypeId), src, "", datetime_to_epoch(src.date_time))]
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        ;
+
+    X3 = SELECT tgt
+        FROM X2:src - (rev_send: e) -> transaction: tgt
+        WHERE tgt.amount > amountLowLimit and tgt.date_time >= startTime
+          and tgt.date_time <= endTime 
+        ACCUM
+          int ts = datetime_to_epoch(tgt.date_time),
+          string idStr = src.exid,
+          FOREACH path in src.@edgeTupleList
+          DO
+            CASE WHEN path.get(path.size() -1).date_time > ts 
+                   //remove the case that A - B - A
+                   AND tgt.to_id != path.get(path.size() -2).vid
+                 THEN
+                   tgt.@newEdgeTupleList += path + [EdgeTuple(RevertEdge(e, edgeTypeId), src, idStr, datetime_to_epoch(tgt.date_time))] 
+            END
+          END
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        HAVING tgt.@edgeTupleList.size() > 0
+        ;
+
+    X4 = SELECT tgt
+        FROM X3:src - (rev_send: e) -> account:tgt
+        ACCUM
+          FOREACH path in src.@edgeTupleList
+          DO
+            tgt.@newEdgeTupleList += path + [EdgeTuple(RevertEdge(e, edgeTypeId), src, "", datetime_to_epoch(src.date_time))] 
+          END
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        HAVING tgt.@edgeTupleList.size() > transLowLimit
+        ;
+  ELSE
+    X1 = SELECT src
+        FROM TransSet:src - (rev_send: e) -> account:tgt
+        ACCUM
+          src.@edgeTupleList += [EdgeTuple(RevertEdge(e, edgeTypeId), tgt, tgt.exid, datetime_to_epoch(src.date_time))]
+        ;
+
+    X2 = SELECT tgt
+        FROM TransSet:src - (send: e) -> account:tgt
+        ACCUM
+          tgt.@newEdgeTupleList += src.@edgeTupleList.get(0) + [EdgeTuple(e,src, "", datetime_to_epoch(src.date_time))]
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        ;
+
+    X3 = SELECT tgt
+        FROM X2:src - (send: e) -> transaction: tgt
+        WHERE tgt.amount > amountLowLimit and tgt.date_time >= startTime
+          and tgt.date_time <= endTime 
+        ACCUM
+          int ts = datetime_to_epoch(tgt.date_time),
+          string idStr = src.exid,
+          FOREACH path in src.@edgeTupleList
+          DO
+            CASE WHEN path.get(path.size() -1).date_time < ts 
+                   //remove the case that A - B - A
+                   AND tgt.from_id != path.get(path.size() -2).vid
+                 THEN
+                   tgt.@newEdgeTupleList += path + [EdgeTuple(e, src, idStr, datetime_to_epoch(tgt.date_time))] 
+            END
+          END
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        HAVING tgt.@edgeTupleList.size() > 0
+        ;
+
+    X4 = SELECT tgt
+        FROM X3:src - (send: e) -> account:tgt
+        ACCUM
+          FOREACH path in src.@edgeTupleList
+          DO
+            tgt.@newEdgeTupleList += path + [EdgeTuple(e, src, "", datetime_to_epoch(src.date_time))] 
+          END
+        POST-ACCUM
+          tgt.@edgeTupleList = tgt.@newEdgeTupleList,
+          tgt.@newEdgeTupleList.clear()
+        HAVING tgt.@edgeTupleList.size() > transLowLimit
+        ;
+  END;
+
+  PRINT X4.@edgeTupleList;
+}
+#install query twoStepTransSearch

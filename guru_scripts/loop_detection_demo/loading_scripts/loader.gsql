@@ -1,0 +1,19 @@
+#SET sys.data_root="../data_from_qingsu/demo_data"
+USE GRAPH poc_graph
+drop job trans_load
+CREATE LOADING JOB trans_load for graph poc_graph { 
+  DEFINE INPUT_LINE_FILTER lineFilter = $2 IS NUMERIC; 
+  DEFINE FILENAME f1 = "./transactions.csv";
+  load f1 to TEMP_TABLE t1 (acc1, acc2, transID,  amount, transDay, transTime, fake) VALUES (Trim($0), Trim($1), gsql_concat(Trim($0), "->", Trim($1), ":", Trim($2), " at ", Trim($3)), Trim($2), GetDateNum(FormatDate(Trim($3))), FormatDate(Trim($3)), flatten($0,",", 1)) 
+    WHERE IsValidDateTime(Trim($3)) USING Separator="|", Header="false";#, reject_line_rule=lineFilter;
+  load TEMP_TABLE t1
+    to VERTEX account VALUES ($"acc1", $"acc1", _, _, _),
+    to VERTEX account VALUES ($"acc2", $"acc2", _, _, _),
+    to VERTEX transaction VALUES ($"transID", $"acc1", $"acc2", $"amount", $"transTime"), 
+    to VERTEX oneDay VALUES ($"transDay", $"transDay"),
+    to EDGE send VALUES ($"acc1" account, $"transID" transaction),
+    to EDGE send VALUES ($"transID" transaction, $"acc2" account),
+    to EDGE oneDay_trans VALUES ($"transDay", $"transID", $"transTime")
+    ;
+}
+RUN LOADING JOB trans_load
