@@ -6,7 +6,9 @@ USE GRAPH social
 BEGIN
 CREATE LOADING JOB postEdge FOR GRAPH social {
    DEFINE FILENAME postEdgeFileName;
-
-   LOAD postEdgeFileName TO EDGE friendship VALUES ($0, $1, $2) USING header="false", separator=",";
+   
+   // use reduce function aggregates multiple values of a non-id attribute into one attribute value of a edge
+   // upsert an exsisting edge, their connect_day is the min of all values of connect_day  
+   LOAD postEdgeFileName TO EDGE friendship VALUES ($0, $1, REDUCE(min($2))) USING header="false", separator=",";
 }
 END

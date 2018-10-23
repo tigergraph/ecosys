@@ -7,7 +7,8 @@ USE GRAPH social
 BEGIN
 CREATE LOADING JOB postVertex FOR GRAPH social {
    DEFINE FILENAME postVertexFileName;
-    
-   LOAD postVertexFileName TO VERTEX person VALUES ($0, $1, $2, $3, $4) USING header="false", separator=",";
+
+   // use reduce function aggregates multiple values of a non-id attribute into one attribute value of a single vertex
+   LOAD postVertexFileName TO VERTEX person VALUES ($0, $1, REDUCE(overwrite($2)), REDUCE(ignore_if_exists($3)), $4) USING header="false", separator=",";
 }
 END
