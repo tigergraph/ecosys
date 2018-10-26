@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import java.io.DataOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
@@ -27,27 +29,45 @@ import java.net.ConnectException;
  */
 public class PostDDLSampleCode {
   static String URL = "http://127.0.0.1:9000/";
-
+  static String postInfo;
+  static String data;
   public static void main(String[] args){
     try {
       // type is vertex or edge
       String type = args[0];
+      // graph name
+      String graphName = args[1];
+      // ddl loading job name
+      String loadingJobName = args[2];
+      // file name declared in ddl loading job
+      String fileName = args[3];
+      // separator of CSV file
+      String separator = args[4];
+      // end of line charactor
+      String endOfLineChar = args[5];
 
       /*
-       modify postInfo
-       upsert vertices - Syntax for postInfo: 
-       ddl/{graph_name}?tag={loading_job_name}&filename={post_vertex_file_name}&sep={separator_of_CSV_file}&eol={end_of_line_charactor}
+         upsert vertices - Syntax for postInfo:
+         ddl/{graph_name}?tag={loading_job_name}&filename={post_vertex_file_name}&sep={separator_of_CSV_file}&eol={end_of_line_charactor}
 
-       upsert edges - Syntax for postInfo: 
-       ddl/{graph_name}?tag={loading_job_name}&filename={post_edge_file_name}&sep={separator_of_CSV_file}&eol={end_of_line_charactor}
+         upsert edges - Syntax for postInfo:
+         ddl/{graph_name}?tag={loading_job_name}&filename={post_edge_file_name}&sep={separator_of_CSV_file}&eol={end_of_line_charactor}
       */
 
-      //String postInfo = "ddl/social?tag=postVertex&filename=postVertexFileName&sep=,&eol=\\n";
-      //String data = "Amanda,Amanda,20,female,ca";
+      postInfo = "ddl/" + graphName+ "?tag=" + loadingJobName + "&filename=" 
+	      + fileName + "&sep=" + separator + "&eol=" + endOfLineChar;
 
-      String postInfo = "ddl/social?tag=postEdge&filename=postEdgeFileName&sep=,&eol=\\n";
-      String data = "Amanda,Leo,2011-08-08";
-
+      if (args.length > 6) {
+        // upsert vertex/edge stored in separate data file
+	
+        String postFilePath = args[6];
+	data = new String(Files.readAllBytes(Paths.get(postFilePath)));
+      } else { 
+	// upsert vertex/edge use inline method
+	
+        //end_of_line_charactordata = "Amanda,Amanda,20,female,ca;Leo,Leo,23,male,ca";
+        data = "Amanda,Leo,2011-08-08;Amanda,Tom,2016-03-05";
+      }
       sendHTTPRequest(postInfo, data, type);
     } catch(Exception e) {
       e.printStackTrace();
@@ -169,8 +189,8 @@ public class PostDDLSampleCode {
    */
   public static Boolean upsertStatus(String responseInfo, String type) {
     JSONObject obj = new JSONObject(responseInfo);                                                  
-    if (!obj.has("reports")) {
-	    return true;
+    if (!obj.has("reports")) {	 
+      return true;
     }
     JSONArray objArray = obj.getJSONArray("reports");                                               
     JSONObject obj1 = objArray.getJSONObject(0);                                                    
@@ -182,7 +202,7 @@ public class PostDDLSampleCode {
     JSONArray vertexInfo = obj2.getJSONArray(type);
     long validObject = vertexInfo.getJSONObject(0).getLong("validObject");
     if (validObject == 0) {
-	    return true;
+      return true;
     }
     return false;
   }
