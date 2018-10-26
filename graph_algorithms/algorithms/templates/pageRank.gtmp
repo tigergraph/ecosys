@@ -1,0 +1,56 @@
+# Compute the pageRank score for each vertex in the graph, with the parameters:
+
+*ATTR*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display) FOR GRAPH *graph*
+*ACCM*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, INT outputLimit) FOR GRAPH *graph* 
+*FILE*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, FILE f) FOR GRAPH *graph*
+{
+  # In each iteration, compute a score for each vertex:
+  #   score = (1-damping) + damping*sum(received scores from its neighbors).
+  # The pageRank algorithm stops when either of the following is true:
+  #  a) it reaches maxIter iterations;
+  #  b) the max score change for any vertex compared to the last iteration <= maxChange.
+
+*ACCM* TYPEDEF TUPLE<STRING name, FLOAT score> vertexScore;
+*ACCM*  HeapAccum<vertexScore>(outputLimit, score DESC) @@topScores;
+  MaxAccum<float> @@maxDiff = 9999; # max score change in an iteration
+  SumAccum<float> @received_score = 0; # sum of scores each vertex receives from neighbors
+  SumAccum<float> @score = 1;   # initial score for every vertex is 1.
+  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
+
+  INT iterNum = 0;
+
+  Start = {*vertex-types*};   #  Start with all vertices of specified type(s)
+  WHILE @@maxDiff > maxChange LIMIT maxIter DO
+    @@maxDiff = 0;
+    V = SELECT s
+         FROM Start:s -(*edge-types*:e)-> :t
+         ACCUM t.@received_score += s.@score/(*s_outdegrees*) 
+         POST-ACCUM s.@score = (1.0-damping) + damping * s.@received_score,
+                    s.@received_score = 0,
+                    @@maxDiff += abs(s.@score - s.@score');
+    iterNum = iterNum + 1;
+  END; # end while loop
+
+*ATTR*  V = SELECT s FROM Start:s
+*ATTR*         POST-ACCUM s.*vFltAttr* = s.@score;
+
+*ACCM*  IF outputLimit > 0 THEN
+*ACCM*      V = SELECT s FROM Start:s
+*ACCM*         POST-ACCUM @@topScores += vertexScore(s.name, s.@score);
+*ACCM*      PRINT @@topScores;
+*ACCM*  END;
+
+*FILE*  f.println("Vertex_ID", "PageRank");
+*FILE*  V = SELECT s FROM Start:s
+*FILE*	       POST-ACCUM f.println(s, s.@score);
+
+  IF display THEN
+     PRINT Start[Start.@score];
+     Start = SELECT s
+         FROM Start:s -(*edge-types*:e)-> :t
+         ACCUM @@edgeSet += e;
+     PRINT @@edgeSet;
+  END;
+}
+
+#INSTALL QUERY pageRank*EXT*
