@@ -24,7 +24,7 @@ Library Structure
 -----------------
 
 You can download the library from github:
-https://github.com/tigergraph/ecosys/graph_algorithms
+https://github.com/tigergraph/ecosys/tree/master/graph_algorithms
 
 The library contains two main sections: Algorithms and Tests.
 
