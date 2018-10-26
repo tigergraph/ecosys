@@ -1,0 +1,22 @@
+# Compute the total number of triangles in the graph. No input parameters are needed.
+
+CREATE QUERY tri_count() FOR GRAPH *graph* {
+  SumAccum<int> @@cnt;
+
+  Start = {*vertex-types*};
+
+  # For each edge e, the number of triangles that contain e is equivalent
+  # to the number of common neighbors between vertices s and t  
+  Result = SELECT t
+    FROM Start:s -(*edge-types*:e)-> :t
+    WHERE getvid(s) > getvid(t)
+    ACCUM 
+      INT c = COUNT((*s_neighbors*) INTERSECT (*t_neighbors*)),
+      @@cnt += c
+  ;
+
+  # Each triangle is counted 3 times for each edge, so final result is divided by 3
+  PRINT @@cnt/3 AS num_triangles;
+}
+ 
+#INSTALL QUERY tri_count
