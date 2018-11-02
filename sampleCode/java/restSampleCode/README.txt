@@ -76,7 +76,7 @@
 ==============
   Delete edge:  with starting vertex is Amanda
     Curl command looks like : 
-      curl -X GET "http://localhost:9000/graph/social/edges/person/Amanda/friendship"
+      curl -X DELETE "http://localhost:9000/graph/social/edges/person/Amanda/friendship"
 
     Run Java example in linux shell:
       // comment out line 42 in DeleteSampleCode.java
@@ -92,7 +92,7 @@
 ================
   Delete vetex: Amanda
     Curl command looks like: 
-      curl -X GET "http://localhost:9000/graph/social/vertices/person/Amanda"
+      curl -X DELETE "http://localhost:9000/graph/social/vertices/person/Amanda"
 
     Run Java example in linux shell:
       // comment out line 41 in DeleteSampleCode.java

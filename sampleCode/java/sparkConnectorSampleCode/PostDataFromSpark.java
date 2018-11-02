@@ -59,7 +59,7 @@ public class PostDataFromSpark {
               + fileName + "&sep=" + separator + "&eol=" + endOfLineChar;
 
     // create a spark session
-    SparkSession sc = SparkSession.builder().appName("Uber").getOrCreate();
+    SparkSession sc = SparkSession.builder().getOrCreate();
     sc.conf().set("fs.s3a.attempts.maximum", "30");
     sc.conf().set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
 
