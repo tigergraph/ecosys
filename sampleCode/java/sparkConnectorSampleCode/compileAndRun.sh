@@ -17,7 +17,6 @@ master_node=$8
 javac -cp $cwd/third_party/*:. PostDataFromSpark.java 
 
 jar -cf sparkConnectorSampleCode.jar ./ 
-#jar -cf sparkConnectorSampleCode.jar ./  third_party/
 
 # spark cluster run in standalone mode.
 spark-submit --class PostDataFromSpark --master $master_node \

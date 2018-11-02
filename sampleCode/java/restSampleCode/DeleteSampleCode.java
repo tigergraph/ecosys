@@ -1,9 +1,8 @@
 /**
 * Copyright (c)  2015-now, TigerGraph Inc.
-* All rights reserved
-* It is provided as sample code to use RESTPP API purpose.
-* anyone can use it for education purpose with the
-* acknowledgement to TigerGraph.
+* Licensed under the Apache License v2.0
+* http://www.apache.org/licenses/LICENSE-2.0
+*
 * Author: Litong Shen litong.shen@tigergraph.com
 */
 import org.json.JSONObject;
