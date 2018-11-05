@@ -60,8 +60,6 @@ public class PostDataFromSpark {
 
     // create a spark session
     SparkSession sc = SparkSession.builder().getOrCreate();
-    sc.conf().set("fs.s3a.attempts.maximum", "30");
-    sc.conf().set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
 
     StringBuilder sbData = new StringBuilder();
     List<Row> arrayList= new ArrayList<>();
