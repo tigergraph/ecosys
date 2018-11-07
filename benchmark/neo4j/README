@@ -34,6 +34,10 @@ $ sudo pip install --upgrade pip
 $ sudo pip install --upgrade virtualenv 
 $  sudo pip install tornado
 $  sudo pip install neo4j-driver
+$ sudo pip install requests
+$ sudo apt-get install libcurl4-openssl-dev
+$ sudo apt-get install libssl-dev
+$ sudo pip install pycurl
 
 
 - 32 vCPUs
