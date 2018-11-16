@@ -180,7 +180,7 @@ def handle_neo4j_request(response):
             kn_size += r["results"][0]["data"][0]["row"][0]
         except:
             bad_requests += 1
-            #print("got bad response: " + str(response))
+            print("got bad response: " + str(response))
         correct_requests += 1
 
     if completed_requests >= total_requests:
@@ -196,14 +196,14 @@ def handle_tigergraph_request(response):
     completed_requests += 1
     if response.error:
         bad_requests += 1
-        #print("got bad response: " + str(response))
+        print("got bad response: " + str(response))
     else:
         try:
             r = json.loads(response.body)
-            kn_size += r["results"][0]["@@subgraph_size"]
+            kn_size += r["results"][0]["Start.size()"]
         except:
             bad_requests += 1
-            #print("got bad response: " + str(response))
+            print("got bad response: " + str(response.body))
         correct_requests += 1
 
     if completed_requests >= total_requests:
@@ -246,7 +246,8 @@ def RunKNThroughput(filename, roots, db_name, depth, notes = ""):
                 connect_timeout = 3600, request_timeout=3600)
         else:
           params = {"depth": depth, "start_node": root}
-          url = url_concat("http://127.0.0.1:9000/query/ksubgraph", params)
+          url = url_concat("http://127.0.0.1:9000/query/khop", params)
+          # print(url)
           http_client.fetch(url, method = "GET", \
                 callback = handle_tigergraph_request, \
                 connect_timeout = 3600, request_timeout=3600)
@@ -270,7 +271,7 @@ def RunKNThroughput(filename, roots, db_name, depth, notes = ""):
 
 
 if __name__ == "__main__":
-    AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=20)
+    AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=22)
     if len(sys.argv) < 7:
         print("Usage: python kn.py seed_file_path num_root db_name depth notes mode")
         sys.exit()
@@ -279,4 +280,4 @@ if __name__ == "__main__":
         #RunKNLatency(os.path.basename(sys.argv[1]), GetRandomNodes(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
         RunKNLatency(os.path.basename(sys.argv[1]), GetRandomNodesSeedFile(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
     else:
-        RunKNThroughput(os.path.basename(sys.argv[1]), GetRandomNodes(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])
+        RunKNThroughput(os.path.basename(sys.argv[1]), GetRandomNodesSeedFile(sys.argv[1], int(sys.argv[2])), sys.argv[3], int(sys.argv[4]), sys.argv[5])

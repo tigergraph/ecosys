@@ -1,0 +1,36 @@
+Seed file does not exists: /graph500-22-seed
+Seed file does not exists: /graph500-22-seed
+Seed file does not exists: /graph500-22-seed
+Seed file does not exists: /graph500-22-seed
+Use randome seeds from /data/ecosys/benchmark/tigergraph//graph500-22-seed
+RunKNThroughput|fetch issued
+elapsed time: 0.136494874954 s
+total_requests: 300
+QPS: 2197.88471985
+bad_requests: 0
+kn_size: 1538494
+avg kn_size: 5128
+Use randome seeds from /data/ecosys/benchmark/tigergraph//graph500-22-seed
+RunKNThroughput|fetch issued
+elapsed time: 12.5900020599 s
+total_requests: 300
+QPS: 23.8284313674
+bad_requests: 0
+kn_size: 145140601
+avg kn_size: 483802
+Use randome seeds from /data/ecosys/benchmark/tigergraph//graph500-22-seed
+RunKNThroughput|fetch issued
+elapsed time: 57.2179319859 s
+total_requests: 300
+QPS: 5.24311154891
+bad_requests: 0
+kn_size: 261228747
+avg kn_size: 870762
+Use randome seeds from /data/ecosys/benchmark/tigergraph//graph500-22-seed
+RunKNThroughput|fetch issued
+elapsed time: 69.5848288536 s
+total_requests: 300
+QPS: 4.3112845852
+bad_requests: 0
+kn_size: 923254
+avg kn_size: 3077
