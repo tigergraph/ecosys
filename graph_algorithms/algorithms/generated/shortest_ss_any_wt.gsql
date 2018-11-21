@@ -2,7 +2,7 @@
 # possibly negative.
 # If any loop in the graph has a net negative weight, the algorithm will exit. 
 
-CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH generic {
+CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH social {
 
   # per-vertex accumulators
   MinAccum<FLOAT> @dist;                      # best-known shortest distance from v
@@ -18,7 +18,7 @@ CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH generic {
   INT maxVal = 1000000000;                    # Should be larger than any possible path
   EXCEPTION negLoop (40999);
          
-  VSET = {Node.*};
+  VSET = {Person.*};
   Source = {v}; 
 
   ##### Initialization: Set the best-known distance to a maxValue (pseudo-infinite)
@@ -36,7 +36,7 @@ CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH generic {
   ##### Do N-1 iterations: Consider whether each edge lowers the best-known distance.
   FOREACH i IN RANGE[1, VSET.size()-1] DO
     VSET = SELECT s
-           FROM VSET:s -(LinkTo:e)-> :t
+           FROM VSET:s -(Coworker:e)-> :t
            ACCUM
              IF s.@visited THEN
                IF s.@dist + e.weight < t.@dist THEN
@@ -49,7 +49,7 @@ CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH generic {
              
   ##### Check for loops with net negative weight #####
   VSET = SELECT s
-         FROM VSET:s -(LinkTo:e)-> :t
+         FROM VSET:s -(Coworker:e)-> :t
          ACCUM @@hasNegLoop +=s.@dist + e.weight < t.@dist;
          
   IF @@hasNegLoop THEN        
@@ -62,10 +62,10 @@ CREATE QUERY shortest_ss_any_wt (VERTEX v, BOOL display) FOR GRAPH generic {
  PRINT VSET[VSET.@dist, VSET.@path];
   IF display THEN
      VSET = SELECT s
-          FROM VSET:s -(LinkTo:e)-> :t
-          ACCUM @@edgeSet += e;
+          FROM VSET:s -(Coworker:e)-> :t
+         ACCUM @@edgeSet += e;
      PRINT @@edgeSet;
-   END;
+  END;
 
 }
 

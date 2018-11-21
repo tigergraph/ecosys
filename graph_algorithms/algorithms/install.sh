@@ -36,7 +36,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the number of the algorithm to install:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -58,6 +58,14 @@ while [ !$finished ]; do
 				algoName="pageRank"
 				echo "  pageRank() works on directed edges"
 				break;;
+			"Shortest Path, Single-Source, No Weight" )
+                                algoName="shortest_ss_no_wt"
+                                echo "  shortest_ss_no_wt() works on directed or undirected edges without weight"
+                                break;;
+			"Shortest Path, Single-Source, Positive Weight" )
+                                algoName="shortest_ss_pos_wt"
+                                echo "  shortest_ss_pos_wt() works on weighted directed or undirected edges without negative weight"
+                                break;;
 			"Shortest Path, Single-Source, Any Weight" )
 				algoName="shortest_ss_any_wt"
 				echo "  shortest_ss_any_wt() works on weighted directed or undirected edges"
@@ -109,7 +117,7 @@ while [ !$finished ]; do
 		vts="${vts}.*"
 	fi
 	sed -i "s/\*vertex-types\*/$vts/g" ${templPath}/${algoName}.gsql
-
+	
 	# 4. Ask for edge types. Replace *edge-types* placeholder.
 	read -p 'Edge types: ' egs
 	egs=${egs//[[:space:]]/}
@@ -154,6 +162,18 @@ while [ !$finished ]; do
 		egs="(${egs})"
 	fi
 	sed -i "s/\*edge-types\*/$egs/g" ${templPath}/${algoName}.gsql
+
+
+	# get weight
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ]; then
+                read -p "Edge attribute that stores FLOAT weight:"  weight
+                        if [[ $(countEdgeAttr $weight) > 0 ]]; then
+                                sed -i "s/\*edge-weight\*/$weight/g" ${templPath}/${algoName}.gsql
+                        else
+                                echo " *** Edge attribute name not found. Try again."
+                        fi
+        fi
+
 
 	# 5. Drop queries and subqueries in order
 	gsql -g $grph "DROP QUERY ${algoName}"

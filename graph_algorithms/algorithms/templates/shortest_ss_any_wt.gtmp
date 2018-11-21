@@ -42,8 +42,8 @@
            FROM VSET:s -(*edge-types*:e)-> :t
            ACCUM
              IF s.@visited THEN
-               IF s.@dist + e.weight < t.@dist THEN
-                 t.@dist = s.@dist + e.weight,             # @dist is a MinAccum
+               IF s.@dist + e.*edge-weight* < t.@dist THEN
+                 t.@dist = s.@dist + e.*edge-weight*,             # @dist is a MinAccum
                  t.@path = s.@path +"-"+ t.name
                END,
                t.@visited += true
@@ -53,7 +53,7 @@
   ##### Check for loops with net negative weight #####
   VSET = SELECT s
          FROM VSET:s -(*edge-types*:e)-> :t
-         ACCUM @@hasNegLoop +=s.@dist + e.weight < t.@dist;
+         ACCUM @@hasNegLoop +=s.@dist + e.*edge-weight* < t.@dist;
          
   IF @@hasNegLoop THEN        
     RAISE negLoop (errMsg);

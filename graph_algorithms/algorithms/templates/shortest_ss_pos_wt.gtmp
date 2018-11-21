@@ -1,0 +1,87 @@
+# Algorithm for Single-Source Shortest Path with positive weights on edges 
+# The path parameter let user choose whether calculate path or not
+
+*ATTR*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, BOOL display, BOOL path) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, BOOL display, BOOL path) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, BOOL display, BOOL path, STRING filepath) FOR GRAPH *graph* {
+
+*FILE*FILE f(filepath);
+
+	MinAccum<float> @dis;
+        OrAccum @visited;
+	ListAccum<vertex> @path;
+        SetAccum<edge> @@edgeSet;
+	float epsilon = 0.000000001;
+
+        VSET = {*vertex-types*};
+        Source = {v};
+        Source = SELECT s FROM Source:s 
+		 ACCUM s.@visited += true, s.@dis = 0;  //initialize
+
+        while(Source.size()>0) do
+          Source = SELECT t
+                   FROM Source:s -(*edge-types*:e)-> :t
+                   WHERE t.@dis > s.@dis + e.*edge-weight*
+                   ACCUM t.@dis += s.@dis + e.*edge-weight*,
+                         t.@visited += true;
+        end;
+
+        VSET = SELECT s FROM VSET:s
+               WHERE s.@visited == true;
+
+  ##### Print the results #####
+IF path THEN
+	Source = {v};
+        while(Source.size()>0) do
+          Source = SELECT t
+                   FROM Source:s -(*edge-types*:e)-> :t
+                   WHERE abs((t.@dis) - (s.@dis+e.*edge-weight*)) < epsilon
+                   ACCUM t.@path = s.@path + [t];
+        end;
+
+*ATTR*VSET = SELECT s
+*ATTR*         FROM VSET:s
+*ATTR*         POST-ACCUM s.*vFltAttr* = s.@dis;  
+
+                    
+*ACCM* PRINT VSET[VSET.@dis, VSET.@path];
+  IF display THEN
+*ATTR*     PRINT VSET[VSET.@dis, VSET.@path];
+*FILE*     PRINT VSET[VSET.@dis, VSET.@path];
+     VSET = SELECT s
+          FROM VSET:s -(*edge-types*:e)-> :t
+         ACCUM @@edgeSet += e;
+     PRINT @@edgeSet;
+  END;
+
+*FILE*   f.println("Vertex_ID","Distance","Shortest_Path");
+*FILE*   VSET = SELECT s FROM VSET:s
+*FILE*           POST-ACCUM f.println(s, s.@dis, s.@path);
+
+ELSE
+
+*ATTR*VSET = SELECT s
+*ATTR*       FROM VSET:s
+*ATTR*       POST-ACCUM s.*vFltAttr* = s.@dis;
+
+
+*ACCM* PRINT VSET[VSET.@dis];
+  IF display THEN
+*ATTR*     PRINT VSET[VSET.@dis];
+*FILE*     PRINT VSET[VSET.@dis];
+     VSET = SELECT s
+          FROM VSET:s -(*edge-types*:e)-> :t
+         ACCUM @@edgeSet += e;
+     PRINT @@edgeSet;
+  END;
+
+*FILE*   f.println("Vertex_ID","Distance");
+*FILE*   VSET = SELECT s FROM VSET:s
+*FILE*           POST-ACCUM f.println(s, s.@dis);
+
+END;
+
+}
+
+
+
