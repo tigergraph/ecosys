@@ -60,7 +60,7 @@ then
   cp twitter-9KNN-prof twitter-9KNN-prof.bak; rm twitter-9KNN-prof
 fi
 tsar -l -m --cpu --mem >> twitter-9KNN & sleep 5;
-nohup python kn.py $1/twitter-22-seed  300 tigergraph 9 notes latency
+nohup python kn.py $1/twitter_rv.net-seed  300  tigergraph 9 notes throughput
 ps -ef | grep tsar | grep -v grep | awk '{print $2}' | xargs kill;
 sed '/Time/d' twitter-9KNN >> twitter-9KNN-prof; rm twitter-9KNN
 awk 'NR == 1 {max = $7; maxtoo=$13} $7>max {max=$7} $13>maxtoo {maxtoo = $13} END {print "max cpu: " max, " max mem: " maxtoo}' twitter-9KNN-prof >> twitter-9KNN-prof;
@@ -70,7 +70,7 @@ then
   cp twitter-12KNN-prof twitter-12KNN-prof.bak; rm twitter-12KNN-prof
 fi
 tsar -l -m --cpu --mem >> twitter-12KNN & sleep 5;
-nohup python kn.py $1/twitter-22-seed  300 tigergraph 12 notes latency
+nohup python kn.py $1/twitter_rv.net-seed  300  tigergraph 12 notes throughput
 ps -ef | grep tsar | grep -v grep | awk '{print $2}' | xargs kill;
 sed '/Time/d' twitter-12KNN >> twitter-12KNN-prof; rm twitter-12KNN
 awk 'NR == 1 {max = $7; maxtoo=$13} $7>max {max=$7} $13>maxtoo {maxtoo = $13} END {print "max cpu: " max, " max mem: " maxtoo}' twitter-12KNN-prof >> twitter-12KNN-prof;
