@@ -211,3 +211,13 @@ parallel-ssh -h server-list  -l ubuntu -P -x "-oStrictHostKeyChecking=no  -i /ho
 
 Run the following to test page rank:
 nohup gsql twitter_setup.gsql;nohup gsql -g twitter 'run loading job load_twitter_edge using file1="all:/ebs/split"';nohup python pg.py twitter-rv tigergraph 10 3
+
+Recording CPU & Memory consumption during testing
+________________________
+To record CPU and Memory usage during these benchmark tests, you must have TSAR installed on your system. Installation here : https://github.com/alibaba/tsar
+Run these commands after loading data
+graph500:
+./profile-graph500.sh
+
+twitter:
+./profile-twitter.sh
