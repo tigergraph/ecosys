@@ -213,6 +213,8 @@ To record CPU and Memory usage during these benchmark tests, you must have TSAR 
 Run these commands after loading data
 graph500:
 ./profile-graph500.sh
+./profile-graph500-throughput.sh path_to_seed
 
 twitter:
 ./profile-twitter.sh
+./profile-twitter-throughput.sh path_to_seed
