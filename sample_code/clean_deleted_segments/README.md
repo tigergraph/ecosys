@@ -8,6 +8,7 @@ INSTRUCTIONS:
         python clean_deleted_segments.py -r
 
 ==============================================================================
+
 To Run it in distributed system.
 
 First of all, make sure that 'dest' folder has large enough space for hold the useless segments if the segments under gstore is not softlink.
