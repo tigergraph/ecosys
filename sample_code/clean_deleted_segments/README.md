@@ -7,7 +7,7 @@ INSTRUCTIONS:
 2) to recover deleted segments: if one run the command with -r option then the script will recover the previous operation
         python clean_deleted_segments.py -r
 
-==================================================================================================================================
+==============================================================================
 To Run it in distributed system.
 
 First of all, make sure that 'dest' folder has large enough space for hold the useless segments if the segments under gstore is not softlink.
