@@ -1,4 +1,14 @@
 #!/bin/bash
+
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the
+# acknowledgement to TigerGraph.
+# Author: Litong Shen litong.shen@tigergraph.com
+############################################################
+
 #export RAW_DATA_PATH=/home/ubuntu/data/social_network/ #change to your raw data file
 #export TOTAL_FILE_NUMBER=6 # numThreads specified in ldbc_snb_datagen/params.ini
 

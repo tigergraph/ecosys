@@ -1,4 +1,14 @@
 #!/bin/bash
+
+############################################################
+# Copyright (c)  2015-now, TigerGraph Inc.
+# All rights reserved
+# It is provided as it is for benchmark reproducible purpose.
+# anyone can use it for benchmark purpose with the
+# acknowledgement to TigerGraph.
+# Author: Litong Shen litong.shen@tigergraph.com
+############################################################
+
 # TGT_DATA_ROOT_FOLDER is the final destination store your processed raw data
 #export TGT_DATA_ROOT_FOLDER=/home/ubuntu/data/raw_data
 
