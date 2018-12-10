@@ -1,0 +1,32 @@
+CREATE QUERY similarity_jaccard_single_file(string vertex_type, string edge_type, vertex input, int topk, string filepath) FOR GRAPH movie { 
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+*/
+    TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+  FILE f(filepath);
+    
+  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk; 
+  SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+
+  Start (ANY) = {input};
+    Start = select s
+            from Start:s
+            accum @@set_size_A += s.outdegree(edge_type);
+
+  Subjects = select t
+             from Start:s-(edge_type:e)-:t;
+    
+    Others = select t
+             from Subjects:s -(:e)- vertex_type:t
+             where t != input
+           accum t.@intersection_size += 1, 
+                   t.@set_size_B = t.outdegree(edge_type)
+           post-accum 
+                   @@result_topk += SIMILARITY_SCORE(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size));
+ 
+    f.println("Vertex1","Vertex2","Similarity");
+  foreach item in @@result_topk do
+      f.println(item.vertex1, item.vertex2, item.score);
+  end;
+
+}
