@@ -1,4 +1,4 @@
-# Compute the pageRank score for each vertex in the graph, with the parameters:
+#Compute the pageRank score for each vertex in the graph, with the parameters:
 
 *ATTR*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display) FOR GRAPH *graph*
 *ACCM*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, INT outputLimit) FOR GRAPH *graph* 
@@ -10,7 +10,7 @@
   #  a) it reaches maxIter iterations;
   #  b) the max score change for any vertex compared to the last iteration <= maxChange.
 
-*ACCM* TYPEDEF TUPLE<STRING name, FLOAT score> vertexScore;
+*ACCM* TYPEDEF TUPLE<vertex Vertex_ID, FLOAT score> vertexScore;
 *ACCM*  HeapAccum<vertexScore>(outputLimit, score DESC) @@topScores;
   MaxAccum<float> @@maxDiff = 9999; # max score change in an iteration
   SumAccum<float> @received_score = 0; # sum of scores each vertex receives from neighbors
@@ -36,7 +36,7 @@
 
 *ACCM*  IF outputLimit > 0 THEN
 *ACCM*      V = SELECT s FROM Start:s
-*ACCM*         POST-ACCUM @@topScores += vertexScore(s.name, s.@score);
+*ACCM*         POST-ACCUM @@topScores += vertexScore(s, s.@score);
 *ACCM*      PRINT @@topScores;
 *ACCM*  END;
 
