@@ -1,0 +1,30 @@
+CREATE QUERY similarity_jaccard_single_attr(string vertex_type, string edge_type, string edge_attribute, vertex<Person> input, int topk) FOR GRAPH movie {  
+
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+
+This is an example to show how to insert edges between "Person" and store the similarity scores. 
+*/
+
+  SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+ 
+    #= input;
+  Start (ANY) = {input};
+    Start = select s
+            from Start:s
+            accum @@set_size_A += s.outdegree(edge_type);
+
+  Subjects = select t
+             from Start:s-(edge_type:e)-:t;
+    
+    Others = select t
+             from Subjects:s -(:e)- Person:t
+             where t != input
+           accum t.@intersection_size += 1, 
+                   t.@set_size_B = t.outdegree(edge_type)
+           post-accum 
+                   insert into similarity values(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size));
+
+    
+
+}i

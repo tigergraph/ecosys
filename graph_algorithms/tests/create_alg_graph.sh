@@ -5,17 +5,28 @@
 echo "Which graph schema would you like to load?"
 echo "  generic    Vertex:          Node"
 echo "             Directed Edge:   LinkTo (rev: LinkFrom)"
-echo "             Undirected Echo: Link"
+echo "             Undirected Edge: Link"
 echo
 echo "  social     Vertex:          Person"
 echo "             Directed Edge:   Friend (rev: Also_Friend)"
-echo "             Undirected Echo: Coworker"
+echo "             Undirected Edge: Coworker"
+echo
+echo "  movie      Vertex:          Person"
+echo "             Directed Edge:   Likes (rev: reverse_Likes)"
+echo "             Undirected Edge: similarity"
 read -p "> " gname
 read -p 'WARNING: Installing this graph will drop all current graphs and jobs. Continue? [y/n]: ' yn
 
 case $yn in
 	[Yy]* )
 		case $gname in
+			"movie")
+				gsql $gname/schema_${gname}.gsql
+                                gsql -g $gname $gname/load_${gname}.gsql
+				cd $gname
+                                echo "RUN LOADING JOB load_$gname USING movie_file=\"data/data.csv\""
+                                gsql -g $gname "RUN LOADING JOB load_$gname USING movie_file=\"data/data.csv\""
+				;;
 			"social"|"generic")
 				gsql $gname/schema_${gname}.gsql
 				gsql -g $gname $gname/load_${gname}.gsql

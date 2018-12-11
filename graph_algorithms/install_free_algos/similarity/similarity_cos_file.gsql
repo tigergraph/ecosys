@@ -1,0 +1,56 @@
+use graph movie
+drop query similarity_cos_file
+drop query similarity_cos_sub_file
+
+# subquery
+ CREATE QUERY similarity_cos_sub_file (string vertex_type, string edge_type, vertex input) FOR GRAPH movie returns (MapAccum<vertex, float>){   /*Please change to your graph name here*/
+
+  MapAccum<vertex, float> @@result;
+        SumAccum<float> @numerator, @@norm1, @norm2;
+
+        start1 = {input};
+        subjects = select t
+                   from start1:s -(edge_type:e)-> :t
+                   accum t.@numerator = e.weight,     /*The attribute name on the edge which stores the weight*/
+                         @@norm1 += pow(e.weight, 2);
+
+        neighbours = select t
+                     from subjects:s -(:e)-> vertex_type:t
+                     where t != input and getvid(input) < getvid(t)
+                     accum t.@numerator += s.@numerator * e.weight;
+
+        neighbours = select s
+                     from neighbours:s -(edge_type:e)-> :t
+                     accum s.@norm2 += pow(e.weight, 2)
+               post-accum @@result += (s -> s.@numerator/sqrt(@@norm1 * s.@norm2))
+                 ;
+
+  return @@result;
+}
+
+# main query
+CREATE QUERY similarity_cos_file (string vertex_type, string edge_type, int topk, STRING filepath) FOR GRAPH movie{
+
+TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+FILE f(filepath);
+MapAccum<vertex, float> @single_result;
+HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+
+	start = {vertex_type.*}; 
+	start = select s
+	        from start:s
+          accum s.@single_result = similarity_cos_sub_file (vertex_type, edge_type, s)
+          post-accum
+                  foreach (key, value) in s.@single_result do
+                          @@total_result += SIMILARITY_SCORE(s, key, value)
+                  end
+		;
+	
+	f.println("Vertex1","Vertex2","Similarity");
+	foreach item in @@total_result do
+		f.println(item.vertex1, item.vertex2, item.score);
+	end;  
+}
+
+install query similarity_cos_sub_file
+install query similarity_cos_file 

@@ -1,0 +1,11 @@
+USE GRAPH movie
+drop job load_movie
+
+create loading job load_movie for graph movie{
+	DEFINE FILENAME movie_file;
+	LOAD movie_file
+		to edge Likes values ($0, $2, $1)
+		using Separator=",", Header = "true";
+}
+
+#run loading job load_movie

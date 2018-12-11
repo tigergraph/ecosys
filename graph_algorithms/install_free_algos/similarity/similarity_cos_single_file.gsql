@@ -1,0 +1,37 @@
+use graph movie
+drop query similarity_cos_single_file
+
+CREATE QUERY similarity_cos_single_file (string vertex_type, string edge_type, vertex input, int topk, STRING filepath) FOR GRAPH movie {  /*Please change the graph name here*/
+
+	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+	FILE f(filepath);
+
+	HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+    	SumAccum<float> @numerator, @@norm1, @norm2;
+
+	start1 = {input};
+    	subjects = select t
+        	   from start1:s -(edge_type:e)-> :t
+                   accum t.@numerator = e.weight,  /*The attribute name on the edge which stores the weight*/
+                         @@norm1 += pow(e.weight, 2);
+
+    	neighbours = select t
+         	     from subjects:s -(:e)-> vertex_type:t
+                     where t != input
+                     accum t.@numerator += s.@numerator * e.weight;
+
+    	neighbours = select s
+                     from neighbours:s -(edge_type:e)-> :t
+                     accum s.@norm2 += pow(e.weight, 2)
+                     post-accum @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+		     ;
+
+	f.println("Vertex1","Vertex2","Similarity");
+	foreach item in @@result_topk do
+        	f.println(item.vertex1, item.vertex2, item.score);
+    	end;
+
+}
+
+install query similarity_cos_single_file
+
