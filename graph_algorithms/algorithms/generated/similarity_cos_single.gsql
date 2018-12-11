@@ -1,6 +1,6 @@
 drop query similarity_cos_single
 
-CREATE QUERY similarity_cos_single (vertex item1, int topk) FOR GRAPH movie {
+CREATE QUERY similarity_cos_single (vertex item1, int topk) FOR GRAPH yelp {
 
 	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
 

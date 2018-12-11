@@ -1,6 +1,6 @@
 
 # subquery
- CREATE QUERY similarity_cos_sub_attr (vertex<Person> item1) FOR GRAPH movie {
+ CREATE QUERY similarity_cos_sub_attr (vertex<Person> item1) FOR GRAPH yelp {
 
         SumAccum<float> @numerator, @@norm1, @norm2;
 
@@ -24,7 +24,7 @@
 }
 
 # main query
-CREATE QUERY similarity_cos_attr () FOR GRAPH movie { 
+CREATE QUERY similarity_cos_attr () FOR GRAPH yelp { 
 
 
 	start = {Person.*}; 

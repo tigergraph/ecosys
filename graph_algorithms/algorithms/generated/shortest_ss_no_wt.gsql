@@ -1,6 +1,6 @@
 # BFS for Single-Source Shortest Path without weights on edges
 
-CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display, BOOL path) FOR GRAPH social {
+CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display, BOOL path) FOR GRAPH yelp {
 
 
 	MinAccum<int> @dis;
@@ -17,7 +17,7 @@ CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display, BOOL path) FOR GRAPH soc
 
         while(Source.size()>0) do
           Source = SELECT t
-                   FROM Source:s -(Coworker:e)-> :t
+                   FROM Source:s -(Likes:e)-> :t
                    WHERE t.@visited == false
                    ACCUM t.@dis += s.@dis + 1,
 			 t.@path = s.@path + [t],
@@ -34,7 +34,7 @@ CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display, BOOL path) FOR GRAPH soc
  PRINT VSET[VSET.@dis, VSET.@path];
   IF display THEN
      VSET = SELECT s
-          FROM VSET:s -(Coworker:e)-> :t
+          FROM VSET:s -(Likes:e)-> :t
          ACCUM @@edgeSet += e;
      PRINT @@edgeSet;
   END;

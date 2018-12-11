@@ -1,4 +1,4 @@
-# Compute the pageRank score for each vertex in the graph, with the parameters:
+#Compute the pageRank score for each vertex in the graph, with the parameters:
 
 CREATE QUERY pageRank_file (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, FILE f) FOR GRAPH social
 {
