@@ -61,12 +61,18 @@ def CleanUp():
   unlinked_segments, mv_segments = Clean(deletedlist);
   #print unlinked_segments
   #print mv_segments
-  unlinklist = ['|'.join(x) for x in unlinked_segments]
-  mvlist = ['|'.join(x) for x in mv_segments]
-  with open(gstore_path + "/unlink_info", 'w') as myfile:
-      myfile.write('\n'.join(unlinklist))
-  with open(gstore_path + "/mv_info", 'w') as myfile:
-      myfile.write('\n'.join(mvlist))
+  if len(unlinked_segments) > 0:
+    unlinklist = ['|'.join(x) for x in unlinked_segments]
+    with open(gstore_path + "/unlink_info", 'w') as myfile:
+        myfile.write('\n'.join(unlinklist))
+  else:
+    print "No dropped segment found with symlinked folder."
+  if len(mv_segments) > 0:
+    mvlist = ['|'.join(x) for x in mv_segments]
+    with open(gstore_path + "/mv_info", 'w') as myfile:
+        myfile.write('\n'.join(mvlist))
+  else:
+    print "No dropped segment found with regluar folder."
 
 def Recover():
   with open(gstore_path + "/unlink_info", 'r') as myfile:
