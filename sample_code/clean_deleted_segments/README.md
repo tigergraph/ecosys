@@ -1,4 +1,5 @@
 INSTRUCTIONS:
+
 CAUTION: Before using this script please run "gadmin reset -y" to clean up all buffered kafka messages.
 
  clean_deleted_segments.py is used clean up the dropped segments and one can also recover the previous operation of this script 
