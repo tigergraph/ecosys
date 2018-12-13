@@ -1,0 +1,54 @@
+# subquery
+
+ CREATE QUERY similarity_jaccard_sub_file (vertex input) FOR GRAPH movie returns (MapAccum<vertex, float>){
+
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+*/
+    
+  MapAccum<vertex, float> @@result;
+	SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+
+    Start (ANY) = {input};
+    Start = select s
+	    from Start:s
+	    accum @@set_size_A += s.outdegree("Likes");
+
+    Subjects = select t
+               from Start:s-(Likes:e)-:t;
+
+    Others = select t
+	     from Subjects:s -(reverse_Likes:e)- :t
+	     where t != input and getvid(input) < getvid(t)
+             accum t.@intersection_size += 1, 
+	           t.@set_size_B = t.outdegree("Likes")
+               post-accum @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+		    ;
+
+  return @@result;
+}
+
+CREATE QUERY similarity_jaccard_file (int topk, STRING filepath) FOR GRAPH movie{
+
+TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+FILE f(filepath);
+MapAccum<vertex, float> @single_result;
+HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+
+	start = {Person.*};
+	start = select s
+                from start:s
+          accum s.@single_result = similarity_jaccard_sub_file (s)
+          post-accum
+                  foreach (key, value) in s.@single_result do
+                          @@total_result += SIMILARITY_SCORE(s, key, value)
+                  end
+                ;
+
+  f.println("Vertex1","Vertex2","Similarity");
+  foreach item in @@total_result do
+          f.println(item.vertex1, item.vertex2, item.score);
+  end;
+
+}
+

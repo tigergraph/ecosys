@@ -1,24 +1,24 @@
 
-# subquery
- CREATE QUERY similarity_cos_sub_file (vertex item1) FOR GRAPH movie returns (MapAccum<vertex, float>){
+#ccard subquery
+ CREATE QUERY similarity_cos_sub_file (vertex input) FOR GRAPH movie returns (MapAccum<vertex, float>){
 
   MapAccum<vertex, float> @@result;
         SumAccum<float> @numerator, @@norm1, @norm2;
 
-        start1 = {item1};
+        start1 = {input};
         subjects = select t
                    from start1:s -(Likes:e)-> :t
-                   accum t.@numerator = e.weight,
-                         @@norm1 += pow(e.weight, 2);
+                   accum t.@numerator = 1,
+                         @@norm1 += pow(1, 2);
 
         neighbours = select t
-                     from subjects:s -(:e)-> Person:t
-                     where t != item1 and getvid(item1) < getvid(t)
-                     accum t.@numerator += s.@numerator * e.weight;
+                     from subjects:s -(reverse_Likes:e)-> Person:t
+		     where t != input and getvid(input) < getvid(t)
+                     accum t.@numerator += s.@numerator * 1;
 
         neighbours = select s
                      from neighbours:s -(Likes:e)-> :t
-                     accum s.@norm2 += pow(e.weight, 2)
+                     accum s.@norm2 += pow(1, 2)
                post-accum @@result += (s -> s.@numerator/sqrt(@@norm1 * s.@norm2))
                  ;
 
@@ -44,10 +44,10 @@ HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
 		;
 	
 	f.println("Vertex1","Vertex2","Similarity");
-  while @@total_result.size() > 0 do 
-		f.println(@@total_result.top().vertex1, @@total_result.top().vertex2, @@total_result.top().score);
-		@@total_result.pop();
-	end;  
+  foreach item in @@total_result do
+          f.println(item.vertex1, item.vertex2, item.score);
+  end;
+
 }
 
 #install query similarity_cos_sub_file

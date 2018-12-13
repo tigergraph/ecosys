@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -89,6 +89,14 @@ while [ !$finished ]; do
 				algoName="similarity_cos"
                                 echo "  similarity_cos() calculates the similarity between all vertices"
                                 break;;
+	                'Jaccard Similarity (single vertex)' )
+                                algoName="similarity_jaccard_single"
+                                echo "  similarity_jaccard_single() calculates the similarity between one given vertex and all other vertices"
+                                break;;
+                        'Jaccard Similary (all vertices)' )
+                                algoName="similarity_jaccard"
+                                echo "  similarity_jaccard() calculates the similarity between all vertices"
+                                break;;
 			"EXIT" )
 				finished=true
 				break;;
@@ -116,16 +124,15 @@ while [ !$finished ]; do
 	echo "Please enter the vertex type(s) and edge type(s) for running ${algo}."
 	echo "   Use commas to separate multiple types [ex: type1, type2]"
 	echo "   Leaving this blank will select all available types"
+	echo " Similarity algorithms only take single vertex type"
 	echo
 
-	# 3. Ask for vertex types. Replace *vertex-types* placeholder.
+	# 3. Ask for vertex types. Replace *vertex-types* placeholder. For similarity algos, only take one vertex type.
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
-	if [ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ]; then
+	if [[ $algoName == similarity* ]]; then #[ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ] || [ "${algoName}" == "similarity_jaccard" ] || [ "${algoName}" == "similarity_jaccard_single" ]; then
 		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}.gsql
-	fi
-
-	if [ "${vts}" == "" ]; then
+	elif [ "${vts}" == "" ]; then
 		vts="ANY"
 	else
 		vts=${vts/,/.*, }   # replace the delimiter
@@ -179,15 +186,41 @@ while [ !$finished ]; do
 	fi
 	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}.gsql
 
+	# 4.2 Ask for reverse edge type for similarity algos. 
+        if [[ ${algoName} == similarity* ]]; then
+		read -p 'Reverse Edge type: ' reveg
+        	reveg=${reveg//[[:space:]]/}
+		sed -i "s/\*rev-edge-types\*/$reveg/g" ${genPath}/${algoName}.gsql
+	fi
+
 
      	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
-	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ]; then
-                read -p "Edge attribute that stores FLOAT weight:"  weight
-                        if [[ $(countEdgeAttr $weight) > 0 ]]; then
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ]; then
+		while true; do
+                	read -p "Edge attribute that stores FLOAT weight:"  weight
+			if [[ $(countEdgeAttr $weight) > 0 ]]; then
+				sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}.gsql
+				break;
+			else
+				echo " *** Edge attribute name not found. Try again."
+			fi
+		done
+        fi
+
+        if [ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ]; then
+        	while true; do
+	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
+                        weight=${weight//[[:space:]]/}
+                        if [ "${weight}" == "" ]; then   #when there is no weight attribute, use uniform weight
+				sed -i "s/e\.\*edge-weight\*/1/g" ${genPath}/${algoName}.gsql
+				break; 
+			elif [[ $(countEdgeAttr $weight) > 0 ]]; then   #when there is the weight attribute
                                 sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}.gsql
-                        else
+				break;
+			else
                                 echo " *** Edge attribute name not found. Try again."
                         fi
+		done
         fi
 
 : <<'END'

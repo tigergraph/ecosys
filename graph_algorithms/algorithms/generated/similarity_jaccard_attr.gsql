@@ -1,0 +1,40 @@
+# subquery
+
+ CREATE QUERY similarity_jaccard_sub_attr (vertex<Person> input) FOR GRAPH movie {
+
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+*/
+    
+	SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+
+    Start (ANY) = {input};
+    Start = select s
+	    from Start:s
+	    accum @@set_size_A += s.outdegree("Likes");
+
+    Subjects = select t
+               from Start:s-(Likes:e)-:t;
+
+    Others = select t
+	     from Subjects:s -(reverse_Likes:e)- :t
+	     where t != input and getvid(input) < getvid(t)
+             accum t.@intersection_size += 1, 
+	           t.@set_size_B = t.outdegree("Likes")
+               post-accum insert into similarity values (input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+		    ;
+
+}
+
+CREATE QUERY similarity_jaccard_attr () FOR GRAPH movie {
+
+
+	start = {Person.*};
+	start = select s
+                from start:s
+          accum similarity_jaccard_sub_attr (s)
+                ;
+
+
+}
+

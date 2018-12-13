@@ -1,25 +1,23 @@
-drop query similarity_cos_single_attr
-
-CREATE QUERY similarity_cos_single_attr (vertex<Person> item1) FOR GRAPH movie {
+CREATE QUERY similarity_cos_single_attr (vertex<Person> input) FOR GRAPH movie {
 
 
     	SumAccum<float> @numerator, @@norm1, @norm2;
 
-	start1 = {item1};
+	start1 = {input};
     	subjects = select t
         	   from start1:s -(Likes:e)-> :t
-                   accum t.@numerator = e.weight,
-                         @@norm1 += pow(e.weight, 2);
+                   accum t.@numerator = 1,
+                         @@norm1 += pow(1, 2);
 
     	neighbours = select t
-         	     from subjects:s -(:e)-> Person:t
-                     where t != item1
-                     accum t.@numerator += s.@numerator * e.weight;
+         	     from subjects:s -(reverse_Likes:e)-> Person:t
+                     where t != input
+                     accum t.@numerator += s.@numerator * 1;
 
     	neighbours = select s
                      from neighbours:s -(Likes:e)-> :t
-                     accum s.@norm2 += pow(e.weight, 2)
-		     post-accum insert into similarity values(item1, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+                     accum s.@norm2 += pow(1, 2)
+		     post-accum insert into similarity values(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
 		     ;
 
 

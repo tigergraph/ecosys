@@ -1,28 +1,28 @@
 
-# subquery
-*ATTR**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex<*vertex-types*> item1) FOR GRAPH *graph* {
-*ACCM**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex item1) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
-*FILE**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex item1) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
+#ccard subquery
+*ATTR**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
+*ACCM**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex input) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
+*FILE**SUB* CREATE QUERY similarity_cos_sub*EXT* (vertex input) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
 
 *ACCM*  MapAccum<vertex, float> @@result;
 *FILE*  MapAccum<vertex, float> @@result;
         SumAccum<float> @numerator, @@norm1, @norm2;
 
-        start1 = {item1};
+        start1 = {input};
         subjects = select t
                    from start1:s -(*edge-types*:e)-> :t
                    accum t.@numerator = e.*edge-weight*,
                          @@norm1 += pow(e.*edge-weight*, 2);
 
         neighbours = select t
-                     from subjects:s -(:e)-> *vertex-types*:t
-                     where t != item1 and getvid(item1) < getvid(t)
+                     from subjects:s -(*rev-edge-types*:e)-> *vertex-types*:t
+		     where t != input and getvid(input) < getvid(t)
                      accum t.@numerator += s.@numerator * e.*edge-weight*;
 
         neighbours = select s
                      from neighbours:s -(*edge-types*:e)-> :t
                      accum s.@norm2 += pow(e.*edge-weight*, 2)
-*ATTR*               post-accum insert into *insert-edge-name* values (item1, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+*ATTR*               post-accum insert into *insert-edge-name* values (input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
 *ACCM*               post-accum @@result += (s -> s.@numerator/sqrt(@@norm1 * s.@norm2))
 *FILE*               post-accum @@result += (s -> s.@numerator/sqrt(@@norm1 * s.@norm2))
                  ;
@@ -62,10 +62,10 @@
 	
 *ACCM*	print @@total_result;
 *FILE*	f.println("Vertex1","Vertex2","Similarity");
-*FILE*  while @@total_result.size() > 0 do 
-*FILE*		f.println(@@total_result.top().vertex1, @@total_result.top().vertex2, @@total_result.top().score);
-*FILE*		@@total_result.pop();
-*FILE*	end;  
+*FILE*  foreach item in @@total_result do
+*FILE*          f.println(item.vertex1, item.vertex2, item.score);
+*FILE*  end;
+
 }
 
 #install query similarity_cos_sub*EXT*

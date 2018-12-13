@@ -1,0 +1,41 @@
+*ATTR*CREATE QUERY similarity_jaccard_single*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY similarity_jaccard_single*EXT* (vertex input, int topk) FOR GRAPH *graph* {
+*FILE*CREATE QUERY similarity_jaccard_single*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
+
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+*/
+
+*FILE*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+*FILE*  FILE f(filepath);
+*ACCM*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+
+*FILE*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+*ACCM*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+  SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+
+  Start (ANY) = {input};
+    Start = select s
+            from Start:s
+            accum @@set_size_A += s.outdegree("*edge-types*");
+
+  Subjects = select t
+             from Start:s-(*edge-types*:e)-:t;
+
+    Others = select t
+             from Subjects:s -(*rev-edge-types*:e)- :t
+             where t != input
+             accum t.@intersection_size += 1,
+                   t.@set_size_B = t.outdegree("*edge-types*")
+*ATTR*               post-accum insert into *insert-edge-name* values(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+*FILE*               post-accum @@result_topk += SIMILARITY_SCORE(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+*ACCM*               post-accum @@result_topk += SIMILARITY_SCORE(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                     ;
+*ACCM*  print @@result_topk;
+
+*FILE*  f.println("Vertex1","Vertex2","Similarity");
+*FILE*          foreach item in @@result_topk do
+*FILE*                  f.println(item.vertex1, item.vertex2, item.score);
+*FILE*          end;
+}
+

@@ -1,7 +1,7 @@
 use graph movie
 drop query similarity_cos_single
 
-CREATE QUERY similarity_cos_single (string vertex_type, string edge_type, vertex input, int topk) FOR GRAPH movie {   /*Please change the graph name here*/
+CREATE QUERY similarity_cos_single (string vertex_type, string edge_type, string reverse_edge_type, vertex input, int topk) FOR GRAPH movie {   /*Please change the graph name here*/
 
 	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
 
@@ -15,7 +15,7 @@ CREATE QUERY similarity_cos_single (string vertex_type, string edge_type, vertex
                          @@norm1 += pow(e.weight, 2);
 
     	neighbours = select t
-         	     from subjects:s -(:e)-> vertex_type:t
+         	     from subjects:s -(reverse_edge_type:e)-> :t
                      where t != input
                      accum t.@numerator += s.@numerator * e.weight;
 

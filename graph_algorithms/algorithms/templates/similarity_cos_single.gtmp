@@ -1,8 +1,6 @@
-drop query similarity_cos_single*EXT*
-
-*ATTR*CREATE QUERY similarity_cos_single*EXT* (vertex<*vertex-types*> item1) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY similarity_cos_single*EXT* (vertex item1, int topk) FOR GRAPH *graph* {
-*FILE*CREATE QUERY similarity_cos_single*EXT* (vertex item1, int topk, STRING filepath) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY similarity_cos_single*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk) FOR GRAPH *graph* {
+*FILE*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
 
 *FILE*	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
 *FILE*	FILE f(filepath);
@@ -12,31 +10,30 @@ drop query similarity_cos_single*EXT*
 *ACCM*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;    
     	SumAccum<float> @numerator, @@norm1, @norm2;
 
-	start1 = {item1};
+	start1 = {input};
     	subjects = select t
         	   from start1:s -(*edge-types*:e)-> :t
                    accum t.@numerator = e.*edge-weight*,
                          @@norm1 += pow(e.*edge-weight*, 2);
 
     	neighbours = select t
-         	     from subjects:s -(:e)-> *vertex-types*:t
-                     where t != item1
+         	     from subjects:s -(*rev-edge-types*:e)-> *vertex-types*:t
+                     where t != input
                      accum t.@numerator += s.@numerator * e.*edge-weight*;
 
     	neighbours = select s
                      from neighbours:s -(*edge-types*:e)-> :t
                      accum s.@norm2 += pow(e.*edge-weight*, 2)
-*ATTR*		     post-accum insert into *insert-edge-name* values(item1, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-*FILE*               post-accum @@result_topk += SIMILARITY_SCORE(item1, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-*ACCM*		     post-accum @@result_topk += SIMILARITY_SCORE(item1, s, s.@numerator/sqrt(@@norm1 * s.@norm2))                 
+*ATTR*		     post-accum insert into *insert-edge-name* values(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+*FILE*               post-accum @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+*ACCM*		     post-accum @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))                 
 		     ;
 *ACCM* 	print @@result_topk;
 
 *FILE*  f.println("Vertex1","Vertex2","Similarity");
-*FILE*  	while @@result_topk.size() > 0 do
-*FILE*        		f.println(@@result_topk.top().vertex1, @@result_topk.top().vertex2, @@result_topk.top().score);
-*FILE*        		@@result_topk.pop();
-*FILE*    	end;
+*FILE*          foreach item in @@result_topk do
+*FILE*                  f.println(item.vertex1, item.vertex2, item.score);
+*FILE*          end;
 
 }
 
