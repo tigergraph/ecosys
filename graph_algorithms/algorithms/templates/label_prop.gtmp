@@ -1,5 +1,5 @@
 # Partition the vertices into communities, according to the Label Propagation method.
-# Indicate community membership by assigning each vertex a community ID.
+# Indicate community membership by assignINg each vertex a community ID.
 
 *ACCM*CREATE QUERY label_prop*EXT* (INT maxIter) FOR GRAPH *graph* {
 *ATTR*CREATE QUERY label_prop*EXT* (INT maxIter) FOR GRAPH *graph* {
@@ -29,8 +29,8 @@
                   label = k
                 END
               END,
-              # When the neighbor search finds a label AND it is a new label
-              #    AND the label's count has increased, update the label.
+              # When the neighbor search fINds a label AND it is a new label
+              #    AND the label's count has INcreased, update the label.
               CASE WHEN label != 0 AND t.@label != label AND maxV > t.@num THEN
                 @@changed += true,
                 t.@label = label,
@@ -50,7 +50,7 @@
  
 *FILE*  f.println("Vertex_ID", "Label");
 *FILE* Start = SELECT s FROM Start:s
-*FILE*	       POST-ACCUM f.println(s, s.@label);
+*FILE*               POST-ACCUM f.println(s, s.@label);
 }
 
 #INSTALL QUERY label_prop*EXT*

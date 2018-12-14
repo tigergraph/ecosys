@@ -1,72 +1,76 @@
-# subquery
-
 *ATTR**SUB* CREATE QUERY similarity_jaccard_sub*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
-*ACCM**SUB* CREATE QUERY similarity_jaccard_sub*EXT* (vertex input) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
-*FILE**SUB* CREATE QUERY similarity_jaccard_sub*EXT* (vertex input) FOR GRAPH *graph* returns (MapAccum<vertex, float>){
+*ACCM**SUB* CREATE QUERY similarity_jaccard_sub*EXT* (vertex input) FOR GRAPH *graph* RETURNS (MapAccum<vertex, float>){
+*FILE**SUB* CREATE QUERY similarity_jaccard_sub*EXT* (vertex input) FOR GRAPH *graph* RETURNS (MapAccum<vertex, float>){
 
-/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+/* This subquery calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 */
     
 *ACCM*  MapAccum<vertex, float> @@result;
 *FILE*  MapAccum<vertex, float> @@result;
-	SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+        SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
 
-    Start (ANY) = {input};
-    Start = select s
-	    from Start:s
-	    accum @@set_size_A += s.outdegree("*edge-types*");
+        Start (ANY) = {input};
+        Start = SELECT s
+                FROM Start:s
+                ACCUM @@set_size_A += s.outdegree("*edge-types*");
 
-    Subjects = select t
-               from Start:s-(*edge-types*:e)-:t;
+        Subjects = SELECT t
+                   FROM Start:s-(*edge-types*:e)-:t;
 
-    Others = select t
-	     from Subjects:s -(*rev-edge-types*:e)- :t
-	     where t != input and getvid(input) < getvid(t)
-             accum t.@intersection_size += 1, 
-	           t.@set_size_B = t.outdegree("*edge-types*")
-*ATTR*               post-accum insert into *insert-edge-name* values (input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
-*ACCM*               post-accum @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
-*FILE*               post-accum @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
-		    ;
+        Others = SELECT t
+                 FROM Subjects:s -(*rev-edge-types*:e)- :t
+                 WHERE t != input and getvid(input) < getvid(t)
+                 ACCUM t.@intersection_size += 1, 
+                       t.@set_size_B = t.outdegree("*edge-types*")
+*ATTR*           POST-ACCUM insert into *insert-edge-name* values (input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+*ACCM*           POST-ACCUM @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+*FILE*           POST-ACCUM @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                 ;
 
-*ACCM*  return @@result;
-*FILE*  return @@result;
+*ACCM*  RETURN @@result;
+*FILE*  RETURN @@result;
 }
 
 *ATTR*CREATE QUERY similarity_jaccard*EXT* () FOR GRAPH *graph* {
 *ACCM*CREATE QUERY similarity_jaccard*EXT* (int topk) FOR GRAPH *graph*{
 *FILE*CREATE QUERY similarity_jaccard*EXT* (int topk, STRING filepath) FOR GRAPH *graph*{
 
-*ACCM*TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-*FILE*TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-*FILE*FILE f(filepath);
-*ACCM*MapAccum<vertex, float> @single_result;
-*FILE*MapAccum<vertex, float> @single_result;
-*ACCM*HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
-*FILE*HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+/* This query calls the subquery similarity_jaccard_sub*EXT* to get the similarity score of every pair of vertices.
+The JSON and FILE version keeps the top k pairs of vertices.
+The Attribute version insert edges between the pairs, with the score as an edge attribute. 
+A similarity edge with one float attribute in the schema is required for this version.  
+*/
 
-	start = {*vertex-types*.*};
-	start = select s
-                from start:s
-*ATTR*          accum similarity_jaccard_sub*EXT* (s)
-*ACCM*          accum s.@single_result = similarity_jaccard_sub*EXT* (s)
-*FILE*          accum s.@single_result = similarity_jaccard_sub*EXT* (s)
-*ACCM*          post-accum
-*ACCM*                  foreach (key, value) in s.@single_result do
+*ACCM*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+*FILE*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+*FILE*  FILE f(filepath);
+*ACCM*  MapAccum<vertex, float> @single_result;
+*FILE*  MapAccum<vertex, float> @single_result;
+*ACCM*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+*FILE*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+
+        start = {*vertex-types*.*};
+        start = SELECT s
+                FROM start:s
+*ATTR*          ACCUM similarity_jaccard_sub*EXT* (s)
+*ACCM*          ACCUM s.@single_result = similarity_jaccard_sub*EXT* (s)
+*FILE*          ACCUM s.@single_result = similarity_jaccard_sub*EXT* (s)
+*ACCM*          POST-ACCUM
+*ACCM*                  FOREACH (key, value) IN s.@single_result DO
 *ACCM*                          @@total_result += SIMILARITY_SCORE(s, key, value)
-*ACCM*                  end
-*FILE*          post-accum
-*FILE*                  foreach (key, value) in s.@single_result do
+*ACCM*                  END
+*FILE*          POST-ACCUM
+*FILE*                  FOREACH (key, value) IN s.@single_result DO
 *FILE*                          @@total_result += SIMILARITY_SCORE(s, key, value)
-*FILE*                  end
+*FILE*                  END
                 ;
 
-*ACCM*  print @@total_result;
+*ACCM*  PRINT @@total_result;
 *FILE*  f.println("Vertex1","Vertex2","Similarity");
-*FILE*  foreach item in @@total_result do
+*FILE*  FOREACH item IN @@total_result DO
 *FILE*          f.println(item.vertex1, item.vertex2, item.score);
-*FILE*  end;
+*FILE*  END;
 
 }
 

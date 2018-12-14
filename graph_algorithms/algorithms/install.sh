@@ -211,7 +211,7 @@ while [ !$finished ]; do
         	while true; do
 	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
                         weight=${weight//[[:space:]]/}
-                        if [ "${weight}" == "" ]; then   #when there is no weight attribute, use uniform weight
+                        if [ "${weight}" == "" ]; then   #when there is no weight attribute, use unified weight
 				sed -i "s/e\.\*edge-weight\*/1/g" ${genPath}/${algoName}.gsql
 				break; 
 			elif [[ $(countEdgeAttr $weight) > 0 ]]; then   #when there is the weight attribute

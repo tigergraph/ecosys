@@ -17,7 +17,7 @@
          x.@old_id = getvid(x)        
   ;
 
-  # Propagate smaller internal IDs until no more ID changes can be done
+  # Propagate smaller internal IDs until no more ID changes can be DOne
   WHILE (Start.size()>0) DO
     Start = SELECT t
         FROM Start:s -(*edge-types*:e)-> :t
@@ -45,7 +45,7 @@
 
 *FILE* f.println("Vertex_ID","Component_ID");
 *FILE* Start = SELECT s FROM Start:s
-*FILE*		POST-ACCUM f.println(s, s.@cc_id);
+*FILE*        	POST-ACCUM f.println(s, s.@cc_id);
 }
 
 #INSTALL QUERY conn_comp*EXT*
