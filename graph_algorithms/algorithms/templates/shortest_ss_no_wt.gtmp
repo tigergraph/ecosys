@@ -1,6 +1,6 @@
-*ATTR*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, BOOL display, BOOL path) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, BOOL display, BOOL path) FOR GRAPH *graph* {
-*FILE*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, BOOL display, BOOL path, STRING filepath) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
 /* This query is Single-Source Shortest Path without weights on edges. It calculates the shortest distance from the given vertex v to all other connected vertices, and shows one shortest path between them.   
 The JSON version also show visualization of the network. 
 The attribute version only store the distance into attribute, not the path.

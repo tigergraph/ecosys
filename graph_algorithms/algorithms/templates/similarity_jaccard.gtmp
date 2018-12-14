@@ -19,7 +19,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                    FROM Start:s-(*edge-types*:e)-:t;
 
         Others = SELECT t
-                 FROM Subjects:s -(*rev-edge-types*:e)- :t
+                 FROM Subjects:s -(*sec-edge-types*:e)- :t
                  WHERE t != input and getvid(input) < getvid(t)
                  ACCUM t.@intersection_size += 1, 
                        t.@set_size_B = t.outdegree("*edge-types*")

@@ -17,7 +17,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
                          @@norm1 += pow(e.*edge-weight*, 2);
 
         neighbours = SELECT t
-                     FROM subjects:s -(*rev-edge-types*:e)-> *vertex-types*:t
+                     FROM subjects:s -(*sec-edge-types*:e)-> *vertex-types*:t
         	     WHERE t != input and getvid(input) < getvid(t)
                      ACCUM t.@numerator += s.@numerator * e.*edge-weight*;
 
