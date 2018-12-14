@@ -1,5 +1,5 @@
 *ATTR*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
 *FILE*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
 /* This query is Single-Source Shortest Path with positive weights on edges
 It calculates the shortest distance from the given vertex v to all other connected vertices, 
@@ -12,7 +12,7 @@ The attribute version only store the distance into attribute, not the path.
         MinAccum<float> @dis;
         OrAccum @visited;
         ListAccum<vertex> @path;
-        SetAccum<edge> @@edgeSet;
+*ACCM*  SetAccum<edge> @@edgeSet;
         float epsilon = 0.000000001;
 
   ##### Initialization  #####
@@ -46,10 +46,12 @@ The attribute version only store the distance into attribute, not the path.
 *ATTR*              POST-ACCUM s.*vFltAttr* = s.@dis;  
                   
 *ACCM*  PRINT ResultSet[ResultSet.@dis, ResultSet.@path];
-*ACCM*  ResultSet = SELECT s
-*ACCM*              FROM ResultSet:s -(*edge-types*:e)-> :t
-*ACCM*              ACCUM @@edgeSet += e;
-*ACCM*  PRINT @@edgeSet;
+*ACCM*  IF display THEN
+*ACCM*          ResultSet = SELECT s
+*ACCM*                      FROM ResultSet:s -(*edge-types*:e)-> :t
+*ACCM*                      ACCUM @@edgeSet += e;
+*ACCM*          PRINT @@edgeSet;
+*ACCM*  END;
 
 *FILE*  f.println("Vertex_ID","Distance","Shortest_Path");
 *FILE*  ResultSet = SELECT s FROM ResultSet:s

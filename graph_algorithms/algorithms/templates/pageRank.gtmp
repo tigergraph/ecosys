@@ -1,6 +1,6 @@
-*ATTR*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display) FOR GRAPH *graph*{
+*ATTR*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping) FOR GRAPH *graph*{
 *ACCM*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, INT outputLimit) FOR GRAPH *graph*{ 
-*FILE*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, FILE f) FOR GRAPH *graph*{
+*FILE*CREATE QUERY pageRank*EXT* (FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH *graph*{
 # Compute the pageRank score for each vertex in the GRAPH
 # In each iteration, compute a score for each vertex:
 #   score = (1-damping) + damping*sum(received scores FROM its neighbors).
@@ -13,7 +13,7 @@
         MaxAccum<float> @@maxDiff = 9999; # max score change in an iteration
         SumAccum<float> @received_score = 0; # sum of scores each vertex receives FROM neighbors
         SumAccum<float> @score = 1;   # Initial score for every vertex is 1.
-        SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
+*ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
 
         INT iterNum = 0;
 
@@ -42,13 +42,13 @@
 *FILE*  V = SELECT s FROM Start:s
 *FILE*      POST-ACCUM f.println(s, s.@score);
 
-        IF display THEN
-                PRINT Start[Start.@score];
-                Start = SELECT s
-                        FROM Start:s -(*edge-types*:e)-> :t
-                        ACCUM @@edgeSet += e;
-                        PRINT @@edgeSet;
-        END;
+*ACCM*  IF display THEN
+*ACCM*          PRINT Start[Start.@score];
+*ACCM*          Start = SELECT s
+*ACCM*                  FROM Start:s -(*edge-types*:e)-> :t
+*ACCM*                  ACCUM @@edgeSet += e;
+*ACCM*          PRINT @@edgeSet;
+*ACCM*  END;
 }
 
 #INSTALL QUERY pageRank*EXT*

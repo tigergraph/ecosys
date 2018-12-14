@@ -1,5 +1,5 @@
 *ATTR*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
 *FILE*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
 /* The Bellman-Ford algorithm for single-Source Shortest Path with edge weights,
  possibly negative.
@@ -11,7 +11,7 @@
         SumAccum<STRING> @path;                     # best-known path FROM v
         OrAccum @visited = false;                   # whether this vertex has been visited
         OrAccum @@hasNegLoop;                       # Indicates a negative loop is found
-        SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
+*ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
         STRING sourceName;
         STRING errMsg = "There is a loop with negative length. Shortest path is undefined.";
         INT maxVal = 1000000000;                    # Should be larger than any possible path
@@ -58,10 +58,12 @@
 *ATTR*                    s.*vStrAttr* = s.@path;
                     
 *ACCM*  PRINT VSET[VSET.@dist, VSET.@path];
-*ACCM*  VSET = SELECT s
-*ACCM*         FROM VSET:s -(*edge-types*:e)-> :t
-*ACCM*         ACCUM @@edgeSet += e;
-*ACCM*  PRINT @@edgeSet;
+*ACCM*  IF display THEN
+*ACCM*          VSET = SELECT s
+*ACCM*                 FROM VSET:s -(*edge-types*:e)-> :t
+*ACCM*                 ACCUM @@edgeSet += e;
+*ACCM*          PRINT @@edgeSet;
+*ACCM*  END;
 
 *FILE*  f.println("Vertex_ID","Distance","Shortest_Path");
 *FILE*  VSET = SELECT s FROM VSET:s
