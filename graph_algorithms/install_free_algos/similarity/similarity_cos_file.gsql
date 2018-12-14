@@ -3,7 +3,7 @@ drop query similarity_cos_file
 drop query similarity_cos_sub_file
 
 # subquery
- CREATE QUERY similarity_cos_sub_file (string vertex_type, string edge_type, vertex input) FOR GRAPH movie returns (MapAccum<vertex, float>){   /*Please change to your graph name here*/
+ CREATE QUERY similarity_cos_sub_file (string vertex_type, string edge_type, string edge_type2, vertex input) FOR GRAPH movie returns (MapAccum<vertex, float>){   /*Please change to your graph name here*/
 
   MapAccum<vertex, float> @@result;
         SumAccum<float> @numerator, @@norm1, @norm2;

@@ -30,7 +30,7 @@ The attribute version only store the distance into attribute, not the path.
                                t.@path = s.@path + [t],
                                t.@visited += true;
                 ResultSet = ResultSet UNION Source;
-        END
+        END;
 
   ##### Print the results #####
 *ATTR*  ResultSet = SELECT s

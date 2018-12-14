@@ -188,9 +188,9 @@ while [ !$finished ]; do
 
 	# 4.2 Ask for reverse edge type for similarity algos. 
         if [[ ${algoName} == similarity* ]]; then
-		read -p 'Reverse Edge type: ' reveg
-        	reveg=${reveg//[[:space:]]/}
-		sed -i "s/\*rev-edge-types\*/$reveg/g" ${genPath}/${algoName}.gsql
+		read -p 'Second Hop Edge type: ' edge2
+                edge2=${edge2//[[:space:]]/}
+		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}.gsql
 	fi
 
 
@@ -250,7 +250,7 @@ END
         		"Show JSON result" )
 				sed -i 's/\*EXT\*//g' ${genPath}/${algoName}.gsql;
 				sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}.gsql;  # Delete lines with *ATTR*
-                                sed -i 's/\*ACCM\*//g' ${genPath}/${algoName}.gsql;  # Cut the #ACCM# string
+                                sed -i 's/\*ACCM\*/      /g' ${genPath}/${algoName}.gsql;  # Cut the *ACCM* string, replace by 6 spaces
                                 sed -i '/^\*FILE\*/ d' ${genPath}/${algoName}.gsql; # Delete lines with *FILE*
 				gsql -g $grph "DROP QUERY ${algoName}"
 				subqueryClue="\*SUB\* CREATE QUERY"
@@ -275,7 +275,7 @@ END
                 			sed -i "s/\*EXT\*/$fExt/g" ${genPath}/${algoName}$fExt.gsql;  # *EXT* -> $fExt
 					sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ATTR* lines
 					sed -i '/^\*ACCM\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ACCM* lines
-					sed -i 's/\*FILE\*//g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string
+					sed -i 's/\*FILE\*/      /g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string
 					gsql -g $grph "DROP QUERY ${algoName}$fExt"
 					subqueryClue="\*SUB\* CREATE QUERY"
 					subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$fExt.gsql)
@@ -354,7 +354,7 @@ END
                                           done
 					fi
 					sed -i "s/\*EXT\*/$aExt/g" $attrQuery; # *EXT* > $aExt
-					sed -i 's/\*ATTR\*//g' $attrQuery;  # Cut *ATTR* string
+					sed -i 's/\*ATTR\*/      /g' $attrQuery;  # Cut *ATTR* string
 					sed -i '/^\*ACCM\*/ d' $attrQuery;  # Del *ACCM* lines
 					sed -i '/^\*FILE\*/ d' $attrQuery;  # Del *FILE*lines
 					gsql -g $grph "DROP QUERY ${algoName}$aExt"

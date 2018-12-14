@@ -1,7 +1,7 @@
 use graph movie
 drop query similarity_cos_single_file
 
-CREATE QUERY similarity_cos_single_file (string vertex_type, string edge_type, vertex input, int topk, STRING filepath) FOR GRAPH movie {  /*Please change the graph name here*/
+CREATE QUERY similarity_cos_single_file (string vertex_type, string edge_type, string edge_type2, vertex input, int topk, STRING filepath) FOR GRAPH movie {  /*Please change the graph name here*/
 
 	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
 	FILE f(filepath);
