@@ -28,7 +28,9 @@ Folder Organization
 
   social/		another graph folder
 
-  generic and social are the names of graph schemas used for examples.
+  movie/                another graph folder
+
+  generic, social and movie are the names of graph schemas used for examples.
   Each graph folder contains the follwing:
 
 	schema_<graph>.gsql	GSQL command file to create the graph schema
@@ -42,10 +44,19 @@ Folder Organization
 Note: The generic and social graph schemas have been extended so that they now
 have *equivalent* topologies, meaning there is a one-to-one correspondence
 between their entity types and attributes:
-		 Social        Generic
-vertex           Person        Node
-directed edge    Friend        LinkTo
-  its rev edge   Also_Friend   LinkFrom
+		 Social        Generic    
+vertex           Person        Node       
+directed edge    Friend        LinkTo      
+  its rev edge   Also_Friend   LinkFrom    
 undirected edge  Coworker      Link
 
 This means that the data sets for either schema can be loaded into either graph.
+
+Movie graph is for similarity algorithms:
+                 Movie
+vertex           Person        
+subject vetex    Movie
+directed edge    Likes
+  its rev edge   reverse_Likes   
+undirected edge  similarity      
+

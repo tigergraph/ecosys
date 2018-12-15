@@ -1,7 +1,7 @@
-use graph hrz_graph
+use graph MyGraph
 drop query CreateReferralEdge
 
-CREATE QUERY CreateReferralEdge(VERTEX<Prescriber> input, int diff) FOR GRAPH hrz_graph { 
+CREATE QUERY CreateReferralEdge(VERTEX<Prescriber> input, int diff) FOR GRAPH MyGraph { 
    
   ListAccum<datetime> @dateList;
   OrAccum<bool> @visited, @qualify;
