@@ -1,34 +1,38 @@
-CREATE QUERY similarity_cos_single_file (vertex input, int topk, STRING filepath) FOR GRAPH movie {
+      CREATE QUERY similarity_cos_single_file (vertex input, int topk, STRING filepath) FOR GRAPH movie {
+/* This query calculates the Cosine Similarity between a given vertex and every other vertex.
+Cosine similarity = A \dot B / ||A|| \dot ||B||
+1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
+2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
+   A similarity edge with one float attribute in the schema is required for this version.
+*/
 
-	TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-	FILE f(filepath);
+        TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+        FILE f(filepath);
 
-	HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
-    	SumAccum<float> @numerator, @@norm1, @norm2;
+        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+        SumAccum<float> @numerator, @@norm1, @norm2;
 
-	start1 = {input};
-    	subjects = select t
-        	   from start1:s -(Likes:e)-> :t
-                   accum t.@numerator = 1,
-                         @@norm1 += pow(1, 2);
+        start1 = {input};
+        subjects = SELECT t
+                   FROM start1:s -(Likes:e)-> :t
+                   ACCUM t.@numerator = e.weight,
+                         @@norm1 += pow(e.weight, 2);
 
-    	neighbours = select t
-         	     from subjects:s -(reverse_Likes:e)-> Person:t
-                     where t != input
-                     accum t.@numerator += s.@numerator * 1;
+        neighbours = SELECT t
+                     FROM subjects:s -(reverse_Likes:e)-> Person:t
+                     WHERE t != input
+                     ACCUM t.@numerator += s.@numerator * e.weight;
 
-    	neighbours = select s
-                     from neighbours:s -(Likes:e)-> :t
-                     accum s.@norm2 += pow(1, 2)
-               post-accum @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-		     ;
+        neighbours = SELECT s
+                     FROM neighbours:s -(Likes:e)-> :t
+                     ACCUM s.@norm2 += pow(e.weight, 2)
+                     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+                     ;
 
-  f.println("Vertex1","Vertex2","Similarity");
-          foreach item in @@result_topk do
-                  f.println(item.vertex1, item.vertex2, item.score);
-          end;
+        f.println("Vertex1","Vertex2","Similarity");
+        FOREACH item IN @@result_topk DO
+                 f.println(item.vertex1, item.vertex2, item.score);
+        END;
 
 }
-
-#install query similarity_cos_single_file
 

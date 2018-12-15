@@ -1,4 +1,4 @@
-      CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display) FOR GRAPH movie {
+CREATE QUERY shortest_ss_no_wt (VERTEX v, BOOL display) FOR GRAPH social {
 /* This query is Single-Source Shortest Path without weights on edges. It calculates the shortest distance from the given vertex v to all other connected vertices, and shows one shortest path between them.   
 The JSON version also show visualization of the network. 
 The attribute version only store the distance into attribute, not the path.

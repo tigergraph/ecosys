@@ -63,17 +63,23 @@ https://docs.tigergraph.com/graph-algorithm-library
 
 List of GSQL Graph Algorithms 
 -----------------------------
-as of October 24, 2018
+as of December 14, 2018
 Compatible with TigerGraph version 2.1.8 or higher
 
-closeness_cent      Closeness Centrality
-conn_comp           Connected Component Detection
-label_prop          Label Propagation Method for Community Detection
-louvain             Louvain Modularity Method for Community Detection
-pageRank            PageRank measurement of relative influence of each vertex
-shortest_ss_any_wt  Single-Source Shortest Paths
-tri_count           Count all the triangles, memory effient
-tri_count_fast      Count all the triangles, faster but using more memory
+closeness_cent                  Closeness Centrality
+conn_comp                       Connected Component Detection
+label_prop                      Label Propagation Method for Community Detection
+louvain                         Louvain Modularity Method for Community Detection
+pageRank                        PageRank measurement of relative influence of each vertex
+shortest_ss_no_wt               Single-Source Shortest Paths without weight
+shortest_ss_pos_wt              Single-Source Shortest Paths with positive weight
+shortest_ss_any_wt              Single-Source Shortest Paths
+tri_count                       Count all the triangles, memory effient
+tri_count_fast                  Count all the triangles, faster but using more memory
+similarity_cos_single           Cosine Similarity for single vertex
+similarity_cos                  Cosine Similarity for each pair of vertices
+similarity_jaccard_single       Jaccard Similarity for single vertex
+similarity_jaccard              Jaccard Similarity for each pair of vertices
 
 Each of the above  may be available as 2 or 3 related queries
 For example:

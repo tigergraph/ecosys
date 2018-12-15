@@ -1,7 +1,6 @@
 *ATTR*CREATE QUERY similarity_cos_single*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
 *ACCM*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk) FOR GRAPH *graph* {
 *FILE*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
-
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
@@ -33,7 +32,8 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
                      ACCUM s.@norm2 += pow(e.*edge-weight*, 2)
 *ATTR*        	     POST-ACCUM insert into *insert-edge-name* values(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
 *FILE*               POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-*ACCM*        	     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))                                 ;
+*ACCM*        	     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+                     ;
 *ACCM*  PRINT @@result_topk;
 
 *FILE*  f.println("Vertex1","Vertex2","Similarity");
@@ -42,6 +42,4 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 *FILE*  END;
 
 }
-
-#install query similarity_cos_single*EXT*
 

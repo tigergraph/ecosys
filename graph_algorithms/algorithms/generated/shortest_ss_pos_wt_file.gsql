@@ -1,4 +1,4 @@
-      CREATE QUERY shortest_ss_pos_wt_file (VERTEX v, STRING filepath) FOR GRAPH movie {
+      CREATE QUERY shortest_ss_pos_wt_file (VERTEX v, STRING filepath) FOR GRAPH social {
 /* This query is Single-Source Shortest Path with positive weights on edges
 It calculates the shortest distance from the given vertex v to all other connected vertices, 
 and shows one shortest path between them.
@@ -10,7 +10,6 @@ The attribute version only store the distance into attribute, not the path.
         MinAccum<float> @dis;
         OrAccum @visited;
         ListAccum<vertex> @path;
-        SetAccum<edge> @@edgeSet;
         float epsilon = 0.000000001;
 
   ##### Initialization  #####
@@ -22,7 +21,7 @@ The attribute version only store the distance into attribute, not the path.
   ##### Calculate distances  #####
         WHILE(Source.size()>0) DO
                 Source = SELECT t
-                         FROM Source:s -((Likes|reverse_Likes):e)-> :t
+                         FROM Source:s -(:e)-> :t
                          WHERE t.@dis > s.@dis + e.weight
                          ACCUM t.@dis += s.@dis + e.weight,
                                t.@visited += true;
@@ -33,7 +32,7 @@ The attribute version only store the distance into attribute, not the path.
         Source = {v};
         WHILE(Source.size()>0) DO
           Source = SELECT t
-                   FROM Source:s -((Likes|reverse_Likes):e)-> :t
+                   FROM Source:s -(:e)-> :t
                    WHERE abs((t.@dis) - (s.@dis+e.weight)) < epsilon
                    ACCUM t.@path = s.@path + [t];
         END;

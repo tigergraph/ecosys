@@ -1,4 +1,4 @@
-CREATE QUERY shortest_ss_pos_wt_attr (VERTEX v) FOR GRAPH social {
+CREATE QUERY shortest_ss_pos_wt (VERTEX v, BOOL display) FOR GRAPH social {
 /* This query is Single-Source Shortest Path with positive weights on edges
 It calculates the shortest distance from the given vertex v to all other connected vertices, 
 and shows one shortest path between them.
@@ -9,6 +9,7 @@ The attribute version only store the distance into attribute, not the path.
         MinAccum<float> @dis;
         OrAccum @visited;
         ListAccum<vertex> @path;
+        SetAccum<edge> @@edgeSet;
         float epsilon = 0.000000001;
 
   ##### Initialization  #####
@@ -37,10 +38,14 @@ The attribute version only store the distance into attribute, not the path.
         END;
 
  ##### Print the results #####
-        ResultSet = SELECT s
-                    FROM ResultSet:s
-                    POST-ACCUM s.score = s.@dis;  
                   
+        PRINT ResultSet[ResultSet.@dis, ResultSet.@path];
+        IF display THEN
+                ResultSet = SELECT s
+                            FROM ResultSet:s -(:e)-> :t
+                            ACCUM @@edgeSet += e;
+                PRINT @@edgeSet;
+        END;
 
 
 }

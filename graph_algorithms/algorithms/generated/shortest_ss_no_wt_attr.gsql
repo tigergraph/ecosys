@@ -1,4 +1,4 @@
-      CREATE QUERY shortest_ss_no_wt_attr (VERTEX v) FOR GRAPH movie {
+CREATE QUERY shortest_ss_no_wt_attr (VERTEX v) FOR GRAPH social {
 /* This query is Single-Source Shortest Path without weights on edges. It calculates the shortest distance from the given vertex v to all other connected vertices, and shows one shortest path between them.   
 The JSON version also show visualization of the network. 
 The attribute version only store the distance into attribute, not the path.
@@ -7,7 +7,6 @@ The attribute version only store the distance into attribute, not the path.
         MinAccum<int> @dis;
         OrAccum @visited;
         ListAccum<vertex> @path;
-        SetAccum<edge> @@edgeSet;
 
   ##### Initialization  #####
         Source = {v};
@@ -21,7 +20,7 @@ The attribute version only store the distance into attribute, not the path.
   ##### Calculate distances and paths #####
         WHILE(Source.size()>0) DO
                 Source = SELECT t
-                         FROM Source:s -(Likes:e)-> :t
+                         FROM Source:s -(:e)-> :t
                          WHERE t.@visited == false
                          ACCUM t.@dis += s.@dis + 1,
                                t.@path = s.@path + [t],

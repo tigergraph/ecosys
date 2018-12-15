@@ -1,4 +1,6 @@
-*SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+*ATTR**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+*ACCM**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+*FILE**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
 # Subquery returns closeness centrality for vertex v in graph with numVert vertices 
         SumAccum<int> @@currDist, @@totalDist;
          OrAccum<bool> @visited;

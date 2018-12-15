@@ -113,10 +113,10 @@ while [ !$finished ]; do
 	# Copy the algorithm template file to the destination file.
 	templPath="./templates"
 	genPath="./generated"
-	cp ${templPath}/${algoName}.gtmp ${genPath}/${algoName}.gsql;
+	cp ${templPath}/${algoName}.gtmp ${genPath}/${algoName}_tmp.gsql;
 
 	# Replace *graph* placeholder
-	sed -i "s/\*graph\*/$grph/g" ${genPath}/${algoName}.gsql
+	sed -i "s/\*graph\*/$grph/g" ${genPath}/${algoName}_tmp.gsql
 	
 	echo; echo "Available vertex and edge types:"
 	gsql -g $grph ls|grep '\- VERTEX\|\DIRECTED EDGE'
@@ -131,14 +131,14 @@ while [ !$finished ]; do
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
 	if [[ $algoName == similarity* ]]; then #[ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ] || [ "${algoName}" == "similarity_jaccard" ] || [ "${algoName}" == "similarity_jaccard_single" ]; then
-		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}.gsql
+		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
 	elif [ "${vts}" == "" ]; then
 		vts="ANY"
 	else
 		vts=${vts/,/.*, }   # replace the delimiter
 		vts="${vts}.*"
 	fi
-	sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}.gsql
+	sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
 	
 
 	# 4. Ask for edge types. Replace *edge-types* placeholder.
@@ -164,7 +164,7 @@ while [ !$finished ]; do
 					outs="${outs} ${3} ${4}.${1}(\"$x\")"
 			fi
 		done
-		sed -i "s/\*${2}\*/$outs/g" ${genPath}/${algoName}.gsql
+		sed -i "s/\*${2}\*/$outs/g" ${genPath}/${algoName}_tmp.gsql
 		IFS=$OIFS
 	}
 
@@ -184,13 +184,13 @@ while [ !$finished ]; do
 		egs=${egs/,/|}
 		egs="(${egs})"
 	fi
-	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}.gsql
+	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
 
 	# 4.2 Ask for reverse edge type for similarity algos. 
         if [[ ${algoName} == similarity* ]]; then
 		read -p 'Second Hop Edge type: ' edge2
                 edge2=${edge2//[[:space:]]/}
-		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}.gsql
+		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}_tmp.gsql
 	fi
 
 
@@ -199,7 +199,7 @@ while [ !$finished ]; do
 		while true; do
                 	read -p "Edge attribute that stores FLOAT weight:"  weight
 			if [[ $(countEdgeAttr $weight) > 0 ]]; then
-				sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}.gsql
+				sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}_tmp.gsql
 				break;
 			else
 				echo " *** Edge attribute name not found. Try again."
@@ -212,10 +212,10 @@ while [ !$finished ]; do
 	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
                         weight=${weight//[[:space:]]/}
                         if [ "${weight}" == "" ]; then   #when there is no weight attribute, use unified weight
-				sed -i "s/e\.\*edge-weight\*/1/g" ${genPath}/${algoName}.gsql
+				sed -i "s/e\.\*edge-weight\*/1/g" ${genPath}/${algoName}_tmp.gsql
 				break; 
 			elif [[ $(countEdgeAttr $weight) > 0 ]]; then   #when there is the weight attribute
-                                sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}.gsql
+                                sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}_tmp.gsql
 				break;
 			else
                                 echo " *** Edge attribute name not found. Try again."
@@ -248,8 +248,10 @@ END
         select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge"; do
         	case $version in
         		"Show JSON result" )
+                                mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}.gsql;
 				sed -i 's/\*EXT\*//g' ${genPath}/${algoName}.gsql;
 				sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}.gsql;  # Delete lines with *ATTR*
+                                sed -i 's/\*ACCM\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql;
                                 sed -i 's/\*ACCM\*/      /g' ${genPath}/${algoName}.gsql;  # Cut the *ACCM* string, replace by 6 spaces
                                 sed -i '/^\*FILE\*/ d' ${genPath}/${algoName}.gsql; # Delete lines with *FILE*
 				gsql -g $grph "DROP QUERY ${algoName}"
@@ -260,14 +262,14 @@ END
 					gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
 				fi
                 		# Finalize the JSON (ACCMulator) version of the query
-        			sed -i 's/\*SUB\*//g' ${genPath}/${algoName}.gsql;   # Cut the *SUB* string
+        			sed -i 's/      \*SUB\* //g' ${genPath}/${algoName}.gsql;   # Cut the *SUB* string
         			echo; echo "gsql -g $grph ${genPath}/${algoName}.gsql"
         			gsql -g $grph ${genPath}/${algoName}.gsql
                                 break;;
 			
 			"Write to File" )
 				# Finalize the FILE output version of the query
-				mv ${genPath}/${algoName}.gsql ${genPath}/${algoName}$fExt.gsql;
+				mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$fExt.gsql;
 				# Check if this algorithm has *FILE*
 				if [[ $(grep -c "\*FILE\*" ${genPath}/${algoName}$fExt.gsql) == 0 ]]; then
                 			rm ${genPath}/${algoName}$fExt.gsql
@@ -275,7 +277,8 @@ END
                 			sed -i "s/\*EXT\*/$fExt/g" ${genPath}/${algoName}$fExt.gsql;  # *EXT* -> $fExt
 					sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ATTR* lines
 					sed -i '/^\*ACCM\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ACCM* lines
-					sed -i 's/\*FILE\*/      /g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string
+                                        sed -i 's/\*FILE\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql; # Cut *FILE* string
+					sed -i 's/\*FILE\*/      /g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string in query body
 					gsql -g $grph "DROP QUERY ${algoName}$fExt"
 					subqueryClue="\*SUB\* CREATE QUERY"
 					subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$fExt.gsql)
@@ -284,13 +287,13 @@ END
 						gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
 					fi
 
-					sed -i 's/\*SUB\*//g' ${genPath}/${algoName}$fExt.gsql;   # Cut the *SUB* string
+					sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$fExt.gsql;   # Cut the *SUB* string
 					echo; echo gsql -g $grph ${genPath}/${algoName}$fExt.gsql
 					gsql -g $grph ${genPath}/${algoName}$fExt.gsql
 				fi
 				break;;
 			"Save to Attribute/Insert Edge" )	
-				mv ${genPath}/${algoName}.gsql ${genPath}/${algoName}$aExt.gsql;
+				mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$aExt.gsql;
 				# Check if this algorithm has *ATTR*
 				if [[ $(grep -c "\*ATTR\*" ${genPath}/${algoName}$aExt.gsql) == 0 ]]; then
 					rm ${genPath}/${algoName}$aExt.gsql
@@ -354,7 +357,8 @@ END
                                           done
 					fi
 					sed -i "s/\*EXT\*/$aExt/g" $attrQuery; # *EXT* > $aExt
-					sed -i 's/\*ATTR\*/      /g' $attrQuery;  # Cut *ATTR* string
+                                        sed -i 's/\*ATTR\*CREATE/CREATE/g' $attrQuery;  # Cut *ATTR* string
+					sed -i 's/\*ATTR\*/      /g' $attrQuery;  # Cut *ATTR* string in query body
 					sed -i '/^\*ACCM\*/ d' $attrQuery;  # Del *ACCM* lines
 					sed -i '/^\*FILE\*/ d' $attrQuery;  # Del *FILE*lines
 					gsql -g $grph "DROP QUERY ${algoName}$aExt"
@@ -364,7 +368,7 @@ END
 						subqueryWords=( $subqueryLine )
 						gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
 					fi				
-					sed -i 's/\*SUB\*//g' ${genPath}/${algoName}$aExt.gsql;   # Cut the *SUB* string
+					sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$aExt.gsql;   # Cut the *SUB* string
 					echo gsql -g $grph $attrQuery;
 					gsql -g $grph $attrQuery;
 				  ;;
