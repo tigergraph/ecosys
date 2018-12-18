@@ -6,6 +6,10 @@ import java.lang.StringBuffer;
 import java.lang.StringBuilder;
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.FileHandler;
 
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
@@ -34,6 +38,8 @@ public class generateDataset implements Serializable {
   static Boolean readFileOnly = false;
 
   static String[] schema_folders;
+  
+  private static Logger logger;
 
   public static void main(String[] args) {
     String properties_file = "";
@@ -53,7 +59,25 @@ public class generateDataset implements Serializable {
     if (args.length > 3) {
       times = Integer.parseInt(args[3]);
     }
-    System.out.println("times is " + times);
+    
+    String loggerFolder = "/tmp/sparkLoader";
+    if (args.length > 3) {
+      loggerFolder = args[4];
+    }
+
+    logger = Logger.getLogger("SparkLoader");
+    try {
+      File directory = new File(loggerFolder);
+      if (!directory.exists()) {
+        directory.mkdirs();
+      }
+      FileHandler handler = new FileHandler(loggerFolder + "/sparkLoading.%g.log", 10 * 1024 * 1024, 30, false);
+      handler.setFormatter(new SimpleFormatter());
+      logger.addHandler(handler);
+    } catch (Exception e) {
+      logger = null;
+      throw new RuntimeException("Logger init failed");
+    }
 
     try {
       // read from properties file
@@ -73,6 +97,24 @@ public class generateDataset implements Serializable {
     }
   }
 
+  private static void logMsg(String msg, Level level, Boolean tee2Std) {
+    if (logger == null) return;
+    logger.log(level, msg);
+    if (tee2Std) System.out.println(msg);
+  }
+
+  private static void logInfo(String msg, Boolean tee2Std) {
+     logMsg(msg, Level.INFO, tee2Std);
+  }
+
+  private static void logInfo(String msg) {
+     logInfo(msg, false);
+  }
+
+  private static void logWarning(String msg) {
+     logMsg(msg, Level.WARNING, false);
+  }
+
 
   public void run(String target_host, String target_path, String rest_endpoint, int times) {
     // create spark context and spark sql instance
@@ -90,19 +132,19 @@ public class generateDataset implements Serializable {
     AmazonS3Client s3client = new AmazonS3Client(configuration);
 
     if (!awsAccessKey.trim().equals("") && !awsSecretKey.trim().equals("")) {
-      System.out.println("------------------Read S3 credentials------------------");
+      logInfo("Read S3 credentials", true);
       s3client = new AmazonS3Client(new BasicAWSCredentials(awsAccessKey, awsSecretKey), configuration);
       sc.conf().set("fs.s3a.access.key", awsAccessKey);
       sc.conf().set("fs.s3a.secret.key", awsSecretKey);
     }
 
-    System.out.println("------------------start process------------------");
+    logInfo("Start process", true);
     for (String schema_folder : schema_folders) {
-      System.out.println("xxxxxxxxxxxxxxxxx start to load schema folder " + schema_folder + " xxxxxxxxxxxxxxxxx");
+      logInfo("Start to load schema folder " + schema_folder, true);
       post2Tg(s3client, sc, schema_folder, target_host, target_path, rest_endpoint, times);
-      System.out.println("xxxxxxxxxxxxxxxxx loding schema folder " + schema_folder + " successfully xxxxxxxxxxxxxxxxx");
+      logInfo("Loding schema folder " + schema_folder + " successfully", true);
     }
-    System.out.println("------------------end process------------------------");
+    logInfo("End process", true);
   }
 
 
@@ -134,7 +176,7 @@ public class generateDataset implements Serializable {
         }
       }
       for (String folder_path : folder_path_arr) {
-          System.out.println("xxxxxxxxxxxxxxxxx start to load date folder " + folder_path + " xxxxxxxxxxxxxxxxx");
+          logInfo("Start to load date folder " + folder_path, true);
 
           // collect all parquet file paths
           List<String> s3Paths = new ArrayList<String>();
@@ -149,7 +191,7 @@ public class generateDataset implements Serializable {
               if (s3Object.getKey().endsWith(".parquet")) {
                 String absoluteS3Path = bucket_name + S3FileSeparator + s3Object.getKey();
                 s3Paths.add(S3Prefix + absoluteS3Path);
-                System.out.println(absoluteS3Path);
+                logInfo("file " + absoluteS3Path);
               }
             }
             // continue geting parquet files from last fetching marker
@@ -164,10 +206,10 @@ public class generateDataset implements Serializable {
           if (target_host.equals("schema")) {
             Dataset<Row> parquet_data = sc.read().parquet(s3Paths.get(0));
             long count = parquet_data.count();
-            System.out.println("xxxxxxxxxxxxxxxxx count is " + count + " xxxxxxxxxxxxxxxxx");
-            System.out.println("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx count is " + count + " xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
             parquet_data.printSchema();
-            System.out.println("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
           } else {
             // parallel read those files
             Dataset<Row> parquet_data = sc.read().parquet(JavaConversions.asScalaBuffer(s3Paths));
@@ -177,20 +219,21 @@ public class generateDataset implements Serializable {
               parquet_data = parquet_data.union(tmp_data);
             }
             long count = parquet_data.count();
-            System.out.println("xxxxxxxxxxxxxxxxx count is " + count + " xxxxxxxxxxxxxxxxx");
-            System.out.println("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx count is " + count + " xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
             parquet_data.printSchema();
-            System.out.println("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
+            logInfo("xxxxxxxxxxxxxxxxx schema xxxxxxxxxxxxxxxxx");
 
             if (target_host.equals("local")) {
-              parquet_data.write().format("csv").mode(SaveMode.Overwrite).save(localPrefix + target_path + "/" + folder_path);
+              String localFolder = localPrefix + target_path + "/" + folder_path;
+              logInfo("write data to local " + localFolder);
+              parquet_data.write().format("csv").mode(SaveMode.Overwrite).save(localFolder);
             } else {
-              System.out.println("-------- target host is " + target_host + "---------");
-              System.out.println("--------- restpp loading endpont is " + rest_endpoint + "---------");
+              logInfo("send data to restpp endpoint " + rest_endpoint);
               processHiveData(target_host, rest_endpoint, parquet_data);
             }
           }
-          System.out.println("xxxxxxxxxxxxxxxxx date folder " + folder_path + " successfully xxxxxxxxxxxxxxxxx");
+          logInfo("Load date folder " + folder_path + " successfully", true);
       }
       // continue geting date folder name from last fetching marker
       listFolders.setMarker(foldersListing.getNextMarker());
@@ -238,7 +281,9 @@ public class generateDataset implements Serializable {
     try {
       res_json = new JSONObject(response);
       if (res_json.has("error") && res_json.optBoolean("error", true) == true) {
-        System.out.println("------------- " + response + " -------------");
+        logWarning("Response has error: " + response);
+      } else {
+        logInfo("Response: " + response);
       }
     } catch (JSONException e) {
        e.printStackTrace();
