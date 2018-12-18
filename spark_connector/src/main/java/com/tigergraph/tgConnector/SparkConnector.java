@@ -33,7 +33,7 @@ public class SparkConnector implements Serializable {
   }
 
   // example for parse Spark dataset and post to TigerGraph
-  private void processHiveData(TgConnector tc, String post_endpoint, final Dataset<Row> hiveData) {
+  private void processHiveData(TgConnector tc, String post_endpoint, String fileVarName, final Dataset<Row> hiveData) {
     hiveData.foreachPartition(rowIterator -> {
       int rowCount = 0;
       StringBuilder payload = new StringBuilder("");
@@ -45,14 +45,14 @@ public class SparkConnector implements Serializable {
         }
 
         if (rowCount == 5000){
-          tc.getJsonForPost(post_endpoint, payload.toString());
+          tc.getJsonForPost(post_endpoint, payload.toString(), fileVarName);
           payload.setLength(0);
           rowCount = 0;
         }
       }
       //handle case for the last batch
       if (rowCount > 0){
-        tc.getJsonForPost(post_endpoint, payload.toString());
+        tc.getJsonForPost(post_endpoint, payload.toString(), fileVarName);
       }
     });
   }
