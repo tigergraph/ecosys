@@ -1,0 +1,29 @@
+---- Graph movie
+Vertex Types: 
+  - VERTEX Person(PRIMARY_ID name STRING, name STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE"
+  - VERTEX Movie(PRIMARY_ID name STRING, name STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE"
+Edge Types: 
+  - DIRECTED EDGE Likes(FROM Person, TO Movie, weight FLOAT) WITH REVERSE_EDGE="reverse_Likes"
+  - DIRECTED EDGE reverse_Likes(FROM Movie, TO Person, weight FLOAT) WITH REVERSE_EDGE="Likes"
+  - UNDIRECTED EDGE similarity(FROM Person, TO Person, score FLOAT)
+
+Graphs: 
+  - Graph movie(Person:v, Movie:v, Likes:e, reverse_Likes:e, similarity:e)
+Jobs: 
+  - CREATE LOADING JOB load_movie FOR GRAPH movie {
+      DEFINE FILENAME movie_file = "";
+      LOAD movie_file TO EDGE Likes VALUES($0, $2, $1) USING SEPARATOR=",", HEADER="true", EOL="\n";
+    }
+
+Queries: 
+  - similarity_cos(int topk) (installed v2)
+  - similarity_cos_attr() (installed v2)
+  - similarity_cos_sub(vertex input) (installed v2)
+  - similarity_cos_sub_attr(vertex<Person> input) (installed v2)
+  - similarity_nbor_cos_ss(vertex input, int topk) (installed v2)
+  - similarity_nbor_cos_ss_attr(vertex<Person> input) (installed v2)
+  - similarity_nbor_cos_ss_file(vertex input, int topk, string filepath) (installed v2)
+
+
+
+

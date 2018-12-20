@@ -1,6 +1,6 @@
-*ATTR*CREATE QUERY similarity_cos_single*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk) FOR GRAPH *graph* {
-*FILE*CREATE QUERY similarity_cos_single*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex input, int topk) FOR GRAPH *graph* {
+*FILE*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.

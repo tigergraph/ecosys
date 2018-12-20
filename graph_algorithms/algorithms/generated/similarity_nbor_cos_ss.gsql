@@ -1,4 +1,4 @@
-      CREATE QUERY similarity_cos_single_file (vertex input, int topk, STRING filepath) FOR GRAPH movie {
+CREATE QUERY similarity_nbor_cos_ss (vertex input, int topk) FOR GRAPH movie {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
@@ -7,9 +7,8 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 */
 
         TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-        FILE f(filepath);
 
-        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;    
         SumAccum<float> @numerator, @@norm1, @norm2;
 
         start1 = {input};
@@ -26,13 +25,10 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
         neighbours = SELECT s
                      FROM neighbours:s -(Likes:e)-> :t
                      ACCUM s.@norm2 += pow(e.weight, 2)
-                     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+              	     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
                      ;
+        PRINT @@result_topk;
 
-        f.println("Vertex1","Vertex2","Similarity");
-        FOREACH item IN @@result_topk DO
-                 f.println(item.vertex1, item.vertex2, item.score);
-        END;
 
 }
 

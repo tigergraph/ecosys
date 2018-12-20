@@ -1,4 +1,4 @@
-      CREATE QUERY similarity_jaccard_single_file (vertex input, int topk, STRinG filepath) FOR GRAPH movie {
+CREATE QUERY similarity_nbor_jaccard_ss_attr (vertex<Person> input) FOR GRAPH movie {
 /* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
@@ -6,10 +6,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
    A similarity edge with one float attribute in the schema is required for this version.
 */
 
-        TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-        FILE f(filepath);
 
-        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
         SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
 
         Start (ANY) = {input};
@@ -25,12 +22,8 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                  WHERE t != input
                  ACCUM t.@intersection_size += 1,
                        t.@set_size_B = t.outdegree("Likes")
-                 POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                 POST-ACCUM insert into similarity values(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
                  ;
 
-        f.println("Vertex1","Vertex2","Similarity");
-        FOREACH item IN @@result_topk DO
-                f.println(item.vertex1, item.vertex2, item.score);
-        END;
 }
 
