@@ -1,0 +1,13 @@
+Please follow the steps to install.
+
+1. Import the solution.tar.gz from your graph studio
+
+2. Copy or merge ExprUtil.hpp and ExprFunctions.hpp to ~/tigergraph/dev/gdk/gsql/src/QueryUdf/
+
+3. Copy or merge TokenBank.cpp to ~/tigergraph/dev/gdk/gsql/src/TokenBank/
+
+4. copy data under data/ to ~/tigergraph/loadingData/
+
+5. Run loading from GraphStudio. 
+
+6. Run loader.gsql by using command gsql -g MyGraph loader.gsql 
