@@ -61,7 +61,7 @@ public class generateDataset implements Serializable {
     }
     
     String loggerFolder = "/tmp/sparkLoader";
-    if (args.length > 3) {
+    if (args.length > 4) {
       loggerFolder = args[4];
     }
 
@@ -76,7 +76,8 @@ public class generateDataset implements Serializable {
       logger.addHandler(handler);
     } catch (Exception e) {
       logger = null;
-      throw new RuntimeException("Logger init failed");
+      System.out.println("Logger init failed");
+      System.exit(1);
     }
 
     try {
