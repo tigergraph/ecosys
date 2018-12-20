@@ -14,7 +14,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
         neighbours = SELECT t
                      FROM subjects:s -(reverse_Likes:e)-> Person:t
-                 WHERE t != input and getvid(input) < getvid(t)
+                     WHERE t != input and getvid(input) < getvid(t)
                      ACCUM t.@numerator += s.@numerator * e.weight;
 
         neighbours = SELECT s
@@ -40,11 +40,11 @@ CREATE QUERY similarity_nbor_cos_as (int topk) FOR GRAPH movie{
         start = {Person.*}; 
         start = SELECT s
                 FROM start:s
-                  ACCUM s.@single_result = similarity_nbor_cos_as_sub (s)
-                  POST-ACCUM 
-                      FOREACH (key, value) IN s.@single_result DO
-                          @@total_result += SIMILARITY_SCORE(s, key, value)
-                      END
+                ACCUM s.@single_result = similarity_nbor_cos_as_sub (s)
+                POST-ACCUM 
+                        FOREACH (key, value) IN s.@single_result DO
+                                @@total_result += SIMILARITY_SCORE(s, key, value)
+                        END
             ;
         
         PRINT @@total_result;

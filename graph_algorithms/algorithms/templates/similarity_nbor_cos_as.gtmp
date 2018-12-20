@@ -17,7 +17,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
         neighbours = SELECT t
                      FROM subjects:s -(*sec-edge-types*:e)-> *vertex-types*:t
-                 WHERE t != input and getvid(input) < getvid(t)
+                     WHERE t != input and getvid(input) < getvid(t)
                      ACCUM t.@numerator += s.@numerator * e.*edge-weight*;
 
         neighbours = SELECT s
@@ -53,12 +53,12 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
         start = SELECT s
                 FROM start:s
 *ATTR*          ACCUM similarity_nbor_cos_as_sub*EXT* (s)
-*ACCM*            ACCUM s.@single_result = similarity_nbor_cos_as_sub*EXT* (s)
+*ACCM*          ACCUM s.@single_result = similarity_nbor_cos_as_sub*EXT* (s)
 *FILE*          ACCUM s.@single_result = similarity_nbor_cos_as_sub*EXT* (s)
-*ACCM*            POST-ACCUM 
-*ACCM*                FOREACH (key, value) IN s.@single_result DO
-*ACCM*                    @@total_result += SIMILARITY_SCORE(s, key, value)
-*ACCM*                END
+*ACCM*          POST-ACCUM 
+*ACCM*                  FOREACH (key, value) IN s.@single_result DO
+*ACCM*                          @@total_result += SIMILARITY_SCORE(s, key, value)
+*ACCM*                  END
 *FILE*          POST-ACCUM
 *FILE*                  FOREACH (key, value) IN s.@single_result DO
 *FILE*                          @@total_result += SIMILARITY_SCORE(s, key, value)

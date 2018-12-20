@@ -16,13 +16,24 @@ Jobs:
     }
 
 Queries: 
-  - similarity_cos(int topk) (installed v2)
-  - similarity_cos_attr() (installed v2)
-  - similarity_cos_sub(vertex input) (installed v2)
-  - similarity_cos_sub_attr(vertex<Person> input) (installed v2)
+  - similarity_nbor_cos_as(int topk) 
+  - similarity_nbor_cos_as_attr() 
+  - similarity_nbor_cos_as_file(int topk, string filepath) 
+  - similarity_nbor_cos_as_sub(vertex input) 
+  - similarity_nbor_cos_as_sub_attr(vertex<Person> input) 
+  - similarity_nbor_cos_as_sub_file(vertex input) 
   - similarity_nbor_cos_ss(vertex input, int topk) (installed v2)
   - similarity_nbor_cos_ss_attr(vertex<Person> input) (installed v2)
   - similarity_nbor_cos_ss_file(vertex input, int topk, string filepath) (installed v2)
+  - similarity_nbor_jaccard_as(int topk) 
+  - similarity_nbor_jaccard_as_attr() 
+  - similarity_nbor_jaccard_as_file(int topk, string filepath) 
+  - similarity_nbor_jaccard_as_sub(vertex input) 
+  - similarity_nbor_jaccard_as_sub_attr(vertex<Person> input) 
+  - similarity_nbor_jaccard_as_sub_file(vertex input) 
+  - similarity_nbor_jaccard_ss(vertex input, int topk) 
+  - similarity_nbor_jaccard_ss_attr(vertex<Person> input) 
+  - similarity_nbor_jaccard_ss_file(vertex input, int topk, string filepath) 
 
 
 

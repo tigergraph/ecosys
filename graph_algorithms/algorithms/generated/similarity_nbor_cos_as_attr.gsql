@@ -13,7 +13,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
         neighbours = SELECT t
                      FROM subjects:s -(reverse_Likes:e)-> Person:t
-                 WHERE t != input and getvid(input) < getvid(t)
+                     WHERE t != input and getvid(input) < getvid(t)
                      ACCUM t.@numerator += s.@numerator * e.weight;
 
         neighbours = SELECT s
