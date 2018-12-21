@@ -1,0 +1,10 @@
+Please follow the steps to deploy:
+
+1. Install http-serve at https://www.npmjs.com/package/http-serve
+
+2. Get a map box API token at https://www.mapbox.com/
+
+3. Put the license key at license.js
+
+4. Use the command 'http-serve ./ -P http://tigergraph-server-ip:9000', where tigergraph-server-ip is the IP of the machine with TigerGraph installed.
+

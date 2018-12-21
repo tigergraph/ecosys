@@ -1,0 +1,1 @@
+{"name":"gvis","version":"0.2.4-dev","description":"Graph visualization library","keywords":["Graph","Visualization","TigerGraph","Visual","Analytics"],"author":"TigerGraph","license":"See the LICENSE file","main":"./gvis.js","typings":"./gvis.d.ts"}
