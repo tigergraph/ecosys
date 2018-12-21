@@ -1,11 +1,11 @@
-use graph hrz_graph
+use graph MyGraph
 clear graph Store -HARD
 
 drop job Load_hrz
 
 SET sys.data_root = "./data/"
 
-create loading job Load_hrz for graph hrz_graph {
+create loading job Load_hrz for graph MyGraph {
  
   LOAD "$sys.data_root/subspecialties_prescriber.csv"
     TO EDGE subspecialty_prescriber VALUES ($"SubSpecialty", $"Prescriber")

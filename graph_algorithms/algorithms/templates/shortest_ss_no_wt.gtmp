@@ -1,0 +1,52 @@
+*ATTR*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_no_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
+/* This query is Single-Source Shortest Path without weights on edges. It calculates the shortest distance from the given vertex v to all other connected vertices, and shows one shortest path between them.   
+The JSON version also show visualization of the network. 
+The attribute version only store the distance into attribute, not the path.
+*/
+
+*FILE*  FILE f(filepath);
+        MinAccum<int> @dis;
+        OrAccum @visited;
+        ListAccum<vertex> @path;
+*ACCM*  SetAccum<edge> @@edgeSet;
+
+  ##### Initialization  #####
+        Source = {v};
+        Source = SELECT s 
+                 FROM Source:s
+                 ACCUM s.@visited += true, 
+                       s.@dis = 0,
+                       s.@path = s; 
+        ResultSet = {v};
+
+  ##### Calculate distances and paths #####
+        WHILE(Source.size()>0) DO
+                Source = SELECT t
+                         FROM Source:s -(*edge-types*:e)-> :t
+                         WHERE t.@visited == false
+                         ACCUM t.@dis += s.@dis + 1,
+                               t.@path = s.@path + [t],
+                               t.@visited += true;
+                ResultSet = ResultSet UNION Source;
+        END;
+
+  ##### Print the results #####
+*ATTR*  ResultSet = SELECT s
+*ATTR*              FROM ResultSet:s
+*ATTR*              POST-ACCUM s.*vFltAttr* = s.@dis;
+
+*ACCM*  PRINT ResultSet[ResultSet.@dis, ResultSet.@path];
+*ACCM*  IF display THEN
+*ACCM*          ResultSet = SELECT s
+*ACCM*                      FROM ResultSet:s -(*edge-types*:e)-> :t
+*ACCM*                      ACCUM @@edgeSet += e;
+*ACCM*          PRINT @@edgeSet;
+*ACCM*  END;
+
+*FILE*   f.println("Vertex_ID","Distance","Shortest_Path");
+*FILE*   ResultSet = SELECT s FROM ResultSet:s
+*FILE*               POST-ACCUM f.println(s, s.@dis, s.@path);
+
+}

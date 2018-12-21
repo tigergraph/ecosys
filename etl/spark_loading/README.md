@@ -59,10 +59,12 @@ You need to install OpenJdk 8, Scala(>= 2.11.7), Spark(>= 2.0.0) into all machin
    * change restpp loading endpoint.
 
 ### Run
-bash run.sh $master_url $target_host $target_path
+bash compile_and_run.sh $master_url $target_host $target_path $times $log_path
    1. $master_url is the url for Spark cluster manager
    2. $target_host
       * local (local csv mode, save as csv in local)
       * ip address of TG database (post mode, post to TG)
       * schema (schema mode, print schema and row count)
    3. $target_path is the path to store in the local machine if it is local csv mode. It must be absolute path.
+   4. $times, just use 1
+   5. $log_path the path that outputs the log, default is /tmp/sparkLoading/

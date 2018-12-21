@@ -1,40 +1,40 @@
-# Identify the Connected Components (undirected edges)
-
 CREATE QUERY conn_comp_attr () FOR GRAPH social {
-  MinAccum<int> @cc_id = 0;       //each vertex's tentative component id
-  SumAccum<int> @old_id = 0;
-  OrAccum<bool> @active;
-  MapAccum<int, int> @@compSizes;
+# This query identifies the Connected Components (undirected edges)
+
+        MinAccum<int> @cc_id = 0;       //each vertex's tentative component id
+        SumAccum<int> @old_id = 0;
+        OrAccum<bool> @active;
+        MapAccum<int, int> @@compSizes;
   
-  Start = {Person.*};
+        Start = {ANY};
 
-  # Initialize: Label each vertex with its own internal ID
-  S = SELECT x FROM Start:x
-      POST-ACCUM 
-         x.@cc_id = getvid(x),
-         x.@old_id = getvid(x)        
-  ;
+# Initialize: Label each vertex with its own internal ID
+        S = SELECT x 
+            FROM Start:x
+            POST-ACCUM x.@cc_id = getvid(x),
+                       x.@old_id = getvid(x)        
+            ;
 
-  # Propagate smaller internal IDs until no more ID changes can be done
-  WHILE (Start.size()>0) DO
-    Start = SELECT t
-        FROM Start:s -(Coworker:e)-> :t
-        ACCUM t.@cc_id += s.@cc_id // If s has a smaller id than t, copy the id to t
-        POST-ACCUM
-          CASE WHEN t.@old_id != t.@cc_id THEN // If t's id has changed
-            t.@old_id = t.@cc_id,
-            t.@active = true
-          ELSE 
-            t.@active = false
-          END
-        HAVING t.@active == true
-    ;
-  END;
+# Propagate smaller internal IDs until no more ID changes can be DOne
+        WHILE (Start.size()>0) DO
+                Start = SELECT t
+                        FROM Start:s -(Coworker:e)-> :t
+                        ACCUM t.@cc_id += s.@cc_id // If s has a smaller id than t, copy the id to t
+                        POST-ACCUM
+                                CASE WHEN t.@old_id != t.@cc_id THEN // If t's id has changed
+                                        t.@old_id = t.@cc_id,
+                                        t.@active = true
+                                ELSE 
+                                        t.@active = false
+                                END
+                        HAVING t.@active == true
+                        ;
+        END;
 
-  Start = {Person.*};
+        Start = {ANY};
 
- Start = SELECT s FROM Start:s
-         POST-ACCUM s.score = s.@cc_id;
+        Start = SELECT s FROM Start:s
+                POST-ACCUM s.score = s.@cc_id;
 
 
 }

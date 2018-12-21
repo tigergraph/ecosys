@@ -1,0 +1,32 @@
+CREATE QUERY similarity_jaccard_single (vertex input, int topk) FOR GRAPH movie {
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
+2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
+   A similarity edge with one float attribute in the schema is required for this version.
+*/
+
+        TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+
+        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+        SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+
+        Start (ANY) = {input};
+        Start = SELECT s
+        	FROM Start:s
+                ACCUM @@set_size_A += s.outdegree("Likes");
+
+        Subjects = SELECT t
+                   FROM Start:s-(Likes:e)-:t;
+
+        Others = SELECT t
+                 FROM Subjects:s -(reverse_Likes:e)- :t
+                 WHERE t != input
+                 ACCUM t.@intersection_size += 1,
+                       t.@set_size_B = t.outdegree("Likes")
+                 POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                 ;
+        PRINT @@result_topk;
+
+}
+

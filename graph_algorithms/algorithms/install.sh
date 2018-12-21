@@ -8,6 +8,9 @@ countStringInFile() {
 }
 countVertexType() {
 	echo $(grep -c "\- VERTEX" schema.$grph)
+}
+ifEdgeType() {
+	echo $(grep -c "RECTED EDGE $1" schema.$grph)
 }	
 countVertexAttr() {
 	echo $(grep "\- VERTEX" schema.$grph|grep -c $1)
@@ -35,8 +38,8 @@ fi
 # 2. Select an algorithm.  After finishing, loop again to select another algorithm.
 finished=false
 while [ !$finished ]; do
-	echo; echo "Please enter the number of the algorithm to install:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)"; do
+	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -58,6 +61,14 @@ while [ !$finished ]; do
 				algoName="pageRank"
 				echo "  pageRank() works on directed edges"
 				break;;
+			"Shortest Path, Single-Source, No Weight" )
+                                algoName="shortest_ss_no_wt"
+                                echo "  shortest_ss_no_wt() works on directed or undirected edges without weight"
+                                break;;
+			"Shortest Path, Single-Source, Positive Weight" )
+                                algoName="shortest_ss_pos_wt"
+                                echo "  shortest_ss_pos_wt() works on weighted directed or undirected edges without negative weight"
+                                break;;
 			"Shortest Path, Single-Source, Any Weight" )
 				algoName="shortest_ss_any_wt"
 				echo "  shortest_ss_any_wt() works on weighted directed or undirected edges"
@@ -70,6 +81,22 @@ while [ !$finished ]; do
 				algoName="tri_count_fast"
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
+			'Cosine Similarity (single vertex)' )
+				algoName="similarity_cos_single"
+                                echo "  similarity_cos_single() calculates the similarity between one given vertex and all other vertices"
+                                break;;
+			'Cosine Similary (all vertices)' )
+				algoName="similarity_cos"
+                                echo "  similarity_cos() calculates the similarity between all vertices"
+                                break;;
+	                'Jaccard Similarity (single vertex)' )
+                                algoName="similarity_jaccard_single"
+                                echo "  similarity_jaccard_single() calculates the similarity between one given vertex and all other vertices"
+                                break;;
+                        'Jaccard Similary (all vertices)' )
+                                algoName="similarity_jaccard"
+                                echo "  similarity_jaccard() calculates the similarity between all vertices"
+                                break;;
 			"EXIT" )
 				finished=true
 				break;;
@@ -86,10 +113,10 @@ while [ !$finished ]; do
 	# Copy the algorithm template file to the destination file.
 	templPath="./templates"
 	genPath="./generated"
-	cp ${templPath}/${algoName}.gtmp ${templPath}/${algoName}.gsql;
+	cp ${templPath}/${algoName}.gtmp ${genPath}/${algoName}_tmp.gsql;
 
 	# Replace *graph* placeholder
-	sed -i "s/\*graph\*/$grph/g" ${templPath}/${algoName}.gsql
+	sed -i "s/\*graph\*/$grph/g" ${genPath}/${algoName}_tmp.gsql
 	
 	echo; echo "Available vertex and edge types:"
 	gsql -g $grph ls|grep '\- VERTEX\|\DIRECTED EDGE'
@@ -97,18 +124,22 @@ while [ !$finished ]; do
 	echo "Please enter the vertex type(s) and edge type(s) for running ${algo}."
 	echo "   Use commas to separate multiple types [ex: type1, type2]"
 	echo "   Leaving this blank will select all available types"
+	echo " Similarity algorithms only take single vertex type"
 	echo
 
-	# 3. Ask for vertex types. Replace *vertex-types* placeholder.
+	# 3. Ask for vertex types. Replace *vertex-types* placeholder. For similarity algos, only take one vertex type.
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
-	if [ "${vts}" == "" ]; then
+	if [[ $algoName == similarity* ]]; then #[ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ] || [ "${algoName}" == "similarity_jaccard" ] || [ "${algoName}" == "similarity_jaccard_single" ]; then
+		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
+	elif [ "${vts}" == "" ]; then
 		vts="ANY"
 	else
-		vts=${vts/,/.*, }
+		vts=${vts/,/.*, }   # replace the delimiter
 		vts="${vts}.*"
 	fi
-	sed -i "s/\*vertex-types\*/$vts/g" ${templPath}/${algoName}.gsql
+	sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
+	
 
 	# 4. Ask for edge types. Replace *edge-types* placeholder.
 	read -p 'Edge types: ' egs
@@ -133,7 +164,7 @@ while [ !$finished ]; do
 					outs="${outs} ${3} ${4}.${1}(\"$x\")"
 			fi
 		done
-		sed -i "s/\*${2}\*/$outs/g" ${templPath}/${algoName}.gsql
+		sed -i "s/\*${2}\*/$outs/g" ${genPath}/${algoName}_tmp.gsql
 		IFS=$OIFS
 	}
 
@@ -153,125 +184,210 @@ while [ !$finished ]; do
 		egs=${egs/,/|}
 		egs="(${egs})"
 	fi
-	sed -i "s/\*edge-types\*/$egs/g" ${templPath}/${algoName}.gsql
+	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
 
-	# 5. Drop queries and subqueries in order
+	# 4.2 Ask for reverse edge type for similarity algos. 
+        if [[ ${algoName} == similarity* ]]; then
+		read -p 'Second Hop Edge type: ' edge2
+                edge2=${edge2//[[:space:]]/}
+		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}_tmp.gsql
+	fi
+
+
+     	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ]; then
+		while true; do
+                	read -p "Edge attribute that stores FLOAT weight:"  weight
+			if [[ $(countEdgeAttr $weight) > 0 ]]; then
+				sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}_tmp.gsql
+				break;
+			else
+				echo " *** Edge attribute name not found. Try again."
+			fi
+		done
+        fi
+
+        if [ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ]; then
+        	while true; do
+	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
+                        weight=${weight//[[:space:]]/}
+                        if [ "${weight}" == "" ]; then   #when there is no weight attribute, use unified weight
+				sed -i "s/e\.\*edge-weight\*/1/g" ${genPath}/${algoName}_tmp.gsql
+				break; 
+			elif [[ $(countEdgeAttr $weight) > 0 ]]; then   #when there is the weight attribute
+                                sed -i "s/\*edge-weight\*/$weight/g" ${genPath}/${algoName}_tmp.gsql
+				break;
+			else
+                                echo " *** Edge attribute name not found. Try again."
+                        fi
+		done
+        fi
+
+: <<'END'
+	# 6. Drop queries and subqueries in order
 	gsql -g $grph "DROP QUERY ${algoName}"
 	gsql -g $grph "DROP QUERY ${algoName}$fExt"
 	gsql -g $grph "DROP QUERY ${algoName}$aExt"
 	# Search for subqueries and drop them
 	# DOESN'T YET WORK FOR MULTIPLE SUBQUERIES BELONGING TO ONE MAIN QUERY
 	subqueryClue="\*SUB\* CREATE QUERY"
-	subqueryLine=$(grep "$subqueryClue" ${templPath}/${algoName}.gsql)
-	if [[ $(grep -c "$subqueryClue" ${templPath}/${algoName}.gsql) > 0 ]]; then
+	subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}.gsql)
+	if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}.gsql) > 0 ]]; then
 		subqueryWords=( $subqueryLine )
 		gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
 	fi
-	
+END
 	
 ###################################################
-# 6. Create up to 3 versions of the algorithm:
+# 7. Create up to 3 versions of the algorithm:
 # ${algoName}      produces JSON output
 # ${algoName}$fExt writes output to a file
 # ${algoName}$aExt saves output to graph attribute (if they exist)
 
-	cp ${templPath}/${algoName}.gsql ${templPath}/${algoName}$fExt.gsql;
-	cp ${templPath}/${algoName}.gsql ${templPath}/${algoName}$aExt.gsql;
-	
-	# Finalize the JSON (ACCMulator) version of the query
-	sed -i 's/\*EXT\*//g' ${templPath}/${algoName}.gsql;   # Cut the *EXT* string
-	sed -i 's/\*SUB\*//g' ${templPath}/${algoName}.gsql;   # Cut the *SUB* string
-	sed -i '/^\*ATTR\*/ d' ${templPath}/${algoName}.gsql;  # Delete lines with *ATTR*
-	sed -i 's/\*ACCM\*//g' ${templPath}/${algoName}.gsql;  # Cut the #ACCM# string
-	sed -i '/^\*FILE\*/ d' ${templPath}/${algoName}.gsql; # Delete lines with *FILE*
-	echo; echo "gsql -g $grph ${templPath}/${algoName}.gsql"
-	gsql -g $grph ${templPath}/${algoName}.gsql
-	mv ${templPath}/${algoName}.gsql ${genPath}/${algoName}.gsql
-	
-	# Finalize the FILE output version of the query
-	# Check if this algorithm has *FILE*
-	if [[ $(grep -c "\*FILE\*" ${templPath}/${algoName}$fExt.gsql) == 0 ]]; then
-		rm ${templPath}/${algoName}$fExt.gsql
-	else
-		sed -i "s/\*EXT\*/$fExt/g" ${templPath}/${algoName}$fExt.gsql;  # *EXT* -> $fExt
-		sed -i '/^\*SUB\*/ d' ${templPath}/${algoName}$fExt.gsql;  # Del *SUB* lines
-		sed -i '/^\*ATTR\*/ d' ${templPath}/${algoName}$fExt.gsql; # Del *ATTR* lines
-		sed -i '/^\*ACCM\*/ d' ${templPath}/${algoName}$fExt.gsql; # Del *ACCM* lines
-		sed -i 's/\*FILE\*//g' ${templPath}/${algoName}$fExt.gsql; # Cut *FILE* string
-		echo; echo gsql -g $grph ${templPath}/${algoName}$fExt.gsql
-		gsql -g $grph ${templPath}/${algoName}$fExt.gsql
-		mv ${templPath}/${algoName}$fExt.gsql ${genPath}/${algoName}$fExt.gsql
-	fi
-		
-	# Check if this algorithm has *ATTR*
-	if [[ $(grep -c "\*ATTR\*" ${templPath}/${algoName}$aExt.gsql) == 0 ]]; then
-		rm ${templPath}/${algoName}$aExt.gsql
-	else
-	  # Finalize the ATTR version of the query
-	  echo; echo "If your graph schema has appropriate vertex or edge attributes,"
-	  echo " you can update the graph with your results."
-	  read -p 'Do you want to update the graph [yn]? ' updateG
-	
-	  case $updateG in [Yy]*)
-	  	attrQuery=${templPath}/${algoName}$aExt.gsql
-		# *vIntType*
-		if [[ $(countStringInFile "\*vIntAttr\*" $attrQuery) > 0 ]]; then
-		  while true; do
-			read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
-			if [[ $(countVertexAttr $vIntAttr) > 0 ]]; then
-				sed -i "s/\*vIntAttr\*/$vIntAttr/g" ${templPath}/${algoName}$aExt.gsql;
-				break;
-			else
-				echo " *** Vertex attribute name not found. Try again."
-			fi
-		  done
-		fi
+	echo; echo "Please choose a way to show result:"
+        select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge"; do
+        	case $version in
+        		"Show JSON result" )
+                                mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}.gsql;
+				sed -i 's/\*EXT\*//g' ${genPath}/${algoName}.gsql;
+				sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}.gsql;  # Delete lines with *ATTR*
+                                sed -i 's/\*ACCM\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql;
+                                sed -i 's/\*ACCM\*/      /g' ${genPath}/${algoName}.gsql;  # Cut the *ACCM* string, replace by 6 spaces
+                                sed -i '/^\*FILE\*/ d' ${genPath}/${algoName}.gsql; # Delete lines with *FILE*
+				gsql -g $grph "DROP QUERY ${algoName}"
+				subqueryClue="\*SUB\* CREATE QUERY"
+				subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}.gsql)
+				if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}.gsql) > 0 ]]; then
+					subqueryWords=( $subqueryLine )
+					gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+				fi
+                		# Finalize the JSON (ACCMulator) version of the query
+        			sed -i 's/      \*SUB\* //g' ${genPath}/${algoName}.gsql;   # Cut the *SUB* string
+        			echo; echo "gsql -g $grph ${genPath}/${algoName}.gsql"
+        			gsql -g $grph ${genPath}/${algoName}.gsql
+                                break;;
+			
+			"Write to File" )
+				# Finalize the FILE output version of the query
+				mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$fExt.gsql;
+				# Check if this algorithm has *FILE*
+				if [[ $(grep -c "\*FILE\*" ${genPath}/${algoName}$fExt.gsql) == 0 ]]; then
+                			rm ${genPath}/${algoName}$fExt.gsql
+        			else
+                			sed -i "s/\*EXT\*/$fExt/g" ${genPath}/${algoName}$fExt.gsql;  # *EXT* -> $fExt
+					sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ATTR* lines
+					sed -i '/^\*ACCM\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ACCM* lines
+                                        sed -i 's/\*FILE\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql; # Cut *FILE* string
+					sed -i 's/\*FILE\*/      /g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string in query body
+					gsql -g $grph "DROP QUERY ${algoName}$fExt"
+					subqueryClue="\*SUB\* CREATE QUERY"
+					subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$fExt.gsql)
+					if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}$fExt.gsql) > 0 ]]; then
+						subqueryWords=( $subqueryLine )
+						gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+					fi
 
-		# * vFltType*
-		if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
-		  while true; do
-			read -p "Vertex attribute to store FLOAT result (e.g. pageRank): " vFltAttr
-			if [[ $(countVertexAttr $vFltAttr) > 0 ]]; then
-				sed -i "s/\*vFltAttr\*/$vFltAttr/g" $attrQuery;
-				break;
-			else
-				echo " *** Vertex attribute name not found. Try again."
-			fi
-		  done
-		fi			
-		
-		# * vStrType*
-		if [[ $(countStringInFile "\*vStrAttr\*" $attrQuery) > 0 ]]; then
-		  while true; do
-			read -p "Vertex attribute to store STRING result (e.g. path desc): " vStrAttr
-			if [[ $(countVertexAttr $vStrAttr) > 0 ]]; then
-				sed -i "s/\*vStrAttr\*/$vStrAttr/g" $attrQuery;
-				break;
-			else
-				echo " *** Vertex attribute name not found. Try again."
-			fi
-		  done
-		fi
+					sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$fExt.gsql;   # Cut the *SUB* string
+					echo; echo gsql -g $grph ${genPath}/${algoName}$fExt.gsql
+					gsql -g $grph ${genPath}/${algoName}$fExt.gsql
+				fi
+				break;;
+			"Save to Attribute/Insert Edge" )	
+				mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$aExt.gsql;
+				# Check if this algorithm has *ATTR*
+				if [[ $(grep -c "\*ATTR\*" ${genPath}/${algoName}$aExt.gsql) == 0 ]]; then
+					rm ${genPath}/${algoName}$aExt.gsql
+				else
+				  # Finalize the ATTR version of the query
+				  echo; echo "If your graph schema has appropriate vertex or edge attributes,"
+				  echo " you can update the graph with your results."
+				  read -p 'Do you want to update the graph [yn]? ' updateG
 
-		sed -i "s/\*EXT\*/$aExt/g" $attrQuery; # *EXT* > $aExt 
-		sed -i '/^\*SUB\*/ d' $attrQuery;   # Del *SUB* lines
-		sed -i 's/\*ATTR\*//g' $attrQuery;  # Cut *ATTR* string
-		sed -i '/^\*ACCM\*/ d' $attrQuery;  # Del *ACCM* lines
-		sed -i '/^\*FILE\*/ d' $attrQuery;  # Del *FILE*lines
-		echo gsql -g $grph $attrQuery;
-		gsql -g $grph $attrQuery;
-		mv ${templPath}/${algoName}$aExt.gsql ${genPath}/${algoName}$aExt.gsql
-	  ;;
-	  esac
-	fi
-	
+				  case $updateG in [Yy]*)
+					attrQuery=${genPath}/${algoName}$aExt.gsql
+					# *vIntType*
+					if [[ $(countStringInFile "\*vIntAttr\*" $attrQuery) > 0 ]]; then
+					  while true; do
+						read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
+						if [[ $(countVertexAttr $vIntAttr) > 0 ]]; then
+							sed -i "s/\*vIntAttr\*/$vIntAttr/g" ${genPath}/${algoName}$aExt.gsql;
+							break;
+						else
+							echo " *** Vertex attribute name not found. Try again."
+						fi
+					  done
+					fi
+
+					# * vFltType*
+					if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
+					  while true; do
+						read -p "Vertex attribute to store FLOAT result (e.g. pageRank): " vFltAttr
+						if [[ $(countVertexAttr $vFltAttr) > 0 ]]; then
+							sed -i "s/\*vFltAttr\*/$vFltAttr/g" $attrQuery;
+							break;
+						else
+							echo " *** Vertex attribute name not found. Try again."
+						fi
+					  done
+					fi
+
+					# * vStrType*
+					if [[ $(countStringInFile "\*vStrAttr\*" $attrQuery) > 0 ]]; then
+					  while true; do
+						read -p "Vertex attribute to store STRING result (e.g. path desc): " vStrAttr
+						if [[ $(countVertexAttr $vStrAttr) > 0 ]]; then
+							sed -i "s/\*vStrAttr\*/$vStrAttr/g" $attrQuery;
+							break;
+						else
+							echo " *** Vertex attribute name not found. Try again."
+						fi
+					  done
+					fi
+					
+					# edge to insert for similarity algorithms
+					if [[ $(countStringInFile "\*insert-edge-name\*" $attrQuery) > 0 ]]; then
+					  while true; do
+                                                read -p "Name of the edge to insert and store FLOAT result (e.g. insert \"similarity\" edge with one FLOAT attribute called \"score\"): " edgeName
+                                                if [[ $(ifEdgeType $edgeName) > 0 ]]; then
+                                                        sed -i "s/\*insert-edge-name\*/$edgeName/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Edge not found. Try again."
+                                                fi
+                                          done
+					fi
+					sed -i "s/\*EXT\*/$aExt/g" $attrQuery; # *EXT* > $aExt
+                                        sed -i 's/\*ATTR\*CREATE/CREATE/g' $attrQuery;  # Cut *ATTR* string
+					sed -i 's/\*ATTR\*/      /g' $attrQuery;  # Cut *ATTR* string in query body
+					sed -i '/^\*ACCM\*/ d' $attrQuery;  # Del *ACCM* lines
+					sed -i '/^\*FILE\*/ d' $attrQuery;  # Del *FILE*lines
+					gsql -g $grph "DROP QUERY ${algoName}$aExt"
+					subqueryClue="\*SUB\* CREATE QUERY"
+					subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$aExt.gsql)
+					if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}$aExt.gsql) > 0 ]]; then
+						subqueryWords=( $subqueryLine )
+						gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+					fi				
+					sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$aExt.gsql;   # Cut the *SUB* string
+					echo gsql -g $grph $attrQuery;
+					gsql -g $grph $attrQuery;
+				  ;;
+				  esac
+				fi
+				break;;
+                        * )
+                                echo "Not a valid choice. Try again."
+                                ;;
+                esac
+        done
+
 	echo "Created the following algorithms:"
 	gsql -g $grph ls | grep $algoName
 	echo
 done
 rm schema.$grph
 
-# 7. Install the queries
+# 8. Install the queries
 read -p "Algorithm files have been created. Do want to install them now [yn]? " doInstall
 case $doInstall in
 	[Yy] )
