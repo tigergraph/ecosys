@@ -135,7 +135,7 @@ while [ !$finished ]; do
 	elif [ "${vts}" == "" ]; then
 		vts="ANY"
 	else
-		vts=${vts/,/.*, }   # replace the delimiter
+		vts=${vts//,/.*, }   # replace the delimiter
 		vts="${vts}.*"
 	fi
 	sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
@@ -181,7 +181,7 @@ while [ !$finished ]; do
 	#esac
 
 	if [[ $egs = *","* ]]; then
-		egs=${egs/,/|}
+		egs=${egs//,/|}
 		egs="(${egs})"
 	fi
 	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
