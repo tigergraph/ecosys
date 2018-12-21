@@ -82,20 +82,20 @@ while [ !$finished ]; do
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
 			'Cosine Similarity (single vertex)' )
-				algoName="similarity_cos_single"
-                                echo "  similarity_cos_single() calculates the similarity between one given vertex and all other vertices"
+				algoName="similarity_nbor_cos_ss"
+                                echo "  similarity_nbor_cos_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
 			'Cosine Similary (all vertices)' )
-				algoName="similarity_cos"
-                                echo "  similarity_cos() calculates the similarity between all vertices"
+				algoName="similarity_nbor_cos_as"
+                                echo "  similarity_nbor_cos_as() calculates the similarity between all vertices"
                                 break;;
 	                'Jaccard Similarity (single vertex)' )
-                                algoName="similarity_jaccard_single"
-                                echo "  similarity_jaccard_single() calculates the similarity between one given vertex and all other vertices"
+                                algoName="similarity_nbor_jaccard_ss"
+                                echo "  similarity_nbor_jaccard_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
                         'Jaccard Similary (all vertices)' )
-                                algoName="similarity_jaccard"
-                                echo "  similarity_jaccard() calculates the similarity between all vertices"
+                                algoName="similarity_nbor_jaccard_as"
+                                echo "  similarity_nbor_jaccard_as() calculates the similarity between all vertices"
                                 break;;
 			"EXIT" )
 				finished=true
@@ -130,12 +130,12 @@ while [ !$finished ]; do
 	# 3. Ask for vertex types. Replace *vertex-types* placeholder. For similarity algos, only take one vertex type.
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
-	if [[ $algoName == similarity* ]]; then #[ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ] || [ "${algoName}" == "similarity_jaccard" ] || [ "${algoName}" == "similarity_jaccard_single" ]; then
+	if [[ $algoName == similarity* ]]; then 
 		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
 	elif [ "${vts}" == "" ]; then
 		vts="ANY"
 	else
-		vts=${vts/,/.*, }   # replace the delimiter
+		vts=${vts//,/.*, }   # replace the delimiter
 		vts="${vts}.*"
 	fi
 	sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
@@ -181,7 +181,7 @@ while [ !$finished ]; do
 	#esac
 
 	if [[ $egs = *","* ]]; then
-		egs=${egs/,/|}
+		egs=${egs//,/|}
 		egs="(${egs})"
 	fi
 	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
@@ -207,7 +207,7 @@ while [ !$finished ]; do
 		done
         fi
 
-        if [ "${algoName}" == "similarity_cos_single" ] || [ "${algoName}" == "similarity_cos" ]; then
+        if [[ ${algoName} == similarity_nbor_cos* ]]; then
         	while true; do
 	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
                         weight=${weight//[[:space:]]/}
@@ -245,7 +245,7 @@ END
 # ${algoName}$aExt saves output to graph attribute (if they exist)
 
 	echo; echo "Please choose a way to show result:"
-        select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge"; do
+        select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge" "All of the above"; do
         	case $version in
         		"Show JSON result" )
                                 mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}.gsql;
@@ -375,6 +375,134 @@ END
 				  esac
 				fi
 				break;;
+                        "All of the above")
+                                #ACCUM version
+                                cp ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}.gsql;
+                                sed -i 's/\*EXT\*//g' ${genPath}/${algoName}.gsql;
+                                sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}.gsql;  # Delete lines with *ATTR*
+                                sed -i 's/\*ACCM\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql;
+                                sed -i 's/\*ACCM\*/      /g' ${genPath}/${algoName}.gsql;  # Cut the *ACCM* string, replace by 6 spaces
+                                sed -i '/^\*FILE\*/ d' ${genPath}/${algoName}.gsql; # Delete lines with *FILE*
+                                gsql -g $grph "DROP QUERY ${algoName}"
+                                subqueryClue="\*SUB\* CREATE QUERY"
+                                subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}.gsql)
+                                if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}.gsql) > 0 ]]; then
+                                        subqueryWords=( $subqueryLine )
+                                        gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+                                fi
+                                # Finalize the JSON (ACCMulator) version of the query
+                                sed -i 's/      \*SUB\* //g' ${genPath}/${algoName}.gsql;   # Cut the *SUB* string
+                                echo; echo "gsql -g $grph ${genPath}/${algoName}.gsql"
+                                gsql -g $grph ${genPath}/${algoName}.gsql
+                        
+                                #FILE version
+                                # Finalize the FILE output version of the query
+                                cp ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$fExt.gsql;
+                                # Check if this algorithm has *FILE*
+                                if [[ $(grep -c "\*FILE\*" ${genPath}/${algoName}$fExt.gsql) == 0 ]]; then
+                                        rm ${genPath}/${algoName}$fExt.gsql
+                                else
+                                        sed -i "s/\*EXT\*/$fExt/g" ${genPath}/${algoName}$fExt.gsql;  # *EXT* -> $fExt
+                                        sed -i '/^\*ATTR\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ATTR* lines
+                                        sed -i '/^\*ACCM\*/ d' ${genPath}/${algoName}$fExt.gsql; # Del *ACCM* lines
+                                        sed -i 's/\*FILE\*CREATE/CREATE/g' ${genPath}/${algoName}.gsql; # Cut *FILE* string
+                                        sed -i 's/\*FILE\*/      /g' ${genPath}/${algoName}$fExt.gsql; # Cut *FILE* string in query body
+                                        gsql -g $grph "DROP QUERY ${algoName}$fExt"
+                                        subqueryClue="\*SUB\* CREATE QUERY"
+                                        subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$fExt.gsql)
+                                        if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}$fExt.gsql) > 0 ]]; then
+                                                subqueryWords=( $subqueryLine )
+                                                gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+                                        fi
+
+                                        sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$fExt.gsql;   # Cut the *SUB* string
+                                        echo; echo gsql -g $grph ${genPath}/${algoName}$fExt.gsql
+                                        gsql -g $grph ${genPath}/${algoName}$fExt.gsql
+                                fi
+
+                                #ATTR version
+                                mv ${genPath}/${algoName}_tmp.gsql ${genPath}/${algoName}$aExt.gsql;
+                                # Check if this algorithm has *ATTR*
+                                if [[ $(grep -c "\*ATTR\*" ${genPath}/${algoName}$aExt.gsql) == 0 ]]; then
+                                        rm ${genPath}/${algoName}$aExt.gsql
+                                else
+                                  # Finalize the ATTR version of the query
+                                  echo; echo "If your graph schema has appropriate vertex or edge attributes,"
+                                  echo " you can update the graph with your results."
+                                  read -p 'Do you want to update the graph [yn]? ' updateG
+
+                                  case $updateG in [Yy]*)
+                                        attrQuery=${genPath}/${algoName}$aExt.gsql
+                                        # *vIntType*
+                                        if [[ $(countStringInFile "\*vIntAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
+                                                if [[ $(countVertexAttr $vIntAttr) > 0 ]]; then
+                                                        sed -i "s/\*vIntAttr\*/$vIntAttr/g" ${genPath}/${algoName}$aExt.gsql;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+                                        # * vFltType*
+                                        if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store FLOAT result (e.g. pageRank): " vFltAttr
+                                                if [[ $(countVertexAttr $vFltAttr) > 0 ]]; then
+                                                        sed -i "s/\*vFltAttr\*/$vFltAttr/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+                                        # * vStrType*
+                                        if [[ $(countStringInFile "\*vStrAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store STRING result (e.g. path desc): " vStrAttr
+                                                if [[ $(countVertexAttr $vStrAttr) > 0 ]]; then
+                                                        sed -i "s/\*vStrAttr\*/$vStrAttr/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+                                        # edge to insert for similarity algorithms
+                                        if [[ $(countStringInFile "\*insert-edge-name\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Name of the edge to insert and store FLOAT result (e.g. insert \"similarity\" edge with one FLOAT attribute called \"score\"): " edgeName
+                                                if [[ $(ifEdgeType $edgeName) > 0 ]]; then
+                                                        sed -i "s/\*insert-edge-name\*/$edgeName/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Edge not found. Try again."
+                                                fi
+                                          done
+                                        fi
+                                        sed -i "s/\*EXT\*/$aExt/g" $attrQuery; # *EXT* > $aExt
+                                        sed -i 's/\*ATTR\*CREATE/CREATE/g' $attrQuery;  # Cut *ATTR* string
+                                        sed -i 's/\*ATTR\*/      /g' $attrQuery;  # Cut *ATTR* string in query body
+                                        sed -i '/^\*ACCM\*/ d' $attrQuery;  # Del *ACCM* lines
+                                        sed -i '/^\*FILE\*/ d' $attrQuery;  # Del *FILE*lines
+                                        gsql -g $grph "DROP QUERY ${algoName}$aExt"
+                                        subqueryClue="\*SUB\* CREATE QUERY"
+                                        subqueryLine=$(grep "$subqueryClue" ${genPath}/${algoName}$aExt.gsql)
+                                        if [[ $(grep -c "$subqueryClue" ${genPath}/${algoName}$aExt.gsql) > 0 ]]; then
+                                                subqueryWords=( $subqueryLine )
+                                                gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
+                                        fi
+                                        sed -i 's/      \*SUB\*/ /g' ${genPath}/${algoName}$aExt.gsql;   # Cut the *SUB* string
+                                        echo gsql -g $grph $attrQuery;
+                                        gsql -g $grph $attrQuery;
+                                  ;;
+                                  esac
+                                fi
+                                break;;
                         * )
                                 echo "Not a valid choice. Try again."
                                 ;;

@@ -1,4 +1,4 @@
-  CREATE QUERY similarity_cos_sub_file (vertex input) FOR GRAPH movie RETURNS (MapAccum<vertex, float>){
+CREATE QUERY similarity_nbor_cos_as_sub (vertex input) FOR GRAPH movie RETURNS (MapAccum<vertex, float>){
 /* This subquery calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 */
@@ -14,7 +14,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
         neighbours = SELECT t
                      FROM subjects:s -(reverse_Likes:e)-> Person:t
-        	     WHERE t != input and getvid(input) < getvid(t)
+                     WHERE t != input and getvid(input) < getvid(t)
                      ACCUM t.@numerator += s.@numerator * e.weight;
 
         neighbours = SELECT s
@@ -27,36 +27,29 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 }
 
 
-      CREATE QUERY similarity_cos_file (int topk, STRING filepath) FOR GRAPH movie{
-
-/* This query calls the subquery similarity_cos_sub_file to get the similarity score of every pair of vertices.
+CREATE QUERY similarity_nbor_cos_as (int topk) FOR GRAPH movie{
+/* This query calls the subquery similarity_nbor_cos_as_sub to get the similarity score of every pair of vertices.
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
    A similarity edge with one float attribute in the schema is required for this version.
 */
-
-
         TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-        FILE f(filepath);
         MapAccum<vertex, float> @single_result;
         HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
 
         start = {Person.*}; 
         start = SELECT s
                 FROM start:s
-                ACCUM s.@single_result = similarity_cos_sub_file (s)
-                POST-ACCUM
+                ACCUM s.@single_result = similarity_nbor_cos_as_sub (s)
+                POST-ACCUM 
                         FOREACH (key, value) IN s.@single_result DO
                                 @@total_result += SIMILARITY_SCORE(s, key, value)
                         END
-        	;
+            ;
         
-        f.println("Vertex1","Vertex2","Similarity");
-        FOREACH item IN @@total_result DO
-                f.println(item.vertex1, item.vertex2, item.score);
-        END;
+        PRINT @@total_result;
 
 }
 
-#install query similarity_cos_sub_file
-#install query similarity_cos_file 
+#install query similarity_nbor_cos_as_sub
+#install query similarity_nbor_cos_as 
