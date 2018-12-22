@@ -1,0 +1,45 @@
+*ATTR*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex<*vertex-types*> input) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex input, int topk) FOR GRAPH *graph* {
+*FILE*CREATE QUERY similarity_nbor_cos_ss*EXT* (vertex input, int topk, STRING filepath) FOR GRAPH *graph* {
+/* This query calculates the Cosine Similarity between a given vertex and every other vertex.
+Cosine similarity = A \dot B / ||A|| \dot ||B||
+1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
+2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
+   A similarity edge with one float attribute in the schema is required for this version.
+*/
+
+*FILE*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+*FILE*  FILE f(filepath);
+*ACCM*  TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+
+*FILE*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;
+*ACCM*  HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;    
+        SumAccum<float> @numerator, @@norm1, @norm2;
+
+        start1 = {input};
+        subjects = SELECT t
+                   FROM start1:s -(*edge-types*:e)-> :t
+                   ACCUM t.@numerator = e.*edge-weight*,
+                         @@norm1 += pow(e.*edge-weight*, 2);
+
+        neighbours = SELECT t
+                     FROM subjects:s -(*sec-edge-types*:e)-> *vertex-types*:t
+                     WHERE t != input
+                     ACCUM t.@numerator += s.@numerator * e.*edge-weight*;
+
+        neighbours = SELECT s
+                     FROM neighbours:s -(*edge-types*:e)-> :t
+                     ACCUM s.@norm2 += pow(e.*edge-weight*, 2)
+*ATTR*        	     POST-ACCUM insert into *insert-edge-name* values(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+*FILE*               POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+*ACCM*        	     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+                     ;
+*ACCM*  PRINT @@result_topk;
+
+*FILE*  f.println("Vertex1","Vertex2","Similarity");
+*FILE*  FOREACH item IN @@result_topk DO
+*FILE*           f.println(item.vertex1, item.vertex2, item.score);
+*FILE*  END;
+
+}
+
