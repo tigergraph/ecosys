@@ -74,7 +74,7 @@ namespace UDIMPL {
     size_t sz = 0;
     uint32_t batch = 0;
     //scan all found internal ids, batch by batch (10000 per batch)
-    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "The total vertices that need to be scanned is: " << vlist.size() << std::endl;
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "The total \'" << vtype << "\' vertices that need to be scanned is: " << vlist.size() << std::endl;
     for (auto& vt : vlist.data_) {
       ++sz;
       ids.push_back(vt.vid);
@@ -108,11 +108,9 @@ namespace UDIMPL {
        << unknownIds.size() << " unknown vids being removed from engine." << std::endl;
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
     size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
-    graphupdates->BeforeAU();
     for (auto id : unknownIds) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
-    graphupdates->AfterAU();
     GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "Finished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
     msg = ss.str();
