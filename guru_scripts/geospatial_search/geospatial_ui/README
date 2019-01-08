@@ -1,6 +1,6 @@
 Please follow the steps to deploy:
 
-1. Clone the code of this folder to your local machine. ATTENTION: this machine has to be different with your machine that you installed TigerGraph.
+1. Clone the code of this folder to your local machine. ATTENTION: this machine has to be different with the machine that installed TigerGraph.
 
 2. Install http-serve at https://www.npmjs.com/package/http-serve
 
@@ -12,4 +12,4 @@ Please follow the steps to deploy:
 
 6. Run the command 'http-serve ./ -P http://tigergraph-server-ip:9000', where tigergraph-server-ip is the IP of the machine with TigerGraph installed. A http server will start.
 
-7. Visit 'http://geo-demo-ip:9000' in your browser, where geo-demo-ip is the ip of your local machine that you deploy this demo.
+7. Visit 'http://geo-demo-ip:9000' in your browser, where geo-demo-ip is the IP of your local machine that you deploy this demo.
