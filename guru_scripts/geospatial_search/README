@@ -1,6 +1,6 @@
 Please follow the steps to install.
 
-1. Import the solution.tar.gz from your graph studio.
+1. Import the solution.tar.gz from your GraphStudio.
 
 2. Copy or merge ExprUtil.hpp and ExprFunctions.hpp to ~/tigergraph/dev/gdk/gsql/src/QueryUdf/
 
@@ -12,4 +12,6 @@ Please follow the steps to install.
 
 6. Run loader.gsql by using command gsql -g MyGraph loader.gsql 
 
-7. Follow the instructions under geospatial_ui folder to deploy the geo spatial demo UI.
+7. Install queries in Write Queries page of GraphStudio.
+
+8. Follow the instructions under geospatial_ui folder to deploy the geo spatial demo UI.
