@@ -92,7 +92,7 @@ typedef std::string string; //XXX DON'T REMOVE
 
   inline void deg_to_dms(double deg, Degree& degree) { 
     degree.day = int(deg); 
-    double md = std::abs(deg - degree.day) * 60; 
+    double md = (deg - degree.day) * 60; 
     degree.min = int(md); 
     degree.sec = (md - degree.min) * 60; 
   } 
