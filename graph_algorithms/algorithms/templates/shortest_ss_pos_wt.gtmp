@@ -1,8 +1,8 @@
-*ATTR*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
-*FILE*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX source) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX source, BOOL display) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_pos_wt*EXT* (VERTEX source, STRING filepath) FOR GRAPH *graph* {
 /* This query is Single-Source Shortest Path with positive weights on edges
-It calculates the shortest distance from the given vertex v to all other connected vertices, 
+It calculates the shortest distance from the given vertex source to all other connected vertices, 
 and shows one shortest path between them.
 The JSON version also show visualization of the network.
 The attribute version only store the distance into attribute, not the path.
@@ -16,10 +16,10 @@ The attribute version only store the distance into attribute, not the path.
         float epsilon = 0.000000001;
 
   ##### Initialization  #####
-        Source = {v};
+        Source = {source};
         Source = SELECT s FROM Source:s 
                  ACCUM s.@visited += true, s.@dis = 0;
-        ResultSet = {v};
+        ResultSet = {source};
 
   ##### Calculate distances  #####
         WHILE(Source.size()>0) DO
@@ -32,7 +32,7 @@ The attribute version only store the distance into attribute, not the path.
         END;
 
   ##### Find the paths  #####
-        Source = {v};
+        Source = {source};
         WHILE(Source.size()>0) DO
           Source = SELECT t
                    FROM Source:s -(*edge-types*:e)-> :t

@@ -1,0 +1,50 @@
+*ATTR*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
+*FILE*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK, STRinG filepath) FOR GRAPH *graph* {
+/* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
+Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
+1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
+2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
+   A similarity edge with one FLOAT attribute in the schema is required for this version.
+*/
+
+*FILE*  TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
+*FILE*  FILE f(filepath);
+*ACCM*  TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
+
+*FILE*  HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;
+*ACCM*  HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;
+        SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+*ATTR*  SumAccum<FLOAT> @jaccard;
+
+        Start (ANY) = {source};
+        Start = SELECT s
+        	FROM Start:s
+                ACCUM @@set_size_A += s.outdegree("*edge-types*");
+
+        Subjects = SELECT t
+                   FROM Start:s-(*edge-types*:e)-:t;
+
+        Others = SELECT t
+                 FROM Subjects:s -(*sec-edge-types*:e)- :t
+                 WHERE t != source
+                 ACCUM t.@intersection_size += 1,
+                       t.@set_size_B = t.outdegree("*edge-types*")
+*ATTR*           POST-ACCUM t.@jaccard = t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size)
+*ATTR*           ORDER BY t.@jaccard DESC
+*ATTR*           LIMIT topK
+*FILE*           POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+*ACCM*           POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                 ;
+*ATTR*  Others = SELECT s
+*ATTR*           FROM Others:s
+*ATTR*           POST-ACCUM insert into *insert-edge-name* values(source, s, s.@jaccard);
+
+*ACCM*  PRINT @@result_topK;
+
+*FILE*  f.println("Vertex1","Vertex2","Similarity");
+*FILE*  FOREACH item IN @@result_topK DO
+*FILE*          f.println(item.vertex1, item.vertex2, item.score);
+*FILE*  END;
+}
+

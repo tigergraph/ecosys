@@ -1,10 +1,10 @@
-  CREATE QUERY cc_subquery_file (VERTEX v, INT numVert, INT maxHops) FOR GRAPH social RETURNS(FLOAT) {
-# Subquery returns closeness centrality for vertex v in graph with numVert vertices 
+  CREATE QUERY cc_subquery_file (VERTEX source, INT numVert, INT maxHops) FOR GRAPH social RETURNS(FLOAT) {
+# Subquery returns closeness centrality for vertex source in graph with numVert vertices 
         SumAccum<int> @@currDist, @@totalDist;
          OrAccum<bool> @visited;
  
-# Initialize: Set the input vertex v as the starting point
-        Start = {v};
+# Initialize: Set the input vertex source as the starting point
+        Start = {source};
         Start = SELECT s FROM Start:s
                 ACCUM s.@visited += true;
  
@@ -12,7 +12,7 @@
         WHILE (Start.size() > 0) LIMIT maxHops DO    # explore up to (maxHops) hops FROM s
                 @@currDist += 1;
                 # Move FROM the current start set to the neighboring set of (unvisited) vertices
-                Start = SELECT t FROM Start:s -(Friend:e)-> :t
+                Start = SELECT t FROM Start:s -((Friend|Also_Friend):e)-> :t
                         WHERE t.@visited == false AND t != s
                         POST-ACCUM t.@visited += true;
                                    @@totalDist += Start.size() * @@currDist;
@@ -33,7 +33,7 @@
         INT numVert;
         INT maxHops = 10;      # measure distance for vertices up to 10 hops away
   
-        Start = {ANY};
+        Start = {Person.*};
 
         #Total number of vertices considered in graph
         numVert = Start.size();

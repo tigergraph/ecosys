@@ -1,6 +1,6 @@
-      CREATE QUERY shortest_ss_pos_wt_file (VERTEX v, STRING filepath) FOR GRAPH social {
+      CREATE QUERY shortest_ss_pos_wt_file (VERTEX source, STRING filepath) FOR GRAPH generic {
 /* This query is Single-Source Shortest Path with positive weights on edges
-It calculates the shortest distance from the given vertex v to all other connected vertices, 
+It calculates the shortest distance from the given vertex source to all other connected vertices, 
 and shows one shortest path between them.
 The JSON version also show visualization of the network.
 The attribute version only store the distance into attribute, not the path.
@@ -13,15 +13,15 @@ The attribute version only store the distance into attribute, not the path.
         float epsilon = 0.000000001;
 
   ##### Initialization  #####
-        Source = {v};
+        Source = {source};
         Source = SELECT s FROM Source:s 
                  ACCUM s.@visited += true, s.@dis = 0;
-        ResultSet = {v};
+        ResultSet = {source};
 
   ##### Calculate distances  #####
         WHILE(Source.size()>0) DO
                 Source = SELECT t
-                         FROM Source:s -(:e)-> :t
+                         FROM Source:s -(LinkTo:e)-> :t
                          WHERE t.@dis > s.@dis + e.weight
                          ACCUM t.@dis += s.@dis + e.weight,
                                t.@visited += true;
@@ -29,10 +29,10 @@ The attribute version only store the distance into attribute, not the path.
         END;
 
   ##### Find the paths  #####
-        Source = {v};
+        Source = {source};
         WHILE(Source.size()>0) DO
           Source = SELECT t
-                   FROM Source:s -(:e)-> :t
+                   FROM Source:s -(LinkTo:e)-> :t
                    WHERE abs((t.@dis) - (s.@dis+e.weight)) < epsilon
                    ACCUM t.@path = s.@path + [t];
         END;

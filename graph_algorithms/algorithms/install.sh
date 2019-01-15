@@ -82,20 +82,20 @@ while [ !$finished ]; do
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
 			'Cosine Similarity (single vertex)' )
-				algoName="similarity_nbor_cos_ss"
-                                echo "  similarity_nbor_cos_ss() calculates the similarity between one given vertex and all other vertices"
+				algoName="cosine_nbor_ss"
+                                echo "  cosine_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
 			'Cosine Similary (all vertices)' )
-				algoName="similarity_nbor_cos_as"
-                                echo "  similarity_nbor_cos_as() calculates the similarity between all vertices"
+				algoName="cosine_nbor_ap"
+                                echo "  cosine_nbor_ap() calculates the similarity between all vertices"
                                 break;;
 	                'Jaccard Similarity (single vertex)' )
-                                algoName="similarity_nbor_jaccard_ss"
-                                echo "  similarity_nbor_jaccard_ss() calculates the similarity between one given vertex and all other vertices"
+                                algoName="jaccard_nbor_ss"
+                                echo "  jaccard_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
                         'Jaccard Similary (all vertices)' )
-                                algoName="similarity_nbor_jaccard_as"
-                                echo "  similarity_nbor_jaccard_as() calculates the similarity between all vertices"
+                                algoName="jaccard_nbor_ap"
+                                echo "  jaccard_nbor_ap() calculates the similarity between all vertices"
                                 break;;
 			"EXIT" )
 				finished=true
@@ -130,7 +130,7 @@ while [ !$finished ]; do
 	# 3. Ask for vertex types. Replace *vertex-types* placeholder. For similarity algos, only take one vertex type.
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
-	if [[ $algoName == similarity* ]]; then 
+	if [[ $algoName == cosine* ]] || [[ $algoName == jaccard* ]]; then 
 		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
 	elif [ "${vts}" == "" ]; then
 		vts="ANY"
@@ -187,7 +187,7 @@ while [ !$finished ]; do
 	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
 
 	# 4.2 Ask for reverse edge type for similarity algos. 
-        if [[ ${algoName} == similarity* ]]; then
+        if [[ $algoName == cosine* ]] || [[ $algoName == jaccard* ]]; then
 		read -p 'Second Hop Edge type: ' edge2
                 edge2=${edge2//[[:space:]]/}
 		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}_tmp.gsql
@@ -207,7 +207,7 @@ while [ !$finished ]; do
 		done
         fi
 
-        if [[ ${algoName} == similarity_nbor_cos* ]]; then
+        if [[ ${algoName} == cosine* ]]; then
         	while true; do
 	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
                         weight=${weight//[[:space:]]/}

@@ -3,6 +3,6 @@ drop all
 create vertex Person (primary_id name string, name string)
 create vertex Movie (primary_id name string, name string)
 create directed edge Likes(from Person, to Movie, weight float) with reverse_edge = "reverse_Likes"
-create undirected edge similarity (from Person, to Person, score float)
+create directed edge similarity (from Person, to Person, score float)
 
 create graph movie(*)
