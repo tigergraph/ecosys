@@ -10,9 +10,9 @@
 ############################################################
 
 # TGT_DATA_ROOT_FOLDER is the final destination store your processed raw data
-#export TGT_DATA_ROOT_FOLDER=/home/ubuntu/data/raw_data
+#export TGT_DATA_ROOT_FOLDER=/home/tigergraph/ldbc_snb_data
 
-gsql -g ldbc "run loading job load_ldbc_edge using 
+time gsql -g ldbc "run loading job load_ldbc_edge using 
 person_file=\"${TGT_DATA_ROOT_FOLDER}/person\", 
 person_mail_file=\"${TGT_DATA_ROOT_FOLDER}/person_email_emailaddress\", 
 person_speak_file=\"${TGT_DATA_ROOT_FOLDER}/person_speaks_language\", 

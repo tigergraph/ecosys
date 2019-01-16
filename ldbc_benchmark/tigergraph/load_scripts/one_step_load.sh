@@ -10,12 +10,12 @@
 ############################################################
 
 #change to your raw data file
-export RAW_DATA_PATH=/home/ubuntu/data/social_network/
+export RAW_DATA_PATH=/home/ubuntu/ldbc_snb_data_raw/social_network/
 # numThreads specified in ldbc_snb_datagen/params.ini
 export TOTAL_FILE_NUMBER=6
 # this is the final destination to store your processed raw data 
 # TGT_DATA_ROOT_FOLDER must be different with RAW_DATA_PATH
-export TGT_DATA_ROOT_FOLDER=/home/ubuntu/data/raw_data
+export TGT_DATA_ROOT_FOLDER=/home/tigergraph/ldbc_snb_data
 
 bash pre_process_data.sh
 echo "------------------------------completed pre-processing raw data----------------------------"

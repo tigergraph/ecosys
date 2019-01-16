@@ -10,10 +10,10 @@
 ############################################################
 
 # TGT_DATA_ROOT_FOLDER is the final destination store your processed raw data
-#export TGT_DATA_ROOT_FOLDER=/home/ubuntu/data/raw_data
+#export TGT_DATA_ROOT_FOLDER=/home/tigergraph/ldbc_snb_data
 
 # RAW_DATA_PATH is the path store your raw data currently
-#export RAW_DATA_PATH=/home/ubuntu/data/social_network/
+#export RAW_DATA_PATH=/home/ubuntu/ldbc_snb_data_raw/social_network/
 
 if [ -d "${TGT_DATA_ROOT_FOLDER}" ]; then rm -Rf ${TGT_DATA_ROOT_FOLDER}; fi
 mkdir ${TGT_DATA_ROOT_FOLDER}

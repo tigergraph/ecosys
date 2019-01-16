@@ -9,13 +9,13 @@
 # Author: Litong Shen litong.shen@tigergraph.com
 ############################################################
 
-#export RAW_DATA_PATH=/home/ubuntu/data/social_network/ #change to your raw data file
+#export RAW_DATA_PATH=/home/ubuntu/ldbc_snb_data_raw/social_network/ #change to your raw data file
 #export TOTAL_FILE_NUMBER=6 # numThreads specified in ldbc_snb_datagen/params.ini
 
 echo "split vertrex place into city, country, continent"
 g++ --std=c++11 SplitPlace.cpp -o SplitPlace
 ./SplitPlace ${RAW_DATA_PATH} ${TOTAL_FILE_NUMBER} 
-
+rm SplitPlace
 echo "#####################################################"
 echo "delete place_#_0.csv files"
 i="0"
@@ -32,7 +32,7 @@ echo "split edge place_isPartOf_place into:
 	city_isPartOf_country, country_isPartOf_continent"
 g++ --std=c++11 SplitEdges.cpp -o SplitEdges
 ./SplitEdges ${RAW_DATA_PATH} ${TOTAL_FILE_NUMBER}
-
+rm SplitEdges
 echo "#####################################################"
 echo "delete organisation_isLocatedIn_place_#_0.csv and place_isPartOf_place_#_0.csv"
 
