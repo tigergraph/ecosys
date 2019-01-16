@@ -13,18 +13,18 @@
 #export TGT_DATA_ROOT_FOLDER=/home/tigergraph/ldbc_snb_data
 
 time gsql -g ldbc "run loading job load_ldbc_edge using 
-person_file=\"${TGT_DATA_ROOT_FOLDER}/person\", 
+v_person_file=\"${TGT_DATA_ROOT_FOLDER}/person\", 
 person_mail_file=\"${TGT_DATA_ROOT_FOLDER}/person_email_emailaddress\", 
 person_speak_file=\"${TGT_DATA_ROOT_FOLDER}/person_speaks_language\", 
-post_file=\"${TGT_DATA_ROOT_FOLDER}/post\", 
-tag_file=\"${TGT_DATA_ROOT_FOLDER}/tag\", 
-city_file=\"${TGT_DATA_ROOT_FOLDER}/city\", 
-country_file=\"${TGT_DATA_ROOT_FOLDER}/country\", 
-continent_file=\"${TGT_DATA_ROOT_FOLDER}/continent\", 
-comments_file=\"${TGT_DATA_ROOT_FOLDER}/comment\", 
-forum_file=\"${TGT_DATA_ROOT_FOLDER}/forum\", 
-organisation_file=\"${TGT_DATA_ROOT_FOLDER}/organisation\", 
-tagclass_file=\"${TGT_DATA_ROOT_FOLDER}/tagclass\",
+v_post_file=\"${TGT_DATA_ROOT_FOLDER}/post\", 
+v_tag_file=\"${TGT_DATA_ROOT_FOLDER}/tag\", 
+v_city_file=\"${TGT_DATA_ROOT_FOLDER}/city\", 
+v_country_file=\"${TGT_DATA_ROOT_FOLDER}/country\", 
+v_continent_file=\"${TGT_DATA_ROOT_FOLDER}/continent\", 
+v_comments_file=\"${TGT_DATA_ROOT_FOLDER}/comment\", 
+v_forum_file=\"${TGT_DATA_ROOT_FOLDER}/forum\", 
+v_organisation_file=\"${TGT_DATA_ROOT_FOLDER}/organisation\", 
+v_tagclass_file=\"${TGT_DATA_ROOT_FOLDER}/tagclass\",
 
 person_knows_person_file=\"${TGT_DATA_ROOT_FOLDER}/person_knows_person\", 
 comments_replyOf_post_file=\"${TGT_DATA_ROOT_FOLDER}/comment_replyOf_post\", 
