@@ -69,10 +69,6 @@ mkdir ${TGT_DATA_ROOT_FOLDER}/tag_hasType_tagclass
 find ${RAW_DATA_PATH} -name 'tag_hasType_tagclass*.csv' -print -exec mv '{}' ${TGT_DATA_ROOT_FOLDER}/tag_hasType_tagclass \;
 mkdir ${TGT_DATA_ROOT_FOLDER}/tagclass_isSubclassOf_tagclass
 find ${RAW_DATA_PATH} -name 'tagclass_isSubclassOf_tagclass*.csv' -print -exec mv '{}' ${TGT_DATA_ROOT_FOLDER}/tagclass_isSubclassOf_tagclass \;
-mkdir ${TGT_DATA_ROOT_FOLDER}/person_email_emailaddress
-find ${RAW_DATA_PATH} -name 'person_email_emailaddress*.csv' -print -exec mv '{}' ${TGT_DATA_ROOT_FOLDER}/person_email_emailaddress \;
-mkdir ${TGT_DATA_ROOT_FOLDER}/person_speaks_language
-find ${RAW_DATA_PATH} -name 'person_speaks_language*.csv' -print -exec mv '{}' ${TGT_DATA_ROOT_FOLDER}/person_speaks_language \;
 
 mkdir ${TGT_DATA_ROOT_FOLDER}/person
 find ${RAW_DATA_PATH} -name 'person*.csv' -print -exec mv '{}' ${TGT_DATA_ROOT_FOLDER}/person \;

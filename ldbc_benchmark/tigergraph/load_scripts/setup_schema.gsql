@@ -160,11 +160,7 @@ CREATE LOADING JOB load_ldbc_edge for graph ldbc {
   DEFINE FILENAME tagclass_isSubclassOf_tagclass_file;
 
   LOAD v_person_file
-              TO VERTEX person VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7, _, _) USING header="true", separator="|";
-  LOAD person_mail_file
-              TO VERTEX person VALUES ($0, _, _, _, _, _, _, _, _, $1, _) USING header="true", separator="|";
-  LOAD person_speak_file
-              TO VERTEX person VALUES ($0, _, _, _, _, _, _, _, _, _, $1) USING header="true", separator="|";
+              TO VERTEX person VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
   LOAD v_post_file
               TO VERTEX post VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7) USING header="true", separator="|";
   LOAD v_tag_file
