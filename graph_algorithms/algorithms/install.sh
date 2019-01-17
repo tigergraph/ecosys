@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -61,6 +61,10 @@ while [ !$finished ]; do
 				algoName="pageRank"
 				echo "  pageRank() works on directed edges"
 				break;;
+                        "Personalized PageRank" )
+                                algoName="pageRank_pers"
+                                echo "  pageRank() works on directed edges"
+                                break;;
 			"Shortest Path, Single-Source, No Weight" )
                                 algoName="shortest_ss_no_wt"
                                 echo "  shortest_ss_no_wt() works on directed or undirected edges without weight"

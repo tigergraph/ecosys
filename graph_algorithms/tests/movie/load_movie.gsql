@@ -8,4 +8,4 @@ create loading job load_movie for graph movie{
 		using Separator=",", Header = "true";
 }
 
-#run loading job load_movie
+run loading job load_movie
