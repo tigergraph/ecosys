@@ -1,4 +1,4 @@
-      CREATE QUERY pageRank_pers_file (Set<Vertex> source, FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH PageRank{
+CREATE QUERY pageRank_pers_file (Set<Vertex> source, FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH social{
 # Compute the pageRank score for each vertex in the GRAPH, given a set of source vertices
 # In each iteration, compute a score for activated vertices if they are source vertices:
 #   score = (1-damping) + damping*sum(received scores FROM its neighbors).
@@ -11,8 +11,6 @@
         SumAccum<float> @received_score = 0; # sum of scores each vertex receives FROM neighbors
         SumAccum<float> @score = 0;   # Initial score for every vertex is 0.
         OrAccum @is_source;   
-    
-        INT iterNum = 0;
        
         Start = {source};   #  Start with a set of vertices
         Start = SELECT s
@@ -36,7 +34,6 @@
                           END,
                           s.@received_score = 0,
                           @@maxDiff += abs(s.@score - s.@score');
-              iterNum = iterNum + 1;
               Total = Total UNION T; 
         END; # END WHILE loop
 

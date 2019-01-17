@@ -16,8 +16,6 @@
         SumAccum<float> @score = 0;   # Initial score for every vertex is 0.
 *ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
         OrAccum @is_source;   
-    
-        INT iterNum = 0;
        
         Start = {source};   #  Start with a set of vertices
         Start = SELECT s
@@ -41,7 +39,6 @@
                           END,
                           s.@received_score = 0,
                           @@maxDiff += abs(s.@score - s.@score');
-              iterNum = iterNum + 1;
               Total = Total UNION T; 
         END; # END WHILE loop
 
