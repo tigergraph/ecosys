@@ -59,189 +59,173 @@
 
 drop all
 
-CREATE VERTEX person (PRIMARY_ID id UINT, id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, email set<STRING>, speaks set<STRING>)
-CREATE VERTEX tag (PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
-CREATE VERTEX tagclass(PRIMARY_ID id UINT, id UINT, home STRING,url STRING)
+// create vertex
+// message
 CREATE VERTEX comments (PRIMARY_ID id UINT, id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT)
 CREATE VERTEX post (PRIMARY_ID id STRING, id STRING, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) 
-CREATE VERTEX forum (PRIMARY_ID id UINT, id UINT, title STRING, creationDate STRING)
-
-// CREATE VERTEX organisation(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
+// organisation
 CREATE VERTEX company(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
 CREATE VERTEX university(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
- 
-//CREATE VERTEX place (PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING) 
+// place
 CREATE VERTEX city(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
 CREATE VERTEX country(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
 CREATE VERTEX continent(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
+// else
+CREATE VERTEX forum (PRIMARY_ID id UINT, id UINT, title STRING, creationDate STRING)
+CREATE VERTEX person (PRIMARY_ID id UINT, id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, email set<STRING>, speaks set<STRING>)
+CREATE VERTEX tag (PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
+CREATE VERTEX tagclass(PRIMARY_ID id UINT, id UINT, home STRING,url STRING)
 
-//CREATE DIRECTED EDGE post_islocatedin_place (FROM messages, TO place) 
-CREATE DIRECTED EDGE post_isLocatedIn_country(FROM post, TO country) WITH REVERSE_EDGE="post_isLocatedIn_country_reverse"
- 
-//CREATE DIRECTED EDGE comments_isLocatedIn_place (FROM messages, TO place)
-CREATE DIRECTED EDGE comments_isLocatedIn_country(FROM comments, TO country) WITH REVERSE_EDGE="comments_isLocatedIn_country_reverse"
-
-//CREATE DIRECTED EDGE organisation_isLocatedIn_place (FROM organisation, TO place)
-CREATE DIRECTED EDGE university_isLocatedIn_city(FROM university, To city) WITH REVERSE_EDGE="university_isLocatedIn_city_reverse"
+// create edge
+// contianerOf
+CREATE DIRECTED EDGE forum_containerOf_post (FROM forum, TO post) WITH REVERSE_EDGE="forum_containerOf_post_reverse"
+// hasCreator
+CREATE DIRECTED EDGE comments_hasCreator_person (FROM comments, TO person) WITH REVERSE_EDGE="comments_hasCreator_person_reverse"
+CREATE DIRECTED EDGE post_hasCreator_person (FROM post, TO person) WITH REVERSE_EDGE="post_hasCreator_person_reverse"
+// hasInterest
+CREATE DIRECTED EDGE person_hasInterest_tag (FROM person, TO tag) WITH REVERSE_EDGE="person_hasInterest_tag_reverse"
+// hasMember
+CREATE DIRECTED EDGE forum_hasMember_person (FROM forum, TO person, joinDate DATETIME) WITH REVERSE_EDGE="forum_hasMember_person_reverse"
+// hasModerator
+CREATE DIRECTED EDGE forum_hasModerator_person (FROM forum, TO person) WITH REVERSE_EDGE="forum_hasModerator_person_reverse"
+// hasTag
+CREATE DIRECTED EDGE comments_hasTag_tag (FROM comments, TO tag) WITH REVERSE_EDGE="comments_hasTag_tag_reverse"
+CREATE DIRECTED EDGE post_hasTag_tag (FROM post, TO tag) WITH REVERSE_EDGE="post_hasTag_tag_reverse"
+CREATE DIRECTED EDGE forum_hasTag_tag (FROM forum, TO tag) WITH REVERSE_EDGE="forum_hasTag_tag_reverse"
+// hasType
+CREATE DIRECTED EDGE tag_hasType_tagclass (FROM tag, TO tagclass) WITH REVERSE_EDGE="tag_hasType_tagclass_reverse"
+// isLocatedIn
 CREATE DIRECTED EDGE company_isLocatedIn_country(FROM company, To country) WITH REVERSE_EDGE="company_isLocatedIn_country_reverse"
-
-//CREATE DIRECTED EDGE person_isLocatedIn_place (FROM person, TO place)
+CREATE DIRECTED EDGE comments_isLocatedIn_country(FROM comments, TO country) WITH REVERSE_EDGE="comments_isLocatedIn_country_reverse"
+CREATE DIRECTED EDGE post_isLocatedIn_country(FROM post, TO country) WITH REVERSE_EDGE="post_isLocatedIn_country_reverse"
 CREATE DIRECTED EDGE person_isLocatedIn_city(FROM person, TO city) WITH REVERSE_EDGE="person_isLocatedIn_city_reverse"
-
-//CREATE DIRECTED EDGE person_studyAt_organisation (FROM person, TO organisation, classYear INT) 
-CREATE DIRECTED EDGE person_studyAt_university (FROM person, TO university, classYear INT) WITH REVERSE_EDGE="person_studyAt_university_reverse"
-
-//CREATE DIRECTED EDGE person_workAt_organisation (FROM person, TO organisation, workFrom INT)
-CREATE DIRECTED EDGE person_workAt_company (FROM person, TO company, workFrom INT) WITH REVERSE_EDGE="person_workAt_company_reverse"
-
-//CREATE DIRECTED EDGE place_isPartOf_place (FROM place, TO place)
+CREATE DIRECTED EDGE university_isLocatedIn_city(FROM university, To city) WITH REVERSE_EDGE="university_isLocatedIn_city_reverse"
+// isPartOf
 CREATE DIRECTED EDGE city_isPartOf_country(FROM city, TO country) WITH REVERSE_EDGE="city_isPartOf_country_reverse"
 CREATE DIRECTED EDGE country_isPartOf_continent(FROM country, TO continent) WITH REVERSE_EDGE="country_isPartOf_continent_reverse"
-
-
+// isSubclassOf
+CREATE DIRECTED EDGE tagclass_isSubclassOf_tagclass (FROM tagclass, TO tagclass) WITH REVERSE_EDGE="tagclass_isSubclassOf_tagclass_reverse"
+// knows
 CREATE DIRECTED EDGE person_knows_person (FROM person, TO person, creationDate DATETIME) WITH REVERSE_EDGE="person_knows_person_reverse"
-CREATE DIRECTED EDGE comments_replyOf_post (FROM comments, TO post) WITH REVERSE_EDGE="comments_replyOf_post_reverse"
-CREATE DIRECTED EDGE comments_replyOf_comments (FROM comments, TO comments) WITH REVERSE_EDGE="comments_replyOf_comments_reverse"
-CREATE DIRECTED EDGE post_hasCreator_person (FROM post, TO person) WITH REVERSE_EDGE="post_hasCreator_person_reverse"
-CREATE DIRECTED EDGE post_hasTag_tag (FROM post, TO tag) WITH REVERSE_EDGE="post_hasTag_tag_reverse"
-CREATE DIRECTED EDGE comments_hasCreator_person (FROM comments, TO person) WITH REVERSE_EDGE="comments_hasCreator_person_reverse"
-CREATE DIRECTED EDGE comments_hasTag_tag (FROM comments, TO tag) WITH REVERSE_EDGE="comments_hasTag_tag_reverse"
-CREATE DIRECTED EDGE forum_containerOf_post (FROM forum, TO post) WITH REVERSE_EDGE="forum_containerOf_post_reverse"
-CREATE DIRECTED EDGE forum_hasMember_person (FROM forum, TO person, joinDate DATETIME) WITH REVERSE_EDGE="forum_hasMember_person_reverse"
-CREATE DIRECTED EDGE forum_hasModerator_person (FROM forum, TO person) WITH REVERSE_EDGE="forum_hasModerator_person_reverse"
-CREATE DIRECTED EDGE forum_hasTag_tag (FROM forum, TO tag) WITH REVERSE_EDGE="forum_hasTag_tag_reverse"
-CREATE DIRECTED EDGE person_hasInterest_tag (FROM person, TO tag) WITH REVERSE_EDGE="person_hasInterest_tag_reverse"
+// likes
 CREATE DIRECTED EDGE person_likes_comments (FROM person, TO comments, creationDate DATETIME) WITH REVERSE_EDGE="person_likes_comments_reverse"
 CREATE DIRECTED EDGE person_likes_post (FROM person, TO post, creationDate DATETIME) WITH REVERSE_EDGE="person_likes_post_reverse"
-CREATE DIRECTED EDGE tag_hasType_tagclass (FROM tag, TO tagclass) WITH REVERSE_EDGE="tag_hasType_tagclass_reverse"
-CREATE DIRECTED EDGE tagclass_isSubclassOf_tagclass (FROM tagclass, TO tagclass) WITH REVERSE_EDGE="tagclass_isSubclassOf_tagclass_reverse"
+// replyOf
+CREATE DIRECTED EDGE comments_replyOf_comments (FROM comments, TO comments) WITH REVERSE_EDGE="comments_replyOf_comments_reverse"
+CREATE DIRECTED EDGE comments_replyOf_post (FROM comments, TO post) WITH REVERSE_EDGE="comments_replyOf_post_reverse"
+// studyAt
+CREATE DIRECTED EDGE person_studyAt_university (FROM person, TO university, classYear INT) WITH REVERSE_EDGE="person_studyAt_university_reverse"
+// workAt
+CREATE DIRECTED EDGE person_workAt_company (FROM person, TO company, workFrom INT) WITH REVERSE_EDGE="person_workAt_company_reverse"
+
 CREATE GRAPH ldbc (*)
 
 use graph ldbc
 CREATE LOADING JOB load_ldbc_edge for graph ldbc {
-  #vertex folders
-  DEFINE FILENAME v_person_file;
-  DEFINE FILENAME person_mail_file;
-  DEFINE FILENAME person_speak_file;
+  // define vertex
+  DEFINE FILENAME v_comment_file;
   DEFINE FILENAME v_post_file;
-  DEFINE FILENAME v_tag_file;
-  DEFINE FILENAME v_city_file;
-  DEFINE FILENAME v_country_file;
-  DEFINE FILENAME v_continent_file;
-  DEFINE FILENAME v_comments_file;
   DEFINE FILENAME v_organisation_file;
-  DEFINE FILENAME v_tagclass_file;
+  DEFINE FILENAME v_place_file;
   DEFINE FILENAME v_forum_file;
-  # edge folder starts 
-  DEFINE FILENAME person_knows_person_file;
-  DEFINE FILENAME comments_replyOf_post_file;
-  DEFINE FILENAME comments_replyOf_comments_file;
-  DEFINE FILENAME post_hasCreator_person_file;
-  DEFINE FILENAME post_hasTag_tag_file;
-  DEFINE FILENAME comments_hasCreator_person_file;
-  DEFINE FILENAME post_isLocatedIn_place_file;
-  DEFINE FILENAME comments_hasTag_tag_file;
-  DEFINE FILENAME comment_isLocatedIn_place_file;
+  DEFINE FILENAME v_person_file;
+  DEFINE FILENAME v_tag_file;
+  DEFINE FILENAME v_tagclass_file;
+  
+  // define edge
   DEFINE FILENAME forum_containerOf_post_file;
+  DEFINE FILENAME comment_hasCreator_person_file;
+  DEFINE FILENAME post_hasCreator_person_file;
+  DEFINE FILENAME person_hasInterest_tag_file;
   DEFINE FILENAME forum_hasMember_person_file;
   DEFINE FILENAME forum_hasModerator_person_file;
+  DEFINE FILENAME comment_hasTag_tag_file;
+  DEFINE FILENAME post_hasTag_tag_file;
   DEFINE FILENAME forum_hasTag_tag_file;
-  DEFINE FILENAME university_isLocatedIn_city_file;
-  DEFINE FILENAME company_isLocatedIn_country_file;
-  DEFINE FILENAME person_hasInterest_tag_file;
+  DEFINE FILENAME tag_hasType_tagclass_file;
+  DEFINE FILENAME organisation_isLocatedIn_place_file;
+  DEFINE FILENAME comment_isLocatedIn_place_file;
+  DEFINE FILENAME post_isLocatedIn_place_file;
   DEFINE FILENAME person_isLocatedIn_place_file;
-  DEFINE FILENAME person_likes_comments_file;
+  DEFINE FILENAME place_isPartOf_place_file;
+  DEFINE FILENAME tagclass_isSubclassOf_tagclass_file;
+  DEFINE FILENAME person_knows_person_file;
+  DEFINE FILENAME person_likes_comment_file;
   DEFINE FILENAME person_likes_post_file;
+  DEFINE FILENAME comment_replyOf_comment_file;
+  DEFINE FILENAME comment_replyOf_post_file;
   DEFINE FILENAME person_studyAt_organisation_file;
   DEFINE FILENAME person_workAt_organisation_file;
-  DEFINE FILENAME city_isPartOf_country_file;
-  DEFINE FILENAME country_isPartOf_continent_file;
-  DEFINE FILENAME tag_hasType_tagclass_file;
-  DEFINE FILENAME tagclass_isSubclassOf_tagclass_file;
 
-  LOAD v_person_file
-              TO VERTEX person VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
+  // load vertex
+  LOAD v_comment_file 
+    TO VERTEX comments VALUES ($0, $0, $1, $2, $3, $4, $5) USING header="true", separator="|";
   LOAD v_post_file
-              TO VERTEX post VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7) USING header="true", separator="|";
-  LOAD v_tag_file
-              TO VERTEX tag VALUES ($0, $0, $1, $2) USING header="true", separator="|";
-  LOAD v_city_file
-              //TO VERTEX place VALUES ($0, $0, $1, $2, $3) USING header="true", separator="|";
-              TO VERTEX city VALUES ($0, $0, $1, $2, $3) USING header="true", separator="|";
-  LOAD v_country_file
-              TO VERTEX country VALUES ($0, $0, $1, $2, $3) USING header="true", separator="|";
-  LOAD v_continent_file
-              TO VERTEX continent VALUES ($0, $0, $1, $2, $3) USING header="true", separator="|";
-  LOAD v_comments_file 
-              TO VERTEX comments VALUES ($0, $0, $1, $2, $3, $4, $5) USING header="true", separator="|";
+    TO VERTEX post VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7) USING header="true", separator="|";
   LOAD v_organisation_file
-              //TO VERTEX organisation VALUES ($0, $0, $1, $2, $3) USING header="true", separator="|";
-              TO VERTEX university VALUES ($0, $0, $1, $2, $3) WHERE $1=="university" USING header="true", separator="|";
-  LOAD v_organisation_file
-              TO VERTEX company VALUES ($0, $0, $1, $2, $3) WHERE $1=="company" USING header="true", separator="|";
-  LOAD v_tagclass_file
-              TO VERTEX tagclass VALUES ($0, $0, $1, $2) USING header="true", separator="|";
+    TO VERTEX company VALUES ($0, $0, $1, $2, $3) WHERE $1=="company",
+    TO VERTEX university VALUES ($0, $0, $1, $2, $3) WHERE $1=="university" USING header="true", separator="|";
+  LOAD v_place_file
+    TO VERTEX city VALUES ($0, $0, $1, $2, $3) WHERE $3=="city",
+    TO VERTEX country VALUES ($0, $0, $1, $2, $3) WHERE $3=="country",
+    TO VERTEX continent VALUES ($0, $0, $1, $2, $3) WHERE $3=="continent" USING header="true", separator="|";
   LOAD v_forum_file
-              TO VERTEX forum VALUES ($0, $0, $1, $2) USING header="true", separator="|";
+    TO VERTEX forum VALUES ($0, $0, $1, $2) USING header="true", separator="|";
+  LOAD v_person_file
+    TO VERTEX person VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
+  LOAD v_tag_file
+    TO VERTEX tag VALUES ($0, $0, $1, $2) USING header="true", separator="|";
+  LOAD v_tagclass_file
+    TO VERTEX tagclass VALUES ($0, $0, $1, $2) USING header="true", separator="|";
 
-  LOAD person_knows_person_file
-              TO EDGE person_knows_person VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD comments_replyOf_post_file
-              TO EDGE comments_replyOf_post VALUES ($0, $1) USING header="true", separator="|";
-  LOAD comments_replyOf_comments_file
-              TO EDGE comments_replyOf_comments VALUES ($0, $1) USING header="true", separator="|";
-  LOAD post_hasCreator_person_file
-              TO EDGE post_hasCreator_person VALUES ($0, $1) USING header="true", separator="|";
-  LOAD post_hasTag_tag_file
-              TO EDGE post_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
-  LOAD comments_hasCreator_person_file
-              TO EDGE comments_hasCreator_person VALUES ($0, $1) USING header="true", separator="|";
-  LOAD post_isLocatedIn_place_file
-              //TO EDGE post_isLocatedIn_place VALUES ($0, $1) USING header="true", separator="|";
-              TO EDGE post_isLocatedIn_country VALUES ($0, $1) USING header="true", separator="|";
-  LOAD comments_hasTag_tag_file
-              TO EDGE comments_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
-  LOAD comment_isLocatedIn_place_file
-              //TO EDGE comment_isLocatedIn_place VALUES ($0, $1) USING header="true", separator="|";
-              TO EDGE comments_isLocatedIn_country VALUES ($0, $1) USING header="true", separator="|";
+  // load edge
   LOAD forum_containerOf_post_file
-              TO EDGE forum_containerOf_post VALUES ($0, $1) USING header="true", separator="|";
-  LOAD forum_hasMember_person_file
-              TO EDGE forum_hasMember_person VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD forum_hasModerator_person_file
-              TO EDGE forum_hasModerator_person VALUES ($0, $1) USING header="true", separator="|";
-  LOAD forum_hasTag_tag_file
-              TO EDGE forum_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
-  LOAD university_isLocatedIn_city_file
-              //TO EDGE organisation_isLocatedIn_place VALUES ($0, $1) USING header="true", separator="|";
-              TO EDGE university_isLocatedIn_city VALUES ($0, $1) USING header="true", separator="|";
-  LOAD company_isLocatedIn_country_file
-              TO EDGE company_isLocatedIn_country VALUES ($0, $1) USING header="true", separator="|";
-
+    TO EDGE forum_containerOf_post VALUES ($0, $1) USING header="true", separator="|";
+  LOAD comment_hasCreator_person_file
+    TO EDGE comments_hasCreator_person VALUES ($0, $1) USING header="true", separator="|";
+  LOAD post_hasCreator_person_file
+    TO EDGE post_hasCreator_person VALUES ($0, $1) USING header="true", separator="|";
   LOAD person_hasInterest_tag_file
-              TO EDGE person_hasInterest_tag VALUES ($0, $1) USING header="true", separator="|";
-  LOAD person_isLocatedIn_place_file
-              // TO EDGE person_isLocatedIn_place VALUES ($0, $1) USING header="true", separator="|";
-              TO EDGE person_isLocatedIn_city VALUES ($0, $1) USING header="true", separator="|";
-  LOAD person_likes_comments_file
-              TO EDGE person_likes_comments VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD person_likes_post_file
-              TO EDGE person_likes_post VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD person_studyAt_organisation_file
-              //TO EDGE person_studyAt_organisation VALUES ($0, $1, $2) USING header="true", separator="|";
-              TO EDGE person_studyAt_university VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD person_workAt_organisation_file
-              //TO EDGE person_workAt_organisation VALUES ($0, $1, $2) USING header="true", separator="|";
-              TO EDGE person_workAt_company VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD city_isPartOf_country_file
-              //TO EDGE place_isPartOf_place VALUES ($0, $1) USING header="true", separator="|";
-              TO EDGE city_isPartOf_country VALUES ($0, $1) USING header="true", separator="|";
-  LOAD country_isPartOf_continent_file
-              TO EDGE country_isPartOf_continent VALUES ($0, $1) USING header="true", separator="|";
-
+    TO EDGE person_hasInterest_tag VALUES ($0, $1) USING header="true", separator="|";
+  LOAD forum_hasMember_person_file
+    TO EDGE forum_hasMember_person VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD forum_hasModerator_person_file
+    TO EDGE forum_hasModerator_person VALUES ($0, $1) USING header="true", separator="|";
+  LOAD comment_hasTag_tag_file
+    TO EDGE comments_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
+  LOAD post_hasTag_tag_file
+    TO EDGE post_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
+  LOAD forum_hasTag_tag_file
+    TO EDGE forum_hasTag_tag VALUES ($0, $1) USING header="true", separator="|";
   LOAD tag_hasType_tagclass_file
-              TO EDGE tag_hasType_tagclass VALUES ($0, $1) USING header="true", separator="|";
+    TO EDGE tag_hasType_tagclass VALUES ($0, $1) USING header="true", separator="|";
+  LOAD organisation_isLocatedIn_place_file
+    TO EDGE company_isLocatedIn_country VALUES ($0, $1) WHERE to_int($1) < 111, 
+    TO EDGE university_isLocatedIn_city VALUES ($0, $1) WHERE to_int($1) > 110 USING header="true", separator="|";
+  LOAD comment_isLocatedIn_place_file
+    TO EDGE comments_isLocatedIn_country VALUES ($0, $1) USING header="true", separator="|";
+  LOAD post_isLocatedIn_place_file
+    TO EDGE post_isLocatedIn_country VALUES ($0, $1) USING header="true", separator="|";
+  LOAD person_isLocatedIn_place_file
+    TO EDGE person_isLocatedIn_city VALUES ($0, $1) USING header="true", separator="|";
+  LOAD place_isPartOf_place_file
+    TO EDGE country_isPartOf_continent VALUES ($0, $1) WHERE to_int($0) < 111,
+    TO EDGE city_isPartOf_country VALUES ($0, $1) WHERE to_int($0) > 110 USING header="true", separator="|";
   LOAD tagclass_isSubclassOf_tagclass_file
-              TO EDGE tagclass_isSubclassOf_tagclass VALUES ($0, $1) USING header="true", separator="|";
+    TO EDGE tagclass_isSubclassOf_tagclass VALUES ($0, $1) USING header="true", separator="|";
+  LOAD person_knows_person_file
+    TO EDGE person_knows_person VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD person_likes_comment_file
+    TO EDGE person_likes_comments VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD person_likes_post_file
+    TO EDGE person_likes_post VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD comment_replyOf_comment_file
+    TO EDGE comments_replyOf_comments VALUES ($0, $1) USING header="true", separator="|";
+  LOAD comment_replyOf_post_file
+    TO EDGE comments_replyOf_post VALUES ($0, $1) USING header="true", separator="|";
+  LOAD person_studyAt_organisation_file
+    TO EDGE person_studyAt_university VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD person_workAt_organisation_file
+    TO EDGE person_workAt_company VALUES ($0, $1, $2) USING header="true", separator="|";
 
 }
