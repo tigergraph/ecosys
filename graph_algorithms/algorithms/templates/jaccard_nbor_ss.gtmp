@@ -1,6 +1,6 @@
 *ATTR*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
 *ACCM*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
-*FILE*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK, STRinG filepath) FOR GRAPH *graph* {
+*FILE*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK, STRING filepath) FOR GRAPH *graph* {
 /* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.

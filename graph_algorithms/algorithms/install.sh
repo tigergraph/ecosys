@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -61,9 +61,13 @@ while [ !$finished ]; do
 				algoName="pageRank"
 				echo "  pageRank() works on directed edges"
 				break;;
+                        "Weighted PageRank" )
+                                algoName="pageRank_wt"
+                                echo "  pageRank_wt() works on directed edges"
+                                break;;
                         "Personalized PageRank" )
                                 algoName="pageRank_pers"
-                                echo "  pageRank() works on directed edges"
+                                echo "  pageRank_pers() works on directed edges"
                                 break;;
 			"Shortest Path, Single-Source, No Weight" )
                                 algoName="shortest_ss_no_wt"
@@ -199,7 +203,7 @@ while [ !$finished ]; do
 
 
      	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
-	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ]; then
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ]; then
 		while true; do
                 	read -p "Edge attribute that stores FLOAT weight:"  weight
 			if [[ $(countEdgeAttr $weight) > 0 ]]; then

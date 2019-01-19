@@ -1,4 +1,4 @@
-*ATTR*CREATE QUERY cosine_nbor_ss*EXT* (vertex<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
 *ACCM*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
 *FILE*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK, STRING filepath) FOR GRAPH *graph* {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
