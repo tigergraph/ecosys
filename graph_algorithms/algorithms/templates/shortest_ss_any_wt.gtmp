@@ -1,14 +1,14 @@
-*ATTR*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
-*FILE*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, STRING filepath) FOR GRAPH *graph* {
+*ATTR*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source, BOOL display) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source, STRING filepath) FOR GRAPH *graph* {
 /* The Bellman-Ford algorithm for single-Source Shortest Path with edge weights,
  possibly negative.
  If any loop in the graph has a net negative weight, the algorithm will exit.
 */
 
 *FILE*  FILE f(filepath);
-        MinAccum<FLOAT> @dist;                      # best-known shortest distance FROM v
-        SumAccum<STRING> @path;                     # best-known path FROM v
+        MinAccum<FLOAT> @dist;                      # best-known shortest distance FROM source
+        SumAccum<STRING> @path;                     # best-known path FROM source
         OrAccum @visited = false;                   # whether this vertex has been visited
         OrAccum @@hasNegLoop;                       # Indicates a negative loop is found
 *ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
@@ -17,7 +17,7 @@
         INT maxVal = 1000000000;                    # Should be larger than any possible path
         EXCEPTION negLoop (40999);
         VSET = {*vertex-types*};
-        Source = {v}; 
+        Source = {source}; 
 
   ##### Initialization: Set the best-known distance to a maxValue (pseudo-infinite)
         Source = SELECT s FROM Source:s

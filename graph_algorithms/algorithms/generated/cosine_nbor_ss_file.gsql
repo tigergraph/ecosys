@@ -1,17 +1,18 @@
-CREATE QUERY similarity_nbor_cos_ss (vertex input, int topk) FOR GRAPH movie {
+      CREATE QUERY cosine_nbor_ss_file (VERTEX source, INT topK, STRING filepath) FOR GRAPH movie {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
-   A similarity edge with one float attribute in the schema is required for this version.
+   A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
 
-        TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+        TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
+        FILE f(filepath);
 
-        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@result_topk;    
-        SumAccum<float> @numerator, @@norm1, @norm2;
+        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;
+        SumAccum<FLOAT> @numerator, @@norm1, @norm2;
 
-        start1 = {input};
+        start1 = {source};
         subjects = SELECT t
                    FROM start1:s -(Likes:e)-> :t
                    ACCUM t.@numerator = e.weight,
@@ -19,16 +20,20 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
         neighbours = SELECT t
                      FROM subjects:s -(reverse_Likes:e)-> Person:t
-                     WHERE t != input
+                     WHERE t != source
                      ACCUM t.@numerator += s.@numerator * e.weight;
 
         neighbours = SELECT s
                      FROM neighbours:s -(Likes:e)-> :t
                      ACCUM s.@norm2 += pow(e.weight, 2)
-              	     POST-ACCUM @@result_topk += SIMILARITY_SCORE(input, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
+                     POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
                      ;
-        PRINT @@result_topk;
 
+
+        f.println("Vertex1","Vertex2","Similarity");
+        FOREACH item IN @@result_topK DO
+                 f.println(item.vertex1, item.vertex2, item.score);
+        END;
 
 }
 

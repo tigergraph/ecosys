@@ -1,12 +1,12 @@
-*ATTR**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
-*ACCM**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
-*FILE**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX v, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
-# Subquery returns closeness centrality for vertex v in graph with numVert vertices 
+*ATTR**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX source, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+*ACCM**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX source, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+*FILE**SUB* CREATE QUERY cc_subquery*EXT* (VERTEX source, INT numVert, INT maxHops) FOR GRAPH *graph* RETURNS(FLOAT) {
+# Subquery returns closeness centrality for vertex source in graph with numVert vertices 
         SumAccum<int> @@currDist, @@totalDist;
          OrAccum<bool> @visited;
  
-# Initialize: Set the input vertex v as the starting point
-        Start = {v};
+# Initialize: Set the input vertex source as the starting point
+        Start = {source};
         Start = SELECT s FROM Start:s
                 ACCUM s.@visited += true;
  

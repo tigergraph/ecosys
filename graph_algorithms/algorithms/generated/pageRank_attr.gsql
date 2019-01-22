@@ -10,8 +10,6 @@ CREATE QUERY pageRank_attr (FLOAT maxChange, INT maxIter, FLOAT damping) FOR GRA
         SumAccum<float> @received_score = 0; # sum of scores each vertex receives FROM neighbors
         SumAccum<float> @score = 1;   # Initial score for every vertex is 1.
 
-        INT iterNum = 0;
-
         Start = {ANY};   #  Start with all vertices of specified type(s)
         WHILE @@maxDiff > maxChange LIMIT maxIter DO
                 @@maxDiff = 0;
@@ -21,7 +19,6 @@ CREATE QUERY pageRank_attr (FLOAT maxChange, INT maxIter, FLOAT damping) FOR GRA
                     POST-ACCUM s.@score = (1.0-damping) + damping * s.@received_score,
                                s.@received_score = 0,
                                @@maxDiff += abs(s.@score - s.@score');
-                iterNum = iterNum + 1;
         END; # END WHILE loop
 
         V = SELECT s FROM Start:s

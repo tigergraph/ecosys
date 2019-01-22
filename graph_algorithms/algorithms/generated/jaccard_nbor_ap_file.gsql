@@ -1,4 +1,4 @@
-CREATE QUERY similarity_nbor_jaccard_as_sub (vertex input) FOR GRAPH movie RETURNS (MapAccum<vertex, float>){
+  CREATE QUERY jaccard_nbor_ap_sub_file (vertex source) FOR GRAPH movie RETURNS (MapAccum<vertex, float>){
 /* This subquery calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 */
@@ -6,7 +6,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
         MapAccum<vertex, float> @@result;
         SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
 
-        Start (ANY) = {input};
+        Start (ANY) = {source};
         Start = SELECT s
                 FROM Start:s
                 ACCUM @@set_size_A += s.outdegree("Likes");
@@ -16,7 +16,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 
         Others = SELECT t
                  FROM Subjects:s -(reverse_Likes:e)- :t
-                 WHERE t != input and getvid(input) < getvid(t)
+                 WHERE t != source and getvid(source) < getvid(t)
                  ACCUM t.@intersection_size += 1, 
                        t.@set_size_B = t.outdegree("Likes")
                  POST-ACCUM @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
@@ -25,28 +25,32 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
         RETURN @@result;
 }
 
-CREATE QUERY similarity_nbor_jaccard_as (int topk) FOR GRAPH movie{
-/* This query calls the subquery similarity_nbor_jaccard_as_sub to get the similarity score of every pair of vertices.
+      CREATE QUERY jaccard_nbor_ap_file (int topK, STRING filepath) FOR GRAPH movie{
+/* This query calls the subquery jaccard_nbor_ap_sub_file to get the similarity score of every pair of vertices.
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute. 
    A similarity edge with one float attribute in the schema is required for this version.  
 */
 
         TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
+        FILE f(filepath);
         MapAccum<vertex, float> @single_result;
-        HeapAccum<SIMILARITY_SCORE>(topk, score DESC) @@total_result;
+        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@total_result;
 
         start = {Person.*};
         start = SELECT s
                 FROM start:s
-                ACCUM s.@single_result = similarity_nbor_jaccard_as_sub (s)
+                ACCUM s.@single_result = jaccard_nbor_ap_sub_file (s)
                 POST-ACCUM
                         FOREACH (key, value) IN s.@single_result DO
                                 @@total_result += SIMILARITY_SCORE(s, key, value)
                         END
                 ;
 
-        PRINT @@total_result;
+        f.println("Vertex1","Vertex2","Similarity");
+        FOREACH item IN @@total_result DO
+                f.println(item.vertex1, item.vertex2, item.score);
+        END;
 
 }
 

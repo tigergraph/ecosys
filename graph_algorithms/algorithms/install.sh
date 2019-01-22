@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -61,6 +61,10 @@ while [ !$finished ]; do
 				algoName="pageRank"
 				echo "  pageRank() works on directed edges"
 				break;;
+                        "Personalized PageRank" )
+                                algoName="pageRank_pers"
+                                echo "  pageRank() works on directed edges"
+                                break;;
 			"Shortest Path, Single-Source, No Weight" )
                                 algoName="shortest_ss_no_wt"
                                 echo "  shortest_ss_no_wt() works on directed or undirected edges without weight"
@@ -82,20 +86,20 @@ while [ !$finished ]; do
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
 			'Cosine Similarity (single vertex)' )
-				algoName="similarity_nbor_cos_ss"
-                                echo "  similarity_nbor_cos_ss() calculates the similarity between one given vertex and all other vertices"
+				algoName="cosine_nbor_ss"
+                                echo "  cosine_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
 			'Cosine Similary (all vertices)' )
-				algoName="similarity_nbor_cos_as"
-                                echo "  similarity_nbor_cos_as() calculates the similarity between all vertices"
+				algoName="cosine_nbor_ap"
+                                echo "  cosine_nbor_ap() calculates the similarity between all vertices"
                                 break;;
 	                'Jaccard Similarity (single vertex)' )
-                                algoName="similarity_nbor_jaccard_ss"
-                                echo "  similarity_nbor_jaccard_ss() calculates the similarity between one given vertex and all other vertices"
+                                algoName="jaccard_nbor_ss"
+                                echo "  jaccard_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
                         'Jaccard Similary (all vertices)' )
-                                algoName="similarity_nbor_jaccard_as"
-                                echo "  similarity_nbor_jaccard_as() calculates the similarity between all vertices"
+                                algoName="jaccard_nbor_ap"
+                                echo "  jaccard_nbor_ap() calculates the similarity between all vertices"
                                 break;;
 			"EXIT" )
 				finished=true
@@ -130,7 +134,7 @@ while [ !$finished ]; do
 	# 3. Ask for vertex types. Replace *vertex-types* placeholder. For similarity algos, only take one vertex type.
 	read -p 'Vertex types: ' vts
 	vts=${vts//[[:space:]]/}
-	if [[ $algoName == similarity* ]]; then 
+	if [[ $algoName == cosine* ]] || [[ $algoName == jaccard* ]]; then 
 		sed -i "s/\*vertex-types\*/$vts/g" ${genPath}/${algoName}_tmp.gsql
 	elif [ "${vts}" == "" ]; then
 		vts="ANY"
@@ -187,7 +191,7 @@ while [ !$finished ]; do
 	sed -i "s/\*edge-types\*/$egs/g" ${genPath}/${algoName}_tmp.gsql
 
 	# 4.2 Ask for reverse edge type for similarity algos. 
-        if [[ ${algoName} == similarity* ]]; then
+        if [[ $algoName == cosine* ]] || [[ $algoName == jaccard* ]]; then
 		read -p 'Second Hop Edge type: ' edge2
                 edge2=${edge2//[[:space:]]/}
 		sed -i "s/\*sec-edge-types\*/$edge2/g" ${genPath}/${algoName}_tmp.gsql
@@ -207,7 +211,7 @@ while [ !$finished ]; do
 		done
         fi
 
-        if [[ ${algoName} == similarity_nbor_cos* ]]; then
+        if [[ ${algoName} == cosine* ]]; then
         	while true; do
 	        	read -p "Edge attribute that stores FLOAT weight, leave blank if no such attribute:"  weight
                         weight=${weight//[[:space:]]/}
