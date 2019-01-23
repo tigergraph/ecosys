@@ -62,7 +62,7 @@ drop all
 // create vertex
 // message
 CREATE VERTEX comments (PRIMARY_ID id UINT, id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT)
-CREATE VERTEX post (PRIMARY_ID id STRING, id STRING, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) 
+CREATE VERTEX post (PRIMARY_ID id UINT, id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) 
 // organisation
 CREATE VERTEX company(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
 CREATE VERTEX university(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
