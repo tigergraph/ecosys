@@ -9,14 +9,13 @@
 # Author: Litong Shen litong.shen@tigergraph.com
 ############################################################
 
-# change to your raw data file
-export LDBC_DATA_DIR=/home/ubuntu/ldbc_snb_data/social_network
-# somehow LDBC SNB datagen doesn't get any benefit from multithreads. fix it to the single file for each vertex/edge
-export LDBC_DATA_POSTFIX=_0_0.csv
+### change to raw data file folder
+export LDBC_SNB_DATA_DIR=/home/ubuntu/ldbc_snb_data_sf1/social_network/
+### somehow LDBC SNB datagen doesn't get any benefit from multithreads. fix it to the single file for each vertex/edge
+export LDBC_SNB_DATA_POSTFIX=_0_0.csv
 
-echo "----- setup_schema.gsql BEGIN"
+# define schema and loading job
 gsql setup_schema.gsql
-echo "----- setup_schema.gsql END"
-echo "----- load_data.sh BEGIN"
-bash load_data.sh
-echo "----- load_data.sh END"
+
+# load data into TigerGraph
+./load_data.sh

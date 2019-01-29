@@ -64,12 +64,12 @@ drop all
 CREATE VERTEX comments (PRIMARY_ID id UINT, id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT)
 CREATE VERTEX post (PRIMARY_ID id UINT, id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) 
 // organisation
-CREATE VERTEX company(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
-CREATE VERTEX university(PRIMARY_ID id UINT, id UINT, types STRING, name STRING, url STRING)
+CREATE VERTEX company(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
+CREATE VERTEX university(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
 // place
-CREATE VERTEX city(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
-CREATE VERTEX country(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
-CREATE VERTEX continent(PRIMARY_ID id UINT, id UINT, name STRING, url STRING, types STRING)
+CREATE VERTEX city(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
+CREATE VERTEX country(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
+CREATE VERTEX continent(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
 // else
 CREATE VERTEX forum (PRIMARY_ID id UINT, id UINT, title STRING, creationDate STRING)
 CREATE VERTEX person (PRIMARY_ID id UINT, id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, email set<STRING>, speaks set<STRING>)
@@ -118,10 +118,10 @@ CREATE DIRECTED EDGE person_studyAt_university (FROM person, TO university, clas
 // workAt
 CREATE DIRECTED EDGE person_workAt_company (FROM person, TO company, workFrom INT) WITH REVERSE_EDGE="person_workAt_company_reverse"
 
-CREATE GRAPH ldbc (*)
+CREATE GRAPH ldbc_snb (*)
 
-use graph ldbc
-CREATE LOADING JOB load_ldbc_edge for graph ldbc {
+use graph ldbc_snb
+CREATE LOADING JOB load_ldbc_snb for graph ldbc_snb {
   // define vertex
   DEFINE FILENAME v_comment_file;
   DEFINE FILENAME v_post_file;
@@ -163,12 +163,12 @@ CREATE LOADING JOB load_ldbc_edge for graph ldbc {
   LOAD v_post_file
     TO VERTEX post VALUES ($0, $0, $1, $2, $3, $4, $5, $6, $7) USING header="true", separator="|";
   LOAD v_organisation_file
-    TO VERTEX company VALUES ($0, $0, $1, $2, $3) WHERE $1=="company",
-    TO VERTEX university VALUES ($0, $0, $1, $2, $3) WHERE $1=="university" USING header="true", separator="|";
+    TO VERTEX company VALUES ($0, $0, $2, $3) WHERE $1=="company",
+    TO VERTEX university VALUES ($0, $0, $2, $3) WHERE $1=="university" USING header="true", separator="|";
   LOAD v_place_file
-    TO VERTEX city VALUES ($0, $0, $1, $2, $3) WHERE $3=="city",
-    TO VERTEX country VALUES ($0, $0, $1, $2, $3) WHERE $3=="country",
-    TO VERTEX continent VALUES ($0, $0, $1, $2, $3) WHERE $3=="continent" USING header="true", separator="|";
+    TO VERTEX city VALUES ($0, $0, $1, $2) WHERE $3=="city",
+    TO VERTEX country VALUES ($0, $0, $1, $2) WHERE $3=="country",
+    TO VERTEX continent VALUES ($0, $0, $1, $2) WHERE $3=="continent" USING header="true", separator="|";
   LOAD v_forum_file
     TO VERTEX forum VALUES ($0, $0, $1, $2) USING header="true", separator="|";
   LOAD v_person_file
@@ -227,5 +227,4 @@ CREATE LOADING JOB load_ldbc_edge for graph ldbc {
     TO EDGE person_studyAt_university VALUES ($0, $1, $2) USING header="true", separator="|";
   LOAD person_workAt_organisation_file
     TO EDGE person_workAt_company VALUES ($0, $1, $2) USING header="true", separator="|";
-
 }
