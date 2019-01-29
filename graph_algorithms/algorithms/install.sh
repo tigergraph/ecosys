@@ -120,7 +120,7 @@ while [ !$finished ]; do
 
 	# Copy the algorithm template file to the destination file.
 	templPath="./templates"
-	genPath="./generated"
+	genPath="./examples"
 	cp ${templPath}/${algoName}.gtmp ${genPath}/${algoName}_tmp.gsql;
 
 	# Replace *graph* placeholder
