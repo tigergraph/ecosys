@@ -1,0 +1,1 @@
+CALL dbms.security.changePassword('tigergraph');
