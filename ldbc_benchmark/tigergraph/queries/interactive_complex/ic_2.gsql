@@ -1,0 +1,43 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_2
+
+CREATE QUERY ic_2(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
+	SumAccum<int> @authorId;
+	SumAccum<string> @authorFN, @authorLN, @content;
+	datetime maxDate;
+  
+	vPerson = { personId };
+	
+  vFriend = SELECT t
+	          FROM vPerson:s-(person_knows_person:e)->person:t;
+
+	// maxDateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
+	// so truncate millisecond portion of the given epoch
+	maxDate = epoch_to_datetime(maxDateEpoch/1000);
+	
+	vMessage = SELECT t
+	           FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+	           WHERE t.creationDate < maxDate
+	           ACCUM t.@authorId = s.id,
+	                 t.@authorFN = s.firstName,
+	                 t.@authorLN = s.lastName
+	           ORDER BY t.creationDate DESC, t.id ASC
+	           LIMIT 20;
+	
+	vMessage = SELECT v
+	           FROM vMessage:v
+	           ACCUM CASE 
+	                   WHEN v.type == "comments" THEN v.@content = v.content
+	                   ELSE v.@content = v.imageFile
+	                 END
+             ORDER BY v.creationDate DESC, v.id ASC;
+	
+	PRINT vMessage[vMessage.@authorId AS personId,
+	               vMessage.@authorFN AS personFirstName,
+	               vMessage.@authorLN AS personLastName,
+	               vMessage.id AS messageID,
+		             vMessage.@content AS messageContent,
+		             vMessage.creationDate AS messageCreationDate];
+}
+
+INSTALL QUERY ic_2

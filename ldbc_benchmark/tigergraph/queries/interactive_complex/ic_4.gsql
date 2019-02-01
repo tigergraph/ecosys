@@ -1,0 +1,44 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_3
+
+CREATE QUERY ic_4(vertex<person> personId, int startDateEpoch, int durationDays) FOR GRAPH ldbc_snb {
+  SumAccum<int> @pId, @postCount;
+	SetAccum<vertex<tag>> @@tagsFav, @@tagsExc;
+	
+	datetime startDate;
+	
+	vPerson = { personId };
+	
+	vFriend = SELECT t
+	          FROM vPerson:s-(person_knows_person:e)->person:t;
+	
+	vPost = SELECT t
+	        FROM vFriend:s-(post_hasCreator_person_reverse:e)->post:t
+	        ACCUM t.@pId = s.id;
+	
+	// startDateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
+	// so truncate millisecond portion of the given epoch
+  startDate = epoch_to_datetime(startDateEpoch/1000);
+  endDate = datetime_add(startDate, INTERVAL durationDays DAY)
+	
+	vTag = SELECT t
+	       FROM vPost:s-(post_hasTag_tag:e)->tag:t
+	       ACCUM CASE WHEN s.creationDate BETWEEN startDate AND endDate THEN t.@postCount += 1
+	                  WHEN s.creationDate < startDate THEN @@tagsExc += t
+	             END
+	       POST-ACCUM CASE WHEN t.@postCount > 0 THEN @@tagsFav += t END;
+	
+	@@tagsFav = @@tagsFav MINUS @@tagsExc;
+	
+	vTag = { @@tagsFav };
+	
+	vTag = SELECT v
+	       FROM vTag:v
+	       ORDER BY v.@postCount DESC, v.name ASC
+	       LIMIT 10;
+	
+	PRINT vTag[vTag.name AS tagName,
+	           vTag.@postCount AS postCount];
+}
+
+INSTALL QUERY ic_4

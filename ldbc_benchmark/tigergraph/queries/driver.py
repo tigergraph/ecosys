@@ -55,6 +55,8 @@ def handle_response(response):
   global print_response
   
   response_recv += 1
+  if print_response:
+    print("--- Request: " + response.request.url)
   if response.error:
     response_code = response.code
     IOLoop.instance().stop()
@@ -67,7 +69,6 @@ def handle_response(response):
     else:
       response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
       if print_response:
-        print("--- Request: " + response.request.url)
         print("--- Response:")
         print(http_response_json["results"])
         print("--- {}/{}: {} ms\n".format(response_recv, request_sent, (response.time_info["starttransfer"] - response.time_info["pretransfer"]) * 1000))
@@ -159,7 +160,7 @@ def runAllIS(async_client, path_to_seeds, max_num_seeds):
     runQuery(async_client, path_to_seeds, max_num_seeds, "IS", i, person_ids, message_ids)
 
 def runAllIC(async_client, path_to_seeds, max_num_seeds):
-  for i in range(1,IS_SIZE+1):
+  for i in range(1,IC_SIZE+1):
     runQuery(async_client, path_to_seeds, max_num_seeds, "IC", i)
 
 def runAllBI(async_client, path_to_seeds, max_num_seeds):
@@ -176,6 +177,9 @@ def runAllQueries(path_to_seeds, max_num_seeds):
   async_client.close()
 
 if __name__ == "__main__":
+  # when max_clients > 1, the response time actually increases since response.time_info includes wait time in the queue.
+  # it'd be great if I can find out the queue wait time so that I can exclude it to retrieve the actual response time.
+  # for more info: https://www.tornadoweb.org/en/stable/httpclient.html#tornado.httpclient.HTTPResponse
   AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=1)
   
   ap = argparse.ArgumentParser()

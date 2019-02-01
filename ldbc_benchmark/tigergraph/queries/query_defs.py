@@ -28,9 +28,9 @@ def ic_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 3:
         seed = {"personId":row["personId"], "startDateEpoch":row["startDate"], "durationDays":row["durationDays"], "countryXName":row["countryXName"], "countryYName":row["countryYName"]}
       elif query_num == 4:
-        seed = {"personId":row["personId"], "startDate":row["startDate"], "durationDays":row["durationDays"]}
+        seed = {"personId":row["personId"], "startDateEpoch":row["startDate"], "durationDays":row["durationDays"]}
       elif query_num == 5:
-        seed = {"personId":row["personId"], "minDate":row["minDate"]}
+        seed = {"personId":row["personId"], "minDateEpoch":row["minDate"]}
       elif query_num == 6:
         seed = {"personId":row["personId"], "tagName":row["tagName"]}
       elif query_num == 7:

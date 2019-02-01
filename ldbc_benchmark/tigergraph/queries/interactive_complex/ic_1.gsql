@@ -1,0 +1,78 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_1 
+
+CREATE QUERY ic_1(vertex<person> personId, string firstName) FOR GRAPH ldbc_snb {
+	TYPEDEF tuple<string orgName, int orgYear, string orgPlace> org; 
+
+  SetAccum<vertex<person>> @@friends;
+	SetAccum<org> @comp, @univ;
+	SumAccum<string> @cityName;
+	SumAccum<int> @distance, @pId, @orgYear;
+	MapAccum<int, SetAccum<org>> @@compInfo, @@univInfo;
+  OrAccum @visited = False;
+  int i = 0;
+	
+  vPerson = { personId };
+	
+  WHILE i < 3 DO
+    vPerson = SELECT t
+              FROM vPerson:s-(person_knows_person:e)->person:t
+	            WHERE t.@visited == False
+	            ACCUM s.@visited += True,
+                    t.@visited += True,
+	                  t.@distance += (i+1),
+	                  CASE WHEN t.firstName == firstName THEN @@friends += t END;
+    i = i + 1;
+  END;
+
+  vFriends = { @@friends };
+	
+	vFriends = SELECT v
+	           FROM vFriends:v
+	           ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC
+	           LIMIT 20;
+
+	vFriends = SELECT s
+	           FROM vFriends:s-(person_isLocatedIn_city:e)->city:t
+	           ACCUM s.@cityName = t.name;
+	
+	vUniv = SELECT t
+	        FROM vFriends:s-(person_studyAt_university:e)->university:t
+	        ACCUM t.@pId += s.id,
+	              t.@orgYear = e.classYear;
+	
+	vUniv = SELECT s
+	        FROM vUniv:s-(university_isLocatedIn_city:e)->city:t
+	        ACCUM @@univInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+	
+	vComp = SELECT t
+	        FROM vFriends:s-(person_workAt_company:e)->company:t
+	        ACCUM t.@pId += s.id,
+	              t.@orgYear = e.workFrom;
+	
+	vComp = SELECT s
+	        FROM vComp:s-(company_isLocatedIn_country:e)->country:t
+	        ACCUM @@compInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+	
+	vFriends = SELECT v
+	           FROM vFriends:v
+	           ACCUM v.@univ += @@univInfo.get(v.id),
+	                 v.@comp += @@compInfo.get(v.id)
+	           ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC;
+	
+	PRINT vFriends[vFriends.id AS friendId,
+	               vFriends.lastName AS friendLastName,
+	               vFriends.@distance AS distanceFromPerson,
+	               vFriends.birthday AS friendBirthday,
+	               vFriends.creationDate AS friendCreationDate,
+	               vFriends.gender AS friendGender,
+	               vFriends.browserUsed AS friendBrowserUsed,
+	               vFriends.locationIP AS friendLocationIp,
+	               vFriends.email AS friendEmails,
+	               vFriends.speaks AS friendLanguages,
+	               vFriends.@cityName AS friendCityName,
+	               vFriends.@univ AS friendUniversities,
+	               vFriends.@comp AS friendCompanies];
+}
+
+INSTALL QUERY ic_1
