@@ -15,7 +15,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                    FROM Start:s-(Likes:e)-:t;
 
         Others = SELECT t
-                 FROM Subjects:s -(reverse_Likes:e)- :t
+                 FROM Subjects:s -(Reverse_Likes:e)- :t
                  WHERE t != source and getvid(source) < getvid(t)
                  ACCUM t.@intersection_size += 1, 
                        t.@set_size_B = t.outdegree("Likes")
@@ -25,7 +25,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
         RETURN @@result;
 }
 
-      CREATE QUERY jaccard_nbor_ap_file (int topK, STRING filepath) FOR GRAPH movie{
+      CREATE QUERY jaccard_nbor_ap_file (INT topK, STRING filepath) FOR GRAPH movie{
 /* This query calls the subquery jaccard_nbor_ap_sub_file to get the similarity score of every pair of vertices.
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute. 
