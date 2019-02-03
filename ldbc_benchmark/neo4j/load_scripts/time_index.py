@@ -1,6 +1,6 @@
 from datetime import datetime
 
-with open('/home/ubuntu/neo4j-community-3.5.1/logs/debug.log', 'r') as log:
+with open('/home/neo4j/neo4j-community-3.5.1/logs/debug.log', 'r') as log:
   begin = []
   end = []
   for line in log:

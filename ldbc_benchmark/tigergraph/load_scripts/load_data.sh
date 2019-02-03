@@ -9,7 +9,7 @@
 # Author: Litong Shen litong.shen@tigergraph.com
 ############################################################
 
-# export LDBC_SNB_DATA_DIR=/home/ubuntu/ldbc_snb_data/social_network/
+# export LDBC_SNB_DATA_DIR=/home/tigergraph/ldbc_snb_data/social_network/
 # export LDBC_SNB_DATA_POSTFIX=_0_0.csv
 
 time gsql -g ldbc_snb "run loading job load_ldbc_snb using 

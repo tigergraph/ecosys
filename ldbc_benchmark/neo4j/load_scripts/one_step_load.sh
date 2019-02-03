@@ -2,7 +2,7 @@
 . ./env_vars.sh
 
 ### if preprocessing is already done, you can skip it (0:run; 1:skip)
-skip_preprocess=1
+skip_preprocess=0
 
 # stop neo4j
 $NEO4J_HOME/bin/neo4j stop
@@ -20,14 +20,17 @@ then
 fi
 
 # clear debug.log
-> $NEO4J_HOME/logs/debug.log
+if [ -f $NEO4J_HOME/logs/debug.log ]; then
+  cat $NEO4J_HOME/logs/debug.log >> $NEO4J_HOME/logs/debug.log.old
+  > $NEO4J_HOME/logs/debug.log
+fi
 
 # load data
 ./load_data.sh
 
 # print loaded data size (w/o indexes)
 set -x
-du $NEO4J_HOME/data/databases/$NEO4J_DB_NAME/ -bc | grep total
+du -bc $NEO4J_HOME/data/databases/$NEO4J_DB_NAME/ | grep total
 set +x
 
 # restart neo4j
@@ -42,7 +45,7 @@ do
 done
 
 # to create index, you have to change the default password for db user neo4j
-# cat change_passwd.cql | $NEO4J_HOME/bin/cypher-shell -u neo4j -p neo4j > /dev/null
+cat change_passwd.cql | $NEO4J_HOME/bin/cypher-shell -u neo4j -p neo4j > /dev/null
 
 # create indexes
 cat create_indexes.cql | $NEO4J_HOME/bin/cypher-shell -u neo4j -p tigergraph --non-interactive > /dev/null

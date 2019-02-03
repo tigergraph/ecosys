@@ -74,7 +74,7 @@ CREATE VERTEX continent(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
 CREATE VERTEX forum (PRIMARY_ID id UINT, id UINT, title STRING, creationDate STRING)
 CREATE VERTEX person (PRIMARY_ID id UINT, id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks set<STRING>, email set<STRING>)
 CREATE VERTEX tag (PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
-CREATE VERTEX tagclass(PRIMARY_ID id UINT, id UINT, home STRING,url STRING)
+CREATE VERTEX tagclass(PRIMARY_ID id UINT, id UINT, name STRING, url STRING)
 
 // create edge
 // contianerOf

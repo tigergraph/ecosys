@@ -1,14 +1,24 @@
 #!/bin/bash
 
-# replace headers
+# remove the first line of each csv file
+files=$(find ${LDBC_SNB_DATA_DIR} -name '*.csv')
+for file in $files
+do
+  printf "Removing header in %s... " ${file}
+  tail -n +2 $file > $file.tmp && mv -f $file.tmp $file
+  # sed '1d' $file > $file.tmp && mv -f $file.tmp $file
+  echo "Done"
+done
+
+# add header files
+printf "Creating headers... "
 while read line; do
   IFS=' ' read -r -a array <<< $line
   filename=${array[0]}
   header=${array[1]}
-  printf "Replacing header in %s... " ${filename}
-  sed "1s/.*/$header/" ${LDBC_SNB_DATA_DIR}/${filename}${LDBC_SNB_DATA_POSTFIX} > tmp.csv && mv tmp.csv ${LDBC_SNB_DATA_DIR}/${filename}${LDBC_SNB_DATA_POSTFIX}
-  echo "Done"
+  echo "${header}" > ${LDBC_SNB_DATA_DIR}/${filename}_header.csv
 done < headers.txt
+echo "Done"
 
 # replace labels with one starting with an uppercase letter
 printf "Replacing labels... "
