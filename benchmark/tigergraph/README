@@ -61,7 +61,7 @@ Grant Read and Write permission to the tigergraph user on
 Configure timeout
 ===================
 Setup timeout to 180 s
-Use the following command to change Restpp.timeout_seconds to  3600
+Use the following command to change Restpp.timeout_seconds to 180s
  gadmin --configure timeout_seconds
 
 Use the following two commands to apply the config change.
