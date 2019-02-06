@@ -8,7 +8,7 @@ with open('/home/neo4j/neo4j-community-3.5.1/logs/debug.log', 'r') as log:
       begin.append(line[:23])
     elif 'Index creation finished' in line:
       end.append(line[:23])
-  if len(begin) > 9:
+  if len(begin) == 0 or len(begin) > 9:
     print("Something went wrong. Please check debug.log")
   elif len(begin) != len(end):
     print("{}/{} Done. Please come back later.".format(len(end), len(begin)))
