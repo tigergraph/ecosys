@@ -1,0 +1,59 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_12
+
+CREATE QUERY ic_12(vertex<person> personId, string tagClassName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int personId, string personFirstName, string personLastName, jsonarray tagNames, int replyCount> replyStats;
+  
+	SumAccum<int> @@numTagsFound, @authorId;
+	SetAccum<vertex<tag>> @@tags;
+	MapAccum<int, vertex<person>> @@personInfo;
+	MapAccum<int, SetAccum<string>> @@postAndTag;
+  HeapAccum<replyStats>(20, replyCount DESC, personId ASC) @@replyStatsTop;
+	GroupByAccum<int authorId, SumAccum<int> replyCount, SetAccum<string> tagNames> @@replyStatsAgg;
+	
+	vTagClass(tag|tagclass) = { tagclass.* };
+	
+	vTagClass = SELECT v
+	            FROM vTagClass:v
+	            WHERE v.name == tagClassName;
+	
+	WHILE True DO
+	  vTagClass = SELECT t
+	              FROM vTagClass:s-((tagclass_isSubclassOf_tagclass_reverse|tag_hasType_tagclass_reverse):e)->(tagclass|tag):t
+	              ACCUM CASE WHEN t.type == "tag" THEN @@tags += t END,
+	                    @@numTagsFound += 1;	  
+	  IF @@numTagsFound == 0 THEN BREAK; END;
+	  @@numTagsFound = 0;
+  END;
+	
+	vPerson = { personId };
+	
+	vFriend = SELECT t
+	          FROM vPerson:s-(person_knows_person:e)->person:t;
+	
+	vComments = SELECT t
+	            FROM vFriend:s-(comments_hasCreator_person_reverse:e)->comments:t
+	            ACCUM t.@authorId = s.id
+							POST-ACCUM @@personInfo += (s.id -> s);
+	
+	vPost = SELECT t
+	        FROM vComments:s-(comments_replyOf_post:e)->post:t;
+	
+	vTag = SELECT t
+	       FROM vPost:s-(post_hasTag_tag)->tag:t
+	       WHERE @@tags.contains(t)
+	       ACCUM @@postAndTag += (s.id -> t.name);
+
+	vComments = SELECT s
+							FROM vComments:s-(comments_replyOf_post:e)->post:t
+							WHERE @@postAndTag.containsKey(t.id)
+							ACCUM @@replyStatsAgg += (s.@authorId -> 1, @@postAndTag.get(t.id))
+							POST-ACCUM @@replyStatsTop += replyStats(s.@authorId, 
+																											 @@personInfo.get(s.@authorId).firstName,
+																											 @@personInfo.get(s.@authorId).lastName,
+																											 to_jsonarray(@@replyStatsAgg.get(s.@authorId).tagNames),
+	                                                     @@replyStatsAgg.get(s.@authorId).replyCount);
+	PRINT @@replyStatsTop;
+}
+
+INSTALL QUERY ic_12

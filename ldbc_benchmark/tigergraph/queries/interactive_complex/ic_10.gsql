@@ -1,0 +1,54 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_10
+
+CREATE QUERY ic_10(vertex<person> personId, int month, int nextMonth) FOR GRAPH ldbc_snb {
+	TYPEDEF tuple<int personId, string personFirstName, string personLastName, int commonInterestScore, string personGender, string personCityName> friendInfo;
+	
+	OrAccum @visited;
+	SumAccum<string> @city;
+	SetAccum<vertex<tag>> @@tagInterest;
+	SumAccum<int> @friendId, @common, @uncommon;
+	MapAccum<int, bool> @@postInterestMap;
+	HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
+	
+	vPerson = { personId };
+	
+	vFriend1h = SELECT t
+	            FROM vPerson:s-(person_knows_person:e)->person:t
+	            ACCUM s.@visited += True,
+	                  t.@visited += True;
+	
+	vFriend2h = SELECT t
+	            FROM vFriend1h:s-(person_knows_person:e)->person:t
+	            WHERE t.@visited == False
+	            AND ((month(t.birthday) == month AND day(t.birthday) >= 21) OR 
+								   (month(t.birthday) == nextMonth AND day(t.birthday) < 22));
+	
+	vFriend2h = SELECT s
+	            FROM vFriend2h:s-(person_isLocatedIn_city:e)->city:t
+	            ACCUM s.@city = t.name;
+	
+	vTag = SELECT t
+	       FROM vPerson:s-(person_hasInterest_tag:e)->tag:t
+	       POST-ACCUM @@tagInterest += t;
+	
+	vPost = SELECT t
+	        FROM vFriend2h:s-(post_hasCreator_person_reverse:e)-post:t;
+	
+	vPost = SELECT s
+	        FROM vPost:s-(post_hasTag_tag:e)->tag:t
+	        ACCUM CASE WHEN @@tagInterest.contains(t) THEN @@postInterestMap += (s.id -> True)
+                     ELSE @@postInterestMap += (s.id -> False)
+                END;
+	
+	vFriend2h = SELECT s
+	            FROM vFriend2h:s-(post_hasCreator_person_reverse:e)-post:t
+	            ACCUM CASE WHEN @@postInterestMap.get(t.id) == True THEN s.@common += 1
+	                       ELSE s.@uncommon += 1
+	                  END
+	            POST-ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, (s.@common-s.@uncommon), s.gender, s.@city);
+	
+	PRINT @@friendInfoTop;
+}
+
+INSTALL QUERY ic_10

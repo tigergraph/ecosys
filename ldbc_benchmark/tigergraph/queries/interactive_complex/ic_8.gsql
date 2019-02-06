@@ -1,0 +1,33 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_8
+
+CREATE QUERY ic_8(vertex<person> personId) FOR GRAPH ldbc_snb {
+  SumAccum<int> @personId;
+  SumAccum<string> @personFirstName, @personLastName;
+
+  vPerson = { personId };
+	
+	vMessage = SELECT t
+	           FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
+	
+	vReply = SELECT t
+           FROM vMessage:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse):e)->comments:t
+           ORDER BY t.creationDate DESC, t.id ASC
+           LIMIT 20;
+  
+  vReply = SELECT s
+           FROM vReply:s-(comments_hasCreator_person:e)->person:t
+           ACCUM s.@personId = t.id,
+                 s.@personFirstName = t.firstName,
+                 s.@personLastName = t.lastName
+           ORDER BY s.creationDate DESC, s.id ASC;
+
+  PRINT vReply[vReply.@personId AS personId,
+               vReply.@personFirstName AS personFirstName,
+               vReply.@personLastName AS personLastName,
+               vReply.creationDate AS creationDate,
+               vReply.id AS commentId,
+               vReply.content AS commentContent];
+}
+
+INSTALL QUERY ic_8

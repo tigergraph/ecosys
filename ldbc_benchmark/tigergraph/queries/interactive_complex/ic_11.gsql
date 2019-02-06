@@ -1,0 +1,41 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_11
+
+CREATE QUERY ic_11(vertex<person> personId, string countryName, int workFromYear) FOR GRAPH ldbc_snb {
+	TYPEDEF tuple<int personId, string personFirstName, string personLastName, string organizationName, int organizationWorkFromYear> friendInfo;
+	
+	ListAccum<vertex<person>> @@friendAll;
+	OrAccum @visited;
+	MapAccum<int, string> @@orgCountryMap;
+	HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@friendInfoTop;
+	int i;
+	
+	vPerson = { personId };
+	
+	WHILE i < 2 DO
+	  vPerson = SELECT t
+	            FROM vPerson:s-(person_knows_person:e)->person:t
+	            WHERE t.@visited == False
+	            ACCUM s.@visited += True,
+	                  t.@visited += True,
+	                  @@friendAll += t;
+	  i += 1;
+	END;
+	
+	vFriend = { @@friendAll };
+	
+	vCompany = { company.* };
+	
+	vOrg = SELECT s
+	       FROM vCompany:s-(company_isLocatedIn_country:e)->country:t
+	       ACCUM @@orgCountryMap += (s.id -> t.name);
+	
+	vFriend = SELECT s
+	          FROM vFriend:s-(person_workAt_company:e)->company:t
+	          WHERE e.workFrom < workFromYear
+	          ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, t.name, e.workFrom);
+	
+	PRINT @@friendInfoTop;
+}
+
+INSTALL QUERY ic_11
