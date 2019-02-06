@@ -10,12 +10,18 @@ def getTime(file):
       if 'System_GCleanUp|Finished' in line:
         end_time_str = line[:15]
         break
-    if not end_time_str:
+      elif '*** Aborted at' in line:
+        end_epoch_str = line[15:25]
+        break
+    if not end_time_str and not end_epoch_str:
       return False
   begin_time_str = re.match(r'.+\.([0-9]+).log', file, re.M).group(1)
   begin_time = datetime.fromtimestamp(int(begin_time_str)/1000.0)
-  end_time_str = "{}-{:02d}-{:02d} {}".format(begin_time.year, begin_time.month, begin_time.day, end_time_str)
-  end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S.%f")
+  if end_time_str:
+    end_time_str = "{}-{:02d}-{:02d} {}".format(begin_time.year, begin_time.month, begin_time.day, end_time_str)
+    end_time = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S.%f")
+  else:
+    end_time = datetime.fromtimestamp(int(end_epoch_str))
   if end_time < begin_time:
     end_time = end_time + datetime.timedelta(days=1)
   print("Finished in {} seconds.".format(round((end_time - begin_time).total_seconds(), 3)))
