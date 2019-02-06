@@ -23,7 +23,7 @@ from tornado.httputil import *
 from query_defs import *
 
 # default value for arguments
-DEFAULT_PATH_TO_SEEDS = "/home/ubuntu/ldbc_snb_data_sf1/substitution_parameters/"
+DEFAULT_PATH_TO_SEEDS = "/home/tigergraph/ldbc_snb_data/substitution_parameters/"
 DEFAULT_MAX_NUM_SEEDS = 100
 DEFAULT_DEBUG_MODE = 0
 
@@ -43,7 +43,6 @@ request_sent = 0
 response_recv = 0
 response_code = 0
 response_msg = ""
-response_time = 0
 print_response = False
 
 def handle_response(response):
@@ -51,27 +50,31 @@ def handle_response(response):
   global response_recv
   global response_code
   global response_msg
-  global response_time
   global print_response
   
   response_recv += 1
   if print_response:
     print("--- Request: " + response.request.url)
+
   if response.error:
     response_code = response.code
     IOLoop.instance().stop()
   else:
     http_response_json = json.loads(response.body.decode("utf-8"))
     if http_response_json["error"]:
-      response_code = http_response_json["code"] 
+      if "code" in http_response_json:
+        response_code = http_response_json["code"] 
+      else:
+        response_code = "RUNTIME"
       response_msg = http_response_json["message"]
       IOLoop.instance().stop()
     else:
-      response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
+      # response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
       if print_response:
         print("--- Response:")
         print(http_response_json["results"])
-        print("--- {}/{}: {} ms\n".format(response_recv, request_sent, (response.time_info["starttransfer"] - response.time_info["pretransfer"]) * 1000))
+        print()
+        
   if response_recv >= request_sent:
     IOLoop.instance().stop()
 
@@ -108,11 +111,9 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
   global response_recv
   global response_code
   global response_msg
-  global response_time
   global print_response
 
   response_recv = 0
-  response_time = 0
   print_response = True if debug_mode > 0 else False
 
   print((IS_NAME if query_type == "IS" \
@@ -135,15 +136,24 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
                        connect_timeout = 3600, request_timeout=3600)
 
   # start ioloop
+  time_begin = time.time()
   IOLoop.instance().start()
+  time_elapsed = time.time() - time_begin
   if not response_code:
-    print("- Average Response Time: {} ms".format((response_time * 1000 / response_recv)))
-    print("- # Seeds: {}".format(request_sent))
+    print("- Elapsed Time: {} sec".format(time_elapsed))
+    print("- # Requests Sent: {}".format(request_sent))
+    print("- QPS: " + str(response_recv/time_elapsed))
+
+    # print("- Average Response Time: {} ms".format((response_time * 1000 / response_recv)))
+    # print("- QPS: {}".format(response_recv / (time_elapsed * 1000)))
+    # print("- # Seeds: {}".format(request_sent))
   else:
+    if response_code == "RUNTIME":
+      print("- Runtime Error: {}".format(response_msg))
     if not response_msg:
       print("- Bad Response: HTTP {}".format(response_code))
     else:
-      print("- Error {}: {}".format(response_code, response_msg))
+      print("- Error {}: {}".format(response_code , response_msg))
 
 def runISWrapper(async_client, path_to_seeds, max_num_seeds, query_num, debug_mode = 0):
   # generate seeds
@@ -180,7 +190,7 @@ if __name__ == "__main__":
   # when max_clients > 1, the response time actually increases since response.time_info includes wait time in the queue.
   # it'd be great if I can find out the queue wait time so that I can exclude it to retrieve the actual response time.
   # for more info: https://www.tornadoweb.org/en/stable/httpclient.html#tornado.httpclient.HTTPResponse
-  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=1)
+  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=4)
   
   ap = argparse.ArgumentParser()
   ap.add_argument("--path", help="Full path to the seed directory")
@@ -191,15 +201,9 @@ if __name__ == "__main__":
 
   args = ap.parse_args()
   
-  if args.path:
-    path_to_seeds = args.path
-  else:
-    path_to_seeds = DEFAULT_PATH_TO_SEEDS
-
-  if args.num:
-    max_num_seeds = int(args.num)
-  else:    
-    max_num_seeds = DEFAULT_MAX_NUM_SEEDS
+  path_to_seeds = args.path if args.path else DEFAULT_PATH_TO_SEEDS
+  max_num_seeds = int(args.num) if args.num else DEFAULT_MAX_NUM_SEEDS
+  debug_mode = int(args.debug) if args.debug else DEFAULT_DEBUG_MODE
 
   if args.seed:
     person_ids, message_ids = generateSeedsForIS(path_to_seeds, max_num_seeds)
@@ -207,11 +211,6 @@ if __name__ == "__main__":
     for i in range(0,int(args.seed)):
       print("{}\t{}".format(person_ids[i], message_ids[i]))
     sys.exit()
-
-  if args.debug:
-    debug_mode = int(args.debug)
-  else:
-    debug_mode = DEFAULT_DEBUG_MODE
 
   if not args.query:
     runAllQueries(path_to_seeds, max_num_seeds)

@@ -38,9 +38,11 @@ def ic_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 8:
         seed = {"personId":row["personId"]}
       elif query_num == 9:
-        seed = {"personId":row["personId"], "minDate":row["minDate"]}
+        seed = {"personId":row["personId"], "maxDateEpoch":row["minDate"]}
       elif query_num == 10:
-        seed = {"personId":row["personId"], "month":row["month"]}
+        month = int(row["month"])
+        nextMonth = (month + 1) if month < 12 else 1
+        seed = {"personId":row["personId"], "month":month, "nextMonth":nextMonth}
       elif query_num == 11:
         seed = {"personId":row["personId"], "countryName":row["countryName"], "workFromYear":row["workFromYear"]}
       elif query_num == 12:

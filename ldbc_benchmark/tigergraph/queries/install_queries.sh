@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# drop queries calling helper queries first to install helper queries
-gsql -g ldbc_snb "DROP QUERY ic_3"
-
-# and then add helper queries
+# helper query for seed generation
 for file in "$PWD/helper"/*.gsql
 do
   gsql "$file"
