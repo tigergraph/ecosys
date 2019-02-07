@@ -1,7 +1,7 @@
 import sys
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def getTime(file):
   with open(file, 'r') as f:
@@ -23,7 +23,7 @@ def getTime(file):
   else:
     end_time = datetime.fromtimestamp(int(end_epoch_str))
   if end_time < begin_time:
-    end_time = end_time + datetime.timedelta(days=1)
+    end_time = end_time + timedelta(days=1)
   print("Finished in {} seconds.".format(round((end_time - begin_time).total_seconds(), 3)))
   return True
 
