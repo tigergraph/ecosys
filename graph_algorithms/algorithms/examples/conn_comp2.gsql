@@ -1,0 +1,38 @@
+CREATE QUERY conn_comp2(/* Parameters here */) FOR GRAPH social { 
+ # This query identifies the Connected Components (undirected edges)
+
+        SumAccum<INT> @cid;       //each vertex's tentative component id
+        MapAccum<INT, INT> @@compSizes;
+        OrAccum @visited;
+        INT n = 0;
+        INT curr_cid;
+        Unvisited = {Person.*};
+
+# Initialize: Label each vertex with its own internal ID
+        Unvisited = SELECT s 
+                    FROM Unvisited:s
+                    POST-ACCUM s.@cid = getvid(s);
+
+        WHILE (Unvisited.size() > 0) DO
+                Start = SELECT s
+                        FROM Unvisited:s
+                        LIMIT 1;
+                Start = SELECT s
+                        FROM Start:s
+                        ACCUM s.@visited = true
+                        POST-ACCUM curr_cid = s.@cid;
+                WHILE (Start.size() > 0) DO
+                        Unvisited = Unvisited MINUS Start;
+                        @@compSizes += (curr_cid -> Start.size());
+                        Start = SELECT t
+                                FROM Start:s -(Coworker:e)-> Person:t
+                                WHERE t.@visited == false
+                                ACCUM t.@cid = s.@cid,
+                                      t.@visited = true;
+                END;
+        END;
+        
+        PRINT @@compSizes;
+        Start = {ANY};
+        PRINT Start.@cid;
+}

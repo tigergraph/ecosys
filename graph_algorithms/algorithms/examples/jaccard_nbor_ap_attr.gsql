@@ -1,10 +1,10 @@
-CREATE QUERY jaccard_nbor_ap_sub (vertex source) FOR GRAPH movie RETURNS (MapAccum<vertex, float>){
+  CREATE QUERY jaccard_nbor_ap_sub_attr (vertex<Person> source, INT topK) FOR GRAPH movie {
 /* This subquery calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 */
     
-        MapAccum<vertex, float> @@result;
         SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+        SumAccum<FLOAT> @jaccard;
 
         Start (ANY) = {source};
         Start = SELECT s
@@ -15,38 +15,34 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                    FROM Start:s-(Likes:e)-:t;
 
         Others = SELECT t
-                 FROM Subjects:s -(reverse_Likes:e)- :t
+                 FROM Subjects:s -(Reverse_Likes:e)- :t
                  WHERE t != source and getvid(source) < getvid(t)
                  ACCUM t.@intersection_size += 1, 
                        t.@set_size_B = t.outdegree("Likes")
-                 POST-ACCUM @@result += (t -> t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
+                 POST-ACCUM t.@jaccard = t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size)
+                 ORDER BY t.@jaccard DESC
+                 LIMIT topK
                  ;
+        Others = SELECT s
+                 FROM Others:s
+                 POST-ACCUM insert into Similarity values(source, s, s.@jaccard);
 
-        RETURN @@result;
 }
 
-CREATE QUERY jaccard_nbor_ap (int topK) FOR GRAPH movie{
-/* This query calls the subquery jaccard_nbor_ap_sub to get the similarity score of every pair of vertices.
+CREATE QUERY jaccard_nbor_ap_attr (INT topK) FOR GRAPH movie {
+/* This query calls the subquery jaccard_nbor_ap_sub_attr to get the similarity score of every pair of vertices.
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute. 
    A similarity edge with one float attribute in the schema is required for this version.  
 */
 
-        TYPEDEF tuple<vertex vertex1, vertex vertex2, float score> SIMILARITY_SCORE;
-        MapAccum<vertex, float> @single_result;
-        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@total_result;
 
         start = {Person.*};
         start = SELECT s
                 FROM start:s
-                ACCUM s.@single_result = jaccard_nbor_ap_sub (s)
-                POST-ACCUM
-                        FOREACH (key, value) IN s.@single_result DO
-                                @@total_result += SIMILARITY_SCORE(s, key, value)
-                        END
+                ACCUM jaccard_nbor_ap_sub_attr (s, topK)
                 ;
 
-        PRINT @@total_result;
 
 }
 

@@ -120,7 +120,7 @@ while [ !$finished ]; do
 
 	# Copy the algorithm template file to the destination file.
 	templPath="./templates"
-	genPath="./generated"
+	genPath="./examples"
 	cp ${templPath}/${algoName}.gtmp ${genPath}/${algoName}_tmp.gsql;
 
 	# Replace *graph* placeholder
@@ -483,7 +483,7 @@ END
                                         # edge to insert for similarity algorithms
                                         if [[ $(countStringInFile "\*insert-edge-name\*" $attrQuery) > 0 ]]; then
                                           while true; do
-                                                read -p "Name of the edge to insert and store FLOAT result (e.g. insert \"similarity\" edge with one FLOAT attribute called \"score\"): " edgeName
+                                                read -p "Name of the edge to insert and store FLOAT result (e.g. insert \"Similarity\" edge with one FLOAT attribute called \"score\"): " edgeName
                                                 if [[ $(ifEdgeType $edgeName) > 0 ]]; then
                                                         sed -i "s/\*insert-edge-name\*/$edgeName/g" $attrQuery;
                                                         break;
