@@ -26,7 +26,13 @@ Now you can load data into Neo4j:
 ./one_step_load.sh
 ```
 
-Once the loading is done, it will print out the total time spent and size of loaded data in Bytes. This is however without indexes. At the end of [one_step_load.sh](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/neo4j/load_scripts/one_step_load.sh), it will call another cypher script to create indexes. Now you can try to check the time spent by running a python script:
+Once the loading is done, it will print out the total time spent and size of loaded data in Bytes. This is however without indexes. At the end of [one_step_load.sh](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/neo4j/load_scripts/one_step_load.sh), it will call another cypher script to create indexes. If you see an authentication error, please check the password for db user neo4j and run:
+
+```
+cat create_indexes.cql | [NEO4J_HOME]/bin/cypher-shell -u neo4j -p [YOUR_PASSWORD]
+```
+
+Now you can try to check the time spent by running a python script:
 
 ```
 python3 time_index.py

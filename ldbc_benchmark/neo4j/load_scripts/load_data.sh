@@ -1,6 +1,6 @@
 #!/bin/bash
 
-time $NEO4J_HOME/bin/neo4j-admin import --database=$NEO4J_DB_NAME \
+$NEO4J_HOME/bin/neo4j-admin import --database=$NEO4J_DB_NAME \
   --id-type=INTEGER \
   --nodes:Message:Comment "${LDBC_SNB_DATA_DIR}/comment_header.csv,${LDBC_SNB_DATA_DIR}/comment${LDBC_SNB_DATA_POSTFIX}" \
   --nodes:Forum "${LDBC_SNB_DATA_DIR}/forum_header.csv,${LDBC_SNB_DATA_DIR}/forum${LDBC_SNB_DATA_POSTFIX}" \
