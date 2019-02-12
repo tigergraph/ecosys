@@ -1,18 +1,36 @@
-############################################################
-# Copyright (c)  2015-now, TigerGraph Inc.
-# All rights reserved
-# It is provided as it is for benchmark reproducible purpose.
-# anyone can use it for benchmark purpose with the 
-# acknowledgement to TigerGraph.
-# Author: Litong Shen litong.shen@tigergraph.com
-############################################################
+# LDBC SNB data loading scripts for TigerGraph
 
-You first need to generate LDBC SNB data before run scripts here. Please follow the instructions here for more detail:
-https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/802619473/LDBC+Social+Network+Benchmark
+## Prerequisites
 
-Once you are done with data generation, modify LDBC_SNB_DATA_DIR in one_step_load.sh to the directory of generated data.
+* Install TigerGraph. Scripts are tested with TigerGraph 2.2.4 Developer's edition.
+* Generate LDBC SNB data.
 
-Then simply do:
-> ./one_step_load.sh
+## Run scripts
 
-It'll first create the schema and the loading job in setup_schema.gsql, and load_data.sh will load all data into TigerGraph.
+### Modify one_step_load.sh
+
+* LDBC_SNB_DATA_DIR: The full path to your raw data. Don't forget to include the social_network/ at the end of the path.
+
+### Load data
+
+Now you can load data into TigerGraph:
+
+```
+./one_step_load.sh
+```
+
+At the beginning of the loading job, you can find the lines similar to the following about the full path to the log file:
+
+```
+Starting the following job, i.e.
+  JobName: load_ldbc_snb, jobid: ldbc_snb_m1.<START_TIME_EPOCH>
+  Loading log: '<TIGERGRAPH_HOME>/logs/restpp/restpp_loader_logs/ldbc_snb/ldbc_snb_m1.<START_TIME_EPOCH>.log'
+```
+
+Once the loading job is done, you can check the time spent by running a python script with the full path to the log:
+
+```
+python3 time.py <TIGERGRAPH_HOME>/logs/restpp/restpp_loader_logs/ldbc_snb/ldbc_snb_m1.<START_TIME_EPOCH>.log
+```
+
+This will print out the time spent to load data if the process is done. If you ran the loading job in background and the process is still running, it will tell you it's not done yet, so you can keep trying to run this script until you see the time.
