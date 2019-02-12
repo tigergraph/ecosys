@@ -12,12 +12,6 @@
 Once you are done with data generation, modify environment variables in [env_vars.sh](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/neo4j/load_scripts/env_vars.sh).
 Change LDBC_SNB_DATA_DIR and NEO4J_DB_NAME properly.
 
-### Modify one_step_load.sh
-
-* skip_preprocess: Neo4j requires pre-processing of data and this is done by [preprocess.sh](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/neo4j/load_scripts/preprocess.sh): replacing the header for each file and capitalize some node name. Replacing a header can take huge amount of time if the file is big. Since this is one-time processing, you can skip pre-processing by changing the value of skip_preprocess to 1 second from the first line of this file.
-
-* change_passwd.cql: If you are running the scripts for the first time, your db user neo4j should be the default password. However, you need to change the default password to create indexes, so it calls this cypher script to change the password. If you already changed your password, You can simply comment out the second from the last line of this file, and change -p flag in the last line accordingly.
-
 ### Load data and create indexes
 
 Now you can load data into Neo4j:
