@@ -12,7 +12,7 @@
 # export LDBC_SNB_DATA_DIR=/home/tigergraph/ldbc_snb_data/social_network/
 # export LDBC_SNB_DATA_POSTFIX=_0_0.csv
 
-time gsql -g ldbc_snb "run loading job load_ldbc_snb using 
+gsql -g ldbc_snb "run loading job load_ldbc_snb using 
 v_person_file=\"${LDBC_SNB_DATA_DIR}/person${LDBC_SNB_DATA_POSTFIX}\",
 v_post_file=\"${LDBC_SNB_DATA_DIR}/post${LDBC_SNB_DATA_POSTFIX}\", 
 v_tag_file=\"${LDBC_SNB_DATA_DIR}/tag${LDBC_SNB_DATA_POSTFIX}\", 
