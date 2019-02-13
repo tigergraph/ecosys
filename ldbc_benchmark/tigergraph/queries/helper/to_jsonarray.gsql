@@ -7,9 +7,9 @@ CREATE QUERY to_jsonarray(set<string> src) FOR GRAPH ldbc_snb RETURNS(jsonarray)
 
   FOREACH s IN src DO
     IF NOT isFirst THEN
-      tgt += ","+s;
+      tgt += "," + "\"" + s + "\"";
     ELSE
-      tgt += s;
+      tgt += "\"" + s + "\"";
       isFirst = False;
     END;
   END;
