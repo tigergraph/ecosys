@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# drop queries with dependencies
+gsql -g ldbc_snb 'DROP QUERY ic_12'
+gsql -g ldbc_snb 'DROP QUERY ic_14'
+
 # helper query for seed generation
 for file in "$PWD/helper"/*.gsql
 do

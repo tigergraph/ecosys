@@ -150,7 +150,7 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
   else:
     if response_code == "RUNTIME":
       print("- Runtime Error: {}".format(response_msg))
-    if not response_msg:
+    elif not response_msg:
       print("- Bad Response: HTTP {}".format(response_code))
     else:
       print("- Error {}: {}".format(response_code , response_msg))
