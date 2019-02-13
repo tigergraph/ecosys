@@ -1,11 +1,11 @@
 USE GRAPH ldbc_snb
 DROP QUERY to_jsonarray
 
-CREATE QUERY to_jsonarray(SetAccum<string> src) FOR GRAPH ldbc_snb RETURNS(jsonarray) {
+CREATE QUERY to_jsonarray(set<string> src) FOR GRAPH ldbc_snb RETURNS(jsonarray) {
   string tgt = "[";
   bool isFirst = True;
 
-	FOREACH s IN src DO
+  FOREACH s IN src DO
     IF NOT isFirst THEN
       tgt += ","+s;
     ELSE
@@ -13,7 +13,7 @@ CREATE QUERY to_jsonarray(SetAccum<string> src) FOR GRAPH ldbc_snb RETURNS(jsona
       isFirst = False;
     END;
   END;
-  tgt += "]"
+  tgt += "]";
 
   RETURN parse_json_array(tgt);
 }

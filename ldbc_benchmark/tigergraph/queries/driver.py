@@ -182,7 +182,7 @@ def runAllQueries(path_to_seeds, max_num_seeds):
 
   runAllIS(async_client, path_to_seeds, max_num_seeds)
   runAllIC(async_client, path_to_seeds, max_num_seeds)
-  runAllBI(async_client, path_to_seeds, max_num_seeds)
+  # runAllBI(async_client, path_to_seeds, max_num_seeds)
 
   async_client.close()
 
