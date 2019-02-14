@@ -1,0 +1,38 @@
+CREATE QUERY mst_attr (VERTEX source) FOR GRAPH social {
+/* Minimal Spanning Tree (MST)
+Given an undirected graph, and a source vertex, print out a MST for the connected subgraph which contains the source vertex.
+1. Start with a set A = {source vertex}
+2. For all vertices in A, find another vertex y in the graph but not A which is connected to a vertex x in A such that the weight on the edge e(x,y) is the smallest among all such edges from a vertex in A to a vertex not in A. Add y to A, and add the edge (x,y) to MST
+3. Repeat 2 until A has no edge linking to any other vertex in the graph.
+The ACCM version shows display by default.  
+*/
+        TYPEDEF TUPLE<VERTEX fromV, VERTEX toV, FLOAT weight> EDGE_WEIGHT;
+        HeapAccum<EDGE_WEIGHT>(1, weight ASC) @@chosen_edge; //only need to keep the minimal tuple
+        OrAccum @chosen;
+
+        A = {source};
+        // initialize the source vertex
+        Current = SELECT a
+                  FROM A:a
+                  ACCUM a.@chosen = true;
+
+        WHILE (Current.size() > 0) DO
+                Current = SELECT t
+                          FROM A:s -((Friend|PI|II):e) -> :t
+                          WHERE t.@chosen == false    // vertex not in A
+                          ACCUM @@chosen_edge += EDGE_WEIGHT(s, t, e.weight)
+                          POST-ACCUM IF t == @@chosen_edge.top().toV THEN    
+                                              t.@chosen = TRUE      // mark the chosen vertex to add into A
+                                     END
+                          HAVING t.@chosen' == false and t.@chosen == true;
+                IF @@chosen_edge.size() > 0 THEN
+                        S = SELECT s
+                            FROM Current:s -((Friend|PI|II):e) -> :t
+                            WHERE t == @@chosen_edge.top().fromV
+                            ACCUM e.in_mst = TRUE;
+                END;    
+                @@chosen_edge.clear();
+                A = A UNION Current;      // update A
+        END;
+
+}
