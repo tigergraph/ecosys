@@ -1,25 +1,17 @@
 *ATTR*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
 *ACCM*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
-*FILE*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK, STRING filepath) FOR GRAPH *graph* {
+*FILE*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK, FILE f) FOR GRAPH *graph* {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
+        SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
 
-*FILE*  TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
-*FILE*  FILE f(filepath);
-*ACCM*  TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
-
-*FILE*  HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;
-*ACCM*  HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;    
-        SumAccum<FLOAT> @numerator, @@norm1, @norm2;
-*ATTR*  SumAccum<FLOAT> @cosine;
-
-        start1 = {source};
+        start = {source};
         subjects = SELECT t
-                   FROM start1:s -(*edge-types*:e)-> :t
+                   FROM start:s -(*edge-types*:e)-> :t
                    ACCUM t.@numerator = e.*edge-weight*,
                          @@norm1 += pow(e.*edge-weight*, 2);
 
@@ -31,22 +23,20 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
         neighbours = SELECT s
                      FROM neighbours:s -(*edge-types*:e)-> :t
                      ACCUM s.@norm2 += pow(e.*edge-weight*, 2)
-*ATTR*        	     POST-ACCUM s.@cosine = s.@numerator/sqrt(@@norm1 * s.@norm2)
-*ATTR*               ORDER BY s.@cosine DESC
-*ATTR*               LIMIT topK
-*FILE*               POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-*ACCM*        	     POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-                     ;
+        	     POST-ACCUM s.@similarity = s.@numerator/sqrt(@@norm1 * s.@norm2)
+                     ORDER BY s.@similarity DESC
+                     LIMIT topK;
+
 *ATTR*  neighbours = SELECT s
 *ATTR*               FROM neighbours:s
-*ATTR*               POST-ACCUM insert into *insert-edge-name* values(source, s, s.@cosine);
+*ATTR*               POST-ACCUM insert into *insert-edge-name* values(source, s, s.@similarity);
 
-*ACCM*  PRINT @@result_topK;
+*ACCM*  PRINT neighbours.@similarity;
 
-*FILE*  f.println("Vertex1","Vertex2","Similarity");
-*FILE*  FOREACH item IN @@result_topK DO
-*FILE*           f.println(item.vertex1, item.vertex2, item.score);
-*FILE*  END;
+*FILE*  f.println("Vertex1", "Vertex2", "Similarity");
+*FILE*  neighbours = SELECT s 
+*FILE*               FROM neighbours:s
+*FILE*               POST-ACCUM f.println(source, s, s.@similarity);
 
 }
 
