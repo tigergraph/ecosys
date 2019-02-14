@@ -5,18 +5,17 @@ CREATE QUERY is_4(string seed) FOR GRAPH ldbc_snb {
   SetAccum<string> @@seeds;
     
   @@seeds += seed;
-  vPost = to_vertex_set(@@seeds, "post");
   vComments = to_vertex_set(@@seeds, "comments");
     
   IF vComments.size() > 0 THEN
-  // note that there is a bug that it can't print multiple attributes from a vertex set
-  // initatied by to_vertex_set() function.
-  // two PRINT statements here is just a temporary workaround
-    PRINT vComments[vComments.creationDate AS messageCreationDate];
-    PRINT vComments[vComments.content AS messageContent];
+    PRINT vComments[
+      vComments.creationDate AS messageCreationDate, 
+      vComments.content AS messageContent];
   ELSE
-    PRINT vPost[vPost.creationDate AS messageCreationDate];
-    PRINT vPost[vPost.imageFile AS messageContent];
+    vPost = to_vertex_set(@@seeds, "post");
+    PRINT vPost[
+      vPost.creationDate AS messageCreationDate,
+      vPost.imageFile AS messageContent];
   END;
 }
 
