@@ -1,0 +1,116 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_14
+
+CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<jsonarray persionIdsInPath, double pathWeight> pathInfo;
+  SumAccum<int> @dist1 = -1, @dist2 = -1;
+  MinAccum<int> @@dist12;
+  SumAccum<int> @@next;
+  ListAccum<ListAccum<vertex<person>>> @path1, @path2;
+  ListAccum<ListAccum<vertex<person>>> @@pathAll;
+  SumAccum<double> @@weight = 0.0;
+  HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
+
+  bool found = False;
+  string jsonStr = "[]";
+
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    
+    vPerson = 
+      SELECT v
+      FROM vPerson:v
+      ACCUM 
+        CASE 
+          WHEN v == person1Id THEN 
+            v.@dist1 = 0
+          WHEN v == person2Id THEN
+	          v.@dist2 = 0
+        END;
+	
+    WHILE NOT found DO
+      @@next = 0;
+	
+      vPerson = 
+        SELECT t
+        FROM vPerson:s-(person_knows_person>:e)-person:t
+        WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
+        ACCUM
+          CASE
+            WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
+              found = True,
+              CASE
+                WHEN s.@dist1 > -1 THEN
+                  @@dist12 += s.@dist1 + t.@dist2 + 1,
+                  FOREACH p1 IN s.@path1 DO
+                    FOREACH p2 IN t.@path2 DO
+                      @@pathAll += p1 + [s] + [t] + p2
+                    END
+                  END
+                WHEN s.@dist2 > -1 THEN
+                  @@dist12 += s.@dist2 + t.@dist1 + 1,
+                  FOREACH p2 IN s.@path2 DO
+                    FOREACH p1 IN t.@path1 DO
+                      @@pathAll += p1 + [t] + [s] + p2
+                    END
+                  END
+              END
+            WHEN s.@dist1 > -1 THEN
+              @@next += 1,
+              t.@dist1 = s.@dist1 + 1,
+              IF s.@path1.size() > 0 THEN
+                FOREACH p IN s.@path1 DO
+                  t.@path1 += p + [s]
+                END
+              ELSE
+                t.@path1 += [s]
+              END
+            WHEN s.@dist2 > -1 THEN
+              @@next += 1,
+              t.@dist2 = s.@dist2 + 1,
+              IF s.@path2.size() > 0 THEN
+                FOREACH p IN s.@path2 DO
+                  t.@path2 += [s] + p
+                END
+              ELSE
+                t.@path2 += [s]
+              END
+          END
+        POST-ACCUM
+          CASE
+            WHEN t.@dist1 > -1 AND t.@dist2 > -1 THEN
+              found = True,            
+              @@dist12 += t.@dist1 + t.@dist2,
+              FOREACH p1 IN t.@path1 DO
+                FOREACH p2 IN t.@path2 DO
+                  @@pathAll += p1 + [t] + p2
+                END
+              END
+          END;
+      IF @@next == 0 THEN
+        @@dist12 = -1;
+        BREAK;
+      END;
+    END;
+  ELSE
+    @@dist12 += 0;
+  END;
+
+  @@pathInfoTop.resize(@@pathAll.size());
+
+  FOREACH path IN @@pathAll DO
+    IF @@dist12 == path.size()-1 THEN
+      jsonStr = "[";
+      FOREACH i IN range[0, path.size()-2] DO
+        @@weight += get_weight(path.get(i), path.get(i+1));
+        jsonStr += bigint_to_string(path.get(i).id) + ",";
+      END;
+      jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
+      @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
+    END;
+  END;
+
+  PRINT @@pathInfoTop;
+}
+
+INSTALL QUERY ic_14

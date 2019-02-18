@@ -1,0 +1,55 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_10
+
+CREATE QUERY ic_10(vertex<person> personId, int month, int nextMonth) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int personId, 
+                string personFirstName, 
+                string personLastName, 
+                int commonInterestScore, 
+                string personGender, 
+                string personCityName> friendInfo;
+
+  OrAccum @visited;
+
+  SumAccum<string> @city;
+  SetAccum<vertex<person>> @@friendAll;
+  SetAccum<int> @@interestedTagIds;
+  SumAccum<int> @common, @uncommon;
+  HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
+
+  vPerson = { personId };
+	
+  vPerson = 
+    SELECT s
+    FROM vPerson:s-(person_knows_person>*2..2:e1)-person:im-(person_isLocatedIn_city>)-city:t
+    WHERE im.@visited == False
+    AND ((month(im.birthday) == month AND day(im.birthday) >= 21) OR 
+         (month(im.birthday) == nextMonth AND day(im.birthday) < 22))
+    ACCUM 
+      s.@visited += True,
+      im.@visited += True,
+      im.@city = t.name,
+      @@friendAll += im;
+
+  vFriend = { @@friendAll };
+
+  vTag = 
+    SELECT t
+    FROM vPerson:s-(person_hasInterest_tag>:e)-tag:t
+    POST-ACCUM @@tagInterest += t;
+	
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(<post_hasCreator_person:e1.post_hasTag_tag>:e2)-tag:t
+    ACCUM
+      CASE WHEN @@interestedTagIds.contains(t.id) == True THEN 
+        s.@common += 1
+      ELSE 
+        s.@uncommon += 1
+      END
+    POST-ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, (s.@common-s.@uncommon), s.gender, s.@city);
+
+  PRINT @@friendInfoTop;
+}
+
+INSTALL QUERY ic_10

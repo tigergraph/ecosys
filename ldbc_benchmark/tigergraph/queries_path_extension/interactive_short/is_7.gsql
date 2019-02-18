@@ -1,0 +1,46 @@
+USE GRAPH ldbc_snb
+DROP QUERY is_7
+
+CREATE QUERY is_7(string messageId) FOR GRAPH ldbc_snb {
+  SetAccum<string> @@seed;	
+  SumAccum<int> @@commentId;
+  SumAccum<string> @commentContent;
+  SumAccum<int> @commentCreationDate;
+  OrAccum @knows;
+	
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "comments");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "post");
+  END;
+	
+  vAuthorOg = 
+    SELECT t
+    FROM vMessage:s-((comments_hasCreator_person>|post_hasCreator_person>):e)-person:t
+    POST-ACCUM @@authorOgId += t.id;
+
+  vAuthorRe = 
+    SELECT t
+    FROM vMessage:s-((<comments_replyOf_post|<comments_replyOf_comments):e1)-comments:im-(comments_hasCreator_person:e2)-person:t
+    ACCUM  
+      t.@commentId = im.id,
+      t.@commentContent = im.content,
+      t.@commentCreationDate = datetime_to_epoch(im.creationDate);
+
+  vAuthorRe = 
+    SELECT s
+    FROM vAuthorRe:s-(person_knows_person>:e)-person:t
+    POST-ACCUM CASE WHEN t.id == @@authorOgId THEN @knows += true
+    ORDER BY s.@commentCreationDate DESC, s.id ASC;
+
+  PRINT vAuthorRe[
+    vAuthorRe.@commentId AS commentId,
+    vAuthorRe.@commentContent AS commentContent,
+    epoch_to_datetime(vAuthorRe.@commentCreationDate) AS commentCreationDate,
+    vAuthorRe.id AS replyAuthorId,
+    vAuthorRe.firstName AS replyAuthorFirstName,
+    vAuthorRe.lastName AS replyAuthorLastName,
+    vAuthorRe.@knows AS replyAuthorKnowsOriginalMessageAuthor];
+}
+
+INSTALL QUERY is_7

@@ -1,0 +1,22 @@
+USE GRAPH ldbc_snb
+DROP QUERY is_4
+
+CREATE QUERY is_4(string messageId) FOR GRAPH ldbc_snb {
+  SetAccum<string> @@seed;
+    
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "comments");
+    
+  IF vMessage.size() > 0 THEN
+    PRINT vMessage[
+      vMessage.creationDate AS messageCreationDate,
+      vMessage.content AS messageContent];
+  ELSE
+    vMessage = to_vertex_set(@@seed, "post");
+    PRINT vMessage[
+      vMessage.creationDate AS messageCreationDate, 
+      vMessage.imageFile AS messageContent];
+  END;
+}
+
+INSTALL QUERY is_4

@@ -1,0 +1,47 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_3
+
+CREATE QUERY ic_3(vertex<person> personId, string countryXName, string countryYName, int startDateEpoch, int durationDays) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int personId, string personFirstName, string personLastName, int xCount, int yCount, int _count> msgStats;
+
+  OrAccum @visited;
+  ListAccum<vertex<person>> @@friendAll;
+  HeapAccum<msgStat>(20, xCount DESC, personId ASC) @@msgStatsTop;
+  datetime startDate, endDate;
+	
+  vPerson = { personId };
+
+  vPerson = 
+    SELECT s
+    FROM vPerson:s-(person_knows_person>*1..2:e1)-person:im-(person_isLocatedIn_city>e2a.city_isPartOf_country>:e2b)-country:t
+    WHERE im.@visited == False
+    AND t.name != countryXName AND t.name != countryYName
+    ACCUM 
+      s.@visited += True,
+      im.@visited += True
+    POST-ACCUM @@friendAll += im;
+  
+  vFriend = { @@friendAll };
+	
+  // startDateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
+  // so truncate millisecond portion of the given epoch
+  startDate = epoch_to_datetime(startDateEpoch/1000);
+  endDate = datetime_add(startDate, INTERVAL durationDays DAY);
+	
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-((<comments_hasCreator_person|<post_hasCreator_person):e1)-(comments|post):im-((comments_isLocatedIn_country>|post_isLocatedIn_country>):e2)-country:t
+    WHERE im.creationDate >= startDate AND im.creationDate < endDate
+    ACCUM 
+      CASE 
+        WHEN t.name == countryXName THEN
+          s.@xCount += 1
+        WHEN t.name == countryYName THEN
+          s.@yCount += 1
+      END
+    POST-ACCUM @@msgStatTop += msgStats(s.id, s.firstName, s.lastName, s.@xCount, s.@yCount, s.@xCount + s.@yCount);	
+
+  PRINT @@msgStatTop;
+}
+
+INSTALL QUERY ic_3

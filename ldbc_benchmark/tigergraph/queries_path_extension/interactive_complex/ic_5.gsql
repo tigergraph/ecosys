@@ -1,0 +1,46 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_5
+
+CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int forumId, string forumTitle, int postCount> forumStats;
+  
+  OrAccum @visited;
+  SetAccum<int> @@forumIds;
+  SumAccum<int> @postCount;
+  HeapAccum<forumStats>(20, postCount DESC, forumId ASC) @@forumStatsTop;
+
+  datetime minDate;
+
+  vPerson = { personId };
+	
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-(person_knows_person>*1..2:e)-person:t
+    WHERE t.@visited == False
+    ACCUM 
+      s.@visited += True,
+      t.@visited += True;
+	
+  // minDate is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
+  // so truncate millisecond portion of the given epoch
+  minDate = epoch_to_datetime(minDateEpoch/1000);
+	
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(<forum_hasMember_person:e)-forum:t
+    WHERE e.joinDate > minDate
+    POST-ACCUM @@forumIds += t.id;
+ 
+  vForum = 
+    SELECT t
+    FROM vFriend:s-(<post_hasCreator_person:e1.<forum_containerOf_post:e2)-forum:t
+    WHERE @@forums.contains(t.id)
+    ACCUM t.@postCount += 1
+    POST-ACCUM @@forumStatsTop += forumStats(t.id, t.title, t.@postCount);
+
+  FOREACH s IN @@forumStatsTop DO
+    PRINT s.forumTitle, s.postCount;
+  END;
+}
+
+INSTALL QUERY ic_5

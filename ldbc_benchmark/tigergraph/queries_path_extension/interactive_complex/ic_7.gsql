@@ -1,0 +1,53 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_7
+
+CREATE QUERY ic_7(vertex<person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple(int personId, 
+                string personFirstName, 
+                string personLastName, 
+                datetime likeCreationDate, 
+                int commentOrPostId,
+                string commentOrPostContent,
+                int minutesLatency,
+                bool isNew) likerInfo;
+
+  SumAccum<int> @likeCreationDate;
+  SumAccum<int> @commentOrPostId;
+  SumAccum<string> @commentOrPostContent;
+  SumAccum<int> @minutesLatency;
+  AndAccum @isNew;
+  HeapAccum<likerInfo>(20, likeCreationDate DESC, personId ASC) @@likerInfoTop;
+
+  vPerson = { personId };
+	
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-((<comments_hasCreator_person|<post_hasCreator_person):e1)-(comments|post):im1-((<person_likes_comments|<person_likes_post):e2)-person:t
+    ACCUM 
+      t.@likeCreationDate = datetime_to_epoch(e2.creationDate),
+      t.@commentOrPostId = im1.id,
+      CASE
+        WHEN im1.type == "comments" THEN
+          t.@commentOrPostContent = im1.content
+        ELSE
+          t.@commentOrPostContent = im1.imageFile
+      END,
+      t.@minutesLatency = (datetime_diff(im1.creationDate, e2.creationDate) / 60),
+
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(person_knows_person>:e)-person:t
+    ACCUM CASE WHEN t == personId THEN s.@isNew += False END
+    POST-ACCUM @@likerInfoTop += likerInfo(s.id, 
+                                           s.firstName, 
+                                           s.lastName, 
+                                           epoch_to_datetime(s.@likeCreationDate), 
+                                           s.@commentOrPostId, 
+                                           s.@commentOrPostContent, 
+                                           s.@minutesLatency, 
+                                           s.@isNew);
+
+  PRINT @@likerInfoTop;
+}
+
+INSTALL QUERY ic_7

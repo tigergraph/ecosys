@@ -1,0 +1,34 @@
+USE GRAPH ldbc_snb
+DROP QUERY is_6
+
+CREATE QUERY is_6(string messageId) FOR GRAPH ldbc_snb {
+  SetAccum<string> @@seed;
+  SumAccum<int> @forumId;
+  SumAccum<string> @forumTitle;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "comments");
+	
+  IF vComments.size() > 0 THEN
+    vPost = 
+      SELECT t
+      FROM vComments:s-(comments_replyOf_comments>*0..:ea.comments_replyOf_post>:eb)-post:t
+  ELSE
+    vPost = to_vertex_set(@@seed, "post");
+  END;
+	
+  vModerator = 
+    SELECT t
+    FROM vPost:s-(<forum_containerOf_post:e1)-forum:im-(forum_hasModerator_person>:e2)-person:t
+    ACCUM t.@forumId = im.id,
+          t.@forumTitle = im.title;
+  
+  PRINT vModerator[
+    vModerator.@forumId AS forumId,
+    vModerator.@forumTitle AS forumTitle,
+    vModerator.id AS moderatorId,
+    vModerator.firstName AS moderatorFirstName,
+    vModerator.lastName AS moderatorLastName];
+}
+
+INSTALL QUERY is_6

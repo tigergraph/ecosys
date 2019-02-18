@@ -1,0 +1,34 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_6
+
+CREATE QUERY ic_6(vertex<person> personId, string tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<string tagName, int postCount> tagStats;
+
+  OrAccum @visited;
+  ListAccum<vertex<post>> @@postWithTag;
+  SumAccum<int> @postCount;
+  HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
+  
+  vPerson = { personId };
+
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-(person_knows_person>*1..2:e1)-person:im1-(<post_hasCreator_person:e2)-post:im2-(post_hasTag_tag>:e3)-tag:t
+    WHERE im1.@visited == False
+    ACCUM 
+      s.@visited += True,
+      im1.@visited += True,
+      CASE WHEN t.name == tagName THEN @@postWithTag += im2;
+
+  vPost = { @@postWithTag };
+	
+  vTag = 
+    SELECT t
+    FROM vPost:s-(post_hasTag_tag>:e)-tag:t
+    ACCUM t.@postCount += 1
+    POST-ACCUM @@tagStatsTop += tagStats(t.name, t.@postCount);
+	
+  PRINT @@tagStatsTop;
+}
+
+INSTALL QUERY ic_6

@@ -1,0 +1,29 @@
+USE GRAPH ldbc_snb
+DROP QUERY ic_12
+
+CREATE QUERY ic_12(vertex<person> personId, string tagClassName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int personId, string personFirstName, string personLastName, jsonarray tagNames, int replyCount> replyStats;
+
+  SumAccum<int> @replyCount;
+  SetAccum<string> @@tags;
+  HeapAccum<replyStats>(20, replyCount DESC, personId ASC) @@replyStatsTop;
+
+  vPerson = { personId };
+
+  vFriend = 
+    SELECT s
+    FROM vPerson:s-(person_knows_person>:e)-person:t;
+
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(<comments_hasCreator_person:e1.comments_replyOf_post>:e2.post_hasTag_tag>:e3)-tag:im-(tag_hasType_tagclass>:e4.tagclass_isSubclassOf_tagclass>*0..:e5)-tagclass:t
+    WHERE t.name = tagClassName
+    ACCUM
+      s.@replyCount += 1,
+      s.@tags += im.name
+    POST-ACCUM @@replyStatsTop += replyStats(s.id, s.firstName, s.lastName, to_jsonarray(s.@tags), s.@replyCount);
+
+  PRINT @@replyStatsTop;
+}
+
+INSTALL QUERY ic_12

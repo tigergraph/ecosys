@@ -1,0 +1,23 @@
+USE GRAPH ldbc_snb
+DROP QUERY is_5
+
+CREATE QUERY is_5(string messageId) FOR GRAPH ldbc_snb {
+  SetAccum<string> @@seed;
+	
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "comments");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "post");
+  END;
+
+  vPerson = 
+    SELECT t
+    FROM vMessage:s-(comments_hasCreator_person>|post_hasCreator_person>:e)-person:t;
+  
+  PRINT vPerson[
+    vPerson.id AS personId,
+    vPerson.firstName AS firstName,
+    vPerson.lastName AS lastName];
+}
+
+INSTALL QUERY is_5

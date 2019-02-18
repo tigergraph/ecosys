@@ -1,0 +1,37 @@
+USE GRAPH ldbc_snb
+DROP QUERY is_2
+
+CREATE QUERY is_2(vertex<person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<int messageId, 
+                string messageContent, 
+                datetime messageCreationDate, 
+                int originalPostId, 
+                int originalPostAuthorId, 
+                string originalPostAuthorFirstName, 
+                string originalPostAuthorLastName> mInfo;
+  
+  HeapAccum<mInfo>(10, messageCreationDate DESC, messageId DESC) @@mInfoTop;
+
+  vPerson = { personId };
+
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((<comments_hasCreator_person|<post_hasCreator_person):e)-(comments|post):t
+    ORDER BY t.creationDate DESC, t.id DESC
+    LIMIT 10;
+
+  vMessage = 
+    SELECT s
+    FROM vMessage:s-(comments_replyOf_comments>*0..:e1a.comments_replyOf_post>*0..1:e1b)-post:im-(post_hasCreator_person>:e2)-person:t
+    ACCUM
+      CASE
+        WHEN s.type == "comments" THEN
+          @@mInfoTop += mInfo(s.id, s.content, s.creationDate, im.id, t.id, t.firstName, t.lastName)
+        ELSE
+          @@mInfoTop += mInfo(s.id, s.imageFile, s.creationDate, im.id, t.id, t.firstName, t.lastName)
+      END;
+  
+  PRINT @@mInfoTop;  
+}
+
+INSTALL QUERY is_2
