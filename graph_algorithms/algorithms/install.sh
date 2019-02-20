@@ -55,7 +55,7 @@ while [ !$finished ]; do
 				break;;
 			"Community detection: Louvain" )
 				algoName="louvain"
-				echo "  louvain() works on undirected edges"
+				echo "  louvain() works on undirected weighted edges"
 				break;;
 			"PageRank" )
 				algoName="pageRank"
@@ -207,7 +207,7 @@ while [ !$finished ]; do
 
 
      	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
-	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ] || [ "${algoName}" == "mst" ]; then
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ] || [ "${algoName}" == "mst" ] || [ "${algoName}" == "louvain" ]; then
 		while true; do
                 	read -p "Edge attribute that stores FLOAT weight:"  weight
 			if [[ $(countEdgeAttr $weight) > 0 ]]; then

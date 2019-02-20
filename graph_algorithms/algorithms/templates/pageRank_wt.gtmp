@@ -18,7 +18,7 @@
 
         Start = {*vertex-types*};   #  Start with all vertices of specified type(s)
         Start = SELECT s
-                FROM Start:s -(Friend:e) -> :t
+                FROM Start:s -(*edge-types*:e) -> :t
                 ACCUM s.@total_weight += e.weight;  # Calculate the total weight for each vertex
 
         WHILE @@maxDiff > maxChange LIMIT maxIter DO
