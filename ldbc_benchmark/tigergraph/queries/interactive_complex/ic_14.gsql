@@ -2,16 +2,19 @@ USE GRAPH ldbc_snb
 DROP QUERY ic_14
 
 CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple<jsonarray persionIdsInPath, double pathWeight> pathInfo;
+  TYPEDEF tuple<jsonarray personIdsInPath, double pathWeight> pathInfo;
   SumAccum<int> @dist1 = -1, @dist2 = -1;
-  MinAccum<int> @@dist12;
   SumAccum<int> @@next;
   ListAccum<ListAccum<vertex<person>>> @path1, @path2;
   ListAccum<ListAccum<vertex<person>>> @@pathAll;
   SumAccum<double> @@weight = 0.0;
+  SetAccum<vertex<person>> @@personAllInPathAll;
+  SetAccum<vertex<comments>> @@commentsSeed;
+  MapAccum<int, SetAccum<vertex<comments>>> @@commentsAll;
+  MapAccum<int, SetAccum<vertex<post>>> @@postAll;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
-  bool found = False;
+  OrAccum @@found = False;
   string jsonStr = "[]";
 
   IF person1Id != person2Id THEN
@@ -25,35 +28,35 @@ CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH
           WHEN v == person1Id THEN 
             v.@dist1 = 0
           WHEN v == person2Id THEN
-	          v.@dist2 = 0
+            v.@dist2 = 0
         END;
-	
-    WHILE NOT found DO
+
+    @@personAllInPathAll += person1Id;
+    @@personAllInPathAll += person2Id;
+
+    WHILE NOT @@found DO
       @@next = 0;
-	
+
       vPerson = 
         SELECT t
-        FROM vPerson:s-(person_knows_person:e)->person:t
+        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
             WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
-              found = True,
-              CASE
-                WHEN s.@dist1 > -1 THEN
-                  @@dist12 += s.@dist1 + t.@dist2 + 1,
-                  FOREACH p1 IN s.@path1 DO
-                    FOREACH p2 IN t.@path2 DO
-                      @@pathAll += p1 + [s] + [t] + p2
+              @@found += True,
+              IF s.@dist1 > -1 THEN
+                FOREACH p1 IN s.@path1 DO
+                  FOREACH p2 IN t.@path2 DO
+                    @@pathAll += p1 + [s] + [t] + p2,
+                    FOREACH p IN p1 DO
+                      @@personAllInPathAll += p
+                    END,
+                    FOREACH p IN p2 DO
+                      @@personAllInPathAll += p
                     END
                   END
-                WHEN s.@dist2 > -1 THEN
-                  @@dist12 += s.@dist2 + t.@dist1 + 1,
-                  FOREACH p2 IN s.@path2 DO
-                    FOREACH p1 IN t.@path1 DO
-                      @@pathAll += p1 + [t] + [s] + p2
-                    END
-                  END
+                END
               END
             WHEN s.@dist1 > -1 THEN
               @@next += 1,
@@ -77,37 +80,76 @@ CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH
               END
           END
         POST-ACCUM
-          CASE
-            WHEN t.@dist1 > -1 AND t.@dist2 > -1 THEN
-              found = True,            
-              @@dist12 += t.@dist1 + t.@dist2,
-              FOREACH p1 IN t.@path1 DO
-                FOREACH p2 IN t.@path2 DO
-                  @@pathAll += p1 + [t] + p2
+          IF NOT @@found AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
+            @@found += True,
+            FOREACH p1 IN t.@path1 DO
+              FOREACH p2 IN t.@path2 DO
+                @@pathAll += p1 + [t] + p2,
+                FOREACH p IN p1 DO
+                  @@personAllInPathAll += p
+                END,
+                FOREACH p IN p2 DO
+                  @@personAllInPathAll += p
                 END
               END
+            END
           END;
+
       IF @@next == 0 THEN
-        @@dist12 = -1;
         BREAK;
       END;
+
     END;
-  ELSE
-    @@dist12 += 0;
   END;
 
   @@pathInfoTop.resize(@@pathAll.size());
 
+  vPerson = { @@personAllInPathAll };
+
+  vComments = 
+    SELECT t
+    FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
+    ACCUM @@commentsAll += (s.id -> t);
+
+  vPost = 
+    SELECT t
+    FROM vPerson:s-(post_hasCreator_person_reverse:e)->post:t
+    ACCUM @@postAll += (s.id -> t);
+
   FOREACH path IN @@pathAll DO
-    IF @@dist12 == path.size()-1 THEN
-      jsonStr = "[";
-      FOREACH i IN range[0, path.size()-2] DO
-        @@weight += get_weight(path.get(i), path.get(i+1));
-        jsonStr += bigint_to_string(path.get(i).id) + ",";
-      END;
-      jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
-      @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i IN range[0, path.size()-2] DO
+      // person1's comments -(replyOf)-> person2's post|comments
+      @@commentsSeed = @@commentsAll.get(path.get(i).id);
+      vComments = { @@commentsSeed };
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        ACCUM CASE WHEN @@postAll.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
+
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        ACCUM CASE WHEN @@commentsAll.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
+
+      // person2's comments -(replyOf)-> person1's post|comments
+      @@commentsSeed = @@commentsAll.get(path.get(i+1).id);
+      vComments = { @@commentsSeed };
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        ACCUM CASE WHEN @@postAll.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
+
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        ACCUM CASE WHEN @@commentsAll.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
+
+      jsonStr += bigint_to_string(path.get(i).id) + ",";
     END;
+    jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
   END;
 
   PRINT @@pathInfoTop;

@@ -2,10 +2,11 @@ USE GRAPH ldbc_snb
 DROP QUERY ic_13
 
 CREATE QUERY ic_13(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
-  SumAccum<int> @dist1 = -1, @dist2 = -1, @@next;
+  SumAccum<int> @dist1 = -1, @dist2 = -1;
+  SumAccum<int> @@next;
+  OrAccum @@found = False;
   MinAccum<int> @@dist12;
-  bool found = False;
-	
+
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
     
@@ -19,23 +20,20 @@ CREATE QUERY ic_13(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH
           WHEN v == person2Id THEN
             v.@dist2 = 0
         END;
-	
-    WHILE NOT found DO
+
+    WHILE NOT @@found DO
       @@next = 0;
-	
+
       vPerson = 
         SELECT t
-        FROM vPerson:s-(person_knows_person:e)->person:t
+        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
             WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
-              found = True,
-              CASE
-                WHEN s.@dist1 > -1 THEN
-                  @@dist12 += s.@dist1 + t.@dist2 + 1
-                WHEN s.@dist2 > -1 THEN
-                  @@dist12 += s.@dist2 + t.@dist1 + 1
+              @@found += True,
+              IF s.@dist1 > -1 THEN
+                @@dist12 += s.@dist1 + t.@dist2 + 1
               END
             WHEN s.@dist1 > -1 THEN
               @@next += 1,
@@ -45,21 +43,21 @@ CREATE QUERY ic_13(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH
               t.@dist2 = s.@dist2 + 1
           END
         POST-ACCUM
-          CASE
-            WHEN t.@dist1 > -1 AND t.@dist2 > -1 THEN
-              found = True,            
-              @@dist12 += t.@dist1 + t.@dist2
+          IF NOT @@found AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
+            @@found += True,            
+            @@dist12 += t.@dist1 + t.@dist2
           END;
 
       IF @@next == 0 THEN
         @@dist12 = -1;
         BREAK;
       END;
+
     END;
   ELSE
     @@dist12 += 0;
   END;
-	
+
   PRINT @@dist12 AS shortestPathLength;
 }
 
