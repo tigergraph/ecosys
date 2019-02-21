@@ -1,0 +1,35 @@
+CREATE QUERY bi_24(STRING tagClass) FOR GRAPH ldbc_snb { 
+  # Messages by Topic and Continent
+	TYPEDEF TUPLE <INT messageCount, INT likeCount, INT Y, INT M, STRING continentName> INFO;
+	HeapAccum<INFO>(100, Y ASC, M ASC, continentName DESC) @@result;
+	GroupByAccum<INT Y, INT M, STRING continentName, SumAccum<INT> messageCount, SumAccum<INT> likeCount> @@count; 
+	SumAccum<STRING> @continentName;
+	SumAccum<INT> @likeCount;
+	
+	TagClass = {tagclass.*};
+	Tags = SELECT t 
+	       FROM TagClass:s -(tag_hasType_tagclass_reverse:e)-> :t
+	       WHERE s.name == tagClass;
+	Messages = SELECT t
+	           FROM Tags:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e) -> :t;
+  # count likes
+	Messages = SELECT s
+	           FROM Messages:s -((person_likes_post_reverse | person_likes_comments_reverse):e) -> :t 
+	           ACCUM s.@likeCount += 1;
+	# get continent name 	
+	Countries = SELECT t
+	            FROM Messages:s -((post_isLocatedIn_country | comments_isLocatedIn_country):e) -> :t;
+	Countries = SELECT s 
+	            FROM Countries:s -(country_isPartOf_continent:e)-> :t
+	            ACCUM s.@continentName = t.name;
+  # get name and count
+	Messages = SELECT s
+	           FROM Messages:s -((post_isLocatedIn_country | comments_isLocatedIn_country):e) -> :t
+	           ACCUM s.@continentName = t.@continentName
+	           POST-ACCUM @@count += (year(s.creationDate), month(s.creationDate), s.@continentName -> 1, s.@likeCount);
+	
+	FOREACH c IN @@count DO
+    @@result += INFO(c.messageCount, c.likeCount, c.Y, c.M, c.continentName);
+	END;
+	PRINT @@result;         
+}

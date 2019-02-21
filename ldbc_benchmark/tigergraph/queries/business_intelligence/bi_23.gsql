@@ -1,0 +1,23 @@
+CREATE QUERY bi_23(STRING homeCountry) FOR GRAPH ldbc_snb { 
+ # Holiday destinations
+	TYPEDEF TUPLE <INT messageCount, STRING destinationName, INT mon> INFO;
+	HeapAccum<INFO>(100, messageCount DESC, destinationName ASC, mon ASC) @@result;
+	GroupByAccum<INT mon, STRING destinationName, SumAccum<INT> messageCount> @@count;
+	Start(ANY) = {country.*};
+	Cities = SELECT t
+	         FROM Start:s -(city_isPartOf_country_reverse:e) -> city:t
+	         WHERE s.name == homeCountry;
+	Person = SELECT t
+	         FROM Cities:s -(person_isLocatedIn_city_reverse:e) -> person:t;
+	Messages = SELECT t
+	           FROM Person:s -((comments_hasCreator_person_reverse | post_hasCreator_person_reverse):e) -> :t;
+	Messages = SELECT s 
+	           FROM Messages:s -((post_isLocatedIn_country | comments_isLocatedIn_country):e) -> country:t
+	           WHERE t.name != homeCountry
+	           ACCUM @@count += (month(s.creationDate), t.name -> 1);
+	FOREACH c IN @@count DO
+    @@result += INFO(c.messageCount, c.destinationName, c.mon);
+	END;
+	PRINT @@result;
+	
+}
