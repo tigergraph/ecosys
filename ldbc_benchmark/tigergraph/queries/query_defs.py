@@ -87,7 +87,7 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 9:
         seed = {"tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"], "threshold":row["threshold"]}
       elif query_num == 10:
-        seed = {"tag":row["tag"], "date":row["date"]}
+        seed = {"tgtTag":row["tag"], "dateEpoch":row["date"]}
       elif query_num == 11:
         seed = {"country":row["country"], "blacklist":row["blacklist"]}
       elif query_num == 12:
