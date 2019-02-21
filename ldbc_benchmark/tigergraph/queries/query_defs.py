@@ -117,7 +117,7 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 24:
         seed = {"tagClass":row["tagClass"]}
       elif query_num == 25:
-        seed = {"person1Id":row["person1Id"], "person2Id":row["person2Id"], "startDate":row["startDate"], "endDate":row["endDate"]}
+        seed = {"person1Id":row["person1Id"], "person2Id":row["person2Id"], "startDateEpoch":row["startDate"], "endDateEpoch":row["endDate"]}
 
       seeds.append(seed)
       count += 1
