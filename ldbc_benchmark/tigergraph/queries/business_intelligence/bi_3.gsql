@@ -1,0 +1,20 @@
+CREATE QUERY bi_3(INT thisYear, INT thisMonth) FOR GRAPH ldbc_snb { 
+  # Tag evolution
+	TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
+  GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
+	HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
+
+	Messages = {post.*, comments.*};
+	Messages = SELECT s
+	           FROM Messages:s -(:e) -> tag:t
+	           WHERE year(s.creationDate) == thisYear AND month(s.creationDate) == thisMonth OR year(s.creationDate) == thisYear + thisMonth/12 AND month(s.creationDate) == 1 + thisMonth%12
+             ACCUM IF year(s.creationDate) == thisYear AND month(s.creationDate) == thisMonth THEN 
+	                   @@count += (tag.name -> 1, 0)
+	                 ELSE
+	                   @@count += (tag.name -> 0, 1)
+	                 END;
+	FOREACH c IN @@count DO
+    @@result += TAG_COUNT(c.tagName, c.countMonth1, c.countMonth2, abs(c.countMonth1 - c.countMonth2));
+	END;
+	PRINT @@result;
+}

@@ -1,0 +1,37 @@
+CREATE QUERY bi_2(INT startDateEpoch, INT endDateEpoch, STRING country1, STRING country2) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE <STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
+  HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
+  SumAccum<STRING> @country, @tag;
+  GroupByAccum<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, SumAccum<INT> messageCount> @@count;
+  DATETIME simulationEnd = to_datetime("2013-01-01");
+  DATETIME startDate, endDate;
+  startDate = epoch_to_datetime(startDateEpoch);
+  endDate = epoch_to_datetime(endDateEpoch);
+
+  Start(ANY) = {country.*};
+  Start = SELECT t
+          FROM Start:s -(city_isPartOf_country_reverse:e) -> city:t
+          WHERE s.name == country1 OR s.name == country2
+          ACCUM t.@country = s.name;
+        Person = SELECT t
+                 FROM Start:s -(person_isLocatedIn_city_reverse:e) -> person:t
+                 ACCUM t.@country = s.@country;
+        Messages = SELECT t
+                   FROM Person:s -((comments_hasCreator_person_reverse | post_hasCreator_person_reverse):e) -> :t
+                   WHERE t.creationDate BETWEEN startDate AND endDate;
+
+        Messages = SELECT s
+                   FROM Messages:s -((comments_hasTag_tag | post_hasTag_tag):e) -> tag:t
+                   ACCUM s.@tag = t.name;
+  Person = SELECT t
+                 FROM Messages:s -((comments_hasCreator_person | post_hasCreator_person):e) -> person:t
+                 ACCUM @@count += (t.@country, month(s.creationDate), t.gender, datetime_diff(simulationEnd, t.birthday)/31536000/5, s.@tag -> 1);
+
+        FOREACH c IN @@count DO
+          IF c.messageCount > 100 THEN
+            @@result += INFO(c.countryName, c.messageMonth, c.personGender, c.ageGroup, c.tagName, c.messageCount);
+          END;
+        END;
+        PRINT @@result;
+
+}
