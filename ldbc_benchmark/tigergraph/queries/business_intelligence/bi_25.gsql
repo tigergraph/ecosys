@@ -1,0 +1,204 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_25
+
+CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, int startDateEpoch, int endDateEpoch) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<jsonarray personIdsInPath, double pathWeight> pathInfo;
+  SumAccum<int> @dist1 = -1, @dist2 = -1;
+  OrAccum @@found = False;
+  SumAccum<int> @@next;
+  ListAccum<ListAccum<vertex<person>>> @path1, @path2;
+  ListAccum<ListAccum<vertex<person>>> @@pathAll;
+  SumAccum<double> @@weight = 0.0;
+  SetAccum<vertex<person>> @@personAllInPathAll;
+  SetAccum<vertex<post>> @@postValid;
+  SumAccum<int> @creatorId;
+  SetAccum<vertex<comments>> @root;
+  OrAccum @@hasComments = True;
+  MapAccum<int, SetAccum<vertex<comments>>> @@commentsAll, @@commentsForum;
+  MapAccum<int, SetAccum<vertex<post>>> @@postForum;
+  SetAccum<vertex<comments>> @@commentsSeed;
+  HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
+
+  datetime startDate, endDate;
+  string jsonStr = "[]";
+
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    
+    vPerson = 
+      SELECT v
+      FROM vPerson:v
+      ACCUM 
+        CASE 
+          WHEN v == person1Id THEN 
+            v.@dist1 = 0
+          WHEN v == person2Id THEN
+            v.@dist2 = 0
+        END;
+
+    @@personAllInPathAll += person1Id;
+    @@personAllInPathAll += person2Id;
+
+    WHILE NOT @@found DO
+      @@next = 0;
+
+      vPerson = 
+        SELECT t
+        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+        WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
+        ACCUM
+          CASE
+            WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
+              @@found += True,
+              IF s.@dist1 > -1 THEN
+                FOREACH p1 IN s.@path1 DO
+                  FOREACH p2 IN t.@path2 DO
+                    @@pathAll += p1 + [s] + [t] + p2,
+                    FOREACH p IN p2 DO
+                      @@personAllInPathAll += p
+                    END
+                  END,
+                  FOREACH p IN p1 DO
+                    @@personAllInPathAll += p
+                  END
+                END,
+                @@personAllInPathAll += s,
+                @@personAllInPathAll += t
+              END
+            WHEN s.@dist1 > -1 THEN
+              @@next += 1,
+              t.@dist1 = s.@dist1 + 1,
+              IF s.@path1.size() > 0 THEN
+                FOREACH p IN s.@path1 DO
+                  t.@path1 += p + [s]
+                END
+              ELSE
+                t.@path1 += [s]
+              END
+            WHEN s.@dist2 > -1 THEN
+              @@next += 1,
+              t.@dist2 = s.@dist2 + 1,
+              IF s.@path2.size() > 0 THEN
+                FOREACH p IN s.@path2 DO
+                  t.@path2 += [s] + p
+                END
+              ELSE
+                t.@path2 += [s]
+              END
+          END
+        POST-ACCUM
+          IF NOT @@found AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
+            @@found += True,
+            FOREACH p1 IN t.@path1 DO
+              FOREACH p2 IN t.@path2 DO
+                @@pathAll += p1 + [t] + p2,
+                FOREACH p IN p2 DO
+                  @@personAllInPathAll += p
+                END
+              END,
+              FOREACH p IN p1 DO
+                @@personAllInPathAll += p
+              END
+            END,
+            @@personAllInPathAll += t
+          END;
+
+      IF @@next == 0 THEN
+        BREAK;
+      END;
+
+    END;
+  END;
+
+  @@pathInfoTop.resize(@@pathAll.size());
+
+  // (start|end)DateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
+  // so truncate millisecond portion of the given epoch
+  startDate = epoch_to_datetime(startDateEpoch/1000);
+  endDate = epoch_to_datetime(endDateEpoch/1000);
+
+  // all posts from forums within the given date interval
+  vForum = { forum.* };
+  vPostValid = 
+    SELECT t
+    FROM vForum:s-(forum_containerOf_post:e)->post:t
+    WHERE s.creationDate BETWEEN startDate AND endDate
+    POST-ACCUM @@postValid += t;
+
+  // comments created by each person in the shortest paths
+  vPerson = { @@personAllInPathAll };
+  vComments = 
+    SELECT t
+    FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
+    ACCUM 
+      t.@creatorId = s.id,
+      t.@root = t,
+      @@commentsAll += (s.id -> t);
+
+  // hop until we meet the original post and check it's valid
+  vRoot(comments|post) = vComments;
+  WHILE @@hasComments DO
+    @@hasComments = False;
+
+    // comments within the given date interval
+    vRoot = 
+      SELECT t
+      FROM vRoot:s-((comments_replyOf_comments|comments_replyOf_post):e)->(comments|post):t
+      ACCUM 
+        t.@creatorId = s.@creatorId,
+        t.@root += s.@root
+      POST-ACCUM 
+        CASE 
+          WHEN t.type == "comments" THEN
+            @@hasComments += True
+          WHEN t.type == "post" AND @@postValid.contains(t) THEN 
+            @@commentsForum += (t.@creatorId -> t.@root)
+        END;
+  END;
+
+  // post within the given date interval
+  vPost = 
+    SELECT t
+    FROM vPerson:s-(post_hasCreator_person_reverse:e)->post:t
+    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t) END;
+
+  FOREACH path IN @@pathAll DO
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i IN range[0, path.size()-2] DO
+      // person1's comments -(replyOf)-> person2's post|comments
+      @@commentsSeed = @@commentsAll.get(path.get(i).id);
+      vComments = { @@commentsSeed };
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        ACCUM CASE WHEN @@postForum.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
+
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        ACCUM CASE WHEN @@commentsForum.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
+
+      // person2's comments -(replyOf)-> person1's post|comments
+      @@commentsSeed = @@commentsAll.get(path.get(i+1).id);
+      vComments = { @@commentsSeed };
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        ACCUM CASE WHEN @@postForum.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
+
+      vComments = 
+        SELECT s
+        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        ACCUM CASE WHEN @@commentsForum.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
+
+      jsonStr += bigint_to_string(path.get(i).id) + ",";
+    END;
+    jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
+  END;
+
+  PRINT @@pathInfoTop;
+}
+
+INSTALL QUERY bi_25
