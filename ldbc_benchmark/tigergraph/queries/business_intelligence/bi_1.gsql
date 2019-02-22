@@ -29,7 +29,7 @@ CREATE QUERY bi_1(INT dateEpoch) FOR GRAPH ldbc_snb {
 
   total = Start.size();
   FOREACH c IN @@calc DO
-    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, c.sumMessageLength/c.messageCount, c.sumMessageLength, c.messageCount/total);
+    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, c.sumMessageLength/c.messageCount, c.sumMessageLength, c.messageCount*0.1/total);
   END;
   PRINT @@result;
 }
