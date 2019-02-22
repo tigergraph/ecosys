@@ -1,0 +1,45 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_4
+
+CREATE QUERY bi_4(STRING tagClass, STRING givenCountry) FOR GRAPH ldbc_snb { 
+  # Popular topics in a country
+	
+	TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> INFO;
+  GroupByAccum<INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, SumAccum<INT> postCount> @@count;
+	HeapAccum<INFO>(20, postCount DESC, forumId ASC) @@result;
+  OrAccum @visited;
+	SumAccum<INT> @personId;
+	
+	Start(ANY) = {country.*};
+	Start = SELECT t
+	        FROM Start:s -(city_isPartOf_country_reverse:e) -> :t
+	         WHERE s.name == givenCountry;
+	Start = SELECT t
+	         FROM Start:s -(person_isLocatedIn_city_reverse:e) -> :t;
+  Forum = SELECT t
+	        FROM Start:s -(forum_hasModerator_person_reverse:e) -> :t
+	        ACCUM t.@personId = s.id,   # one forum can only have one moderator
+	              t.@visited = TRUE;
+	       
+	Start = {tagclass.*};
+	Start = SELECT s
+	        FROM Start:s
+	        WHERE s.name == tagClass;
+	Start = SELECT t
+	        FROM Start:s -(tag_hasType_tagclass_reverse:e) -> :t;
+	Start = SELECT t 
+	       FROM Start:s -(post_hasTag_tag_reverse:e)-> :t; 
+
+	Forum = SELECT t 
+	        FROM Start:s -(forum_containerOf_post_reverse:e)-> :t 
+	        WHERE t.@visited == TRUE
+	        ACCUM @@count += (t.id, t.title, t.creationDate, t.@personId -> 1);
+	
+	FOREACH c IN @@count DO
+    @@result += INFO(c.forumId, c.forumTitle, c.forumCreationDate, c.personId, c.postCount);
+	END;
+	PRINT @@result;
+	
+}
+
+INSTALL QUERY bi_4

@@ -1,3 +1,6 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_1
+
 CREATE QUERY bi_1(INT dateEpoch) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
   HeapAccum<MessageInfo>(200, theYear DESC, isComment ASC, lengthCategory ASC) @@result;
@@ -30,3 +33,5 @@ CREATE QUERY bi_1(INT dateEpoch) FOR GRAPH ldbc_snb {
   END;
   PRINT @@result;
 }
+
+INSTALL QUERY bi_1

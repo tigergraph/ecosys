@@ -1,3 +1,6 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_23
+
 CREATE QUERY bi_23(STRING homeCountry) FOR GRAPH ldbc_snb { 
  # Holiday destinations
 	TYPEDEF TUPLE <INT messageCount, STRING destinationName, INT mon> INFO;
@@ -21,3 +24,5 @@ CREATE QUERY bi_23(STRING homeCountry) FOR GRAPH ldbc_snb {
 	PRINT @@result;
 	
 }
+
+INSTALL QUERY bi_23
