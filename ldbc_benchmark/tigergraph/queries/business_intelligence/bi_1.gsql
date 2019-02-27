@@ -1,3 +1,6 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_1
+
 CREATE QUERY bi_1(datetime date) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
   HeapAccum<MessageInfo>(200, theYear DESC, isComment ASC, lengthCategory ASC) @@result;
@@ -24,7 +27,9 @@ CREATE QUERY bi_1(datetime date) FOR GRAPH ldbc_snb {
 
   total = Start.size();
   FOREACH c IN @@calc DO
-    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, c.sumMessageLength/c.messageCount, c.sumMessageLength, c.messageCount/total);
+    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, c.sumMessageLength/c.messageCount, c.sumMessageLength, c.messageCount*0.1/total);
   END;
   PRINT @@result;
 }
+
+INSTALL QUERY bi_1

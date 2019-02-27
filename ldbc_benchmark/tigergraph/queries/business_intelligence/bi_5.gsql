@@ -1,0 +1,42 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_5
+
+CREATE QUERY bi_5(STRING givenCountry) FOR GRAPH ldbc_snb { 
+# Top posters in a country
+	
+TYPEDEF TUPLE <INT personId, STRING personFirstName, STRING personLastName, DATETIME personCreationDate, INT postCount> INFO;
+  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, DATETIME personCreationDate, SumAccum<INT> postCount> @@count;
+	HeapAccum<INFO>(100, postCount DESC, personId ASC) @@result;
+  OrAccum @visited;
+	SumAccum<INT> @popularity;
+
+  Start(ANY) = {country.*};
+	Start = SELECT t
+	        FROM Start:s -(city_isPartOf_country_reverse:e) -> :t
+	         WHERE s.name == givenCountry;
+	Start = SELECT t
+	         FROM Start:s -(person_isLocatedIn_city_reverse:e) -> :t;
+
+	# top 100 Forums
+	Forum = SELECT t
+	        FROM Start:s -(forum_hasMember_person_reverse:e)-> :t
+	        ACCUM t.@popularity += 1
+	        ORDER BY t.@popularity DESC
+	        LIMIT 100;
+	Person = SELECT t
+	         FROM Forum:s -(forum_hasMember_person:e)-> :t;
+	Post = SELECT t
+	       FROM Forum:s -(forum_containerOf_post:e)-> :t
+	       ACCUM t.@visited = TRUE;
+	Post = SELECT t
+	       FROM Person:s -(post_hasCreator_person_reverse:e)-> :t
+	       WHERE t.@visited == TRUE
+	       ACCUM @@count += (s.id, s.firstName, s.lastName, s.creationDate -> 1);
+	
+	FOREACH c IN @@count DO
+    @@result += INFO(c.personId, c.personFirstName, c.personLastName, c.personCreationDate, c.postCount);
+	END;
+	PRINT @@result;
+}
+
+INSTALL QUERY bi_5

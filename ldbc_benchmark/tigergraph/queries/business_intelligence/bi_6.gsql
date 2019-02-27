@@ -1,0 +1,39 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_6
+
+CREATE QUERY bi_6(STRING givenTag) FOR GRAPH ldbc_snb { 
+# Most active Posters of a given Topic
+
+        SumAccum<INT> @replyCount;
+	SumAccum<INT> @likeCount;
+	SumAccum<INT> @messageCount;
+	SumAccum<INT> @score;
+  
+	Tag = {tag.*};
+	Tag = SELECT s 
+	      FROM Tag:s 
+	      WHERE s.name == givenTag;
+	# Target messages
+	Messages = SELECT t 
+	           FROM Tag:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e)-> :t;
+	
+	Messages = SELECT s 
+	           FROM Messages:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t
+	           ACCUM s.@likeCount += 1;
+	
+	Messages = SELECT s 
+	           FROM Messages:s -((comments_replyOf_post_reverse | comments_replyOf_comments_reverse):e)-> :t
+	           ACCUM s.@replyCount += 1;
+	
+	Persons = SELECT t 
+	          FROM Messages:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
+	          ACCUM t.@messageCount += 1,
+	                t.@likeCount += s.@likeCount,
+	                t.@replyCount += s.@replyCount
+	          POST-ACCUM t.@score = t.@messageCount + 2 * t.@replyCount + 10 * t.@likeCount
+	          ORDER BY t.@score DESC, t.id ASC
+	          LIMIT 100;
+        PRINT Persons [Persons.id AS personId, Persons.@replyCount AS replyCount, Persons.@likeCount AS likeCount, Persons.@messageCount AS messageCount, Persons.@score AS score];
+}
+
+INSTALL QUERY bi_6

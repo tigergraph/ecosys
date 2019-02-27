@@ -1,0 +1,46 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_7
+
+CREATE QUERY bi_7(STRING givenTag) FOR GRAPH ldbc_snb { 
+  # Most authoritative users on a given topic
+	
+	SumAccum<INT> @authorityScore, @popularityScore;
+	OrAccum @hasGivenTag;
+	
+ 	Tag = {tag.*};
+	Tag = SELECT s 
+	      FROM Tag:s 
+	      WHERE s.name == givenTag;
+	# Target messages
+	Message12 = SELECT t 
+	            FROM Tag:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e)-> :t
+	            ACCUM t.@hasGivenTag = TRUE;
+	Person = SELECT t 
+	         FROM Message12:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t; 
+	Person2 = SELECT t 
+	          FROM Message12:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t; 
+	Message3 = SELECT t 
+	           FROM Person2:s -((post_hasCreator_person_reverse | comments_hasCreator_person_reverse):e)-> :t; 
+	Message3 = SELECT s 
+	           FROM Message3:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t
+	           ACCUM s.@popularityScore += 1;
+
+	# Traverse backwards
+	Person2 = SELECT t 
+	          FROM Message3:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
+	          ACCUM t.@popularityScore += s.@popularityScore;
+	Message12 = SELECT t 
+	            FROM Person2:s -((person_likes_comments | person_likes_post):e)-> :t
+	            WHERE t.@hasGivenTag == TRUE
+	            ACCUM t.@authorityScore += s.@popularityScore;
+	Person = SELECT t 
+	         FROM Message12:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
+	         ACCUM t.@authorityScore += s.@authorityScore
+	         ORDER BY t.@authorityScore DESC, t.id ASC
+	         LIMIT 100;
+	
+	PRINT Person[Person.id AS personId, Person.@authorityScore AS authorityScore];
+	
+}
+
+INSTALL QUERY bi_7

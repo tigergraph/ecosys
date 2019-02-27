@@ -1,3 +1,6 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_2
+
 CREATE QUERY bi_2(datetime startDate, datetime endDate, STRING country1, STRING country2) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
   HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
@@ -32,3 +35,5 @@ CREATE QUERY bi_2(datetime startDate, datetime endDate, STRING country1, STRING 
         PRINT @@result;
 
 }
+
+INSTALL QUERY bi_2

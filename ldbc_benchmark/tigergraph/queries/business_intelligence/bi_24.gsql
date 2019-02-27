@@ -1,3 +1,6 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_24
+
 CREATE QUERY bi_24(STRING tagClass) FOR GRAPH ldbc_snb { 
   # Messages by Topic and Continent
 	TYPEDEF TUPLE <INT messageCount, INT likeCount, INT Y, INT M, STRING continentName> INFO;
@@ -33,3 +36,5 @@ CREATE QUERY bi_24(STRING tagClass) FOR GRAPH ldbc_snb {
 	END;
 	PRINT @@result;         
 }
+
+INSTALL QUERY bi_24
