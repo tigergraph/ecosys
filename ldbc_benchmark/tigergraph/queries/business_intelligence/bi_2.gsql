@@ -1,12 +1,9 @@
-CREATE QUERY bi_2(INT startDateEpoch, INT endDateEpoch, STRING country1, STRING country2) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_2(datetime startDate, datetime endDate, STRING country1, STRING country2) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
   HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
   SumAccum<STRING> @country, @tag;
   GroupByAccum<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, SumAccum<INT> messageCount> @@count;
   DATETIME simulationEnd = to_datetime("2013-01-01");
-  DATETIME startDate, endDate;
-  startDate = epoch_to_datetime(startDateEpoch);
-  endDate = epoch_to_datetime(endDateEpoch);
 
   Start(ANY) = {country.*};
   Start = SELECT t

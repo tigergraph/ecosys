@@ -1,0 +1,43 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_11
+
+CREATE QUERY bi_11(string tgtCountry, set<string> blacklist) FOR GRAPH ldbc_snb { 
+  TYPEDEF tuple<int person_id, string tag_name, int likeCount, int replyCount> reply;
+	
+	ListAccum<string> @@blacklistP;
+	AndAccum @isWhiteContent;
+	SetAccum<vertex<comments>> @@whiteComments;
+	SumAccum<int> @creatorId;
+	HeapAccum<reply>(100, likeCount DESC, person_id ASC, tag_name ASC) @@replyTop;
+	
+	FOREACH word IN blacklist DO
+	  @@blacklistP += ("%" + word + "%");
+	END;
+
+	vCountry = { country.* };
+	vCity = 
+	  SELECT t
+	  FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
+	  WHERE s.name == tgtCountry;
+	
+	vPerson =
+	  SELECT t
+	  FROM vCity:s-(person_isLocatedIn_city_reverse:e)->person:t;
+	
+	vComments = 
+	  SELECT t
+	  FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
+	  ACCUM 
+	    FOREACH word IN @@blacklistP DO
+	      CASE WHEN t.content LIKE word THEN // GLE-1067
+	        t.@isWhiteContent += False,
+	        BREAK
+	      END
+	    END,
+	    t.@creatorId = s.id
+	  POST-ACCUM CASE WHEN t.@isWhiteContent THEN @@whiteComments += t END;
+
+	PRINT @@replyTop;
+}
+
+INSTALL QUERY bi_11

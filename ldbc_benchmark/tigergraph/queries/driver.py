@@ -6,19 +6,13 @@
 # acknowledgement to TigerGraph.
 # Author: Mingxi Wu mingxi.wu@tigergraph.com
 ############################################################
-import sys
-import datetime
-import json
-import threading
-import errno
-import csv
-import argparse
 
-from timeit import default_timer as timer
+from datetime import datetime, timedelta
+from json import loads
+from argparse import ArgumentParser
 
-from tornado.httpclient import *
-from tornado.ioloop import *
-from tornado.httputil import *
+from tornado.httpclient import AsyncHTTPClient
+from tornado.ioloop import IOLoop
 
 from query_defs import *
 
@@ -41,6 +35,7 @@ BI_SIZE = 25
 
 request_sent = 0
 response_recv = 0
+response_time = 0
 response_code = 0
 response_msg = ""
 print_response = False
@@ -48,6 +43,7 @@ print_response = False
 def handle_response(response):
   global request_sent
   global response_recv
+  global response_time
   global response_code
   global response_msg
   global print_response
@@ -60,7 +56,7 @@ def handle_response(response):
     response_code = response.code
     IOLoop.instance().stop()
   else:
-    http_response_json = json.loads(response.body.decode("utf-8"))
+    http_response_json = loads(response.body.decode("utf-8"))
     if http_response_json["error"]:
       if "code" in http_response_json:
         response_code = http_response_json["code"] 
@@ -69,7 +65,7 @@ def handle_response(response):
       response_msg = http_response_json["message"]
       IOLoop.instance().stop()
     else:
-      # response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
+      response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
       if print_response:
         print("--- Response:")
         print(http_response_json["results"])
@@ -109,6 +105,7 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
              person_ids = [], message_ids = [], debug_mode = 0):
   global request_sent
   global response_recv
+  global response_time
   global response_code
   global response_msg
   global print_response
@@ -136,17 +133,14 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
                        connect_timeout = 3600, request_timeout=3600)
 
   # start ioloop
-  time_begin = time.time()
+  # time_begin = time.time()
   IOLoop.instance().start()
-  time_elapsed = time.time() - time_begin
+  # time_elapsed = time.time() - time_begin
   if not response_code:
-    print("- Elapsed Time: {} sec".format(time_elapsed))
     print("- # Requests Sent: {}".format(request_sent))
-    print("- QPS: " + str(response_recv/time_elapsed))
-
-    # print("- Average Response Time: {} ms".format((response_time * 1000 / response_recv)))
-    # print("- QPS: {}".format(response_recv / (time_elapsed * 1000)))
-    # print("- # Seeds: {}".format(request_sent))
+    # print("- Elapsed Time: {} sec".format(time_elapsed))
+    # print("- QPS: " + str(response_recv/time_elapsed))
+    print("- Average Response Time: {}".format(str(timedelta(seconds=(response_time / response_recv)))))
   else:
     if response_code == "RUNTIME":
       print("- Runtime Error: {}".format(response_msg))
@@ -187,12 +181,11 @@ def runAllQueries(path_to_seeds, max_num_seeds):
   async_client.close()
 
 if __name__ == "__main__":
-  # when max_clients > 1, the response time actually increases since response.time_info includes wait time in the queue.
-  # it'd be great if I can find out the queue wait time so that I can exclude it to retrieve the actual response time.
-  # for more info: https://www.tornadoweb.org/en/stable/httpclient.html#tornado.httpclient.HTTPResponse
-  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=4)
+  # average response time somehow increases when max_clients > 1, could be a bug in async request
+  # detail: https://www.tornadoweb.org/en/stable/httpclient.html#tornado.httpclient.HTTPResponse
+  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=1)
   
-  ap = argparse.ArgumentParser()
+  ap = ArgumentParser()
   ap.add_argument("--path", help="Full path to the seed directory")
   ap.add_argument("--num", help="Number of seeds to run queries")
   ap.add_argument("--query", help="Type and number of single query to run (e.g. is2, ic12, bi22)")

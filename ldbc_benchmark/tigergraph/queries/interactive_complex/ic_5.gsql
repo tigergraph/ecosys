@@ -1,12 +1,12 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_5
 
-CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_5(vertex<person> personId, datetime minDate) FOR GRAPH ldbc_snb {
 	SetAccum<vertex<person>> @@friends;
 	OrAccum @visited;
 	SetAccum<vertex<post>> @@fPosts;
 	SumAccum<int> @postCount;
-  datetime minDate;
+ 
 	int i = 0;
 	
 	vPerson = { personId };
@@ -22,10 +22,6 @@ CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb 
 	END;
 	
 	vFriend = { @@friends };
-	
-	// minDate is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
-	// so truncate millisecond portion of the given epoch
-  minDate = epoch_to_datetime(minDateEpoch/1000);
 	
 	vForum = SELECT t
 	         FROM vFriend:s-(forum_hasMember_person_reverse:e)->forum:t

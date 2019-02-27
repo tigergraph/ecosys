@@ -1,14 +1,12 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_10
 
-CREATE QUERY bi_10(string tgtTag, int dateEpoch) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_10(string tgtTag, datetime date) FOR GRAPH ldbc_snb { 
   TYPEDEF tuple<int person_id, int score, int friendsScore, int total> tagScore;
 
   SetAccum<vertex<person>> @@personAll;
   GroupByAccum<int person_id, SumAccum<int> score, SumAccum<int> friendsScore> @@tagScoreMap;
   HeapAccum<tagScore>(100, total DESC, person_id ASC) @@tagScoreTop;
-
-  datetime date;
 
   vTag = { tag.* };
   vTag = 
@@ -23,10 +21,6 @@ CREATE QUERY bi_10(string tgtTag, int dateEpoch) FOR GRAPH ldbc_snb {
     POST-ACCUM 
       @@tagScoreMap += (t.id -> 100, 0),
       @@personAll += t;
-
-  // dateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
-  // so truncate millisecond portion of the given epoch
-  date = epoch_to_datetime(dateEpoch/1000);
 
   // find all persons that have written a message having tgtTag after a given date
   vMessage = 
@@ -49,10 +43,10 @@ CREATE QUERY bi_10(string tgtTag, int dateEpoch) FOR GRAPH ldbc_snb {
     WHERE @@tagScoreMap.containsKey(t.id)
     ACCUM @@tagScoreMap += (s.id -> 0, @@tagScoreMap.get(t.id).score)
     POST-ACCUM @@tagScoreTop += tagScore(
-          s.id, 
-          @@tagScoreMap.get(s.id).score, 
-          @@tagScoreMap.get(s.id).friendsScore, 
-          (@@tagScoreMap.get(s.id).score + @@tagScoreMap.get(s.id).friendsScore));
+        s.id, 
+        @@tagScoreMap.get(s.id).score, 
+        @@tagScoreMap.get(s.id).friendsScore, 
+        (@@tagScoreMap.get(s.id).score + @@tagScoreMap.get(s.id).friendsScore));
 
   FOREACH ts IN @@tagScoreTop DO
     PRINT 

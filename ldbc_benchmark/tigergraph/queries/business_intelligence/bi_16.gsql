@@ -1,0 +1,75 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_16
+
+CREATE QUERY bi_16(vertex<person> personId, string tgtCountry, string tgtTagClass, int minPathDistance, int maxPathDistance) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<int person_id, string tag_name, int messageCount> social;
+
+  SumAccum<int> @@counter = 1;
+  SetAccum<int> @visited;
+  SetAccum<vertex<person>> @@personAll, @@personRange;
+  SumAccum<int> @creatorId;
+  SetAccum<vertex<tag>> @@tagSel;
+  OrAccum @isValid;
+  SetAccum<string> @tagNames;
+  GroupByAccum<int person_id, string tag_name, SumAccum<int> messageCount> @@socialGroup;
+  HeapAccum<social>(100, messageCount DESC, tag_name ASC, person_id ASC) @@socialTop;
+
+  vCountry = { country.* };
+  vCity = 
+    SELECT t
+    FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
+    WHERE s.name == tgtCountry;
+
+  vPerson =
+    SELECT t
+    FROM vCity:s-(person_isLocatedIn_city_reverse:e)->person:t
+    POST-ACCUM @@personAll += t;
+
+  vPerson = { personId };
+  WHILE @@counter <= maxPathDistance DO
+    vPerson =
+      SELECT t
+      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)-person:t
+      WHERE NOT t.@visited.contains(s.id)
+      ACCUM 
+        t.@visited += s.id,
+        CASE WHEN @@counter >= minPathDistance AND @@personAll.contains(t) THEN @@personRange += t END;
+
+    @@counter += 1;
+  END;
+
+  vPerson = { @@personRange };
+  vMessage =
+    SELECT t
+    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    ACCUM t.@creatorId += s.id;
+
+  vTagClass = { tagclass.* };
+  vTag =
+    SELECT t
+    FROM vTagClass:s-(tag_hasType_tagclass_reverse:e)->tag:t
+    WHERE s.name == tgtTagClass
+    ACCUM @@tagSel += t;
+
+  vMessage =
+    SELECT s
+    FROM vMessage:s-((comments_hasTag_tag|post_hasTag_tag):e)->tag:t
+    ACCUM 
+      s.@tagNames += t.name,
+      CASE WHEN @@tagSel.contains(t) THEN s.@isValid += True END
+    POST-ACCUM
+      CASE
+        WHEN s.@isValid THEN
+          FOREACH tn IN s.@tagNames DO
+            @@socialGroup += (s.@creatorId, tn -> 1)
+          END
+      END;
+
+  FOREACH (p,t,m) IN @@socialGroup DO
+    @@socialTop += social(p, t, m);
+  END;
+
+  PRINT @@socialTop;
+}
+
+INSTALL QUERY bi_16

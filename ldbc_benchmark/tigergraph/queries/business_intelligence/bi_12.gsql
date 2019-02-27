@@ -1,0 +1,29 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_12
+
+CREATE QUERY bi_12(datetime date, int likeThreshold) FOR GRAPH ldbc_snb { 
+  TYPEDEF tuple<int messageId, datetime messageCreationDate, string creatorFirstName, string creatorLastName, int likeCount> msg;
+
+  SumAccum<string> @creatorFirstName, @creatorLastName;
+  SumAccum<int> @likeCount;
+  HeapAccum<msg>(100, likeCount DESC, messageId ASC) @@trendingMsg;
+
+  vMessage = { comments.*, post.* };
+  vMessage = 
+    SELECT s
+    FROM vMessage:s-((comments_hasCreator_person|post_hasCreator_person):e)->person:t
+    WHERE s.creationDate > date
+    ACCUM 
+      s.@creatorFirstName = t.firstName,
+      s.@creatorLastName = t.lastName;
+
+  vMessage =
+    SELECT s
+    FROM vMessage:s-((person_likes_comments_reverse|person_likes_post_reverse):e)->person:t
+    ACCUM s.@likeCount += 1
+    POST-ACCUM @@trendingMsg += msg(s.id, s.creationDate, s.@creatorFirstName, s.@creatorLastName, s.@likeCount);
+
+  PRINT @@trendingMsg;
+}
+
+INSTALL QUERY bi_12

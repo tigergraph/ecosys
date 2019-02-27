@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_25
 
-CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, int startDateEpoch, int endDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<jsonarray personIdsInPath, double pathWeight> pathInfo;
   SumAccum<int> @dist1 = -1, @dist2 = -1;
   OrAccum @@found = False;
@@ -19,7 +19,6 @@ CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, int start
   SetAccum<vertex<comments>> @@commentsSeed;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
-  datetime startDate, endDate;
   string jsonStr = "[]";
 
   IF person1Id != person2Id THEN
@@ -111,11 +110,6 @@ CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, int start
   END;
 
   @@pathInfoTop.resize(@@pathAll.size());
-
-  // (start|end)DateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
-  // so truncate millisecond portion of the given epoch
-  startDate = epoch_to_datetime(startDateEpoch/1000);
-  endDate = epoch_to_datetime(endDateEpoch/1000);
 
   // all posts from forums within the given date interval
   vForum = { forum.* };

@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_9
 
-CREATE QUERY ic_9(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_9(vertex<person> personId, datetime maxDate) FOR GRAPH ldbc_snb {
 	TYPEDEF tuple<int personId, string personFirstName, string personLastName, int messageId, string messageContent, datetime messageCreationDate> msgInfo;
 	
   ListAccum<vertex<person>> @@friendAll;
@@ -9,13 +9,12 @@ CREATE QUERY ic_9(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb 
 	HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@msgInfoTop;
 
   int i = 0;
-  datetime maxDate;
 	
 	vPerson = { personId };
 	
 	WHILE i < 2 DO
 	  vPerson = SELECT t
-	            FROM vPerson:s-(person_knows_person:e)->person:t
+	            FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
 	            WHERE t.@visited == False
 	            ACCUM s.@visited += True,
 	                  t.@visited += True,
@@ -24,10 +23,6 @@ CREATE QUERY ic_9(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb 
 	END;
 	
 	vFriend = { @@friendAll };
-
-  // maxDateEpoch is in millisecond and epoch_to_datetime() won't work properly with 13-digit epoch,
-	// so truncate millisecond portion of the given epoch
-	maxDate = epoch_to_datetime(maxDateEpoch/1000);
 
   vMessage = SELECT t
 	           FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t

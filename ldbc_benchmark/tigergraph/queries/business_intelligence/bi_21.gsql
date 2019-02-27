@@ -1,0 +1,57 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_21
+
+CREATE QUERY bi_21(string tgtCountry, datetime endDate) FOR GRAPH ldbc_snb { 
+  TYPEDEF tuple<int zombie_id, int zombieLikeCount, int totalLikeCount, double zombieScore> zombie;
+
+  SumAccum<int> @messageCount, @creatorId;
+  SetAccum<int> @@zombieAll;
+  GroupByAccum<int zombie_id, SumAccum<int> zombieLikeCount, SumAccum<int> totalLikeCount> @@zombieGroup;
+  HeapAccum<zombie>(100, zombieScore DESC, zombie_id ASC) @@zombieTop;
+
+  vCountry = { country.* };
+  vCity = 
+    SELECT t
+    FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
+    WHERE s.name == tgtCountry;
+
+  vPerson =
+    SELECT t
+    FROM vCity:s-(person_isLocatedIn_city_reverse:e)->person:t
+    WHERE t.creationDate < endDate;
+
+  vMessage =
+    SELECT t
+    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    WHERE t.creationDate < endDate
+    ACCUM 
+      s.@messageCount += 1,
+      t.@creatorId = s.id
+    POST-ACCUM 
+      CASE WHEN s.@messageCount < ((year(endDate) - year(s.creationDate)) * 12 + (month(endDate) - month(s.creationDate)) + 1) THEN
+        @@zombieAll += s.id
+      END;
+
+  vMessage =
+    SELECT s
+    FROM vMessage:s-((person_likes_comments_reverse|person_likes_post_reverse):e)-person:t
+    ACCUM 
+      CASE 
+        WHEN @@zombieAll.contains(t.id) THEN 
+          @@zombieGroup += (s.@creatorId -> 1, 1) 
+        ELSE
+          @@zombieGroup += (s.@creatorId -> 0, 1)
+      END;
+
+  FOREACH (id,zlc,tlc) IN @@zombieGroup DO
+    IF tlc == 0 THEN
+      @@zombieTop += zombie(id, zlc, tlc, 0.0);
+    ELSE
+      @@zombieTop += zombie(id, zlc, tlc, zlc/(tlc*1.0));
+    END;
+  END;
+
+  PRINT @@zombieTop;
+}
+
+INSTALL QUERY bi_21
