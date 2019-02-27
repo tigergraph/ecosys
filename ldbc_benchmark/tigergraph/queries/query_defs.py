@@ -99,7 +99,7 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
         date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
         seed = {"tgtTag":row["tag"], "date":date}
       elif query_num == 11:
-        seed = {"country":row["country"], "blacklist":row["blacklist"].split(";")}
+        seed = {"tgtCountry":row["country"], "blacklist":row["blacklist"].split(";")}
       elif query_num == 12:
         date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
         seed = {"date":date, "likeThreshold":row["likeThreshold"]}
