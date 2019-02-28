@@ -23,6 +23,7 @@ Hardware & Major enviroment
 - OS Ubuntu 14.04.5 LTS
 - Java build 1.8.0_144-b01 (folow http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html)
 - you need to install the following python modules
+$ sudo apt-get update
 $ sudo apt-get install python-pip python-dev build-essential 
 $ sudo pip install --upgrade pip 
 $ sudo pip install --upgrade virtualenv 
