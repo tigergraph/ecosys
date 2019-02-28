@@ -2,23 +2,18 @@ USE GRAPH ldbc_snb
 DROP QUERY ic_8
 
 CREATE QUERY ic_8(vertex<person> personId) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple(int personId, 
-                string personFirstName, 
-                string personLastName, 
-                datetime commentCreationDate, 
-                int commentId, 
-                string commentContent) replyInfo;
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, 
+      DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
 
-  HeapAccum<replyInfo>(20, commentCreationDate DESC, commentId ASC) @@replyInfoTop;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
 
   vPerson = { personId };
-
   vReplier = 
     SELECT t
     FROM vPerson:s-((<comments_hasCreator_person|<post_hasCreator_person):e1.(<comments_replyOf_comments|<comments_replyOf_post):e2)-comments:im-(comments_hasCreator_person)-person:t
-    ACCUM @@replyInfoTop += replyInfo(t.id, t.firstName, t.lastName, im.creationDate, im.id, im.content);
+    ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, im.creationDate, im.id, im.content);
 
-  PRINT @@replyInfoTop;
+  PRINT @@replierTop;
 }
 
 INSTALL QUERY ic_8

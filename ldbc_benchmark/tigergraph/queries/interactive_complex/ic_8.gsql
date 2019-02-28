@@ -1,33 +1,36 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_8
 
-CREATE QUERY ic_8(vertex<person> personId) FOR GRAPH ldbc_snb {
-  SumAccum<int> @personId;
-  SumAccum<string> @personFirstName, @personLastName;
+CREATE QUERY ic_8(VERTEX<person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<VERTEX<comments> v, DATETIME commentCreationDate, INT commentId> reply;
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName,
+      DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+
+  SetAccum<VERTEX<comments>> @@replies;
+  HeapAccum<reply>(20, commentCreationDate DESC, commentId ASC) @@replyTop;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
 
   vPerson = { personId };
-	
-	vMessage = SELECT t
-	           FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
-	
-	vReply = SELECT t
-           FROM vMessage:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse):e)->comments:t
-           ORDER BY t.creationDate DESC, t.id ASC
-           LIMIT 20;
-  
-  vReply = SELECT s
-           FROM vReply:s-(comments_hasCreator_person:e)->person:t
-           ACCUM s.@personId = t.id,
-                 s.@personFirstName = t.firstName,
-                 s.@personLastName = t.lastName
-           ORDER BY s.creationDate DESC, s.id ASC;
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
 
-  PRINT vReply[vReply.@personId AS personId,
-               vReply.@personFirstName AS personFirstName,
-               vReply.@personLastName AS personLastName,
-               vReply.creationDate AS creationDate,
-               vReply.id AS commentId,
-               vReply.content AS commentContent];
+  vReply = 
+    SELECT t
+    FROM vMessage:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse):e)->comments:t
+    POST-ACCUM @@replyTop += reply(t, t.creationDate, t.id);
+
+  FOREACH r IN @@replyTop DO
+    @@replies += r.v;
+  END;
+
+  vReply = { @@replies };
+  vReply = 
+    SELECT s
+    FROM vReply:s-(comments_hasCreator_person:e)->person:t
+    ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
+
+  PRINT @@replierTop;
 }
 
 INSTALL QUERY ic_8
