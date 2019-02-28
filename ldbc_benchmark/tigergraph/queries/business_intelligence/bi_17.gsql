@@ -1,0 +1,31 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_17
+
+CREATE QUERY bi_17(STRING givenCountry) FOR GRAPH ldbc_snb { 
+
+	SumAccum<INT> @@cnt;
+	Start(ANY) = {country.*};
+	Start = SELECT s
+	        FROM Start:s 
+	        WHERE s.name == givenCountry;
+	
+ 	Cities = SELECT t
+	         FROM Start:s -(city_isPartOf_country_reverse:e) -> city:t;
+	Person = SELECT t
+	         FROM Cities:s -(person_isLocatedIn_city_reverse:e) -> person:t;
+
+	Person = SELECT s
+           	 FROM Person:s -((person_knows_person | person_knows_person_reverse):e)-> :t
+           	 WHERE getvid(s) > getvid(t)
+           	 ACCUM INT c = COUNT( s.neighbors("person_knows_person") 
+				      UNION s.neighbors("person_knows_person_reverse") 
+				      INTERSECT (t.neighbors("person_knows_person")
+				      UNION t.neighbors("person_knows_person_reverse")) 
+	                            ),
+                       @@cnt += c;
+
+# Each triangle is counted 3 times for each edge, so final result is divided by 3
+        PRINT @@cnt/3 AS count_triangles;
+}
+
+INSTALL QUERY bi_17
