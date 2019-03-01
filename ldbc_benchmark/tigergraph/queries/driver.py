@@ -7,11 +7,11 @@
 # Author: Mingxi Wu mingxi.wu@tigergraph.com
 ############################################################
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from json import loads
 from argparse import ArgumentParser
 
-from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import AsyncHTTPClient, HTTPClient
 from tornado.ioloop import IOLoop
 
 from query_defs import *
@@ -79,7 +79,7 @@ def handle_response(response):
 # We'll use interactive_7_param.txt to generate seeds for interactive short queries
 def generateSeedsForIS(path_to_seeds, max_num_seeds, query_num = 0):
   with open(path_to_seeds + "interactive_7_param.txt", "r") as f:
-    reader = csv.DictReader(f, delimiter="|")
+    reader = DictReader(f, delimiter="|")
     person_ids = []
     count = 0
     for row in reader:
@@ -96,7 +96,7 @@ def generateSeedsForIS(path_to_seeds, max_num_seeds, query_num = 0):
       http_response = http_client.fetch(url, method = "GET")
 
       # parse json to get message_ids
-      http_response_json = json.loads(http_response.body.decode("utf-8"))
+      http_response_json = loads(http_response.body.decode("utf-8"))
       message_ids = http_response_json["results"][0]["message_ids"]
       http_client.close()
     return person_ids, message_ids

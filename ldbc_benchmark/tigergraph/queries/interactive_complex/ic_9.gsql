@@ -1,36 +1,41 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_9
 
-CREATE QUERY ic_9(vertex<person> personId, datetime maxDate) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<int personId, string personFirstName, string personLastName, int messageId, string messageContent, datetime messageCreationDate> msgInfo;
+CREATE QUERY ic_9(VERTEX<person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
 	
-  ListAccum<vertex<person>> @@friendAll;
 	OrAccum @visited;
+	SetAccum<VERTEX<person>> @@friendAll;
 	HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@msgInfoTop;
 
-  int i = 0;
+  INT i = 0;
 	
 	vPerson = { personId };
-	
 	WHILE i < 2 DO
-	  vPerson = SELECT t
-	            FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
-	            WHERE t.@visited == False
-	            ACCUM s.@visited += True,
-	                  t.@visited += True,
-	                  @@friendAll += t;
+	  vPerson = 
+			SELECT t
+			FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+			WHERE t.@visited == False
+			ACCUM 
+				s.@visited += True,
+				t.@visited += True,
+				@@friendAll += t;
+
 	  i += 1;
 	END;
 	
 	vFriend = { @@friendAll };
-
-  vMessage = SELECT t
-	           FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
-             WHERE t.creationDate < maxDate
-             ACCUM CASE WHEN t.type == "comments" THEN 
-	                           @@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
-	                      ELSE @@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
-	                 END;
+  vMessage = 
+		SELECT t
+		FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+		WHERE t.creationDate < maxDate
+		ACCUM 
+			CASE 
+				WHEN t.type == "comments" THEN 
+					@@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+				ELSE 
+					@@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
+			END;
 
   PRINT @@msgInfoTop;
 }

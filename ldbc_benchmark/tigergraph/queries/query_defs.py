@@ -11,7 +11,10 @@ def get_messages_from_person(person_id, max_num_seeds):
 def is_queries(ids, query_num):
   urls = []
   for id in ids:
-    params = {"seed": id}
+    if query_num in range(1,4):
+      params = {"personId": id}
+    else:
+      params = {"messageId": id}
     url = url_concat(ENDPOINT_URL_PREFIX + "is_{}".format(query_num), params)
     urls.append(url)
   return urls
@@ -25,17 +28,17 @@ def ic_queries(path_to_seeds, max_num_seeds, query_num):
       if query_num == 1:
         seed = {"personId":row["personId"], "firstName":row["firstName"]}
       elif query_num == 2:
-        max_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        max_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"personId":row["personId"], "maxDate":max_date}
       elif query_num == 3:
-        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"personId":row["personId"], "startDate":start_date, "durationDays":row["durationDays"], "countryXName":row["countryXName"], "countryYName":row["countryYName"]}
       elif query_num == 4:
-        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"personId":row["personId"], "startDate":start_date, "durationDays":row["durationDays"]}
       elif query_num == 5:
-        min_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
-        seed = {"personId":row["personId"], "minDateEpoch":min_date}
+        min_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"personId":row["personId"], "minDate":min_date}
       elif query_num == 6:
         seed = {"personId":row["personId"], "tagName":row["tagName"]}
       elif query_num == 7:
@@ -43,7 +46,7 @@ def ic_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 8:
         seed = {"personId":row["personId"]}
       elif query_num == 9:
-        max_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        max_date = datetime.fromtimestamp(int(row["minDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"personId":row["personId"], "maxDate":max_date}
       elif query_num == 10:
         month = int(row["month"])
@@ -75,11 +78,11 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
     count = 0
     for row in reader:
       if query_num == 1:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"date":date}
       elif query_num == 2:
-        date1 = datetime.fromtimestamp(int(row["date1"])/1000).strftime('%Y-%m-%d %H:%M:%S')
-        date2 = datetime.fromtimestamp(int(row["date2"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date1 = datetime.fromtimestamp(int(row["date1"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        date2 = datetime.fromtimestamp(int(row["date2"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"date1":date1, "date2":date2, "country1":row["country1"], "country2":row["country2"]}
       elif query_num == 3:
         seed = {"year":row["year"], "month":row["month"]}
@@ -96,18 +99,18 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 9:
         seed = {"tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"], "threshold":row["threshold"]}
       elif query_num == 10:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"tgtTag":row["tag"], "date":date}
       elif query_num == 11:
         seed = {"tgtCountry":row["country"], "blacklist":row["blacklist"].split(";")}
       elif query_num == 12:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"date":date, "likeThreshold":row["likeThreshold"]}
       elif query_num == 13:
         seed = {"tgtCountry":row["country"]}
       elif query_num == 14:
-        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
-        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"startDate":start_date, "endDate":end_date}
       elif query_num == 15:
         seed = {"_country":row["country"]}
@@ -116,15 +119,15 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 17:
         seed = {"country":row["country"]}
       elif query_num == 18:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"date":date, "lengthThreshold":row["lengthThreshold"], "languages":row["languages"].split(";")}
       elif query_num == 19:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"date":date, "tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"]}
       elif query_num == 20:
         seed = {"tagClasses":row["tagClasses"]}
       elif query_num == 21:
-        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"tgtCountry":row["country"], "endDate":end_date}
       elif query_num == 22:
         seed = {"country1":row["country1"], "country2":row["country2"]}
@@ -133,8 +136,8 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
       elif query_num == 24:
         seed = {"tagClass":row["tagClass"]}
       elif query_num == 25:
-        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
-        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
+        start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"person1Id":row["person1Id"], "person2Id":row["person2Id"], "startDate":start_date, "endDate":end_date}
 
       seeds.append(seed)

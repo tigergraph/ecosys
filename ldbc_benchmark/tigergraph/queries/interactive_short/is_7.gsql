@@ -1,58 +1,58 @@
 USE GRAPH ldbc_snb
 DROP QUERY is_7
 
-CREATE QUERY is_7(string seed) FOR GRAPH ldbc_snb {
-	SetAccum<string> @@seeds;	
-	SumAccum<int> @@authorOgId, @authorReId;
-	SumAccum<string> @authorReFN, @authorReLN;
-	MapAccum<int, bool> @@knowsAuthorOg;
-	OrAccum @knows;
-	
-	@@seeds += seed;
-	vComments = to_vertex_set(@@seeds, "comments");
-	vPost = to_vertex_set(@@seeds, "post");
-	
-	IF vComments.size() > 0 THEN
-	  vAuthorOg = SELECT t
-	              FROM vComments:s-(comments_hasCreator_person:e)->person:t
-	              ACCUM @@authorOgId += t.id;
-	
-	  vReply = SELECT t
-	           FROM vComments:s-(comments_replyOf_comments_reverse:e)->comments:t;
-	ELSE
-	  vAuthorOg = SELECT t
-	              FROM vPost:s-(post_hasCreator_person:e)->person:t
-	              ACCUM @@authorOgId += t.id;
-	
-	  vReply = SELECT t
-	           FROM vPost:s-(comments_replyOf_post_reverse:e)->comments:t;
-	END;
-	
-	vAuthorRe = SELECT t
-	            FROM vReply:s-(comments_hasCreator_person:e)->person:t
-	            ACCUM s.@authorReId = t.id,
-	                  s.@authorReFN = t.firstName,
-	                  s.@authorReLN = t.lastName;
-	
-	vAuthorRe = SELECT s
-	            FROM vAuthorRe:s-(person_knows_person:e)->person:t
-	            ACCUM CASE 
-	                    WHEN t.id == @@authorOgId THEN @@knowsAuthorOg += (s.id -> True) 
-	                    ELSE @@knowsAuthorOg += (s.id -> False)
-	                  END;
-	
-	vReply = SELECT v
-	         FROM vReply:v
-	         ACCUM v.@knows += @@knowsAuthorOg.get(v.@authorReId)
-	         ORDER BY v.creationDate DESC, v.@authorReId ASC;
-	
-	PRINT vReply[vReply.id AS commentId,
-	             vReply.content AS commentContent,
-		           vReply.creationDate AS commentCreationDate,
-	             vReply.@authorReId AS replyAuthorId,
-	             vReply.@authorReFN AS replyAuthorFirstName,
-	             vReply.@authorReLN AS replyAuthorLastName,
-	             vReply.@knows AS replyAuthorKnowsOriginalMessageAuthor];
+CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
+  SetAccum<STRING> @@seed;
+  SetAccum<INT> @@friendIds;
+  SumAccum<INT> @replierId;
+  SumAccum<STRING> @replierFirstName, @replierLastName;
+  OrAccum @knows;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "comments");
+
+  IF vComments.size() > 0 THEN
+    vCreator = 
+      SELECT t
+      FROM vComments:s-(comments_hasCreator_person:e)->person:t;
+
+    vReply = 
+      SELECT t
+      FROM vComments:s-(comments_replyOf_comments_reverse:e)->comments:t;
+  ELSE
+    vPost = to_vertex_set(@@seed, "post");
+    vCreator = 
+      SELECT t
+      FROM vPost:s-(post_hasCreator_person:e)->person:t;
+
+    vReply = 
+      SELECT t
+      FROM vPost:s-(comments_replyOf_post_reverse:e)->comments:t;
+  END;
+
+  vFriend =
+    SELECT t
+    FROM vCreator:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    POST-ACCUM @@friendIds += t.id;
+
+  vReply =
+    SELECT s
+    FROM vReply:s-(comments_hasCreator_person:e)->person:t
+    ACCUM
+      s.@replierId = t.id,
+      s.@replierFirstName = t.firstName,
+      s.@replierLastName = t.lastName,
+      CASE WHEN @@friendIds.contains(t.id) THEN s.@knows += True END
+    ORDER BY s.creationDate DESC, s.@replierId ASC;
+
+  PRINT vReply[
+      vReply.id AS commentId,
+      vReply.content AS commentContent,
+      vReply.creationDate AS commentCreationDate,
+      vReply.@replierId AS replyAuthorId,
+      vReply.@replierFirstName AS replyAuthorFirstName,
+      vReply.@replierLastName AS replyAuthorLastName,
+      vReply.@knows AS replyAuthorKnowsOriginalMessageAuthor];
 }
 
 INSTALL QUERY is_7

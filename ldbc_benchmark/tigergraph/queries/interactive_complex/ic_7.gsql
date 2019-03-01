@@ -1,40 +1,46 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_7
 
-CREATE QUERY ic_7(vertex<person> personId) FOR GRAPH ldbc_snb {
-	SumAccum<int> @likeCreationDate, @commentOrPostId, @minutesLatency;
-	SumAccum<string> @commentOrPostContent;
-	AndAccum @isNew;
-	
+CREATE QUERY ic_7(VERTEX<person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, 
+      DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent,
+      INT minutesLatency, BOOL isNew> liker;
+
+  SetAccum<INT> @@friendIds;
+  SumAccum<INT> @likeCreationDate, @commentOrPostId, @minutesLatency;
+  SumAccum<STRING> @commentOrPostContent;
+  AndAccum @isNew;
+  HeapAccum<liker>(20, likeCreationDate DESC, personId ASC) @@likerTop;
+
   vPerson = { personId };
-	
-	vMessage = SELECT t
-	           FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
-	
-	vLiker = SELECT t
-	         FROM vMessage:s-((person_likes_comments_reverse|person_likes_post_reverse):e)->person:t
-	         ACCUM t.@likeCreationDate = datetime_to_epoch(e.creationDate),
-	               t.@commentOrPostId = s.id,
-	               CASE WHEN s.type == "comments" THEN t.@commentOrPostContent = s.content 
-	                    ELSE t.@commentOrPostContent += s.imageFile 
-	               END,
-	               t.@minutesLatency = (datetime_diff(s.creationDate, e.creationDate) / 60)
-	         ORDER BY t.@likeCreationDate DESC, t.id ASC
-	         LIMIT 20;
-	          
-	vLiker = SELECT s
-	         FROM vLiker:s-(person_knows_person:e)->person:t
-	         ACCUM CASE WHEN t == personId THEN s.@isNew += False END
-	         ORDER BY s.@likeCreationDate DESC, s.id ASC;
-	
-	PRINT vLiker[vLiker.id AS personId,
-		           vLiker.firstName AS personFirstName,
-				       vLiker.lastName AS personLastName,
-				       epoch_to_datetime(vLiker.@likeCreationDate) AS likeCreationDate,
-				       vLiker.@commentOrPostId AS commentOrPostId,
-				       vLiker.@commentOrPostContent AS commentOrPostContent,
-				       vLiker.@minutesLatency AS minutesLatency,
-				       vLiker.@isNew AS isNew];
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
+
+  vFriend =
+    SELECT t
+    FROM vPerson-((person_knows_person|person_knows_person_reverse):e)-person:t
+    ACCUM @@friendIds += t.id;
+
+  vLiker = 
+    SELECT t
+    FROM vMessage:s-((person_likes_comments_reverse|person_likes_post_reverse):e)->person:t
+    ACCUM 
+      t.@likeCreationDate = datetime_to_epoch(e.creationDate),
+      t.@commentOrPostId = s.id,
+      CASE 
+        WHEN s.type == "comments" THEN 
+          t.@commentOrPostContent = s.content 
+        ELSE 
+          t.@commentOrPostContent += s.imageFile 
+      END,
+      t.@minutesLatency = (datetime_diff(s.creationDate, e.creationDate) / 60),
+      CASE WHEN @@friendIds.contains(t.id) THEN t.@isNew += False END
+    POST-ACCUM @@likerTop += liker(t.id, t.firstName, t.lastName, 
+        epoch_to_datetime(t.@likeCreationDate), t.@commentOrPostId, t.@commentOrPostContent,
+        t.@minutesLatency, t.@isNew);
+
+    PRINT @@likerTop;
 }
 
 INSTALL QUERY ic_7

@@ -1,60 +1,74 @@
 USE GRAPH ldbc_snb
 DROP QUERY is_2
 
-CREATE QUERY is_2(vertex<person> seed) FOR GRAPH ldbc_snb {
-	SetAccum<vertex<comments>> @@commentsRecent;
-	SetAccum<vertex<post>> @@postsRecent;
-	SumAccum<int> @messageId, @messageCreationDate, @authorOgId;
-	SumAccum<string> @messageContent, @authorOgFN, @authorOgLN;
-	bool isPost;
-	
-	vPerson = {seed};
+CREATE QUERY is_2(VERTEX<person> personId) FOR GRAPH ldbc_snb {
 
-	vMessage = SELECT t
-						 FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
-						 ORDER BY t.creationDate DESC, t.id DESC
-						 LIMIT 10;
+	SetAccum<VERTEX<comments>> @@commentsRecent;
+	SetAccum<VERTEX<post>> @@postsRecent;
+	SumAccum<INT> @messageId, @messageCreationDate, @authorOgId;
+	SumAccum<STRING> @messageContent, @authorOgFN, @authorOgLN;
+	BOOL isPost;
+	
+	vPerson = { personId };
+
+	vMessage = 
+		SELECT t
+		FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+		ORDER BY t.creationDate DESC, t.id DESC
+		LIMIT 10;
   
-  vMessage = SELECT v
-	           FROM vMessage:v
-	           ACCUM CASE 
-						 				 WHEN v.type == "comments" THEN @@commentsRecent += v
-	                   WHEN v.type == "post" THEN v.@messageId = v.id, 
-	                                              v.@messageContent = v.imageFile,
-	                                              v.@messageCreationDate = datetime_to_epoch(v.creationDate),
-	                                              @@postsRecent += v
-	                 END;
+  vMessage = 
+		SELECT v
+		FROM vMessage:v
+		ACCUM 
+			CASE 
+				WHEN v.type == "comments" THEN 
+					@@commentsRecent += v
+				WHEN v.type == "post" THEN 
+					v.@messageId = v.id, 
+					v.@messageContent = v.imageFile,
+					v.@messageCreationDate = datetime_to_epoch(v.creationDate),
+					@@postsRecent += v
+			END;
 	
 	FOREACH c IN @@commentsRecent DO
 	  vRoot(comments|post) = {c};
 	  isPost = False;
 	  WHILE isPost == False DO
-	    vRoot = SELECT t
-	            FROM vRoot:s-((comments_replyOf_comments|comments_replyOf_post):e)->(comments|post):t
-	            ACCUM t.@messageId = c.id,
-	                  t.@messageContent = c.content,
-	                  t.@messageCreationDate = datetime_to_epoch(c.creationDate),
-	                  CASE WHEN t.type == "post" THEN isPost = True,
-	                                                  @@postsRecent += t           
-	                  END;
+	    vRoot = 
+				SELECT t
+				FROM vRoot:s-((comments_replyOf_comments|comments_replyOf_post):e)->(comments|post):t
+				ACCUM 
+					t.@messageId = c.id,
+					t.@messageContent = c.content,
+					t.@messageCreationDate = datetime_to_epoch(c.creationDate),
+					CASE WHEN t.type == "post" THEN 
+						isPost = True,
+						@@postsRecent += t           
+					END;
 	  END;
 	END;
 	
-	vMessage = {@@postsRecent};
-	vMessage = SELECT s
-	           FROM vMessage:s-(post_hasCreator_person:e)->person:t
-	           ACCUM s.@authorOgId = t.id,
-	                 s.@authorOgFN = t.firstName,
-	                 s.@authorOgLN = t.lastName
-	           ORDER BY s.@messageCreationDate DESC, s.@messageId DESC;
+	vMessage = { @@postsRecent };
+	vMessage = 
+		SELECT s
+		FROM vMessage:s-(post_hasCreator_person:e)->person:t
+		ACCUM 
+			s.@authorOgId = t.id,
+			s.@authorOgFN = t.firstName,
+			s.@authorOgLN = t.lastName
+		ORDER BY 
+			s.@messageCreationDate DESC, 
+			s.@messageId DESC;
 	
-	PRINT vMessage[vMessage.@messageId AS messageId,
-	               vMessage.@messageContent AS messageContent,
-		             epoch_to_datetime(vMessage.@messageCreationDate) AS messageCreationDate,
-		             vMessage.id AS originalPostId,
-	               vMessage.@authorOgId AS originalPostAuthorId,
-	               vMessage.@authorOgFN AS originalPostAuthorFirstName,
-	               vMessage.@authorOgLN AS originalPostAuthorLastName];
+	PRINT vMessage[
+			vMessage.@messageId AS messageId,
+			vMessage.@messageContent AS messageContent,
+			epoch_to_datetime(vMessage.@messageCreationDate) AS messageCreationDate,
+			vMessage.id AS originalPostId,
+			vMessage.@authorOgId AS originalPostAuthorId,
+			vMessage.@authorOgFN AS originalPostAuthorFirstName,
+			vMessage.@authorOgLN AS originalPostAuthorLastName];
 }
 
 INSTALL QUERY is_2

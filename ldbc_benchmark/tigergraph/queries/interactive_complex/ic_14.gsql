@@ -1,21 +1,21 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_14
 
-CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple<jsonarray personIdsInPath, double pathWeight> pathInfo;
-  SumAccum<int> @dist1 = -1, @dist2 = -1;
-  SumAccum<int> @@next;
-  ListAccum<ListAccum<vertex<person>>> @path1, @path2;
-  ListAccum<ListAccum<vertex<person>>> @@pathAll;
-  SumAccum<double> @@weight = 0.0;
-  SetAccum<vertex<person>> @@personAllInPathAll;
-  SetAccum<vertex<comments>> @@commentsSeed;
-  MapAccum<int, SetAccum<vertex<comments>>> @@commentsAll;
-  MapAccum<int, SetAccum<vertex<post>>> @@postAll;
+CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<jsonarray personIdsInPath, DOUBLE pathWeight> pathInfo;
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @@next;
+  ListAccum<ListAccum<VERTEX<person>>> @path1, @path2;
+  ListAccum<ListAccum<VERTEX<person>>> @@pathAll;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  SetAccum<VERTEX<person>> @@personAllInPathAll;
+  SetAccum<VERTEX<comments>> @@commentsSeed;
+  MapAccum<INT, SetAccum<VERTEX<comments>>> @@commentsAll;
+  MapAccum<INT, SetAccum<VERTEX<post>>> @@postAll;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
   OrAccum @@found = False;
-  string jsonStr = "[]";
+  STRING jsonStr = "[]";
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };

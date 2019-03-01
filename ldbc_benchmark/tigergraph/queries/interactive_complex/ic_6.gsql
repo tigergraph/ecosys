@@ -1,45 +1,48 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_6
 
-CREATE QUERY ic_6(vertex<person> personId, string tagName) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<string tagName, int postCount> tagStats;
-	
-	OrAccum @visited;
-	ListAccum<vertex<person>> @@friendAll;
-	ListAccum<vertex<post>> @@postAll;
-	SumAccum<int> @postCount;
-	HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
-	int i = 0;
-	
-	vPerson = { personId };
-	
-	WHILE i < 2 DO
-	  vPerson = SELECT t
-	            FROM vPerson:s-(person_knows_person:e)->person:t
-	            WHERE t.@visited == False
-	            ACCUM s.@visited += True,
-	                  t.@visited += True,
-	                  @@friendAll += t;
-	  i += 1;
-	END;
-	
-	vFriend = { @@friendAll };
-  
-  vPost = SELECT t
-	        FROM vFriend:s-(post_hasCreator_person_reverse:e)->post:t;
-	
-	vPost = SELECT s
-	        FROM vPost:s-(post_hasTag_tag:e)->tag:t
-	        ACCUM CASE WHEN t.name == tagName THEN @@postAll += s END;
-	
-	vPost = { @@postAll };
-	
-	vTag = SELECT t
-	       FROM vPost:s-(post_hasTag_tag:e)->tag:t
-	       ACCUM t.@postCount += 1
-	       POST-ACCUM @@tagStatsTop += tagStats(t.name, t.@postCount);
-	
-	PRINT @@tagStatsTop;
+CREATE QUERY ic_6(VERTEX<person> personId, STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<STRING tagName, INT postCount> tagStats;
+
+  OrAccum @visited;
+  ListAccum<VERTEX<person>> @@friendAll;
+  ListAccum<VERTEX<post>> @@postAll;
+  SumAccum<INT> @postCount;
+  HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
+  INT i = 0;
+
+  vPerson = { personId };
+  WHILE i < 2 DO
+    vPerson = 
+      SELECT t
+      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+      WHERE t.@visited == False
+      ACCUM 
+        s.@visited += True,
+        t.@visited += True,
+        @@friendAll += t;
+
+    i += 1;
+  END;
+
+  vFriend = { @@friendAll };
+  vPost = 
+    SELECT t
+    FROM vFriend:s-(post_hasCreator_person_reverse:e)->post:t;
+
+  vPost = 
+    SELECT s
+    FROM vPost:s-(post_hasTag_tag:e)->tag:t
+    ACCUM CASE WHEN t.name == tagName THEN @@postAll += s END;
+
+  vPost = { @@postAll };
+  vTag = 
+    SELECT t
+    FROM vPost:s-(post_hasTag_tag:e)->tag:t
+    ACCUM t.@postCount += 1
+    POST-ACCUM @@tagStatsTop += tagStats(t.name, t.@postCount);
+
+  PRINT @@tagStatsTop;
 }
 
 INSTALL QUERY ic_6

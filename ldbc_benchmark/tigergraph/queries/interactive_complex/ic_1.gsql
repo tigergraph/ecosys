@@ -1,78 +1,95 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_1 
 
-CREATE QUERY ic_1(vertex<person> personId, string firstName) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<string orgName, int orgYear, string orgPlace> org; 
+CREATE QUERY ic_1(VERTEX<person> personId, STRING firstName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<VERTEX<person> v, INT distanceFromPerson, STRING lastName, INT id> friendInfo;
+  TYPEDEF TUPLE<STRING orgName, INT orgYear, STRING orgPlace> org; 
 
-  SetAccum<vertex<person>> @@friends;
-	SetAccum<org> @comp, @univ;
-	SumAccum<string> @cityName;
-	SumAccum<int> @distance, @pId, @orgYear;
-	MapAccum<int, SetAccum<org>> @@compInfo, @@univInfo;
+  HeapAccum<friendInfo>(20, distanceFromPerson ASC, lastName ASC, id ASC) @@friendInfoTop;
+  SetAccum<VERTEX<person>> @@friendAll;
+  SetAccum<org> @comp, @univ;
+  SumAccum<STRING> @cityName;
+  SumAccum<INT> @distance, @pId, @orgYear;
+  MapAccum<INT, SetAccum<org>> @@compInfo, @@univInfo;
   OrAccum @visited = False;
-  int i = 0;
-	
+  INT i = 0;
+
   vPerson = { personId };
-	
+
   WHILE i < 3 DO
-    vPerson = SELECT t
-              FROM vPerson:s-(person_knows_person:e)->person:t
-	            WHERE t.@visited == False
-	            ACCUM s.@visited += True,
-                    t.@visited += True,
-	                  t.@distance += (i+1),
-	                  CASE WHEN t.firstName == firstName THEN @@friends += t END;
+    vPerson = 
+      SELECT t
+      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+      WHERE t.@visited == False
+      ACCUM 
+        s.@visited += True,
+        t.@visited += True,
+        t.@distance += (i+1),
+        CASE WHEN t.firstName == firstName THEN 
+          @@friendInfoTop += friendInfo(t, t.@distance, t.lastName, t.id)
+        END;
+
+    IF @@friendInfoTop.size() >= 20 THEN BREAK; END;
     i = i + 1;
   END;
 
-  vFriends = { @@friends };
-	
-	vFriends = SELECT v
-	           FROM vFriends:v
-	           ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC
-	           LIMIT 20;
+  FOREACH f IN @@friendInfoTop DO
+    @@friendAll += f.v;
+  END;
 
-	vFriends = SELECT s
-	           FROM vFriends:s-(person_isLocatedIn_city:e)->city:t
-	           ACCUM s.@cityName = t.name;
-	
-	vUniv = SELECT t
-	        FROM vFriends:s-(person_studyAt_university:e)->university:t
-	        ACCUM t.@pId += s.id,
-	              t.@orgYear = e.classYear;
-	
-	vUniv = SELECT s
-	        FROM vUniv:s-(university_isLocatedIn_city:e)->city:t
-	        ACCUM @@univInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
-	
-	vComp = SELECT t
-	        FROM vFriends:s-(person_workAt_company:e)->company:t
-	        ACCUM t.@pId += s.id,
-	              t.@orgYear = e.workFrom;
-	
-	vComp = SELECT s
-	        FROM vComp:s-(company_isLocatedIn_country:e)->country:t
-	        ACCUM @@compInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
-	
-	vFriends = SELECT v
-	           FROM vFriends:v
-	           ACCUM v.@univ += @@univInfo.get(v.id),
-	                 v.@comp += @@compInfo.get(v.id)
-	           ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC;
-	
-	PRINT vFriends[vFriends.id AS friendId,
-	               vFriends.lastName AS friendLastName,
-	               vFriends.@distance AS distanceFromPerson,
-	               vFriends.birthday AS friendBirthday,
-	               vFriends.creationDate AS friendCreationDate,
-	               vFriends.gender AS friendGender,
-	               vFriends.browserUsed AS friendBrowserUsed,
-	               vFriends.locationIP AS friendLocationIp,
-	               vFriends.email AS friendEmails,
-	               vFriends.speaks AS friendLanguages,
-	               vFriends.@cityName AS friendCityName,
-	               vFriends.@univ AS friendUniversities,
-	               vFriends.@comp AS friendCompanies];
+  vFriend = { @@friendAll };
+
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(person_isLocatedIn_city:e)->city:t
+    ACCUM s.@cityName = t.name;
+
+  vUniv = 
+  SELECT t
+  FROM vFriend:s-(person_studyAt_university:e)->university:t
+  ACCUM 
+    t.@pId += s.id,
+    t.@orgYear = e.classYear;
+
+  vUniv = 
+    SELECT s
+    FROM vUniv:s-(university_isLocatedIn_city:e)->city:t
+    ACCUM @@univInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+
+  vComp = 
+    SELECT t
+    FROM vFriend:s-(person_workAt_company:e)->company:t
+    ACCUM 
+      t.@pId += s.id,
+      t.@orgYear = e.workFrom;
+
+  vComp = 
+    SELECT s
+    FROM vComp:s-(company_isLocatedIn_country:e)->country:t
+    ACCUM @@compInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+
+  vFriend = 
+    SELECT v
+    FROM vFriend:v
+    ACCUM 
+      v.@univ += @@univInfo.get(v.id),
+      v.@comp += @@compInfo.get(v.id)
+    ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC;
+
+  PRINT vFriend[
+      vFriend.id AS friendId,
+      vFriend.lastName AS friendLastName,
+      vFriend.@distance AS distanceFromPerson,
+      vFriend.birthday AS friendBirthday,
+      vFriend.creationDate AS friendCreationDate,
+      vFriend.gender AS friendGender,
+      vFriend.browserUsed AS friendBrowserUsed,
+      vFriend.locationIP AS friendLocationIp,
+      vFriend.email AS friendEmails,
+      vFriend.speaks AS friendLanguages,
+      vFriend.@cityName AS friendCityName,
+      vFriend.@univ AS friendUniversities,
+      vFriend.@comp AS friendCompanies];
 }
 
 INSTALL QUERY ic_1

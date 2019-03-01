@@ -1,85 +1,79 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_3
 
-CREATE QUERY ic_3(vertex<person> personId, string countryXName, string countryYName, datetime startDate, int durationDays) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<int id, string firstName, string lastName> friendInfo;
-	TYPEDEF tuple<int personId, string personFirstName, string personLastName, int xCount, int yCount, int _count> msgStat; 
+CREATE QUERY ic_3(VERTEX<person> personId, STRING countryXName, STRING countryYName, 
+    DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING firstName, STRING lastName> fullName;
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, 
+      INT yCount, INT count_> msgStats; 
 
-	ListAccum<vertex<person>> @@friendAll;
-	OrAccum @visited;
-	SumAccum<int> @city, @creatorId;
-	SumAccum<string> @countryName;
-	MapAccum<int, string> @@cityInCountry;
-	MapAccum<int, friendInfo> @@friendInfoAll;
-	GroupByAccum<int friendId, SumAccum<int> xCount, SumAccum<int> yCount> @@msgStatGroup;
-	HeapAccum<msgStat>(20, xCount DESC, personId ASC) @@msgStatTop;
+  ListAccum<VERTEX<person>> @@friendAll;
+  OrAccum @visited;
+  SetAccum<INT> @@cityIds;
+  SumAccum<INT> @personId;
+  MapAccum<INT, fullName> @@personNameMap;
+  GroupByAccum<INT personId, SumAccum<INT> xCount, SumAccum<INT> yCount> @@msgStatsGroup;
+  HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@msgStatsTop;
 
-	datetime endDate;
-	int i = 0;
+  DATETIME endDate;
+  INT i = 0;
 
-	vPerson = { personId };
+  vPerson = { personId };
+  WHILE i < 2 DO
+    vPerson = 
+      SELECT t
+      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+      WHERE t.@visited == False
+      ACCUM 
+        s.@visited += True,
+        t.@visited += True,
+        @@friendAll += t;
 
-	WHILE i < 2 DO
-		vPerson = 
-			SELECT t
-			FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
-			WHERE t.@visited == False
-			ACCUM 
-				s.@visited += True,
-				t.@visited += True,
-				@@friendAll += t;
-		i += 1;
-	END;
+    i += 1;
+  END;
 
-	vFriend = { @@friendAll };
-	vCity = 
-		SELECT t
-		FROM vFriend:s-(person_isLocatedIn_city:e)->city:t
-		ACCUM s.@city = t.id;
+  vCountry = { country.* };
+  vCountry =
+    SELECT s
+    FROM vCountry:s-(city_isPartOf_country_reverse:e)-city:t
+    ACCUM 
+      CASE 
+        WHEN s.name == countryXName OR s.name == countryYName THEN
+          @@cityIds += t.id
+      END;
 
-	vCity = 
-		SELECT s
-		FROM vCity:s-(city_isPartOf_country:e)->country:t
-		ACCUM @@cityInCountry += (s.id -> t.name);
+  vFriend = { @@friendAll };
+  vFriend = 
+    SELECT s
+    FROM vFriend:s-(person_isLocatedIn_city:e)->city:t
+    WHERE NOT @@cityIds.contains(t.id);
 
-	vFriend = 
-		SELECT s
-		FROM vFriend:s
-		ACCUM s.@countryName = @@cityInCountry.get(s.@city);
+  endDate = datetime_add(startDate, INTERVAL durationDays DAY);
 
-	vFriend = 
-		SELECT s
-		FROM vFriend:s
-		WHERE s.@countryName != countryXName AND s.@countryName != countryYName;
+  vMessage = 
+    SELECT t
+    FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    WHERE startDate <= t.creationDate AND t.creationDate < endDate
+    ACCUM t.@personId = s.id
+    POST-ACCUM @@personNameMap += (s.id -> fullName(s.firstName, s.lastName));
 
-	endDate = datetime_add(startDate, INTERVAL durationDays DAY);
+  vMessage = 
+    SELECT s
+    FROM vMessage:s-((comments_isLocatedIn_country|post_isLocatedIn_country):e)->country:t
+    ACCUM 
+      CASE 
+        WHEN t.name == countryXName THEN 
+          @@msgStatsGroup += (s.@personId -> 1, 0)
+        WHEN t.name == countryYName THEN 
+          @@msgStatsGroup += (s.@personId -> 0, 1)
+      END;
 
-	vMessage = 
-		SELECT t
-		FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
-		WHERE startDate <= t.creationDate AND t.creationDate < endDate
-		ACCUM t.@creatorId = s.id
-		POST-ACCUM @@friendInfoAll += (s.id -> friendInfo(s.id, s.firstName, s.lastName));
+  FOREACH (id,x,y) IN @@msgStatsGroup DO
+    @@msgStatsTop += msgStats(id, @@personNameMap.get(id).firstName, 
+        @@personNameMap.get(id).lastName, x, y, (x + y));
+  END;
 
-	vMessage = 
-		SELECT s
-		FROM vMessage:s-((comments_isLocatedIn_country|post_isLocatedIn_country):e)->country:t
-		ACCUM 
-			CASE 
-				WHEN t.name == countryXName THEN 
-					@@msgStatGroup += (s.@creatorId -> 1, 0)
-				WHEN t.name == countryYName THEN 
-					@@msgStatGroup += (s.@creatorId -> 0, 1)
-			END;
-
-	FOREACH kf IN @@msgStatGroup DO
-		@@msgStatTop += msgStat(@@friendInfoAll.get(kf.friendId).id, 
-				@@friendInfoAll.get(kf.friendId).firstName, 
-				@@friendInfoAll.get(kf.friendId).lastName, 
-				kf.xCount, kf.yCount, (kf.xCount + kf.yCount));
-	END;
-
-	PRINT @@msgStatTop;
+  PRINT @@msgStatsTop;
 }
 
 INSTALL QUERY ic_3

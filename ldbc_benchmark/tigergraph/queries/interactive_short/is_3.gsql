@@ -1,19 +1,20 @@
 USE GRAPH ldbc_snb
 DROP QUERY is_3
 
-CREATE QUERY is_3(vertex<person> seed) FOR GRAPH ldbc_snb {
-  SumAccum<int> @creationDate;
+CREATE QUERY is_3(VERTEX<person> personId) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @creationDate;
   
-	vPerson = {seed};
-
-  vFriend = SELECT t
-            FROM vPerson:s-(person_knows_person:e)->person:t
-            ACCUM t.@creationDate += datetime_to_epoch(e.creationDate)
-            ORDER BY t.@creationDate DESC, t.id;
+	vPerson = { personId };
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    ACCUM t.@creationDate += datetime_to_epoch(e.creationDate)
+    ORDER BY t.@creationDate DESC, t.id;
   
-  PRINT vFriend[vFriend.id AS personId,
-                vFriend.firstName AS firstName,
-                vFriend.lastName AS lastName,
-                epoch_to_datetime(vFriend.@creationDate) AS friendshipCreationDate];
+  PRINT vFriend[
+      vFriend.id AS personId,
+      vFriend.firstName AS firstName,
+      vFriend.lastName AS lastName,
+      epoch_to_datetime(vFriend.@creationDate) AS friendshipCreationDate];
 }
 INSTALL QUERY is_3

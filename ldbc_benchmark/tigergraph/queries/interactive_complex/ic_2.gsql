@@ -1,8 +1,9 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_2
 
-CREATE QUERY ic_2(vertex<person> personId, datetime maxDate) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple<int personId, string personFirstName, string personLastName, int messageId, string messageContent, datetime messageCreationDate> msg;
+CREATE QUERY ic_2(VERTEX<person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, 
+      STRING messageContent, DATETIME messageCreationDate> msg;
 
   HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
 

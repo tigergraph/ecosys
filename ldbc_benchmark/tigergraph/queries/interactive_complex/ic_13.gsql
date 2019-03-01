@@ -1,11 +1,11 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_13
 
-CREATE QUERY ic_13(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
-  SumAccum<int> @dist1 = -1, @dist2 = -1;
-  SumAccum<int> @@next;
+CREATE QUERY ic_13(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @@next;
   OrAccum @@found = False;
-  MinAccum<int> @@dist12;
+  MinAccum<INT> @@dist12;
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
