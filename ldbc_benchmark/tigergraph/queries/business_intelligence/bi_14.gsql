@@ -1,0 +1,45 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi_14
+
+CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
+
+  SumAccum<INT> @personId;
+  SumAccum<STRING> @personFirstName, @personLastName;
+  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, SumAccum<INT> threadCount, SumAccum<INT> messageCount> @@initiatorGroup;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
+
+  vPerson = { person.* };
+  vPost = 
+    SELECT t
+    FROM vPerson:s-(post_hasCreator_person_reverse:e)->post:t
+    WHERE t.creationDate BETWEEN startDate AND endDate
+    ACCUM
+      t.@personId = s.id,
+      t.@personFirstName = s.firstName,
+      t.@personLastName = s.lastName,
+      @@initiatorGroup += (s.id, s.firstName, s.lastName -> 1, 0);
+
+  vMessage(comments|post) = vPost;
+  WHILE vMessage.size() > 0 DO
+    vMessage =
+      SELECT t
+      FROM vMessage:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse):e)->comments:t
+      ACCUM
+        t.@personId = s.@personId,
+        t.@personFirstName = s.@personFirstName,
+        t.@personLastName = s.@personLastName,
+        CASE
+          WHEN t.creationDate BETWEEN startDate AND endDate THEN
+            @@initiatorGroup += (s.@personId, s.@personFirstName, s.@personLastName -> 0, 1)
+        END;
+  END;
+
+  FOREACH (id, fn, ln, tc, mc) IN @@initiatorGroup DO
+    @@initiatorTop += initiator(id, fn, ln, tc, mc);
+  END;
+
+  PRINT @@initiatorTop;
+}
+
+INSTALL QUERY bi_14

@@ -110,7 +110,7 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
         end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime('%Y-%m-%d %H:%M:%S')
         seed = {"startDate":start_date, "endDate":end_date}
       elif query_num == 15:
-        seed = {"country":row["country"]}
+        seed = {"_country":row["country"]}
       elif query_num == 16:
         seed = {"personId":row["person"], "tgtCountry":row["country"], "tgtTagClass":row["tagClass"], "minPathDistance":row["minPathDistance"], "maxPathDistance":row["maxPathDistance"]}
       elif query_num == 17:
