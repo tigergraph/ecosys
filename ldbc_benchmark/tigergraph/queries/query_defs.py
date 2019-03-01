@@ -1,6 +1,7 @@
 from tornado.httputil import url_concat
 from datetime import datetime
 from csv import DictReader
+from urllib.parse import quote
 
 ENDPOINT_URL_PREFIX = "http://127.0.0.1:9000/query/ldbc_snb/"
 
@@ -150,10 +151,10 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
     args = ""
     for key, value in seed.items():
       if not type(value) is list:
-        args += "{}={}&".format(key, value)
+        args += "{}={}&".format(key, quote(value))
       else:
         for v in value:
-          args += "{}={}&".format(key, v)
+          args += "{}={}&".format(key, quote(v))
     url += args[:-1]
     urls.append(url)
   return urls
