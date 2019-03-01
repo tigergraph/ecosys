@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_11
 
-CREATE QUERY bi_11(string tgtCountry, set<string> blacklist) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_11(string _country, set<string> blacklist) FOR GRAPH ldbc_snb { 
 	TYPEDEF tuple<int personId, string tagName, int likeCount, int replyCount> reply;
 
 	SetAccum<string> @@blacklistP;
@@ -23,7 +23,7 @@ CREATE QUERY bi_11(string tgtCountry, set<string> blacklist) FOR GRAPH ldbc_snb 
 	vCity = 
 		SELECT t
 		FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
-		WHERE s.name == tgtCountry;
+		WHERE s.name == _country;
 
 	vPerson =
 		SELECT t

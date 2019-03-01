@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_10
 
-CREATE QUERY bi_10(string tgtTag, datetime date) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_10(string _tag, datetime date) FOR GRAPH ldbc_snb { 
   TYPEDEF tuple<int person_id, int score, int friendsScore, int total> tagScore;
 
   SetAccum<vertex<person>> @@personAll;
@@ -12,9 +12,9 @@ CREATE QUERY bi_10(string tgtTag, datetime date) FOR GRAPH ldbc_snb {
   vTag = 
     SELECT v
     FROM vTag:v
-    WHERE v.name == tgtTag;
+    WHERE v.name == _tag;
 
-  // find all persons that are interested in the tgtTag
+  // find all persons that are interested in the _tag
   vPerson =
     SELECT t
     FROM vTag:s-(person_hasInterest_tag_reverse:e)->person:t
@@ -22,7 +22,7 @@ CREATE QUERY bi_10(string tgtTag, datetime date) FOR GRAPH ldbc_snb {
       @@tagScoreMap += (t.id -> 100, 0),
       @@personAll += t;
 
-  // find all persons that have written a message having tgtTag after a given date
+  // find all persons that have written a message having _tag after a given date
   vMessage = 
     SELECT t
     FROM vTag:s-((comments_hasTag_tag_reverse|post_hasTag_tag_reverse):e)->(comments|post):t

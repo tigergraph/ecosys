@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_21
 
-CREATE QUERY bi_21(string tgtCountry, datetime endDate) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_21(string _country, datetime endDate) FOR GRAPH ldbc_snb { 
   TYPEDEF tuple<int zombie_id, int zombieLikeCount, int totalLikeCount, double zombieScore> zombie;
 
   SumAccum<int> @messageCount, @creatorId;
@@ -13,7 +13,7 @@ CREATE QUERY bi_21(string tgtCountry, datetime endDate) FOR GRAPH ldbc_snb {
   vCity = 
     SELECT t
     FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
-    WHERE s.name == tgtCountry;
+    WHERE s.name == _country;
 
   vPerson =
     SELECT t

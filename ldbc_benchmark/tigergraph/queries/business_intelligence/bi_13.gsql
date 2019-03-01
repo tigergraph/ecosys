@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_13
 
-CREATE QUERY bi_13(string tgtCountry) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_13(string _country) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<string tag_name, int popularity> tagInfo;
   TYPEDEF tuple<int year, int month, jsonarray popularTags> tagStats;
 
@@ -17,7 +17,7 @@ CREATE QUERY bi_13(string tgtCountry) FOR GRAPH ldbc_snb {
   vMessage = 
     SELECT t
     FROM vCountry:s-((comments_isLocatedIn_country_reverse|post_isLocatedIn_country_reverse):e)->(comments|post):t
-    WHERE s.name == tgtCountry
+    WHERE s.name == _country
     POST-ACCUM @@numMsgGroup += (year(t.creationDate), month(t.creationDate) -> 1);
 
   vMessage = 

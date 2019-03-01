@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi_16
 
-CREATE QUERY bi_16(vertex<person> personId, string tgtCountry, string tgtTagClass, int minPathDistance, int maxPathDistance) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_16(vertex<person> personId, string _country, string _tagClass, int minPathDistance, int maxPathDistance) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int person_id, string tag_name, int messageCount> social;
 
   SumAccum<int> @@counter = 1;
@@ -18,7 +18,7 @@ CREATE QUERY bi_16(vertex<person> personId, string tgtCountry, string tgtTagClas
   vCity = 
     SELECT t
     FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
-    WHERE s.name == tgtCountry;
+    WHERE s.name == _country;
 
   vPerson =
     SELECT t
@@ -48,7 +48,7 @@ CREATE QUERY bi_16(vertex<person> personId, string tgtCountry, string tgtTagClas
   vTag =
     SELECT t
     FROM vTagClass:s-(tag_hasType_tagclass_reverse:e)->tag:t
-    WHERE s.name == tgtTagClass
+    WHERE s.name == _tagClass
     ACCUM @@tagSel += t;
 
   vMessage =
