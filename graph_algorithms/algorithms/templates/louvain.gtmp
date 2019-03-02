@@ -65,9 +65,9 @@
         iteration = 1;
         S = SELECT s 
             FROM Start:s -(*edge-types*:e)-> :t
-            #WHERE s.@cid != t.@cid  # since the default bestCluster is itself, don't need to calculate itself        
             WHERE s.@cid > t.@cid
-            ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.*edge-weight* - 2 * s.@weight * s.@weight/ @@totalWeight) # weightToCluster is just e.*edge-weight*
+            ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.*edge-weight* - 2 * s.@weight * s.@weight/ @@totalWeight) 
+                  # weightToCluster is just e.*edge-weight*
             POST-ACCUM INT bestCluster = s.@largestDeltaQ.top().cid,
                        IF s.@largestDeltaQ.size() > 0 and s.@largestDeltaQ.top().deltaQ > 0 and s.@cid != bestCluster THEN 
                                s.@cid = bestCluster
@@ -100,7 +100,13 @@
                 WHILE (loop < partitions) DO 
                         S = SELECT s 
                             FROM Start:s -(*edge-types*:e)-> :t
-                            WHERE s.@uid % partitions == loop AND abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon AND s.@cid > t.@cid)   # at least one cluster not only itself, or use smaller label
+                            WHERE s.@uid % partitions == loop    # for different split
+                                  # At least one cluster not singlet(a cluster on its own). If both clusters are singlets, consider only when the label of target is smaller to avoid swap
+                                  AND (( abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon   # s is not a singlet 
+                                  OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon )     # or t is not a singlet
+                                  OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon      # s is a singlet 
+                                  AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon      # t is also a singlet
+                                  AND s.@cid > t.@cid) )                                               # consider only when target label is smaller
                             ACCUM s.@weightToCluster += (t.@cid -> e.*edge-weight*)
                             POST-ACCUM INT bestCluster = s.@cid,
                                        FLOAT maxDeltaQ = 0.0,
@@ -281,7 +287,7 @@
 *ATTR*                     , s.*vIntAttr* = s.@cid
 *FILE*                     , f_comm.println(s, s.@cid)
                            ;
-
+        log(TRUE, @@clusterSizes.size());
 
         IF distribution ==0 THEN
                 FOREACH (cluster, csize) IN @@clusterSizes DO
