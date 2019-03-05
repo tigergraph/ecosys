@@ -12,5 +12,5 @@ Please follow the steps to deploy:
 
 6. Run the command 'http-serve ./ -P http://tigergraph-server-ip:9000', where tigergraph-server-ip is the IP of the machine with TigerGraph installed. A http server will start.
 
-7. Visit 'http://geo-demo-ip:8080' in your browser, where geo-demo-ip is the IP of your local machine that you deploy this demo.
+7. Visit 'http://dashboard-demo-ip:8080' in your browser, where dashboard-demo-ip is the IP of your local machine that you deploy this demo.
 
