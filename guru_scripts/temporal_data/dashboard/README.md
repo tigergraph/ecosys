@@ -14,3 +14,7 @@ Please follow the steps to deploy:
 
 7. Visit 'http://dashboard-demo-ip:8080' in your browser, where dashboard-demo-ip is the IP of your local machine that you deploy this demo.
 
+Screenshot:
+
+![alt text](https://raw.githubusercontent.com/tigergraph/ecosys/master/guru_scripts/temporal_data/dashboard/dashboard.png)
+
