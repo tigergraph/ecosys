@@ -4,13 +4,12 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
   SetAccum<STRING> @@blacklistP;
   AndAccum @isValid;
   SumAccum<INT> @creatorId;
-  //SetAccum<VERTEX<Comment>> @@validComments;
+  SetAccum<VERTEX<Comment>> @@validComments;
   SetAccum<VERTEX<Comment>> @@replyAll;
   SetAccum<INT> @@tagIdsExclude;
   SetAccum<STRING> @tagNames;
   SumAccum<INT> @likeCount;
-  GroupByAccum<INT personId, STRING tagName, 
-      SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
   HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
 
   FOREACH word IN blacklist DO
@@ -27,8 +26,6 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
     SELECT t
     FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t;
 
-  // query installation failed. see GLE-1067 for more detail
-  /*
   vComments = 
     SELECT t
     FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
@@ -43,21 +40,6 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
     POST-ACCUM CASE WHEN t.@isValid THEN @@validComments += t END;
     
   vComments = { @@validComments };
-  */
-
-  // workaround
-  vComments =
-    SELECT t
-    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
-    ACCUM t.@creatorId = s.id;
-
-  FOREACH word IN @@blacklistP DO
-    vComments =
-      SELECT v
-      FROM vComments:v
-      WHERE v.content NOT LIKE word;
-  END;
-
   vMessage =
     SELECT t
     FROM vComments:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post):e)->(Comment|Post):t
