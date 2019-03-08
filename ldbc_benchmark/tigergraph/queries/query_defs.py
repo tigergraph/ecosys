@@ -6,7 +6,7 @@ from urllib.parse import quote
 ENDPOINT_URL_PREFIX = "http://127.0.0.1:9000/query/ldbc_snb/"
 
 def get_messages_from_person(person_id, max_num_seeds):
-  params = {"seed": person_id, "num_messages": max_num_seeds}
+  params = {"seed": person_id, "numMessages": max_num_seeds}
   return url_concat(ENDPOINT_URL_PREFIX + "get_messages_from_person", params)
 
 def is_queries(ids, query_num):
@@ -79,63 +79,63 @@ def bi_queries(path_to_seeds, max_num_seeds, query_num):
     count = 0
     for row in reader:
       if query_num == 1:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"date":date}
+        max_date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"maxDate":max_date}
       elif query_num == 2:
-        date1 = datetime.fromtimestamp(int(row["date1"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        date2 = datetime.fromtimestamp(int(row["date2"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"startDate":date1, "endDate":date2, "country1":row["country1"], "country2":row["country2"]}
+        start_date = datetime.fromtimestamp(int(row["date1"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        end_date = datetime.fromtimestamp(int(row["date2"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"startDate":start_date, "endDate":end_date, "country1Name":row["country1"], "country2Name":row["country2"]}
       elif query_num == 3:
-        seed = {"givenYear":row["year"], "givenMonth":row["month"]}
+        seed = {"year1":row["year"], "month1":row["month"]}
       elif query_num == 4:
-        seed = {"tagClass":row["tagClass"], "givenCountry":row["country"]}
+        seed = {"tagClassName":row["tagClass"], "countryName":row["country"]}
       elif query_num == 5:
-        seed = {"givenCountry":row["country"]}
+        seed = {"countryName":row["country"]}
       elif query_num == 6:
-        seed = {"givenTag":row["tag"]}
+        seed = {"tagName":row["tag"]}
       elif query_num == 7:
-        seed = {"givenTag":row["tag"]}
+        seed = {"tagName":row["tag"]}
       elif query_num == 8:
-        seed = {"givenTag":row["tag"]}
+        seed = {"tagName":row["tag"]}
       elif query_num == 9:
-        seed = {"tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"], "threshold":row["threshold"]}
+        seed = {"tagClass1Name":row["tagClass1"], "tagClass2Name":row["tagClass2"], "threshold":row["threshold"]}
       elif query_num == 10:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"_tag":row["tag"], "date":date}
+        min_date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"tagName":row["tag"], "minDate":min_date}
       elif query_num == 11:
-        seed = {"_country":row["country"], "blacklist":row["blacklist"].split(";")}
+        seed = {"countryName":row["country"], "blacklist":row["blacklist"].split(";")}
       elif query_num == 12:
         date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"date":date, "likeThreshold":row["likeThreshold"]}
+        seed = {"minDate":date, "likeThreshold":row["likeThreshold"]}
       elif query_num == 13:
-        seed = {"_country":row["country"]}
+        seed = {"countryName":row["country"]}
       elif query_num == 14:
         start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         seed = {"startDate":start_date, "endDate":end_date}
       elif query_num == 15:
-        seed = {"_country":row["country"]}
+        seed = {"countryName":row["country"]}
       elif query_num == 16:
-        seed = {"personId":row["person"], "_country":row["country"], "_tagClass":row["tagClass"], "minPathDistance":row["minPathDistance"], "maxPathDistance":row["maxPathDistance"]}
+        seed = {"personId":row["person"], "countryName":row["country"], "tagClassName":row["tagClass"], "minPathDistance":row["minPathDistance"], "maxPathDistance":row["maxPathDistance"]}
       elif query_num == 17:
-        seed = {"givenCountry":row["country"]}
+        seed = {"countryName":row["country"]}
       elif query_num == 18:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"date":date, "lengthThreshold":row["lengthThreshold"], "languages":row["languages"].split(";")}
+        min_date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"minDate":min_date, "lengthThreshold":row["lengthThreshold"], "languages":row["languages"].split(";")}
       elif query_num == 19:
-        date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"date":date, "tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"]}
+        min_date = datetime.fromtimestamp(int(row["date"])/1000).strftime("%Y-%m-%d %H:%M:%S")
+        seed = {"minDate":min_date, "tagClass1":row["tagClass1"], "tagClass2":row["tagClass2"]}
       elif query_num == 20:
-        seed = {"tagClasses":row["tagClasses"]}
+        seed = {"tagClassNames":row["tagClasses"]}
       elif query_num == 21:
         end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
-        seed = {"_country":row["country"], "endDate":end_date}
+        seed = {"countryName":row["country"], "endDate":end_date}
       elif query_num == 22:
-        seed = {"country1":row["country1"], "country2":row["country2"]}
+        seed = {"country1Name":row["country1"], "country2Name":row["country2"]}
       elif query_num == 23:
-        seed = {"homeCountry":row["country"]}
+        seed = {"countryName":row["country"]}
       elif query_num == 24:
-        seed = {"tagClass":row["tagClass"]}
+        seed = {"tagClassName":row["tagClass"]}
       elif query_num == 25:
         start_date = datetime.fromtimestamp(int(row["startDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")
         end_date = datetime.fromtimestamp(int(row["endDate"])/1000).strftime("%Y-%m-%d %H:%M:%S")

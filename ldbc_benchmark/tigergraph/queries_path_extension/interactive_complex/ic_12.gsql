@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_12
 
-CREATE QUERY ic_12(vertex<person> personId, string tagClassName) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_12(vertex<Person> personId, string tagClassName) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int personId, string personFirstName, string personLastName, jsonarray tagNames, int replyCount> replyStats;
 
   SumAccum<int> @replyCount;
@@ -12,11 +12,11 @@ CREATE QUERY ic_12(vertex<person> personId, string tagClassName) FOR GRAPH ldbc_
 
   vFriend = 
     SELECT s
-    FROM vPerson:s-(person_knows_person>:e)-person:t;
+    FROM vPerson:s-(Person_KNOWS_Person>:e)-Person:t;
 
   vFriend = 
     SELECT s
-    FROM vFriend:s-(<comments_hasCreator_person:e1.comments_replyOf_post>:e2.post_hasTag_tag>:e3)-tag:im-(tag_hasType_tagclass>:e4.tagclass_isSubclassOf_tagclass>*0..:e5)-tagclass:t
+    FROM vFriend:s-(<Comment_HAS_CREATOR_Person:e1.Comment_REPLY_OF_Post>:e2.Post_HAS_TAG_Tag>:e3)-Tag:im-(Tag_HAS_TYPE_TagClass>:e4.TagClass_IS_SUBCLASS_OF_TagClass>*0..:e5)-TagClass:t
     WHERE t.name = tagClassName
     ACCUM
       s.@replyCount += 1,

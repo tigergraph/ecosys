@@ -1,36 +1,33 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_10
+CREATE QUERY bi_10(STRING tagName, DATETIME minDate) FOR GRAPH ldbc_snb { 
+  TYPEDEF tuple<INT person_id, INT score, INT friendsScore, INT total> tagScore;
 
-CREATE QUERY bi_10(string _tag, datetime date) FOR GRAPH ldbc_snb { 
-  TYPEDEF tuple<int person_id, int score, int friendsScore, int total> tagScore;
-
-  SetAccum<vertex<person>> @@personAll;
-  GroupByAccum<int person_id, SumAccum<int> score, SumAccum<int> friendsScore> @@tagScoreMap;
+  SetAccum<vertex<Person>> @@personAll;
+  GroupByAccum<INT person_id, SumAccum<INT> score, SumAccum<INT> friendsScore> @@tagScoreMap;
   HeapAccum<tagScore>(100, total DESC, person_id ASC) @@tagScoreTop;
 
-  vTag = { tag.* };
+  vTag = { Tag.* };
   vTag = 
     SELECT v
     FROM vTag:v
-    WHERE v.name == _tag;
+    WHERE v.name == tagName;
 
-  // find all persons that are interested in the _tag
+  // find all persons that are interested in the tagName
   vPerson =
     SELECT t
-    FROM vTag:s-(person_hasInterest_tag_reverse:e)->person:t
+    FROM vTag:s-(Person_HAS_INTEREST_Tag_REVERSE:e)->Person:t
     POST-ACCUM 
       @@tagScoreMap += (t.id -> 100, 0),
       @@personAll += t;
 
-  // find all persons that have written a message having _tag after a given date
+  // find all persons that have written a message having tagName after a given minDate
   vMessage = 
     SELECT t
-    FROM vTag:s-((comments_hasTag_tag_reverse|post_hasTag_tag_reverse):e)->(comments|post):t
-    WHERE t.creationDate > date;
+    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->(Comment|Post):t
+    WHERE t.creationDate > minDate;
 
   vPerson =
     SELECT t
-    FROM vMessage:s-((comments_hasCreator_person|post_hasCreator_person):e)->person:t
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person|Post_HAS_CREATOR_Person):e)->Person:t
     POST-ACCUM 
       @@tagScoreMap += (t.id -> 1, 0),
       @@personAll += t;
@@ -39,7 +36,7 @@ CREATE QUERY bi_10(string _tag, datetime date) FOR GRAPH ldbc_snb {
   vPerson = { @@personAll };
   vPerson = 
     SELECT s
-    FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     WHERE @@tagScoreMap.containsKey(t.id)
     ACCUM @@tagScoreMap += (s.id -> 0, @@tagScoreMap.get(t.id).score)
     POST-ACCUM @@tagScoreTop += tagScore(
@@ -53,7 +50,5 @@ CREATE QUERY bi_10(string _tag, datetime date) FOR GRAPH ldbc_snb {
       ts.person_id AS person_id, 
       ts.score AS score, 
       ts.friendsScore AS friendsScore;
-  END;	
+  END;
 }
-
-INSTALL QUERY bi_10

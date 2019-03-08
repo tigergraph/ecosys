@@ -1,12 +1,9 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_10
-
-CREATE QUERY ic_10(VERTEX<person> personId, INT month, INT nextMonth) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
 
   OrAccum @visited;
   SumAccum<STRING> @city;
-  SetAccum<VERTEX<tag>> @@tagInterest;
+  SetAccum<VERTEX<Tag>> @@tagInterest;
   SumAccum<INT> @friendId, @common, @uncommon;
   MapAccum<INT, BOOL> @@postInterestMap;
   HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
@@ -14,35 +11,35 @@ CREATE QUERY ic_10(VERTEX<person> personId, INT month, INT nextMonth) FOR GRAPH 
   vPerson = { personId };
   vFriend1h = 
     SELECT t
-    FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     ACCUM 
       s.@visited += True,
       t.@visited += True;
 
   vFriend2h = 
     SELECT t
-    FROM vFriend1h:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    FROM vFriend1h:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     WHERE t.@visited == False
     AND ((month(t.birthday) == month AND day(t.birthday) >= 21) OR 
         (month(t.birthday) == nextMonth AND day(t.birthday) < 22));
 
   vFriend2h = 
     SELECT s
-    FROM vFriend2h:s-(person_isLocatedIn_city:e)->city:t
+    FROM vFriend2h:s-(Person_IS_LOCATED_IN_City:e)->City:t
     ACCUM s.@city = t.name;
 
   vTag = 
     SELECT t
-    FROM vPerson:s-(person_hasInterest_tag:e)->tag:t
+    FROM vPerson:s-(Person_HAS_INTEREST_Tag:e)->Tag:t
     POST-ACCUM @@tagInterest += t;
 
   vPost = 
     SELECT t
-    FROM vFriend2h:s-(post_hasCreator_person_reverse:e)-post:t;
+    FROM vFriend2h:s-(Post_HAS_CREATOR_Person_REVERSE:e)-Post:t;
 
   vPost = 
     SELECT s
-    FROM vPost:s-(post_hasTag_tag:e)->tag:t
+    FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
     ACCUM 
       CASE 
         WHEN @@tagInterest.contains(t) THEN 
@@ -53,7 +50,7 @@ CREATE QUERY ic_10(VERTEX<person> personId, INT month, INT nextMonth) FOR GRAPH 
 
   vFriend2h = 
     SELECT s
-    FROM vFriend2h:s-(post_hasCreator_person_reverse:e)-post:t
+    FROM vFriend2h:s-(Post_HAS_CREATOR_Person_REVERSE:e)-Post:t
     ACCUM 	
       CASE 
         WHEN @@postInterestMap.get(t.id) == True THEN 
@@ -66,5 +63,3 @@ CREATE QUERY ic_10(VERTEX<person> personId, INT month, INT nextMonth) FOR GRAPH 
 
   PRINT @@friendInfoTop;
 }
-
-INSTALL QUERY ic_10

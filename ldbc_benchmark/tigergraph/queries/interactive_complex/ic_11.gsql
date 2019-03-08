@@ -1,10 +1,7 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_11
-
-CREATE QUERY ic_11(VERTEX<person> personId, STRING countryName, INT workFromYear) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
 
-  ListAccum<VERTEX<person>> @@friendAll;
+  ListAccum<VERTEX<Person>> @@friendAll;
   OrAccum @visited;
   MapAccum<INT, STRING> @@orgCountryMap;
   HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@friendInfoTop;
@@ -15,7 +12,7 @@ CREATE QUERY ic_11(VERTEX<person> personId, STRING countryName, INT workFromYear
   WHILE i < 2 DO
     vPerson = 
       SELECT t
-      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+      FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
       WHERE t.@visited == False
       ACCUM 
         s.@visited += True,
@@ -26,19 +23,17 @@ CREATE QUERY ic_11(VERTEX<person> personId, STRING countryName, INT workFromYear
   END;
 
   vFriend = { @@friendAll };
-  vCompany = { company.* };
+  vCompany = { Company.* };
   vOrg = 
     SELECT s
-    FROM vCompany:s-(company_isLocatedIn_country:e)->country:t
+    FROM vCompany:s-(Company_IS_LOCATED_IN_Country:e)->Country:t
     ACCUM @@orgCountryMap += (s.id -> t.name);
 
   vFriend = 
     SELECT s
-    FROM vFriend:s-(person_workAt_company:e)->company:t
+    FROM vFriend:s-(Person_WORK_AT_Company:e)->Company:t
     WHERE e.workFrom < workFromYear
     ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, t.name, e.workFrom);
 
   PRINT @@friendInfoTop;
 }
-
-INSTALL QUERY ic_11

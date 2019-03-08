@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_11
 
-CREATE QUERY ic_11(vertex<person> personId, string countryName, int workFromYear) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_11(vertex<Person> personId, string countryName, int workFromYear) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int personId, string personFirstName, string personLastName, string organizationName, int organizationWorkFromYear> friendInfo;
 
   OrAccum @visited;
@@ -11,7 +11,7 @@ CREATE QUERY ic_11(vertex<person> personId, string countryName, int workFromYear
 	
   vFriend = 
     SELECT s
-    FROM vPerson:s-(person_knows_person>*1..2:e)-person:t
+    FROM vPerson:s-(Person_KNOWS_Person>*1..2:e)-Person:t
     WHERE t.@visited == False
     ACCUM 
       s.@visited += True,
@@ -19,7 +19,7 @@ CREATE QUERY ic_11(vertex<person> personId, string countryName, int workFromYear
 
   vFriend = 
     SELECT s
-    FROM vFriend:s-(person_workAt_company:e1)-company:im-(company_isLocatedIn_country:e2)-country:t
+    FROM vFriend:s-(Person_WORK_AT_Company:e1)-Company:im-(Company_IS_LOCATED_IN_Country:e2)-Country:t
     AND e2.workFrom < workFromYear
     AND t.name == countryName
     ACCUM @@friendInfoTop += friendInfo(im.id, im.firstName, im.lastName, im.name, e2.workFrom);

@@ -1,18 +1,14 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_12
-
-CREATE QUERY ic_12(VERTEX<person> personId, STRING tagClassName) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, JSONARRAY tagNames, 
-			INT replyCount> replyStats;
+CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_snb {
+	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, JSONARRAY tagNames, INT replyCount> replyStats;
 
 	SumAccum<INT> @@numTagsFound, @authorId;
-	SetAccum<VERTEX<tag>> @@tags;
-	MapAccum<INT, VERTEX<person>> @@personInfo;
+	SetAccum<VERTEX<Tag>> @@tags;
+	MapAccum<INT, VERTEX<Person>> @@personInfo;
 	MapAccum<INT, SetAccum<STRING>> @@postAndTag;
 	HeapAccum<replyStats>(20, replyCount DESC, personId ASC) @@replyStatsTop;
 	GroupByAccum<INT authorId, SumAccum<INT> replyCount, SetAccum<STRING> tagNames> @@replyStatsAgg;
 
-	vTagClass(tag|tagclass) = { tagclass.* };
+	vTagClass(Tag|TagClass) = { TagClass.* };
 	vTagClass = 
 		SELECT v
 		FROM vTagClass:v
@@ -21,9 +17,9 @@ CREATE QUERY ic_12(VERTEX<person> personId, STRING tagClassName) FOR GRAPH ldbc_
 	WHILE True DO
 		vTagClass = 
 			SELECT t
-			FROM vTagClass:s-((tagclass_isSubclassOf_tagclass_reverse|tag_hasType_tagclass_reverse):e)->(tagclass|tag):t
+			FROM vTagClass:s-((TagClass_IS_SUBCLASS_OF_TagClass_REVERSE|Tag_HAS_TYPE_TagClass_REVERSE):e)->(TagClass|Tag):t
 			ACCUM 
-				CASE WHEN t.type == "tag" THEN @@tags += t END,
+				CASE WHEN t.type == "Tag" THEN @@tags += t END,
 				@@numTagsFound += 1;
 
 		IF @@numTagsFound == 0 THEN BREAK; END;
@@ -33,36 +29,31 @@ CREATE QUERY ic_12(VERTEX<person> personId, STRING tagClassName) FOR GRAPH ldbc_
 	vPerson = { personId };
 	vFriend = 
 		SELECT t
-		FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t;
+		FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t;
 
 	vComments = 
 		SELECT t
-		FROM vFriend:s-(comments_hasCreator_person_reverse:e)->comments:t
+		FROM vFriend:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
 		ACCUM t.@authorId = s.id
 		POST-ACCUM @@personInfo += (s.id -> s);
 
 	vPost = 
 		SELECT t
-		FROM vComments:s-(comments_replyOf_post:e)->post:t;
+		FROM vComments:s-(Comment_REPLY_OF_Post:e)->Post:t;
 
 	vTag = 
 		SELECT t
-		FROM vPost:s-(post_hasTag_tag)->tag:t
+		FROM vPost:s-(Post_HAS_TAG_Tag)->Tag:t
 		WHERE @@tags.contains(t)
 		ACCUM @@postAndTag += (s.id -> t.name);
 
 	vComments = 
 		SELECT s
-		FROM vComments:s-(comments_replyOf_post:e)->post:t
+		FROM vComments:s-(Comment_REPLY_OF_Post:e)->Post:t
 		WHERE @@postAndTag.containsKey(t.id)
 		ACCUM @@replyStatsAgg += (s.@authorId -> 1, @@postAndTag.get(t.id))
 		POST-ACCUM @@replyStatsTop += 
-				replyStats(s.@authorId, @@personInfo.get(s.@authorId).firstName,
-						@@personInfo.get(s.@authorId).lastName, 
-						to_jsonarray(@@replyStatsAgg.get(s.@authorId).tagNames), 
-						@@replyStatsAgg.get(s.@authorId).replyCount);
+        replyStats(s.@authorId, @@personInfo.get(s.@authorId).firstName, @@personInfo.get(s.@authorId).lastName, to_jsonarray(@@replyStatsAgg.get(s.@authorId).tagNames), @@replyStatsAgg.get(s.@authorId).replyCount);
 						
 	PRINT @@replyStatsTop;
 }
-
-INSTALL QUERY ic_12

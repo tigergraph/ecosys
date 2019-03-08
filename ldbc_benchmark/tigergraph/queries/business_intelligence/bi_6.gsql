@@ -1,39 +1,46 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_6
-
-CREATE QUERY bi_6(STRING givenTag) FOR GRAPH ldbc_snb { 
 # Most active Posters of a given Topic
-
-        SumAccum<INT> @replyCount;
+CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb { 
+  SumAccum<INT> @replyCount;
 	SumAccum<INT> @likeCount;
 	SumAccum<INT> @messageCount;
 	SumAccum<INT> @score;
   
-	Tag = {tag.*};
-	Tag = SELECT s 
-	      FROM Tag:s 
-	      WHERE s.name == givenTag;
-	# Target messages
-	Messages = SELECT t 
-	           FROM Tag:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e)-> :t;
-	
-	Messages = SELECT s 
-	           FROM Messages:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t
-	           ACCUM s.@likeCount += 1;
-	
-	Messages = SELECT s 
-	           FROM Messages:s -((comments_replyOf_post_reverse | comments_replyOf_comments_reverse):e)-> :t
-	           ACCUM s.@replyCount += 1;
-	
-	Persons = SELECT t 
-	          FROM Messages:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
-	          ACCUM t.@messageCount += 1,
-	                t.@likeCount += s.@likeCount,
-	                t.@replyCount += s.@replyCount
-	          POST-ACCUM t.@score = t.@messageCount + 2 * t.@replyCount + 10 * t.@likeCount
-	          ORDER BY t.@score DESC, t.id ASC
-	          LIMIT 100;
-        PRINT Persons [Persons.id AS personId, Persons.@replyCount AS replyCount, Persons.@likeCount AS likeCount, Persons.@messageCount AS messageCount, Persons.@score AS score];
-}
+	vTag = {Tag.*};
+	vTag = 
+    SELECT s 
+    FROM vTag:s 
+    WHERE s.name == tagName;
 
-INSTALL QUERY bi_6
+	# Target messages
+	vMessages = 
+    SELECT t 
+    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
+	
+	vMessages = 
+    SELECT s 
+    FROM vMessages:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->:t
+    ACCUM s.@likeCount += 1;
+	
+	vMessages = 
+    SELECT s 
+    FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t
+    ACCUM s.@replyCount += 1;
+	
+	Persons = 
+    SELECT t 
+    FROM vMessages:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t
+    ACCUM 
+      t.@messageCount += 1,
+      t.@likeCount += s.@likeCount,
+      t.@replyCount += s.@replyCount
+    POST-ACCUM t.@score = t.@messageCount + 2 * t.@replyCount + 10 * t.@likeCount
+    ORDER BY t.@score DESC, t.id ASC
+    LIMIT 100;
+  
+  PRINT Persons[
+      Persons.id AS personId, 
+      Persons.@replyCount AS replyCount, 
+      Persons.@likeCount AS likeCount, 
+      Persons.@messageCount AS messageCount, 
+      Persons.@score AS score];
+}

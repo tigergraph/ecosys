@@ -1,36 +1,34 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_3
-
-CREATE QUERY bi_3(INT givenYear, INT givenMonth) FOR GRAPH ldbc_snb { 
-  # Tag evolution
-  
+# Tag evolution
+CREATE QUERY bi_3(INT year1, INT month1) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
+
   GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
   HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
 
-  Messages = {post.*, comments.*};
-  Messages = SELECT s
-	     FROM Messages:s
-	     WHERE year(s.creationDate) == givenYear 
-	           AND month(s.creationDate) == givenMonth 
-	           OR year(s.creationDate) == givenYear + givenMonth/12 
-	           AND month(s.creationDate) == 1 + givenMonth%12;
-	
-  Messages = SELECT s
-	     FROM Messages:s -(:e) -> tag:t
-	     ACCUM IF year(s.creationDate) == givenYear AND month(s.creationDate) == givenMonth THEN 
-	             @@count += (t.name -> 1, 0)
-	           ELSE
-                     @@count += (t.name -> 0, 1)
-	           END;
-	
+  INT year2, month2;
+  year2 = year1 + (month1 / 12);
+  month2 = 1 + month1 % 12;
+
+  vMessages = { Post.*, Comment.* };
+  vMessages = 
+    SELECT s
+    FROM vMessages:s
+    WHERE (year(s.creationDate) == year1 AND month(s.creationDate) == month1)
+        OR (year(s.creationDate) == year2 AND month(s.creationDate) == month2);
+
+  vMessages = 
+    SELECT s
+    FROM vMessages:s-(:e)->Tag:t
+    ACCUM 
+      IF year(s.creationDate) == year1 AND month(s.creationDate) == month1 THEN 
+        @@count += (t.name -> 1, 0)
+      ELSE
+        @@count += (t.name -> 0, 1)
+      END;
+
   FOREACH c IN @@count DO
-    @@result += TAG_COUNT(c.tagName, 
-	                  c.countMonth1, 
-                          c.countMonth2, 
-                          abs(c.countMonth1 - c.countMonth2));
+    @@result += TAG_COUNT(c.tagName, c.countMonth1, c.countMonth2, abs(c.countMonth1 - c.countMonth2));
   END;
+
   PRINT @@result;
 }
-
-INSTALL QUERY bi_3

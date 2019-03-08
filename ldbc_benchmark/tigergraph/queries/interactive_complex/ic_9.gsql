@@ -1,43 +1,38 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_9
+CREATE QUERY ic_9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
 
-CREATE QUERY ic_9(VERTEX<person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
-	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
-	
-	OrAccum @visited;
-	SetAccum<VERTEX<person>> @@friendAll;
-	HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@msgInfoTop;
+  OrAccum @visited;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@msgInfoTop;
 
   INT i = 0;
-	
-	vPerson = { personId };
-	WHILE i < 2 DO
-	  vPerson = 
-			SELECT t
-			FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
-			WHERE t.@visited == False
-			ACCUM 
-				s.@visited += True,
-				t.@visited += True,
-				@@friendAll += t;
 
-	  i += 1;
-	END;
-	
-	vFriend = { @@friendAll };
+  vPerson = { personId };
+  WHILE i < 2 DO
+    vPerson = 
+      SELECT t
+      FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
+      WHERE t.@visited == False
+      ACCUM 
+        s.@visited += True,
+        t.@visited += True,
+        @@friendAll += t;
+
+    i += 1;
+  END;
+
+  vFriend = { @@friendAll };
   vMessage = 
-		SELECT t
-		FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
-		WHERE t.creationDate < maxDate
-		ACCUM 
-			CASE 
-				WHEN t.type == "comments" THEN 
-					@@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
-				ELSE 
-					@@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
-			END;
+    SELECT t
+    FROM vFriend:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
+    WHERE t.creationDate < maxDate
+    ACCUM 
+      CASE 
+        WHEN t.type == "Comment" THEN 
+          @@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+        ELSE 
+          @@msgInfoTop += msgInfo(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
+      END;
 
   PRINT @@msgInfoTop;
 }
-
-INSTALL QUERY ic_9

@@ -1,28 +1,25 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_13
+CREATE QUERY bi_13(STRING countryName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING tag_name, INT popularity> tagInfo;
+  TYPEDEF TUPLE<INT year, INT month, JSONARRAY popularTags> tagStats;
 
-CREATE QUERY bi_13(string _country) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple<string tag_name, int popularity> tagInfo;
-  TYPEDEF tuple<int year, int month, jsonarray popularTags> tagStats;
-
-  GroupByAccum<int year, int month, SumAccum<int> numMsg> @@numMsgGroup;
-  GroupByAccum<int year, int month, GroupByAccum<string tagName, SumAccum<int> popularity> tagGroup> @@monthlyGroup;
+  GroupByAccum<INT year, INT month, SumAccum<INT> numMsg> @@numMsgGroup;
+  GroupByAccum<INT year, INT month, GroupByAccum<STRING tagName, SumAccum<INT> popularity> tagGroup> @@monthlyGroup;
   HeapAccum<tagInfo>(5, popularity DESC, tag_name ASC) @@tagInfoTop;
   HeapAccum<tagStats>(100, year DESC, month ASC) @@tagStatsTop;
 
-  string jsonStr;
+  STRING jsonStr;
   bool isFirstTuple;
 
-  vCountry = { country.* };
+  vCountry = { Country.* };
   vMessage = 
     SELECT t
-    FROM vCountry:s-((comments_isLocatedIn_country_reverse|post_isLocatedIn_country_reverse):e)->(comments|post):t
-    WHERE s.name == _country
+    FROM vCountry:s-((Comment_IS_LOCATED_IN_Country_REVERSE|Post_IS_LOCATED_IN_Country_REVERSE):e)->(Comment|Post):t
+    WHERE s.name == countryName
     POST-ACCUM @@numMsgGroup += (year(t.creationDate), month(t.creationDate) -> 1);
 
   vMessage = 
     SELECT s
-    FROM vMessage:s-((comments_hasTag_tag|post_hasTag_tag):e)->tag:t
+    FROM vMessage:s-((Comment_HAS_TAG_Tag|Post_HAS_TAG_Tag):e)->Tag:t
     ACCUM 
       @@monthlyGroup += (year(s.creationDate), month(s.creationDate) -> (t.name -> 1)),
       @@numMsgGroup += (year(s.creationDate), month(s.creationDate) -> (-1));
@@ -39,7 +36,7 @@ CREATE QUERY bi_13(string _country) FOR GRAPH ldbc_snb {
       @@tagInfoTop += tagInfo(t.tagName, t.popularity);
     END;
 
-    // put 5 most popular tags into jsonarray
+    // put 5 most popular tags into JSONARRAY
     jsonStr = "[";
     isFirstTuple = True;
     FOREACH ti IN @@tagInfoTop DO
@@ -56,5 +53,3 @@ CREATE QUERY bi_13(string _country) FOR GRAPH ldbc_snb {
 
   PRINT @@tagStatsTop;
 }
-
-INSTALL QUERY bi_13

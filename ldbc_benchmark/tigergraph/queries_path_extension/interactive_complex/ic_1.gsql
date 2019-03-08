@@ -1,12 +1,12 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_1 
 
-CREATE QUERY ic_1(vertex<person> personId, string firstName) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<string orgName, int orgYear, string orgPlace> org;
 
   OrAccum @visited = False;
   SumAccum<int> @distance;
-  ListAccum<vertex<person>> @@friends;
+  ListAccum<vertex<Person>> @@friends;
   SumAccum<string> @cityName;
   ListAccum<org> @comp;
   ListAccum<org> @univ;
@@ -18,7 +18,7 @@ CREATE QUERY ic_1(vertex<person> personId, string firstName) FOR GRAPH ldbc_snb 
   WHILE i < 3 DO
     vPerson = 
       SELECT t
-      FROM vPerson:s-(person_knows_person>:e)-person:t
+      FROM vPerson:s-(Person_KNOWS_Person>:e)-Person:t
       WHERE t.@visited == False
       ACCUM 
         s.@visited += True,
@@ -39,17 +39,17 @@ CREATE QUERY ic_1(vertex<person> personId, string firstName) FOR GRAPH ldbc_snb 
 
   vFriends = 
     SELECT s
-    FROM vFriends:s-(person_isLocatedIn_city>:e)-city:t
+    FROM vFriends:s-(Person_IS_LOCATED_IN_City>:e)-City:t
     ACCUM s.@cityName = t.name;
 	
   vFriends = 
     SELECT s
-    FROM vFriends:s-(person_workAt_company>:e1)-company:im-(company_isLocatedIn_country>:e2)-country:t
+    FROM vFriends:s-(Person_WORK_AT_Company>:e1)-Company:im-(Company_IS_LOCATED_IN_Country>:e2)-Country:t
     ACCUM s.@comp += org(im.name, e1.workFrom, t.name);
 
   vFriends = 
     SELECT s
-    FROM vFriends:s-(person_workAt_company>:e1)-company:im-(company_isLocatedIn_country>:e2)-country:t
+    FROM vFriends:s-(Person_WORK_AT_Company>:e1)-Company:im-(Company_IS_LOCATED_IN_Country>:e2)-Country:t
     ACCUM s.@univ += org(im.name, e1.classYear, t.name)
     ORDER BY s.@distance ASC, s.lastName ASC, s.id ASC;
 	

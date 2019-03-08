@@ -1,97 +1,93 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_11
+CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
 
-CREATE QUERY bi_11(string _country, set<string> blacklist) FOR GRAPH ldbc_snb { 
-	TYPEDEF tuple<int personId, string tagName, int likeCount, int replyCount> reply;
+  SetAccum<STRING> @@blacklistP;
+  AndAccum @isValid;
+  SumAccum<INT> @creatorId;
+  //SetAccum<VERTEX<Comment>> @@validComments;
+  SetAccum<VERTEX<Comment>> @@replyAll;
+  SetAccum<INT> @@tagIdsExclude;
+  SetAccum<STRING> @tagNames;
+  SumAccum<INT> @likeCount;
+  GroupByAccum<INT personId, STRING tagName, 
+      SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
 
-	SetAccum<string> @@blacklistP;
-	AndAccum @isValid;
-	SumAccum<int> @creatorId;
-	//SetAccum<vertex<comments>> @@validComments;
-	SetAccum<vertex<comments>> @@replyAll;
-	SetAccum<int> @@tagIdsExclude;
-	SetAccum<string> @tagNames;
-	SumAccum<int> @likeCount;
-	GroupByAccum<int personId, string tagName, SumAccum<int> likeCount, SumAccum<int> replyCount> @@replyGroup;
-	HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
+  FOREACH word IN blacklist DO
+    @@blacklistP += ("%" + word + "%");
+  END;
 
-	FOREACH word IN blacklist DO
-		@@blacklistP += ("%" + word + "%");
-	END;
+  vCountry = { Country.* };
+  vCity = 
+    SELECT t
+    FROM vCountry:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
+    WHERE s.name == countryName;
 
-	vCountry = { country.* };
-	vCity = 
-		SELECT t
-		FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
-		WHERE s.name == _country;
+  vPerson =
+    SELECT t
+    FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t;
 
-	vPerson =
-		SELECT t
-		FROM vCity:s-(person_isLocatedIn_city_reverse:e)->person:t;
+  // query installation failed. see GLE-1067 for more detail
+  /*
+  vComments = 
+    SELECT t
+    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
+    ACCUM 
+      t.@creatorId = s.id,
+      FOREACH word IN @@blacklistP DO
+        CASE WHEN t.content LIKE word THEN
+          t.@isValid += False,
+          BREAK
+        END
+      END
+    POST-ACCUM CASE WHEN t.@isValid THEN @@validComments += t END;
+    
+  vComments = { @@validComments };
+  */
 
-	// query installation failed. see GLE-1067 for more detail
-	/*
-	vComments = 
-		SELECT t
-		FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
-		ACCUM 
-			t.@creatorId = s.id,
-			FOREACH word IN @@blacklistP DO
-				CASE WHEN t.content LIKE word THEN
-					t.@isValid += False,
-					BREAK
-				END
-			END
-		POST-ACCUM CASE WHEN t.@isValid THEN @@validComments += t END;
-		
-	vComments = { @@validComments };
-	*/
+  // workaround
+  vComments =
+    SELECT t
+    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
+    ACCUM t.@creatorId = s.id;
 
-	// workaround
-	vComments =
-		SELECT t
-		FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
-		ACCUM t.@creatorId = s.id;
+  FOREACH word IN @@blacklistP DO
+    vComments =
+      SELECT v
+      FROM vComments:v
+      WHERE v.content NOT LIKE word;
+  END;
 
-	FOREACH word IN @@blacklistP DO
-		vComments =
-			SELECT v
-			FROM vComments:v
-			WHERE v.content NOT LIKE word;
-	END;
+  vMessage =
+    SELECT t
+    FROM vComments:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post):e)->(Comment|Post):t
+    POST-ACCUM @@replyAll += s;
 
-	vMessage =
-		SELECT t
-		FROM vComments:s-((comments_replyOf_comments|comments_replyOf_post):e)->(comments|post):t
-		POST-ACCUM @@replyAll += s;
+  vReply = { @@replyAll };
 
-	vReply = { @@replyAll };
+  vMessage =
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_TAG_Tag|Post_HAS_TAG_Tag):e)->Tag:t
+    POST-ACCUM @@tagIdsExclude += t.id;
 
-	vMessage =
-		SELECT s
-		FROM vMessage:s-((comments_hasTag_tag|post_hasTag_tag):e)->tag:t
-		POST-ACCUM @@tagIdsExclude += t.id;
+  vComments =
+    SELECT s
+    FROM vReply:s-(Comment_HAS_TAG_Tag:e)->Tag:t
+    WHERE NOT @@tagIdsExclude.contains(t.id)
+    ACCUM s.@tagNames += t.name;
 
-	vComments =
-		SELECT s
-		FROM vReply:s-(comments_hasTag_tag:e)->tag:t
-		WHERE NOT @@tagIdsExclude.contains(t.id)
-		ACCUM s.@tagNames += t.name;
+  vReply =
+    SELECT s
+    FROM vReply:s-(Person_LIKES_Comment_REVERSE:e)->Person:t
+    ACCUM s.@likeCount += 1
+    POST-ACCUM 
+      FOREACH tn IN s.@tagNames DO
+        @@replyGroup += (s.@creatorId, tn -> s.@likeCount, 1)
+      END;
 
-	vReply =
-		SELECT s
-		FROM vReply:s-(person_likes_comments_reverse:e)->person:t
-		ACCUM s.@likeCount += 1
-		POST-ACCUM 
-			FOREACH tn IN s.@tagNames DO
-				@@replyGroup += (s.@creatorId, tn -> s.@likeCount, 1)
-			END;
+  FOREACH (p,t,l,r) IN @@replyGroup DO
+    @@replyTop += reply(p,t,l,r);
+  END;
 
-	FOREACH (p,t,l,r) IN @@replyGroup DO
-		@@replyTop += reply(p,t,l,r);
-	END;
-
-	PRINT @@replyTop;
+  PRINT @@replyTop;
 }
-
-INSTALL QUERY bi_11

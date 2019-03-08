@@ -1,30 +1,29 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_8
+CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb { 
+  SumAccum<INT> @count;
 
-CREATE QUERY bi_8(STRING givenTag) FOR GRAPH ldbc_snb { 
+  vTag = { Tag.* };
+  vTag = 
+    SELECT s 
+    FROM vTag:s 
+    WHERE s.name == tagName;
 
-	SumAccum<INT> @count;
-	
-	Tag = {tag.*};
-	Tag = SELECT s 
-	      FROM Tag:s 
-	      WHERE s.name == givenTag;
-	
-	Messages = SELECT t 
-	            FROM Tag:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e)-> :t;
-	Comments = SELECT t
-	           FROM Messages:s -((comments_replyOf_post_reverse | comments_replyOf_comments_reverse):e)-> :t;
-	
-	relatedTags = SELECT t 
-	              FROM Comments:s -(comments_hasTag_tag:e)-> :t
-	              WHERE t.name != givenTag
-	              ACCUM t.@count += 1          # no duplicated names for tags
-	              ORDER BY t.@count DESC, t.name ASC
-	              LIMIT 100;
-	
-	PRINT relatedTags [relatedTags.name AS relatedTagName, 
-		                 relatedTags.@count AS replyCount];
+  vMessages = 
+    SELECT t 
+    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
 
+  vComments = 
+    SELECT t
+    FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t;
+
+  vRelatedTags = 
+    SELECT t 
+    FROM vComments:s-(Comment_HAS_TAG_Tag:e)->:t
+    WHERE t.name != tagName
+    ACCUM t.@count += 1 # no duplicated names for tags
+    ORDER BY t.@count DESC, t.name ASC
+    LIMIT 100;
+
+  PRINT vRelatedTags[
+      vRelatedTags.name AS relatedTagName, 
+      vRelatedTags.@count AS replyCount];
 }	
-
-INSTALL QUERY bi_8

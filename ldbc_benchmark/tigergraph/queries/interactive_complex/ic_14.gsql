@@ -1,17 +1,14 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_14
-
-CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH ldbc_snb {
-  TYPEDEF TUPLE<jsonarray personIdsInPath, DOUBLE pathWeight> pathInfo;
+CREATE QUERY ic_14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
   SumAccum<INT> @dist1 = -1, @dist2 = -1;
   SumAccum<INT> @@next;
-  ListAccum<ListAccum<VERTEX<person>>> @path1, @path2;
-  ListAccum<ListAccum<VERTEX<person>>> @@pathAll;
+  ListAccum<ListAccum<VERTEX<Person>>> @path1, @path2;
+  ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
   SumAccum<DOUBLE> @@weight = 0.0;
-  SetAccum<VERTEX<person>> @@personAllInPathAll;
-  SetAccum<VERTEX<comments>> @@commentsSeed;
-  MapAccum<INT, SetAccum<VERTEX<comments>>> @@commentsAll;
-  MapAccum<INT, SetAccum<VERTEX<post>>> @@postAll;
+  SetAccum<VERTEX<Person>> @@personAllInPathAll;
+  SetAccum<VERTEX<Comment>> @@commentsSeed;
+  MapAccum<INT, SetAccum<VERTEX<Comment>>> @@commentsAll;
+  MapAccum<INT, SetAccum<VERTEX<Post>>> @@postAll;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
   OrAccum @@found = False;
@@ -19,7 +16,6 @@ CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
-    
     vPerson = 
       SELECT v
       FROM vPerson:v
@@ -39,7 +35,7 @@ CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
       vPerson = 
         SELECT t
-        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+        FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
@@ -108,42 +104,42 @@ CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
   vComments = 
     SELECT t
-    FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
+    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
     ACCUM @@commentsAll += (s.id -> t);
 
   vPost = 
     SELECT t
-    FROM vPerson:s-(post_hasCreator_person_reverse:e)->post:t
+    FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
     ACCUM @@postAll += (s.id -> t);
 
   FOREACH path IN @@pathAll DO
     jsonStr = "[";
     @@weight = 0.0;
     FOREACH i IN range[0, path.size()-2] DO
-      // person1's comments -(replyOf)-> person2's post|comments
+      // person1's Comment -(replyOf)-> person2's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i).id);
       vComments = { @@commentsSeed };
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postAll.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
 
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsAll.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
 
-      // person2's comments -(replyOf)-> person1's post|comments
+      // person2's Comment -(replyOf)-> person1's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i+1).id);
       vComments = { @@commentsSeed };
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postAll.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
 
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsAll.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
 
       jsonStr += bigint_to_string(path.get(i).id) + ",";
@@ -154,5 +150,3 @@ CREATE QUERY ic_14(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
   PRINT @@pathInfoTop;
 }
-
-INSTALL QUERY ic_14

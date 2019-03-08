@@ -1,44 +1,51 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_18
+CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
 
-CREATE QUERY bi_18(DATETIME date, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb { 
-	
-	TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
-	HeapAccum<INFO>(100000, personCount DESC, messageCount DESC) @@result;
-	MapAccum<INT, INT> @@personCount;
-	SumAccum<INT> @messageCount;
-	OrAccum @inLanguages;
-  Person = {person.*};
-	Person = SELECT s
-	        FROM Person:s -(post_hasCreator_person_reverse:e) -> :t
-	        WHERE t.content != "" AND t.length < lengthThreshold AND t.creationDate > date AND t.lang IN languages
-	        ACCUM s.@messageCount += 1;
-	
-	Start(ANY) = {post.*};
-	Start = SELECT s
-	        FROM Start:s 
-	        WHERE s.lang IN languages;
-	
-  WHILE Start.size() > 0 DO
-	Start = SELECT t
-	        FROM Start:s -((comments_replyOf_post_reverse | comments_replyOf_comments_reverse):e) -> :t
-	        ACCUM t.@inLanguages = TRUE;
-	END;
-	
-	Person = SELECT s
-	         FROM Person:s -(comments_hasCreator_person_reverse:e) -> :t
-	         WHERE t.content != "" AND t.length < lengthThreshold AND t.creationDate > date AND t.@inLanguages == TRUE
-	         ACCUM s.@messageCount += 1;
-	
-	Person = SELECT s
-	         FROM Person:s
-	         ACCUM @@personCount += (s.@messageCount -> 1); 
-	
-	FOREACH (messageCount, personCount) IN @@personCount DO
+  HeapAccum<INFO>(100000, personCount DESC, messageCount DESC) @@result;
+  MapAccum<INT, INT> @@personCount;
+  SumAccum<INT> @messageCount;
+  OrAccum @inLanguages;
+
+  Person = { Person.* };
+  Person = 
+    SELECT s
+    FROM Person:s-(Post_HAS_CREATOR_Person_REVERSE:e)->:t
+    WHERE t.content != "" 
+      AND t.length < lengthThreshold 
+      AND t.creationDate > minDate 
+      AND t.lang IN languages
+    ACCUM s.@messageCount += 1;
+
+  vStart(ANY) = { Post.* };
+  vStart = 
+    SELECT s
+    FROM vStart:s 
+    WHERE s.lang IN languages;
+
+  WHILE vStart.size() > 0 DO
+    vStart = 
+      SELECT t
+      FROM vStart:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t
+      ACCUM t.@inLanguages = TRUE;
+  END;
+
+  Person = 
+    SELECT s
+    FROM Person:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->:t
+    WHERE t.content != "" 
+      AND t.length < lengthThreshold 
+      AND t.creationDate > minDate 
+      AND t.@inLanguages == TRUE
+    ACCUM s.@messageCount += 1;
+
+  Person = 
+    SELECT s
+    FROM Person:s
+    ACCUM @@personCount += (s.@messageCount -> 1); 
+
+  FOREACH (messageCount, personCount) IN @@personCount DO
     @@result += INFO(messageCount, personCount);
-	END;
-	PRINT @@result; 
+  END;
 
+  PRINT @@result; 
 }
-
-INSTALL QUERY bi_18

@@ -1,14 +1,14 @@
 USE GRAPH ldbc_snb
 DROP QUERY is_3
 
-CREATE QUERY is_3(vertex<person> personId) FOR GRAPH ldbc_snb {
+CREATE QUERY is_3(vertex<Person> personId) FOR GRAPH ldbc_snb {
   SumAccum<int> @creationDate;
 
   vPerson = { personId };
 
   vFriend = 
     SELECT t
-    FROM vPerson:s-(person_knows_person>:e)-person:t
+    FROM vPerson:s-(Person_KNOWS_Person>:e)-Person:t
     ACCUM t.@creationDate = datetime_to_epoch(e.creationDate)
     ORDER BY t.@creationDate DESC, t.id ASC;
   

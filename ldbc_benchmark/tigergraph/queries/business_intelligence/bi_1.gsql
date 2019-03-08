@@ -1,35 +1,35 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_1
-
-CREATE QUERY bi_1(datetime date) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
+
   HeapAccum<MessageInfo>(200, theYear DESC, isComment ASC, lengthCategory ASC) @@result;
   OrAccum @isComment;
   SumAccum<STRING> @lengthCategory;
   GroupByAccum<INT theYear, BOOL isComment, STRING lengthCategory, SumAccum<INT> messageCount, SumAccum<INT> sumMessageLength> @@calc;
+
   INT total;
 
-  Start = {post.*, comments.*};
-  Start = SELECT s
-          FROM Start:s
-          WHERE s.creationDate < date
-          ACCUM s.@isComment = s.type == "comments",
-              IF s.length < 40 THEN
-                s.@lengthCategory = "0"
-              ELSE IF s.length < 80 THEN
-                s.@lengthCategory = "1"
-              ELSE IF s.length < 160 THEN
-                s.@lengthCategory = "2"
-              ELSE
-                s.@lengthCategory = "3"
-              END
-          POST-ACCUM @@calc += (year(s.creationDate), s.@isComment, s.@lengthCategory -> 1, s.length);
+  vStart = { Post.*, Comment.* };
+  vStart = 
+    SELECT s
+    FROM vStart:s
+    WHERE s.creationDate < maxDate
+    ACCUM 
+      s.@isComment = (s.type == "Comment"),
+      IF s.length < 40 THEN
+        s.@lengthCategory = "0"
+      ELSE IF s.length < 80 THEN
+        s.@lengthCategory = "1"
+      ELSE IF s.length < 160 THEN
+        s.@lengthCategory = "2"
+      ELSE
+        s.@lengthCategory = "3"
+      END
+    POST-ACCUM @@calc += (year(s.creationDate), s.@isComment, s.@lengthCategory -> 1, s.length);
 
-  total = Start.size();
+  total = vStart.size();
   FOREACH c IN @@calc DO
-    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, c.sumMessageLength/c.messageCount, c.sumMessageLength, c.messageCount*0.1/total);
+    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, (c.sumMessageLength / c.messageCount), c.sumMessageLength, (c.messageCount * 0.1 / total));
   END;
+
   PRINT @@result;
 }
-
-INSTALL QUERY bi_1

@@ -1,11 +1,11 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_4
 
-CREATE QUERY ic_4(vertex<person> personId, int startDateEpoch, int durationDays) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_4(vertex<Person> personId, int startDateEpoch, int durationDays) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<string tagName, int postCount> tagStats;
 
   SumAccum<int> @postCount;
-  SetAccum<vertex<tag>> @@tagsFav, @@tagsExc;
+  SetAccum<vertex<Tag>> @@tagsFav, @@tagsExc;
   HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
   datetime startDate, endDate;
 
@@ -18,7 +18,7 @@ CREATE QUERY ic_4(vertex<person> personId, int startDateEpoch, int durationDays)
 
   vTag = 
     SELECT t
-    FROM vPerson:s-(person_knows_person>:e1a.<post_hasCreator_person:e1b)-post:im-(post_hasTag_tag>:e2)-tag:t
+    FROM vPerson:s-(Person_KNOWS_Person>:e1a.<Post_HAS_CREATOR_Person:e1b)-Post:im-(Post_HAS_TAG_Tag>:e2)-Tag:t
     ACCUM 
       CASE 
         WHEN im.creationDate >= startDate AND im.creationDate < endDate THEN 

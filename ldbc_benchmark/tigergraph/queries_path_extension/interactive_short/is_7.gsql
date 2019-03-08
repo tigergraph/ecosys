@@ -9,19 +9,19 @@ CREATE QUERY is_7(string messageId) FOR GRAPH ldbc_snb {
   OrAccum @knows;
 	
   @@seed += messageId;
-  vMessage = to_vertex_set(@@seed, "comments");
+  vMessage = to_vertex_set(@@seed, "Comment");
   IF vMessage.size() == 0 THEN
-    vMessage = to_vertex_set(@@seed, "post");
+    vMessage = to_vertex_set(@@seed, "Post");
   END;
 	
   vAuthorOg = 
     SELECT t
-    FROM vMessage:s-((comments_hasCreator_person>|post_hasCreator_person>):e)-person:t
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e)-Person:t
     POST-ACCUM @@authorOgId += t.id;
 
   vAuthorRe = 
     SELECT t
-    FROM vMessage:s-((<comments_replyOf_post|<comments_replyOf_comments):e1)-comments:im-(comments_hasCreator_person:e2)-person:t
+    FROM vMessage:s-((<Comment_REPLY_OF_Post|<Comment_REPLY_OF_Comment):e1)-Comment:im-(Comment_HAS_CREATOR_Person:e2)-Person:t
     ACCUM  
       t.@commentId = im.id,
       t.@commentContent = im.content,
@@ -29,7 +29,7 @@ CREATE QUERY is_7(string messageId) FOR GRAPH ldbc_snb {
 
   vAuthorRe = 
     SELECT s
-    FROM vAuthorRe:s-(person_knows_person>:e)-person:t
+    FROM vAuthorRe:s-(Person_KNOWS_Person>:e)-Person:t
     POST-ACCUM CASE WHEN t.id == @@authorOgId THEN @knows += true
     ORDER BY s.@commentCreationDate DESC, s.id ASC;
 

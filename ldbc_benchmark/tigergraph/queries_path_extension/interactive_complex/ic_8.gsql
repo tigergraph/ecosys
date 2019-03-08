@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_8
 
-CREATE QUERY ic_8(vertex<person> personId) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_8(vertex<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, 
       DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
 
@@ -10,7 +10,7 @@ CREATE QUERY ic_8(vertex<person> personId) FOR GRAPH ldbc_snb {
   vPerson = { personId };
   vReplier = 
     SELECT t
-    FROM vPerson:s-((<comments_hasCreator_person|<post_hasCreator_person):e1.(<comments_replyOf_comments|<comments_replyOf_post):e2)-comments:im-(comments_hasCreator_person)-person:t
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1.(<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e2)-Comment:im-(Comment_HAS_CREATOR_Person)-Person:t
     ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, im.creationDate, im.id, im.content);
 
   PRINT @@replierTop;

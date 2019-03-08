@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Install TigerGraph. Scripts are tested with TigerGraph 2.2.4 Developer's edition.
+* Install TigerGraph. Scripts are tested with TigerGraph 2.3.2 Developer edition.
 * Generate LDBC SNB data.
 
 ## Run scripts

@@ -1,29 +1,26 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_25
+CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 
-CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
-  TYPEDEF tuple<jsonarray personIdsInPath, double pathWeight> pathInfo;
-  SumAccum<int> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
   OrAccum @@found = False;
-  SumAccum<int> @@next;
-  ListAccum<ListAccum<vertex<person>>> @path1, @path2;
-  ListAccum<ListAccum<vertex<person>>> @@pathAll;
-  SumAccum<double> @@weight = 0.0;
-  SetAccum<vertex<person>> @@personAllInPathAll;
-  SetAccum<vertex<post>> @@postValid;
-  SumAccum<int> @creatorId;
-  SetAccum<vertex<comments>> @root;
+  SumAccum<INT> @@next;
+  ListAccum<ListAccum<VERTEX<Person>>> @path1, @path2;
+  ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  SetAccum<VERTEX<Person>> @@personAllInPathAll;
+  SetAccum<VERTEX<Post>> @@postValid;
+  SumAccum<INT> @creatorId;
+  SetAccum<VERTEX<Comment>> @root;
   OrAccum @@hasComments = True;
-  MapAccum<int, SetAccum<vertex<comments>>> @@commentsAll, @@commentsForum;
-  MapAccum<int, SetAccum<vertex<post>>> @@postForum;
-  SetAccum<vertex<comments>> @@commentsSeed;
+  MapAccum<INT, SetAccum<VERTEX<Comment>>> @@commentsAll, @@commentsForum;
+  MapAccum<INT, SetAccum<VERTEX<Post>>> @@postForum;
+  SetAccum<VERTEX<Comment>> @@commentsSeed;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
-  string jsonStr = "[]";
+  STRING jsonStr = "[]";
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
-    
     vPerson = 
       SELECT v
       FROM vPerson:v
@@ -43,7 +40,7 @@ CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, datetime 
 
       vPerson = 
         SELECT t
-        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+        FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
@@ -112,78 +109,78 @@ CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, datetime 
   @@pathInfoTop.resize(@@pathAll.size());
 
   // all posts from forums within the given date interval
-  vForum = { forum.* };
+  vForum = { Forum.* };
   vPostValid = 
     SELECT t
-    FROM vForum:s-(forum_containerOf_post:e)->post:t
+    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
     WHERE s.creationDate BETWEEN startDate AND endDate
     POST-ACCUM @@postValid += t;
 
-  // comments created by each person in the shortest paths
+  // Comment created by each Person in the shortest paths
   vPerson = { @@personAllInPathAll };
   vComments = 
     SELECT t
-    FROM vPerson:s-(comments_hasCreator_person_reverse:e)->comments:t
+    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
     ACCUM 
       t.@creatorId = s.id,
       t.@root = t,
       @@commentsAll += (s.id -> t);
 
-  // hop until we meet the original post and check it's valid
-  vRoot(comments|post) = vComments;
+  // hop until we meet the original Post and check it's valid
+  vRoot(Comment|Post) = vComments;
   WHILE @@hasComments DO
     @@hasComments = False;
 
-    // comments within the given date interval
+    // Comment within the given date interval
     vRoot = 
       SELECT t
-      FROM vRoot:s-((comments_replyOf_comments|comments_replyOf_post):e)->(comments|post):t
+      FROM vRoot:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post):e)->(Comment|Post):t
       ACCUM 
         t.@creatorId = s.@creatorId,
         t.@root += s.@root
       POST-ACCUM 
         CASE 
-          WHEN t.type == "comments" THEN
+          WHEN t.type == "Comment" THEN
             @@hasComments += True
-          WHEN t.type == "post" AND @@postValid.contains(t) THEN 
+          WHEN t.type == "Post" AND @@postValid.contains(t) THEN 
             @@commentsForum += (t.@creatorId -> t.@root)
         END;
   END;
 
-  // post within the given date interval
+  // Post within the given date interval
   vPost = 
     SELECT t
-    FROM vPerson:s-(post_hasCreator_person_reverse:e)->post:t
+    FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
     ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t) END;
 
   FOREACH path IN @@pathAll DO
     jsonStr = "[";
     @@weight = 0.0;
     FOREACH i IN range[0, path.size()-2] DO
-      // person1's comments -(replyOf)-> person2's post|comments
+      // person1's Comment -(replyOf)-> person2's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i).id);
       vComments = { @@commentsSeed };
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postForum.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
 
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsForum.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
 
-      // person2's comments -(replyOf)-> person1's post|comments
+      // person2's Comment -(replyOf)-> person1's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i+1).id);
       vComments = { @@commentsSeed };
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_post:e)-post:t
+        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postForum.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
 
       vComments = 
         SELECT s
-        FROM vComments:s-(comments_replyOf_comments:e)-comments:t
+        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsForum.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
 
       jsonStr += bigint_to_string(path.get(i).id) + ",";
@@ -194,5 +191,3 @@ CREATE QUERY bi_25(vertex<person> person1Id, vertex<person> person2Id, datetime 
 
   PRINT @@pathInfoTop;
 }
-
-INSTALL QUERY bi_25

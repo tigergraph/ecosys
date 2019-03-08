@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_2
 
-CREATE QUERY ic_2(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_2(vertex<Person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int personId, string personFirstName, string personLastName, int messageId, string messageContent, datetime messageCreationDate> friendMessage;
 
   HeapAccum<friendMessage>(20, messageCreationDate DESC, messageId ASC) @@friendMessageTop;
@@ -15,10 +15,10 @@ CREATE QUERY ic_2(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb 
 
   vMessage = 
     SELECT t
-    FROM vPerson:s-(person_knows_person>:e1)-person:im-((<comments_hasCreator_person|<post_hasCreator_person):e2)-(comments|post):t
+    FROM vPerson:s-(Person_KNOWS_Person>:e1)-Person:im-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e2)-(Comment|Post):t
     WHERE t.creationDate < maxDate
     ACCUM 
-      CASE WHEN t.type == "comments" THEN
+      CASE WHEN t.type == "Comment" THEN
         @@friendMessageTop += friendMessage(im.id, im.firstName, im.lastName, t.id, t.content, t.creationDate)
       ELSE
         @@friendMessageTop += friendMessage(im.id, im.firstName, im.lastName, t.id, t.imageFile, t.creationDate)

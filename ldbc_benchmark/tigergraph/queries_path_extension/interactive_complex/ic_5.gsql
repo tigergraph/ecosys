@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_5
 
-CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_5(vertex<Person> personId, int minDateEpoch) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int forumId, string forumTitle, int postCount> forumStats;
   
   OrAccum @visited;
@@ -15,7 +15,7 @@ CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb 
 	
   vFriend = 
     SELECT t
-    FROM vPerson:s-(person_knows_person>*1..2:e)-person:t
+    FROM vPerson:s-(Person_KNOWS_Person>*1..2:e)-Person:t
     WHERE t.@visited == False
     ACCUM 
       s.@visited += True,
@@ -27,13 +27,13 @@ CREATE QUERY ic_5(vertex<person> personId, int minDateEpoch) FOR GRAPH ldbc_snb 
 	
   vFriend = 
     SELECT s
-    FROM vFriend:s-(<forum_hasMember_person:e)-forum:t
+    FROM vFriend:s-(<Forum_HAS_MEMBER_Person:e)-Forum:t
     WHERE e.joinDate > minDate
     POST-ACCUM @@forumIds += t.id;
  
   vForum = 
     SELECT t
-    FROM vFriend:s-(<post_hasCreator_person:e1.<forum_containerOf_post:e2)-forum:t
+    FROM vFriend:s-(<Post_HAS_CREATOR_Person:e1.<Forum_CONTAINER_OF_Post:e2)-Forum:t
     WHERE @@forums.contains(t.id)
     ACCUM t.@postCount += 1
     POST-ACCUM @@forumStatsTop += forumStats(t.id, t.title, t.@postCount);

@@ -1,13 +1,8 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_3
-
-CREATE QUERY ic_3(VERTEX<person> personId, STRING countryXName, STRING countryYName, 
-    DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYName, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<STRING firstName, STRING lastName> fullName;
-  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, 
-      INT yCount, INT count_> msgStats; 
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
 
-  ListAccum<VERTEX<person>> @@friendAll;
+  ListAccum<VERTEX<Person>> @@friendAll;
   OrAccum @visited;
   SetAccum<INT> @@cityIds;
   SumAccum<INT> @personId;
@@ -22,7 +17,7 @@ CREATE QUERY ic_3(VERTEX<person> personId, STRING countryXName, STRING countryYN
   WHILE i < 2 DO
     vPerson = 
       SELECT t
-      FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+      FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
       WHERE t.@visited == False
       ACCUM 
         s.@visited += True,
@@ -32,34 +27,30 @@ CREATE QUERY ic_3(VERTEX<person> personId, STRING countryXName, STRING countryYN
     i += 1;
   END;
 
-  vCountry = { country.* };
+  vCountry = { Country.* };
   vCountry =
     SELECT s
-    FROM vCountry:s-(city_isPartOf_country_reverse:e)-city:t
-    ACCUM 
-      CASE 
-        WHEN s.name == countryXName OR s.name == countryYName THEN
-          @@cityIds += t.id
-      END;
+    FROM vCountry:s-(City_IS_PART_OF_Country_REVERSE:e)-City:t
+    ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN @@cityIds += t.id END;
 
   vFriend = { @@friendAll };
   vFriend = 
     SELECT s
-    FROM vFriend:s-(person_isLocatedIn_city:e)->city:t
+    FROM vFriend:s-(Person_IS_LOCATED_IN_City:e)->City:t
     WHERE NOT @@cityIds.contains(t.id);
 
   endDate = datetime_add(startDate, INTERVAL durationDays DAY);
 
   vMessage = 
     SELECT t
-    FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    FROM vFriend:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
     WHERE startDate <= t.creationDate AND t.creationDate < endDate
     ACCUM t.@personId = s.id
     POST-ACCUM @@personNameMap += (s.id -> fullName(s.firstName, s.lastName));
 
   vMessage = 
     SELECT s
-    FROM vMessage:s-((comments_isLocatedIn_country|post_isLocatedIn_country):e)->country:t
+    FROM vMessage:s-((Comment_IS_LOCATED_IN_Country|Post_IS_LOCATED_IN_Country):e)->Country:t
     ACCUM 
       CASE 
         WHEN t.name == countryXName THEN 
@@ -69,11 +60,8 @@ CREATE QUERY ic_3(VERTEX<person> personId, STRING countryXName, STRING countryYN
       END;
 
   FOREACH (id,x,y) IN @@msgStatsGroup DO
-    @@msgStatsTop += msgStats(id, @@personNameMap.get(id).firstName, 
-        @@personNameMap.get(id).lastName, x, y, (x + y));
+    @@msgStatsTop += msgStats(id, @@personNameMap.get(id).firstName, @@personNameMap.get(id).lastName, x, y, (x + y));
   END;
 
   PRINT @@msgStatsTop;
 }
-
-INSTALL QUERY ic_3

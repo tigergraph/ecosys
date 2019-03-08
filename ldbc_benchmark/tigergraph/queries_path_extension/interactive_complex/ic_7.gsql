@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_7
 
-CREATE QUERY ic_7(vertex<person> personId) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_7(vertex<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF tuple(int personId, 
                 string personFirstName, 
                 string personLastName, 
@@ -22,12 +22,12 @@ CREATE QUERY ic_7(vertex<person> personId) FOR GRAPH ldbc_snb {
 	
   vFriend = 
     SELECT t
-    FROM vPerson:s-((<comments_hasCreator_person|<post_hasCreator_person):e1)-(comments|post):im1-((<person_likes_comments|<person_likes_post):e2)-person:t
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):im1-((<Person_LIKES_Comment|<Person_LIKES_Post):e2)-Person:t
     ACCUM 
       t.@likeCreationDate = datetime_to_epoch(e2.creationDate),
       t.@commentOrPostId = im1.id,
       CASE
-        WHEN im1.type == "comments" THEN
+        WHEN im1.type == "Comment" THEN
           t.@commentOrPostContent = im1.content
         ELSE
           t.@commentOrPostContent = im1.imageFile
@@ -36,7 +36,7 @@ CREATE QUERY ic_7(vertex<person> personId) FOR GRAPH ldbc_snb {
 
   vFriend = 
     SELECT s
-    FROM vFriend:s-(person_knows_person>:e)-person:t
+    FROM vFriend:s-(Person_KNOWS_Person>:e)-Person:t
     ACCUM CASE WHEN t == personId THEN s.@isNew += False END
     POST-ACCUM @@likerInfoTop += likerInfo(s.id, 
                                            s.firstName, 

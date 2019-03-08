@@ -1,24 +1,20 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_2
-
-CREATE QUERY ic_2(VERTEX<person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
-  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, 
-      STRING messageContent, DATETIME messageCreationDate> msg;
+CREATE QUERY ic_2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
 
   HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
 
   vPerson = { personId };
   vFriend = 
     SELECT t
-    FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t;
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t;
 
   vMessage = 
     SELECT t
-    FROM vFriend:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    FROM vFriend:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
     WHERE t.creationDate < maxDate
     ACCUM 
       CASE
-        WHEN t.type == "comments" THEN
+        WHEN t.type == "Comment" THEN
           @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
         ELSE
           @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
@@ -26,5 +22,3 @@ CREATE QUERY ic_2(VERTEX<person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb 
 
   PRINT @@msgTop;
 }
-
-INSTALL QUERY ic_2

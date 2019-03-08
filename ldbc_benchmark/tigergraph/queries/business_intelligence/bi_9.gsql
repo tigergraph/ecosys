@@ -1,53 +1,50 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_9
-
-CREATE QUERY bi_9(STRING tagClass1, STRING tagClass2, INT threshold) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
 
   OrAccum @isType1, @isType2;
   SumAccum<INT> @numMembers;
-  SetAccum<VERTEX<forum>> @@forumLarge;
+  SetAccum<VERTEX<Forum>> @@forumLarge;
   SumAccum<INT> @forumId;
   MapAccum<INT, INT> @@postForumMap;
   GroupByAccum<INT postId, SumAccum<INT> count1, SumAccum<INT> count2> @@forumStatsGroup;
   HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
 
-  vTagClass = { tagclass.* };
+  vTagClass = { TagClass.* };
   vTagClass =
     SELECT v
     FROM vTagClass:v
-    WHERE v.name == tagClass1 OR v.name == tagClass2
+    WHERE v.name == tagClass1Name OR v.name == tagClass2Name
     ACCUM 
       CASE 
-        WHEN v.name == tagClass1 THEN 
+        WHEN v.name == tagClass1Name THEN 
           v.@isType1 += True
-        WHEN v.name == tagClass2 THEN 
+        WHEN v.name == tagClass2Name THEN 
           v.@isType2 += True
       END;
 
   vTag =
     SELECT t
-    FROM vTagClass:s-(tag_hasType_tagclass_reverse:e)->tag:t
+    FROM vTagClass:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->Tag:t
     ACCUM 
       t.@isType1 = s.@isType1,
       t.@isType2 = s.@isType2;
 
-  vForum = { forum.* };
+  vForum = { Forum.* };
   vForum =
     SELECT s
-    FROM vForum:s-(forum_hasMember_person:e)->person:t
+    FROM vForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t
     ACCUM s.@numMembers += 1
     POST-ACCUM CASE WHEN s.@numMembers > threshold THEN @@forumLarge += s END;
 
   vForum = { @@forumLarge };
   vForum =
     SELECT s
-    FROM vForum:s-(forum_containerOf_post:e)->post:t
+    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
     ACCUM @@postForumMap += (t.id -> s.id);
 
   vPost =
     SELECT t
-    FROM vTag:s-(post_hasTag_tag_reverse:e)->post:t
+    FROM vTag:s-(Post_HAS_TAG_Tag_REVERSE:e)->Post:t
     WHERE @@postForumMap.containsKey(t.id)
     ACCUM
       IF s.@isType1 THEN 
@@ -63,7 +60,5 @@ CREATE QUERY bi_9(STRING tagClass1, STRING tagClass2, INT threshold) FOR GRAPH l
 
   FOREACH v IN @@forumStatsTop DO
     PRINT v.forumId, v.count1, v.count2;
-  END;	
+  END;
 }
-
-INSTALL QUERY bi_9

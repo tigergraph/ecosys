@@ -1,6 +1,3 @@
-USE GRAPH ldbc_snb
-DROP QUERY is_7
-
 CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
   SetAccum<STRING> @@seed;
   SetAccum<INT> @@friendIds;
@@ -9,35 +6,35 @@ CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
   OrAccum @knows;
 
   @@seed += messageId;
-  vComments = to_vertex_set(@@seed, "comments");
+  vComments = to_vertex_set(@@seed, "Comment");
 
   IF vComments.size() > 0 THEN
     vCreator = 
       SELECT t
-      FROM vComments:s-(comments_hasCreator_person:e)->person:t;
+      FROM vComments:s-(Comment_HAS_CREATOR_Person:e)->Person:t;
 
     vReply = 
       SELECT t
-      FROM vComments:s-(comments_replyOf_comments_reverse:e)->comments:t;
+      FROM vComments:s-(Comment_REPLY_OF_Comment_REVERSE:e)->Comment:t;
   ELSE
-    vPost = to_vertex_set(@@seed, "post");
+    vPost = to_vertex_set(@@seed, "Post");
     vCreator = 
       SELECT t
-      FROM vPost:s-(post_hasCreator_person:e)->person:t;
+      FROM vPost:s-(Post_HAS_CREATOR_Person:e)->Person:t;
 
     vReply = 
       SELECT t
-      FROM vPost:s-(comments_replyOf_post_reverse:e)->comments:t;
+      FROM vPost:s-(Comment_REPLY_OF_Post_REVERSE:e)->Comment:t;
   END;
 
   vFriend =
     SELECT t
-    FROM vCreator:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    FROM vCreator:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     POST-ACCUM @@friendIds += t.id;
 
   vReply =
     SELECT s
-    FROM vReply:s-(comments_hasCreator_person:e)->person:t
+    FROM vReply:s-(Comment_HAS_CREATOR_Person:e)->Person:t
     ACCUM
       s.@replierId = t.id,
       s.@replierFirstName = t.firstName,
@@ -54,5 +51,3 @@ CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
       vReply.@replierLastName AS replyAuthorLastName,
       vReply.@knows AS replyAuthorKnowsOriginalMessageAuthor];
 }
-
-INSTALL QUERY is_7

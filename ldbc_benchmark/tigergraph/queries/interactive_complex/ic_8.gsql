@@ -1,23 +1,19 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_8
+CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<VERTEX<Comment> v, DATETIME commentCreationDate, INT commentId> reply;
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
 
-CREATE QUERY ic_8(VERTEX<person> personId) FOR GRAPH ldbc_snb {
-  TYPEDEF TUPLE<VERTEX<comments> v, DATETIME commentCreationDate, INT commentId> reply;
-  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName,
-      DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
-
-  SetAccum<VERTEX<comments>> @@replies;
+  SetAccum<VERTEX<Comment>> @@replies;
   HeapAccum<reply>(20, commentCreationDate DESC, commentId ASC) @@replyTop;
   HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
 
   vPerson = { personId };
   vMessage = 
     SELECT t
-    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t;
+    FROM vPerson:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t;
 
   vReply = 
     SELECT t
-    FROM vMessage:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse):e)->comments:t
+    FROM vMessage:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE):e)->Comment:t
     POST-ACCUM @@replyTop += reply(t, t.creationDate, t.id);
 
   FOREACH r IN @@replyTop DO
@@ -27,10 +23,8 @@ CREATE QUERY ic_8(VERTEX<person> personId) FOR GRAPH ldbc_snb {
   vReply = { @@replies };
   vReply = 
     SELECT s
-    FROM vReply:s-(comments_hasCreator_person:e)->person:t
+    FROM vReply:s-(Comment_HAS_CREATOR_Person:e)->Person:t
     ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
 
   PRINT @@replierTop;
 }
-
-INSTALL QUERY ic_8

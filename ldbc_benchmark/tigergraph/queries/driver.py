@@ -7,6 +7,7 @@
 # Author: Mingxi Wu mingxi.wu@tigergraph.com
 ############################################################
 
+import sys, logging, time
 from datetime import timedelta
 from json import loads
 from argparse import ArgumentParser
@@ -38,7 +39,6 @@ response_recv = 0
 response_time = 0
 response_code = 0
 response_msg = ""
-print_response = False
 
 def handle_response(response):
   global request_sent
@@ -46,11 +46,11 @@ def handle_response(response):
   global response_time
   global response_code
   global response_msg
-  global print_response
-  
+
+  ldbc_snb_logger = logging.getLogger("ldbc_snb")
+
   response_recv += 1
-  if print_response:
-    print("--- Request: " + response.request.url)
+  ldbc_snb_logger.info("[Request] {}".format(response.request.url))
 
   if response.error:
     response_code = response.code
@@ -66,10 +66,7 @@ def handle_response(response):
       IOLoop.instance().stop()
     else:
       response_time += (response.time_info["starttransfer"] - response.time_info["pretransfer"])
-      if print_response:
-        print("--- Response:")
-        print(http_response_json["results"])
-        print()
+      ldbc_snb_logger.info("[Response] {}\n".format(http_response_json["results"]))
         
   if response_recv >= request_sent:
     IOLoop.instance().stop()
@@ -101,21 +98,20 @@ def generateSeedsForIS(path_to_seeds, max_num_seeds, query_num = 0):
       http_client.close()
     return person_ids, message_ids
 
-def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, \
-             person_ids = [], message_ids = [], debug_mode = 0):
+def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, person_ids = [], 
+    message_ids = []):
   global request_sent
   global response_recv
   global response_time
   global response_code
   global response_msg
-  global print_response
 
   response_recv = 0
-  print_response = True if debug_mode > 0 else False
+  response_code = None
+  response_msg = None
 
-  print((IS_NAME if query_type == "IS" \
-    else IC_NAME if query_type == "IC" \
-    else BI_NAME) + " {}:".format(query_num))
+  print("\n{} {}:".format(
+      IS_NAME if query_type == "IS" else IC_NAME if query_type == "IC" else BI_NAME, query_num))
 
   if query_type == "IS":
     if query_num in [1,2,3]:
@@ -130,30 +126,30 @@ def runQuery(async_client, path_to_seeds, max_num_seeds, query_type, query_num, 
 
   for url in urls:
     async_client.fetch(url, method = "GET", callback = handle_response, \
-                       connect_timeout = 3600, request_timeout=3600)
+        connect_timeout = 3600, request_timeout=3600)
 
   # start ioloop
-  # time_begin = time.time()
+  time_begin = time.time()
   IOLoop.instance().start()
-  # time_elapsed = time.time() - time_begin
+  time_elapsed = time.time() - time_begin
   if not response_code:
     print("- # Requests Sent: {}".format(request_sent))
-    # print("- Elapsed Time: {} sec".format(time_elapsed))
-    # print("- QPS: " + str(response_recv/time_elapsed))
-    print("- Average Response Time: {}".format(str(timedelta(seconds=(response_time / response_recv)))))
+    print("- Elapsed Time: {} sec".format(round(time_elapsed, 3)))
+    print("- QPS: {}".format(round(response_recv/time_elapsed, 3)))
+    # print("- Average Response Time: {}\n".format(str(timedelta(seconds=(response_time / response_recv)))))
   else:
     if response_code == "RUNTIME":
-      print("- Runtime Error: {}".format(response_msg))
+      print("- {}".format(response_msg))
     elif not response_msg:
       print("- Bad Response: HTTP {}".format(response_code))
     else:
       print("- Error {}: {}".format(response_code , response_msg))
 
-def runISWrapper(async_client, path_to_seeds, max_num_seeds, query_num, debug_mode = 0):
+def runISWrapper(async_client, path_to_seeds, max_num_seeds, query_num):
   # generate seeds
   person_ids, message_ids = generateSeedsForIS(path_to_seeds, max_num_seeds, query_num)
   # run query
-  runQuery(async_client, path_to_seeds, max_num_seeds, "IS", query_num, person_ids, message_ids, debug_mode)
+  runQuery(async_client, path_to_seeds, max_num_seeds, "IS", query_num, person_ids, message_ids)
 
 def runAllIS(async_client, path_to_seeds, max_num_seeds):
   # generate seeds
@@ -183,20 +179,20 @@ def runAllQueries(path_to_seeds, max_num_seeds):
 if __name__ == "__main__":
   # average response time somehow increases when max_clients > 1, could be a bug in async request
   # detail: https://www.tornadoweb.org/en/stable/httpclient.html#tornado.httpclient.HTTPResponse
-  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=1)
+  AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+  # AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient", max_clients=1)
   
   ap = ArgumentParser()
-  ap.add_argument("--path", help="Full path to the seed directory")
-  ap.add_argument("--num", help="Number of seeds to run queries")
-  ap.add_argument("--query", help="Type and number of single query to run (e.g. is2, ic12, bi22)")
-  ap.add_argument("--seed", help="If you just want to have some seed(s) to test, put the number")
-  ap.add_argument("--debug", help="If you want to debug the output, put 1 to print out the reponse")
+  ap.add_argument("-p", "--path", default=DEFAULT_PATH_TO_SEEDS, help="Full path to the seed directory.")
+  ap.add_argument("-n", "--num", default=DEFAULT_MAX_NUM_SEEDS, help="Number of seeds to run queries.")
+  ap.add_argument("-q", "--query", help="Type and number of specific query to run, e.g. IS_2, Ic_12, bi_22.")
+  ap.add_argument("-d", "--debug", default=DEFAULT_DEBUG_MODE, nargs="?", const=1, help="Show HTTP request/response.")
+  ap.add_argument("--seed", help="Print person.id and message.id for test purpose.")
 
   args = ap.parse_args()
-  
-  path_to_seeds = args.path if args.path else DEFAULT_PATH_TO_SEEDS
-  max_num_seeds = int(args.num) if args.num else DEFAULT_MAX_NUM_SEEDS
-  debug_mode = int(args.debug) if args.debug else DEFAULT_DEBUG_MODE
+
+  if args.debug != 0:
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(message)s")
 
   if args.seed:
     person_ids, message_ids = generateSeedsForIS(path_to_seeds, max_num_seeds)
@@ -206,23 +202,27 @@ if __name__ == "__main__":
     sys.exit()
 
   if not args.query:
-    runAllQueries(path_to_seeds, max_num_seeds)
+    runAllQueries(args.path, int(args.num))
   else:
     try:
-      query_type = args.query[:2].upper()
-      query_num = int(args.query[2:])
+      query_info = args.query.split("_")
+      query_type = query_info[0].upper()
+      query_num = int(query_info[1])
     except:
-      print(args.query + " does not exist")
+      errmsg = args.query + " does not exist."
+      if not "_" in args.query:
+        errmsg += " Did you forget \"_\" between type and number? e.g. IS_2, Ic_12, bi_22"
+      print(errmsg)
       sys.exit()
 
     async_client = AsyncHTTPClient()
 
     if query_type == "IS" and query_num in range(1,IS_SIZE+1):
-      runISWrapper(async_client, path_to_seeds, max_num_seeds, query_num, debug_mode)
+      runISWrapper(async_client, args.path, int(args.num), query_num)
     elif query_type == "IC" and query_num in range(1,IC_SIZE+1):
-      runQuery(async_client, path_to_seeds, max_num_seeds, "IC", query_num, [], [], debug_mode)
+      runQuery(async_client, args.path, int(args.num), "IC", query_num, [], [])
     elif query_type == "BI" and query_num in range(1,BI_SIZE+1):
-      runQuery(async_client, path_to_seeds, max_num_seeds, "BI", query_num, [], [], debug_mode)
+      runQuery(async_client, args.path, int(args.num), "BI", query_num, [], [])
     else:
       print(args.query + " does not exist")
     

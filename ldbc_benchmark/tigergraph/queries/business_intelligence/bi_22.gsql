@@ -1,100 +1,103 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_22
+CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
 
-CREATE QUERY bi_22(string country1, string country2) FOR GRAPH ldbc_snb { 
-  TYPEDEF tuple<int person1Id, int person2Id, string city1Name, int score> pairScore;
-
-  SumAccum<string> @city1Name;
-  SumAccum<int> @person1Id;
-  SetAccum<int> @@person2Ids;
-  MapAccum<int, int> @@messagePersonIds;
-  MapAccum<string, GroupByAccum<int person1Id, int person2Id, OrAccum<bool> b1, OrAccum<bool> b2, OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
+  SumAccum<STRING> @city1Name;
+  SumAccum<INT> @person1Id;
+  SetAccum<INT> @@person2Ids;
+  MapAccum<INT, INT> @@messagePersonIds;
+  MapAccum<STRING, 
+      GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
+          OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreTop;
 
-  int score;
+  INT score;
 
   // collect person1 and person2 into each set vPerson1 and vPerson2
-  vCountry1 = { country.* };
+  vCountry1 = { Country.* };
   vCity1 = 
     SELECT t
-    FROM vCountry1:s-(city_isPartOf_country_reverse:e)->city:t
-    WHERE s.name == country1;
+    FROM vCountry1:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
+    WHERE s.name == country1Name;
 
   vPerson1 =
     SELECT t
-    FROM vCity1:s-(person_isLocatedIn_city_reverse:e)->person:t
+    FROM vCity1:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
     ACCUM t.@city1Name = s.name;
 
-  vCountry2 = { country.* };
+  vCountry2 = { Country.* };
   vCity2 = 
     SELECT t
-    FROM vCountry2:s-(city_isPartOf_country_reverse:e)->city:t
-    WHERE s.name == country2;
+    FROM vCountry2:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
+    WHERE s.name == country2Name;
 
   vPerson2 =
     SELECT t
-    FROM vCity2:s-(person_isLocatedIn_city_reverse:e)->person:t
+    FROM vCity2:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
     POST-ACCUM @@person2Ids += t.id;
 
   // case 1 and 4
   vMessage =
     SELECT t
-    FROM vPerson2:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    FROM vPerson2:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
     ACCUM @@messagePersonIds += (t.id -> s.id);
 
   vComments1 = 
     SELECT t
-    FROM vPerson1:s-(comments_hasCreator_person_reverse:e)->comments:t
+    FROM vPerson1:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
     ACCUM 
       t.@person1Id = s.id,
       t.@city1Name = s.@city1Name;
 
   vMessage =
     SELECT t
-    FROM vComments1:s-((comments_replyOf_comments|comments_replyOf_post))->(comments|post):t
+    FROM vComments1:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post))->(Comment|Post):t
     ACCUM 
       CASE 
         WHEN @@messagePersonIds.containsKey(t.id) THEN
-          @@pairScoreMap += (s.@city1Name -> (s.@person1Id, @@messagePersonIds.get(t.id) -> True, False, False, False, False))
+          @@pairScoreMap += (s.@city1Name -> 
+              (s.@person1Id, @@messagePersonIds.get(t.id) -> True, False, False, False, False))
       END;
 
   vMessage =
     SELECT t
-    FROM vPerson1:s-((person_likes_comments|person_likes_post):e)->(comments|post):t
+    FROM vPerson1:s-((Person_LIKES_Comment|Person_LIKES_Post):e)->(Comment|Post):t
     WHERE @@messagePersonIds.containsKey(t.id)
-    ACCUM @@pairScoreMap += (s.@city1Name -> (s.id, @@messagePersonIds.get(t.id) -> False, False, False, True, False));
+    ACCUM @@pairScoreMap += (s.@city1Name -> 
+        (s.id, @@messagePersonIds.get(t.id) -> False, False, False, True, False));
 
   @@messagePersonIds.clear(); // clear to reuse
 
   // case 2 and 5
   vMessage1 = 
     SELECT t
-    FROM vPerson1:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    FROM vPerson1:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
     ACCUM 
       t.@person1Id = s.id,
       t.@city1Name = s.@city1Name;
 
   vComments =
     SELECT t
-    FROM vPerson2:s-(comments_hasCreator_person_reverse:e)->comments:t
+    FROM vPerson2:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
     ACCUM @@messagePersonIds += (t.id -> s.id);
 
   vMessage =
     SELECT s
-    FROM vMessage1:s-((comments_replyOf_comments_reverse|comments_replyOf_post_reverse))->comments:t
+    FROM vMessage1:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE))->Comment:t
     WHERE @@messagePersonIds.containsKey(t.id)
-    ACCUM @@pairScoreMap += (s.@city1Name -> (s.@person1Id, @@messagePersonIds.get(t.id) -> False, True, False, False, False));
+    ACCUM @@pairScoreMap += (s.@city1Name -> 
+        (s.@person1Id, @@messagePersonIds.get(t.id) -> False, True, False, False, False));
 
   vMessage =
     SELECT s
-    FROM vMessage1:s-((person_likes_comments_reverse|person_likes_post_reverse):e)->person:t
+    FROM vMessage1:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
     WHERE @@person2Ids.contains(t.id)
-    ACCUM @@pairScoreMap += (s.@city1Name -> (s.@person1Id, t.id -> False, False, False, False, True));
+    ACCUM @@pairScoreMap += (s.@city1Name -> 
+        (s.@person1Id, t.id -> False, False, False, False, True));
 
   // case 3
   vPerson1 =
     SELECT s
-    FROM vPerson1:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+    FROM vPerson1:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     WHERE @@person2Ids.contains(t.id)
     ACCUM @@pairScoreMap += (s.@city1Name -> (s.id, t.id -> False, False, True, False, False));
 
@@ -112,5 +115,3 @@ CREATE QUERY bi_22(string country1, string country2) FOR GRAPH ldbc_snb {
     PRINT @@pairScoreTop;
   END;
 }
-
-INSTALL QUERY bi_22

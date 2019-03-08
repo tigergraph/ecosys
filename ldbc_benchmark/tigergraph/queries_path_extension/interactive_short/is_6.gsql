@@ -7,19 +7,19 @@ CREATE QUERY is_6(string messageId) FOR GRAPH ldbc_snb {
   SumAccum<string> @forumTitle;
 
   @@seed += messageId;
-  vComments = to_vertex_set(@@seed, "comments");
+  vComments = to_vertex_set(@@seed, "Comment");
 	
   IF vComments.size() > 0 THEN
     vPost = 
       SELECT t
-      FROM vComments:s-(comments_replyOf_comments>*0..:ea.comments_replyOf_post>:eb)-post:t
+      FROM vComments:s-(Comment_REPLY_OF_Comment>*0..:ea.Comment_REPLY_OF_Post>:eb)-Post:t
   ELSE
-    vPost = to_vertex_set(@@seed, "post");
+    vPost = to_vertex_set(@@seed, "Post");
   END;
 	
   vModerator = 
     SELECT t
-    FROM vPost:s-(<forum_containerOf_post:e1)-forum:im-(forum_hasModerator_person>:e2)-person:t
+    FROM vPost:s-(<Forum_CONTAINER_OF_Post:e1)-Forum:im-(Forum_HAS_MODERATOR_Person>:e2)-Person:t
     ACCUM t.@forumId = im.id,
           t.@forumTitle = im.title;
   

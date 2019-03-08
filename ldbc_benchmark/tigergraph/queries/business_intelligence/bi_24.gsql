@@ -1,40 +1,48 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_24
+# Messages by Topic and Continent
+CREATE QUERY bi_24(STRING tagClassName) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT messageCount, INT likeCount, INT Y, INT M, STRING continentName> info;
 
-CREATE QUERY bi_24(STRING tagClass) FOR GRAPH ldbc_snb { 
-  # Messages by Topic and Continent
-	TYPEDEF TUPLE <INT messageCount, INT likeCount, INT Y, INT M, STRING continentName> INFO;
-	HeapAccum<INFO>(100, Y ASC, M ASC, continentName DESC) @@result;
-	GroupByAccum<INT Y, INT M, STRING continentName, SumAccum<INT> messageCount, SumAccum<INT> likeCount> @@count; 
-	SumAccum<STRING> @continentName;
-	SumAccum<INT> @likeCount;
-	
-	TagClass = {tagclass.*};
-	Tags = SELECT t 
-	       FROM TagClass:s -(tag_hasType_tagclass_reverse:e)-> :t
-	       WHERE s.name == tagClass;
-	Messages = SELECT t
-	           FROM Tags:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e) -> :t;
+  HeapAccum<info>(100, Y ASC, M ASC, continentName DESC) @@result;
+  GroupByAccum<INT Y, INT M, STRING continentName, SumAccum<INT> messageCount, SumAccum<INT> likeCount> @@count; 
+  SumAccum<STRING> @continentName;
+  SumAccum<INT> @likeCount;
+
+  vTagClass = { TagClass.* };
+  vTags = 
+    SELECT t 
+    FROM vTagClass:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->:t
+    WHERE s.name == tagClassName;
+
+  vMessages = 
+    SELECT t
+    FROM vTags:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
+
   # count likes
-	Messages = SELECT s
-	           FROM Messages:s -((person_likes_post_reverse | person_likes_comments_reverse):e) -> :t 
-	           ACCUM s.@likeCount += 1;
-	# get continent name 	
-	Countries = SELECT t
-	            FROM Messages:s -((post_isLocatedIn_country | comments_isLocatedIn_country):e) -> :t;
-	Countries = SELECT s 
-	            FROM Countries:s -(country_isPartOf_continent:e)-> :t
-	            ACCUM s.@continentName = t.name;
-  # get name and count
-	Messages = SELECT s
-	           FROM Messages:s -((post_isLocatedIn_country | comments_isLocatedIn_country):e) -> :t
-	           ACCUM s.@continentName = t.@continentName
-	           POST-ACCUM @@count += (year(s.creationDate), month(s.creationDate), s.@continentName -> 1, s.@likeCount);
-	
-	FOREACH c IN @@count DO
-    @@result += INFO(c.messageCount, c.likeCount, c.Y, c.M, c.continentName);
-	END;
-	PRINT @@result;         
-}
+  vMessages = 
+    SELECT s
+    FROM vMessages:s-((Person_LIKES_Post_REVERSE|Person_LIKES_Comment_REVERSE):e)->:t
+    ACCUM s.@likeCount += 1;
 
-INSTALL QUERY bi_24
+  # get Continent name
+  vCountries = 
+    SELECT t
+    FROM vMessages:s-((Post_IS_LOCATED_IN_Country|Comment_IS_LOCATED_IN_Country):e)->:t;
+
+  vCountries = 
+    SELECT s 
+    FROM vCountries:s-(Country_IS_PART_OF_Continent:e)->:t
+    ACCUM s.@continentName = t.name;
+
+  # get name and count
+  vMessages = 
+    SELECT s
+    FROM vMessages:s-((Post_IS_LOCATED_IN_Country|Comment_IS_LOCATED_IN_Country):e)->:t
+    ACCUM s.@continentName = t.@continentName
+    POST-ACCUM @@count += (year(s.creationDate), month(s.creationDate), s.@continentName -> 1, s.@likeCount);
+
+  FOREACH c IN @@count DO
+    @@result += info(c.messageCount, c.likeCount, c.Y, c.M, c.continentName);
+  END;
+
+  PRINT @@result;
+}

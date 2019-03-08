@@ -1,46 +1,57 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_7
+# Most authoritative users on a given topic
+CREATE QUERY bi_7(STRING tagName) FOR GRAPH ldbc_snb { 
+  SumAccum<INT> @authorityScore, @popularityScore;
+  OrAccum @hasGivenTag;
 
-CREATE QUERY bi_7(STRING givenTag) FOR GRAPH ldbc_snb { 
-  # Most authoritative users on a given topic
-	
-	SumAccum<INT> @authorityScore, @popularityScore;
-	OrAccum @hasGivenTag;
-	
- 	Tag = {tag.*};
-	Tag = SELECT s 
-	      FROM Tag:s 
-	      WHERE s.name == givenTag;
-	# Target messages
-	Message12 = SELECT t 
-	            FROM Tag:s -((comments_hasTag_tag_reverse | post_hasTag_tag_reverse):e)-> :t
-	            ACCUM t.@hasGivenTag = TRUE;
-	Person = SELECT t 
-	         FROM Message12:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t; 
-	Person2 = SELECT t 
-	          FROM Message12:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t; 
-	Message3 = SELECT t 
-	           FROM Person2:s -((post_hasCreator_person_reverse | comments_hasCreator_person_reverse):e)-> :t; 
-	Message3 = SELECT s 
-	           FROM Message3:s -((person_likes_comments_reverse | person_likes_post_reverse):e)-> :t
-	           ACCUM s.@popularityScore += 1;
+  vTag = {Tag.*};
+  vTag = 
+    SELECT s 
+    FROM vTag:s 
+    WHERE s.name == tagName;
 
-	# Traverse backwards
-	Person2 = SELECT t 
-	          FROM Message3:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
-	          ACCUM t.@popularityScore += s.@popularityScore;
-	Message12 = SELECT t 
-	            FROM Person2:s -((person_likes_comments | person_likes_post):e)-> :t
-	            WHERE t.@hasGivenTag == TRUE
-	            ACCUM t.@authorityScore += s.@popularityScore;
-	Person = SELECT t 
-	         FROM Message12:s -((post_hasCreator_person | comments_hasCreator_person):e)-> :t
-	         ACCUM t.@authorityScore += s.@authorityScore
-	         ORDER BY t.@authorityScore DESC, t.id ASC
-	         LIMIT 100;
-	
-	PRINT Person[Person.id AS personId, Person.@authorityScore AS authorityScore];
-	
+  # Target messages
+  vMessage12 = 
+    SELECT t 
+    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t
+    ACCUM t.@hasGivenTag = TRUE;
+
+  vPerson = 
+    SELECT t 
+    FROM vMessage12:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t; 
+
+  vPerson2 = 
+    SELECT t 
+    FROM vMessage12:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->:t; 
+
+  vMessage3 = 
+    SELECT t 
+    FROM vPerson2:s-((Post_HAS_CREATOR_Person_REVERSE|Comment_HAS_CREATOR_Person_REVERSE):e)->:t; 
+
+  vMessage3 = 
+    SELECT s 
+    FROM vMessage3:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->:t
+    ACCUM s.@popularityScore += 1;
+
+  # Traverse backwards
+  vPerson2 = 
+    SELECT t 
+    FROM vMessage3:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t
+    ACCUM t.@popularityScore += s.@popularityScore;
+
+  vMessage12 = 
+    SELECT t 
+    FROM vPerson2:s-((Person_LIKES_Comment|Person_LIKES_Post):e)->:t
+    WHERE t.@hasGivenTag == TRUE
+    ACCUM t.@authorityScore += s.@popularityScore;
+
+  vPerson = 
+    SELECT t 
+    FROM vMessage12:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t
+    ACCUM t.@authorityScore += s.@authorityScore
+    ORDER BY t.@authorityScore DESC, t.id ASC
+    LIMIT 100;
+
+  PRINT vPerson[
+      vPerson.id AS personId, 
+      vPerson.@authorityScore AS authorityScore];
 }
-
-INSTALL QUERY bi_7

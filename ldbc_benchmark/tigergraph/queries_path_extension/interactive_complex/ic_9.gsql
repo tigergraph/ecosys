@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_9
 
-CREATE QUERY ic_9(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_9(vertex<Person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<int personId, string personFirstName, string personLastName, int messageId, string messageContent, datetime messageCreationDate> msgInfo;
   
   OrAccum @visited;
@@ -15,14 +15,14 @@ CREATE QUERY ic_9(vertex<person> personId, int maxDateEpoch) FOR GRAPH ldbc_snb 
 	
   vMessage = 
     SELECT t
-    FROM vPerson:s-(person_knows_person>*1..2:e1)-person:im-((<comments_hasCreator_person|<post_hasCreator_person):e2)-(comments|post):t
+    FROM vPerson:s-(Person_KNOWS_Person>*1..2:e1)-Person:im-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e2)-(Comment|Post):t
     WHERE im.@visited == False
     AND t.creationDate < maxDate
     ACCUM 
       s.@visited += True,
       im.@visited += True,
       CASE 
-        WHEN t.type == "comments" THEN 
+        WHEN t.type == "Comment" THEN 
           @@msgInfoTop += msgInfo(im.id, im.firstName, im.lastName, t.id, t.content, t.creationDate)
         ELSE 
           @@msgInfoTop += msgInfo(im.id, im.firstName, im.lastName, t.id, t.imageFile, t.creationDate)

@@ -1,13 +1,10 @@
-USE GRAPH ldbc_snb
-DROP QUERY is_1 
-
-CREATE QUERY is_1(VERTEX<person> personId) FOR GRAPH ldbc_snb {
+CREATE QUERY is_1(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   SumAccum<INT> @cityId;
 
   vPerson = { personId };
   vPerson = 
     SELECT s
-    FROM vPerson:s-(person_isLocatedIn_city:e)->city:t
+    FROM vPerson:s-(Person_IS_LOCATED_IN_City:e)->City:t
     ACCUM s.@cityId = t.id;
 
   PRINT vPerson[
@@ -20,5 +17,3 @@ CREATE QUERY is_1(VERTEX<person> personId) FOR GRAPH ldbc_snb {
       vPerson.gender AS gender, 
       vPerson.creationDate AS creationDate];
 }
-
-INSTALL QUERY is_1

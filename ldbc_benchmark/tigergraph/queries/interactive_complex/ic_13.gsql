@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-DROP QUERY ic_13
-
-CREATE QUERY ic_13(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
   SumAccum<INT> @dist1 = -1, @dist2 = -1;
   SumAccum<INT> @@next;
   OrAccum @@found = False;
@@ -9,7 +6,6 @@ CREATE QUERY ic_13(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
-    
     vPerson = 
       SELECT v
       FROM vPerson:v
@@ -26,7 +22,7 @@ CREATE QUERY ic_13(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
       vPerson = 
         SELECT t
-        FROM vPerson:s-((person_knows_person|person_knows_person_reverse):e)->person:t
+        FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
@@ -60,5 +56,3 @@ CREATE QUERY ic_13(VERTEX<person> person1Id, VERTEX<person> person2Id) FOR GRAPH
 
   PRINT @@dist12 AS shortestPathLength;
 }
-
-INSTALL QUERY ic_13

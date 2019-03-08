@@ -1,28 +1,25 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi_21
+CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT zombie_id, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> zombie;
 
-CREATE QUERY bi_21(string _country, datetime endDate) FOR GRAPH ldbc_snb { 
-  TYPEDEF tuple<int zombie_id, int zombieLikeCount, int totalLikeCount, double zombieScore> zombie;
-
-  SumAccum<int> @messageCount, @creatorId;
-  SetAccum<int> @@zombieAll;
-  GroupByAccum<int zombie_id, SumAccum<int> zombieLikeCount, SumAccum<int> totalLikeCount> @@zombieGroup;
+  SumAccum<INT> @messageCount, @creatorId;
+  SetAccum<INT> @@zombieAll;
+  GroupByAccum<INT zombie_id, SumAccum<INT> zombieLikeCount, SumAccum<INT> totalLikeCount> @@zombieGroup;
   HeapAccum<zombie>(100, zombieScore DESC, zombie_id ASC) @@zombieTop;
 
-  vCountry = { country.* };
+  vCountry = { Country.* };
   vCity = 
     SELECT t
-    FROM vCountry:s-(city_isPartOf_country_reverse:e)->city:t
-    WHERE s.name == _country;
+    FROM vCountry:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
+    WHERE s.name == countryName;
 
   vPerson =
     SELECT t
-    FROM vCity:s-(person_isLocatedIn_city_reverse:e)->person:t
+    FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
     WHERE t.creationDate < endDate;
 
   vMessage =
     SELECT t
-    FROM vPerson:s-((comments_hasCreator_person_reverse|post_hasCreator_person_reverse):e)->(comments|post):t
+    FROM vPerson:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
     WHERE t.creationDate < endDate
     ACCUM 
       s.@messageCount += 1,
@@ -34,7 +31,7 @@ CREATE QUERY bi_21(string _country, datetime endDate) FOR GRAPH ldbc_snb {
 
   vMessage =
     SELECT s
-    FROM vMessage:s-((person_likes_comments_reverse|person_likes_post_reverse):e)-person:t
+    FROM vMessage:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)-Person:t
     ACCUM 
       CASE 
         WHEN @@zombieAll.contains(t.id) THEN 
@@ -53,5 +50,3 @@ CREATE QUERY bi_21(string _country, datetime endDate) FOR GRAPH ldbc_snb {
 
   PRINT @@zombieTop;
 }
-
-INSTALL QUERY bi_21

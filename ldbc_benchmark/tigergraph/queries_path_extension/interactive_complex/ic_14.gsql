@@ -1,13 +1,13 @@
 USE GRAPH ldbc_snb
 DROP QUERY ic_14
 
-CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH ldbc_snb {
+CREATE QUERY ic_14(vertex<Person> person1Id, vertex<Person> person2Id) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<jsonarray persionIdsInPath, double pathWeight> pathInfo;
   SumAccum<int> @dist1 = -1, @dist2 = -1;
   MinAccum<int> @@dist12;
   SumAccum<int> @@next;
-  ListAccum<ListAccum<vertex<person>>> @path1, @path2;
-  ListAccum<ListAccum<vertex<person>>> @@pathAll;
+  ListAccum<ListAccum<vertex<Person>>> @path1, @path2;
+  ListAccum<ListAccum<vertex<Person>>> @@pathAll;
   SumAccum<double> @@weight = 0.0;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
@@ -33,7 +33,7 @@ CREATE QUERY ic_14(vertex<person> person1Id, vertex<person> person2Id) FOR GRAPH
 	
       vPerson = 
         SELECT t
-        FROM vPerson:s-(person_knows_person>:e)-person:t
+        FROM vPerson:s-(Person_KNOWS_Person>:e)-Person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
         ACCUM
           CASE
