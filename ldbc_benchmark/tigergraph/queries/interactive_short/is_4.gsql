@@ -12,6 +12,7 @@ CREATE QUERY is_4(STRING messageId) FOR GRAPH ldbc_snb {
     vPost = to_vertex_set(@@seed, "Post");
     PRINT vPost[
         vPost.creationDate AS messageCreationDate,
-        vPost.imageFile AS messageContent];
+        vPost.content AS messageContent,
+        vPost.imageFile AS messageImage];
   END;
 }
