@@ -20,6 +20,11 @@ CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
       CASE 
         WHEN v.type == "Comment" THEN 
           @@commentsRecent += v
+        WHEN v.type == "Post" AND v.content != "" THEN 
+          v.@messageId = v.id, 
+          v.@messageContent = v.content,
+          v.@messageCreationDate = datetime_to_epoch(v.creationDate),
+          @@postsRecent += v
         WHEN v.type == "Post" THEN 
           v.@messageId = v.id, 
           v.@messageContent = v.imageFile,
