@@ -5,15 +5,11 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
+        SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
 
-        TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
-
-        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;    
-        SumAccum<FLOAT> @numerator, @@norm1, @norm2;
-
-        start1 = {source};
+        start = {source};
         subjects = SELECT t
-                   FROM start1:s -(Likes:e)-> :t
+                   FROM start:s -(Likes:e)-> :t
                    ACCUM t.@numerator = e.weight,
                          @@norm1 += pow(e.weight, 2);
 
@@ -25,10 +21,12 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
         neighbours = SELECT s
                      FROM neighbours:s -(Likes:e)-> :t
                      ACCUM s.@norm2 += pow(e.weight, 2)
-              	     POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, s, s.@numerator/sqrt(@@norm1 * s.@norm2))
-                     ;
+        	     POST-ACCUM s.@similarity = s.@numerator/sqrt(@@norm1 * s.@norm2)
+                     ORDER BY s.@similarity DESC
+                     LIMIT topK;
 
-        PRINT @@result_topK;
+
+        PRINT neighbours.@similarity;
 
 
 }

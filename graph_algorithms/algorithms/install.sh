@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -55,7 +55,7 @@ while [ !$finished ]; do
 				break;;
 			"Community detection: Louvain" )
 				algoName="louvain"
-				echo "  louvain() works on undirected edges"
+				echo "  louvain() works on undirected weighted edges"
 				break;;
 			"PageRank" )
 				algoName="pageRank"
@@ -81,6 +81,10 @@ while [ !$finished ]; do
 				algoName="shortest_ss_any_wt"
 				echo "  shortest_ss_any_wt() works on weighted directed or undirected edges"
 				break;;
+                        "Minimal Spanning Tree (MST)" )
+                                algoName="mst"
+                                echo "  mst() works on weighted undirected edges"
+                                break;;
 			"Triangle Counting(minimal memory)" )
 				algoName="tri_count"
 				echo "  tri_count() works on undirected edges"
@@ -203,7 +207,7 @@ while [ !$finished ]; do
 
 
      	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
-	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ]; then
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ] || [ "${algoName}" == "mst" ] || [ "${algoName}" == "louvain" ]; then
 		while true; do
                 	read -p "Edge attribute that stores FLOAT weight:"  weight
 			if [[ $(countEdgeAttr $weight) > 0 ]]; then
@@ -351,6 +355,19 @@ END
 						fi
 					  done
 					fi
+
+                                        # * eBoolType*
+                                        if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
+                                                if [[ $(countEdgeAttr $eBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*eBoolAttr\*/$eBoolAttr/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Edge attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
 					
 					# edge to insert for similarity algorithms
 					if [[ $(countStringInFile "\*insert-edge-name\*" $attrQuery) > 0 ]]; then
@@ -476,6 +493,19 @@ END
                                                         break;
                                                 else
                                                         echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+                                        # * eBoolType*
+                                        if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
+                                                if [[ $(countEdgeAttr $eBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*eBoolAttr\*/$eBoolAttr/g" $attrQuery;
+                                                        break;
+                                                else
+                                                        echo " *** Edge attribute name not found. Try again."
                                                 fi
                                           done
                                         fi

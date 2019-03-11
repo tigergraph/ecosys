@@ -5,11 +5,8 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
-
-        TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
-
-        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@result_topK;
-        SumAccum<int> @intersection_size, @@set_size_A, @set_size_B;
+        SumAccum<INT> @intersection_size, @@set_size_A, @set_size_B;
+        SumAccum<FLOAT> @similarity;
 
         Start (ANY) = {source};
         Start = SELECT s
@@ -20,14 +17,17 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                    FROM Start:s-(Likes:e)-:t;
 
         Others = SELECT t
-                 FROM Subjects:s -(reverse_Likes:e)- :t
+                 FROM Subjects:s -(Reverse_Likes:e)- :t
                  WHERE t != source
                  ACCUM t.@intersection_size += 1,
                        t.@set_size_B = t.outdegree("Likes")
-                 POST-ACCUM @@result_topK += SIMILARITY_SCORE(source, t, t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size))
-                 ;
+                 POST-ACCUM t.@similarity = t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size)
+                 ORDER BY t.@similarity DESC
+                 LIMIT topK;
 
-        PRINT @@result_topK;
+
+        PRINT Others.@similarity;
+
 
 }
 

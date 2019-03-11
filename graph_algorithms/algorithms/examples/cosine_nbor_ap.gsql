@@ -1,29 +1,32 @@
-CREATE QUERY cosine_nbor_ap_sub (VERTEX source) FOR GRAPH movie RETURNS (MapAccum<VERTEX, FLOAT>){
+CREATE QUERY cosine_nbor_ap_sub (VERTEX source, INT topK) FOR GRAPH movie RETURNS (MapAccum<VERTEX, FLOAT>){
 /* This subquery calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 */
 
-        MapAccum<VERTEX, FLOAT> @@result;
-        SumAccum<FLOAT> @numerator, @@norm1, @norm2;
+        MapAccum<VERTEX, FLOAT> @@topK_result;
+        SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
 
-        start1 = {source};
+        start = {source};
         subjects = SELECT t
-                   FROM start1:s -(Likes:e)-> :t
+                   FROM start:s -(Likes:e)-> :t
                    ACCUM t.@numerator = e.weight,
                          @@norm1 += pow(e.weight, 2);
 
         neighbours = SELECT t
-                     FROM subjects:s -(reverse_Likes:e)-> Person:t
-                     WHERE t != source and getvid(source) < getvid(t)
+                     FROM subjects:s -(Reverse_Likes:e)-> Person:t
+                     WHERE t != source
                      ACCUM t.@numerator += s.@numerator * e.weight;
 
         neighbours = SELECT s
                      FROM neighbours:s -(Likes:e)-> :t
                      ACCUM s.@norm2 += pow(e.weight, 2)
-                     POST-ACCUM @@result += (s -> s.@numerator/sqrt(@@norm1 * s.@norm2))
-                 ;
-
-        RETURN @@result;
+                     POST-ACCUM s.@similarity = s.@numerator/sqrt(@@norm1 * s.@norm2)
+                     ORDER BY s.@similarity DESC
+                     LIMIT topK;
+        neighbours = SELECT s
+                     FROM neighbours:s 
+                     ACCUM @@topK_result += (s -> s.@similarity);
+        return @@topK_result;
 }
 
 
@@ -33,23 +36,11 @@ CREATE QUERY cosine_nbor_ap (INT topK) FOR GRAPH movie{
 2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
-        TYPEDEF tuple<VERTEX vertex1, VERTEX vertex2, FLOAT score> SIMILARITY_SCORE;
-        MapAccum<VERTEX, FLOAT> @single_result;
-        HeapAccum<SIMILARITY_SCORE>(topK, score DESC) @@total_result;
-
+        MapAccum<VERTEX, FLOAT> @result;
         start = {Person.*}; 
         start = SELECT s
                 FROM start:s
-                ACCUM s.@single_result = cosine_nbor_ap_sub (s)
-                POST-ACCUM 
-                        FOREACH (key, value) IN s.@single_result DO
-                                @@total_result += SIMILARITY_SCORE(s, key, value)
-                        END
-            ;
-        
-        PRINT @@total_result;
-
+                ACCUM s.@result = cosine_nbor_ap_sub(s, topK);
+        PRINT start.@result;
 }
 
-#install query cosine_nbor_ap_sub
-#install query cosine_nbor_ap 
