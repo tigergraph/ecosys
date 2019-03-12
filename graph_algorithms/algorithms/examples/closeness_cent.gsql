@@ -12,7 +12,7 @@ CREATE QUERY cc_subquery (VERTEX source, INT numVert, INT maxHops) FOR GRAPH soc
         WHILE (Start.size() > 0) LIMIT maxHops DO    # explore up to (maxHops) hops FROM s
                 @@currDist += 1;
                 # Move FROM the current start set to the neighboring set of (unvisited) vertices
-                Start = SELECT t FROM Start:s -((Friend|Also_Friend):e)-> :t
+                Start = SELECT t FROM Start:s -(:e)-> :t
                         WHERE t.@visited == false AND t != s
                         POST-ACCUM t.@visited += true;
                                    @@totalDist += Start.size() * @@currDist;
@@ -28,7 +28,7 @@ CREATE QUERY cc_subquery (VERTEX source, INT numVert, INT maxHops) FOR GRAPH soc
 CREATE QUERY closeness_cent (BOOL display, INT outputLimit) FOR GRAPH social {
 # Closeness Centrality main query
 
-        TYPEDEF TUPLE<STRING name, FLOAT score> vertexScore;
+        TYPEDEF TUPLE<VERTEX Vertex_ID, FLOAT score> vertexScore;
         HeapAccum<vertexScore>(outputLimit, score DESC) @@topScores;
         SumAccum<float> @score;
         SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
@@ -36,7 +36,7 @@ CREATE QUERY closeness_cent (BOOL display, INT outputLimit) FOR GRAPH social {
         INT numVert;
         INT maxHops = 10;      # measure distance for vertices up to 10 hops away
   
-        Start = {Person.*};
+        Start = {ANY};
 
         #Total number of vertices considered in graph
         numVert = Start.size();
@@ -44,13 +44,13 @@ CREATE QUERY closeness_cent (BOOL display, INT outputLimit) FOR GRAPH social {
         # get closeness centrality for each vertex
         Start = SELECT s FROM Start:s
                 POST-ACCUM s.@score = cc_subquery(s,numVert,maxHops),
-                           @@topScores += vertexScore(s.name, cc_subquery(s,numVert,maxHops));
+                           @@topScores += vertexScore(s, cc_subquery(s,numVert,maxHops));
 
         PRINT @@topScores;
         IF display THEN
                 PRINT Start[Start.@score];
                 Start = SELECT s
-                        FROM Start:s -((Friend|Also_Friend):e)-> :t
+                        FROM Start:s -(:e)-> :t
                         ACCUM @@edgeSet += e;
                 PRINT @@edgeSet;
         END;

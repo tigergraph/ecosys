@@ -8,13 +8,13 @@ CREATE QUERY tri_count_fast() FOR GRAPH social {
   
 # We build up our neighbor lists manually because we'll only build them up on the 2 smaller vertices on a triangle. 
         T0 = SELECT t
-             FROM Start:s-(Coworker)-> :t
-             WHERE (s.outdegree("Coworker")) > (t.outdegree("Coworker")) OR ((s.outdegree("Coworker")) == (t.outdegree("Coworker")) AND getvid(s) > getvid(t))
+             FROM Start:s-()-> :t
+             WHERE (s.outdegree()) > (t.outdegree()) OR ((s.outdegree()) == (t.outdegree()) AND getvid(s) > getvid(t))
              ACCUM t.@neighbors += getvid(s);
   
 # Here we compute the intersection for 2 points on the triangle.
         T1 = SELECT t
-             FROM Start:s-(Coworker:e)-> :t
+             FROM Start:s-(:e)-> :t
              ACCUM @@cnt += COUNT(s.@neighbors INTERSECT t.@neighbors);
   
 # Divide by 2 because every triangle was counted twice

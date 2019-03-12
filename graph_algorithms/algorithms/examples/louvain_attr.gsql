@@ -8,7 +8,7 @@ CREATE QUERY louvain_attr(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT sp
  * split: To save memory, split number is 10 by default. When the split number is larger, the query is closer to sequential Louvain Method, which is slower. When the split number is 1, the query is parallel, but requires more memory. 
  * distribution: 0, only list number; 1, also list members
  * debug: 0, no modularity info; 1, show debug log; 2, modularity for each iteration
- * f_community, f_distribution: files to store community label and community distribution
+ * f_comm, f_dist: files to store community label and community distribution
 */
         
         TYPEDEF TUPLE <INT csize, INT number> ClusterNum;
@@ -63,9 +63,9 @@ CREATE QUERY louvain_attr(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT sp
         iteration = 1;
         S = SELECT s 
             FROM Start:s -(Friend:e)-> :t
-            #WHERE s.@cid != t.@cid  # since the default bestCluster is itself, don't need to calculate itself        
             WHERE s.@cid > t.@cid
-            ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.weight - 2 * s.@weight * s.@weight/ @@totalWeight) # weightToCluster is just e.weight
+            ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.weight - 2 * s.@weight * s.@weight/ @@totalWeight) 
+                  # weightToCluster is just e.weight
             POST-ACCUM INT bestCluster = s.@largestDeltaQ.top().cid,
                        IF s.@largestDeltaQ.size() > 0 and s.@largestDeltaQ.top().deltaQ > 0 and s.@cid != bestCluster THEN 
                                s.@cid = bestCluster
@@ -98,7 +98,13 @@ CREATE QUERY louvain_attr(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT sp
                 WHILE (loop < partitions) DO 
                         S = SELECT s 
                             FROM Start:s -(Friend:e)-> :t
-                            WHERE s.@uid % partitions == loop AND abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon AND s.@cid > t.@cid)   # at least one cluster not only itself, or use smaller label
+                            WHERE s.@uid % partitions == loop    # for different split
+                                  # At least one cluster not singlet(a cluster on its own). If both clusters are singlets, consider only when the label of target is smaller to avoid swap
+                                  AND (( abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon   # s is not a singlet 
+                                  OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon )     # or t is not a singlet
+                                  OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon      # s is a singlet 
+                                  AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon      # t is also a singlet
+                                  AND s.@cid > t.@cid) )                                               # consider only when target label is smaller
                             ACCUM s.@weightToCluster += (t.@cid -> e.weight)
                             POST-ACCUM INT bestCluster = s.@cid,
                                        FLOAT maxDeltaQ = 0.0,
@@ -276,7 +282,7 @@ CREATE QUERY louvain_attr(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT sp
                 POST-ACCUM @@clusterSizes += (s.@cid -> 1)
                            , s.cid = s.@cid
                            ;
-
+        PRINT @@clusterSizes.size() AS numClusters;
 
         IF distribution ==0 THEN
                 FOREACH (cluster, csize) IN @@clusterSizes DO

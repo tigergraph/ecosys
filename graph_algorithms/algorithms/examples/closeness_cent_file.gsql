@@ -12,7 +12,7 @@
         WHILE (Start.size() > 0) LIMIT maxHops DO    # explore up to (maxHops) hops FROM s
                 @@currDist += 1;
                 # Move FROM the current start set to the neighboring set of (unvisited) vertices
-                Start = SELECT t FROM Start:s -((Friend|Also_Friend):e)-> :t
+                Start = SELECT t FROM Start:s -(:e)-> :t
                         WHERE t.@visited == false AND t != s
                         POST-ACCUM t.@visited += true;
                                    @@totalDist += Start.size() * @@currDist;
@@ -33,7 +33,7 @@
         INT numVert;
         INT maxHops = 10;      # measure distance for vertices up to 10 hops away
   
-        Start = {Person.*};
+        Start = {ANY};
 
         #Total number of vertices considered in graph
         numVert = Start.size();

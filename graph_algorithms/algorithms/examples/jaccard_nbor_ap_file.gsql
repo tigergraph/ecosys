@@ -22,6 +22,7 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                  POST-ACCUM t.@similarity = t.@intersection_size*1.0/(@@set_size_A + t.@set_size_B - t.@intersection_size)
                  ORDER BY t.@similarity DESC
                  LIMIT topK;
+
         Others = SELECT s
                  FROM Others:s
                  POST-ACCUM f.println(source, s, s.@similarity);
