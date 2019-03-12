@@ -21,7 +21,7 @@ The attribute version only store the distance into attribute, not the path.
   ##### Calculate distances  #####
         WHILE(Source.size()>0) DO
                 Source = SELECT t
-                         FROM Source:s -(LinkTo:e)-> :t
+                         FROM Source:s -(Link:e)-> :t
                          WHERE t.@dis > s.@dis + e.weight
                          ACCUM t.@dis += s.@dis + e.weight,
                                t.@visited += true;
@@ -32,7 +32,7 @@ The attribute version only store the distance into attribute, not the path.
         Source = {source};
         WHILE(Source.size()>0) DO
           Source = SELECT t
-                   FROM Source:s -(LinkTo:e)-> :t
+                   FROM Source:s -(Link:e)-> :t
                    WHERE abs((t.@dis) - (s.@dis+e.weight)) < epsilon
                    ACCUM t.@path = s.@path + [t];
         END;
@@ -42,7 +42,7 @@ The attribute version only store the distance into attribute, not the path.
         PRINT ResultSet[ResultSet.@dis, ResultSet.@path];
         IF display THEN
                 ResultSet = SELECT s
-                            FROM ResultSet:s -(LinkTo:e)-> :t
+                            FROM ResultSet:s -(Link:e)-> :t
                             ACCUM @@edgeSet += e;
                 PRINT @@edgeSet;
         END;

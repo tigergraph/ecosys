@@ -32,7 +32,7 @@ The ACCM version shows display by default.
                           POST-ACCUM IF t == @@chosen_edge.top().toV THEN    
                                               t.@chosen = TRUE      // mark the chosen vertex to add into A
                                      END
-                          HAVING t.@chosen' == false and t.@chosen == true;
+                          HAVING t.@chosen == true;
                 IF @@chosen_edge.size() > 0 THEN
 *ATTR*                  S = SELECT s
 *ATTR*                      FROM Current:s -(*edge-types*:e) -> :t

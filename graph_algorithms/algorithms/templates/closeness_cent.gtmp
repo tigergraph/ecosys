@@ -32,7 +32,7 @@
 *FILE*CREATE QUERY closeness_cent*EXT* (FILE f) FOR GRAPH *graph* {
 # Closeness Centrality main query
 
-*ACCM*  TYPEDEF TUPLE<STRING name, FLOAT score> vertexScore;
+*ACCM*  TYPEDEF TUPLE<VERTEX Vertex_ID, FLOAT score> vertexScore;
 *ACCM*  HeapAccum<vertexScore>(outputLimit, score DESC) @@topScores;
         SumAccum<float> @score;
 *ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
@@ -50,7 +50,7 @@
         Start = SELECT s FROM Start:s
                 POST-ACCUM s.@score = cc_subquery*EXT*(s,numVert,maxHops),
 *ATTR*                     s.*vFltAttr* = cc_subquery*EXT*(s,numVert,maxHops);
-*ACCM*                     @@topScores += vertexScore(s.name, cc_subquery*EXT*(s,numVert,maxHops));
+*ACCM*                     @@topScores += vertexScore(s, cc_subquery*EXT*(s,numVert,maxHops));
 *FILE*                     f.println(s, cc_subquery*EXT*(s,numVert,maxHops));
 
 *ACCM*  PRINT @@topScores;
