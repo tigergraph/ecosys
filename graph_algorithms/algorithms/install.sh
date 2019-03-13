@@ -253,7 +253,22 @@ while [ !$finished ]; do
 		gsql -g $grph "DROP QUERY ${subqueryWords[3]}"
 	fi
 END
-	
+
+        # 6. Ask for query mode.
+       echo; echo "Please choose query mode:"
+       select mode in "Single Node Mode" "Batch Mode"; do
+                case $mode in
+                        "Batch Mode" )	
+                                sed -i "s/CREATE QUERY/CREATE BATCH QUERY/g" ${genPath}/${algoName}_tmp.gsql;
+                                break;;
+                        "Single Node Mode" )
+                                break;;
+                        * )
+                                echo "Not a valid choice. Try again."
+                                ;;
+                esac
+        done
+
 ###################################################
 # 7. Create up to 3 versions of the algorithm:
 # ${algoName}      produces JSON output

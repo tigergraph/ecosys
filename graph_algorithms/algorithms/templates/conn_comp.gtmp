@@ -1,6 +1,6 @@
-*ATTR*CREATE QUERY conn_comp*EXT* () FOR GRAPH *graph* {
-*ACCM*CREATE QUERY conn_comp*EXT* () FOR GRAPH *graph* {
-*FILE*CREATE QUERY conn_comp*EXT* (FILE f) FOR GRAPH *graph* {
+*ATTR*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH *graph* {
+*ACCM*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH *graph* {
+*FILE*CREATE BATCH QUERY conn_comp*EXT* (FILE f) FOR GRAPH *graph* {
 # This query identifies the Connected Components (undirected edges)
 
         MinAccum<int> @cc_id = 0;       //each vertex's tentative component id
