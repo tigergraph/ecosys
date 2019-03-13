@@ -1,4 +1,4 @@
-      CREATE QUERY conn_comp_file (FILE f) FOR GRAPH social {
+      CREATE BATCH QUERY conn_comp_file (FILE f) FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         MinAccum<int> @cc_id = 0;       //each vertex's tentative component id
@@ -18,7 +18,7 @@
 # Propagate smaller internal IDs until no more ID changes can be DOne
         WHILE (Start.size()>0) DO
                 Start = SELECT t
-                        FROM Start:s -(Coworker:e)-> :t
+                        FROM Start:s -(:e)-> :t
                         ACCUM t.@cc_id += s.@cc_id // If s has a smaller id than t, copy the id to t
                         POST-ACCUM
                                 CASE WHEN t.@old_id != t.@cc_id THEN // If t's id has changed

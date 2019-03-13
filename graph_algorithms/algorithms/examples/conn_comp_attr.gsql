@@ -1,4 +1,6 @@
-CREATE QUERY conn_comp_attr () FOR GRAPH social {
+*ATTR*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH social {
+*ACCM*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH social {
+*FILE*CREATE BATCH QUERY conn_comp*EXT* (FILE f) FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         MinAccum<int> @cc_id = 0;       //each vertex's tentative component id
@@ -18,7 +20,7 @@ CREATE QUERY conn_comp_attr () FOR GRAPH social {
 # Propagate smaller internal IDs until no more ID changes can be DOne
         WHILE (Start.size()>0) DO
                 Start = SELECT t
-                        FROM Start:s -(Coworker:e)-> :t
+                        FROM Start:s -(:e)-> :t
                         ACCUM t.@cc_id += s.@cc_id // If s has a smaller id than t, copy the id to t
                         POST-ACCUM
                                 CASE WHEN t.@old_id != t.@cc_id THEN // If t's id has changed
@@ -33,10 +35,17 @@ CREATE QUERY conn_comp_attr () FOR GRAPH social {
 
         Start = {ANY};
 
-        Start = SELECT s FROM Start:s
-                POST-ACCUM s.score = s.@cc_id;
+*ATTR*  Start = SELECT s FROM Start:s
+*ATTR*          POST-ACCUM s.*vIntAttr* = s.@cc_id;
 
+*ACCM*  Start = SELECT s FROM Start:s
+*ACCM*          POST-ACCUM @@compSizes += (s.@cc_id -> 1);
+*ACCM*  PRINT @@compSizes;
+*ACCM*  PRINT Start.@cc_id;
 
+*FILE*  f.println("Vertex_ID","Component_ID");
+*FILE*  Start = SELECT s FROM Start:s
+*FILE*        	POST-ACCUM f.println(s, s.@cc_id);
 }
 
-#INSTALL QUERY conn_comp_attr
+#INSTALL QUERY conn_comp*EXT*
