@@ -35,7 +35,7 @@ python3 driver.py [-h] [-p PATH] [-n NUM] [-q QUERY] [-d [DEBUG]] [--seed SEED]
 * QUERY (Optional): If you want to run a single QUERY or all queries in a workload instead of all 46 queries, you can pass a type and/or number of specific query: IS[_1..7], IC[_1..14], BI[_1..25]. 
   * to run a specific query: IS_2, Ic_12, bi_22
   * to run all queries in a specific workload: is, iC, BI
-* DEBUG (Optional): If you want to print out HTTP request/response and/or response time for each HTTP request, pass this flag with the following values:
+* DEBUG (Optional): If you want to print out HTTP request/response and/or response time for each HTTP request, pass this flag with one of the following values:
   * 1: print HTTP request/response and response time for each HTTP request
   * 2: print only response time for each HTTP request
-* SEED (Optional): You can run a query QUERY with a speicfic parameter SEED for NUM number of times by passing a pipe-separated and quoted string here, i.e. you can simply copy and paste a single line from a text file under substitution_parameters/ directory and enclose it with quotation marks. Note that the order of parameter in the string matters.
+* SEED (Optional): You can run a query QUERY with a speicfic parameter SEED for NUM number of times by passing a pipe-separated and quoted string here, i.e. you can simply copy and paste a single line from a text file under substitution_parameters/ directory and enclose it with quotation marks. Note that the order of parameter in the string matters, and SEED will be ignored unless you provide a specific query QUERY to run.
