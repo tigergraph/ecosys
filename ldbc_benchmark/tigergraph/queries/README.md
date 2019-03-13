@@ -32,6 +32,10 @@ python3 driver.py [-h] [-p PATH] [-n NUM] [-q QUERY] [-d [DEBUG]] [--seed SEED]
 
 * PATH (Optional): Full PATH to the directory of pre-generated seeds. Those seeds of txt files are under substitution_parameters/ in the directory where data generated. It is by default "/home/tigergraph/ldbc_snb_data/substitution_parameters/" and you can skip passing this argument by directly modifying DEFAULT_PATH_TO_SEEDS in [driver.py](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/tigergraph/queries/driver.py).
 * NUM (Optional): Max NUMber of seeds to run queries. It will read up to MAX_NUM_SEEDS seeds from the files. It is by default 100 and you can skip passing this argument by directly modifying DEFAULT_MAX_NUM_SEEDS in [driver.py](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/tigergraph/queries/driver.py).
-* QUERY (Optional): If you want to run a single QUERY instead of all 46 queries, you can pass a type and number of specific query: IS_[1..7], IC_[1..14], BI_[1..25]. e.g. IS_2, Ic_12, bi_22.
-* DEBUG (Optional): If you want to check out HTTP request/response, pass this flag then driver will print them out.
-* SEED (Optional): If you just need some seed(s) to test, put the number of SEEDs you want to populate. It will print person.id and message.id and terminates without running the driver.
+* QUERY (Optional): If you want to run a single QUERY or all queries in a workload instead of all 46 queries, you can pass a type and/or number of specific query: IS[_1..7], IC[_1..14], BI[_1..25]. 
+  * to run a specific query: IS_2, Ic_12, bi_22
+  * to run all queries in a specific workload: is, iC, BI
+* DEBUG (Optional): If you want to print out HTTP request/response and/or response time for each HTTP request, pass this flag with the following values:
+  * 1: print HTTP request/response and response time for each HTTP request
+  * 2: print only response time for each HTTP request
+* SEED (Optional): You can run a query QUERY with a speicfic parameter SEED for NUM number of times by passing a pipe-separated and quoted string here, i.e. you can simply copy and paste a single line from a text file under substitution_parameters/ directory and enclose it with quotation marks. Note that the order of parameter in the string matters.
