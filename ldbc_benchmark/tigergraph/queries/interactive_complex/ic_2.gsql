@@ -16,6 +16,9 @@ CREATE QUERY ic_2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb 
       CASE
         WHEN t.type == "Comment" THEN
           @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+        WHEN t.type == "Post" AND t.content != ""  THEN
+          @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+
         ELSE
           @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
       END;
