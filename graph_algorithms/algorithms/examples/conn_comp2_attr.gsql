@@ -1,8 +1,7 @@
-CREATE QUERY conn_comp () FOR GRAPH social {
+CREATE QUERY conn_comp_attr () FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         SumAccum<INT> @cid;        //community id for each vertex
-        MapAccum<INT, INT> @@compSizes;
         OrAccum @visited;
         INT n = 0;
         INT curr_cid;
@@ -21,11 +20,9 @@ CREATE QUERY conn_comp () FOR GRAPH social {
                 Start = SELECT s
                         FROM Start:s
                         ACCUM s.@visited = true
-                        POST-ACCUM curr_cid = s.@cid
                         ;
                 WHILE (Start.size() > 0) DO
                         Unvisited = Unvisited MINUS Start;
-                        @@compSizes += (curr_cid -> Start.size());
                         Start = SELECT t
                                 FROM Start:s -(Coworker:e)-> Person:t
                                 WHERE t.@visited == false
@@ -35,12 +32,10 @@ CREATE QUERY conn_comp () FOR GRAPH social {
         END;
 
         Start = {Person.*};
-
         Start = SELECT s FROM Start:s
-                POST-ACCUM @@compSizes += (s.@cid -> 1);
-        PRINT @@compSizes;
-        PRINT Start.@cid;
+                POST-ACCUM s.score = s.@cid;
+
 
 }
 
-#INSTALL QUERY conn_comp
+#INSTALL QUERY conn_comp_attr
