@@ -1,4 +1,4 @@
-      CREATE BATCH QUERY conn_comp2_file (FILE f) FOR GRAPH social {
+      CREATE DISTRIBUTED QUERY conn_comp2_file (FILE f) FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         SumAccum<INT> @cid;        //community id for each vertex
@@ -31,7 +31,7 @@
                 END;
         END;
 
-        Start = {ANY};
+        Start = {Person.*};
 
 
         f.println("Vertex_ID","Component_ID");

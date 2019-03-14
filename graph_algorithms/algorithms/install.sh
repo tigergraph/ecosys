@@ -256,10 +256,10 @@ END
 
         # 6. Ask for query mode.
        echo; echo "Please choose query mode:"
-       select mode in "Single Node Mode" "Batch Mode"; do
+       select mode in "Single Node Mode" "Distributed Mode"; do
                 case $mode in
-                        "Batch Mode" )	
-                                sed -i "s/CREATE QUERY/CREATE BATCH QUERY/g" ${genPath}/${algoName}_tmp.gsql;
+                        "Distributed Mode" )	
+                                sed -i "s/CREATE QUERY/CREATE DISTRIBUTED QUERY/g" ${genPath}/${algoName}_tmp.gsql;
                                 break;;
                         "Single Node Mode" )
                                 break;;

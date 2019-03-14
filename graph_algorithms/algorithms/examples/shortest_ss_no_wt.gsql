@@ -1,4 +1,4 @@
-CREATE QUERY shortest_ss_no_wt (VERTEX source, BOOL display) FOR GRAPH generic {
+CREATE DISTRIBUTED QUERY shortest_ss_no_wt (VERTEX source, BOOL display) FOR GRAPH social {
 /* This query is Single-Source Shortest Path without weights on edges. It calculates the shortest distance from the given vertex source to all other connected vertices, and shows one shortest path between them.   
 The JSON version also show visualization of the network. 
 The attribute version only store the distance into attribute, not the path.
@@ -21,7 +21,7 @@ The attribute version only store the distance into attribute, not the path.
   ##### Calculate distances and paths #####
         WHILE(Source.size()>0) DO
                 Source = SELECT t
-                         FROM Source:s -(LinkTo:e)-> :t
+                         FROM Source:s -(Friend:e)-> :t
                          WHERE t.@visited == false
                          ACCUM t.@dis += s.@dis + 1,
                                t.@path = s.@path + [t],
@@ -34,7 +34,7 @@ The attribute version only store the distance into attribute, not the path.
         PRINT ResultSet[ResultSet.@dis, ResultSet.@path];
         IF display THEN
                 ResultSet = SELECT s
-                            FROM ResultSet:s -(LinkTo:e)-> :t
+                            FROM ResultSet:s -(Friend:e)-> :t
                             ACCUM @@edgeSet += e;
                 PRINT @@edgeSet;
         END;

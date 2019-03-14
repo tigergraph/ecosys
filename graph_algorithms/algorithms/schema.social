@@ -1,0 +1,42 @@
+---- Graph social
+Vertex Types: 
+  - VERTEX Person(PRIMARY_ID id STRING, name STRING, score FLOAT, tag STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE"
+Edge Types: 
+  - DIRECTED EDGE Friend(FROM Person, TO Person, weight FLOAT, tag STRING, flag BOOL) WITH REVERSE_EDGE="Also_Friend"
+  - DIRECTED EDGE Also_Friend(FROM Person, TO Person, weight FLOAT, tag STRING, flag BOOL) WITH REVERSE_EDGE="Friend"
+  - UNDIRECTED EDGE Coworker(FROM Person, TO Person, weight FLOAT, tag STRING, flag BOOL)
+
+Graphs: 
+  - Graph social(Person:v, Friend:e, Also_Friend:e, Coworker:e)
+Jobs: 
+  - CREATE LOADING JOB load_social FOR GRAPH social {
+      DEFINE FILENAME dir_efile = "";
+      DEFINE FILENAME mixed_efile = "";
+      DEFINE FILENAME vfile = "";
+      DEFINE FILENAME und_efile = "";
+      LOAD vfile TO VERTEX Person VALUES($0, $0, $1, $2) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD dir_efile TO VERTEX Person VALUES($0, $0, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD dir_efile TO VERTEX Person VALUES($1, $1, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD und_efile TO VERTEX Person VALUES($0, $0, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD und_efile TO VERTEX Person VALUES($1, $1, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD mixed_efile TO VERTEX Person VALUES($0, $0, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD mixed_efile TO VERTEX Person VALUES($1, $1, _, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD dir_efile TO EDGE Friend VALUES($0, $1, $2, $3, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD und_efile TO EDGE Coworker VALUES($0, $1, $2, $3, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD mixed_efile TO EDGE Friend VALUES($0, $1, $3, $4, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+      LOAD mixed_efile TO EDGE Coworker VALUES($0, $2, $3, $4, _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+    }
+
+Queries: 
+  - conn_comp2() (installed v2)
+  - conn_comp2_file(file f) (installed v2)
+  - mst(vertex source) (installed v2)
+  - mst_attr(vertex source) (installed v2)
+  - mst_file(vertex source, file f) (installed v2)
+  - pageRank(float maxChange, int maxIter, float damping, bool display, int outputLimit) (installed v2)
+  - pageRank_file(float maxChange, int maxIter, float damping, file f) (installed v2)
+  - shortest_ss_no_wt(vertex source, bool display) (installed v2)
+
+
+
+

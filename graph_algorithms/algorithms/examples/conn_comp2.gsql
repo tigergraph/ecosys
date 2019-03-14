@@ -1,4 +1,4 @@
-CREATE BATCH QUERY conn_comp2 () FOR GRAPH social {
+CREATE DISTRIBUTED QUERY conn_comp2 () FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         SumAccum<INT> @cid;        //community id for each vertex
@@ -34,7 +34,7 @@ CREATE BATCH QUERY conn_comp2 () FOR GRAPH social {
                 END;
         END;
 
-        Start = {ANY};
+        Start = {Person.*};
 
         Start = SELECT s FROM Start:s
                 POST-ACCUM @@compSizes += (s.@cid -> 1);

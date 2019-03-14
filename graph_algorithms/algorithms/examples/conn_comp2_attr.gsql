@@ -1,4 +1,4 @@
-CREATE BATCH QUERY conn_comp2_attr () FOR GRAPH social {
+CREATE DISTRIBUTED QUERY conn_comp2_attr () FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         SumAccum<INT> @cid;        //community id for each vertex

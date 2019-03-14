@@ -1,9 +1,9 @@
-CREATE QUERY mst (VERTEX source) FOR GRAPH social {
+CREATE DISTRIBUTED QUERY mst (VERTEX source) FOR GRAPH social {
 /* Minimal Spanning Tree (MST)
 Given an undirected graph, and a source vertex, print out a MST for the connected subgraph which contains the source vertex.
-1. Start with a set A = {source vertex}
-2. For all vertices in A, find another vertex y in the graph but not A which is connected to a vertex x in A such that the weight on the edge e(x,y) is the smallest among all such edges from a vertex in A to a vertex not in A. Add y to A, and add the edge (x,y) to MST
-3. Repeat 2 until A has no edge linking to any other vertex in the graph.
+1. Start with a set MSTNodes = {source vertex}
+2. For all vertices in MSTNodes, find another vertex y in the graph but not MSTNodes which is connected to a vertex x in MSTNodes such that the weight on the edge e(x,y) is the smallest among all such edges from a vertex in MSTNodes to a vertex not in MSTNodes. Add y to MSTNodes, and add the edge (x,y) to MST
+3. Repeat 2 until MSTNodes has no edge linking to any other vertex in the graph.
 The ACCM version shows display by default.  
 */
         TYPEDEF TUPLE<VERTEX toV, EDGE their_edge, FLOAT weight> EDGE_WEIGHT;
@@ -11,26 +11,26 @@ The ACCM version shows display by default.
         SetAccum<EDGE> @@mst;
         OrAccum @chosen;
 
-        A = {source};
+        MSTNodes = {source};
         // initialize the source vertex
-        Current = SELECT a
-                  FROM A:a
-                  ACCUM a.@chosen = true;
+        Current = SELECT s
+                  FROM MSTNodes:s
+                  ACCUM s.@chosen = true;
 
         WHILE (Current.size() > 0) DO
                 Current = SELECT t
-                          FROM A:s -((Friend|PI|II):e) -> :t
-                          WHERE t.@chosen == false    // vertex not in A
+                          FROM MSTNodes:s -(Coworker:e) -> :t
+                          WHERE t.@chosen == false    // vertex not in MSTNodes
                           ACCUM @@chosen_edge += EDGE_WEIGHT(t, e, e.weight)
                           POST-ACCUM IF t == @@chosen_edge.top().toV THEN    
-                                              t.@chosen = TRUE      // mark the chosen vertex to add into A
+                                              t.@chosen = TRUE      // mark the chosen vertex to add into MSTNodes
                                      END
                           HAVING t.@chosen == true;
                 IF @@chosen_edge.size() > 0 THEN
                         @@mst += @@chosen_edge.top().their_edge;
                 END;    
                 @@chosen_edge.clear();
-                A = A UNION Current;      // update A
+                MSTNodes = MSTNodes UNION Current;      // update MSTNodes
         END;
 
         PRINT @@mst;

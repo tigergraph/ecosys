@@ -1,7 +1,7 @@
 USE GRAPH social
 DROP QUERY plmr_split
 
-CREATE BATCH QUERY plmr_split(INT iter1 = 32, INT iter2 = 32, INT iter3 = 0, INT split = 10, int output_mode = 0, int debug = 2, int skewLimit = 10000, STRING fileResult = "/tmp/community.csv") for graph social {
+CREATE DISTRIBUTED QUERY plmr_split(INT iter1 = 32, INT iter2 = 32, INT iter3 = 0, INT split = 10, int output_mode = 0, int debug = 2, int skewLimit = 10000, STRING fileResult = "/tmp/community.csv") for graph social {
   /*
  * Parallel Louvain Method with Refinement
  * https://arxiv.org/pdf/1304.4453

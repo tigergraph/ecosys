@@ -1,7 +1,7 @@
 DROP ALL
 
 CREATE VERTEX Person (PRIMARY_ID id STRING, name STRING, score FLOAT, tag STRING)
-CREATE DIRECTED EDGE Friend (FROM Person, TO Person, weight FLOAT, tag STRING) WITH REVERSE_EDGE="Also_Friend"
-CREATE UNDIRECTED EDGE Coworker (FROM Person, TO Person, weight FLOAT, tag STRING)
+CREATE DIRECTED EDGE Friend (FROM Person, TO Person, weight FLOAT, tag STRING, flag BOOL) WITH REVERSE_EDGE="Also_Friend"
+CREATE UNDIRECTED EDGE Coworker (FROM Person, TO Person, weight FLOAT, tag STRING, flag BOOL)
 
 CREATE GRAPH social (*)
