@@ -24,10 +24,10 @@ sudo apt install libcurl4-openssl-dev libssl-dev
 pip3 install tornado pycurl --user
 ```
 
-Once you done with this, you can now run the driver:
+### Usage
 
 ```
-python3 driver.py [-h] [-p PATH] [-n NUM] [-q QUERY] [-d [DEBUG]] [--seed SEED]
+python3 driver.py [-h] [-p PATH] [-n NUM] [-q QUERY] [-d DEBUG] [--seed SEED]
 ```
 
 * PATH (Optional): Full PATH to the directory of pre-generated seeds. Those seeds of txt files are under substitution_parameters/ in the directory where data generated. It is by default "/home/tigergraph/ldbc_snb_data/substitution_parameters/" and you can skip passing this argument by directly modifying DEFAULT_PATH_TO_SEEDS in [driver.py](https://github.com/tigergraph/ecosys/blob/ldbc/ldbc_benchmark/tigergraph/queries/driver.py).
