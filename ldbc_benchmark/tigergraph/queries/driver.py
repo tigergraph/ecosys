@@ -61,7 +61,7 @@ def handle_response(response):
     else:
       response_time = response.time_info["starttransfer"] - response.time_info["pretransfer"]
       logging.Logger.info1(logging.root, "[Response] {}".format(response_json["results"]))
-      logging.Logger.info2(logging.root, "[Running Time] {} sec".format(round(response_time, 3)))
+      logging.Logger.info2(logging.root, "[Running Time] {} sec".format(round(response_time, 10)))
 
   return response_time, has_error
 
@@ -127,7 +127,7 @@ def run_query(http_client, path, num, seed, query_type, query_num, person_ids=[]
     if not has_error:
       print("\n-- # {}: {}".format("Seeds" if not seed else "Iterations", request_sent))
       if response_recv > 0:
-        print("-- Average Response Time: {} sec\n".format(round((response_time/response_recv),3)))
+        print("-- Average Response Time: {} sec\n".format(round((response_time/response_recv),10)))
   except HTTPClientError as e:
     print("-- Bad Response: HTTP {} {}".format(e.response.code, e.response.reason))
   except Exception as e:
