@@ -1,0 +1,74 @@
+use graph ldbc_snb
+
+create query ic_10(vertex<person> pid, int currentMonth) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SetAccum<vertex<tag>> @tagSet;
+  SumAccum<int> @common;
+  SumAccum<int> @uncommon;
+  SumAccum<int> @score;
+  SumAccum<string> @cityName;
+
+  // global variables
+  int nextMonth;
+  nextMonth = currentMonth + 1;
+  if currentMonth == 12 then
+    nextMonth = 1;
+  end;
+
+  Seed = { pid };
+
+  // collect the set of tags that the root is interested in
+  RootInterests = select tgt from Seed:src -(person_hasInterest_tag>)- tag:tgt;
+  
+  // find friends of friends who satisfy the birthday condition
+  Result =
+    select tgt
+    from Seed:src -((person_knows_person>|<person_knows_person)*2..2)- person:tgt
+    where src != tgt and
+      ((month(tgt.birthday) == currentMonth and day(tgt.birthday) >= 21) 
+       or (month(tgt.birthday) == nextMonth and day(tgt.birthday) < 22))
+    ;
+
+  // collect the set of posts created by 2-hop friends along with their tags
+  PostSet = select src from Result:src -(<post_hasCreator_person)- post:msg;
+  AggregatePostSet =
+    select src
+    from PostSet:src -(post_hasTag_tag>)- tag:tgt
+    accum src.@tagSet += tgt
+    ;
+
+  // aggregate commonInterestScore and city info for each person in Result
+  AggregateResult =
+    select src
+    from Result:src -(<post_hasCreator_person)- post:tgt
+    accum
+      if count(tgt.@tagSet INTERSECT RootInterests) == 0 then src.@uncommon += 1
+      else src.@common += 1
+      end
+    post-accum src.@score += src.@common - src.@uncommon
+    ;
+
+  AggregateResult =
+    select src
+    from Result:src -(person_isLocatedIn_city>)- city:tgt
+    accum src.@cityName = tgt.name
+    ;
+
+  // perform sorting on the result
+  Result =
+    select src
+    from Result:src
+    order by src.@score desc, src.id asc
+    limit 10
+    ;
+
+  print Result[
+    Result.id as personId,
+    Result.firstName as personFirstName,
+    Result.lastName as personLastName,
+    Result.@score as commonInterestScore,
+    Result.gender as personGender,
+    Result.@cityName as personCityName
+  ];
+}
+

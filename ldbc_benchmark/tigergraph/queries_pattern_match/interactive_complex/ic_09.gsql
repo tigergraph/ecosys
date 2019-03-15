@@ -1,0 +1,36 @@
+use graph ldbc_snb
+
+create query ic_9(vertex<person> pid, datetime maxDate) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<int> @personId;
+  SumAccum<string> @personFirstName;
+  SumAccum<string> @personLastName;
+  SumAccum<string> @messageContent;
+
+  Seed = { pid };
+  Result =
+    select tgt
+    from Seed:src -((person_knows_person>|<person_knows_person)*1..2)- person:auth
+         -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):tgt
+    where tgt.creationDate < maxDate
+    accum
+      tgt.@personId = auth.id,
+      tgt.@personFirstName = auth.firstName,
+      tgt.@personLastName = auth.lastName,
+      if tgt.type == "post" and tgt.content IS NULL then tgt.@messageContent = tgt.imageFile
+      else tgt.@messageContent = tgt.content
+      end
+    order by tgt.creationDate desc, tgt.id asc
+    limit 20
+    ;
+
+  print Result[
+    Result.@personId as personId,
+    Result.@personFirstName as personFirstName,
+    Result.@personLastName as personLastName,
+    Result.id as messageId,
+    Result.@messageContent as messageContent,
+    Result.creationDate as messageCreationDate
+  ];
+}
+

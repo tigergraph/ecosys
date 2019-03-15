@@ -1,0 +1,42 @@
+use graph ldbc_snb
+
+create query bi_6(string tagName) for graph ldbc_snb {
+  // vertex-attached accumulators
+  GroupByAccum<vertex msg, SumAccum<int> lCnt, SumAccum<int> rCnt> @messages;
+  SumAccum<int> @messageCount;
+  SumAccum<int> @score;
+
+  TagSeed = { tag.* };
+  // find person who created message with given tag
+  FinalResult =
+    select tgt
+    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag))- (post|comments):msg
+         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where src.name == tagName
+    accum tgt.@messages += (msg -> 0, 0)
+    post-accum tgt.@messageCount += tgt.@messages.size()
+    ;
+
+  // aggregate number of likes for each message
+  AggregateResult =
+    select src
+    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):msg
+         -((<person_likes_post|<person_likes_comments|<comments_replyOf_post|<comments_replyOf_comments))- (person|comments):tgt
+    accum case
+      when tgt.type == "person" then src.@messages += (msg -> 1, 0) # likes
+      when tgt.type == "comments" then src.@messages += (msg -> 0, 1) #replies
+      end
+    post-accum
+      src.@score += src.@messageCount,
+      foreach g in src.@messages do
+        src.@score += 2 * g.rCnt + 10 * g.lCnt
+     end
+    ;
+
+  // perform ordering on final result
+  FinalResult = select s from FinalResult:s order by s.@score desc, s.id asc limit 100;
+
+  // print result
+  print FinalResult;
+}
+

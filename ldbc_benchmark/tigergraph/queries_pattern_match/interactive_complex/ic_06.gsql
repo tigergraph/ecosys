@@ -1,0 +1,44 @@
+use graph ldbc_snb
+
+create query ic_6(vertex<person> pid, string tagName) for graph ldbc_snb {
+  // vertex-attached accumulators
+  OrAccum @hasGivenTag;
+  OrAccum @hasOtherTags;
+  SumAccum<int> @postCount;
+
+  PersonSeed = { pid };
+
+  // find all posts made by the person's friends
+  PostSet =
+    select tgt
+    from PersonSeed:src -((person_knows_person>|<person_knows_person)*1..2)- person:mid
+         -(<post_hasCreator_person)- post:tgt
+    where src != mid
+    ;
+
+  // filter PostSet by requirements on tags
+  PostSet =
+    select src
+    from PostSet:src -(post_hasTag_tag>)- tag:tgt
+    accum case
+      when tgt.name == tagName then src.@hasGivenTag += true
+      when tgt.name != tagName then src.@hasOtherTags += true
+      end
+    having src.@hasGivenTag and src.@hasOtherTags
+    ;
+
+  // aggregate information about postCount
+  TagSet =
+    select tgt
+    from PostSet:src -(post_hasTag_tag>)- tag:tgt
+    accum tgt.@postCount += 1
+    order by tgt.@postCount desc, tgt.name asc
+    limit 10
+    ;
+
+  print TagSet[
+    TagSet.name as tagName,
+    TagSet.@postCount as postCount
+  ];
+}
+

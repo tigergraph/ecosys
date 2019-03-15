@@ -1,0 +1,66 @@
+use graph ldbc_snb
+
+create query ic_13(vertex<person> s, vertex<person> t) for graph ldbc_snb {
+  // global accumulators
+  SetAccum<vertex<person>> @@explored;
+  OrAccum @@stop;
+  MinAccum<int> @@length;
+
+  // vertex-attached accumulators
+  OrAccum @seenS;
+  OrAccum @seenT;
+  SumAccum<int> @sLength;
+  SumAccum<int> @tLength;
+
+  // global variables
+  int ExploredSize = 0;
+
+  // check for zero-length condition
+  if s == t then
+    @@length = 0;
+    @@stop += true;
+  end;
+
+  // initialize s, t vertices
+  Start = { s, t };
+  Start = select v from Start:v
+          accum case when v == s then v.@seenS += true
+                     when v == t then v.@seenT += true
+                end;
+  @@explored += s;
+  @@explored += t;
+
+  // loop for graph exploration
+  while @@stop == false and @@explored.size() != ExploredSize do
+    ExploredSize = @@explored.size();
+    Start = 
+      select v
+      from Start:u -((person_knows_person>|<person_knows_person))- person:v
+      where ((u.@seenS == true and v.@seenS == false) or // from S frontier
+             (u.@seenT == true and v.@seenT == false)) // from T frontier
+      accum case
+        when ((u.@seenS == true and v.@seenT == true) or
+              (u.@seenT == true and v.@seenS == true)) then // u->v joins S,T
+          @@stop += true,
+          case when (u.@seenS == true and v.@seenT == true) then
+            @@length += (u.@sLength + v.@sLength + 1)
+          end
+        when u.@seenS == true then // expand S frontier
+          v.@seenS += true, v.@sLength = u.@sLength + 1, @@explored += v
+        when u.@seenT == true then // expand T frontier
+          v.@seenT += true, v.@tLength = u.@tLength + 1, @@explored += v
+        end
+      post-accum case
+        when v.@seenS == true and v.@seenT == true and @@stop == false then
+          @@stop += true, @@length += (v.@sLength + v.@tLength)
+        end
+      ;
+  end;
+
+  if @@stop == false then
+    @@length = -1;
+  end;
+
+  print @@length;
+}
+

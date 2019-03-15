@@ -1,0 +1,53 @@
+use graph ldbc_snb
+
+create query is_2(vertex<person> pid) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<string> @messageContent;
+  SumAccum<int> @originalPostId;
+  SumAccum<int> @originalPostAuthorId;
+  SumAccum<string> @originalPostAuthorFirstName;
+  SumAccum<string> @originalPostAuthorLastName;
+
+  PersonSeed = { pid };
+  // find the last 10 messages created by the user
+  FinalResult =
+    select tgt
+    from PersonSeed:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:tgt
+    accum case
+      when tgt.type == "post" then
+        case when tgt.content IS NULL then tgt.@messageContent = tgt.imageFile
+             when tgt.content IS NOT NULL then tgt.@messageContent = tgt.content
+             end,
+        tgt.@originalPostId = tgt.id,
+        tgt.@originalPostAuthorId = src.id,
+        tgt.@originalPostAuthorFirstName = src.firstName,
+        tgt.@originalPostAuthorLastName = src.lastName
+      when tgt.type == "comments" then tgt.@messageContent = tgt.content
+      end
+    order by tgt.creationDate desc, tgt.id desc
+    limit 10
+    ;
+
+  // aggregate info about original post if the message is a comment
+  AggregateResult =
+    select src
+    from FinalResult:src -((comments_replyOf_comments>)*)- _
+         -(comments_replyOf_post>)- post:op -(post_hasCreator_person>)- person:tgt
+    accum
+      src.@originalPostId += op.id,
+      src.@originalPostAuthorOd += tgt.id,
+      src.@originalPostAuthorFirstName += tgt.firstName,
+      src.@originalPostAuthorLastName += tgt.lastName
+    ;
+
+  print FinalResult[
+    FinalResult.id as messageId,
+    FinalResult.@messageContent as messageContent,
+    FinalResult.creationDate as messageCreationDate,
+    FinalResult.@originalPostId as originalPostId,
+    FinalResult.@originalPostAuthorId as originalPostAuthorId,
+    FinalResult.@originalPostAuthorFirstName as originalPostAuthorFirstName,
+    FinalResult.@originalPostAuthorLastName as originalPostAuthorLastName
+  ];
+}
+

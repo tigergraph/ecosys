@@ -1,0 +1,38 @@
+use graph ldbc_snb
+
+create query ic_8(vertex<person> pid) for graph ldbc_snb {
+  // vertex-attached accumulator
+  SumAccum<int> @personId;
+  SumAccum<string> @personFirstName;
+  SumAccum<string> @personLastName;
+
+  Seed = { pid };
+  // find the most recent comment for each message created by the person
+  Result =
+    select tgt
+    from Seed:src -((<post_hasCreator_person|<comments_hasCreator_person))- _
+         -((<comments_replyOf_post|<comments_replyOf_comments))- comments:tgt
+    ;
+
+  // aggregate info about the comment creators
+  Result =
+    select src
+    from Result:src -(comments_hasCreator_person>)- person:tgt
+    accum
+      src.@personId = tgt.id,
+      src.@personFirstName = tgt.firstName,
+      src.@personLastName = tgt.lastName
+    order by src.creationDate desc, src.id asc
+    limit 20
+    ;
+
+  print Result[
+    Result.@personId as personId,
+    Result.@personFirstName as personFirstName,
+    Result.@personLastName as personLastName,
+    Result.creationDate as commentCreationDate,
+    Result.id as commentId,
+    Result.content as commentContent
+  ];
+}
+

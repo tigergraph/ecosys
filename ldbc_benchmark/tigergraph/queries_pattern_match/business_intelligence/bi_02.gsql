@@ -1,0 +1,75 @@
+use graph ldbc_snb
+
+create query bi_2(datetime startDate, datetime endDate,
+                  string country1, string country2) for graph ldbc_snb {
+  // tuple type definitions
+  typedef tuple<string countryName, int messageMonth, string personGender,
+                int ageGroup, string tagName, int messageCount> summary;
+
+  // global accumulators
+  GroupByAccum<string countryName, int messageMonth,
+               string personGender, int ageGroup,
+               string tagName, SetAccum<vertex> messages> @@groupings;
+
+  HeapAccum<summary>(100, messageCount desc, tagName asc,
+                     ageGroup asc, personGender asc,
+                     messageMonth asc, countryName asc) @@sorted_groupings;
+
+  // vertex-attached accumulators
+  SumAccum<string> @countryName;
+  SumAccum<int> @messageMonth;
+  SumAccum<string> @personGender;
+  SumAccum<int> @ageGroup;
+  SumAccum<string> @tagName;
+
+  // global variables
+  datetime EndOfSimulation = to_datetime("2013-01-01");
+  int SecondsPerYear;
+  SecondsPerYear = 365 * 24 * 60 * 60;
+
+  Seed = { post.*, comments.* };
+
+  // select messages created within the given timeline from the given country
+  Seed =
+    select src
+    from Seed:src -((post_hasCreator_person>|comments_hasCreator_person>))- _
+         -(person_isLocatedIn_city>)- city -(city_isPartOf_country>)- country:tgt
+    where src.creationDate >= startDate and
+          src.creationDate <= endDate and
+          (tgt.name == country1 or tgt.name == country2)
+    accum src.@messageMonth += month(src.creationDate), src.@countryName += tgt.name
+    ;
+
+  // accumulate author information to messages
+  Seed =
+    select src
+    from Seed:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    accum src.@personGender += tgt.gender,
+          src.@ageGroup += ceil(datetime_diff(EndOfSimulation, tgt.birthday) / SecondsPerYear / 5)
+    ;
+
+  // accumulate tag information to messages
+  Seed =
+    select src
+    from Seed:src -((post_hasTag_tag>|comments_hasTag_tag>))- tag:tgt
+    accum src.@tagName += tgt.name
+    ;
+
+  // perform groupings
+  Seed =
+    select src
+    from Seed:src
+    post-accum @@groupings += (src.@countryName, src.@messageMonth, src.@personGender,
+                               src.@ageGroup, src.@tagName -> src);
+
+  // sort grouping results
+  foreach g in @@groupings do
+    if g.messages.size() > 100 then
+      @@sorted_groupings += summary(
+        g.countryName, g.messageMonth, g.personGender, g.ageeGroup,
+        g.tagName, g.messages.size()
+      );
+    end;
+  end;
+}
+

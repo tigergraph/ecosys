@@ -1,0 +1,97 @@
+use graph ldbc_snb
+
+create query ic_1(vertex<person> pid, string firstName) for graph ldbc_snb {
+  // user-defined tuples
+  typedef tuple<string companyName, int personWorkFrom> JobInfoPair;
+  typedef tuple<string companyName, int personWorkFrom, string countryName> JobInfoTriplet;
+  typedef tuple<string uniName, int personClassYear> UniInfoPair;
+  typedef tuple<string uniName, int personClassYear, string cityName> UniInfoTriplet;
+
+  // global accumulator(s)
+  SetAccum<vertex<person>> @@friends;
+
+  // vertex-attached accumulator(s)
+  SetAccum<JobInfoPair> @JobInfoPairSet;
+  SetAccum<JobInfoTriplet> @friendCompanies;
+  SetAccum<UniInfoPair> @UniInfoPairSet;
+  SetAccum<UniInfoTriplet> @friendUniversities;
+  SumAccum<int> @distanceFromPerson;
+  SumAccum<string> @friendCityName;
+
+  // global variables
+  int i = 0;
+
+  PersonSet = { pid };
+  // find the max-three-hop friends and add them to @@friends
+  while i < 3 do
+    PersonSet =
+      select tgt
+      from PersonSet:src -((person_knows_person>|<person_knows_person))- person:tgt
+      where tgt != pid
+      accum tgt.@distanceFromPerson += (i + 1), @@friends += tgt
+      ;
+  end;
+
+  FinalResult = { @@friends };
+  // Aggregate information about the person's work, school, and residence
+  AggregateSet =
+    select src
+    from FinalResult:src -(person_isLocatedIn_city>)- city:tgt
+    accum src.@friendCityName += tgt.name
+    ;
+
+  AggregateSet =
+    select src
+    from FinalResult:src -(person_workAt_company>:e)- company:tgt
+    accum src.@JobInfoPairSet += JobInfoPair(tgt.name, e.workFrom)
+    ;
+
+  AggregateSet =
+    select src
+    from FinalResult:src -(person_workAt_company>.company_isLocatedIn_country>)- country:tgt
+    accum
+      foreach info in src.@JobInfoPairSet do
+        src.@friendCompanies += JobInfoTriplet(info.companyName, info.personWorkFrom, tgt.name)
+      end
+    ;
+
+  AggregateSet =
+    select src
+    from FinalResult:src -(person_studyAt_university>:e)- university:tgt
+    accum src.@UniInfoPairSet += UniInfoPair(tgt.name, e.classYear)
+    ;
+
+  AggregateSet =
+    select src
+    from FinalResult:src -(person_studyAt_university>.university_isLocatedIn_city>)- city:tgt
+    accum
+      foreach info in src.@UniInfoPairSet do
+        src.@friendUniversities += UniInfoTriplet(info.uniName, info.personClassYear, tgt.name)
+      end
+    ;
+
+  // perform ordering on FinalResult
+  FinalResult =
+    select src
+    from FinalResult:src
+    order by src.@distanceFromPerson asc, src.lastName asc, src.id asc
+    limit 20
+    ;
+
+  print FinalResult[
+    FinalResult.id as friendId,
+    FinalResult.lastName as friendLastName,
+    FinalResult.@distanceFromPerson as distanceFromPerson,
+    FinalResult.birtyday as friendBirthday,
+    FinalResult.creationDate as friendCreationDate,
+    FinalResult.gender as friendGender,
+    FinalResult.browserUsed as friendBrowserUsed,
+    FinalResult.locationIP as friendLocationIp,
+    FinalResult.email as friendEmails,
+    FinalResult.speaks as friendLanguages,
+    FinalResult.@friendCityName as friendCityName,
+    FinalResult.@friendUniversities as friendUniversities,
+    FinalResult.@friendCompanies as friendCompanies
+  ];
+}
+

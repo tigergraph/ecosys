@@ -1,0 +1,38 @@
+use graph ldbc_snb
+
+create query bi_12(datetime start, int likeThreshold) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<string> @creatorFirstName;
+  SumAccum<string> @creatorLastName;
+  SumAccum<int> @likeCount;
+
+  FinalResult = { post.*, comments.* };
+
+  // select messages created after start date and aggregate creator info
+  FinalResult =
+    select src
+    from FinalResult:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where src.creationDate > start
+    accum src.@creatorFirstName += tgt.firstName,
+          src.@creatorLastName += tgt.lastName
+    ;
+
+  // aggregate like count
+  FinalResult =
+    select src
+    from FinalResult:src -((<person_likes_post|<person_likes_comments))- person:tgt
+    accum src.@likeCount += 1
+    having src.@likeCount > likeThreshold
+    order by src.@likeCount desc, src.id asc
+    limit 100
+    ;
+
+  print FinalResult[
+    FinalResult.id as messageId,
+    FinalResult.creationDate as messageCreationDate,
+    FinalResult.@creatorFirstName as creatorFirstName,
+    FinalResult.@creatorLastName as creatorLastName,
+    FinalResult.@likeCount as likeCount
+  ];
+}
+

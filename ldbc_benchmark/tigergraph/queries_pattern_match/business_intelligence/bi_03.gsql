@@ -1,0 +1,39 @@
+use graph ldbc_snb
+
+create query bi_3(int year, int month) for graph ldbc_snb {
+  // tuple type definitions
+  typedef tuple<string tagName, int countMonth1,
+                int countMonth2, int diff> summary;
+
+  // global accumulators
+  HeapAccum<summary>(100, diff desc, tagName asc) @@results;  
+
+  // vertex-attached accumulators
+  SumAccum<int> @countThisMonth;
+  SumAccum<int> @countNextMonth;
+
+  Seed = { post.*, comments.* };
+
+  // select tags associated to messages created in given or following month
+  TagSet =
+    select tgt
+    from Seed:src -((post_hasTag_tag>|comments_hasTag_tag>))- tag:tgt
+    where (year(src.creationDate) == year and
+           month(src.creationDate) == month)
+          or
+          (year(datetime_sub(src.creationDate, INTERVAL 1 MONTH)) == year and
+           month(datetime_sub(src.creationDate, INTERVAL 1 MONTH)) == month)
+    accum
+      if (year(src.creationDate) == year and month(src.creationDate) == month) then
+        tgt.@countThisMonth += 1
+      else
+        tgt.@countNextMonth += 1
+      end
+    post-accum
+      @@results += summary(tgt.name, tgt.@countThisMonth, tgt.@countNextMonth,
+                           abs(tgt.@countThisMonth - tgt.@countNextMonth))
+    ;
+
+  print @@results;
+}
+

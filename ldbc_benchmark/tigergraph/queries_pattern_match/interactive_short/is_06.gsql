@@ -1,0 +1,35 @@
+use graph ldbc_snb
+
+create query is_6(vertex mid) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<int> @moderatorId;
+  SumAccum<string> @moderatorFirstName;
+  SumAccum<string> @moderatorLastName;
+
+  Seed (post|comments) = { mid };
+  // select the container forum of the given message
+  Result =
+    select tgt
+    from Seed:src -((comments_replyOf_comments>|comments_replyOf_post)*)- post:msg
+         -(<forum_containerOf_post)- forum:tgt
+    ;
+
+  // aggregate information about the forum's moderator
+  AggregateResult =
+    select src
+    from Result:src -(forum_hasModerator_person>)- person:tgt
+    accum
+      src.@moderatorId += tgt.id,
+      src.@moderatorFirstName += tgt.firstName,
+      src.@moderatorLastName += tgt.lastName
+    ;
+
+  print Result[
+    Result.id as forumId,
+    Result.title as forumTitle,
+    Result.@moderatorId as moderatorId,
+    Result.@moderatorFirstName as moderatorFirstName,
+    Result.@moderatorLastName as moderatorLastName
+  ];  
+}
+

@@ -1,0 +1,55 @@
+use graph ldbc_snb
+
+create query bi_5(string countryName) for graph ldbc_snb {
+  // global accumulator
+  SetAccum<vertex<person>> @@members_top100;
+
+  // vertex-attached accumulators
+  SetAccum<vertex<person>> @forumMembers;
+  SumAccum<int> @forumMemberCount;
+  SetAccum<vertex<post>> @personPosts;
+  SumAccum<int> @personPostCount;
+
+  // find the vertex associated to the country with given name
+  CountrySeed = { country.* };
+
+  // select the top 100 most popular forums in the given country
+  ForumSeed =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country)- city
+         -(<person_isLocatedIn_city)- person:p
+         -(<forum_hasMember_person)- forum:tgt
+    where src.name == countryName
+    accum tgt.@forumMembers += p
+    post-accum tgt.@forumMemberCount += tgt.@forumMembers.size()
+    order by tgt.@forumMemberCount desc, tgt.id asc // use id to break tie
+    limit 100
+  ;
+
+  // select all members of top 100 forums
+  AllMembers =
+    select tgt
+    from ForumSeed -(forum_hasMember_person>)- person:tgt
+    accum @@members_top100 += tgt
+    ;
+
+  // rank members according to their post contributions in these forums
+  Result =
+    select tgt
+    from ForumSeed -(forum_containerOf_post>)- post:p -(post_hasCreator_person>)- person:tgt
+    where tgt in @@members_top100
+    accum tgt.@personPosts += p
+    post-accum tgt.@personPostCount += tgt.@personPosts.size()
+    order by tgt.@personPostCount desc, tgt.id asc
+    limit 100
+  ;
+
+  print Result[
+    Result.id as personId,
+    Result.firstName as firstName,
+    Result.lastName as lastName,
+    Result.creationDate as creationDate,
+    Result.@personPostCount as postCount
+  ];
+}
+

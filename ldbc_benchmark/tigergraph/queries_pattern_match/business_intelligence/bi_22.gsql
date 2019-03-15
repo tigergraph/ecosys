@@ -1,0 +1,109 @@
+use graph ldbc_snb
+
+create query bi_22(string country1, string country2) for graph ldbc_snb {
+  // user-defined tuples
+  typedef tuple<int person1_id, int person2_id, int city1_name, int score> res;
+
+  // global accumulator(s)
+  GroupByAccum<vertex<person> p1, vertex<person> p2, SumAccum<int> score> @@groups;
+  HeapAccum<res>(1, score desc, person1_id asc, person2_id asc) @@results;
+  SetAccum<vertex<person>> @@citizens_country1;
+  SetAccum<vertex<person>> @@citizens_country2;
+
+  // vertex-attached accumulator(s)
+  SetAccum<vertex<person>> @country1Repliers;
+  SetAccum<vertex<person>> @country2Repliers;
+  SetAccum<vertex<person>> @country1Likers;
+  SetAccum<vertex<person>> @country2Likers;
+  SetAccum<vertex<person>> @friends;
+  SumAccum<string> @cityName;
+
+  CountrySeed = { country.* };
+
+  // find the set of users from country1 and country2 respectively
+  Country1PersonSet =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country)- city:loc
+         -(<person_isLocatedIn_city)- person:tgt
+    where src.name == country1
+    accum tgt.@cityName = loc.name, @@citizens_country1 += tgt
+    ;
+
+  Country2PersonSet =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- person:tgt
+    where src.name == country2
+    accum @@citizens_country2 += tgt
+    ;
+
+  // subscore 1
+  AggregateSet =
+    select tgt
+    from Country1PersonSet: src -(<comments_hasCreator_person)- comments
+         -((comments_replyOf_post>|comments_replyOf_comments>))-_:msg
+         -((comments_hasCreator_person>|post_hasCreator_person>))- person:tgt
+    where tgt in @@citizens_country2
+    accum tgt.@country1Repliers += src
+    post-accum
+      foreach p in tgt.@country1Repliers do
+        @@groups += (p, tgt -> 4)
+      end
+    ;
+  // subscore 2
+  AggregateSet =
+    select tgt
+    from Country2PersonSet: src -(<comments_hasCreator_person)- comments
+         -((comments_replyOf_post>|comments_replyOf_comments>))- _:msg
+         -((comments_hasCreator_person>|post_hasCreator_person>))- person:tgt
+    where tgt in @@citizens_country1
+    accum tgt.@country2Repliers += src
+    post-accum
+      foreach p in tgt.@country2Repliers do
+        @@groups += (tgt, p -> 1)
+      end
+    ;
+  // subscore 3
+  AggregateSet =
+    select src
+    from Country1PersonSet:src -((person_knows_person>|<person_knows_person))- person:tgt
+    where tgt in @@citizens_country2
+    accum src.@friends += tgt
+    post-accum
+      foreach p in src.@friends do
+        @@groups += (src, tgt -> 15)
+      end
+    ;
+  // subscore 4
+  AggregateSet =
+    select tgt
+    from Country1PersonSet:src -((person_likes_post>|person_likes_comments>))- _:msg
+         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where tgt in @@citizens_country2
+    accum tgt.@country1Likers += src
+    post-accum
+      foreach p in tgt.@country1Likers do
+        @@groups += (p, tgt -> 4)
+      end
+    ;
+  // subscore 5
+  AggregateSet =
+    select tgt
+    from Country2PersonSet:src -((person_likes_post>|person_likes_comments>))- _:msg
+         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where tgt in @@citizens_country1
+    accum tgt.@country2Likers += src
+    post-accum
+      foreach p in tgt.@country2Likers do
+        @@groups += (p, tgt -> 4)
+      end
+    ;
+
+  // output the results in sorted order
+  @@results.resize(@@groups.size());
+  foreach (g1, g2, g3) in @@groups do
+    @@results += res(g1.id, g2.id, g1.@cityName, g3);
+  end;
+
+  print @@results;
+}
+
