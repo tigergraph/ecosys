@@ -45,14 +45,16 @@ CREATE QUERY ic_14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH
                 FOREACH p1 IN s.@path1 DO
                   FOREACH p2 IN t.@path2 DO
                     @@pathAll += p1 + [s] + [t] + p2,
-                    FOREACH p IN p1 DO
-                      @@personAllInPathAll += p
-                    END,
-                    FOREACH p IN p2 DO
-                      @@personAllInPathAll += p
+                    FOREACH i IN RANGE[0, p2.size()-2] DO
+                      @@personAllInPathAll += p2.get(i)
                     END
+                  END,
+                  FOREACH i IN RANGE[1, p1.size()-1] DO
+                    @@personAllInPathAll += p1.get(i)
                   END
-                END
+                END,
+                @@personAllInPathAll += s,
+                @@personAllInPathAll += t
               END
             WHEN s.@dist1 > -1 THEN
               @@next += 1,
@@ -81,14 +83,15 @@ CREATE QUERY ic_14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH
             FOREACH p1 IN t.@path1 DO
               FOREACH p2 IN t.@path2 DO
                 @@pathAll += p1 + [t] + p2,
-                FOREACH p IN p1 DO
-                  @@personAllInPathAll += p
-                END,
-                FOREACH p IN p2 DO
-                  @@personAllInPathAll += p
+                FOREACH i IN RANGE[0, p2.size()-2] DO
+                  @@personAllInPathAll += p2.get(i)
                 END
+              END,
+              FOREACH i IN RANGE[1, p1.size()-1] DO
+                @@personAllInPathAll += p1.get(i)
               END
-            END
+            END,
+            @@personAllInPathAll += t
           END;
 
       IF @@next == 0 THEN
@@ -102,7 +105,7 @@ CREATE QUERY ic_14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH
 
   vPerson = { @@personAllInPathAll };
 
-  vComments = 
+  vComment = 
     SELECT t
     FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
     ACCUM @@commentsAll += (s.id -> t);
@@ -118,28 +121,28 @@ CREATE QUERY ic_14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH
     FOREACH i IN range[0, path.size()-2] DO
       // person1's Comment -(replyOf)-> person2's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i).id);
-      vComments = { @@commentsSeed };
-      vComments = 
+      vComment = { @@commentsSeed };
+      c2p = 
         SELECT s
-        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
+        FROM vComment:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postAll.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
 
-      vComments = 
+      c2c = 
         SELECT s
-        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
+        FROM vComment:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsAll.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
 
       // person2's Comment -(replyOf)-> person1's Post|Comment
       @@commentsSeed = @@commentsAll.get(path.get(i+1).id);
-      vComments = { @@commentsSeed };
-      vComments = 
+      vComment = { @@commentsSeed };
+      c2p = 
         SELECT s
-        FROM vComments:s-(Comment_REPLY_OF_Post:e)-Post:t
+        FROM vComment:s-(Comment_REPLY_OF_Post:e)-Post:t
         ACCUM CASE WHEN @@postAll.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
 
-      vComments = 
+      c2c = 
         SELECT s
-        FROM vComments:s-(Comment_REPLY_OF_Comment:e)-Comment:t
+        FROM vComment:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentsAll.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
 
       jsonStr += bigint_to_string(path.get(i).id) + ",";
