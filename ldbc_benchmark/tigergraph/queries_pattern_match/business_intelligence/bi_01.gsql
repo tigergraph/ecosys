@@ -1,0 +1,61 @@
+use graph ldbc_snb
+
+create query bi_1(datetime maxDate) for graph ldbc_snb {
+  // user-defined tuple(s)
+  typedef tuple<int year, bool isComment, string lengthCategory,
+                int messageCount, int averageMessageLength,
+                int sumMessageLength, int percentageOfMessages> result;
+
+  // global accumulator(s)
+  GroupByAccum<int year, bool isComment, string lengthCategory,
+               SetAccum<vertex> messages> @@groups;
+  HeapAccum<result> (1, year desc, isComment asc,
+                     lengthCategory asc) @@ResultHeap;
+  SumAccum<float> @@totalCount;
+  SumAccum<int> @@totalMsgLength;
+
+  // global variables
+  string shortCode = "0";
+  string oneLinerCode = "1";
+  string tweetCode = "2";
+  string longCode = "3";
+  int groupSize;
+
+  MessageSeed = { post.*, comments.* };
+  // perform grouping and count total messages
+  MessageSet =
+    select src
+    from MessageSeed:src
+    where src.creationDate < maxDate
+    accum
+      int creationYear = year(src.creationDate),
+      bool isComment = (src.type == "comments"),
+      if src.length < 40 then
+        @@groups += (creationYear, isComment, shortCode -> src)
+      else if src.length < 80 then
+        @@groups += (creationYear, isComment, oneLinerCode -> src)
+      else if src.length < 160 then
+        @@groups += (creationYear, isComment, tweetCode -> src)
+      else
+        @@groups += (creationYear, isComment, longCode -> src)
+      end,
+      @@totalCount += 1
+    ;
+
+  @@ResultHeap.resize(@@groups.size());
+  foreach g in @@groups do
+    @@totalMsgLength = 0; // clear @@totalMsgLength for new group
+    foreach msg in g.messages do
+      @@totalMsgLength += msg.length;
+    end;
+    groupSize = g.messages.size();
+    @@ResultHeap += result(
+      g.year, g.isComment, g.lengthCategory, groupSize,
+      @@totalMsgLength / groupSize, @@totalMsgLength,
+      groupSize / @@totalCount
+    );
+  end;
+
+  print @@ResultHeap;
+}
+

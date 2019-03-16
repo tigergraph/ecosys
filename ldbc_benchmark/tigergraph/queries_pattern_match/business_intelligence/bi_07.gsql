@@ -1,0 +1,62 @@
+use graph ldbc_snb
+
+create query bi_7(string tagName) for graph ldbc_snb {
+  // vertex attached accumulators
+  SetAccum<vertex> @messages;
+  SetAccum<vertex<person>> @likers;
+  SumAccum<int> @authorityScore;
+  SumAccum<int> @popularityScore;
+
+  // seed set
+  TagSeed = { tag.* };
+  
+  // find person who created a message with the given tag
+  // aggregate all messages they created with that given tag
+  FinalResult =
+    select tgt
+    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag))- _:msg
+         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where src.name == tagName
+    accum tgt.@messages += msg
+    ;
+
+  // find the set of users who likes messages created by person in FinalResult
+  AuthoritySource =
+    select tgt
+    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
+         -((<person_likes_post|<person_likes_comments))- person:tgt
+    where msg in src.@messages
+    accum src.@likers += tgt
+    ;
+
+  // aggregate popularity score for AuthoritySource
+  AggregateAuthoritySource =
+    select src
+    from AuthoritySource:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
+         -((<person_likes_post|<person_likes_comments))- person:tgt
+    accum src.@popularityScore += 1
+    ;
+
+  // aggregate authority score for FinalResult
+  AggregateResult =
+    select src
+    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
+         -((<person_likes_post|<person_likes_comments))- person:tgt
+    where msg in src.@messages
+    accum src.@authorityScore += tgt.@popularityScore
+    ;
+
+  // Order all vertices in FinalResult by authorityScore and id
+  FinalResult =
+    select src
+    from FinalResult:src
+    order by src.@authorityScore desc, src.id asc
+    limit 100
+    ;
+
+  print FinalResult[
+    FinalResult.id as personId,
+    FinalResult.@authorityScore as authorityScore
+  ];
+}
+  

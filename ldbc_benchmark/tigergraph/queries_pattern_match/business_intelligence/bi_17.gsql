@@ -1,0 +1,31 @@
+use graph ldbc_snb
+
+create query bi_17(string countryName) for graph ldbc_snb {
+  // user-defined tuple type(s)
+  typedef tuple <vertex<person> a, vertex<person> b, vertex<person> c> triangle;
+  // global accumulator(s)
+  SetAccum<vertex<person>> @@citizens;
+  SetAccum<triangle> @@results;
+
+  // find the country with the given name
+  CountrySeed = { country.* };
+  // find the set of all users in the given country
+  PersonSet =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- person:tgt
+    where src.name == countryName
+    accum @@citizens += tgt
+    ;
+
+  AggregateSet =
+    select src
+    from PersonSet:src -((person_knows_person>|<person_knows_person))- person:mid
+         -((person_knows_person>|<person_knows_person))- person:tgt
+    where (mid in @@citizens) and (tgt in @@citizens) and
+          (src.id < mid.id) and (mid.id < tgt.id)
+    accum @@results += triangle(src, mid, tgt)
+    ;
+
+  print @@results.size();
+}
+

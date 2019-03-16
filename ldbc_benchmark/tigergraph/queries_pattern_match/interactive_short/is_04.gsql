@@ -1,0 +1,26 @@
+use graph ldbc_snb
+
+create query is_4(vertex mid) for graph ldbc_snb {
+  SumAccum<string> @messageContent;
+
+  Seed (post|comments) = { mid };
+  Result =
+    select src
+    from Seed:src
+    where src.type == "post" or src.type == "comments"
+    accum case
+      when src.type == "comments" then
+        src.@messageContent += src.content
+      when src.type == "post" and src.content IS NULL then
+        src.@messageContent += src.imageFile
+      when src.type == "post" and src.content IS NOT NULL then
+        src.@messageContent += src.content
+      end
+    ;
+
+  print Result[
+    Result.creationDate as messageCreationDate,
+    Result.@messageContent as messageContent
+  ];
+}
+

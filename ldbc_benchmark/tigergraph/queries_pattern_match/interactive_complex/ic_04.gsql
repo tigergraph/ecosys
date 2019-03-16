@@ -1,0 +1,41 @@
+use graph ldbc_snb
+
+create query ic_4(vertex<person> pid, datetime startDate, int duration) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<int> @postCount;
+
+  PersonSeed = { pid };
+
+  // find tags of posts created by the person's friends in the given timeframe
+  FinalResult =
+    select tgt
+    from PersonSeed:src -((<person_knows_person|person_knows_person>))- _
+         -(<post_hasCreator_person)- post:msg -(post_hasTag_tag>)- tag:tgt
+    where msg.creationDate >= startDate and msg.creationDate < datetime_add(startDate, INTERVAL duration DAY)
+    accum tgt.@postCount += 1
+    ;
+
+  // filter out tags of posts created by the person's friends before the given startDate
+  ExcludeResult =
+    select tgt
+    from PersonSeed:src -((<person_knows_person|person_knows_person>))- _
+         -(<post_hasCreator_person)- post:msg -(post_hasTag_tag>)- tag:tgt
+    where msg.creationDate < startDate
+    ;
+
+  FinalResult = FinalResult MINUS ExcludeResult;
+
+  // perform ordering on FinalResult
+  FinalResult =
+    select src
+    from FinalResult:src
+    order by src.@postCount desc, src.name asc
+    limit 10
+    ;
+
+  print FinalResult[
+    FinalResult.name as tagName,
+    FinalResult.@postCount as postCount
+  ];
+}
+

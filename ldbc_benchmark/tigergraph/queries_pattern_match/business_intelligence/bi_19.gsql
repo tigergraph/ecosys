@@ -1,0 +1,69 @@
+use graph ldbc_snb
+
+create query bi_19(datetime startDate, string class1,
+                   string class2) for graph ldbc_snb
+{
+  // global accumulator(s)
+  SetAccum<vertex<person>> @@members_of_both;
+  // vertex-attached accumulator(s)
+  SetAccum<vertex<person>> @friends;
+  SetAccum<vertex<person>> @strangers;
+  SumAccum<int> @strangerCount;
+  SumAccum<int> @interactionCount;
+  OrAccum @inClass1;
+  OrAccum @inClass2;
+
+  PersonSet = { person.* };
+  // aggregate for each person in PersonSet the set of friends
+  AggregateSet =
+    select src
+    from PersonSet:src -((person_knows_person>|<person_knows_person))- person:tgt
+    where src.birthday > startDate
+    accum src.@friends += tgt
+    ;
+
+  // find all users who are involved with both tag classes
+  TagClassSeed = { tagclass.* };
+  MemberSet =
+    select tgt
+    from TagClassSeed:src -(<tag_hasType_tagclass.<forum_hasTag_tag.forum_hasMember_person>)- person:tgt
+    where src.name == class1 or src.name == class2
+    accum case
+      when src.name == class1 then tgt.@inClass1 += true
+      when src.name == class2 then tgt.@inClass2 += true
+      end
+    post-accum case
+      when tgt.@inClass1 == true and tgt.@inClass2 == true then
+        @@members_of_both += tgt
+      end
+    having tgt.@inClass1 == true and tgt.@inClass2 == true
+    ;
+
+  // aggregate strangerCount and interactionCount
+  AggregateSet =
+    select src
+    from PersonSet:src -(<comments_hasCreator_person)- _
+         -((comments_replyOf_comments>|comments_replyOf_post>)*)- (post|comments):msg
+         -((comments_hasCreator_person>|post_hasCreator_person>))- person:tgt
+    where (src.birthday > startDate) and
+          (tgt not in src.@friends) and
+          (tgt in @@members_of_both)
+    accum src.@interactionCount += 1, src.@strangers += tgt
+    post-accum src.@strangerCount += src.@strangers.size()
+    ;
+
+  PersonSet =
+    select src
+    from PersonSet:src
+    where src.birthday > startDate
+    order by src.@interactionCount desc, src.id asc
+    limit 100
+    ;
+
+  print PersonSet[
+    PersonSet.id as personId,
+    PersonSet.@strangerCount as strangerCount,
+    PersonSet.@interactionCount as interactionCount
+  ];
+}
+

@@ -1,0 +1,22 @@
+use graph ldbc_snb
+
+create query is_3(vertex<person> pid) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<int> @friendshipDateAsEpoch;
+
+  PersonSeed = { pid };
+  Result =
+    select tgt
+    from PersonSeed:src -((person_knows_person>|<person_knows_person):e)- person:tgt
+    accum tgt.@friendshipDateAsEpoch += datetime_to_epoch(e.creationDate)
+    order by tgt.@friendshipDateAsEpoch desc, tgt.id asc
+    ;
+
+  print Result[
+    Result.id as personId,
+    Result.firstName as firstName,
+    Result.lastName as lastName,
+    epoch_to_datetime(Result.@friendshipDateAsEpoch) as friendshipCreationDate
+  ];
+}
+

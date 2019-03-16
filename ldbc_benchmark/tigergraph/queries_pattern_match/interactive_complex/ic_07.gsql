@@ -1,0 +1,57 @@
+use graph ldbc_snb
+
+create query ic_7(vertex<person> pid) for graph ldbc_snb {
+  // user-defined tuples
+  typedef tuple<datetime likeCreationDate,
+                int commentOrPostId,
+                string commentOrPostContent,
+                int minutesLatency> likeInfo;
+
+  // vertex-attached accumulators
+  HeapAccum<likeInfo> (1, likeCreationDate desc) @latestLike;
+  AndAccum @isNew;
+  SumAccum<int> @likeCreationDateAsEpoch;
+
+  PersonSeed = { pid };
+  // find the latest like for each liker
+  LikerSet =
+    select tgt
+    from PersonSeed:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
+         -((<person_likes_post|<person_likes_comments):e)- person:tgt
+    accum int minutesDiff = minute(e.creationDate) - minute(msg.creationDate),
+          case
+            when msg.type == "post" then
+              tgt.@latestLike += likeInfo(e.creationDate, msg.id, msg.imageFile, minutesDiff)
+            when msg.type == "comments" then
+              tgt.@latestLike += likeInfo(e.creationDate, msg.id, msg.content, minutesDiff)
+            end
+    ;
+
+  // mark the isNew flag for each person in LikerSet
+  AggregateSet =
+    select src
+    from LikerSet:src -((person_knows_person>|<person_knows_person))- person:tgt
+    where tgt == pid
+    accum src.@isNew += false
+    ;
+
+  // generate final result in sorted order
+  LikerSet =
+    select src
+    from LikerSet:src
+    accum src.@likeCreationDateAsEpoch += src.@latestLike.top().likeCreationDate
+    order by src.@likeCreationDateAsEpoch desc, src.id asc
+    ;
+
+  print LikerSet[
+    LikerSet.id as personId,
+    LikerSet.firstName as personFirstName,
+    LikerSet.lastName as personLastName,
+    LikerSet.@latestLike.top().likeCreationDate as likeCreationDate,
+    LikerSet.@latestLike.top().commentOrPostId as commentOrPostId,
+    LikerSet.@latestLike.top().commentOrPostContent as commentOrPostContent,
+    LikerSet.@latestLike.top().minutesLatency as minutesLatency,
+    LikerSet.@isNew as isNew
+  ];
+}
+

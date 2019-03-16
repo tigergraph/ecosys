@@ -1,0 +1,52 @@
+use graph ldbc_snb
+
+create query is_7(vertex mid) for graph ldbc_snb {
+  // vertex-attached accumulator
+  SetAccum<int> @origAuthorFriendIds;
+  SumAccum<int> @authorId;
+  SumAccum<string> @authorFirstName;
+  SumAccum<string> @authorLastName;
+  OrAccum @knowsOrigAuthor;
+ 
+  MessageSeed (post|comments) = { mid };
+  // aggregate info about the message creator's friends
+  MessageSeed =
+    select src
+    from MessageSeed:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:auth
+         -((person_knows_person>|<person_knows_person))- person:tgt
+    accum src.@origAuthorFriendIds += tgt.id
+    ;
+
+  // find the 1-hop comments that reply to the message
+  FinalResult =
+    select tgt
+    from MessageSeed:src -((<comments_replyOf_comments|<comments_replyOf_post))- comments:tgt
+    accum tgt.@origAuthorFriendIds = src.@origAuthorFriendIds
+    ;
+
+  // aggregate info about the reply author
+  FinalResult =
+    select src
+    from FinalResult:src -(comments_hasCreator_person>)- person:tgt
+    accum
+      src.@authorId = tgt.id,
+      src.@authorFirstName = tgt.firstName,
+      src.@authorLastName = tgt.lastName
+    post-accum
+      if src.@authorId in src.@origAuthorFriendIds then
+        src.@knowsOrigAuthor += true
+      end
+    order by src.creationDate desc, src.authorId asc
+    ;
+
+  print FinalResult[
+    FinalResult.id as commentId,
+    FinalResult.content as commentContent,
+    FinalResult.creationDate as commentCreationDate,
+    FinalResult.@authorId as replyAuthorId,
+    FinalResult.@authorFirstName as replyAuthorFirstName,
+    FinalResult.@authorLastName as replyAuthorLastName,
+    FinalResult.@knowsOrigAuthor as replayAuthorKnowsOriginalMessageAuthor
+  ];
+}
+

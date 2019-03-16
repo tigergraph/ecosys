@@ -1,0 +1,76 @@
+use graph ldbc_snb
+
+create query bi_11(string countryName,
+                   set<string> blacklist) for graph ldbc_snb
+{
+  // user-defined tuples
+  typedef tuple<int personId, string tagName, int likeCount, int replyCount> result;
+
+  // global accumulators
+  HeapAccum<result>(100, likeCount desc, personId asc, tagName asc) @@ResultSet;
+
+  // vertex-attached accumulators
+  SetAccum<vertex<tag>> @tagBlacklist;
+  SumAccum<int> @likeCount;
+  SumAccum<int> @replyCount;
+
+  // seed set
+  CountrySeed = { country.* };
+
+  CommentsInCountry =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- person:p
+         -(<comments_hasCreator_person)- comments:tgt
+    where src.name == countryName
+    ;
+
+  // exclude comments with blacklisted words
+  foreach word in blacklist do
+    BlackListedComments =
+      select src
+      from CommentsInCountry:src
+      where src.content LIKE "%" + word + "%"
+      ;
+    CommentsInCountry = CommentsInCountry MINUS BlackListedComments;
+  end;
+
+  // aggregate blacklisted tags for each comment
+  // blacklisted tags attaches to the message that the comment replies to
+  AggregateComments =
+    select src
+    from CommentsInCountry:src -((comments_replyOf_post>|comments_replyOf_comments>).(<post_hasTag_tag|<comments_hasTag_tag))- tag:tgt
+    accum src.@tagBlacklist += tgt
+    ;
+
+  // filter out comments with blacklisted tags
+  CommentsInCountry =
+    select src
+    from CommentsInCountry:src -(comments_hasTag_tag>)- tag:tgt
+    where tgt not in src.@tagBlacklist
+    ;
+
+  AggregateComments =
+    select src
+    from CommentsInCountry:src -(<person_likes_comments)- (person):tgt
+    accum src.@likeCount += 1
+    ;
+
+  // aggregate likeCount and replyCount for each tag
+  TagSet =
+    select tgt
+    from CommentsInCountry:src -(comments_hasTag_tag>)- tag:tgt
+    accum tgt.@likeCount += src.@likeCount,
+          tgt.@replyCount += 1
+    ;
+
+  PersonSeed = { person.* };
+  FinalResult =
+    select src
+    from PersonSeed:src -(<comments_hasCreator_person)- comments:c -(comments_hasTag_tag>)- tag:tgt
+    where c in CommentsInCountry and tgt in TagSet
+    accum @@ResultSet += (src.id, tgt.name, tgt.@likeCount, tgt.@replyCount)
+    ;
+
+  print @@ResultSet;
+}
+

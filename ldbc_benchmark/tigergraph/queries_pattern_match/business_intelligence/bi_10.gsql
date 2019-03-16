@@ -1,0 +1,52 @@
+use graph ldbc_snb
+
+create query bi_10(string tagName, datetime start) for graph ldbc_snb {
+  // vertex-attached accumulators
+  SumAccum<int> @score;
+  SumAccum<int> @friendsScore;
+
+  // seed set
+  TagSeed = { tag.* };
+
+  // find person(s) interested in the given tag and mark their interest
+  PersonWithInterest =
+    select tgt
+    from TagSeed:src -(person_hasInterest_tag>)- person:tgt
+    where src.name == tagName
+    accum tgt.@score += 100
+    ;
+
+  // find person(s) who created messages with given tag and count the messages
+  PersonWithMessage =
+    select tgt
+    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag))- (post|comments):msg
+         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    where src.name == tagName and msg.creationDate > start
+    accum tgt.@score += 1
+    ;
+
+  FinalResult = PersonWithInterest UNION PersonWithMessage;
+
+  // aggregate friendScore for each person
+  AggregateResult =
+    select src
+    from FinalResult:src -((<person_knows_person|person_knows_person>))- person:tgt
+    accum src.@friendsScore += tgt.@score
+  ;
+
+  // sort the final result by sum of scores and id
+  FinalResult =
+    select src
+    from FinalResult:src
+    order by src.@score + src.@friendsScore desc, src.id asc
+    limit 100
+    ;
+
+  // print the results
+  print FinalResult[
+    FinalResult.id as personId,
+    FinalResult.@score as score,
+    FinalResult.@friendsScore as friendsScore
+  ];
+}
+

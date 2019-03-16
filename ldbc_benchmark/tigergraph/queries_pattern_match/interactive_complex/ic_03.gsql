@@ -1,0 +1,49 @@
+use graph ldbc_snb
+
+create query ic_3(vertex<person> pid, string countryXName, string countryYName,
+                  datetime startDate, int durationDays) for graph ldbc_snb
+
+{
+  // vertex-attached accumulators
+  SumAccum<int> @xCount;
+  SumAccum<int> @yCount;
+  SumAccum<int> @totalCount;
+
+  PersonSeed = { pid };
+  // find all friends and friends of friends of the given person
+  FinalResult =
+    select tgt
+    from PersonSeed:src -((<person_knows_person|person_knows_person>)*1..2)- person:tgt;
+
+  // refine the result by matching people who creates messages in countryX or countryY
+  FinalResult =
+    select src
+    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):msg
+         -((post_isLocatedIn_country>|comments_isLocatedIn_country>))- country:tgt
+    where msg.creationDate >= startDate and msg.creationDate < datetime_add(startDate, INTERVAL durationDays DAY)
+          and (tgt.name == countryXName or tgt.name == countryYName)
+    accum case
+      when tgt.name == countryXName then src.@xCount += 1
+      when tgt.name == countryYName then src.@yCount += 1
+      end
+    post-accum
+      src.@totalCount += src.@xCount + src.@yCount;
+
+  // refine the result by filtering out people who live in countryX or countryY
+  FinalResult =
+    select src
+    from FinalResult:src -(person_isLocatedIn_city>.city_isPartOf_country>)- country:tgt
+    where tgt.name != countryXName and tgt.name != countryYName
+    order by src.@xCount desc, src.id asc
+    limit 20;
+
+  print FinalResult[
+    FinalResult.id as personId,
+    FinalResult.firstName as personFirstName,
+    FinalResult.lastName as personLastName,
+    FinalResult.@xCount as xCount,
+    FinalResult.@yCount as yCount,
+    FinalResult.@totalCount as totalCount
+  ];
+}
+

@@ -1,0 +1,52 @@
+use graph ldbc_snb
+
+create query bi_18(datetime startDate, int lengthThreshold,
+                   set<string> languages) for graph ldbc_snb
+{
+  // user-defined tuples
+  typedef tuple<int messageCount, int personCount> res;
+
+  // global accumulator(s)
+  SetAccum<vertex> @@messages;
+  MapAccum<int, SetAccum<vertex<person>>> @@count2PersonMap;
+  HeapAccum<res>(1, personCount desc, messageCount desc) @@results;
+
+  // vertex-attached accumulators
+  SumAccum<int> @messageCount;
+
+  PersonSet = { person.* };
+  // find the set of messages that satisfy all constraints except for languages
+  MessageSet =
+    select s
+    from PersonSet:s -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):t
+    where (t.content IS NOT NULL) and
+          (t.length < lengthThreshold) and
+          (t.creationDate > startDate) and
+          ((t.type == "post" and t.imageFile IS NULL) or (t.type == "comments"))
+    ;
+
+  // find the messages that satisfy the language constraint
+  MessageSet =
+    select src
+    from MessageSet:src -((comments_replyOf_post>|comments_replyOf_comments>)*)- post:tgt
+    where tgt.language in languages
+    accum @@messages += tgt
+    ;
+
+  // aggregate @messageCount onto PersonSet
+  AggregateSet =
+    select src
+    from PersonSet:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):tgt
+    where tgt in @@messages
+    accum src.@messageCount += 1
+    post-accum @@count2PersonMap += (src.@messageCount -> src)
+    ;
+
+  @@results.resize(@@count2PersonMap.size());
+  foreach (k, v) in @@count2PersonMap do
+    @@results += (v.size(), k);
+  end;
+
+  print @@results;
+}
+

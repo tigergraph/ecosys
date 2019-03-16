@@ -1,0 +1,83 @@
+CREATE QUERY bi_19(DATETIME minDate, STRING tagClass1Name, STRING tagClass2Name) FOR GRAPH ldbc_snb { 
+
+  OrAccum @inTagClass1 = false;
+  MinAccum<UINT> @personId = 0;
+  MinAccum<UINT> @strangerId = 0;
+  SetAccum<UINT> @strangers;
+  SetAccum<UINT> @friends;
+  SumAccum<INT> @interactionCount;
+	
+  Start(ANY) = {TagClass.*};
+
+  // Find stranger related to tagClass1
+  Start = SELECT s
+	  FROM Start:s
+	  WHERE s.name == tagClass1Name;
+	
+  Start = SELECT t
+          FROM Start:s - (Tag_HAS_TYPE_TagClass_REVERSE:e) -> :t;
+  Start = SELECT t
+          FROM Start:s - (Forum_HAS_TAG_Tag_REVERSE:e) -> :t;
+  Start = SELECT t
+          FROM Start:s - (Forum_HAS_MEMBER_Person:e) -> :t
+	  ACCUM t.@inTagClass1 = true;
+	
+	
+  // Find stranger related to both tagClass1 and tagClass2
+  Start = {TagClass.*};
+  Start = SELECT s
+	  FROM Start:s
+	  WHERE s.name == tagClass2Name;
+	
+  Start = SELECT t
+          FROM Start:s - (Tag_HAS_TYPE_TagClass_REVERSE:e) -> :t;
+  Start = SELECT t
+          FROM Start:s - (Forum_HAS_TAG_Tag_REVERSE:e) -> :t;
+  Strangers = SELECT t
+              FROM Start:s - (Forum_HAS_MEMBER_Person:e) -> :t
+	      WHERE t.@inTagClass1 == true;
+  
+  // Get the persons
+  Persons = {Person.*};
+  Persons = SELECT s
+            FROM Persons:s
+	    WHERE s.birthday > minDate;
+  // Mark the comments made by the persons	
+  Comments = SELECT t
+	     FROM Persons:s -(Comment_HAS_CREATOR_Person_REVERSE:e) -> :t
+	     ACCUM t.@personId = s.id;
+	
+
+  // For each message created by a stranger, store its only stranger in its MinAccum.
+  Messages = SELECT t
+             FROM Strangers:s - ((Comment_HAS_CREATOR_Person_REVERSE | Post_HAS_CREATOR_Person_REVERSE):e) -> :t
+	     ACCUM t.@strangerId = s.id; 
+  // Pass the strangerId down the tree
+  WHILE(Messages.size() > 0) DO
+      Messages = SELECT t
+                 FROM Messages:s - ((Comment_REPLY_OF_Post_REVERSE | Comment_REPLY_OF_Comment_REVERSE):e) -> :t
+	         ACCUM t.@strangerId = s.@strangerId;
+	END;
+	
+  // Only keep the Comments by Persons which have interaction with strangers 	
+  Comments = SELECT s
+	     FROM Comments:s
+	     WHERE s.@strangerId != 0 AND s.@strangerId != s.@personId;
+
+  // Store the friends of each person in a local SetAccum
+  Persons = SELECT s
+	    FROM Persons:s - (Person_KNOWS_Person:e) -> :t
+	    ACCUM s.@friends += t.id;
+  // Build a map to store which strangers interacted with each person
+  Persons = SELECT t
+	    FROM Comments:s - (Comment_HAS_CREATOR_Person:e) -> :t
+	    ACCUM IF NOT s.@strangerId IN t.@friends THEN   // they do not know each other
+	              t.@strangers += s.@strangerId,
+	              t.@interactionCount += 1
+	          END
+            ORDER BY t.@interactionCount DESC, t.id ASC
+	    LIMIT 100;
+	
+  PRINT Persons[Persons.id AS personId, Persons.@strangers.size() AS strangerCount, Persons.@interactionCount AS interactionCount];
+	
+}

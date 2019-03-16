@@ -1,0 +1,16 @@
+use graph ldbc_snb
+
+create query is_05(vertex mid) for graph ldbc_snb {
+  Seed (post|comments) = { mid };
+  Result =
+    select tgt
+    from Seed:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
+    ;
+
+  print Result[
+    Result.id as personId,
+    Result.firstName as firstName,
+    Result.lastName as lastName
+  ];
+}
+

@@ -1,0 +1,40 @@
+use graph ldbc_snb
+
+create query bi_23(string countryName) for graph ldbc_snb {
+  // user-defined tuples
+  typedef tuple<int messageCount, string destination, int month> res;
+
+  // global accumulators
+  GroupByAccum<int month, string dest, SetAccum<vertex> messages> @@groups;
+  HeapAccum<res>(100, messageCount desc, destination asc, month asc) @@results;
+
+  // vertex-attached accumulator(s)
+  SumAccum<string> @destinationName;
+
+  CountrySeed = { country.* };
+  // find all messages written in a given country (no limitation)
+  MessageSet =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- _
+         -((<post_hasCreator_person|<comments_hasCreator_person))- _:tgt;
+
+  // filter MessageSet by country to onl include those written abroad
+  MessageSet =
+    select src
+    from MessageSet:src -((post_isLocatedIn_country>|comments_isLocatedIn_country>))- country:tgt
+    where tgt.name != countryName
+    accum src.@destinationName += tgt.name;
+
+  // aggregate group info onto @@groupings
+  MessageSet =
+    select src
+    from MessageSet:src
+    accum @@groups += (month(src.creationDate), src.@destinationName -> src);
+
+  foreach g in @@groups do
+    @@results += res(g.messages.size(), g.dest, g.month);
+  end;
+
+  print @@results;
+}
+

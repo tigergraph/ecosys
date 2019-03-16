@@ -1,0 +1,46 @@
+use graph ldbc_snb
+
+create query bi_14(datetime startDate, datetime endDate) for graph ldbc_snb {
+  // vertex-attached accumulator(s)
+  SetAccum<vertex<post>> @threadSet;
+  SumAccum<int> @threadCount;
+  SumAccum<int> @messageCount;
+
+  PersonSet = { person.* };
+
+  // aggregate info about posts onto PersonSet
+  AggregateSet =
+    select src
+    from PersonSet:src -(<post_hasCreator_person)- post:tgt
+    where tgt.creationDate >= startDate and tgt.creationDate <= endDate
+    accum src.@threadSet += tgt, src.@threadCount += 1
+    ;
+
+  // aggregate info about comments within a person's threadSet onto PersonSet
+  AggregateSet = 
+    select src
+    from PersonSet:src -(<post_hasCreator_person)- _:p
+         -((<comments_replyOf_post|<comments_replyOf_comments)*)- (post|comments):tgt
+    where p in src.@threadSet and
+          tgt.creationDate >= startDate and
+          tgt.creationDate <= endDate
+    accum src.@messageCount += 1
+    ;
+
+  // sort PersonSet by messageCount and personId
+  PersonSet =
+    select src
+    from PersonSet:src
+    order by src.@messageCount desc, src.id asc
+    limit 100
+    ;
+
+  print PersonSet[
+    PersonSet.id as personId,
+    PersonSet.firstName as personFirstName,
+    PersonSet.lastName as personLastName,
+    PersonSet.@threadCount as threadCount,
+    PersonSet.@messageCount as messageCount
+  ];
+}
+

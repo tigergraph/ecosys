@@ -1,0 +1,39 @@
+use graph ldbc_snb
+
+create query ic_11(vertex<person> pid, string countryName,
+                   int workFromYear) for graph ldbc_snb
+{
+  // vertex-attached accumulator
+  SumAccum<string> @orgName;
+  SumAccum<int> @orgYear;
+
+  PersonSeed = { pid };
+  CountrySeed = { country.* };
+
+  // find the person's friends or 2-hop friends first
+  Result =
+    select tgt
+    from PersonSeed:src -((person_knows_person>|<person_knows_person)*1..2)- person:tgt
+    where tgt != src
+    ;
+
+  // filter Result with workFromYear and countryName condition
+  Result =
+    select tgt
+    from CountrySeed:src -(<company_isLocatedIn_country)- company:org
+         -(<person_workAt_company:e)- person:tgt
+    where src.name == countryName and tgt in Result and e.workFrom < workFromYear
+    accum tgt.@orgName = org.name, tgt.@orgYear = e.workFrom
+    order by tgt.@orgYear asc, tgt.id asc, tgt.@orgName desc
+    limit 10
+    ;
+
+  print Result[
+    Result.id as personId,
+    Result.firstName as personFirstName,
+    Result.lastName as personLastName,
+    Result.@orgName as organizationName,
+    Result.@orgYear as organizationWorkFromYear
+  ];
+}
+

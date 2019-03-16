@@ -1,0 +1,25 @@
+use graph ldbc_snb
+
+create query is_1(vertex<person> pid) for graph ldbc_snb {
+  // vertex-attached accumulator
+  SumAccum<int> @cityId;
+
+  FinalResult = { pid };
+  AggregateResult =
+    select src
+    from FinalResult:src -(person_isLocatedIn_city>)- city:tgt
+    accum src.@cityId = tgt.id
+    ;
+
+  print FinalResult[
+    FinalResult.firstName as firstName,
+    FinalResult.lastName as lastName,
+    FinalResult.birthday as birthday,
+    FinalResult.locationIP as locationIP,
+    FinalResult.browserIsed as browserUsed,
+    FinalResult.@cityId as cityId,
+    FinalResult.gender as gender,
+    FinalResult.creationDate as creationDate
+  ];
+}
+

@@ -1,0 +1,44 @@
+use graph ldbc_snb
+
+create query bi_9(string tagClassName1, string tagClassName2,
+                  int threshold) for graph ldbc_snb
+{
+  // vertex-attached accumulators
+  SetAccum<vertex<post>> @postForCount1;
+  SetAccum<vertex<post>> @postForCount2;
+  SumAccum<int> @count1;
+  SumAccum<int> @count2;
+  SumAccum<int> @countMembers;
+
+  TagClassSeed = { tagclass.* };
+
+  FinalResult =
+    select tgt
+    from TagClassSeed:src -(<tag_hasType_tagclass.<post_hasTag_tag)- post:p
+         -(<forum_containerOf_post)- forum:tgt
+    where src.name == tagClassName1 or src.name == tagClassName2
+    accum case
+      when src.name == tagClassName1 then tgt.@postForCount1 += p
+      when src.name == tagClassName2 then tgt.@postForCount2 += p
+      end
+    post-accum
+      tgt.@count1 += tgt.@postForCount1.size(),
+      tgt.@count2 += tgt.@postForCount2.size()
+    ;
+
+  FinalResult =
+    select src
+    from FinalResult:src -(forum_hasMember_person>)- person:p
+    accum src.@countMembers += 1
+    having src.@countMembers > threshold
+    order by abs(src.@count2 - src.@count1) desc, src.id asc
+    limit 100
+    ;
+
+  print FinalResult[
+    FinalResult.id as forumId,
+    FinalResult.@count1 as count1,
+    FinalResult.@count2 as count2
+  ];  
+}
+

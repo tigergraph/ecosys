@@ -1,0 +1,61 @@
+use graph ldbc_snb
+
+create query bi_21(string countryName, datetime endDate) for graph ldbc_snb {
+  // vertex-attached accumulator(s)
+  SumAccum<int> @messageCount;
+  SumAccum<int> @zombieLikeCount;
+  SumAccum<int> @totalLikeCount;
+  SumAccum<double> @zombieScore;
+
+  CountrySeed = { country.* };
+  // select all users in the given country created before endDate
+  ZombieSet =
+    select tgt
+    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- person:tgt
+    where src.name == countryName and tgt.creationDate < endDate
+    ;
+  // filter ZombieSet with constraints on messageCount
+  AggregateSet =
+    select src
+    from ZombieSet:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):tgt
+    where tgt.creationDate < endDate
+    accum src.@messageCount += 1
+    ;
+  // This ensures that users with no message are also included.
+  ZombieSet =
+    select s
+    from ZombieSet:s
+    where s.@messageCount < ceil(month(endDate) - month(s.creationDate) + 1)
+    ;
+
+  // aggregate zombieLikeCount and totalLikeCount onto ZombieSet
+  AggregateSet =
+    select src
+    from ZombieSet:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
+         -((<person_likes_post|<person_likes_comments))- person:tgt
+    where tgt.creationDate < endDate
+    accum
+      src.@totalLikeCount += 1,
+      case when tgt in ZombieSet then src.@zombieLikeCount += 1 end
+    post-accum case
+      when src.@totalLikeCount != 0 then
+        src.@zombieScore = src.@zombieLikeCount / src.@totalLikeCount
+      end
+    ;
+
+  // order ZombieSet by zombieScore and id
+  ZombieSet =
+    select src
+    from ZombieSet:src
+    order by src.@zombieScore desc, src.id asc
+    limit 100
+    ;
+
+  print ZombieSet[
+    ZombieSet.id as zombieId,
+    ZombieSet.@zombieLikeCount as zombieLikeCount,
+    ZombieSet.@totalLikeCount as totalLikeCount,
+    ZombieSet.@zombieScore as zombieScore
+  ];
+}
+
