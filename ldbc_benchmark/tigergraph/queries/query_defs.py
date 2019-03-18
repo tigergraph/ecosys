@@ -106,7 +106,7 @@ def generate_seed_dict(row, query_type, query_num):
       min_date = datetime.fromtimestamp(int(row[0])/1000).strftime("%Y-%m-%d %H:%M:%S")
       seed = {"minDate":min_date, "tagClass1Name":row[1], "tagClass2Name":row[2]}
     elif query_num == 20:
-      seed = {"tagClassNames":row[0]}
+      seed = {"tagClassNames":row[0].split(";")}
     elif query_num == 21:
       end_date = datetime.fromtimestamp(int(row[1])/1000).strftime("%Y-%m-%d %H:%M:%S")
       seed = {"countryName":row[0], "endDate":end_date}
