@@ -26,7 +26,7 @@ CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb {
     FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t
     ACCUM s.@replyCount += 1;
 	
-	Persons = 
+	vPersons = 
     SELECT t 
     FROM vMessages:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t
     ACCUM 
@@ -37,10 +37,10 @@ CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb {
     ORDER BY t.@score DESC, t.id ASC
     LIMIT 100;
   
-  PRINT Persons[
-      Persons.id AS personId, 
-      Persons.@replyCount AS replyCount, 
-      Persons.@likeCount AS likeCount, 
-      Persons.@messageCount AS messageCount, 
-      Persons.@score AS score];
+  PRINT vPersons[
+      vPersons.id AS personId, 
+      vPersons.@replyCount AS replyCount, 
+      vPersons.@likeCount AS likeCount, 
+      vPersons.@messageCount AS messageCount, 
+      vPersons.@score AS score];
 }

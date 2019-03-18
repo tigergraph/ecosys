@@ -18,25 +18,25 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
     FROM vStart:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->:t;
 
   # top 100 Forums
-  Forum = 
+  vForum = 
     SELECT t
     FROM vStart:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->:t
     ACCUM t.@popularity += 1
     ORDER BY t.@popularity DESC
     LIMIT 100;
 
-  Person = 
+  vPerson = 
     SELECT t
-    FROM Forum:s -(Forum_HAS_MEMBER_Person:e)-> :t;
+    FROM vForum:s -(Forum_HAS_MEMBER_Person:e)-> :t;
 
-  Post = 
+  vPost = 
     SELECT t
-    FROM Forum:s -(Forum_CONTAINER_OF_Post:e)-> :t
+    FROM vForum:s -(Forum_CONTAINER_OF_Post:e)-> :t
     ACCUM t.@visited = TRUE;
 
-  Post = 
+  vPost = 
     SELECT t
-    FROM Person:s -(Post_HAS_CREATOR_Person_REVERSE:e)-> :t
+    FROM vPerson:s -(Post_HAS_CREATOR_Person_REVERSE:e)-> :t
     WHERE t.@visited == TRUE
     ACCUM @@count += (s.id, s.firstName, s.lastName, s.creationDate -> 1);
 

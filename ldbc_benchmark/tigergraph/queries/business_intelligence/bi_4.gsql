@@ -17,7 +17,7 @@ CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb {
     SELECT t
     FROM vStart:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->:t;
 
-  Forum = 
+  vForum = 
     SELECT t
     FROM vStart:s-(Forum_HAS_MODERATOR_Person_REVERSE:e)->:t
     ACCUM 
@@ -38,7 +38,7 @@ CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb {
     SELECT t 
     FROM vStart:s-(Post_HAS_TAG_Tag_REVERSE:e)->:t; 
 
-  Forum = 
+  vForum = 
     SELECT t 
     FROM vStart:s-(Forum_CONTAINER_OF_Post_REVERSE:e)->:t 
     WHERE t.@visited == TRUE
