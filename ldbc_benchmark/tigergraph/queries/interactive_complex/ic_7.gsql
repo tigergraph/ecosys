@@ -2,9 +2,6 @@ CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
 
   SetAccum<INT> @@friendIds;
-  SumAccum<INT> @likeCreationDate, @commentOrPostId, @minutesLatency;
-  SumAccum<STRING> @commentOrPostContent;
-  AndAccum @isNew;
   HeapAccum<liker>(20, likeCreationDate DESC, personId ASC) @@likerTop;
 
   vPerson = { personId };
@@ -20,18 +17,13 @@ CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   vLiker = 
     SELECT t
     FROM vMessage:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
-    ACCUM 
-      t.@likeCreationDate = datetime_to_epoch(e.creationDate),
-      t.@commentOrPostId = s.id,
-      CASE 
-        WHEN s.type == "Comment" THEN 
-          t.@commentOrPostContent = s.content 
+    ACCUM
+      CASE
+        WHEN s.type == "Comment" OR (s.type == "Post" AND s.content != "") THEN 
+          @@likerTop += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.content, (datetime_diff(e.creationDate, s.creationDate) / 60), NOT @@friendIds.contains(t.id))
         ELSE 
-          t.@commentOrPostContent += s.imageFile 
-      END,
-      t.@minutesLatency = (datetime_diff(s.creationDate, e.creationDate) / 60),
-      CASE WHEN @@friendIds.contains(t.id) THEN t.@isNew += False END
-    POST-ACCUM @@likerTop += liker(t.id, t.firstName, t.lastName, epoch_to_datetime(t.@likeCreationDate), t.@commentOrPostId, t.@commentOrPostContent, t.@minutesLatency, t.@isNew);
+          @@likerTop += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.imageFile, (datetime_diff(e.creationDate, s.creationDate) / 60), NOT @@friendIds.contains(t.id))
+      END;
 
   PRINT @@likerTop;
 }
