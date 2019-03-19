@@ -6,6 +6,7 @@ CREATE QUERY ic_6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
   ListAccum<VERTEX<Post>> @@postAll;
   SumAccum<INT> @postCount;
   HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
+
   INT i = 0;
 
   vPerson = { personId };
@@ -36,7 +37,7 @@ CREATE QUERY ic_6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
   vTag = 
     SELECT t
     FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
-    ACCUM t.@postCount += 1
+    ACCUM CASE WHEN t.name != tagName THEN t.@postCount += 1 END
     POST-ACCUM @@tagStatsTop += tagStats(t.name, t.@postCount);
 
   PRINT @@tagStatsTop;
