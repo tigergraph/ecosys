@@ -9,9 +9,12 @@ CREATE QUERY bi_2(DATETIME startDate, DATETIME endDate, STRING country1Name, STR
 
   vStart(ANY) = { Country.* };
   vStart = 
+    SELECT s
+    FROM vStart:s
+    WHERE s.name == country1Name OR s.name == country2Name;
+  vStart = 
     SELECT t
     FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
-    WHERE s.name == country1Name OR s.name == country2Name
     ACCUM t.@country = s.name;
 
   vPerson = 
