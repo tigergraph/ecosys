@@ -2,32 +2,23 @@ CREATE QUERY bi_13(STRING countryName) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<STRING tag_name, INT popularity> tagInfo;
   TYPEDEF TUPLE<INT year, INT month, JSONARRAY popularTags> tagStats;
 
-  GroupByAccum<INT year, INT month, SumAccum<INT> numMsg> @@numMsgGroup;
   GroupByAccum<INT year, INT month, GroupByAccum<STRING tagName, SumAccum<INT> popularity> tagGroup> @@monthlyGroup;
   HeapAccum<tagInfo>(5, popularity DESC, tag_name ASC) @@tagInfoTop;
   HeapAccum<tagStats>(100, year DESC, month ASC) @@tagStatsTop;
 
   STRING jsonStr;
-  bool isFirstTuple;
+  bool needComma;
 
   vCountry = { Country.* };
   vMessage = 
     SELECT t
     FROM vCountry:s-((Comment_IS_LOCATED_IN_Country_REVERSE|Post_IS_LOCATED_IN_Country_REVERSE):e)->(Comment|Post):t
-    WHERE s.name == countryName
-    POST-ACCUM @@numMsgGroup += (year(t.creationDate), month(t.creationDate) -> 1);
+    WHERE s.name == countryName;
 
   vMessage = 
     SELECT s
     FROM vMessage:s-((Comment_HAS_TAG_Tag|Post_HAS_TAG_Tag):e)->Tag:t
-    ACCUM 
-      @@monthlyGroup += (year(s.creationDate), month(s.creationDate) -> (t.name -> 1)),
-      @@numMsgGroup += (year(s.creationDate), month(s.creationDate) -> (-1));
-
-  // put stats for empty tags
-  FOREACH (y,m,num) IN @@numMsgGroup DO
-    @@monthlyGroup += (y, m -> ("" -> num));
-  END;
+    ACCUM @@monthlyGroup += (year(s.creationDate), month(s.creationDate) -> (t.name -> 1));
 
   FOREACH (y,m,tg) IN @@monthlyGroup DO
     @@tagInfoTop.clear();
@@ -38,12 +29,12 @@ CREATE QUERY bi_13(STRING countryName) FOR GRAPH ldbc_snb {
 
     // put 5 most popular tags into JSONARRAY
     jsonStr = "[";
-    isFirstTuple = True;
+    needComma = False;
     FOREACH ti IN @@tagInfoTop DO
-      IF NOT isFirstTuple THEN
+      IF needComma THEN
         jsonStr += ",";
       ELSE
-        isFirstTuple = False;
+        needComma = True;
       END;
       jsonStr += "[\"" + ti.tag_name + "\"," + to_string(ti.popularity) + "]";
     END;
