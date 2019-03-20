@@ -13,7 +13,11 @@ CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
     WHERE t.creationDate BETWEEN startDate AND endDate
     ACCUM
       s.@threadCount += 1,
-      t.@personId = s.id;
+      t.@personId = s.id,
+      CASE
+        WHEN t.creationDate BETWEEN startDate AND endDate THEN
+          @@initiatorGroup += (s.id -> 1)
+      END;
 
   vMessage(Comment|Post) = vPost;
   WHILE vMessage.size() > 0 DO
