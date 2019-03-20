@@ -2,8 +2,8 @@ CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
 
   SumAccum<INT> @personId;
-  SumAccum<STRING> @personFirstName, @personLastName;
-  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, SumAccum<INT> threadCount, SumAccum<INT> messageCount> @@initiatorGroup;
+  SumAccum<INT> @threadCount;
+  MapAccum<INT, INT> @@initiatorGroup;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
 
   vPerson = { Person.* };
@@ -12,10 +12,8 @@ CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
     FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
     WHERE t.creationDate BETWEEN startDate AND endDate
     ACCUM
-      t.@personId = s.id,
-      t.@personFirstName = s.firstName,
-      t.@personLastName = s.lastName,
-      @@initiatorGroup += (s.id, s.firstName, s.lastName -> 1, 0);
+      s.@threadCount += 1,
+      t.@personId = s.id;
 
   vMessage(Comment|Post) = vPost;
   WHILE vMessage.size() > 0 DO
@@ -24,17 +22,16 @@ CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
       FROM vMessage:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE):e)->Comment:t
       ACCUM
         t.@personId = s.@personId,
-        t.@personFirstName = s.@personFirstName,
-        t.@personLastName = s.@personLastName,
         CASE
           WHEN t.creationDate BETWEEN startDate AND endDate THEN
-            @@initiatorGroup += (s.@personId, s.@personFirstName, s.@personLastName -> 0, 1)
+            @@initiatorGroup += (s.@personId -> 1)
         END;
   END;
 
-  FOREACH (id, fn, ln, tc, mc) IN @@initiatorGroup DO
-    @@initiatorTop += initiator(id, fn, ln, tc, mc);
-  END;
+  vPerson =
+    SELECT v
+    FROM vPerson:v
+    ACCUM @@initiatorTop += initiator(v.id, v.firstName, v.lastName, v.@threadCount, @@initiatorGroup.get(v.id));
 
   PRINT @@initiatorTop;
 }
