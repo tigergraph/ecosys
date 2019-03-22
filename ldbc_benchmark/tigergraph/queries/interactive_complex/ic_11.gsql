@@ -3,7 +3,7 @@ CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear
 
   ListAccum<VERTEX<Person>> @@friendAll;
   OrAccum @visited;
-  MapAccum<INT, STRING> @@orgCountryMap;
+  OrAccum @locatedInGivenCountry;
   HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@friendInfoTop;
 
   INT i;
@@ -22,17 +22,19 @@ CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear
     i += 1;
   END;
 
-  vFriend = { @@friendAll };
   vCompany = { Company.* };
-  vOrg = 
-    SELECT s
+  findCompanyInGivenCountry = 
+    SELECT t
     FROM vCompany:s-(Company_IS_LOCATED_IN_Country:e)->Country:t
-    ACCUM @@orgCountryMap += (s.id -> t.name);
+    WHERE t.name == countryName
+    ACCUM s.@locatedInGivenCountry += True;
 
-  vFriend = 
-    SELECT s
+  vFriend = { @@friendAll };
+  aggFriend = 
+    SELECT t
     FROM vFriend:s-(Person_WORK_AT_Company:e)->Company:t
     WHERE e.workFrom < workFromYear
+    AND t.@locatedInGivenCountry == True
     ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, t.name, e.workFrom);
 
   PRINT @@friendInfoTop;
