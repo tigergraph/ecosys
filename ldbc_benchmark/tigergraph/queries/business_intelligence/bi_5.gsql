@@ -8,10 +8,13 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
   SumAccum<INT> @popularity;
 
   vStart(ANY) = { Country.* };
-  vStart = 
-    SELECT t
-    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t
+
+  vStart = SELECT s
+    FROM vStart:s
     WHERE s.name == countryName;
+    
+  vStart = SELECT t
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t;
 
   vStart = 
     SELECT t

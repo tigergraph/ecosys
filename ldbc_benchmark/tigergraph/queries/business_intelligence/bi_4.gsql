@@ -8,10 +8,12 @@ CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb {
   SumAccum<INT> @personId;
 
   vStart(ANY) = { Country.* };
-  vStart = 
-    SELECT t
-    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t
+  vStart = SELECT s
+    FROM vStart:s
     WHERE s.name == countryName;
+    
+  vStart = SELECT t
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t;
 
   vStart = 
     SELECT t
