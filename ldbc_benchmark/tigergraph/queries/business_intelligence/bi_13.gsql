@@ -10,10 +10,14 @@ CREATE QUERY bi_13(STRING countryName) FOR GRAPH ldbc_snb {
   bool needComma;
 
   vCountry = { Country.* };
+	vCountry =
+	  SELECT v
+	  FROM vCountry:v
+	  WHERE v.name == countryName;
+
   vMessage = 
     SELECT t
-    FROM vCountry:s-((Comment_IS_LOCATED_IN_Country_REVERSE|Post_IS_LOCATED_IN_Country_REVERSE):e)->(Comment|Post):t
-    WHERE s.name == countryName;
+    FROM vCountry:s-((Comment_IS_LOCATED_IN_Country_REVERSE|Post_IS_LOCATED_IN_Country_REVERSE):e)->(Comment|Post):t;
 
   vMessage = 
     SELECT s
