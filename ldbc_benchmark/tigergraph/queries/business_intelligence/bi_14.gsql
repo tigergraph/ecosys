@@ -6,18 +6,19 @@ CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
   MapAccum<INT, INT> @@initiatorGroup;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
 
-  vPerson = { Person.* };
-  vPost = 
+  vPost = { Post.* };
+  vPost =
+    SELECT v
+    FROM vPost:v
+    WHERE v.creationDate BETWEEN startDate AND endDate;
+
+  vPerson = 
     SELECT t
-    FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    WHERE t.creationDate BETWEEN startDate AND endDate
+    FROM vPost:s-(Post_HAS_CREATOR_Person:e)->Person:t
     ACCUM
-      s.@threadCount += 1,
-      t.@personId = s.id,
-      CASE
-        WHEN t.creationDate BETWEEN startDate AND endDate THEN
-          @@initiatorGroup += (s.id -> 1)
-      END;
+      t.@threadCount += 1,
+      s.@personId = t.id,
+      @@initiatorGroup += (t.id -> 1);
 
   vMessage(Comment|Post) = vPost;
   WHILE vMessage.size() > 0 DO
