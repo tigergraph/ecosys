@@ -24,9 +24,14 @@ function get_install_str_body {
 
 # add bigint_to_string function and back up original ExprFunctions.hpp
 echo "[STEP 1 ] Add an user-defined function."
-gdk_path=$( sed -n "s/export[[:space:]]gdk=*//p" ~/.bash_tigergraph )
-udf_file="$gdk_path/gsql/src/QueryUdf/ExprFunctions.hpp"
-if [ ! -f $udf_file ]; then 
+is_valid_user=0
+if [ -d "$HOME/.gium" ]; then
+  udf_file="$( dirname $( readlink "$HOME/.gium" ) )/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp"
+  if [ -f $udf_file ]; then
+    is_valid_user=1
+  fi
+fi
+if [ $is_valid_user -ne "1" ]; then
   echo "[ERROR  ] Can't add the user-defined function. Please make sure that you can run TigerGraph with the current user."
   exit 1
 fi
