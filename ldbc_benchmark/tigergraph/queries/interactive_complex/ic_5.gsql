@@ -1,11 +1,13 @@
 CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT forumId> groupStats;
 
-  SetAccum<VERTEX<Person>> @@friends;
   OrAccum @visited;
-  SetAccum<VERTEX<Post>> @@fPosts;
+  SetAccum<VERTEX<Person>> @@friendAll;
+	SetAccum<INT> @memberIds;
+	SumAccum<INT> @creatorId;
   SumAccum<INT> @postCount;
   HeapAccum<groupStats>(20, postCount DESC, forumId ASC) @@groupStatsTop;
+	
 
   INT i = 0;
 
@@ -18,27 +20,31 @@ CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb 
       ACCUM 
         s.@visited += True,
         t.@visited += True,
-        @@friends += t;
+        @@friendAll += t;
 
     i += 1;
   END;
 
-  vFriend = { @@friends };
+  vFriend = { @@friendAll };
+	@@friendAll.clear();
   vForum = 
     SELECT t
     FROM vFriend:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->Forum:t
-    WHERE e.joinDate > minDate;
+    WHERE e.joinDate > minDate
+	  ACCUM
+	    @@friendAll += s,
+	    t.@memberIds += s.id;
 
-  vPost = 
+	vFriend = { @@friendAll };
+  findPost = 
     SELECT t
     FROM vFriend:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    POST-ACCUM @@fPosts += t;
+	  ACCUM t.@creatorId = s.id;
 
-  vForum = 
-    SELECT s
+  aggForum = 
+    SELECT t
     FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
-    WHERE @@fPosts.contains(t)
-    ACCUM s.@postCount += 1
+    ACCUM CASE WHEN t.@creatorId IN s.@memberIds THEN s.@postCount += 1 END
     POST-ACCUM @@groupStatsTop += groupStats(s.title, s.@postCount, s.id);
 
   FOREACH gs IN @@groupStatsTop DO
