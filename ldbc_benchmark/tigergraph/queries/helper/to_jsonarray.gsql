@@ -1,16 +1,16 @@
-CREATE QUERY to_jsonarray(set<string> src) FOR GRAPH ldbc_snb RETURNS(jsonarray) {
-  string tgt = "[";
-  bool isFirst = True;
+CREATE QUERY to_jsonarray(SET<STRING> src) FOR GRAPH ldbc_snb RETURNS(JSONARRAY) {
+  BOOL needComma = False;
+  STRING jsonStr = "[";
 
   FOREACH s IN src DO
-    IF NOT isFirst THEN
-      tgt += "," + "\"" + s + "\"";
+    IF needComma THEN
+      jsonStr += ",";
     ELSE
-      tgt += "\"" + s + "\"";
-      isFirst = False;
+      needComma = True;
     END;
+    jsonStr += "\"" + s + "\"";
   END;
-  tgt += "]";
+  jsonStr += "]";
 
-  RETURN parse_json_array(tgt);
+  RETURN parse_json_array(jsonStr);
 }
