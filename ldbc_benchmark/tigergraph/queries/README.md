@@ -9,8 +9,9 @@ Then you type the following commands Tto install a helper function and all GSQL 
 
 ```
 git clone git@github.com:tigergraph/ecosys.git
+cd ecosys
 git checkout ldbc
-cd ecosys/ldbc_benchmark/tigergraph/queries
+cd ldbc_benchmark/tigergraph/queries
 ./install_queries.sh
 ```
 
