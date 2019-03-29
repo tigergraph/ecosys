@@ -34,3 +34,15 @@ python3 time.py <TIGERGRAPH_HOME>/logs/restpp/restpp_loader_logs/ldbc_snb/ldbc_s
 ```
 
 This will print out the time spent to load data if the process is done. If you ran the loading job in background and the process is still running, it will tell you it's not done yet, so you can keep trying to run this script until you see the time.
+
+If you want to try offline loading, you can run the other script:
+```
+./one_step_load_offline.sh
+```
+
+In case of offline loading, you need to pass additional -d flag to time.py to measure the right time spent to load data:
+```
+python3 time.py <TIGERGRAPH_HOME>/logs/restpp/restpp_loader_logs/ldbc_snb/ldbc_snb_m1.<START_TIME_EPOCH>.log -d
+```
+
+It will show you not only the time spent to load but also the time spent to build performed only in offline loading.
