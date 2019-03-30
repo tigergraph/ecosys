@@ -1,10 +1,9 @@
+    
 import sys
 import os
 import re
 from datetime import datetime, timedelta
 import argparse
-
-DEFAULT_PATH_TO_DELTA_OUT = "/home/tigergraph/tigergraph/logs/delta.out"
 
 def getTimeLoadingJob(file):
   with open(file, "r") as f:
@@ -48,7 +47,7 @@ def getTimeBuildGstore(file):
 if __name__ == "__main__":
   ap = argparse.ArgumentParser()
   ap.add_argument("loading_job", help="Full path to the loding job log file")
-  ap.add_argument("-d", "--delta", nargs="?", const=DEFAULT_PATH_TO_DELTA_OUT, help="Full path to the gstore build log file, delta.out")
+  ap.add_argument("-d", "--delta", nargs="?",  help="Full path to the gstore build log file, delta.out")
 
   args = ap.parse_args()
   loading_job_time = getTimeLoadingJob(args.loading_job)
@@ -58,13 +57,33 @@ if __name__ == "__main__":
     print("Loading job is still in progress. Please come back later.")
 
   try:
-    if args.delta != None:
-      building_gstore_time = getTimeBuildGstore(args.delta)
-      if building_gstore_time > 0:
-        print("- Building gstore: {} s".format(building_gstore_time))
-        print("- Total: {} s".format(loading_job_time + building_gstore_time))
+    home_dir = os.environ['HOME']
+    link = home_dir + "/.gium" 
+    tg_home = os.path.abspath(os.path.join(os.readlink(link), os.pardir))
+    
+    if "-d" not in sys.argv:
+      sys.exit()
+
+    if args.delta == None:
+      delta_path = tg_home + "/logs/delta.out"
+      if not os.path.isfile(delta_path):
+        print ("Failed to anto-detect \"delta.out\", Please specify the full path to <tigergraph.root>/logs/delta.out")
+        sys.exit()
       else:
-        print("Build gstore is still in progress. Please come back later.")
+        building_gstore_time = getTimeBuildGstore(delta_path)
+    else:
+      building_gstore_time = getTimeBuildGstore(args.delta)
+
+    if building_gstore_time > 0:
+      print("- Building gstore: {} s".format(building_gstore_time))
+      print("- Total: {} s".format(loading_job_time + building_gstore_time))
+    else:
+      print("Build gstore is still in progress. Please come back later.")
+
+  except SystemExit:
+    pass
+  except NotADirectoryError:
+    print("Can't find TigerGraph. Please make sure that you can run TigerGraph with the current user.")
   except FileNotFoundError:
     print("No such file: " + args.delta)
   except:
