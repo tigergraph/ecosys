@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Connected Components 2" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Connected Components 2" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -88,6 +88,10 @@ while [ !$finished ]; do
                         "Minimal Spanning Tree (MST)" )
                                 algoName="mst"
                                 echo "  mst() works on weighted undirected edges"
+                                break;;
+                        "Cycle Detection" )
+                                algoName="cycle_detection"
+                                echo "  cycle_detection() works on directed edges"
                                 break;;
 			"Triangle Counting(minimal memory)" )
 				algoName="tri_count"
@@ -336,7 +340,7 @@ END
 
 				  case $updateG in [Yy]*)
 					attrQuery=${genPath}/${algoName}$aExt.gsql
-					# *vIntType*
+					# *vIntAttr*
 					if [[ $(countStringInFile "\*vIntAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
@@ -349,7 +353,20 @@ END
 					  done
 					fi
 
-					# * vFltType*
+                                        # *vBoolAttr*
+                                        if [[ $(countStringInFile "\*vBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store BOOL result (e.g. in_cycle): " vBoolAttr
+                                                if [[ $(countVertexAttr $vBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*vBoolAttr\*/$vBoolAttr/g" ${genPath}/${algoName}$aExt.gsql;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+					# * vFltAttr*
 					if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store FLOAT result (e.g. pageRank): " vFltAttr
@@ -362,7 +379,7 @@ END
 					  done
 					fi
 
-					# * vStrType*
+					# * vStrAttr*
 					if [[ $(countStringInFile "\*vStrAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store STRING result (e.g. path desc): " vStrAttr
@@ -375,7 +392,7 @@ END
 					  done
 					fi
 
-                                        # * eBoolType*
+                                        # * eBoolAttr*
                                         if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
                                           while true; do
                                                 read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
@@ -519,7 +536,7 @@ END
                                         # * eBoolType*
                                         if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
                                           while true; do
-                                                read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
+                                                read -p "Edge attribute to store BOOL result (e.g. flag): " eBoolAttr
                                                 if [[ $(countEdgeAttr $eBoolAttr) > 0 ]]; then
                                                         sed -i "s/\*eBoolAttr\*/$eBoolAttr/g" $attrQuery;
                                                         break;
