@@ -76,7 +76,7 @@ pageRank_pers                   Personalized PageRank
 shortest_ss_no_wt               Single-Source Shortest Paths without weight
 shortest_ss_pos_wt              Single-Source Shortest Paths with positive weight
 shortest_ss_any_wt              Single-Source Shortest Paths
-Minimal Spanning Tree (MST)
+mst                             Minimal Spanning Tree (MST)
 tri_count                       Count all the triangles, memory effient
 tri_count_fast                  Count all the triangles, faster but using more memory
 cosine_nbor_ss                  Cosine Similarity for single vertex
