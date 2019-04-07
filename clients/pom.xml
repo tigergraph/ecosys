@@ -136,7 +136,7 @@
         <repository>
             <id>bintray-tigergraphecosys-com.tigergraph.client</id>
             <name>tigergraphecosys-com.tigergraph.client</name>
-            <url>https://api.bintray.com/maven/tigergraphecosys/tgjars/gsql_cleint/;publish=1</url>
+            <url>https://api.bintray.com/maven/tigergraphecosys/tgjars/gsql_client/;publish=1</url>
         </repository>
     </distributionManagement>
 
