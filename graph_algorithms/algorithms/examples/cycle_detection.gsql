@@ -5,27 +5,24 @@ Stop passing the sequence (v1,v2,v3, ...) when:
 1. v = v1. If v has the minimum label in the sequence, report the cycle
 2. v = vi (i!=1). Do not report since this cycle is already reported in an earlier iteration
 */
-
-        TYPEDEF TUPLE <VERTEX v, INT uid> p;
-        ListAccum<ListAccum<p>> @currList, @newList;
-       ListAccum<ListAccum<p>> @@cycles;
+        ListAccum<ListAccum<VERTEX>> @currList, @newList;
+        ListAccum<ListAccum<VERTEX>> @@cycles;
         SumAccum<INT> @uid;
   
         # initialization
         Active = {Person.*};
         Active = SELECT s 
                  FROM Active:s
-                 ACCUM s.@uid = getvid(s)
-                 POST-ACCUM s.@currList = [[p(s, s.@uid)]];
+                 ACCUM s.@currList = [s];
   
         WHILE Active.size() > 0 LIMIT depth DO 
         Active = SELECT t 
                  FROM Active:s -(Friend:e)-> :t
                  ACCUM BOOL t_is_min = TRUE,
                        FOREACH sequence IN s.@currList DO 
-                               IF t == sequence.get(0).v THEN  # cycle detected
-                                        FOREACH item IN sequence DO
-                                                IF item.uid < t.@uid THEN
+                               IF t == sequence.get(0) THEN  # cycle detected
+                                        FOREACH v IN sequence DO
+                                                IF getvid(v) < getvid(t) THEN
                                                         t_is_min = FALSE,
                                                         BREAK
                                                 END
@@ -33,8 +30,8 @@ Stop passing the sequence (v1,v2,v3, ...) when:
                                         IF t_is_min == TRUE THEN  # if it has the minimal label in the list, report 
                                                 @@cycles += sequence
                                         END
-                               ELSE IF sequence.contains(p(t, t.@uid)) == FALSE THEN   # discard the sequences contain t
-                                        t.@newList += [sequence + [p(t, t.@uid)]]   # store sequences in @newList to avoid confliction with @currList
+                               ELSE IF sequence.contains(t) == FALSE THEN   # discard the sequences contain t
+                                        t.@newList += [sequence + [t]]   # store sequences in @newList to avoid confliction with @currList
                                END
                        END
                  POST-ACCUM s.@currList.clear(),

@@ -333,7 +333,8 @@ END
 				  echo; echo "If your graph schema has appropriate vertex or edge attributes,"
 				  echo " you can update the graph with your results."
 				  read -p 'Do you want to update the graph [yn]? ' updateG
-
+                                        
+                                  # if you update attribute here, you also need to do the same update in the "All of the above" choice
 				  case $updateG in [Yy]*)
 					attrQuery=${genPath}/${algoName}$aExt.gsql
 					# *vIntAttr*
@@ -496,6 +497,19 @@ END
                                                 read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
                                                 if [[ $(countVertexAttr $vIntAttr) > 0 ]]; then
                                                         sed -i "s/\*vIntAttr\*/$vIntAttr/g" ${genPath}/${algoName}$aExt.gsql;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+                                        # *vBoolAttr*
+                                        if [[ $(countStringInFile "\*vBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store BOOL result (e.g. in_cycle): " vBoolAttr
+                                                if [[ $(countVertexAttr $vBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*vBoolAttr\*/$vBoolAttr/g" ${genPath}/${algoName}$aExt.gsql;
                                                         break;
                                                 else
                                                         echo " *** Vertex attribute name not found. Try again."
