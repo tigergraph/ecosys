@@ -1,51 +1,45 @@
-      CREATE DISTRIBUTED QUERY cycle_detection_file (FILE f) FOR GRAPH social {
+      CREATE QUERY cycle_detection_file (INT depth, FILE f) FOR GRAPH social {
 /* Rocha–Thatte cycle detection algorithm
 This is a distributed algorithm for detecting all the cycles on large-scale directed graphs.In every iteration, the vertices send its sequences to its out-neighbors, and receive the sequences from the in-neighbors.
 Stop passing the sequence (v1,v2,v3, ...) when:
 1. v = v1. If v has the minimum label in the sequence, report the cycle
 2. v = vi (i!=1). Do not report since this cycle is already reported in an earlier iteration
 */
-        TYPEDEF TUPLE <VERTEX personV, INT uid> p;
-        ListAccum<ListAccum<p>> @currList, @newList, @@cycles;
+
+        TYPEDEF TUPLE <VERTEX v, INT uid> p;
+        ListAccum<ListAccum<p>> @currList, @newList;
         SumAccum<INT> @uid;
-        
+  
+        # initialization
         Active = {Person.*};
         Active = SELECT s 
                  FROM Active:s
                  ACCUM s.@uid = getvid(s)
-                 POST-ACCUM s.@currList = [[p(s, s.@uid), p(s, s.@uid)]];  # use the first one in the list to store the minimal
-        
-        WHILE Active.size() > 0 DO 
-                Active = SELECT t 
-                         FROM Active:s -(Friend:e)-> :t
-                         ACCUM INT i = 0,
-                               FOREACH l IN s.@currList DO 
-                                       IF t == l.get(1).personV THEN # find cycle
-                                               IF t == l.get(0).personV THEN  # if it is the mininal in the list, report 
-                                                       @@cycles += l
-                                               END
-                                       ELSE IF l.contains(p(t, t.@uid)) == FALSE THEN   # do not add into list if already had cycle
-                                               t.@newList += [l + [p(t, t.@uid)]]   # update another list to avoid confliction
-                                       END
+                 POST-ACCUM s.@currList = [[p(s, s.@uid)]];
+  
+        WHILE Active.size() > 0 LIMIT depth DO 
+        Active = SELECT t 
+                 FROM Active:s -(Friend:e)-> :t
+                 ACCUM BOOL t_is_min = TRUE,
+                       FOREACH sequence IN s.@currList DO 
+                               IF t == sequence.get(0).v THEN  # cycle detected
+                                        FOREACH item IN sequence DO
+                                                IF item.uid < t.@uid THEN
+                                                        t_is_min = FALSE,
+                                                        BREAK
+                                                END
+                                        END,
+                                        IF t_is_min == TRUE THEN  # if it has the minimal label in the list, report 
+                                                f.println(sequence)
+                                        END
+                               ELSE IF sequence.contains(p(t, t.@uid)) == FALSE THEN   # discard the sequences contain t
+                                        t.@newList += [sequence + [p(t, t.@uid)]]   # store sequences in @newList to avoid confliction with @currList
                                END
-                         POST-ACCUM FOREACH l IN t.@newList DO
-                                            IF t.@uid < l.get(0).uid THEN
-                                                    l.update(0, p(t, t.@uid))
-                                            END
-                                    END,
-                                    s.@currList.clear(),
-                                    t.@currList = t.@newList,
-                                    t.@newList.clear()
-                         HAVING t.@currList.size() > 0;  # IF receive no INFO, deactivate it;
-        END;
-
-        FOREACH item IN @@cycles DO
-                 f.println(item);   # the first node in each list can be ignored
+                       END
+                 POST-ACCUM s.@currList.clear(),
+                            t.@currList = t.@newList,
+                            t.@newList.clear()
+                 HAVING t.@currList.size() > 0;  # IF receive no sequences, deactivate it;
         END;
 }
-
-
-
-
-
 
