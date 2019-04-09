@@ -4,7 +4,7 @@
     <groupId>com.tigergraph.client</groupId>
     <name>gsql_client</name>
     <artifactId>gsql_client</artifactId>
-    <version>2.3.2</version>
+    <version>2.3.2.1</version>
     <url>http://maven.apache.org</url>
     <build>
         <sourceDirectory>.</sourceDirectory>
@@ -123,6 +123,12 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20180813</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
         </dependency>
     </dependencies>
 
