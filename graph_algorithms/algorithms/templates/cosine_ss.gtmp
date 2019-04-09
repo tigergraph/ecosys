@@ -1,0 +1,57 @@
+*ATTR*CREATE QUERY cosine_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY cosine_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
+*FILE*CREATE QUERY cosine_ss*EXT* (VERTEX source, INT topK, FILE f) FOR GRAPH *graph* {
+/* This query calculates the Cosine Similarity between a given vertex and every other vertex.
+Cosine similarity = A \dot B / ||A|| \dot ||B||
+1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
+2. The Attribute version insert edges between the pairs, with the score as an edge attribute.
+   A similarity edge with one FLOAT attribute in the schema is required for this version.
+3. This query calls a user defined subquery called collect_feature to collect the features needed for calculation.
+*/
+
+        SumAccum<FLOAT> @similarity, @norm, @@source_norm;
+        MapAccum<STRING, FLOAT> @vector, @@source_vector;
+  
+        Source = {source};
+        Source = SELECT s
+                 FROM Source:s
+                 ACCUM @@source_vector += collect_feature(s);
+        FOREACH (key,value) IN @@source_vector DO
+                @@source_norm += value * value;
+        END;
+        @@source_norm = sqrt(@@source_norm);
+  
+        Start = {Person.*};
+        Start = SELECT s
+                FROM Start:s
+                WHERE s != source
+                ACCUM s.@vector = collect_feature(s)
+                POST-ACCUM FLOAT numerator=0,
+                           FOREACH (key,value) IN s.@vector DO
+                               s.@norm += value * value  
+                           END,
+                               s.@norm = sqrt(s.@norm),
+                           FOREACH (key, value) IN s.@vector DO
+                               numerator = numerator + @@source_vector.get(key)*value
+                           END,
+                           IF s.@norm > 0 AND @@source_norm > 0 THEN
+                               s.@similarity = numerator/(s.@norm * @@source_norm)
+                           ELSE
+                               s.@similarity = 0
+                           END
+                HAVING s.@similarity > 0
+                ORDER BY s.@similarity DESC
+                LIMIT topK;
+
+*ATTR*  Start = SELECT s
+*ATTR*          FROM Start:s
+*ATTR*          POST-ACCUM insert into *insert-edge-name* values(source, s, s.@similarity);
+
+*ACCM*  PRINT Start.@similarity;
+
+*FILE*  f.println("Vertex1", "Vertex2", "Similarity");
+*FILE*  Start = SELECT s
+*FILE*          FROM Start:s
+*FILE*          POST-ACCUM f.println(source, s, s.@similarity);
+
+}

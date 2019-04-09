@@ -1,0 +1,34 @@
+CREATE QUERY cosine_ss(VERTEX source, INT topK) FOR GRAPH movie { 
+
+  SumAccum<FLOAT> @similarity, @norm, @@source_norm;
+  MapAccum<STRING, FLOAT> @vector, @@source_vector;
+  
+        Source = {source};
+        Source = SELECT s
+                 FROM Source:s
+                 ACCUM @@source_vector += collect_feature(s);
+        FOREACH (key,value) IN @@source_vector DO
+                @@source_norm += value * value;
+        END;
+        @@source_norm = sqrt(@@source_norm);
+  
+        Start = {Person.*};
+        Start = SELECT s
+                FROM Start:s
+                WHERE s != source
+                ACCUM s.@vector = collect_feature(s)
+                POST-ACCUM FLOAT numerator=0,
+                           FOREACH (key,value) IN s.@vector DO
+                               s.@norm += value * value  
+                           END,
+                               s.@norm = sqrt(s.@norm),
+                           FOREACH (key, value) IN s.@vector DO
+                               numerator = numerator + @@source_vector.get(key)*value
+                           END,
+                           s.@similarity = numerator/(s.@norm * @@source_norm)
+                ORDER BY s.@similarity DESC
+                LIMIT topK;
+
+        PRINT Start.@similarity;
+}
+
