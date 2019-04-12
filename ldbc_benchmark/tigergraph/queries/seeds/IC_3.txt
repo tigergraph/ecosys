@@ -1,0 +1,14 @@
+personId:
+countryX
+
+startDate:
+1306861200000
+
+duration:
+42
+
+countryX:
+'Laos' 
+
+countryY:
+'Scotland'
