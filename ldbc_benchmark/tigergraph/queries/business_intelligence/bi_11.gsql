@@ -6,12 +6,16 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
   SumAccum<INT> @creatorId;
   SetAccum<VERTEX<Comment>> @@validComments;
   SetAccum<VERTEX<Comment>> @@replyAll;
-  SetAccum<INT> @@tagIdsExclude;
   SetAccum<STRING> @tagNames;
   SumAccum<INT> @likeCount;
   GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
   HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
 
+  SetAccum<INT> @postTagSet2;
+  SetAccum<INT> @commentTagSet2;
+  SetAccum<INT> @replyTagSet2;
+  SetAccum<INT> @@invalidReplySet;
+	
   FOREACH word IN blacklist DO
     @@blacklistP += ("%" + word + "%");
   END;
@@ -47,15 +51,48 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
 
   vReply = { @@replyAll };
 
-  vMessage =
+  vComment =
+    SELECT t
+    FROM vReply:s-(Comment_REPLY_OF_Comment:e)->Comment:t;
+	
+  vPost = 
+    SELECT t
+    FROM vReply:s-(Comment_REPLY_OF_Post:e)->Post:t;
+	
+  vCommentTag =
+    SELECT t
+    FROM vComment:s-(Comment_HAS_TAG_Tag:e)->Tag:t
+    ACCUM s.@commentTagSet2 += t.id;
+	
+  vPostTag =
+    SELECT t
+    FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
+    ACCUM s.@postTagSet2 += t.id;
+	
+  vComment =
+    SELECT t
+    FROM vReply:s-(Comment_REPLY_OF_Comment:e)->Comment:t
+    ACCUM s.@replyTagSet2 += t.@commentTagSet2;
+  	
+  vPost = 
+    SELECT t
+    FROM vReply:s-(Comment_REPLY_OF_Post:e)->Post:t
+    ACCUM s.@replyTagSet2 += t.@postTagSet2;
+	
+  vReply2 =
     SELECT s
-    FROM vMessage:s-((Comment_HAS_TAG_Tag|Post_HAS_TAG_Tag):e)->Tag:t
-    POST-ACCUM @@tagIdsExclude += t.id;
-
+    FROM vReply:s-(Comment_HAS_TAG_Tag:e)->Tag:t
+    WHERE s.@replyTagSet2.contains(t.id)
+    ACCUM @@invalidReplySet += s.id;
+	
+  vReply =
+    SELECT s
+    FROM vReply:s
+    WHERE NOT @@invalidReplySet.contains(s.id);
+	
   vComments =
     SELECT s
     FROM vReply:s-(Comment_HAS_TAG_Tag:e)->Tag:t
-    WHERE NOT @@tagIdsExclude.contains(t.id)
     ACCUM s.@tagNames += t.name;
 
   vReply =
