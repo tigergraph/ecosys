@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similarity (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similarity (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -97,19 +97,27 @@ while [ !$finished ]; do
 				algoName="tri_count_fast"
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
-			'Cosine Similarity (single vertex)' )
+                        'Cosine Similarity (single vertex)' )
+                                algoName="cosine_ss"
+                                echo "  cosine_ss() calculates the similarity between one given vertex and all other vertices. You need to have a subquery called collect_feature_cosine returning MapAccum<STRING, FLOAT> installed before installing this algorithm."
+                                break;;
+                        'Jaccard Similarity (single vertex)' )
+                                algoName="jaccard_ss"
+                                echo "  jaccard_ss() calculates the similarity between one given vertex and all other vertices. You need to have a subquery called collect_feature_jaccard returning SetAccum<STRING> installed before installing this algorithm."
+                                break;;
+			'Cosine Neighbor Similarity (single vertex)' )
 				algoName="cosine_nbor_ss"
                                 echo "  cosine_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
-			'Cosine Similarity (all vertices)' )
+			'Cosine Neighbor Similarity (all vertices)' )
 				algoName="cosine_nbor_ap"
                                 echo "  cosine_nbor_ap() calculates the similarity between all vertices"
                                 break;;
-	                'Jaccard Similarity (single vertex)' )
+	                'Jaccard Neighbor Similarity (single vertex)' )
                                 algoName="jaccard_nbor_ss"
                                 echo "  jaccard_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
-                        'Jaccard Similarity (all vertices)' )
+                        'Jaccard Neighbor Similarity (all vertices)' )
                                 algoName="jaccard_nbor_ap"
                                 echo "  jaccard_nbor_ap() calculates the similarity between all vertices"
                                 break;;
@@ -275,7 +283,7 @@ END
 # ${algoName}$fExt writes output to a file
 # ${algoName}$aExt saves output to graph attribute (if they exist)
 
-	echo; echo "Please choose a way to show result:"
+	echo; echo "Please choose a way to show result (Contact TigerGraph Support for higher performance File version):"
         select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge" "All of the above"; do
         	case $version in
         		"Show JSON result" )

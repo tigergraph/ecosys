@@ -1,4 +1,4 @@
-CREATE QUERY collect_feature(VERTEX source) FOR GRAPH movie returns (MapAccum<STRING, FLOAT>){
+CREATE QUERY collect_feature_cosine(VERTEX source) FOR GRAPH movie returns (MapAccum<STRING, FLOAT>){
   MapAccum<STRING, FLOAT> @@feature_vector;
   Source = {source};
   Source = SELECT s
