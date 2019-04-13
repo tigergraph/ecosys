@@ -1,0 +1,8 @@
+date: 
+1311292800000
+    
+lengthThreshold: 
+20
+
+languages: 
+['ar']
