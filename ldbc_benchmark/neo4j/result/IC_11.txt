@@ -1,0 +1,14 @@
++-------------------------------------------------------------------------------------------------+
+| personId       | personFirstName | personLastName | organizationName | organizationWorkFromYear |
++-------------------------------------------------------------------------------------------------+
+| 6597069767125  | "Eve-Mary Thai" | "Pham"         | "Lao_Airlines"   | 2002                     |
+| 28587302330691 | "Atef"          | "Hafez"        | "Lao_Airlines"   | 2002                     |
+| 5869           | "Cy"            | "Vorachith"    | "Lao_Airlines"   | 2004                     |
+| 8796093022909  | "Mee"           | "Vang"         | "Lao_Air"        | 2005                     |
+| 10995116285549 | "Jetsada"       | "Charoenpura"  | "Lao_Airlines"   | 2005                     |
+| 24189255815555 | "A."            | "Anwar"        | "Lao_Airlines"   | 2006                     |
+| 2199023266276  | "Ben"           | "Li"           | "Lao_Air"        | 2007                     |
+| 8796093027636  | "Pao"           | "Sysavanh"     | "Lao_Airlines"   | 2007                     |
+| 1259           | "Mee"           | "Vongvichit"   | "Lao_Air"        | 2008                     |
+| 2199023258003  | "Ali"           | "Achiou"       | "Lao_Air"        | 2009                     |
++-------------------------------------------------------------------------------------------------+
