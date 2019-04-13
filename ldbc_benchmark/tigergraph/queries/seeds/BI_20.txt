@@ -1,0 +1,2 @@
+tagClasses: 
+Writer;Single;Country
