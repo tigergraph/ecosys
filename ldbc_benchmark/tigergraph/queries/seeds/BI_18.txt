@@ -1,8 +1,8 @@
 date: 
-1311292800000
+1313366400000
     
 lengthThreshold: 
-20
+97
 
 languages: 
-ar
+tk
