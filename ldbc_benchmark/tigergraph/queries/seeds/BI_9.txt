@@ -1,0 +1,9 @@
+tagClass1:
+BaseballPlayer
+
+
+tagClass2: 
+ChristianBishop
+
+threshold: 
+200
