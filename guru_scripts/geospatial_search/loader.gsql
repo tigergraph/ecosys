@@ -1,0 +1,18 @@
+drop job loadGeo
+
+create loading job loadGeo for graph MyGraph {
+
+  load "~/tigergraph/loadingData/healthcare_facility_locations.csv"
+    to edge Facility_Geo values ($"FACID", getGridId($"LATITUDE", $"LONGITUDE"), $"LATITUDE", $"LONGITUDE")
+  using header="true", quote="double";
+
+  load "~/tigergraph/loadingData/patient.csv"
+     to edge Patient_Geo values ($"PATIENTID", getGridId($"LATITUDE", $"LONGITUDE"), $"LATITUDE", $"LONGITUDE")
+  using header="true", quote="double";
+
+  load "~/tigergraph/loadingData/ca_postcode.csv"
+     to edge Zipcode_Geo values ($"Zip Code", getGridId($"Latitude", $"Longitude"), $"Latitude", $"Longitude")
+  using header="true", quote="double";
+}
+
+run job loadGeo

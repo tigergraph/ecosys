@@ -7,15 +7,15 @@ installed and used, either as a stand-alone query or as a building block of a la
 analytics application.GSQL running on the TigerGraph platform is particularly
 well-suited for graph algorithms:
 
-* Turing-complete with full support for imperativea nd procedural programming,
+* Turing-complete with full support for imperative and procedural programming,
  ideal for algorithmic computation.
- 
+
 * Parallel and Distributed Processing, enabling computations on larger graphs.
 
 * User-Extensible.
   Because the algorithms are written in standard GSQL and compiled by the user,
   they are easy to modify and customize.
-  
+
 * Open-Source. Users can study the GSQL implementations to learn by
   example, and they can develop and submit additions to the library.
 
@@ -33,10 +33,9 @@ and install them. There are two folders:
 	templates/
 		 contains template algorithms with some placeholder code
 		and markers which need to be acted on by the installation script.
-	
+
 	examples/
 		contains GSQL queries generated from the templates by the installation script.
-
 
 The Tests folder contains small sample graphs that you can use to experiment with the
 algorithms. In our online documentation, we use the test graphs to show you the expected
@@ -54,14 +53,14 @@ See the README.test file in the tests folder
 2) Change into the algorithms folder.
 3) Run a installation script, i.e.,
    bash install.sh
-   and answer the questions.  
-   
-More detailed documentation and examples are available on the web at 
+   and answer the questions.
+
+More detailed documentation and examples are available on the web at
 https://docs.tigergraph.com/graph-algorithm-library
 
-   
 
-List of GSQL Graph Algorithms 
+
+List of GSQL Graph Algorithms
 -----------------------------
 as of April 12, 2019
 Compatible with TigerGraph version 2.1.8 or higher

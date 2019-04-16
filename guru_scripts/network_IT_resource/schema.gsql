@@ -1,0 +1,28 @@
+  CREATE VERTEX LUN(PRIMARY_ID did STRING, name STRING, total_capacity FLOAT, estimated_used FLOAT)
+  CREATE VERTEX Pool(PRIMARY_ID pid STRING, name STRING, raw_capacity FLOAT, used_capacity FLOAT, user_capacity FLOAT, subscribed_capacity FLOAT)
+  CREATE VERTEX Storage_Array(PRIMARY_ID aid STRING, name STRING, capacity FLOAT, allocated FLOAT, available FLOAT, raw_capacity FLOAT, raw_allocated FLOAT, raw_available FLOAT)
+  CREATE VERTEX Host_Server(PRIMARY_ID hid STRING, hid STRING, name STRING, status STRING COMPRESS)
+  CREATE VERTEX Application(PRIMARY_ID pid STRING, short_name STRING, tier UINT, weight INT)
+  CREATE VERTEX Service(PRIMARY_ID sid STRING, name STRING)
+  CREATE VERTEX Manager(PRIMARY_ID sid STRING)
+  CREATE VERTEX Switch(PRIMARY_ID fid STRING, swtich_name STRING)
+  CREATE VERTEX Warning(PRIMARY_ID sid STRING, event_type INT, warn_date DATETIME)
+  CREATE VERTEX WanringType(PRIMARY_ID aid STRING)
+  CREATE DIRECTED EDGE Alert_App(FROM Warning, TO Application) WITH REVERSE_EDGE="App_Alert"
+  CREATE DIRECTED EDGE App_Alert(FROM Application, TO Warning) WITH REVERSE_EDGE="Alert_App"
+  CREATE DIRECTED EDGE AHA_Alert(FROM WanringType, TO Warning) WITH REVERSE_EDGE="Alert_AHA"
+  CREATE DIRECTED EDGE Alert_AHA(FROM Warning, TO WanringType) WITH REVERSE_EDGE="AHA_Alert"
+  CREATE DIRECTED EDGE Pool_Lun(FROM Pool, TO LUN, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Array_Pool(FROM Storage_Array, TO Pool, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE LUN_Server(FROM LUN, TO Host_Server, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Server_App(FROM Host_Server, TO Application, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE App_Service(FROM Application, TO Service, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Service_Manager(FROM Service, TO Manager, goUpper BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Pool_Array(FROM Pool, TO Storage_Array, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE LUN_Pool(FROM LUN, TO Pool, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Server_LUN(FROM Host_Server, TO LUN, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE App_Server(FROM Application, TO Host_Server, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Service_App(FROM Service, TO Application, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE Manager_Service(FROM Manager, TO Service, goLower BOOL DEFAULT "true")
+  CREATE DIRECTED EDGE AppCall(FROM Application, TO Application)
+  CREATE Graph Storage(*)

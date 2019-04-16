@@ -1,0 +1,17 @@
+INSTRUCTION:
+delete_unknown_by_type.gsql is a gsql query template targeted to clean out all unknown vertices of a given type
+ExprFunctions.hpp provides the necessary expression functions  RemoveUnknownID
+
+1)To generate the correct query for your own graph, you have to replace CONSTANT inside the query template. 
+There are two CONSTANT
+  a) _graphname_: one should replace this string with your own graph name string
+  b) _VTYPE_: one should replace this string with your own vertex type name
+
+2) cp the entire RemoveUnknownID function from ExprFunctions.hpp to your own ExprFunctions.hpp under $tigergraph/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp. Make sure that this function is still inside the namespace of UDIMPL (copy the function into the bracket of namespace of UDIMPL)
+
+3) install the modified query.
+
+4) run the modified query with "gsql -g graphname DeleteUnknownByType()" or curl command.
+
+5) check whether the unknown vertices were removed from the graph store or not.
+
