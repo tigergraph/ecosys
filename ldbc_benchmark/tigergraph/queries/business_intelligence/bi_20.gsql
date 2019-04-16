@@ -1,10 +1,11 @@
 CREATE QUERY bi_20(SET<STRING> tagClassNames) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<STRING tagClassName, INT messageCount> INFO;
 
-  HeapAccum<INFO>(100, messageCount DESC, tagClassName ASC) @@result;
+  HeapAccum<INFO>(200, messageCount DESC, tagClassName ASC) @@result;
   SumAccum<STRING> @tagClassName;
   MapAccum<STRING, INT> @@count;
-
+  SetAccum<STRING> @visitedTagClass;
+	
   vTagClass = { TagClass.* };
   vTagClass = 
     SELECT s
@@ -30,7 +31,11 @@ CREATE QUERY bi_20(SET<STRING> tagClassNames) FOR GRAPH ldbc_snb {
   vMessages = 
     SELECT t
     FROM vTags:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t
-    ACCUM @@count += (s.@tagClassName -> 1);
+    ACCUM t.@visitedTagClass += s.@tagClassName
+    POST-ACCUM
+      FOREACH i IN t.@visitedTagClass DO
+        @@count += (i -> 1)
+      END;
 
   FOREACH (key, value) IN @@count DO
     @@result += INFO(key, value);
