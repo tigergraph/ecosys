@@ -1,6 +1,7 @@
 CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb { 
   SumAccum<INT> @count;
-
+  SetAccum<INT> @@invalidComment;
+	
   vTag = { Tag.* };
   vTag = 
     SELECT s 
@@ -15,10 +16,16 @@ CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb {
     SELECT t
     FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t;
 
+  tmp =
+    SELECT t
+    FROM vComments:s-(Comment_HAS_TAG_Tag:e)->Tag:t
+    WHERE t.name == tagName
+    ACCUM @@invalidComment += s.id;
+	
   vRelatedTags = 
     SELECT t 
     FROM vComments:s-(Comment_HAS_TAG_Tag:e)->:t
-    WHERE t.name != tagName
+    WHERE NOT @@invalidComment.contains(s.id)
     ACCUM t.@count += 1 # no duplicated names for tags
     ORDER BY t.@count DESC, t.name ASC
     LIMIT 100;
@@ -26,4 +33,4 @@ CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb {
   PRINT vRelatedTags[
       vRelatedTags.name AS relatedTagName, 
       vRelatedTags.@count AS replyCount];
-}	
+}
