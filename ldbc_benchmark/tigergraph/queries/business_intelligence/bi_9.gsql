@@ -5,8 +5,7 @@ CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR
   SumAccum<INT> @numMembers;
   SetAccum<VERTEX<Forum>> @@forumLarge;
   SumAccum<INT> @forumId;
-  MapAccum<INT, INT> @@postForumMap;
-  GroupByAccum<INT postId, SumAccum<INT> count1, SumAccum<INT> count2> @@forumStatsGroup;
+  GroupByAccum<INT forumId, SumAccum<INT> count1, SumAccum<INT> count2> @@forumStatsGroup;
   HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
 
   vTagClass = { TagClass.* };
@@ -26,8 +25,8 @@ CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR
     SELECT t
     FROM vTagClass:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->Tag:t
     ACCUM 
-      t.@isType1 = s.@isType1,
-      t.@isType2 = s.@isType2;
+      t.@isType1 += s.@isType1,
+      t.@isType2 += s.@isType2;
 
   vForum = { Forum.* };
   vForum =
@@ -37,25 +36,29 @@ CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR
     POST-ACCUM CASE WHEN s.@numMembers > threshold THEN @@forumLarge += s END;
 
   vForum = { @@forumLarge };
-  vForum =
-    SELECT s
-    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
-    ACCUM @@postForumMap += (t.id -> s.id);
-
   vPost =
     SELECT t
-    FROM vTag:s-(Post_HAS_TAG_Tag_REVERSE:e)->Post:t
-    WHERE @@postForumMap.containsKey(t.id)
-    ACCUM
-      IF s.@isType1 THEN 
-        @@forumStatsGroup += (@@postForumMap.get(t.id) -> 1, 0)
+    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
+    ACCUM t.@forumId = s.id;
+
+  aggPostTag =
+    SELECT t
+    FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
+    ACCUM 
+      s.@isType1 += t.@isType1,
+      s.@isType2 += t.@isType2
+    POST-ACCUM 
+      If s.@isType1 THEN
+        @@forumStatsGroup += (s.@forumId -> 1, 0)
       END,
       IF s.@isType2 THEN 
-        @@forumStatsGroup += (@@postForumMap.get(t.id) -> 0, 1)
+        @@forumStatsGroup += (s.@forumId -> 0, 1)
       END;
 
   FOREACH (i,c1,c2) IN @@forumStatsGroup DO
-    @@forumStatsTop += forumStats(i, c1, c2, abs(c2 - c1));
+    IF c1 > 0 AND c2 > 0 THEN
+      @@forumStatsTop += forumStats(i, c1, c2, abs(c2 - c1));
+    END;
   END;
 
   FOREACH v IN @@forumStatsTop DO
