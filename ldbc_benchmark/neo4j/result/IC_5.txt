@@ -1,0 +1,24 @@
++----------------------------------------------------------+
+| forumTitle                                   | postCount |
++----------------------------------------------------------+
+| "Group for Stephen_Sondheim in Philadelphia" | 1         |
+| "Wall of Mahinda Perera"                     | 0         |
+| "Album 34 of Arap Amanaka"                   | 0         |
+| "Album 18 of Aditya Chopra"                  | 0         |
+| "Wall of Lei Zhang"                          | 0         |
+| "Wall of Frederick Kawawa"                   | 0         |
+| "Album 14 of Meera Singh"                    | 0         |
+| "Wall of Andre Buysse"                       | 0         |
+| "Album 33 of Walter Hoffmann"                | 0         |
+| "Album 1 of Wolfgang Schmidt"                | 0         |
+| "Album 20 of Wolfgang Schmidt"               | 0         |
+| "Album 26 of Lata Singh"                     | 0         |
+| "Wall of Baruch Dego"                        | 0         |
+| "Album 2 of Hans Johansson"                  | 0         |
+| "Album 10 of Hans Johansson"                 | 0         |
+| "Album 22 of Hans Johansson"                 | 0         |
+| "Wall of Lin Li"                             | 0         |
+| "Wall of Abdel Halim Ali Shabana Hassan"     | 0         |
+| "Wall of German Calero"                      | 0         |
+| "Album 21 of Jharana Gurung"                 | 0         |
++----------------------------------------------------------+
