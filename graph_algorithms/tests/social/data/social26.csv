@@ -1,4 +1,4 @@
-source,target,weight,tag
+source,dirTarget,undirTarget,weight,tag
 Alex,Bob,Chase,20,
 Bob,Chase,Eddie,11,
 Chase,Damon,Ivy,4,
