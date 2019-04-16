@@ -1,13 +1,12 @@
-
 {
 'tagClassName':'Country',
-'messageCount':732695
+'messageCount':455856
 },
 {
 'tagClassName':'Single',
-'messageCount':424110
+'messageCount':310879
 },
 {
 'tagClassName':'Writer',
-'messageCount':180165
+'messageCount':159442
 }
