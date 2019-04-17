@@ -260,7 +260,6 @@ public class QueryParser {
       sb.append("/").append(this.endpoint);
     }
 
-    System.out.println(">>>> Token: " + token);
     String url = "";
     try {
       if (secure)
@@ -304,14 +303,8 @@ public class QueryParser {
     }
 
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
-    System.out.println(">>>> Token: " + token);
     if (token != null && !token.equals("")) {
       request.addHeader("Authorization", "Bearer " + token);
-    }
-    Header[] headers = request.getAllHeaders();
-    System.out.println(">>> request: " + request.toString());
-    for (Header header : headers) {
-      System.out.println(">>>> " + header.getName() + ": " + header.getValue());
     }
 
     return request;
