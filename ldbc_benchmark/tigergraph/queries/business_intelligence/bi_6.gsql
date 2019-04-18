@@ -1,46 +1,77 @@
-# Most active Posters of a given Topic
 CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb { 
-  SumAccum<INT> @replyCount;
+	
+	SetAccum<VERTEX<Person>> @@personSet;
+	SetAccum<VERTEX<Post>> @postSet;
+	SetAccum<VERTEX<Comment>> @commentSet;
+	SetAccum<INT> @likedPerson;
+	MapAccum<INT, SetAccum<INT>> @@postLikedSet;
+	MapAccum<INT, SetAccum<INT>> @@commentLikedSet;
+	SetAccum<VERTEX<Comment>> @replied;
 	SumAccum<INT> @likeCount;
-	SumAccum<INT> @messageCount;
 	SumAccum<INT> @score;
-  
+	SumAccum<INT> @messageCount;
+	
 	vTag = {Tag.*};
 	vTag = 
-    SELECT s 
-    FROM vTag:s 
-    WHERE s.name == tagName;
-
-	# Target messages
-	vMessages = 
-    SELECT t 
-    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
+       	 SELECT s 
+         FROM vTag:s 
+         WHERE s.name == tagName;
+	
+	vPost =
+	  SELECT t 
+          FROM vTag:s-(Post_HAS_TAG_Tag_REVERSE:e)->:t;
+	
+	vComment =
+	  SELECT t 
+          FROM vTag:s-(Comment_HAS_TAG_Tag_REVERSE:e)->:t;
 	
 	vMessages = 
-    SELECT s 
-    FROM vMessages:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->:t
-    ACCUM s.@likeCount += 1;
+          SELECT t 
+          FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
 	
-	vMessages = 
-    SELECT s 
-    FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t
-    ACCUM s.@replyCount += 1;
+	tmpPost = 
+	  SELECT t
+          FROM vPost:s-(Person_LIKES_Post_REVERSE:e)->Person:t
+          ACCUM 
+	      @@postLikedSet += (s.id -> t.id);
 	
+	tmpComment = 
+	  SELECT t
+          FROM vComment:s-(Person_LIKES_Comment_REVERSE:e)->Person:t
+	  ACCUM 
+	      @@commentLikedSet += (s.id -> t.id);
+	
+	tmp1 =
+	  SELECT t
+	  FROM vMessages:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE):e)->Comment:t
+          ACCUM s.@replied += t;
+	
+	vPerson1 =
+	  SELECT t 
+          FROM vPost:s-(Post_HAS_CREATOR_Person:e)->:t
+	  ACCUM t.@likeCount += @@postLikedSet.get(s.id).size(),
+	        t.@replied += s.@replied,
+	        t.@postSet += s,
+	        @@personSet += t;  
+	
+	vPerson2 =
+	  SELECT t 
+          FROM vComment:s-(Comment_HAS_CREATOR_Person:e)->:t
+	  ACCUM 
+	        t.@likeCount += @@commentLikedSet.get(s.id).size(),
+	        t.@replied += s.@replied,
+	        t.@commentSet += s,
+	        @@personSet += t;
+	        
+	vPersons = { @@personSet };
 	vPersons = 
-    SELECT t 
-    FROM vMessages:s-((Post_HAS_CREATOR_Person|Comment_HAS_CREATOR_Person):e)->:t
-    ACCUM 
-      t.@messageCount += 1,
-      t.@likeCount += s.@likeCount,
-      t.@replyCount += s.@replyCount
-    POST-ACCUM t.@score = t.@messageCount + 2 * t.@replyCount + 10 * t.@likeCount
-    ORDER BY t.@score DESC, t.id ASC
-    LIMIT 100;
-  
-  PRINT vPersons[
-      vPersons.id AS personId, 
-      vPersons.@replyCount AS replyCount, 
-      vPersons.@likeCount AS likeCount, 
-      vPersons.@messageCount AS messageCount, 
-      vPersons.@score AS score];
+	SELECT s
+	FROM vPersons:s
+	ACCUM 
+	    s.@messageCount = s.@postSet.size() + s.@commentSet.size(),
+	    s.@score =  s.@postSet.size() + s.@commentSet.size() + 2*s.@replied.size() + 10 * s.@likeCount
+	ORDER BY s.@score DESC, s.id ASC
+	LIMIT 100;
+	
+	PRINT vPersons[vPersons.@replied.size() AS replyCount, vPersons.@likeCount AS likeCount, vPersons.@messageCount AS messageCount, vPersons.@score AS score]; 
 }
