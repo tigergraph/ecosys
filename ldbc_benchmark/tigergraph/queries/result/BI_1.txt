@@ -1,4 +1,3 @@
-
 {
 'theYear':2011,
 'isComment':False,
@@ -6,7 +5,7 @@
 'messageCount':155346,
 'averageMessageLength':0,
 'sumMessageLength':0,
-'percentageOfMessages':0.01422
+'percentageOfMessages':0.14221
 },
 {
 'theYear':2011,
@@ -15,7 +14,7 @@
 'messageCount':33835,
 'averageMessageLength':105,
 'sumMessageLength':3565583,
-'percentageOfMessages':0.0031
+'percentageOfMessages':0.03097
 },
 {
 'theYear':2011,
@@ -24,7 +23,7 @@
 'messageCount':4118,
 'averageMessageLength':205,
 'sumMessageLength':847203,
-'percentageOfMessages':0.00038
+'percentageOfMessages':0.00377
 },
 {
 'theYear':2011,
@@ -33,7 +32,7 @@
 'messageCount':252707,
 'averageMessageLength':4,
 'sumMessageLength':1060141,
-'percentageOfMessages':0.02313
+'percentageOfMessages':0.23134
 },
 {
 'theYear':2011,
@@ -42,7 +41,7 @@
 'messageCount':37035,
 'averageMessageLength':76,
 'sumMessageLength':2833106,
-'percentageOfMessages':0.00339
+'percentageOfMessages':0.0339
 },
 {
 'theYear':2011,
@@ -51,7 +50,7 @@
 'messageCount':83790,
 'averageMessageLength':92,
 'sumMessageLength':7757096,
-'percentageOfMessages':0.00767
+'percentageOfMessages':0.0767
 },
 {
 'theYear':2011,
@@ -60,7 +59,7 @@
 'messageCount':5583,
 'averageMessageLength':174,
 'sumMessageLength':973301,
-'percentageOfMessages':0.00051
+'percentageOfMessages':0.00511
 },
 {
 'theYear':2010,
@@ -69,7 +68,7 @@
 'messageCount':113852,
 'averageMessageLength':0,
 'sumMessageLength':0,
-'percentageOfMessages':0.01042
+'percentageOfMessages':0.10422
 },
 {
 'theYear':2010,
@@ -78,7 +77,7 @@
 'messageCount':33933,
 'averageMessageLength':105,
 'sumMessageLength':3577850,
-'percentageOfMessages':0.00311
+'percentageOfMessages':0.03106
 },
 {
 'theYear':2010,
@@ -87,7 +86,7 @@
 'messageCount':4191,
 'averageMessageLength':205,
 'sumMessageLength':863047,
-'percentageOfMessages':0.00038
+'percentageOfMessages':0.00384
 },
 {
 'theYear':2010,
@@ -96,7 +95,7 @@
 'messageCount':244736,
 'averageMessageLength':4,
 'sumMessageLength':1024675,
-'percentageOfMessages':0.0224
+'percentageOfMessages':0.22404
 },
 {
 'theYear':2010,
@@ -105,7 +104,7 @@
 'messageCount':36410,
 'averageMessageLength':76,
 'sumMessageLength':2785842,
-'percentageOfMessages':0.00333
+'percentageOfMessages':0.03333
 },
 {
 'theYear':2010,
@@ -114,7 +113,7 @@
 'messageCount':81405,
 'averageMessageLength':92,
 'sumMessageLength':7532986,
-'percentageOfMessages':0.00745
+'percentageOfMessages':0.07452
 },
 {
 'theYear':2010,
@@ -123,5 +122,5 @@
 'messageCount':5440,
 'averageMessageLength':174,
 'sumMessageLength':951284,
-'percentageOfMessages':0.0005
+'percentageOfMessages':0.00498
 }
