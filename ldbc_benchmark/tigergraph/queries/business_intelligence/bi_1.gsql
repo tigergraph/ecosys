@@ -28,7 +28,7 @@ CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
 
   total = vStart.size();
   FOREACH c IN @@calc DO
-    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, (c.sumMessageLength / c.messageCount), c.sumMessageLength, (c.messageCount * 0.1 / total));
+    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, (c.sumMessageLength / c.messageCount), c.sumMessageLength, (c.messageCount * 1.0 / total));
   END;
 
   PRINT @@result;
