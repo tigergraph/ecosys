@@ -1,51 +1,66 @@
-# Top posters in a Country
 CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
-  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME personCreationDate, INT postCount> INFO;
-
-  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, DATETIME personCreationDate, SumAccum<INT> postCount> @@count;
-  HeapAccum<INFO>(100, postCount DESC, personId ASC) @@result;
-  OrAccum @visited;
-  SumAccum<INT> @popularity;
-
+	OrAccum @isCitizen;
+	SetAccum<INT> @popCount;
+	SetAccum<INT> @@topForum;
+	SetAccum<INT> @postCount;
+	SetAccum<INT> @@topPost;
+	
   vStart(ANY) = { Country.* };
 
   vStart = SELECT s
     FROM vStart:s
     WHERE s.name == countryName;
-    
-  vStart = SELECT t
-    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t;
-
-  vStart = 
+	
+  vCity =
     SELECT t
-    FROM vStart:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->:t;
-
-  # top 100 Forums
-  vForum = 
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t;
+	
+  vPerson =
     SELECT t
-    FROM vStart:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->:t
-    ACCUM t.@popularity += 1
-    ORDER BY t.@popularity DESC
+    FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
+    ACCUM t.@isCitizen = TRUE;
+	
+  vForum =
+    SELECT t
+    FROM vPerson:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->Forum:t;
+	
+  tmp =
+    SELECT t
+    FROM vForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t
+    WHERE t.@isCitizen
+    ACCUM s.@popCount += t.id;
+	
+  topForum =
+    SELECT s
+    FROM vForum:s
+    ORDER BY s.@popCount.size() DESC, s.id ASC
     LIMIT 100;
-
-  vPerson = 
+	
+  tmp2 =
+    SELECT s
+    FROM topForum:s
+    ACCUM @@topForum += s.id;
+	
+  vPerson2 =
     SELECT t
-    FROM vForum:s -(Forum_HAS_MEMBER_Person:e)-> :t;
-
-  vPost = 
+    FROM topForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t;
+	
+  topPost =
     SELECT t
-    FROM vForum:s -(Forum_CONTAINER_OF_Post:e)-> :t
-    ACCUM t.@visited = TRUE;
-
-  vPost = 
+    FROM topForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
+    ACCUM @@topPost += t.id; 
+	
+  vPost =
     SELECT t
-    FROM vPerson:s -(Post_HAS_CREATOR_Person_REVERSE:e)-> :t
-    WHERE t.@visited == TRUE
-    ACCUM @@count += (s.id, s.firstName, s.lastName, s.creationDate -> 1);
-
-  FOREACH c IN @@count DO
-    @@result += INFO(c.personId, c.personFirstName, c.personLastName, c.personCreationDate, c.postCount);
-  END;
-
-  PRINT @@result;
+    FROM vPerson2:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
+    WHERE t.id IN @@topPost
+    ACCUM s.@postCount += t.id;
+	
+  res =
+    SELECT s
+    FROM vPerson2:s
+    ORDER BY s.@postCount.SIZE() DESC, s.id ASC
+    LIMIT 100;
+  
+  PRINT res[res.@postCount.size() AS postCount, res.firstName AS firstName, res.lastName AS lastName, res.creationDate AS creationDate, res.id AS id];	
 }
