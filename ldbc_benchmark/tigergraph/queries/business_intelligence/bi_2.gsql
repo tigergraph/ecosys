@@ -1,8 +1,9 @@
-CREATE QUERY bi_2(DATETIME startDate, DATETIME endDate, STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb {
+CREATE QUERY bi_2(DATETIME startDate, DATETIME endDate, STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
 
   HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
-  SumAccum<STRING> @country, @tag;
+  SumAccum<STRING> @country;
+  SetAccum<String> @tags;
   GroupByAccum<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, SumAccum<INT> messageCount> @@count;
 
   DATETIME simulationEnd = to_datetime("2013-01-01");
@@ -30,12 +31,15 @@ CREATE QUERY bi_2(DATETIME startDate, DATETIME endDate, STRING country1Name, STR
   vMessages = 
     SELECT s
     FROM vMessages:s-((Comment_HAS_TAG_Tag|Post_HAS_TAG_Tag):e)->Tag:t
-    ACCUM s.@tag = t.name;
+    ACCUM s.@tags += t.name;
 
   vPerson = 
     SELECT t
     FROM vMessages:s-((Comment_HAS_CREATOR_Person|Post_HAS_CREATOR_Person):e)->Person:t
-    ACCUM @@count += (t.@country, month(s.creationDate), t.gender, (datetime_diff(simulationEnd, t.birthday) / 31536000 / 5), s.@tag -> 1);
+    ACCUM 
+      FOREACH tag IN s.@tags DO 
+        @@count += (t.@country, month(s.creationDate), t.gender, (datetime_diff(simulationEnd, t.birthday) / 31536000 / 5), tag -> 1)
+      END;  
 
   FOREACH c IN @@count DO
     IF c.messageCount > 100 THEN
