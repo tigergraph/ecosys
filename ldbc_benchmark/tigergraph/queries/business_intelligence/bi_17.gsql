@@ -1,6 +1,10 @@
 CREATE QUERY bi_17(STRING countryName) FOR GRAPH ldbc_snb { 
   SumAccum<INT> @@cnt;
-
+  SumAccum<String> @country;
+  MapAccum<INT, SetAccum<INT>> @@preLevel0;
+  MapAccum<INT, SetAccum<INT>> @@preLevel;
+  MapAccum<INT, SetAccum<INT>> @@preLevel2;
+  
   vStart(ANY) = {Country.*};
   vStart = 
     SELECT s
@@ -13,19 +17,39 @@ CREATE QUERY bi_17(STRING countryName) FOR GRAPH ldbc_snb {
 
   vPerson = 
     SELECT t
-    FROM vCities:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t;
+    FROM vCities:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
+    ACCUM t.@country = countryName;
 
-  vPerson = 
+  vLevel2 =
+    SELECT t
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
+    WHERE t.id > s.id AND t.@country == countryName
+    ACCUM @@preLevel += (t.id -> s.id);
+  
+  vLevel3 =
+    SELECT t
+    FROM vLevel2:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
+    WHERE t.id > s.id AND t.@country == countryName
+    ACCUM @@preLevel2 += (t.id -> s.id);
+          //@@tmp += t;
+  
+  vLevel0 =
     SELECT s
-    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->:t
-    WHERE getvid(s) > getvid(t)
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
+    WHERE s.id < t.id AND t.@country == countryName
+    ACCUM @@preLevel0 += (s.id -> t.id);
+  
+  res =
+    SELECT s
+    FROM vLevel3:s
     ACCUM 
-      INT c = COUNT( s.neighbors("Person_KNOWS_Person") 
-          UNION s.neighbors("Person_KNOWS_Person_REVERSE") 
-          INTERSECT (t.neighbors("Person_KNOWS_Person")
-          UNION t.neighbors("Person_KNOWS_Person_REVERSE"))),
-      @@cnt += c;
-
-  # Each triangle is counted 3 times for each edge, so final result is divided by 3
-  PRINT @@cnt/3 AS count_triangles;
+      FOREACH ver IN @@preLevel2.get(s.id) DO
+        FOREACH ver2 IN @@preLevel.get(ver) DO
+          IF @@preLevel0.get(ver2).contains(s.id) THEN
+            @@cnt += 1
+          END
+        END
+      END;
+    
+  PRINT @@cnt AS count_triangles;
 }
