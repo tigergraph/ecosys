@@ -1,16 +1,11 @@
-CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
-  TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT forumId> groupStats;
-
+CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb { 
   OrAccum @visited;
   SetAccum<VERTEX<Person>> @@friendAll;
-	SetAccum<INT> @memberIds;
-	SumAccum<INT> @creatorId;
-  SumAccum<INT> @postCount;
-  HeapAccum<groupStats>(20, postCount DESC, forumId ASC) @@groupStatsTop;
-	
-
+  SetAccum<INT> @member;
+  SumAccum<INT> @creator;
+  SetAccum<INT> @post;
+  
   INT i = 0;
-
   vPerson = { personId };
   WHILE i < 2 DO
     vPerson = 
@@ -21,35 +16,36 @@ CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb 
         s.@visited += True,
         t.@visited += True,
         @@friendAll += t;
-
     i += 1;
   END;
-
-  vFriend = { @@friendAll };
-	@@friendAll.clear();
-  vForum = 
-    SELECT t
-    FROM vFriend:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->Forum:t
-    WHERE e.joinDate > minDate
-	  ACCUM
-	    @@friendAll += s,
-	    t.@memberIds += s.id;
-
-	vFriend = { @@friendAll };
-  findPost = 
-    SELECT t
-    FROM vFriend:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-	  ACCUM t.@creatorId = s.id;
-
-  aggForum = 
-    SELECT t
-    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
-    ACCUM CASE WHEN t.@creatorId IN s.@memberIds THEN s.@postCount += 1 END
-    POST-ACCUM @@groupStatsTop += groupStats(s.title, s.@postCount, s.id);
-
-  FOREACH gs IN @@groupStatsTop DO
-    PRINT 
-      gs.forumTitle AS forumTitle,
-      gs.postCount AS postCount;
-  END;
+  
+  vFriends = { @@friendAll };
+  vForum =
+  SELECT t
+  FROM vFriends:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->Forum:t
+  WHERE e.joinDate > minDate
+  ACCUM t.@member += s.id;
+  
+  vPost = 
+  SELECT t
+  FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t;
+  
+  vPost =
+  SELECT s
+  FROM vPost:s-(Post_HAS_CREATOR_Person:e)->Person:t
+  ACCUM s.@creator = t.id;
+  
+  vPost = 
+  SELECT t
+  FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
+  WHERE t.@creator IN s.@member
+  ACCUM s.@post += t.id;
+  
+  vForum =
+  SELECT s
+  FROM vForum:s
+  ORDER BY s.@post.size() DESC, s.id ASC
+  LIMIT 20;
+  
+  PRINT vForum[vForum.title AS title, vForum.@post.size() AS postCount];
 }
