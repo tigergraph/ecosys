@@ -31,7 +31,6 @@ CREATE QUERY bi_17(STRING countryName) FOR GRAPH ldbc_snb {
     FROM vLevel2:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
     WHERE t.id > s.id AND t.@country == countryName
     ACCUM @@preLevel2 += (t.id -> s.id);
-          //@@tmp += t;
   
   vLevel0 =
     SELECT s
