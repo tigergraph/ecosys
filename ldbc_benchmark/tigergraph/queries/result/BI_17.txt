@@ -1,1 +1,1 @@
-[{'count_triangles': 3430}]
+[{'count_triangles': 242}]
