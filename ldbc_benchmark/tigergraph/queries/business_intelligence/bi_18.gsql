@@ -2,20 +2,25 @@ CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages)
   TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
 
   HeapAccum<INFO>(100000, personCount DESC, messageCount DESC) @@result;
-  MapAccum<INT, INT> @@personCount;
+  MapAccum<INT, INT> @@count;
+  SetAccum<INT> @messages;
   SumAccum<INT> @messageCount;
   OrAccum @inLanguages;
-
+  INT tot = 0;
+  INT num_0 = 0;
+  
   vPerson = { Person.* };
-  vPerson = 
-    SELECT s
-    FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->:t
-    WHERE t.content != "" 
+  tot = vPerson.size();
+  
+  vPost = 
+  SELECT t
+  FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
+  WHERE t.content != "" 
       AND t.length < lengthThreshold 
       AND t.creationDate > minDate 
       AND t.lang IN languages
-    ACCUM s.@messageCount += 1;
-
+  ACCUM t.@inLanguages = TRUE;
+  
   vStart(ANY) = { Post.* };
   vStart = 
     SELECT s
@@ -28,24 +33,26 @@ CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages)
       FROM vStart:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t
       ACCUM t.@inLanguages = TRUE;
   END;
-
-  vPerson = 
-    SELECT s
-    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->:t
-    WHERE t.content != "" 
-      AND t.length < lengthThreshold 
-      AND t.creationDate > minDate 
-      AND t.@inLanguages == TRUE
-    ACCUM s.@messageCount += 1;
-
-  vPerson = 
-    SELECT s
-    FROM vPerson:s
-    ACCUM @@personCount += (s.@messageCount -> 1); 
-
-  FOREACH (messageCount, personCount) IN @@personCount DO
+  
+  vPerson =
+  SELECT s
+  FROM vPerson:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->:t  
+  WHERE t.content != "" 
+        AND t.length < lengthThreshold 
+        AND t.creationDate > minDate 
+        AND t.@inLanguages
+  ACCUM s.@messages += t.id
+  POST-ACCUM s.@messageCount = s.@messages.size(),
+  @@count += (s.@messageCount -> 1);
+  
+  num_0 = tot - vPerson.size();
+  IF num_0 != 0 THEN
+    @@count += (0 -> num_0);
+  END;
+   
+  FOREACH (messageCount, personCount) IN @@count DO
     @@result += INFO(messageCount, personCount);
   END;
 
-  PRINT @@result; 
+  PRINT @@result;  
 }
