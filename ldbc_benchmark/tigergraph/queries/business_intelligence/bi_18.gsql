@@ -1,7 +1,7 @@
 CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
 
-  HeapAccum<INFO>(100000, personCount DESC, messageCount DESC) @@result;
+  HeapAccum<INFO>(1, personCount DESC, messageCount DESC) @@result;
   MapAccum<INT, INT> @@count;
   SetAccum<INT> @messages;
   SumAccum<INT> @messageCount;
@@ -49,7 +49,8 @@ CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages)
   IF num_0 != 0 THEN
     @@count += (0 -> num_0);
   END;
-   
+
+  @@result.resize(@@count.size());
   FOREACH (messageCount, personCount) IN @@count DO
     @@result += INFO(messageCount, personCount);
   END;
