@@ -26,9 +26,9 @@ Folder Organization
  
   generic/		a graph folder
 
-  social/		another graph folder
+  social/		another graph folder, weighted graph
 
-  movie/                another graph folder
+  movie/                another graph folder, weighted graph
 
   generic, social and movie are the names of graph schemas used for examples.
   Each graph folder contains the follwing:

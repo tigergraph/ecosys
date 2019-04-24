@@ -1,4 +1,4 @@
-CREATE QUERY pageRank (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, INT outputLimit) FOR GRAPH social{ 
+CREATE DISTRIBUTED QUERY pageRank (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display, INT outputLimit) FOR GRAPH social{
 # Compute the pageRank score for each vertex in the GRAPH
 # In each iteration, compute a score for each vertex:
 #   score = (1-damping) + damping*sum(received scores FROM its neighbors).
@@ -13,7 +13,7 @@ CREATE QUERY pageRank (FLOAT maxChange, INT maxIter, FLOAT damping, BOOL display
         SumAccum<float> @score = 1;   # Initial score for every vertex is 1.
         SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
 
-        Start = {ANY};   #  Start with all vertices of specified type(s)
+        Start = {Person.*};   #  Start with all vertices of specified type(s)
         WHILE @@maxDiff > maxChange LIMIT maxIter DO
                 @@maxDiff = 0;
                 V = SELECT s

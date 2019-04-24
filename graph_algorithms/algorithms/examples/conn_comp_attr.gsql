@@ -1,6 +1,6 @@
-*ATTR*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH social {
-*ACCM*CREATE BATCH QUERY conn_comp*EXT* () FOR GRAPH social {
-*FILE*CREATE BATCH QUERY conn_comp*EXT* (FILE f) FOR GRAPH social {
+*ATTR*CREATE DISTRIBUTED QUERY conn_comp*EXT* () FOR GRAPH social {
+*ACCM*CREATE DISTRIBUTED QUERY conn_comp*EXT* () FOR GRAPH social {
+*FILE*CREATE DISTRIBUTED QUERY conn_comp*EXT* (FILE f) FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         MinAccum<int> @cc_id = 0;       //each vertex's tentative component id

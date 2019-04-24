@@ -1,5 +1,5 @@
 README for GSQL Algorithm Library
-10/24/18
+4/24/19
 
 The GSQL Graph Algorithm Library is a collection of high-performance GSQL queries,
 each of which implements a standard graph algorithm. Each algorithm is ready to be
@@ -30,13 +30,12 @@ The library contains two main sections: Algorithms and Tests.
 
 The Algorithms folder contains template algorithms and scripts to help you customize
 and install them. There are two folders:
-	template/
+	templates/
 		 contains template algorithms with some placeholder code
 		and markers which need to be acted on by the installation script.
 
-	generated/
+	examples/
 		contains GSQL queries generated from the templates by the installation script.
-
 
 The Tests folder contains small sample graphs that you can use to experiment with the
 algorithms. In our online documentation, we use the test graphs to show you the expected
@@ -63,23 +62,27 @@ https://docs.tigergraph.com/graph-algorithm-library
 
 List of GSQL Graph Algorithms
 -----------------------------
-as of December 14, 2018
+as of April 12, 2019
 Compatible with TigerGraph version 2.1.8 or higher
 
 closeness_cent                  Closeness Centrality
 conn_comp                       Connected Component Detection
 label_prop                      Label Propagation Method for Community Detection
-louvain                         Louvain Modularity Method for Community Detection
+louvain                         Parallel Louvain Modularity Method with Refinement for Community Detection
 pageRank                        PageRank measurement of relative influence of each vertex
+pageRank_wt                     Weighted PageRank
+pageRank_pers                   Personalized PageRank
 shortest_ss_no_wt               Single-Source Shortest Paths without weight
 shortest_ss_pos_wt              Single-Source Shortest Paths with positive weight
 shortest_ss_any_wt              Single-Source Shortest Paths
+mst                             Minimum Spanning Tree (MST)
+cycle_detection                 Rocha–Thatte algorithm for cycle detection
 tri_count                       Count all the triangles, memory effient
 tri_count_fast                  Count all the triangles, faster but using more memory
-similarity_cos_single           Cosine Similarity for single vertex
-similarity_cos                  Cosine Similarity for each pair of vertices
-similarity_jaccard_single       Jaccard Similarity for single vertex
-similarity_jaccard              Jaccard Similarity for each pair of vertices
+cosine_nbor_ss                  Cosine Similarity from a single vertex
+cosine_nbor_ap                  Cosine Similarity for each pair of vertices
+jaccard_nbor_ss                 Jaccard Similarity from a single vertex
+jaccard_nbor_ap                 Jaccard Similarity for each pair of vertices
 
 Each of the above  may be available as 2 or 3 related queries
 For example:

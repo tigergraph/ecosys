@@ -1,4 +1,4 @@
-CREATE BATCH QUERY conn_comp () FOR GRAPH social {
+CREATE DISTRIBUTED QUERY conn_comp () FOR GRAPH social {
 # This query identifies the Connected Components (undirected edges)
 
         MinAccum<int> @cc_id = 0;       //each vertex's tentative component id

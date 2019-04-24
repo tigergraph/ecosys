@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Connected Components 2" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Cosine Similary (all vertices)" "Jaccard Similarity (single vertex)" "Jaccard Similary (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -49,10 +49,6 @@ while [ !$finished ]; do
 				algoName="conn_comp"
 				echo "  conn_comp() works on undirected edges"
 				break;;
-                        "Connected Components 2" )
-                                algoName="conn_comp2"
-                                echo "  conn_comp2() works on undirected edges"
-                                break;;
 			"Label Propagation" )
 				algoName="label_prop"
 				echo "  label_prop() works on undirected edges"
@@ -89,6 +85,10 @@ while [ !$finished ]; do
                                 algoName="mst"
                                 echo "  mst() works on weighted undirected edges"
                                 break;;
+                        "Cycle Detection" )
+                                algoName="cycle_detection"
+                                echo "  cycle_detection() works on directed edges"
+                                break;;
 			"Triangle Counting(minimal memory)" )
 				algoName="tri_count"
 				echo "  tri_count() works on undirected edges"
@@ -97,19 +97,27 @@ while [ !$finished ]; do
 				algoName="tri_count_fast"
 				echo "  tri_count_fast() works on undirected graphs"
 				break;;
-			'Cosine Similarity (single vertex)' )
+                        'Cosine Similarity (single vertex)' )
+                                algoName="cosine_ss"
+                                echo "  cosine_ss() calculates the similarity between one given vertex and all other vertices. You need to have a subquery called collect_feature_cosine returning MapAccum<STRING, FLOAT> installed before installing this algorithm."
+                                break;;
+                        'Jaccard Similarity (single vertex)' )
+                                algoName="jaccard_ss"
+                                echo "  jaccard_ss() calculates the similarity between one given vertex and all other vertices. You need to have a subquery called collect_feature_jaccard returning SetAccum<STRING> installed before installing this algorithm."
+                                break;;
+			'Cosine Neighbor Similarity (single vertex)' )
 				algoName="cosine_nbor_ss"
                                 echo "  cosine_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
-			'Cosine Similary (all vertices)' )
+			'Cosine Neighbor Similarity (all vertices)' )
 				algoName="cosine_nbor_ap"
                                 echo "  cosine_nbor_ap() calculates the similarity between all vertices"
                                 break;;
-	                'Jaccard Similarity (single vertex)' )
+	                'Jaccard Neighbor Similarity (single vertex)' )
                                 algoName="jaccard_nbor_ss"
                                 echo "  jaccard_nbor_ss() calculates the similarity between one given vertex and all other vertices"
                                 break;;
-                        'Jaccard Similary (all vertices)' )
+                        'Jaccard Neighbor Similarity (all vertices)' )
                                 algoName="jaccard_nbor_ap"
                                 echo "  jaccard_nbor_ap() calculates the similarity between all vertices"
                                 break;;
@@ -256,10 +264,10 @@ END
 
         # 6. Ask for query mode.
        echo; echo "Please choose query mode:"
-       select mode in "Single Node Mode" "Batch Mode"; do
+       select mode in "Single Node Mode" "Distributed Mode"; do
                 case $mode in
-                        "Batch Mode" )	
-                                sed -i "s/CREATE QUERY/CREATE BATCH QUERY/g" ${genPath}/${algoName}_tmp.gsql;
+                        "Distributed Mode" )	
+                                sed -i "s/CREATE QUERY/CREATE DISTRIBUTED QUERY/g" ${genPath}/${algoName}_tmp.gsql;
                                 break;;
                         "Single Node Mode" )
                                 break;;
@@ -275,7 +283,7 @@ END
 # ${algoName}$fExt writes output to a file
 # ${algoName}$aExt saves output to graph attribute (if they exist)
 
-	echo; echo "Please choose a way to show result:"
+	echo; echo "Please choose a way to show result (Contact TigerGraph Support for higher performance File version):"
         select version in "Show JSON result" "Write to File" "Save to Attribute/Insert Edge" "All of the above"; do
         	case $version in
         		"Show JSON result" )
@@ -333,10 +341,11 @@ END
 				  echo; echo "If your graph schema has appropriate vertex or edge attributes,"
 				  echo " you can update the graph with your results."
 				  read -p 'Do you want to update the graph [yn]? ' updateG
-
+                                        
+                                  # if you update attribute here, you also need to do the same update in the "All of the above" choice
 				  case $updateG in [Yy]*)
 					attrQuery=${genPath}/${algoName}$aExt.gsql
-					# *vIntType*
+					# *vIntAttr*
 					if [[ $(countStringInFile "\*vIntAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store INT result (e.g. component ID): " vIntAttr
@@ -349,7 +358,20 @@ END
 					  done
 					fi
 
-					# * vFltType*
+                                        # *vBoolAttr*
+                                        if [[ $(countStringInFile "\*vBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store BOOL result (e.g. in_cycle): " vBoolAttr
+                                                if [[ $(countVertexAttr $vBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*vBoolAttr\*/$vBoolAttr/g" ${genPath}/${algoName}$aExt.gsql;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
+					# * vFltAttr*
 					if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store FLOAT result (e.g. pageRank): " vFltAttr
@@ -362,7 +384,7 @@ END
 					  done
 					fi
 
-					# * vStrType*
+					# * vStrAttr*
 					if [[ $(countStringInFile "\*vStrAttr\*" $attrQuery) > 0 ]]; then
 					  while true; do
 						read -p "Vertex attribute to store STRING result (e.g. path desc): " vStrAttr
@@ -375,7 +397,7 @@ END
 					  done
 					fi
 
-                                        # * eBoolType*
+                                        # * eBoolAttr*
                                         if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
                                           while true; do
                                                 read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
@@ -490,6 +512,19 @@ END
                                           done
                                         fi
 
+                                        # *vBoolAttr*
+                                        if [[ $(countStringInFile "\*vBoolAttr\*" $attrQuery) > 0 ]]; then
+                                          while true; do
+                                                read -p "Vertex attribute to store BOOL result (e.g. in_cycle): " vBoolAttr
+                                                if [[ $(countVertexAttr $vBoolAttr) > 0 ]]; then
+                                                        sed -i "s/\*vBoolAttr\*/$vBoolAttr/g" ${genPath}/${algoName}$aExt.gsql;
+                                                        break;
+                                                else
+                                                        echo " *** Vertex attribute name not found. Try again."
+                                                fi
+                                          done
+                                        fi
+
                                         # * vFltType*
                                         if [[ $(countStringInFile "\*vFltAttr\*" $attrQuery) > 0 ]]; then
                                           while true; do
@@ -519,7 +554,7 @@ END
                                         # * eBoolType*
                                         if [[ $(countStringInFile "\*eBoolAttr\*" $attrQuery) > 0 ]]; then
                                           while true; do
-                                                read -p "Edge attribute to store BOOL result (e.g. mst): " eBoolAttr
+                                                read -p "Edge attribute to store BOOL result (e.g. flag): " eBoolAttr
                                                 if [[ $(countEdgeAttr $eBoolAttr) > 0 ]]; then
                                                         sed -i "s/\*eBoolAttr\*/$eBoolAttr/g" $attrQuery;
                                                         break;

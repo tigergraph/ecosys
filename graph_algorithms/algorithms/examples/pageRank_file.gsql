@@ -1,4 +1,4 @@
-CREATE QUERY pageRank_file (FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH social{
+      CREATE DISTRIBUTED QUERY pageRank_file (FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH social{
 # Compute the pageRank score for each vertex in the GRAPH
 # In each iteration, compute a score for each vertex:
 #   score = (1-damping) + damping*sum(received scores FROM its neighbors).
@@ -10,7 +10,7 @@ CREATE QUERY pageRank_file (FLOAT maxChange, INT maxIter, FLOAT damping, FILE f)
         SumAccum<float> @received_score = 0; # sum of scores each vertex receives FROM neighbors
         SumAccum<float> @score = 1;   # Initial score for every vertex is 1.
 
-        Start = {ANY};   #  Start with all vertices of specified type(s)
+        Start = {Person.*};   #  Start with all vertices of specified type(s)
         WHILE @@maxDiff > maxChange LIMIT maxIter DO
                 @@maxDiff = 0;
                 V = SELECT s

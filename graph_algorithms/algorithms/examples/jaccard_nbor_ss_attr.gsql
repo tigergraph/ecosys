@@ -1,4 +1,6 @@
-CREATE QUERY jaccard_nbor_ss_attr (VERTEX<Person> source, INT topK) FOR GRAPH movie {
+*ATTR*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX<Person> source, INT topK) FOR GRAPH movie {
+*ACCM*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH movie {
+*FILE*CREATE QUERY jaccard_nbor_ss*EXT* (VERTEX source, INT topK, FILE f) FOR GRAPH movie {
 /* This query calculates the Jaccard Similarity between a given vertex and every other vertex.
 Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
@@ -25,11 +27,16 @@ Jaccard similarity = intersection_size / (size_A + size_B - intersection_size)
                  ORDER BY t.@similarity DESC
                  LIMIT topK;
 
-        Others = SELECT s
-                 FROM Others:s
-                 POST-ACCUM insert into Similarity values(source, s, s.@similarity);
+*ATTR*  Others = SELECT s
+*ATTR*           FROM Others:s
+*ATTR*           POST-ACCUM insert into *insert-edge-name* values(source, s, s.@similarity);
 
+*ACCM*  PRINT Others.@similarity;
 
+*FILE*  f.println("Vertex1", "Vertex2", "Similarity");
+*FILE*  Others = SELECT s
+*FILE*           FROM Others:s
+*FILE*           POST-ACCUM f.println(source, s, s.@similarity);
 
 }
 
