@@ -1,75 +1,76 @@
 CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb { 
   SetAccum<INT> @postSet, @commentSet;
-  SumAccum<INT> @messageCount, @months, @zombieScore;
-  SetAccum<INT> @@zombies;
-  SetAccum<INT> @likeSet, @zombieLikeSet;
-  SumAccum<INT> @likeCount, @zombieLikeCount;
-  
-  vCountry = { Country.* };
+	SumAccum<INT> @messageCount, @months;
+	SumAccum<FLOAT> @zombieScore;
+	SetAccum<INT> @@zombies;
+	SetAccum<INT> @likeSet, @zombieLikeSet;
+	SumAccum<FLOAT> @likeCount, @zombieLikeCount;
+	
+	vCountry = { Country.* };
   vCity = 
     SELECT t
     FROM vCountry:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
     WHERE s.name == countryName;
-  vPerson =
-    SELECT t
-    FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
+	vPerson =
+	  SELECT t
+	  FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
+	  WHERE t.creationDate < endDate
+	  ACCUM t.@months = (year(endDate) - year(t.creationDate)) * 12 + (month(endDate) - month(t.creationDate)) + 1;
+	  
+	vPost =
+	  SELECT t
+	  FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
+	  WHERE t.creationDate < endDate
+	  ACCUM s.@postSet += t.id
+	  POST-ACCUM s.@messageCount += s.@postSet.size();
+	
+	vComment =
+	  SELECT t
+	  FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
+	  WHERE t.creationDate < endDate
+	  ACCUM s.@commentSet += t.id
+	  POST-ACCUM s.@messageCount += s.@commentSet.size();
+	
+	vPerson =
+	  SELECT s
+	  FROM vPerson:s
+	  WHERE s.@messageCount < s.@months
+	  ACCUM @@zombies += s.id,
+	        s.@zombieLikeCount = 0,
+	        s.@likeCount = 0,
+	        s.@zombieScore = 0;
+	
+	vMessage = 
+	  SELECT t
+	  FROM vPerson:s-((Post_HAS_CREATOR_Person_REVERSE|Comment_HAS_CREATOR_Person_REVERSE):e)->(Post|Comment):t;
+	
+	vMessage =
+	  SELECT s
+	  FROM vMessage:s-((Person_LIKES_Post_REVERSE|Person_LIKES_Comment_REVERSE):e)->Person:t
     WHERE t.creationDate < endDate
-    ACCUM t.@months = (year(endDate) - year(t.creationDate)) * 12 + (month(endDate) - month(t.creationDate)) + 1;
-    
-  vPost =
-    SELECT t
-    FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    WHERE t.creationDate < endDate
-    ACCUM s.@postSet += t.id
-    POST-ACCUM s.@messageCount += s.@postSet.size();
-  
-  vComment =
-    SELECT t
-    FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
-    WHERE t.creationDate < endDate
-    ACCUM s.@commentSet += t.id
-    POST-ACCUM s.@messageCount += s.@commentSet.size();
-  
-  vPerson =
-    SELECT s
-    FROM vPerson:s
-    WHERE s.@messageCount < s.@months
-    ACCUM @@zombies += s.id,
-          s.@zombieLikeCount = 0,
-          s.@likeCount = 0,
-          s.@zombieScore = 0;
-  
-  vMessage = 
-    SELECT t
-    FROM vPerson:s-((Post_HAS_CREATOR_Person_REVERSE|Comment_HAS_CREATOR_Person_REVERSE):e)->(Post|Comment):t;
-  
-  vMessage =
-    SELECT s
-    FROM vMessage:s-((Person_LIKES_Post_REVERSE|Person_LIKES_Comment_REVERSE):e)->Person:t
-    WHERE t.creationDate < endDate
-    ACCUM
-      s.@likeSet += t.id,
-      CASE WHEN t.id IN @@zombies THEN
-        s.@zombieLikeSet += t.id
-      END;
-  
-  tmp =
-    SELECT s
+	  ACCUM
+	    s.@likeSet += t.id,
+	    CASE WHEN t.id IN @@zombies THEN
+	      s.@zombieLikeSet += t.id
+	    END;
+	
+	tmp =
+	  SELECT s
     FROM vPerson:s-((Post_HAS_CREATOR_Person_REVERSE|Comment_HAS_CREATOR_Person_REVERSE):e)->(Post|Comment):t
-    ACCUM s.@likeCount += t.@likeSet.size(),
-          s.@zombieLikeCount += t.@zombieLikeSet.size()
-    POST-ACCUM 
-          IF s.@likeCount == 0 THEN
-            s.@zombieScore = 0
-          ELSE
-            s.@zombieScore = s.@zombieLikeCount / s.@likeCount
-          END;
-  
-  vPerson = 
-    SELECT s
-    FROM vPerson:s
-    ORDER BY s.@zombieScore DESC, s.id ASC
-    LIMIT 100;
-  
-  PRINT vPerson[vPerson.id, vPerson.@zombieLikeCount AS zombieLikeCount, vPerson.@likeCount AS totalLikeCount, vPerson.@zombieScore AS zombieScore];  
+	  ACCUM s.@likeCount += t.@likeSet.size(),
+	        s.@zombieLikeCount += t.@zombieLikeSet.size()
+	  POST-ACCUM 
+	        IF s.@likeCount < 0.1 THEN
+	          s.@zombieScore = 0
+	        ELSE
+	          s.@zombieScore = s.@zombieLikeCount / s.@likeCount
+	        END;
+	
+	vPerson = 
+	  SELECT s
+	  FROM vPerson:s
+	  ORDER BY s.@zombieScore DESC, s.id ASC
+	  LIMIT 100;
+	
+	PRINT vPerson[vPerson.id, vPerson.@zombieLikeCount AS zombieLikeCount, vPerson.@likeCount AS totalLikeCount, vPerson.@zombieScore AS zombieScore];  
 }
