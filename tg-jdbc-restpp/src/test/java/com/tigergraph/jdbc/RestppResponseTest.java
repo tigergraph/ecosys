@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 
 /**
  * Unit test for RestppResponse.
+ * The corresponding TigerGraph demo could be found at:
+ * https://docs.tigergraph.com/dev/gsql-examples/common-applications#example-2-page-rank
  */
 public class RestppResponseTest extends TestCase {
 

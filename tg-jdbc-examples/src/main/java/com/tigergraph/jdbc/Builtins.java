@@ -10,6 +10,8 @@ import java.sql.Statement;
 
 /**
  * Example code to demonstrate how to invoke TigerGraph builtin queries
+ * The corresponding TigerGraph demo could be found at:
+ * https://docs.tigergraph.com/dev/gsql-examples/common-applications#example-2-page-rank
  */
 public class Builtins {
   public static void main( String[] args ) throws SQLException {
@@ -27,7 +29,7 @@ public class Builtins {
     /**
      * Specify the graph name, especially when multi-graph is enabled.
      */
-    properties.put("graph", "BitCoinGraph");
+    properties.put("graph", "gsql_demo");
 
     /**
      * Only accept 3 parameters: IP address, port and debug.
@@ -98,7 +100,7 @@ public class Builtins {
           System.out.println("Running \"builtins stat_edge_number(type=?)\"...");
           query = "builtins stat_edge_number(type=?)";
           try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(0, "chain");
+            pstmt.setString(0, "Linkto");
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
               while (rs.next()) {
                 Object obj = rs.getObject(0);

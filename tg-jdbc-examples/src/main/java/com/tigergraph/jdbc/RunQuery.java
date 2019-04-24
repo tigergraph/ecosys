@@ -10,6 +10,8 @@ import java.sql.Statement;
 
 /**
  * Example code to demonstrate how to invoke TigerGraph pre-installed queries
+ * The corresponding TigerGraph demo could be found at:
+ * https://docs.tigergraph.com/dev/gsql-examples/common-applications#example-2-page-rank
  */
 public class RunQuery
 {
@@ -28,7 +30,7 @@ public class RunQuery
     /**
      * Specify the graph name, especially when multi-graph is enabled.
      */
-    properties.put("graph", "BitCoinGraph");
+    properties.put("graph", "gsql_demo");
 
     /**
      * Only accept 3 parameters: ip address, port and debug.
@@ -54,8 +56,8 @@ public class RunQuery
         /**
          * Run a pre-installed query with parameters.
          */
-        System.out.println("Running \"run pageRank(maxChange=?, maxIteration=?, dumpingFactor=?)\"...");
-        String query = "run pageRank(maxChange=?, maxIteration=?, dumpingFactor=?)";
+        System.out.println("Running \"run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)\"...");
+        String query = "run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(0, "0.001");
           pstmt.setInt(1, 10);

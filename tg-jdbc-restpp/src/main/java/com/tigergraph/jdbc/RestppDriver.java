@@ -40,7 +40,7 @@ public class RestppDriver extends BaseDriver {
         String host = tgUrl.getHost();
         Boolean secure = tgUrl.getProtocol().equals("https");
         int port = tgUrl.getPort();
-        if (port < 0) {
+        if (port < 0 || port > 65535) {
           port = 9000;
         }
         connection = new RestppConnection(host, port, secure, params, url, this.debug);

@@ -10,6 +10,8 @@ import java.sql.Statement;
 
 /**
  * Example code to demonstrate how to query certain vertices & edges.
+ * The corresponding TigerGraph demo could be found at:
+ * https://docs.tigergraph.com/dev/gsql-examples/common-applications#example-2-page-rank
  */
 public class GraphQuery
 {
@@ -28,7 +30,7 @@ public class GraphQuery
     /**
      * Specify the graph name, especially when multi-graph is enabled.
      */
-    properties.put("graph", "BitCoinGraph");
+    properties.put("graph", "gsql_demo");
 
     /**
      * Only accept 3 parameters: ip address, port and debug.
@@ -52,10 +54,10 @@ public class GraphQuery
 
       try (Connection con = driver.connect(sb.toString(), properties, debug)) {
         /**
-         * To get any 3 vertices of Block type
+         * To get any 3 vertices of Page type
          */
-        String query = "get Block(limit=?)";
-        System.out.println("Running \"get Block(limit=?)\"...");
+        String query = "get Page(limit=?)";
+        System.out.println("Running \"get Page(limit=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setInt(0, 3);
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -69,13 +71,13 @@ public class GraphQuery
         }
 
         /**
-         * To get a Block which has the given id
+         * To get a Page which has the given id
          */
         System.out.println();
-        query = "get Block(id=?)";
-        System.out.println("Running \"get Block(id=?)\"...");
+        query = "get Page(id=?)";
+        System.out.println("Running \"get Page(id=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
+          pstmt.setString(0, "2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
               Object obj = rs.getObject(0);
@@ -87,13 +89,13 @@ public class GraphQuery
         }
 
         /**
-         * To get a Block whose height is 1
+         * To get a Page whose page_id is 2
          */
         System.out.println();
-        query = "get Block(filter=?)";
-        System.out.println("Running \"get Block(filter=?)\"...");
+        query = "get Page(filter=?)";
+        System.out.println("Running \"get Page(filter=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "height=1");
+          pstmt.setString(0, "page_id=2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
               Object obj = rs.getObject(0);
@@ -108,10 +110,10 @@ public class GraphQuery
          * To get all edges from a given vertex
          */
         System.out.println();
-        query = "get edges(Block, ?)";
-        System.out.println("Running \"get edges(Block, ?)\"...");
+        query = "get edges(Page, ?)";
+        System.out.println("Running \"get edges(Page, ?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
+          pstmt.setString(0, "2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
               Object obj = rs.getObject(0);
@@ -126,11 +128,11 @@ public class GraphQuery
          * To get a specific edge from a given vertex to another specific vertex
          */
         System.out.println();
-        query = "get edge(Block, ?, chain, Block, ?)";
-        System.out.println("Running \"get edge(Block, ?, Chain, Block, ?)\"...");
+        query = "get edge(Page, ?, Linkto, Page, ?)";
+        System.out.println("Running \"get edge(Page, ?, Linkto, Page, ?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
-          pstmt.setString(1, "00000000184d61d43e667b4aebe6224e0a3265a2be87048b7924d7339de6095d");
+          pstmt.setString(0, "2");
+          pstmt.setString(1, "3");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
               Object obj = rs.getObject(0);

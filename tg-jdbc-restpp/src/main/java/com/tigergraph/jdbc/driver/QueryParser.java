@@ -69,6 +69,7 @@ public class QueryParser {
 
   /**
    * Parse queries to get vertices and edges.
+   * Reference: https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints
    */
   private void parseEdgeAndVertex(String[] tokens) throws SQLException {
     StringBuilder sb = new StringBuilder();
@@ -212,7 +213,7 @@ public class QueryParser {
     } else if (tokens[0].toLowerCase().equals("run")) {
       /**
        * It is a pre-installed query.
-       * e.g., "run pageRank(maxChange=?, maxIteration=?, dumpingFactor=?)"
+       * e.g., "run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)"
        */
       this.is_run_query = Boolean.TRUE;
       this.httpType = HttpTypes.HttpGet;

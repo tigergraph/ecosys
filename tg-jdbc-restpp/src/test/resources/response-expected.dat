@@ -1,3 +1,10 @@
-{"v_id":"000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7","attributes":{"_size":216,"time_stamp":1233109856,"txcount":1,"bits":486604799,"merkleroot":"af2f3ca9eb0466ac85392d5cd1fb9c8646e0e309aee3be111087914afa10c9d9","nonce":3386415364,"_version":1,"height":2065},"v_type":"Block"}
-{"v_id":"00000000f42278032e65a8fc09a41fbbd1779421d166e59c205a37b6fdad1340","attributes":{"_size":216,"time_stamp":1233065969,"txcount":1,"bits":486604799,"merkleroot":"4f36847fe29c9a6d9f8bd4f6924a97f5aedc6fee19d5558392b11e3b6f2f1b98","nonce":1474415380,"_version":1,"height":2018},"v_type":"Block"}
-{"v_id":"000000007e95b1d5a9603874ddbae14c6eacf7dcf86429efb91947ea27ca402e","attributes":{"_size":216,"time_stamp":1233040087,"txcount":1,"bits":486604799,"merkleroot":"cdb8e7a0af6d3b05768f6ea1f874d2434c20e883a098b7c5e123f56208847b60","nonce":1891517959,"_version":1,"height":1992},"v_type":"Block"}
+{"@@maxDifference":0.425}
+{"@@maxDifference":0.36125}
+{"@@maxDifference":0.15353}
+{"@@maxDifference":0.19575}
+{"@@maxDifference":0.16639}
+{"@@maxDifference":0.09429}
+{"@@maxDifference":0.08014}
+{"@@maxDifference":0.05961}
+{"@@maxDifference":0.04705}
+{"@@maxDifference":0.03999}

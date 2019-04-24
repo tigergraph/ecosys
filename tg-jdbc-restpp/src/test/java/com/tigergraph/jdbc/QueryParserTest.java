@@ -15,6 +15,8 @@ import junit.framework.TestCase;
 
 /**
  * Unit test for QueryParser
+ * The corresponding TigerGraph demo could be found at:
+ * https://docs.tigergraph.com/dev/gsql-examples/common-applications#example-2-page-rank
  */
 public class QueryParserTest extends TestCase {
 
@@ -23,33 +25,33 @@ public class QueryParserTest extends TestCase {
 	}
 	
 	public void testFormat() throws Exception {
-    String query = "get Block(limit=?)";
+    String query = "get Page(limit=?)";
     Map<String, Object> parameters = new HashMap<>(10);
-    parameters.put("0", "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
+    parameters.put("0", "3");
     StringBuilder sb = new StringBuilder();
 		QueryParser parser = new QueryParser(query, parameters, Boolean.FALSE);
     sb.append(parser.getEndpoint()).append("\n");
 
-    query = "get Block(filter=?)";
+    query = "get Page(filter=?)";
     parameters.clear();
-    parameters.put("0", "height=1");
+    parameters.put("0", "page_id=1");
 		parser = new QueryParser(query, parameters, Boolean.FALSE);
     sb.append(parser.getEndpoint()).append("\n");
 
-    query = "get edges(Block, ?)";
+    query = "get edges(Page, ?)";
     parameters.clear();
-    parameters.put("0", "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
+    parameters.put("0", "2");
 		parser = new QueryParser(query, parameters, Boolean.FALSE);
     sb.append(parser.getEndpoint()).append("\n");
 
-    query = "get edge(Block, ?, chain, Block, ?)";
+    query = "get edge(Page, ?, Linkto, Page, ?)";
     parameters.clear();
-    parameters.put("0", "000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7");
-    parameters.put("1", "00000000184d61d43e667b4aebe6224e0a3265a2be87048b7924d7339de6095d");
+    parameters.put("0", "2");
+    parameters.put("1", "3");
 		parser = new QueryParser(query, parameters, Boolean.FALSE);
     sb.append(parser.getEndpoint()).append("\n");
 
-    query = "run pageRank(maxChange=?, maxIteration=?, dumpingFactor=?)";
+    query = "run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)";
     parameters.clear();
     parameters.put("0", "0.001");
     parameters.put("1", 10);
@@ -57,7 +59,6 @@ public class QueryParserTest extends TestCase {
 		parser = new QueryParser(query, parameters, Boolean.FALSE);
     sb.append(parser.getEndpoint()).append("\n");
 
-    query = "run pageRank(maxChange=?, maxIteration=?, dumpingFactor=?)";
 		String formattedResult = sb.toString();
 		InputStream expected = 
 			getClass().getClassLoader().getResourceAsStream("endpoint-expected.dat");

@@ -1,5 +1,5 @@
-vertices/Block?limit=000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7
-vertices/Block?filter=height=1
-edges/Block/000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7
-edges/Block/000000005d1ee9f633d16642d1bd8af362c3e49e7ce819937ebe6873aaa8c7b7/chain/Block/00000000184d61d43e667b4aebe6224e0a3265a2be87048b7924d7339de6095d
-pageRank?maxChange=0.001&maxIteration=10&dumpingFactor=0.15
+vertices/Page?limit=3
+vertices/Page?filter=page_id=1
+edges/Page/2
+edges/Page/2/Linkto/Page/3
+pageRank?maxChange=0.001&maxIteration=10&dampingFactor=0.15

@@ -171,11 +171,11 @@ public class RestppConnection extends Connection {
     return new RestppPreparedStatement(this, query, this.debug);
   }
 
-  @Override public PreparedStatement prepareStatement(String cypher, int resultSetType, int resultSetConcurrency) throws SQLException {
+  @Override public PreparedStatement prepareStatement(String query, int resultSetType, int resultSetConcurrency) throws SQLException {
     throw ExceptionBuilder.buildUnsupportedOperationException();
   }
 
-  @Override public PreparedStatement prepareStatement(String cypher, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+  @Override public PreparedStatement prepareStatement(String query, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
     throw ExceptionBuilder.buildUnsupportedOperationException();
   }
