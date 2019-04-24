@@ -1,5 +1,6 @@
 CREATE DISTRIBUTED QUERY mst_attr (VERTEX source) FOR GRAPH social {
-/* Minimal Spanning Tree (MST)
+nimum/g
+/* Minimum Spanning Tree (MST)
 Given an undirected graph, and a source vertex, print out a MST for the connected subgraph which contains the source vertex.
 1. Start with a set MSTNodes = {source vertex}
 2. For all vertices in MSTNodes, find another vertex y in the graph but not MSTNodes which is connected to a vertex x in MSTNodes such that the weight on the edge e(x,y) is the smallest among all such edges from a vertex in MSTNodes to a vertex not in MSTNodes. Add y to MSTNodes, and add the edge (x,y) to MST

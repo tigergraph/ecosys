@@ -1,8 +1,0 @@
-CREATE QUERY collect_feature_jaccard(VERTEX source) FOR GRAPH movie returns (SetAccum<STRING>){
-        SetAccum<STRING> @@feature_vector;
-        Source = {source};
-        Source = SELECT s
-                 FROM Source:s -(Likes:e) -> :t
-                 ACCUM @@feature_vector += t.name;
-        RETURN @@feature_vector;
-}

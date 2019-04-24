@@ -1,5 +1,5 @@
 README for GSQL Algorithm Library
-4/12/19
+4/24/19
 
 The GSQL Graph Algorithm Library is a collection of high-performance GSQL queries,
 each of which implements a standard graph algorithm. Each algorithm is ready to be
@@ -76,13 +76,13 @@ pageRank_pers                   Personalized PageRank
 shortest_ss_no_wt               Single-Source Shortest Paths without weight
 shortest_ss_pos_wt              Single-Source Shortest Paths with positive weight
 shortest_ss_any_wt              Single-Source Shortest Paths
-mst                             Minimal Spanning Tree (MST)
+mst                             Minimum Spanning Tree (MST)
 cycle_detection                 Rocha–Thatte algorithm for cycle detection
 tri_count                       Count all the triangles, memory effient
 tri_count_fast                  Count all the triangles, faster but using more memory
-cosine_nbor_ss                  Cosine Similarity for single vertex
+cosine_nbor_ss                  Cosine Similarity from a single vertex
 cosine_nbor_ap                  Cosine Similarity for each pair of vertices
-jaccard_nbor_ss                 Jaccard Similarity for single vertex
+jaccard_nbor_ss                 Jaccard Similarity from a single vertex
 jaccard_nbor_ap                 Jaccard Similarity for each pair of vertices
 
 Each of the above  may be available as 2 or 3 related queries
