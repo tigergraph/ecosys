@@ -1,0 +1,5 @@
+vertices/Page?limit=3
+vertices/Page?filter=page_id=1
+edges/Page/2
+edges/Page/2/Linkto/Page/3
+pageRank?maxChange=0.001&maxIteration=10&dampingFactor=0.15
