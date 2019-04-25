@@ -8,10 +8,9 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
   MapAccum<STRING, 
       GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
           OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
+  SumAccum<INT> @@score;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreTop;
-
-  INT score;
 
   // collect person1 and person2 into each set vPerson1 and vPerson2
   vCountry1 = { Country.* };
@@ -106,13 +105,13 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
   FOREACH (k,gba) IN @@pairScoreMap DO
     @@pairScoreGroupTop.clear();
     FOREACH (p1,p2,b1,b2,b3,b4,b5) IN gba DO
-      score = 0;
-      IF b1 THEN score += 4; END;
-      IF b2 THEN score += 1; END;
-      IF b3 THEN score += 15; END;
-      IF b4 THEN score += 10; END;
-      IF b5 THEN score += 1; END;
-      @@pairScoreGroupTop += pairScore(p1, p2, k, score);
+      @@score = 0;
+      IF b1 THEN @@score += 4; END;
+      IF b2 THEN @@score += 1; END;
+      IF b3 THEN @@score += 15; END;
+      IF b4 THEN @@score += 10; END;
+      IF b5 THEN @@score += 1; END;
+      @@pairScoreGroupTop += pairScore(p1, p2, k, @@score);
     END;
     @@pairScoreTop += @@pairScoreGroupTop.top();
   END;
