@@ -52,7 +52,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
 # Initialize: count edges and set a unique cluster ID for each vertex
         Start = {Person.*};
         S = SELECT s 
-            FROM Start:s -(Friend:e)-> :t
+            FROM Start:s -(Coworker:e)-> :t
             ACCUM @@totalWeight += e.weight,
                   s.@weight += e.weight
             POST-ACCUM s.@vid = getvid(s),
@@ -62,7 +62,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
 # Special first iteration of Phase 1
         iteration = 1;
         S = SELECT s 
-            FROM Start:s -(Friend:e)-> :t
+            FROM Start:s -(Coworker:e)-> :t
             WHERE s.@cid > t.@cid
             ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.weight - 2 * s.@weight * s.@weight/ @@totalWeight) 
                   # weightToCluster is just e.weight
@@ -73,7 +73,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
                        s.@largestDeltaQ.clear();
         
         S = SELECT s
-            FROM Start:s-(Friend:e)-:t
+            FROM Start:s-(Coworker:e)-:t
             WHERE s.@cid == t.@cid
             ACCUM @@modularity += e.weight - s.@weight * t.@weight / (@@totalWeight);
 
@@ -97,7 +97,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
                 loop = 0;
                 WHILE (loop < partitions) DO 
                         S = SELECT s 
-                            FROM Start:s -(Friend:e)-> :t
+                            FROM Start:s -(Coworker:e)-> :t
                             WHERE s.@uid % partitions == loop    # for different split
                                   # At least one cluster not singlet(a cluster on its own). If both clusters are singlets, consider only when the label of target is smaller to avoid swap
                                   AND (( abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon   # s is not a singlet 
@@ -128,7 +128,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
                 last_modularity = @@modularity;
                 @@modularity = 0;
                 T1 = SELECT s
-                     FROM Start:s-(Friend:e)-:t
+                     FROM Start:s-(Coworker:e)-:t
                      WHERE s.@cid == t.@cid
                      ACCUM @@modularity += e.weight - s.@weight * t.@weight / (@@totalWeight);
                 @@modularity = @@modularity / @@totalWeight;                      
@@ -172,7 +172,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
         
                         # Calculate.weight incident from vertex to cluster in coarsened graph; change every interation
                         S = SELECT s
-                            FROM Start:s -(Friend:e)-:t
+                            FROM Start:s -(Coworker:e)-:t
                             WHERE s.@cid != t.@cid AND @@totIncidentCluster.get(s.@uid) > 0 AND @@totIncidentCluster.get(t.@cid) > 0   #@@totIncidentCluster keeps changing, can be 0
                             ACCUM @@weightToClusterMap += (s.@uid -> (t.@cid -> e.weight));  # from s, incident to some clusters. Not consider the same cluster
                         represent = SELECT s 
@@ -216,7 +216,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
                         @@modularity = 0;
                 
                         S = SELECT s
-                            FROM Start:s-(Friend:e)-:t
+                            FROM Start:s-(Coworker:e)-:t
                             WHERE s.@cid == t.@cid
                             ACCUM @@modularity += e.weight - s.@weight * t.@weight / (@@totalWeight);
                             @@modularity = @@modularity / @@totalWeight;
@@ -243,7 +243,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
         WHILE (iteration < 2 OR @@modularity - last_modularity > epsilon) LIMIT iter3 DO
                 iteration += 1;
                 S = SELECT s 
-                    FROM Start:s -(Friend:e)-> :t
+                    FROM Start:s -(Coworker:e)-> :t
                     WHERE abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon AND s.@cid > t.@cid)   # at least one cluster not only itself, or use smaller label
                     ACCUM s.@weightToCluster += (t.@cid -> e.weight)
                     POST-ACCUM
@@ -268,7 +268,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
                 last_modularity = @@modularity;
                 @@modularity = 0;
                 T1 = SELECT s
-                     FROM Start:s-(Friend:e)-:t
+                     FROM Start:s-(Coworker:e)-:t
                      WHERE s.@cid == t.@cid
                      ACCUM @@modularity += e.weight - s.@weight * t.@weight / (@@totalWeight);
                 @@modularity = @@modularity / @@totalWeight;                      
@@ -282,7 +282,7 @@ CREATE QUERY louvain(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split =
         Start = SELECT s FROM Start:s
                 POST-ACCUM @@clusterSizes += (s.@cid -> 1)
                            ;
-        PRINT @@clusterSizes.size() AS numClusters;
+        log(TRUE, @@clusterSizes.size());
 
         IF distribution ==0 THEN
                 FOREACH (cluster, csize) IN @@clusterSizes DO

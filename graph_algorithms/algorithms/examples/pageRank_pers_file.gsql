@@ -1,4 +1,4 @@
-CREATE QUERY pageRank_pers_file (Set<Vertex> source, FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH social{
+      CREATE QUERY pageRank_pers_file (SET<VERTEX> source, FLOAT maxChange, INT maxIter, FLOAT damping, FILE f) FOR GRAPH social{
 # Compute the pageRank score for each vertex in the GRAPH, given a set of source vertices
 # In each iteration, compute a score for activated vertices if they are source vertices:
 #   score = (1-damping) + damping*sum(received scores FROM its neighbors).

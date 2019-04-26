@@ -1,5 +1,4 @@
-CREATE DISTRIBUTED QUERY mst_attr (VERTEX source) FOR GRAPH social {
-nimum/g
+CREATE QUERY mst_attr (VERTEX source) FOR GRAPH social {
 /* Minimum Spanning Tree (MST)
 Given an undirected graph, and a source vertex, print out a MST for the connected subgraph which contains the source vertex.
 1. Start with a set MSTNodes = {source vertex}
