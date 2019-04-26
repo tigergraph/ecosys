@@ -1,52 +1,49 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_18
 
-create query bi_18(datetime startDate, int lengthThreshold,
-                   set<string> languages) for graph ldbc_snb
-{
-  // user-defined tuples
-  typedef tuple<int messageCount, int personCount> res;
+CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
 
-  // global accumulator(s)
-  SetAccum<vertex> @@messages;
-  MapAccum<int, SetAccum<vertex<person>>> @@count2PersonMap;
-  HeapAccum<res>(1, personCount desc, messageCount desc) @@results;
+  HeapAccum<INFO>(1, personCount DESC, messageCount DESC) @@result;
+  MapAccum<INT, INT> @@count;
+  SumAccum<INT> @messageCount;
 
-  // vertex-attached accumulators
-  SumAccum<int> @messageCount;
+  INT numPersonNoMsg = 0;
+  
+  vPerson = { Person.* };
+  vMessage =
+    SELECT t
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e)-(Comment|Post):t
+    WHERE t.content != "" AND ((t.type == "Post" AND t.imageFile == "") OR t.type == "Comment")
+      AND t.length < lengthThreshold 
+      AND t.creationDate > minDate;
 
-  PersonSet = { person.* };
-  // find the set of messages that satisfy all constraints except for languages
-  MessageSet =
-    select s
-    from PersonSet:s -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):t
-    where (t.content IS NOT NULL) and
-          (t.length < lengthThreshold) and
-          (t.creationDate > startDate) and
-          ((t.type == "post" and t.imageFile IS NULL) or (t.type == "comments"))
-    ;
+  vMessage =
+    SELECT s
+    FROM vMessage:s-((Comment_REPLY_OF_Post>|Comment_REPLY_OF_Comment>)*0..)-Post:t
+    WHERE t.lang IN languages;
 
-  // find the messages that satisfy the language constraint
-  MessageSet =
-    select src
-    from MessageSet:src -((comments_replyOf_post>|comments_replyOf_comments>)*)- post:tgt
-    where tgt.language in languages
-    accum @@messages += tgt
-    ;
+  vCreator =
+    SELECT t
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e)-Person:t
+    ACCUM t.@messageCount += 1
+    POST-ACCUM @@count += (t.@messageCount -> 1);
 
-  // aggregate @messageCount onto PersonSet
-  AggregateSet =
-    select src
-    from PersonSet:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):tgt
-    where tgt in @@messages
-    accum src.@messageCount += 1
-    post-accum @@count2PersonMap += (src.@messageCount -> src)
-    ;
+  numPersonNoMsg = vPerson.size() - vCreator.size();
+  IF numPersonNoMsg != 0 THEN
+    @@count += (0 -> numPersonNoMsg);
+  END;
 
-  @@results.resize(@@count2PersonMap.size());
-  foreach (k, v) in @@count2PersonMap do
-    @@results += (v.size(), k);
-  end;
+  @@result.resize(@@count.size());
+  FOREACH (messageCount, personCount) IN @@count DO
+    @@result += INFO(messageCount, personCount);
+  END;
 
-  print @@results;
+  PRINT @@result;  
 }
 
+// INSTALL QUERY bi_18
+// RUN QUERY bi_18("2011-08-15 00:00:00",97,["tk"])
+SET query_timeout = 180000
+INTERPRET QUERY bi_18("2011-08-15 00:00:00",97,["tk"])

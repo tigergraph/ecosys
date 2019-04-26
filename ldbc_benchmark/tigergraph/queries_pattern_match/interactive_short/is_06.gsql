@@ -1,35 +1,35 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is_6
 
-create query is_6(vertex mid) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SumAccum<int> @moderatorId;
-  SumAccum<string> @moderatorFirstName;
-  SumAccum<string> @moderatorLastName;
+CREATE QUERY is_6(STRING messageId) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @forumId;
+  SumAccum<STRING> @forumTitle;
+  SetAccum<STRING> @@seed;
 
-  Seed (post|comments) = { mid };
-  // select the container forum of the given message
-  Result =
-    select tgt
-    from Seed:src -((comments_replyOf_comments>|comments_replyOf_post)*)- post:msg
-         -(<forum_containerOf_post)- forum:tgt
-    ;
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
 
-  // aggregate information about the forum's moderator
-  AggregateResult =
-    select src
-    from Result:src -(forum_hasModerator_person>)- person:tgt
-    accum
-      src.@moderatorId += tgt.id,
-      src.@moderatorFirstName += tgt.firstName,
-      src.@moderatorLastName += tgt.lastName
-    ;
+  vModerator =
+    SELECT t3
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(<Forum_CONTAINER_OF_Post:e2)-Forum:t2
+        -(Forum_HAS_MODERATOR_Person>:e3)-Person:t3
+    ACCUM t3.@forumId = t2.id, t3.@forumTitle = t2.title;
 
-  print Result[
-    Result.id as forumId,
-    Result.title as forumTitle,
-    Result.@moderatorId as moderatorId,
-    Result.@moderatorFirstName as moderatorFirstName,
-    Result.@moderatorLastName as moderatorLastName
-  ];  
+  PRINT vModerator[
+      vModerator.@forumId AS forumId,
+      vModerator.@forumTitle AS forumTitle,
+      vModerator.id AS moderatorId,
+      vModerator.firstName AS moderatorFirstName,
+      vModerator.lastName AS moderatorLastName];
 }
 
+// INSTALL QUERY is_6
+// RUN QUERY is_6(1236950581248)
+SET query_timeout = 180000
+INTERPRET QUERY is_6(1236950581248)

@@ -1,52 +1,45 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is_7
 
-create query is_7(vertex mid) for graph ldbc_snb {
-  // vertex-attached accumulator
-  SetAccum<int> @origAuthorFriendIds;
-  SumAccum<int> @authorId;
-  SumAccum<string> @authorFirstName;
-  SumAccum<string> @authorLastName;
-  OrAccum @knowsOrigAuthor;
- 
-  MessageSeed (post|comments) = { mid };
-  // aggregate info about the message creator's friends
-  MessageSeed =
-    select src
-    from MessageSeed:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:auth
-         -((person_knows_person>|<person_knows_person))- person:tgt
-    accum src.@origAuthorFriendIds += tgt.id
-    ;
+CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
 
-  // find the 1-hop comments that reply to the message
-  FinalResult =
-    select tgt
-    from MessageSeed:src -((<comments_replyOf_comments|<comments_replyOf_post))- comments:tgt
-    accum tgt.@origAuthorFriendIds = src.@origAuthorFriendIds
-    ;
+  SetAccum<STRING> @@seed;
+  OrAccum @knows;
+  SumAccum<INT> @replyAuthorId;
+  SumAccum<STRING> @replyAuthorFirstName, @replyAuthorLastName;
+  HeapAccum<reply>(100, commentCreationDate DESC, replyAuthorId ASC) @@replyTop;
 
-  // aggregate info about the reply author
-  FinalResult =
-    select src
-    from FinalResult:src -(comments_hasCreator_person>)- person:tgt
-    accum
-      src.@authorId = tgt.id,
-      src.@authorFirstName = tgt.firstName,
-      src.@authorLastName = tgt.lastName
-    post-accum
-      if src.@authorId in src.@origAuthorFriendIds then
-        src.@knowsOrigAuthor += true
-      end
-    order by src.creationDate desc, src.authorId asc
-    ;
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
 
-  print FinalResult[
-    FinalResult.id as commentId,
-    FinalResult.content as commentContent,
-    FinalResult.creationDate as commentCreationDate,
-    FinalResult.@authorId as replyAuthorId,
-    FinalResult.@authorFirstName as replyAuthorFirstName,
-    FinalResult.@authorLastName as replyAuthorLastName,
-    FinalResult.@knowsOrigAuthor as replayAuthorKnowsOriginalMessageAuthor
-  ];
+  accFriend = 
+    SELECT s
+    FROM vMessage:s
+        -((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e1)-Person:t1
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e2)-Person:t2
+    ACCUM t2.@knows += True;
+  
+  accReply = 
+    SELECT s
+    FROM vMessage:s
+        -((<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e1)-Comment:t1
+        -(Comment_HAS_CREATOR_Person>:e2)-Person:t2
+    ACCUM
+      t1.@replyAuthorId = t2.id,
+      t1.@replyAuthorFirstName = t2.firstName,
+      t1.@replyAuthorLastName = t2.lastName,
+      CASE WHEN t2.@knows THEN t1.@knows += True END
+    POST-ACCUM @@replyTop += reply(t1.id, t1.content, t1.creationDate, t1.@replyAuthorId, t1.@replyAuthorFirstName, t1.@replyAuthorLastName, t1.@knows);
+
+  PRINT @@replyTop;
 }
 
+// INSTALL QUERY is_7
+// RUN QUERY is_7(1236950581248)
+SET query_timeout = 180000
+INTERPRET QUERY is_7(1236950581248)

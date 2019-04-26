@@ -1,40 +1,47 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_5
 
-create query ic_5(vertex<person> pid, datetime minDate) for graph ldbc_snb {
-  // global accumulators
-  SetAccum<vertex<person>> @@friends;
+CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT forumId> groupStats;
 
-  // vertex-attached accumulators
-  SumAccum<int> @postCount;
+  SetAccum<VERTEX<Person>> @@friendAll;
+	SetAccum<INT> @memberIds;
+  SumAccum<INT> @creatorId;
+  SumAccum<INT> @postCount;
+  HeapAccum<groupStats>(20, postCount DESC, forumId ASC) @@groupStatsTop;
+	
+  vPerson = { personId };
+  vForum =
+    SELECT t2
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person)*1..2)-Person:t1
+        -(<Forum_HAS_MEMBER_Person:e2)-Forum:t2
+    WHERE t1 != s
+      AND e2.joinDate > minDate
+    ACCUM t2.@memberIds += t1.id
+    POST-ACCUM @@friendAll += t1;
 
-  PersonSeed = { pid };
-  FinalResult =
-    select tgt
-    from PersonSeed:src -((person_knows_person>|<person_knows_person)*1..2)- person:mem
-         -(<forum_hasMember_person:e)- forum:tgt
-    where e.joinDate > minDate and mem != src
-    accum tgt.@members += mem
-    ;
+  vFriend = { @@friendAll };
+  accPersonPost = 
+    SELECT t
+    FROM vFriend:s-(<Post_HAS_CREATOR_Person:e)-Post:t
+	  ACCUM t.@creatorId = s.id;
 
-  // count posts created by friends in each form
-  AggregateResult =
-    select src
-    from FinalResult:src -(forum_hasMember_person>)- person:mem -(<post_hasCreator_person)- post:tgt
-    where mem in @@friends
-    accum src.@postCount += 1
-    ;
+  accForumPost = 
+    SELECT t
+    FROM vForum:s-(Forum_CONTAINER_OF_Post>:e)-Post:t
+    ACCUM CASE WHEN t.@creatorId IN s.@memberIds THEN s.@postCount += 1 END
+    POST-ACCUM @@groupStatsTop += groupStats(s.title, s.@postCount, s.id);
 
-  // sort vertices in FinalResult
-  FinalResult =
-    select src
-    from FinalResult:src
-    order by src.@postCount desc, src.id asc
-    limit 20
-    ;
-
-  print FinalResult[
-    FinalResult.@postCount as postCount,
-    FinalResult.title as forumTitle
-  ];
+  FOREACH gs IN @@groupStatsTop DO
+    PRINT 
+      gs.forumTitle AS forumTitle,
+      gs.postCount AS postCount;
+  END;
 }
 
+// INSTALL QUERY ic_5
+// RUN QUERY ic_5(8796093030404,"2012-09-08 00:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY ic_5(8796093030404,"2012-09-08 00:00:00")

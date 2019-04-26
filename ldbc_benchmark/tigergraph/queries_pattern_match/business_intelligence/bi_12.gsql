@@ -1,38 +1,36 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_12
 
-create query bi_12(datetime start, int likeThreshold) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SumAccum<string> @creatorFirstName;
-  SumAccum<string> @creatorLastName;
-  SumAccum<int> @likeCount;
+CREATE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
 
-  FinalResult = { post.*, comments.* };
+  SumAccum<STRING> @creatorFirstName, @creatorLastName;
+  SumAccum<INT> @likeCount;
+  HeapAccum<msg>(100, likeCount DESC, messageId ASC) @@trendingMsg;
 
-  // select messages created after start date and aggregate creator info
-  FinalResult =
-    select src
-    from FinalResult:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
-    where src.creationDate > start
-    accum src.@creatorFirstName += tgt.firstName,
-          src.@creatorLastName += tgt.lastName
-    ;
+  vMessage = { Comment.*, Post.* };
+  vMessage = 
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>|<Person_LIKES_Comment|<Person_LIKES_Post):e)-Person:t
+    WHERE s.creationDate > minDate
+    ACCUM 
+      CASE
+        WHEN (e.type == "Comment_HAS_CREATOR_Person" OR e.type == "Post_HAS_CREATOR_Person") THEN
+          s.@creatorFirstName = t.firstName,
+          s.@creatorLastName = t.lastName
+        WHEN (e.type == "Person_LIKES_Comment" OR e.type == "Person_LIKES_Post") THEN
+          s.@likeCount += 1
+      END
+    POST-ACCUM
+      IF s.@likeCount > likeThreshold THEN
+        @@trendingMsg += msg(s.id, s.creationDate, s.@creatorFirstName, s.@creatorLastName, s.@likeCount)
+      END;
 
-  // aggregate like count
-  FinalResult =
-    select src
-    from FinalResult:src -((<person_likes_post|<person_likes_comments))- person:tgt
-    accum src.@likeCount += 1
-    having src.@likeCount > likeThreshold
-    order by src.@likeCount desc, src.id asc
-    limit 100
-    ;
-
-  print FinalResult[
-    FinalResult.id as messageId,
-    FinalResult.creationDate as messageCreationDate,
-    FinalResult.@creatorFirstName as creatorFirstName,
-    FinalResult.@creatorLastName as creatorLastName,
-    FinalResult.@likeCount as likeCount
-  ];
+  PRINT @@trendingMsg;
 }
 
+// INSTALL QUERY bi_12
+// RUN QUERY bi_12("2011-07-21 22:00:00", 400)
+SET query_timeout = 180000
+INTERPRET QUERY bi_12("2011-07-21 22:00:00", 400)

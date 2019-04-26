@@ -1,26 +1,39 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is_4
 
-create query is_4(vertex mid) for graph ldbc_snb {
-  SumAccum<string> @messageContent;
+CREATE QUERY is_4(STRING messageId) FOR GRAPH ldbc_snb {
+  SetAccum<STRING> @@seed;
+  SumAccum<STRING> @messageContent;
 
-  Seed (post|comments) = { mid };
-  Result =
-    select src
-    from Seed:src
-    where src.type == "post" or src.type == "comments"
-    accum case
-      when src.type == "comments" then
-        src.@messageContent += src.content
-      when src.type == "post" and src.content IS NULL then
-        src.@messageContent += src.imageFile
-      when src.type == "post" and src.content IS NOT NULL then
-        src.@messageContent += src.content
-      end
-    ;
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
 
-  print Result[
-    Result.creationDate as messageCreationDate,
-    Result.@messageContent as messageContent
-  ];
+  IF vComments.size() > 0 THEN
+    PRINT vComments[
+        vComments.creationDate AS messageCreationDate,
+        vComments.content AS messageContent];
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+      vPost =
+        SELECT v
+        FROM vPost:v
+        ACCUM
+          CASE
+            WHEN v.content != "" THEN
+              v.@messageContent += v.content
+            ELSE
+              v.@messageContent += v.imageFile
+          END;
+
+    PRINT vPost[
+        vPost.creationDate AS messageCreationDate,
+        vPost.@messageContent AS messageContent];
+  END;
 }
 
+
+// INSTALL QUERY is_4
+// RUN QUERY is_4(1236950581248)
+SET query_timeout = 180000
+INTERPRET QUERY is_4(1236950581248)

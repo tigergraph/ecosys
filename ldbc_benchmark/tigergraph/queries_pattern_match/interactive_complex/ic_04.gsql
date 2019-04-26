@@ -1,41 +1,48 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_4
 
-create query ic_4(vertex<person> pid, datetime startDate, int duration) for graph ldbc_snb {
-  // vertex-attached accumulators
+CREATE QUERY ic_4(VERTEX<Person> personId, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
+
   SumAccum<int> @postCount;
+  SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;
+  HeapAccum<topic>(10, postCount DESC, tagName ASC) @@topicTop;
 
-  PersonSeed = { pid };
+  DATETIME endDate;
+  endDate = DATETIME_add(startDate, INTERVAL durationDays DAY);
 
-  // find tags of posts created by the person's friends in the given timeframe
-  FinalResult =
-    select tgt
-    from PersonSeed:src -((<person_knows_person|person_knows_person>))- _
-         -(<post_hasCreator_person)- post:msg -(post_hasTag_tag>)- tag:tgt
-    where msg.creationDate >= startDate and msg.creationDate < datetime_add(startDate, INTERVAL duration DAY)
-    accum tgt.@postCount += 1
-    ;
+  PersonSeed = { personId };
 
-  // filter out tags of posts created by the person's friends before the given startDate
-  ExcludeResult =
-    select tgt
-    from PersonSeed:src -((<person_knows_person|person_knows_person>))- _
-         -(<post_hasCreator_person)- post:msg -(post_hasTag_tag>)- tag:tgt
-    where msg.creationDate < startDate
-    ;
+  // find tags of posts created by the Person's friends in the given timeframe
+  vTag =
+    SELECT tgt
+    FROM PersonSeed:src
+        -((<Person_KNOWS_Person|Person_KNOWS_Person>))-_
+        -(<Post_HAS_CREATOR_Person)-Post:msg
+        -(Post_HAS_TAG_Tag>)-Tag:tgt
+    ACCUM
+      CASE
+        WHEN msg.creationDate >= startDate AND msg.creationDate < endDate THEN
+          tgt.@postCount += 1
+        WHEN msg.creationDate < startDate THEN
+          @@tagsExc += tgt
+      END
+    POST-ACCUM CASE WHEN tgt.@postCount > 0 THEN @@tagsFav += tgt END;
 
-  FinalResult = FinalResult MINUS ExcludeResult;
+  @@tagsFav = @@tagsFav MINUS @@tagsExc;
+  vTag = { @@tagsFav };
 
-  // perform ordering on FinalResult
-  FinalResult =
-    select src
-    from FinalResult:src
-    order by src.@postCount desc, src.name asc
-    limit 10
-    ;
+  // perform ordering on vTag
+  vTag =
+    SELECT src
+    FROM vTag:src
+    ACCUM @@topicTop += topic(src.name, src.@postCount);
 
-  print FinalResult[
-    FinalResult.name as tagName,
-    FinalResult.@postCount as postCount
-  ];
+  PRINT @@topicTop;
 }
 
+//INSTALL QUERY ic_4
+//RUN QUERY ic_4(21990232559429, "2012-05-01T00:00:00", 37)
+SET query_timeout = 180000
+INTERPRET QUERY ic_4(21990232559429, "2012-05-01T00:00:00", 37)

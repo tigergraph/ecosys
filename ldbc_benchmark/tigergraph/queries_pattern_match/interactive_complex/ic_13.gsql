@@ -1,66 +1,67 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_13
 
-create query ic_13(vertex<person> s, vertex<person> t) for graph ldbc_snb {
-  // global accumulators
-  SetAccum<vertex<person>> @@explored;
-  OrAccum @@stop;
-  MinAccum<int> @@length;
+CREATE QUERY ic_13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @@next;
+  OrAccum @@found = False;
+  MinAccum<INT> @@dist12;
 
-  // vertex-attached accumulators
-  OrAccum @seenS;
-  OrAccum @seenT;
-  SumAccum<int> @sLength;
-  SumAccum<int> @tLength;
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    vPerson = 
+      SELECT v
+      FROM vPerson:v
+      ACCUM 
+        CASE 
+          WHEN v == person1Id THEN 
+            v.@dist1 = 0
+          WHEN v == person2Id THEN
+            v.@dist2 = 0
+        END;
 
-  // global variables
-  int ExploredSize = 0;
+    WHILE NOT @@found DO
+      @@next = 0;
 
-  // check for zero-length condition
-  if s == t then
-    @@length = 0;
-    @@stop += true;
-  end;
+      vPerson = 
+        SELECT t
+        FROM vPerson:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+        WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
+        ACCUM
+          CASE
+            WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
+              @@found += True,
+              IF s.@dist1 > -1 THEN
+                @@dist12 += s.@dist1 + t.@dist2 + 1
+              END
+            WHEN s.@dist1 > -1 THEN
+              @@next += 1,
+              t.@dist1 = s.@dist1 + 1
+            WHEN s.@dist2 > -1 THEN
+              @@next += 1,
+              t.@dist2 = s.@dist2 + 1
+          END
+        POST-ACCUM
+          IF @@found == False AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
+            @@found += True,            
+            @@dist12 += t.@dist1 + t.@dist2
+          END;
 
-  // initialize s, t vertices
-  Start = { s, t };
-  Start = select v from Start:v
-          accum case when v == s then v.@seenS += true
-                     when v == t then v.@seenT += true
-                end;
-  @@explored += s;
-  @@explored += t;
+      IF @@next == 0 THEN
+        @@dist12 = -1;
+        BREAK;
+      END;
 
-  // loop for graph exploration
-  while @@stop == false and @@explored.size() != ExploredSize do
-    ExploredSize = @@explored.size();
-    Start = 
-      select v
-      from Start:u -((person_knows_person>|<person_knows_person))- person:v
-      where ((u.@seenS == true and v.@seenS == false) or // from S frontier
-             (u.@seenT == true and v.@seenT == false)) // from T frontier
-      accum case
-        when ((u.@seenS == true and v.@seenT == true) or
-              (u.@seenT == true and v.@seenS == true)) then // u->v joins S,T
-          @@stop += true,
-          case when (u.@seenS == true and v.@seenT == true) then
-            @@length += (u.@sLength + v.@sLength + 1)
-          end
-        when u.@seenS == true then // expand S frontier
-          v.@seenS += true, v.@sLength = u.@sLength + 1, @@explored += v
-        when u.@seenT == true then // expand T frontier
-          v.@seenT += true, v.@tLength = u.@tLength + 1, @@explored += v
-        end
-      post-accum case
-        when v.@seenS == true and v.@seenT == true and @@stop == false then
-          @@stop += true, @@length += (v.@sLength + v.@tLength)
-        end
-      ;
-  end;
+    END;
+  ELSE
+    @@dist12 += 0;
+  END;
 
-  if @@stop == false then
-    @@length = -1;
-  end;
-
-  print @@length;
+  PRINT @@dist12 AS shortestPathLength;
 }
 
+// INSTALL QUERY ic_13
+// RUN QUERY ic_13(17592186055119, 8796093025131)
+SET query_timeout = 180000
+INTERPRET QUERY ic_13(17592186055119, 8796093025131)

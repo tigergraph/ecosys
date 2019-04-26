@@ -1,76 +1,71 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_11
 
-create query bi_11(string countryName,
-                   set<string> blacklist) for graph ldbc_snb
-{
-  // user-defined tuples
-  typedef tuple<int personId, string tagName, int likeCount, int replyCount> result;
+CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
 
-  // global accumulators
-  HeapAccum<result>(100, likeCount desc, personId asc, tagName asc) @@ResultSet;
+  SetAccum<STRING> @@blacklistP;
+  AndAccum @isValid;
+  SumAccum<INT> @creatorId;
+  SetAccum<VERTEX<Comment>> @@commentValid;
+  SetAccum<STRING> @tagNames;
+  SumAccum<INT> @likeCount;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
+	
+  FOREACH word IN blacklist DO
+    @@blacklistP += ("%" + word + "%");
+  END;
 
-  // vertex-attached accumulators
-  SetAccum<vertex<tag>> @tagBlacklist;
-  SumAccum<int> @likeCount;
-  SumAccum<int> @replyCount;
+  vCountry = { Country.* };
+  accCountryPersonComment = 
+    SELECT s
+    FROM vCountry:s
+        -(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t1
+        -(<Comment_HAS_CREATOR_Person:e2)-Comment:t2
+    WHERE s.name == countryName
+    ACCUM 
+      t2.@creatorId = t1.id,
+      FOREACH word IN @@blacklistP DO // FOREACH is not available in WHERE, so ACCUM to filter
+        CASE WHEN t2.content LIKE word THEN
+          t2.@isValid += False,
+          BREAK
+        END
+      END
+    POST-ACCUM CASE WHEN t2.@isValid THEN @@commentValid += t2 END;
+    
+  vComment = { @@commentValid };
+  vComment =
+    SELECT s
+    FROM vComment:s-(Comment_HAS_TAG_Tag>:e)-Tag:t
+    ACCUM s.@tagNames += t.name;
 
-  // seed set
-  CountrySeed = { country.* };
+  accCommentMessageTag =
+    SELECT s
+    FROM vComment:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>):e1)-(Comment|Post):t1
+        -((Comment_HAS_TAG_Tag>|Post_HAS_TAG_Tag>):e2)-Tag:t2
+    ACCUM CASE WHEN t2.name IN s.@tagNames THEN s.@isValid += False END;
 
-  CommentsInCountry =
-    select tgt
-    from CountrySeed:src -(<city_isPartOf_country.<person_isLocatedIn_city)- person:p
-         -(<comments_hasCreator_person)- comments:tgt
-    where src.name == countryName
-    ;
+  accReply =
+    SELECT s
+    FROM vComment:s-(<Person_LIKES_Comment:e)-Person:t
+    WHERE s.@isValid
+    ACCUM s.@likeCount += 1
+    POST-ACCUM 
+      FOREACH tn IN s.@tagNames DO
+        @@replyGroup += (s.@creatorId, tn -> s.@likeCount, 1)
+      END;
 
-  // exclude comments with blacklisted words
-  foreach word in blacklist do
-    BlackListedComments =
-      select src
-      from CommentsInCountry:src
-      where src.content LIKE "%" + word + "%"
-      ;
-    CommentsInCountry = CommentsInCountry MINUS BlackListedComments;
-  end;
+  FOREACH (p,t,l,r) IN @@replyGroup DO
+    @@replyTop += reply(p,t,l,r);
+  END;
 
-  // aggregate blacklisted tags for each comment
-  // blacklisted tags attaches to the message that the comment replies to
-  AggregateComments =
-    select src
-    from CommentsInCountry:src -((comments_replyOf_post>|comments_replyOf_comments>).(<post_hasTag_tag|<comments_hasTag_tag))- tag:tgt
-    accum src.@tagBlacklist += tgt
-    ;
-
-  // filter out comments with blacklisted tags
-  CommentsInCountry =
-    select src
-    from CommentsInCountry:src -(comments_hasTag_tag>)- tag:tgt
-    where tgt not in src.@tagBlacklist
-    ;
-
-  AggregateComments =
-    select src
-    from CommentsInCountry:src -(<person_likes_comments)- (person):tgt
-    accum src.@likeCount += 1
-    ;
-
-  // aggregate likeCount and replyCount for each tag
-  TagSet =
-    select tgt
-    from CommentsInCountry:src -(comments_hasTag_tag>)- tag:tgt
-    accum tgt.@likeCount += src.@likeCount,
-          tgt.@replyCount += 1
-    ;
-
-  PersonSeed = { person.* };
-  FinalResult =
-    select src
-    from PersonSeed:src -(<comments_hasCreator_person)- comments:c -(comments_hasTag_tag>)- tag:tgt
-    where c in CommentsInCountry and tgt in TagSet
-    accum @@ResultSet += (src.id, tgt.name, tgt.@likeCount, tgt.@replyCount)
-    ;
-
-  print @@ResultSet;
+  PRINT @@replyTop;
 }
 
+// INSTALL QUERY bi_11
+// RUN QUERY bi_11("Germany", ["one","has","David"])
+SET query_timeout = 180000
+INTERPRET QUERY bi_11("Germany", ["one","has","David"])

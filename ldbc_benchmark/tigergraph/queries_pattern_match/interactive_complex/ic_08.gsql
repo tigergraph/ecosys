@@ -1,38 +1,33 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_8
 
-create query ic_8(vertex<person> pid) for graph ldbc_snb {
-  // vertex-attached accumulator
-  SumAccum<int> @personId;
-  SumAccum<string> @personFirstName;
-  SumAccum<string> @personLastName;
+CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  //TYPEDEF TUPLE<VERTEX<Comment> v, DATETIME commentCreationDate, INT commentId> reply;
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
 
-  Seed = { pid };
-  // find the most recent comment for each message created by the person
-  Result =
-    select tgt
-    from Seed:src -((<post_hasCreator_person|<comments_hasCreator_person))- _
-         -((<comments_replyOf_post|<comments_replyOf_comments))- comments:tgt
-    ;
+  SetAccum<VERTEX<Comment>> @@replies;
+  //HeapAccum<reply>(20, commentCreationDate DESC, commentId ASC) @@replyTop;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
 
-  // aggregate info about the comment creators
-  Result =
-    select src
-    from Result:src -(comments_hasCreator_person>)- person:tgt
-    accum
-      src.@personId = tgt.id,
-      src.@personFirstName = tgt.firstName,
-      src.@personLastName = tgt.lastName
-    order by src.creationDate desc, src.id asc
-    limit 20
-    ;
+  vPerson = { personId };
+  vReply = 
+    SELECT t2
+    FROM vPerson:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e2)-Comment:t2
+    ORDER BY t2.creationDate DESC, t2.id ASC
+    LIMIT 20;
 
-  print Result[
-    Result.@personId as personId,
-    Result.@personFirstName as personFirstName,
-    Result.@personLastName as personLastName,
-    Result.creationDate as commentCreationDate,
-    Result.id as commentId,
-    Result.content as commentContent
-  ];
+  vReply = 
+    SELECT s
+    FROM vReply:s-(Comment_HAS_CREATOR_Person>:e)-Person:t
+    ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
+
+  PRINT @@replierTop;
 }
 
+// INSTALL QUERY ic_8
+// RUN QUERY ic_8(24189255818757)
+SET query_timeout = 180000
+INTERPRET QUERY ic_8(24189255818757)

@@ -1,62 +1,55 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_7
 
-create query bi_7(string tagName) for graph ldbc_snb {
-  // vertex attached accumulators
-  SetAccum<vertex> @messages;
-  SetAccum<vertex<person>> @likers;
-  SumAccum<int> @authorityScore;
-  SumAccum<int> @popularityScore;
+CREATE QUERY bi_7(STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, INT authorityScore> authUser;
 
-  // seed set
-  TagSeed = { tag.* };
-  
-  // find person who created a message with the given tag
-  // aggregate all messages they created with that given tag
-  FinalResult =
-    select tgt
-    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag))- _:msg
-         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
-    where src.name == tagName
-    accum tgt.@messages += msg
-    ;
+  OrAccum @visited;
+  SumAccum<INT> @popularityScore;
+	SumAccum<INT> @authorityScore;
+	SetAccum<INT> @personIds;
+	MapAccum<INT, INT> @@popularityScoreMap;
+  HeapAccum<authUser>(100, authorityScore DESC, personId ASC) @@authUserTop;
+	
+  vTag = { Tag.* };
+  vPerson1 =
+    SELECT t2
+    FROM vTag:s
+        -((<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag):e1)-(Comment|Post):t1
+        -((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e2)-Person:t2
+    WHERE s.name == tagName
+    ACCUM t1.@visited += True;
 
-  // find the set of users who likes messages created by person in FinalResult
-  AuthoritySource =
-    select tgt
-    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
-         -((<person_likes_post|<person_likes_comments))- person:tgt
-    where msg in src.@messages
-    accum src.@likers += tgt
-    ;
+  vPerson2 =
+    SELECT t2
+    FROM vPerson1:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Person_LIKES_Post|<Person_LIKES_Comment):e2)-Person:t2
+    WHERE t1.@visited
+    ACCUM s.@personIds += t2.id;
 
-  // aggregate popularity score for AuthoritySource
-  AggregateAuthoritySource =
-    select src
-    from AuthoritySource:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
-         -((<person_likes_post|<person_likes_comments))- person:tgt
-    accum src.@popularityScore += 1
-    ;
+  accPopularityScore =
+    SELECT s
+    FROM vPerson2:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Person_LIKES_Post|<Person_LIKES_Comment):e2)-Person:t2
+    ACCUM s.@popularityScore += 1
+    POST-ACCUM @@popularityScoreMap += (s.id -> s.@popularityScore);
 
-  // aggregate authority score for FinalResult
-  AggregateResult =
-    select src
-    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:msg
-         -((<person_likes_post|<person_likes_comments))- person:tgt
-    where msg in src.@messages
-    accum src.@authorityScore += tgt.@popularityScore
-    ;
+  accAuthorityScore =
+    SELECT v
+    FROM vPerson1:v
+    ACCUM 
+      FOREACH p IN v.@personIds DO
+        v.@authorityScore += @@popularityScoreMap.get(p)
+      END
+    POST-ACCUM @@authUserTop += authUser(v.id, v.@authorityScore);
 
-  // Order all vertices in FinalResult by authorityScore and id
-  FinalResult =
-    select src
-    from FinalResult:src
-    order by src.@authorityScore desc, src.id asc
-    limit 100
-    ;
-
-  print FinalResult[
-    FinalResult.id as personId,
-    FinalResult.@authorityScore as authorityScore
-  ];
+  PRINT @@authUserTop;
 }
-  
+
+//INSTALL QUERY bi_7
+//RUN QUERY bi_7("Arnold_Schwarzenegger")
+SET query_timeout = 180000
+INTERPRET QUERY bi_7("Arnold_Schwarzenegger")

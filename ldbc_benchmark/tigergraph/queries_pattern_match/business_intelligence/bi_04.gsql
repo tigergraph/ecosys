@@ -1,50 +1,37 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_4
 
-create query bi_4(string className, string countryName) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SetAccum<vertex<post>> @relatedPosts;
-  SumAccum<int> @postCount;
-  SumAccum<int> @personId;
+CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
 
-  CountrySeed = { country.* };
-  TagClassSeed = { tagclass.* };
+  SumAccum<INT> @personId;
+  SetAccum<INT> @postIds;
+  HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@forumInfoTop;
 
-  // find the forums associated with the given country
-  Result1 =
-    select tgt
-    from CountrySeed:src -(<city_isPartOf_country)- city
-         -(<person_isLocatedIn_city)- person:p
-         -(<forum_hasModerator_person)- forum:tgt
-    where src.name == countryName
-    accum tgt.@personId = p.id
-    ;
+  vCountry = { Country.* };
+  vForum =
+    SELECT t2
+    FROM vCountry:s
+        -(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t1
+        -(<Forum_HAS_MODERATOR_Person:e2)-Forum:t2
+    WHERE s.name == countryName
+    ACCUM t2.@personId = t1.id;
 
-  // find the forums associated with the given tagclass
-  Result2 =
-    select tgt
-    from TagClassSeed:src -(<tag_hasType_tagclass)- tag
-         -(<post_hasTag_tag)- post:p -(<forum_containerOf_post)- forum:tgt
-    where src.name == className
-    accum tgt.@relatedPosts += p
-    post-accum tgt.@postCount += tgt.@relatedPosts.size()
-    having tgt.@postCount >= 1
-    ;
+  vTagClass = { TagClass.* };
+  accPostForum =
+    SELECT s
+    FROM vTagClass:s-(<Tag_HAS_TYPE_TagClass.<Post_HAS_TAG_Tag)-Post:t1
+        -(<Forum_CONTAINER_OF_Post:e2)-Forum:t2
+    WHERE s.name == tagClassName
+      AND t2.@personId != 0 // default value is 0
+    ACCUM t2.@postIds += t1.id
+    POST-ACCUM @@forumInfoTop += forumInfo(t2.id, t2.title, t2.creationDate, t2.@personId, t2.@postIds.size());
 
-  Result = Result1 intersect Result2;
-  // sort results in the required order and limit to 20 forums
-  Result =
-    select src
-    from Result:src
-    order by src.@postCount desc, src.id asc
-    limit 20
-  ;
-
-  print Result[
-    Result.id as forumId,
-    Result.title as forumTitle,
-    Result.creationDate as forumCreationDate,
-    Result.@personId as personId,
-    Result.@postCount as postCount
-  ];
+  PRINT @@forumInfoTop;
 }
 
+// INSTALL QUERY bi_4
+// RUN QUERY bi_4("MusicalArtist","Burma")
+SET query_timeout = 180000
+INTERPRET QUERY bi_4("MusicalArtist","Burma")

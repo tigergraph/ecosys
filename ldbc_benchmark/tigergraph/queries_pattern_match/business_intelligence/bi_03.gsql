@@ -1,39 +1,42 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_3
 
-create query bi_3(int year, int month) for graph ldbc_snb {
-  // tuple type definitions
-  typedef tuple<string tagName, int countMonth1,
-                int countMonth2, int diff> summary;
+CREATE QUERY bi_3(INT year1, INT month1) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
 
-  // global accumulators
-  HeapAccum<summary>(100, diff desc, tagName asc) @@results;  
+  GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
+  HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
 
-  // vertex-attached accumulators
-  SumAccum<int> @countThisMonth;
-  SumAccum<int> @countNextMonth;
+  INT year2, month2;
+  year2 = year1 + (month1 / 12);
+  month2 = 1 + month1 % 12;
 
-  Seed = { post.*, comments.* };
+  vMessages = { Post.*, Comment.* };
+  vMessages = 
+    SELECT s
+    FROM vMessages:s
+    WHERE (year(s.creationDate) == year1 AND month(s.creationDate) == month1)
+        OR (year(s.creationDate) == year2 AND month(s.creationDate) == month2);
 
-  // select tags associated to messages created in given or following month
-  TagSet =
-    select tgt
-    from Seed:src -((post_hasTag_tag>|comments_hasTag_tag>))- tag:tgt
-    where (year(src.creationDate) == year and
-           month(src.creationDate) == month)
-          or
-          (year(datetime_sub(src.creationDate, INTERVAL 1 MONTH)) == year and
-           month(datetime_sub(src.creationDate, INTERVAL 1 MONTH)) == month)
-    accum
-      if (year(src.creationDate) == year and month(src.creationDate) == month) then
-        tgt.@countThisMonth += 1
-      else
-        tgt.@countNextMonth += 1
-      end
-    post-accum
-      @@results += summary(tgt.name, tgt.@countThisMonth, tgt.@countNextMonth,
-                           abs(tgt.@countThisMonth - tgt.@countNextMonth))
-    ;
+  vMessages = 
+    SELECT s
+    FROM vMessages:s-(_>:e)-Tag:t
+    ACCUM 
+      IF year(s.creationDate) == year1 AND month(s.creationDate) == month1 THEN 
+        @@count += (t.name -> 1, 0)
+      ELSE
+        @@count += (t.name -> 0, 1)
+      END;
 
-  print @@results;
+  FOREACH c IN @@count DO
+    @@result += TAG_COUNT(c.tagName, c.countMonth1, c.countMonth2, abs(c.countMonth1 - c.countMonth2));
+  END;
+
+  PRINT @@result;
 }
 
+// INSTALL QUERY bi_3
+// RUN QUERY bi_3(2010,10)
+SET query_timeout = 180000
+INTERPRET QUERY bi_3(2010,10)

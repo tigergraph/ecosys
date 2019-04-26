@@ -1,61 +1,40 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_24
 
-create query bi_24(string className) for graph ldbc_snb {
-  // user-defined tuples
-  typedef tuple<int messageCount, int likeCount, int year,
-                int month, string continentName> res;
+CREATE QUERY bi_24(STRING tagClassName) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT messageCount, INT likeCount, INT year, INT month, STRING continentName> info;
 
-  // global accumulator(s)
-  GroupByAccum<string continentName, int year, int month,
-               SetAccum<vertex> messages> @@groups;
-  HeapAccum<res>(100, year asc, month asc, continentName desc) @@results;
-  SumAccum<int> @@likeCountByGroup;
+  HeapAccum<info>(100, year ASC, month ASC, continentName DESC) @@result;
+  GroupByAccum<INT year, INT month, STRING continentName, SumAccum<INT> messageCount, SumAccum<INT> likeCount> @@count; 
+  SumAccum<STRING> @continentName;
+  SumAccum<INT> @likeCount;
 
-  // vertex-attached accumulator(s)
-  SumAccum<string> @continentName;
-  SumAccum<int> @likeCount;
+  vTagClass = { TagClass.* };
+  vMessage = 
+    SELECT t2
+    FROM vTagClass:s-(<Tag_HAS_TYPE_TagClass.(<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag))-(Comment|Post):t2
+    WHERE s.name == tagClassName;
 
-  TagClassSeed = { tagclass.* };
-  // find the set of all messages created under the given tagclass
-  MessageSet =
-    select tgt
-    from TagClassSeed:src -(<tag_hasType_tagclass)- _
-         -((<post_hasTag_tag|comments_hasTag_tag))- (post|comments):tgt
-    where src.name == className
-    ;
+  accLike = 
+    SELECT s
+    FROM vMessage:s-((<Person_LIKES_Post|<Person_LIKES_Comment):e)-Person:t
+    ACCUM s.@likeCount += 1;
 
-  // aggregate continent name onto MessageSet
-  AggregateSet =
-    select src
-    from MessageSet:src -((post_isLocatedIn_country>|comments_isLocatedIn_country>))- _
-         -(country_isPartOf_continent)- continent:tgt
-    accum src.@continentName += tgt.name
-    ;
-  // aggregate @likeCount for each message
-  AggregateSet =
-    select src
-    from MessageSet:src -((<person_likes_post|<person_likes_comments))- person:tgt
-    accum src.@likeCount += 1
-    ;
+  accMsgContinent = 
+    SELECT s
+    FROM vMessage:s-((Post_IS_LOCATED_IN_Country>|Comment_IS_LOCATED_IN_Country>).Country_IS_PART_OF_Continent>)-Continent:t
+    ACCUM s.@continentName = t.name
+    POST-ACCUM @@count += (year(s.creationDate), month(s.creationDate), s.@continentName -> 1, s.@likeCount);
 
-  MessageSet =
-    select src
-    from MessageSet:src
-    accum
-      int creationYear = year(src.creationDate),
-      int creationMonth = month(src.creationDate),
-      @@groups += (src.@continentName, creationYear, creationMonth -> src)
-    ;
+  FOREACH c IN @@count DO
+    @@result += info(c.messageCount, c.likeCount, c.year, c.month, c.continentName);
+  END;
 
-  foreach g in @@groups do
-    @@likeCountByGroup = 0;
-    foreach msg in g.messages do
-      @@likeCountByGroup += msg.@likeCount;
-    end;
-    @@results += res(g.messages.size(), @@likeCountByGroup,
-                     g.year, g.month, g.continentName);
-  end;
-
-  print @@results;
+  PRINT @@result;
 }
 
+// INSTALL QUERY bi_24
+// RUN QUERY bi_24("Single")
+SET query_timeout = 180000
+INTERPRET QUERY bi_24("Single")

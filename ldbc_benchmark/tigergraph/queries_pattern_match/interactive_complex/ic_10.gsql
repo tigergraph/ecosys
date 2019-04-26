@@ -1,74 +1,66 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_10
 
-create query ic_10(vertex<person> pid, int currentMonth) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SetAccum<vertex<tag>> @tagSet;
-  SumAccum<int> @common;
-  SumAccum<int> @uncommon;
-  SumAccum<int> @score;
-  SumAccum<string> @cityName;
+CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
 
-  // global variables
-  int nextMonth;
-  nextMonth = currentMonth + 1;
-  if currentMonth == 12 then
-    nextMonth = 1;
-  end;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<VERTEX<Post>> @@postAll;
+  SumAccum<STRING> @city;
+  SetAccum<VERTEX<Tag>> @@tagInterest;
+	OrAccum @hasCommonInterest;
+  SumAccum<INT> @commonInterestScore;
+  HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
 
-  Seed = { pid };
+  vPerson = { personId };
+  vTag = 
+    SELECT t
+    FROM vPerson:s-(Person_HAS_INTEREST_Tag>:e)-Tag:t
+    POST-ACCUM @@tagInterest += t;
 
-  // collect the set of tags that the root is interested in
-  RootInterests = select tgt from Seed:src -(person_hasInterest_tag>)- tag:tgt;
-  
-  // find friends of friends who satisfy the birthday condition
-  Result =
-    select tgt
-    from Seed:src -((person_knows_person>|<person_knows_person)*2..2)- person:tgt
-    where src != tgt and
-      ((month(tgt.birthday) == currentMonth and day(tgt.birthday) >= 21) 
-       or (month(tgt.birthday) == nextMonth and day(tgt.birthday) < 22))
-    ;
+  accFriend = 
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e1)-Person:t1
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e2)-Person:t2
+        -(Person_IS_LOCATED_IN_City>:e3)-City:t3
+    WHERE s != t2
+      AND ((month(t2.birthday) == month AND day(t2.birthday) >= 21)
+          OR (month(t2.birthday) == nextMonth AND day(t2.birthday) < 22))
+    ACCUM t2.@city = t3.name
+    POST-ACCUM @@friendAll += t2;
 
-  // collect the set of posts created by 2-hop friends along with their tags
-  PostSet = select src from Result:src -(<post_hasCreator_person)- post:msg;
-  AggregatePostSet =
-    select src
-    from PostSet:src -(post_hasTag_tag>)- tag:tgt
-    accum src.@tagSet += tgt
-    ;
+  vFriend = { @@friendAll };
+  vPost = 
+    SELECT t
+    FROM vFriend:s-(<Post_HAS_CREATOR_Person:e)-Post:t;
 
-  // aggregate commonInterestScore and city info for each person in Result
-  AggregateResult =
-    select src
-    from Result:src -(<post_hasCreator_person)- post:tgt
-    accum
-      if count(tgt.@tagSet INTERSECT RootInterests) == 0 then src.@uncommon += 1
-      else src.@common += 1
-      end
-    post-accum src.@score += src.@common - src.@uncommon
-    ;
+  accPostTag =
+    SELECT s
+    FROM vPost:s-(Post_HAS_TAG_Tag>:e)-Tag:t
+    ACCUM CASE WHEN @@tagInterest.contains(t) THEN s.@hasCommonInterest += True END;
 
-  AggregateResult =
-    select src
-    from Result:src -(person_isLocatedIn_city>)- city:tgt
-    accum src.@cityName = tgt.name
-    ;
+	accPostPerson = 
+	  SELECT t
+	  FROM vPost:s-(Post_HAS_CREATOR_Person>:e)-Person:t
+	  ACCUM
+	    CASE
+	      WHEN NOT s.@hasCommonInterest THEN
+	        t.@commonInterestScore += (-1)
+	      ELSE
+	        t.@commonInterestScore += 1
+	    END;
 
-  // perform sorting on the result
-  Result =
-    select src
-    from Result:src
-    order by src.@score desc, src.id asc
-    limit 10
-    ;
+	accFriend = 
+    SELECT v
+    FROM vFriend:v
+    ACCUM @@friendInfoTop += friendInfo(v.id, v.firstName, v.lastName, v.@commonInterestScore, v.gender, v.@city);
 
-  print Result[
-    Result.id as personId,
-    Result.firstName as personFirstName,
-    Result.lastName as personLastName,
-    Result.@score as commonInterestScore,
-    Result.gender as personGender,
-    Result.@cityName as personCityName
-  ];
+  PRINT @@friendInfoTop;
 }
 
+//INSTALL QUERY ic_10
+//RUN QUERY ic_10(30786325583618, 11, 12)
+SET query_timeout = 180000
+INTERPRET QUERY ic_10(30786325583618, 11, 12)

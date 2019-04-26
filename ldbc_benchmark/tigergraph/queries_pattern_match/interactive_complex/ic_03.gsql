@@ -1,49 +1,57 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_3
 
-create query ic_3(vertex<person> pid, string countryXName, string countryYName,
-                  datetime startDate, int durationDays) for graph ldbc_snb
+CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYName, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
 
-{
-  // vertex-attached accumulators
-  SumAccum<int> @xCount;
-  SumAccum<int> @yCount;
-  SumAccum<int> @totalCount;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<INT> @@cityIds;
+  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, SumAccum<INT> xCount, SumAccum<INT> yCount> @@msgStatsGroup;
+  HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@msgStatsTop;
 
-  PersonSeed = { pid };
-  // find all friends and friends of friends of the given person
-  FinalResult =
-    select tgt
-    from PersonSeed:src -((<person_knows_person|person_knows_person>)*1..2)- person:tgt;
+  DATETIME endDate;
+  endDate = datetime_add(startDate, INTERVAL durationDays DAY);
 
-  // refine the result by matching people who creates messages in countryX or countryY
-  FinalResult =
-    select src
-    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):msg
-         -((post_isLocatedIn_country>|comments_isLocatedIn_country>))- country:tgt
-    where msg.creationDate >= startDate and msg.creationDate < datetime_add(startDate, INTERVAL durationDays DAY)
-          and (tgt.name == countryXName or tgt.name == countryYName)
-    accum case
-      when tgt.name == countryXName then src.@xCount += 1
-      when tgt.name == countryYName then src.@yCount += 1
-      end
-    post-accum
-      src.@totalCount += src.@xCount + src.@yCount;
+  vCountry = { Country.* };
+  vCountry =
+    SELECT s
+    FROM vCountry:s-(<City_IS_PART_OF_Country:e)-City:t
+    ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN @@cityIds += t.id END;
 
-  // refine the result by filtering out people who live in countryX or countryY
-  FinalResult =
-    select src
-    from FinalResult:src -(person_isLocatedIn_city>.city_isPartOf_country>)- country:tgt
-    where tgt.name != countryXName and tgt.name != countryYName
-    order by src.@xCount desc, src.id asc
-    limit 20;
+  vPerson = { personId };
+  accFriend =
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person)*1..2)-Person:t1
+        -(Person_IS_LOCATED_IN_City>:e2)-City:t2
+    WHERE s != t1
+      AND NOT @@cityIds.contains(t2.id)
+    ACCUM @@friendAll += t1;
 
-  print FinalResult[
-    FinalResult.id as personId,
-    FinalResult.firstName as personFirstName,
-    FinalResult.lastName as personLastName,
-    FinalResult.@xCount as xCount,
-    FinalResult.@yCount as yCount,
-    FinalResult.@totalCount as totalCount
-  ];
+  vFriend = { @@friendAll };
+  accFriendMessage = 
+    SELECT s
+    FROM vFriend:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((Comment_IS_LOCATED_IN_Country>|Post_IS_LOCATED_IN_Country>):e2)-Country:t2
+    WHERE startDate <= t1.creationDate AND t1.creationDate < endDate
+    ACCUM
+      CASE
+        WHEN t2.name == countryXName THEN
+          @@msgStatsGroup += (s.id, s.firstName, s.lastName -> 1, 0)
+        WHEN t2.name == countryYName THEN
+          @@msgStatsGroup += (s.id, s.firstName, s.lastName -> 0, 1)
+      END;
+
+  FOREACH (id,fn,ln,x,y) IN @@msgStatsGroup DO
+    @@msgStatsTop += msgStats(id, fn, ln, x, y, (x + y));
+  END;
+
+  PRINT @@msgStatsTop;
 }
 
+//INSTALL QUERY ic_3
+//RUN QUERY ic_3(17592186055119, "Laos", "Scotland", "2011-05-31T17:00:00", 42)
+SET query_timeout = 180000
+INTERPRET QUERY ic_3(17592186055119, "Laos", "Scotland", "2011-05-31T17:00:00", 42)

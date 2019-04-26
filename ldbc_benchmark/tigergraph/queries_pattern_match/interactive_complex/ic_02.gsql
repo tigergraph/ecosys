@@ -1,33 +1,31 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_2
 
-create query ic_2(vertex<person> pid, datetime maxDate) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SumAccum<int> @personId;
-  SumAccum<string> @personFirstName;
-  SumAccum<string> @personLastName;
-  SumAccum<string> @messageContent;
+CREATE QUERY ic_2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
 
-  PersonSeed = { pid };
-  FinalResult =
-    select tgt
-    from PersonSeed:src -((person_knows_person>|<person_knows_person))- person:mid
-         -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):tgt
-    where tgt.creationDate <= maxDate
-    accum tgt.@personId += mid.id, tgt.@personFirstName += mid.firstName, tgt.@personLastName += mid.lastName,
-      if tgt.type == "post" and tgt.content IS NULL then tgt.@messageContent += tgt.imageFile
-      else tgt.@messageContent += tgt.content
-      end
-    order by tgt.creationDate desc, tgt.id asc
-    limit 20
-    ;
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
 
-  print FinalResult[
-    FinalResult.@personId as personId,
-    FinalResult.@personFirstName as personFirstName,
-    FinalResult.@personLastName as personLastName,
-    FinalResult.id as messageId,
-    FinalResult.@messageContent as messageContent,
-    FinalResult.creationDate as messageCreationDate
-  ];
+  vPerson = { personId };
+  accPersonMessage = 
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e1)-Person:t1
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e2)-(Comment|Post):t2
+    WHERE t2.creationDate < maxDate
+    ACCUM 
+      CASE
+        WHEN t2.type == "Comment" OR t2.content != "" THEN
+          @@msgTop += msg(t1.id, t1.firstName, t1.lastName, t2.id, t2.content, t2.creationDate)
+        ELSE
+          @@msgTop += msg(t1.id, t1.firstName, t1.lastName, t2.id, t2.imageFile, t2.creationDate)
+      END;
+
+  PRINT @@msgTop;
 }
 
+// INSTALL QUERY ic_2
+// RUN QUERY ic_2(17592186052613,"2012-11-27T16:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY ic_2(17592186052613,"2012-11-27T16:00:00")

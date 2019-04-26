@@ -1,75 +1,50 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_2
 
-create query bi_2(datetime startDate, datetime endDate,
-                  string country1, string country2) for graph ldbc_snb {
-  // tuple type definitions
-  typedef tuple<string countryName, int messageMonth, string personGender,
-                int ageGroup, string tagName, int messageCount> summary;
+CREATE QUERY bi_2(DATETIME startDate, DATETIME endDate, STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
 
-  // global accumulators
-  GroupByAccum<string countryName, int messageMonth,
-               string personGender, int ageGroup,
-               string tagName, SetAccum<vertex> messages> @@groupings;
+  HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
+  SumAccum<STRING> @country;
+  SetAccum<String> @tags;
+  GroupByAccum<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, SumAccum<INT> messageCount> @@count;
 
-  HeapAccum<summary>(100, messageCount desc, tagName asc,
-                     ageGroup asc, personGender asc,
-                     messageMonth asc, countryName asc) @@sorted_groupings;
+  DATETIME simulationEnd = to_datetime("2013-01-01");
 
-  // vertex-attached accumulators
-  SumAccum<string> @countryName;
-  SumAccum<int> @messageMonth;
-  SumAccum<string> @personGender;
-  SumAccum<int> @ageGroup;
-  SumAccum<string> @tagName;
+  vCountry = { Country.* };
+  vMessage =
+    SELECT t2
+    FROM vCountry:s
+        -(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t1
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e2)-(Comment|Post):t2
+    WHERE (s.name == country1Name OR s.name == country2Name)
+      AND t2.creationDate >= startDate AND t2.creationDate <= endDate
+    ACCUM t1.@country = s.name;
 
-  // global variables
-  datetime EndOfSimulation = to_datetime("2013-01-01");
-  int SecondsPerYear;
-  SecondsPerYear = 365 * 24 * 60 * 60;
+  vMessage = 
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_TAG_Tag>|Post_HAS_TAG_Tag>):e)-Tag:t
+    ACCUM s.@tags += t.name;
 
-  Seed = { post.*, comments.* };
+  vPerson = 
+    SELECT t
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e)-Person:t
+    ACCUM
+      FOREACH tag IN s.@tags DO 
+        @@count += (t.@country, month(s.creationDate), t.gender, (datetime_diff(simulationEnd, t.birthday) / 31536000 / 5), tag -> 1)
+      END;  
 
-  // select messages created within the given timeline from the given country
-  Seed =
-    select src
-    from Seed:src -((post_hasCreator_person>|comments_hasCreator_person>))- _
-         -(person_isLocatedIn_city>)- city -(city_isPartOf_country>)- country:tgt
-    where src.creationDate >= startDate and
-          src.creationDate <= endDate and
-          (tgt.name == country1 or tgt.name == country2)
-    accum src.@messageMonth += month(src.creationDate), src.@countryName += tgt.name
-    ;
+  FOREACH c IN @@count DO
+    IF c.messageCount > 100 THEN
+      @@result += INFO(c.countryName, c.messageMonth, c.personGender, c.ageGroup, c.tagName, c.messageCount);
+    END;
+  END;
 
-  // accumulate author information to messages
-  Seed =
-    select src
-    from Seed:src -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
-    accum src.@personGender += tgt.gender,
-          src.@ageGroup += ceil(datetime_diff(EndOfSimulation, tgt.birthday) / SecondsPerYear / 5)
-    ;
-
-  // accumulate tag information to messages
-  Seed =
-    select src
-    from Seed:src -((post_hasTag_tag>|comments_hasTag_tag>))- tag:tgt
-    accum src.@tagName += tgt.name
-    ;
-
-  // perform groupings
-  Seed =
-    select src
-    from Seed:src
-    post-accum @@groupings += (src.@countryName, src.@messageMonth, src.@personGender,
-                               src.@ageGroup, src.@tagName -> src);
-
-  // sort grouping results
-  foreach g in @@groupings do
-    if g.messages.size() > 100 then
-      @@sorted_groupings += summary(
-        g.countryName, g.messageMonth, g.personGender, g.ageeGroup,
-        g.tagName, g.messages.size()
-      );
-    end;
-  end;
+  PRINT @@result;
 }
 
+// INSTALL QUERY bi_2
+// RUN QUERY bi_2("2010-01-01 00:00:00","2010-11-08 00:00:00","Ethiopia","Spain")
+SET query_timeout = 180000
+INTERPRET QUERY bi_2("2010-01-01 00:00:00","2010-11-08 00:00:00","Ethiopia","Spain")

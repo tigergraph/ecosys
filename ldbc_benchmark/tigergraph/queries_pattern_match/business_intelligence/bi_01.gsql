@@ -1,61 +1,45 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_1
 
-create query bi_1(datetime maxDate) for graph ldbc_snb {
-  // user-defined tuple(s)
-  typedef tuple<int year, bool isComment, string lengthCategory,
-                int messageCount, int averageMessageLength,
-                int sumMessageLength, int percentageOfMessages> result;
+CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
 
-  // global accumulator(s)
-  GroupByAccum<int year, bool isComment, string lengthCategory,
-               SetAccum<vertex> messages> @@groups;
-  HeapAccum<result> (1, year desc, isComment asc,
-                     lengthCategory asc) @@ResultHeap;
-  SumAccum<float> @@totalCount;
-  SumAccum<int> @@totalMsgLength;
+  HeapAccum<MessageInfo>(1, theYear DESC, isComment ASC, lengthCategory ASC) @@result;
+  OrAccum @isComment;
+  SumAccum<STRING> @lengthCategory;
+  GroupByAccum<INT theYear, BOOL isComment, STRING lengthCategory, SumAccum<INT> messageCount, SumAccum<INT> sumMessageLength> @@calc;
 
-  // global variables
-  string shortCode = "0";
-  string oneLinerCode = "1";
-  string tweetCode = "2";
-  string longCode = "3";
-  int groupSize;
+  INT total;
 
-  MessageSeed = { post.*, comments.* };
-  // perform grouping and count total messages
-  MessageSet =
-    select src
-    from MessageSeed:src
-    where src.creationDate < maxDate
-    accum
-      int creationYear = year(src.creationDate),
-      bool isComment = (src.type == "comments"),
-      if src.length < 40 then
-        @@groups += (creationYear, isComment, shortCode -> src)
-      else if src.length < 80 then
-        @@groups += (creationYear, isComment, oneLinerCode -> src)
-      else if src.length < 160 then
-        @@groups += (creationYear, isComment, tweetCode -> src)
-      else
-        @@groups += (creationYear, isComment, longCode -> src)
-      end,
-      @@totalCount += 1
-    ;
+  vStart = { Post.*, Comment.* };
+  vStart = 
+    SELECT s
+    FROM vStart:s
+    WHERE s.creationDate < maxDate
+    ACCUM 
+      s.@isComment = (s.type == "Comment"),
+      IF s.length < 40 THEN
+        s.@lengthCategory = "0"
+      ELSE IF s.length < 80 THEN
+        s.@lengthCategory = "1"
+      ELSE IF s.length < 160 THEN
+        s.@lengthCategory = "2"
+      ELSE
+        s.@lengthCategory = "3"
+      END
+    POST-ACCUM @@calc += (year(s.creationDate), s.@isComment, s.@lengthCategory -> 1, s.length);
 
-  @@ResultHeap.resize(@@groups.size());
-  foreach g in @@groups do
-    @@totalMsgLength = 0; // clear @@totalMsgLength for new group
-    foreach msg in g.messages do
-      @@totalMsgLength += msg.length;
-    end;
-    groupSize = g.messages.size();
-    @@ResultHeap += result(
-      g.year, g.isComment, g.lengthCategory, groupSize,
-      @@totalMsgLength / groupSize, @@totalMsgLength,
-      groupSize / @@totalCount
-    );
-  end;
+  total = vStart.size();
+  @@result.resize(total);
+  FOREACH c IN @@calc DO
+    @@result += MessageInfo(c.theYear, c.isComment, c.lengthCategory, c.messageCount, (c.sumMessageLength / c.messageCount), c.sumMessageLength, (c.messageCount * 1.0 / total));
+  END;
 
-  print @@ResultHeap;
+  PRINT @@result;
 }
 
+// INSTALL QUERY bi_1
+// RUN QUERY bi_1("2011-07-22 00:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY bi_1("2011-07-22 00:00:00")

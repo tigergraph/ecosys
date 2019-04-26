@@ -1,42 +1,46 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_6
 
-create query bi_6(string tagName) for graph ldbc_snb {
-  // vertex-attached accumulators
-  GroupByAccum<vertex msg, SumAccum<int> lCnt, SumAccum<int> rCnt> @messages;
-  SumAccum<int> @messageCount;
-  SumAccum<int> @score;
+CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> scoreInfo;
 
-  TagSeed = { tag.* };
-  // find person who created message with given tag
-  FinalResult =
-    select tgt
-    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag))- (post|comments):msg
-         -((post_hasCreator_person>|comments_hasCreator_person>))- person:tgt
-    where src.name == tagName
-    accum tgt.@messages += (msg -> 0, 0)
-    post-accum tgt.@messageCount += tgt.@messages.size()
-    ;
+  SetAccum<VERTEX> @@messageAll;
+  SumAccum<INT> @replyCount, @likeCount, @messageCount;
+  HeapAccum<scoreInfo>(100, score DESC, personId ASC) @@scoreInfoTop;
 
-  // aggregate number of likes for each message
-  AggregateResult =
-    select src
-    from FinalResult:src -((<post_hasCreator_person|<comments_hasCreator_person))- (post|comments):msg
-         -((<person_likes_post|<person_likes_comments|<comments_replyOf_post|<comments_replyOf_comments))- (person|comments):tgt
-    accum case
-      when tgt.type == "person" then src.@messages += (msg -> 1, 0) # likes
-      when tgt.type == "comments" then src.@messages += (msg -> 0, 1) #replies
-      end
-    post-accum
-      src.@score += src.@messageCount,
-      foreach g in src.@messages do
-        src.@score += 2 * g.rCnt + 10 * g.lCnt
-     end
-    ;
+  vTag = { Tag.* };
+  vMessage(ANY) =
+    SELECT t
+    FROM vTag:s-((<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag):e)-(Comment|Post):t
+    WHERE s.name == tagName
+    POST-ACCUM @@messageAll += t;
 
-  // perform ordering on final result
-  FinalResult = select s from FinalResult:s order by s.@score desc, s.id asc limit 100;
+  accCount =
+    SELECT s
+    FROM vMessage:s-((<Person_LIKES_Comment|<Person_LIKES_Post|<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e)-(Person|Comment):t
+    ACCUM 
+      CASE
+        WHEN t.type == "Person" THEN
+          s.@likeCount += 1
+        WHEN t.type == "Comment" THEN
+          s.@replyCount += 1
+      END;
+  
+  vMessage = { @@messageAll };
+  accMsgPerson =
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e)-Person:t
+    ACCUM
+      t.@replyCount += s.@replyCount,
+      t.@likeCount += s.@likeCount,
+      t.@messageCount += 1
+    POST-ACCUM @@scoreInfoTop += scoreInfo(t.id, t.@replyCount, t.@likeCount, t.@messageCount, (t.@messageCount+2*t.@replyCount+10*t.@likeCount));
 
-  // print result
-  print FinalResult;
+  PRINT @@scoreInfoTop;
 }
 
+//INSTALL QUERY bi_6
+//RUN QUERY bi_6("Abbas_I_of_Persia")
+SET query_timeout = 180000
+INTERPRET QUERY bi_6("Abbas_I_of_Persia")

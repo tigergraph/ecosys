@@ -1,46 +1,29 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_14
 
-create query bi_14(datetime startDate, datetime endDate) for graph ldbc_snb {
-  // vertex-attached accumulator(s)
-  SetAccum<vertex<post>> @threadSet;
-  SumAccum<int> @threadCount;
-  SumAccum<int> @messageCount;
+CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
 
-  PersonSet = { person.* };
+  SumAccum<INT> @messageCount;
+  SetAccum<INT> @threadIds;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
 
-  // aggregate info about posts onto PersonSet
-  AggregateSet =
-    select src
-    from PersonSet:src -(<post_hasCreator_person)- post:tgt
-    where tgt.creationDate >= startDate and tgt.creationDate <= endDate
-    accum src.@threadSet += tgt, src.@threadCount += 1
-    ;
+  vMessage = { Comment.*, Post.* };
+  accMsgPostPerson =
+    SELECT s
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(Post_HAS_CREATOR_Person>:e2)-Person:t2
+    WHERE s.creationDate >= startDate AND s.creationDate <= endDate
+      AND t1.creationDate >= startDate AND t1.creationDate <= endDate
+    ACCUM t2.@messageCount += 1, t2.@threadIds += t1.id
+    POST-ACCUM @@initiatorTop += initiator(t2.id, t2.firstName, t2.lastName, t2.@threadIds.size(), t2.@messageCount);
 
-  // aggregate info about comments within a person's threadSet onto PersonSet
-  AggregateSet = 
-    select src
-    from PersonSet:src -(<post_hasCreator_person)- _:p
-         -((<comments_replyOf_post|<comments_replyOf_comments)*)- (post|comments):tgt
-    where p in src.@threadSet and
-          tgt.creationDate >= startDate and
-          tgt.creationDate <= endDate
-    accum src.@messageCount += 1
-    ;
-
-  // sort PersonSet by messageCount and personId
-  PersonSet =
-    select src
-    from PersonSet:src
-    order by src.@messageCount desc, src.id asc
-    limit 100
-    ;
-
-  print PersonSet[
-    PersonSet.id as personId,
-    PersonSet.firstName as personFirstName,
-    PersonSet.lastName as personLastName,
-    PersonSet.@threadCount as threadCount,
-    PersonSet.@messageCount as messageCount
-  ];
+  PRINT @@initiatorTop;
 }
 
+// INSTALL QUERY bi_14
+// RUN QUERY bi_14("2012-05-31 22:00:00", "2012-06-30 22:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY bi_14("2012-05-31 22:00:00", "2012-06-30 22:00:00")

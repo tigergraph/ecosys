@@ -1,53 +1,53 @@
+set syntax_version = "v2"
 use graph ldbc_snb
+DROP QUERY is_2
 
-create query is_2(vertex<person> pid) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SumAccum<string> @messageContent;
-  SumAccum<int> @originalPostId;
-  SumAccum<int> @originalPostAuthorId;
-  SumAccum<string> @originalPostAuthorFirstName;
-  SumAccum<string> @originalPostAuthorLastName;
+CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate, INT originalPostId, INT originalPostAuthorId, STRING originalPostAuthorFirstName, STRING originalPostAuthorLastName> ogPostInfo;
 
-  PersonSeed = { pid };
-  // find the last 10 messages created by the user
-  FinalResult =
-    select tgt
-    from PersonSeed:src -((<post_hasCreator_person|<comments_hasCreator_person))- _:tgt
-    accum case
-      when tgt.type == "post" then
-        case when tgt.content IS NULL then tgt.@messageContent = tgt.imageFile
-             when tgt.content IS NOT NULL then tgt.@messageContent = tgt.content
-             end,
-        tgt.@originalPostId = tgt.id,
-        tgt.@originalPostAuthorId = src.id,
-        tgt.@originalPostAuthorFirstName = src.firstName,
-        tgt.@originalPostAuthorLastName = src.lastName
-      when tgt.type == "comments" then tgt.@messageContent = tgt.content
-      end
-    order by tgt.creationDate desc, tgt.id desc
-    limit 10
-    ;
+  SumAccum<INT> @messageId, @messageCreationDate, @authorOgId;
+  SumAccum<STRING> @messageContent, @authorOgFN, @authorOgLN;
+  HeapAccum<ogPostInfo>(10, messageCreationDate DESC, messageId DESC) @@ogPostInfoTop;
 
-  // aggregate info about original post if the message is a comment
-  AggregateResult =
-    select src
-    from FinalResult:src -((comments_replyOf_comments>)*)- _
-         -(comments_replyOf_post>)- post:op -(post_hasCreator_person>)- person:tgt
-    accum
-      src.@originalPostId += op.id,
-      src.@originalPostAuthorOd += tgt.id,
-      src.@originalPostAuthorFirstName += tgt.firstName,
-      src.@originalPostAuthorLastName += tgt.lastName
-    ;
+  vPerson = { personId };
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e)-(Comment|Post):t
+    ORDER BY t.creationDate DESC, t.id DESC
+    LIMIT 10;
 
-  print FinalResult[
-    FinalResult.id as messageId,
-    FinalResult.@messageContent as messageContent,
-    FinalResult.creationDate as messageCreationDate,
-    FinalResult.@originalPostId as originalPostId,
-    FinalResult.@originalPostAuthorId as originalPostAuthorId,
-    FinalResult.@originalPostAuthorFirstName as originalPostAuthorFirstName,
-    FinalResult.@originalPostAuthorLastName as originalPostAuthorLastName
-  ];
+  accMessage = 
+    SELECT s
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(Post_HAS_CREATOR_Person>:e2)-Person:t2
+    ACCUM 
+      CASE
+        WHEN s.type == "Comment" THEN
+          t1.@messageId = s.id,
+          t1.@messageCreationDate = datetime_to_epoch(s.creationDate),
+          t1.@messageContent = s.content
+        ELSE
+          t1.@messageId = t1.id,
+          t1.@messageCreationDate = datetime_to_epoch(t1.creationDate),
+          IF s.content != "" THEN
+            t1.@messageContent = t1.content
+          ELSE
+            t1.@messageContent = t1.imageFile
+          END
+      END,
+      t1.@authorOgId = t2.id,
+      t1.@authorOgFN = t2.firstName,
+      t1.@authorOgLN = t2.lastName
+    POST-ACCUM @@ogPostInfoTop += 
+        ogPostInfo(t1.@messageId, t1.@messageContent, epoch_to_datetime(t1.@messageCreationDate), 
+            t1.id, t1.@authorOgId, t1.@authorOgFN, t1.@authorOgLN);
+
+  PRINT @@ogPostInfoTop;
+
 }
 
+//INSTALL QUERY is_2
+//RUN QUERY is_2(30786325583618)
+SET query_timeout = 180000
+INTERPRET QUERY is_2(30786325583618)

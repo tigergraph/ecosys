@@ -1,25 +1,28 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is_1
 
-create query is_1(vertex<person> pid) for graph ldbc_snb {
-  // vertex-attached accumulator
-  SumAccum<int> @cityId;
+CREATE QUERY is_1(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @cityId;
 
-  FinalResult = { pid };
-  AggregateResult =
-    select src
-    from FinalResult:src -(person_isLocatedIn_city>)- city:tgt
-    accum src.@cityId = tgt.id
-    ;
+  vPerson = { personId };
+  vPerson = 
+    SELECT s
+    FROM vPerson:s-(Person_IS_LOCATED_IN_City>:e)-City:t
+    ACCUM s.@cityId = t.id;
 
-  print FinalResult[
-    FinalResult.firstName as firstName,
-    FinalResult.lastName as lastName,
-    FinalResult.birthday as birthday,
-    FinalResult.locationIP as locationIP,
-    FinalResult.browserIsed as browserUsed,
-    FinalResult.@cityId as cityId,
-    FinalResult.gender as gender,
-    FinalResult.creationDate as creationDate
-  ];
+  PRINT vPerson[
+      vPerson.firstName AS firstName,
+      vPerson.lastName AS lastName, 
+      vPerson.birthday AS birthday, 
+      vPerson.locationIP AS locationIP, 
+      vPerson.browserUsed AS browserUsed, 
+      vPerson.@cityId AS cityId, 
+      vPerson.gender AS gender, 
+      vPerson.creationDate AS creationDate];
 }
 
+// INSTALL QUERY is_1
+// RUN QUERY is_1(30786325583618)
+SET query_timeout = 180000
+INTERPRET QUERY is_1(30786325583618)

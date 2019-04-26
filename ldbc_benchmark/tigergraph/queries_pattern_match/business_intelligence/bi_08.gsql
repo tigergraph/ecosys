@@ -1,40 +1,38 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_8
 
-create query bi_8(string tagName) for graph ldbc_snb {
-  // vertex-attached accumulators
-  SumAccum<int> @count;
+CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING relatedTagName, INT replyCount> topic;
 
-  // seed set
-  TagSeed = { tag.* };
+  AndAccum @isValid;
+  SumAccum<INT> @count;
+  SetAccum<VERTEX<Comment>> @@replyValid;
+  HeapAccum<topic>(100, replyCount DESC, relatedTagName ASC) @@topicTop;
+	
+  vTag = { Tag.* };
+  findValidReply =
+    SELECT s
+    FROM vTag:s
+        -((<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag):e1)-(Comment|Post):t1
+        -((<Comment_REPLY_OF_Post|<Comment_REPLY_OF_Comment):e2)-Comment:t2
+        -(Comment_HAS_TAG_Tag>:e)-Tag:t3
+    WHERE s.name == tagName
+    ACCUM CASE WHEN t3.name == tagName THEN t2.@isValid += False END
+    POST-ACCUM CASE WHEN t2.@isValid THEN @@replyValid += t2 END;
 
-  // find all comments to messages where the messages have the given tag
-  CommentsToMessageWithGivenTag =
-    select tgt
-    from TagSeed:src -((<post_hasTag_tag|<comments_hasTag_tag).(<comments_replyOf_post|<comments_replyOf_comments))- comments:tgt
-    where src.name == tagName
-    ;
+  vReply = { @@replyValid };
+  accTopic =
+    SELECT s
+    FROM vReply:s-(Comment_HAS_TAG_Tag>:e)-Tag:t
+    WHERE t.name != tagName
+    ACCUM t.@count += 1 # no duplicated names for tags
+    POST-ACCUM @@topicTop += topic(t.name, t.@count);
 
-  // find comments that also have the given tag
-  CommentsWithGivenTag =
-    select src
-    from CommentsToMessageWithGivenTag:src -(comments_hasTag_tag>)- tag:tgt
-    where tgt.name == tagName
-    ;
-
-  CommentsWithoutGivenTag = CommentsToMessageWithGivenTag MINUS CommentsWithGivenTag;
-
-  // aggregate count for tags related to CommentsWithoutGivenTag
-  FinalResult =
-    select tgt
-    from CommentsWithoutGivenTag:src -(comments_hasTag_tag>)- tag:tgt
-    accum tgt.@count += 1
-    order by tgt.@count desc, tgt.name asc
-    limit 100
-    ;
-
-  print FinalResult[
-    FinalResult.name as relatedTagName,
-    FinalResult.@count as totalCount
-  ];
+  PRINT @@topicTop;
 }
 
+// INSTALL QUERY bi_8
+// RUN QUERY bi_8("Genghis_Khan")
+SET query_timeout = 180000
+INTERPRET QUERY bi_8("Genghis_Khan")

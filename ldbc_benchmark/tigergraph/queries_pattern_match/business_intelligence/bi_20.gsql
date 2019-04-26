@@ -1,25 +1,36 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_20
 
-create query bi_20(set<string> tagclasses) for graph ldbc_snb {
-  // vertex-attached accumulator(s)
-  SetAccum<vertex> @messageSet;
-  SumAccum<int> @messageCount;
+CREATE QUERY bi_20(SET<STRING> tagClassNames) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING tagClassName, INT messageCount> tagInfo;
 
-  TagclassSet = { tagclass.* };
-  TagClassSet =
-    select src
-    from TagclassSet:src -((<tagclass_isSubclassOf_tagclass)*)- _ -(<tag_hasType_tagclass)- _
-         -((<post_hasTag_tag|<comments_hasTag_tag))- (post|comments):tgt
-    where src.name in tagclasses
-    accum src.@messageSet += tgt
-    post-accum src.@messageCount += src.@messageSet.size()
-    order by src.@messageCount desc, src.name asc
-    limit 100
-    ;
+  SetAccum<STRING> @visited;
+  MapAccum<STRING, INT> @@tagInfoMap;
+  HeapAccum<tagInfo>(100, messageCount DESC, tagClassName ASC) @@tagInfoTop;
 
-  print TagClassSet[
-    TagClassSet.name as tagClassName,
-    TagClassSet.@messageCount as messageCount
-  ];
+  vTagClass = { TagClass.* };
+  aggAll =
+    SELECT t3
+    FROM vTagClass:s
+        -(<TagClass_IS_SUBCLASS_OF_TagClass*0..)-TagClass:t1
+        -(<Tag_HAS_TYPE_TagClass:e2)-Tag:t2
+        -((<Post_HAS_TAG_Tag|<Comment_HAS_TAG_Tag):e3)-(Post|Comment):t3
+    WHERE s.name IN tagClassNames
+    ACCUM t3.@visited += s.name
+    POST-ACCUM
+      FOREACH tcName IN t3.@visited DO
+        @@tagInfoMap += (tcName -> 1)
+      END;
+
+  FOREACH (key, value) IN @@tagInfoMap DO
+    @@tagInfoTop += tagInfo(key, value);
+  END;
+
+  PRINT @@tagInfoTop;
 }
 
+// INSTALL QUERY bi_20
+// RUN QUERY bi_20(["Writer","Single","Country"])
+SET query_timeout = 180000
+INTERPRET QUERY bi_20(["Writer","Single","Country"])

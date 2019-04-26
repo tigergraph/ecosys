@@ -1,51 +1,46 @@
-use graph ldbc_snb
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_12
 
-create query ic_12(vertex<person> pid, string className) for graph ldbc_snb {
-  // global accumulator
-  SetAccum<vertex<person>> @@friends;
+CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_snb {
+  OrAccum @visited;
+  SetAccum<STRING> @tagNames;
+  SumAccum<INT> @replyCount;
 
-  // vertex-attached accumulators
-  SetAccum<vertex<comments>> @replySet;
-  SetAccum<string> @tagNames;
-  SumAccum<int> @replyCount;
+  vTagClass = { TagClass.* };
+  accTagPost =
+    SELECT s
+    FROM vTagClass:s
+        -(<TagClass_IS_SUBCLASS_OF_TagClass*0..)-TagClass:t1
+        -(<Tag_HAS_TYPE_TagClass:e2)-Tag:t2
+        -(<Post_HAS_TAG_Tag:e3)-Post:t3
+    WHERE s.name == tagClassName
+    ACCUM
+      t3.@visited += True,
+      t3.@tagNames += t2.name;
 
-  PersonSeed = { pid };
-  TagclassSeed = { tagclass.* };
+  vPerson = { personId };
+  vFriend =
+    SELECT t
+    FROM vPerson:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t;
 
-  // find all of the given user's friends
-  Result =
-    select tgt
-    from PersonSeed:src -((person_knows_person>|<person_knows_person))- person:tgt
-    accum @@friends += tgt
-    ;
+  vFriend =
+    SELECT s
+    FROM vFriend:s-(<Comment_HAS_CREATOR_Person.Comment_REPLY_OF_Post>)-Post:t
+    WHERE t.@visited
+    ACCUM s.@tagNames += t.@tagNames, s.@replyCount += 1
+    ORDER BY s.@replyCount DESC, s.id ASC
+    LIMIT 20;
 
-  // collect all the accepted tags constrained by the tagclass condition
-  TagSet =
-    select tgt
-    from TagclassSeed:src -((<tagclass_isSubclassOf_tagclass)*)- tagclass
-         -(<tag_hasType_tagclass)- tag:tgt
-    where src.name == className
-    ;
-
-  // use TagSet to refine Result
-  Result =
-    select tgt
-    from TagSet:src -(<post_hasTag_tag.<comments_replyOf_post)- comments:msg
-         -(comments_hasCreator_person>)- person:tgt
-    where tgt in @@friends
-    accum tgt.@tagNames += src.name, tgt.@replySet += msg
-    post-accum tgt.@replyCount += tgt.@replySet.size()
-    having tgt.@replyCount >= 1
-    order by tgt.@replyCount desc, tgt.id asc
-    limit 20
-    ;
-
-  print Result[
-    Result.id as personId,
-    Result.firstName as personFirstName,
-    Result.lastName as personLastName,
-    Result.@tagNames as tagNames,
-    Result.@replyCount as replyCount
-  ];
+  PRINT vFriend[
+      vFriend.id AS personId,
+      vFriend.firstName AS personFirstName,
+      vFriend.lastName AS personLastName,
+      vFriend.@tagNames AS tagNames,
+      vFriend.@replyCount AS replyCount];
 }
 
+// INSTALL QUERY ic_12
+// RUN QUERY ic_12(17592186052613, "BasketballPlayer")
+SET query_timeout = 180000
+INTERPRET QUERY ic_12(17592186052613, "BasketballPlayer")
