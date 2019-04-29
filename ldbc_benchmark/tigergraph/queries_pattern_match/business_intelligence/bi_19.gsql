@@ -1,0 +1,55 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_19
+
+CREATE QUERY bi_19(DATETIME minDate, STRING tagClass1Name, STRING tagClass2Name) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, INT strangerCount, INT interactionCount> strInt;
+
+  OrAccum @hasTag1, @hasTag2;
+  SetAccum<VERTEX<Person>> @@memberAll;
+  SetAccum<INT> @friends, @strangers;
+  SumAccum<INT> @interactionCount;
+  HeapAccum<strInt>(100, interactionCount DESC, personId ASC) @@strangerInteractionTop;
+
+  vTagClass = { TagClass.* };
+  accMember =
+    SELECT t
+    FROM vTagClass:s-(<Tag_HAS_TYPE_TagClass.<Forum_HAS_TAG_Tag.Forum_HAS_MEMBER_Person>)-Person:t
+    WHERE s.name == tagClass1Name OR s.name == tagClass2Name
+    ACCUM
+      CASE
+        WHEN s.name == tagClass1Name THEN
+          t.@hasTag1 += True
+        WHEN s.name == tagClass2Name THEN
+          t.@hasTag2 += True
+      END
+    POST-ACCUM CASE WHEN t.@hasTag1 AND t.@hasTag2 THEN @@memberAll += t END;
+  
+  vPerson = { Person.* };
+  accFriend =
+    SELECT t
+    FROM vPerson:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+    WHERE s.birthday > minDate
+    ACCUM s.@friends += t.id;
+
+  vMember = { @@memberAll };
+  accCount =
+    SELECT s
+    FROM vMember:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Comment_REPLY_OF_Post|<Comment_REPLY_OF_Comment)*)-Comment:t2
+        -(Comment_HAS_CREATOR_Person>:e3)-Person:t3
+    WHERE s != t3 AND s.id NOT IN t3.@friends
+      AND t3.birthday > minDate
+    ACCUM
+      t3.@strangers += s.id,
+      t3.@interactionCount += 1
+    POST-ACCUM @@strangerInteractionTop += strInt(t3.id, t3.@strangers.size(), t3.@interactionCount);
+  
+  PRINT @@strangerInteractionTop;
+}
+
+// INSTALL QUERY bi_19
+// RUN QUERY bi_19("1989-01-01 00:00:00","MusicalArtist","OfficeHolder")
+SET query_timeout = 600000
+INTERPRET QUERY bi_19("1989-01-01 00:00:00","MusicalArtist","OfficeHolder")
