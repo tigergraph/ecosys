@@ -1,14 +1,13 @@
-      CREATE QUERY louvain_file(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split = 10, INT distribution = 0, INT debug = 2, FILE f_comm, FILE f_dist) FOR GRAPH social {
+CREATE QUERY louvain_parallel(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split = 10, INT outputLevel = 0) FOR GRAPH social {
  /*
- * Parallel Louvain Method with Refinement
+ * Louvain Method with Parallelism and Refinement
  * https://arxiv.org/pdf/1304.4453
  * The minimum label heuristics are implemented: https://doi.org/10.1016/j.parco.2015.03.003
  
  * iter: There are three phases in the algorithm -- move, merge and refine. Their max number of iterations are set by iter1, iter2, iter3 respectively.
  * split: To save memory, split number is 10 by default. When the split number is larger, the query is closer to sequential Louvain Method, which is slower. When the split number is 1, the query is parallel, but requires more memory. 
- * distribution: 0, only list number; 1, also list members
- * debug: 0, no modularity info; 1, show debug log; 2, modularity for each iteration
- * f_comm, f_dist: files to store community label and community distribution
+ * outputLevel: 0, only list number; 1, also list members
+ * fComm, fDist: files to store community label and community distribution
 */
         
         TYPEDEF TUPLE <INT csize, INT number> ClusterNum;
@@ -43,6 +42,7 @@
         INT iteration2;
         INT partitions;
         INT loop;
+        INT debug = 0;  # debug: 0, no modularity info; 1, show debug log; 2, modularity for each iteration
 
         partitions = split;
         CASE WHEN split < 1 THEN
@@ -277,30 +277,25 @@
         END;
         
                 
-        f_comm.println("Vertex_ID", "community_id");
+        Print Start.@cid;
         Start = {ANY};
         Start = SELECT s FROM Start:s
                 POST-ACCUM @@clusterSizes += (s.@cid -> 1)
-                           , f_comm.println(s, s.@cid)
                            ;
         log(TRUE, @@clusterSizes.size());
 
-        IF distribution ==0 THEN
+        IF outputLevel ==0 THEN
                 FOREACH (cluster, csize) IN @@clusterSizes DO
                         @@clusterMap += (csize -> 1);
                 END;
                 FOREACH (csize, number) IN @@clusterMap DO
                         @@clusterDist += ClusterNum(csize, number);
                 END;
-                FOREACH item IN @@clusterDist DO
-                        f_dist.println(item.csize, item.number);
-                END;
+                PRINT @@clusterDist;
         ELSE
                 FOREACH (cluster, csize) IN @@clusterSizes DO
                         @@clusterMembers += (csize -> cluster);
                 END;
-                FOREACH (key, value) IN @@clusterMembers DO
-                        f_dist.println(key, value);
-                END;
+                PRINT @@clusterMembers;
         END;
 }

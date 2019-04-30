@@ -1,4 +1,3 @@
-*ATTR*CREATE QUERY cycle_detection*EXT* (INT depth) FOR GRAPH *graph* {
 *ACCM*CREATE QUERY cycle_detection*EXT* (INT depth) FOR GRAPH *graph* {
 *FILE*CREATE QUERY cycle_detection*EXT* (INT depth, FILE f) FOR GRAPH *graph* {
 /* Rocha–Thatte cycle detection algorithm
@@ -9,7 +8,6 @@ Stop passing the sequence (v1,v2,v3, ...) when:
 */
         ListAccum<ListAccum<VERTEX>> @currList, @newList;
 *ACCM*  ListAccum<ListAccum<VERTEX>> @@cycles;
-*ATTR*  SetAccum<VERTEX> @@v_cycles;
         SumAccum<INT> @uid;
   
         # initialization
@@ -31,9 +29,6 @@ Stop passing the sequence (v1,v2,v3, ...) when:
                                                 END
                                         END,
                                         IF t_is_min == TRUE THEN  # if it has the minimal label in the list, report 
-*ATTR*                                          FOREACH v IN sequence DO
-*ATTR*                                                  @@v_cycles += v
-*ATTR*                                          END
 *ACCM*                                          @@cycles += sequence
 *FILE*                                          f.println(sequence)
                                         END
@@ -46,10 +41,6 @@ Stop passing the sequence (v1,v2,v3, ...) when:
                             t.@newList.clear()
                  HAVING t.@currList.size() > 0;  # IF receive no sequences, deactivate it;
         END;
-*ATTR*  Active = {@@v_cycles};
-*ATTR*  Active = SELECT s
-*ATTR*           FROM Active:s
-*ATTR*           POST-ACCUM s.*vBoolAttr* = true;
 *ACCM*  PRINT @@cycles;   
 }
 

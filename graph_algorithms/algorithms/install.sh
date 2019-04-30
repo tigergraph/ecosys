@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Community detection: Louvain" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Louvain Method with Parallelism and Refinement" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -53,9 +53,9 @@ while [ !$finished ]; do
 				algoName="label_prop"
 				echo "  label_prop() works on undirected edges"
 				break;;
-			"Community detection: Louvain" )
-				algoName="louvain"
-				echo "  louvain() works on undirected weighted edges"
+			"Louvain Method with Parallelism and Refinement" )
+				algoName="louvain_parallel"
+				echo "  louvain_parallel() works on undirected weighted edges"
 				break;;
 			"PageRank" )
 				algoName="pageRank"
@@ -219,7 +219,7 @@ while [ !$finished ]; do
 
 
      	# 5. Ask for edge weight name. Replace *edge-weight* placeholder.
-	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ] || [ "${algoName}" == "mst" ] || [ "${algoName}" == "louvain" ]; then
+	if [ "${algoName}" == "shortest_ss_pos_wt" ] || [ "${algoName}" == "shortest_ss_any_wt" ] || [ "${algoName}" == "pageRank_wt" ] || [ "${algoName}" == "mst" ] || [ "${algoName}" == "louvain_parallel" ]; then
 		while true; do
                 	read -p "Edge attribute that stores FLOAT weight:"  weight
 			if [[ $(countEdgeAttr $weight) > 0 ]]; then
