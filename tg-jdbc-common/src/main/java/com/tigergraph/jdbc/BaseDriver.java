@@ -9,8 +9,6 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
-
 public abstract class BaseDriver implements java.sql.Driver {
 
   protected static final String JDBC_PREFIX = "jdbc:tg:";
@@ -42,13 +40,14 @@ public abstract class BaseDriver implements java.sql.Driver {
 	}
 
 	@Override public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
   @Override public boolean acceptsURL(String url) throws SQLException {
     if (null == url) {
       throw new SQLException("url is invalid.");
     }
+
     String[] parts = url.split(":");
     if ((parts.length > 3) && (url.startsWith(JDBC_PREFIX))) {
       if (null != DRIVER_PREFIX) {
@@ -59,4 +58,5 @@ public abstract class BaseDriver implements java.sql.Driver {
     }
     return false;
   }
+
 }

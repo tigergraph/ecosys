@@ -1,7 +1,5 @@
 package com.tigergraph.jdbc.restpp.driver;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
-
 import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;

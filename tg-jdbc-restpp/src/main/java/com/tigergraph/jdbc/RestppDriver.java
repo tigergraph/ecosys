@@ -3,11 +3,11 @@ package com.tigergraph.jdbc.restpp;
 import com.tigergraph.jdbc.BaseDriver;
 import com.tigergraph.jdbc.restpp.RestppConnection;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
+import java.sql.SQLException;
+import java.net.MalformedURLException;
 
 /**
  * JDBC Driver class for the Restpp connector.
@@ -20,8 +20,6 @@ public class RestppDriver extends BaseDriver {
 
   /**
    * Default constructor.
-   * 
-   * @throws SQLException sqlexception
    */
   public RestppDriver() throws SQLException {
     super(JDBC_RESTPP_PREFIX);
@@ -45,7 +43,7 @@ public class RestppDriver extends BaseDriver {
         }
         connection = new RestppConnection(host, port, secure, params, url, this.debug);
       } else {
-        throw new SQLException("JDBC URL is invalid.\nA valid URL format is: 'jdbc:tg:http://<host>:<port>'");
+        throw new SQLException("The URL is invalid.\nA valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
       }
     } catch (MalformedURLException e) {
       throw new SQLException(e);

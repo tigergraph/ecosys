@@ -1,7 +1,5 @@
 package com.tigergraph.jdbc.restpp.driver;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -36,7 +34,7 @@ public class RestppResponse {
 
   public RestppResponse(HttpResponse response, Boolean debug) throws SQLException {
     if (response.getStatusLine() == null) {
-      throw new SQLException("Received request without status code...");
+      throw new SQLException("Received request without a status code.");
     }
 
     this.debug = debug;

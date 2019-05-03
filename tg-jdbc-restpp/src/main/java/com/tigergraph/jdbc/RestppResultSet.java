@@ -1,7 +1,5 @@
 package com.tigergraph.jdbc.restpp;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.tigergraph.jdbc.ResultSet;
@@ -35,7 +33,6 @@ public class RestppResultSet extends ResultSet {
   @Override
   @SuppressWarnings("unchecked")
   protected boolean innerNext() throws SQLException {
-    checkClosed();
     row++;
     return (row < results.size());
   }
@@ -44,12 +41,10 @@ public class RestppResultSet extends ResultSet {
   public void close() throws SQLException {
     results = null;
     row = -1;
-    isClosed = true;
   }
 
   @Override
   public boolean wasNull() throws SQLException {
-    checkClosed();
     return this.wasNull;
   }
 
@@ -69,122 +64,124 @@ public class RestppResultSet extends ResultSet {
 
   @Override
   public Object getObject(int columnIndex) throws SQLException {
-    checkClosed();
     return get(0);
   }
 
   @Override
   public Object getObject(String columnLabel) throws SQLException {
-    checkClosed();
     return get(0);
   }
 
+  /**
+   * Methods not implemented yet.
+   */
+
   @Override public int getType() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getConcurrency() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getHoldability() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public com.tigergraph.jdbc.ResultSetMetaData getMetaData() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int findColumn(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public String getString(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public String getString(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean getBoolean(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean getBoolean(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public Array getArray(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public Array getArray(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public short getShort(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public short getShort(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getInt(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getInt(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public long getLong(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public long getLong(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public float getFloat(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public float getFloat(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public double getDouble(int columnIndex) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public double getDouble(String columnLabel) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }

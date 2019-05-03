@@ -2,19 +2,18 @@ package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.restpp.RestppDriver;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class Driver extends BaseDriver {
 
   /**
-   * <Prefix, class> hash map of all available drivers.
+   * Hash map of all available drivers.
    */
-  @SuppressWarnings({"rawtypes", "serial"})
   private final Map<String, Class> DRIVERS = new HashMap<String, Class>() {{
     put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
   }};
@@ -33,15 +32,12 @@ public class Driver extends BaseDriver {
 
   /**
    * Retrieve the corresponding driver according to url.
-   * @param url: The JDBC url
-   * @return The driver
    */
-  @SuppressWarnings({"rawtypes", "unchecked"})
   private BaseDriver getDriver(String url) throws SQLException {
     BaseDriver driver = null;
 
-    if (url == null) {
-      throw new SQLException("null is not a valid url");
+    if (null == url) {
+      throw new SQLException("URL can not be NULL.");
     }
 
     try {
@@ -64,8 +60,8 @@ public class Driver extends BaseDriver {
       throw new SQLException(e);
     }
 
-    if (driver == null) {
-      throw new SQLException("Cannot find a suitable driver from the url " + url);
+    if (null == driver) {
+      throw new SQLException("Cannot find a suitable driver for url: " + url);
     }
 
     return driver;

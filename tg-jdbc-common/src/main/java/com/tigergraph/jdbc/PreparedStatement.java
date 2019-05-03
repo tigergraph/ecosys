@@ -1,7 +1,5 @@
 package com.tigergraph.jdbc;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -18,19 +16,17 @@ import static java.sql.Types.*;
 
 public abstract class PreparedStatement extends Statement implements java.sql.PreparedStatement {
 
-  protected String                  statement;
   protected HashMap<String, Object> parameters;
-  private int                     parametersNumber;
+  protected String statement;
+  private int parametersNumber;
 
   /**
-   * Default constructor with connection and statement.
-   *
-   * @param connection   The JDBC connection
-   * @param rawStatement The prepared statement
+   * Default constructor
    */
-  protected PreparedStatement(Connection connection, String rawStatement) {
+  protected PreparedStatement(Connection connection, String preparedStatement) {
     super(connection);
-    this.statement = rawStatement;
+    this.statement = preparedStatement;
+
     /**
      * Number of parameters, i.e., occurrence of char "?"
      */
@@ -38,156 +34,78 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
     this.parameters = new HashMap<>(this.parametersNumber);
   }
 
-  /*----------------------------------------*/
-  /*       Some useful, check method        */
-  /*----------------------------------------*/
-
   /**
-   * Check if the connection is closed or not.
-   */
-  protected void checkClosed() throws SQLException {
-    if (this.isClosed()) {
-      throw new SQLException("Statement already closed");
-    }
-  }
-
-  /**
-   * Check if the given parameter index is out of bound.
-   *
-   * @param parameterIndex The index parameter to check
+   * Check if the given parameter index is out of boundary.
    */
   private void checkParamsNumber(int parameterIndex) throws SQLException {
     if (parameterIndex > this.parametersNumber) {
-      throw new SQLException("ParameterIndex does not correspond to a parameter marker in the SQL statement");
-    }
-  }
-
-  /** Check if the given object is a valid type
-   * If it's not we throw an exception.
-   *
-   * @param obj The object to check
-   */
-  private void checkValidObject(Object obj) throws SQLException {
-    if (!(
-        obj == null ||
-        obj instanceof Boolean ||
-        obj instanceof String ||
-        obj instanceof Character ||
-        obj instanceof Long ||
-        obj instanceof Short ||
-        obj instanceof Byte ||
-        obj instanceof Integer ||
-        obj instanceof Double ||
-        obj instanceof Float ||
-        obj instanceof List ||
-        obj instanceof Iterable ||
-        obj instanceof Map ||
-        obj instanceof Iterator ||
-        obj instanceof boolean[] ||
-        obj instanceof String[] ||
-        obj instanceof long[] ||
-        obj instanceof int[] ||
-        obj instanceof double[] ||
-        obj instanceof float[] ||
-        obj instanceof Object[])) {
-      throw new SQLException("Object of type '" + obj.getClass() + "' isn't supported");
+      throw new SQLException("ParameterIndex is out of range.");
     }
   }
 
   /**
    * Insert a parameter into the map.
-   *
-   * @param index The index/key of the parameter
-   * @param obj The value of the parameter
    */
   private void insertParameter(int index, Object obj) {
     this.parameters.put(Integer.toString(index), obj);
   }
 
-  /*------------------------------------*/
-  /*       Default implementation       */
-  /*------------------------------------*/
+  /*
+   * Methods with default implementation.
+   */
 
   @Override public void setNull(int parameterIndex, int sqlType) throws SQLException {
-    this.checkClosed();
     this.checkParamsNumber(parameterIndex);
-    //@formatter:off
-    if(  sqlType == ARRAY ||
-      sqlType == BLOB ||
-      sqlType == CLOB ||
-      sqlType == DATALINK ||
-      sqlType == JAVA_OBJECT ||
-      sqlType == NCHAR ||
-      sqlType == NCLOB ||
-      sqlType == NVARCHAR ||
-      sqlType == LONGNVARCHAR ||
-      sqlType == REF ||
-      sqlType == ROWID ||
-      sqlType == SQLXML ||
-      sqlType == STRUCT){
-    //@formatter:on
-      throw new SQLFeatureNotSupportedException("The Type you specified is not supported");
-    }
     this.insertParameter(parameterIndex, null);
   }
 
-  @Override public void setBoolean(int parameterIndex, boolean x) throws SQLException {
-    this.checkClosed();
+  @Override public void setBoolean(int parameterIndex, boolean val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setShort(int parameterIndex, short x) throws SQLException {
-    this.checkClosed();
+  @Override public void setShort(int parameterIndex, short val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setInt(int parameterIndex, int x) throws SQLException {
-    this.checkClosed();
+  @Override public void setInt(int parameterIndex, int val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setLong(int parameterIndex, long x) throws SQLException {
-    this.checkClosed();
+  @Override public void setLong(int parameterIndex, long val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setFloat(int parameterIndex, float x) throws SQLException {
-    this.checkClosed();
+  @Override public void setFloat(int parameterIndex, float val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setDouble(int parameterIndex, double x) throws SQLException {
-    this.checkClosed();
+  @Override public void setDouble(int parameterIndex, double val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setString(int parameterIndex, String x) throws SQLException {
-    this.checkClosed();
+  @Override public void setString(int parameterIndex, String val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
-  @Override public void setObject(int parameterIndex, Object x) throws SQLException {
-    this.checkClosed();
+  @Override public void setObject(int parameterIndex, Object val) throws SQLException {
     this.checkParamsNumber(parameterIndex);
-    this.checkValidObject(x);
-    this.insertParameter(parameterIndex, x);
+    this.insertParameter(parameterIndex, val);
   }
 
   @Override public void clearParameters() throws SQLException {
-    this.checkClosed();
     this.parameters.clear();
   }
 
-  /*-----------------------------*/
-  /*       Abstract method       */
-  /*-----------------------------*/
+  /*
+   * Abstract Methods.
+   */
 
   @Override public abstract boolean execute() throws SQLException;
 
@@ -199,208 +117,224 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
 
   @Override public abstract ParameterMetaData getParameterMetaData() throws SQLException;
 
-  /*---------------------------------*/
-  /*       Not implemented yet       */
-  /*---------------------------------*/
+  /*
+   * Methods not implemented yet.
+   */
 
-  @Override public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setUnicodeStream(int parameterIndex,
+    InputStream val, int length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-    throw new SQLException("Method execute(String, int) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean execute(String sql) throws SQLException {
-    throw new SQLException("Method execute(String) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-    throw new SQLException("Method execute(String, int[]) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean execute(String sql, String[] columnNames) throws SQLException {
-    throw new SQLException("Method execute(String, String[]) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public ResultSet executeQuery(String sql) throws SQLException {
-    throw new SQLException("Method executeQuery(String) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int executeUpdate(String sql) throws SQLException {
-    throw new SQLException("Method executeUpdate(String) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-    throw new SQLException("Method executeUpdate(String, int) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-    throw new SQLException("Method executeUpdate(String, int[]) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-    throw new SQLException("Method executeUpdate(String, String[]) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setByte(int parameterIndex, byte x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setByte(int parameterIndex, byte val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setBytes(int parameterIndex, byte[] x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setDate(int parameterIndex, Date x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setDate(int parameterIndex, Date val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setTime(int parameterIndex, Time x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setTime(int parameterIndex, Time val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setTimestamp(int parameterIndex, Timestamp val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setAsciiStream(int parameterIndex,
+    InputStream val, int length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setBinaryStream(int parameterIndex,
+    InputStream val, int length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setObject(int parameterIndex,
+    Object val, int targetSqlType) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setCharacterStream(int parameterIndex,
+    Reader reader, int length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setRef(int parameterIndex, Ref x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setRef(int parameterIndex, Ref val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setBlob(int parameterIndex, Blob x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setBlob(int parameterIndex, Blob val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setClob(int parameterIndex, Clob x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setClob(int parameterIndex, Clob val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setArray(int parameterIndex, java.sql.Array x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setArray(int parameterIndex, java.sql.Array val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setDate(int parameterIndex, Date val, Calendar cal) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setTime(int parameterIndex, Time val, Calendar cal) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setTimestamp(int parameterIndex,
+    Timestamp val, Calendar cal) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setNull(int parameterIndex,
+    int sqlType, String typeName) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setURL(int parameterIndex, URL x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setURL(int parameterIndex, URL val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setRowId(int parameterIndex, RowId x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setRowId(int parameterIndex, RowId val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setNString(int parameterIndex, String value) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setNCharacterStream(int parameterIndex,
+    Reader value, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setNClob(int parameterIndex, NClob value) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setClob(int parameterIndex,
+    Reader reader, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setBlob(int parameterIndex,
+    InputStream inputStream, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setNClob(int parameterIndex,
+    Reader reader, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setObject(int parameterIndex,
+    Object val, int targetSqlType, int scaleOrLength) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setAsciiStream(int parameterIndex,
+    InputStream val, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setBinaryStream(int parameterIndex,
+    InputStream val, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setCharacterStream(int parameterIndex,
+    Reader reader, long length) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setAsciiStream(int parameterIndex,
+    InputStream val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+  @Override public void setBinaryStream(int parameterIndex, InputStream val) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setClob(int parameterIndex, Reader reader) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void setNClob(int parameterIndex, Reader reader) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void addBatch() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void addBatch(String sql) throws SQLException {
-    throw new SQLException("Method addBatch(String sql) cannot be called on PreparedStatement");
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }

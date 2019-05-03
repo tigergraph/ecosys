@@ -1,6 +1,5 @@
 package com.tigergraph.jdbc.restpp;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.Connection;
@@ -33,13 +32,12 @@ import java.util.Properties;
 
 public class RestppConnection extends Connection {
 
-  private boolean isClosed = false;
-
-  public String host;
-  public Integer port;
-  public Boolean secure;
-  public String token;
-  public String graph;
+  private Boolean closed = Boolean.FALSE;
+  private String host;
+  private Integer port;
+  private Boolean secure;
+  private String token;
+  private String graph;
   private Boolean debug = Boolean.FALSE;
 
   private CloseableHttpClient httpClient;
@@ -54,23 +52,29 @@ public class RestppConnection extends Connection {
    * @param url        Url
    * @throws SQLException sqlexption
    */
-  public RestppConnection(String host, Integer port, Boolean secure, Properties properties, String url, Boolean debug) throws SQLException {
-    super(properties, url, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+  public RestppConnection(String host, Integer port, Boolean secure,
+      Properties properties, String url, Boolean debug) throws SQLException {
+    super(properties, url);
     this.secure = secure;
     this.host = host;
     this.port = port;
     this.debug = debug;
+
+    // Get token for authentication.
     if (null != properties && properties.containsKey("token")) {
       this.token = properties.getProperty("token");
     } else {
       this.token = null;
     }
+
+    // Get graph name.
     if (null != properties && properties.containsKey("graph")) {
       this.graph = properties.getProperty("graph");
     } else {
       this.graph = null;
     }
-    // Create the http client builder
+
+    // Create the http client builder.
     HttpClientBuilder builder = HttpClients.custom();
     if (null != properties && properties.containsKey("useragent")) {
       String userAgent = properties.getProperty("useragent");
@@ -81,7 +85,6 @@ public class RestppConnection extends Connection {
 
   public RestppResponse executeQueries(final List<QueryParser> queries) throws SQLException {
     RestppResponse result = null;
-    checkClosed();
 
     if (queries.size() < 1) {
       throw new SQLException("No query specified.");
@@ -89,6 +92,10 @@ public class RestppConnection extends Connection {
 
     result = executeQuery(queries.get(0));
 
+    /**
+     * Execute the queries one by one,
+     * and append their results to the firt RestppResponse.
+     */
     for(int i = 1; i < queries.size(); i++) {
       RestppResponse newResult = executeQuery(queries.get(i));
       result.addResults(newResult.getResults());
@@ -99,7 +106,6 @@ public class RestppConnection extends Connection {
 
   public RestppResponse executeQuery(QueryParser parser) throws SQLException {
     RestppResponse result = null;
-    checkClosed();
     HttpRequestBase request = parser.buildQuery(host, port, secure, graph, token);
     try (CloseableHttpResponse response = httpClient.execute(request)) {
       result = new RestppResponse(response, this.debug);
@@ -109,96 +115,82 @@ public class RestppConnection extends Connection {
     return result;
   }
 
-  /*------------------------------*/
-  /*       Commit, rollback       */
-  /*------------------------------*/
-
-  @Override public DatabaseMetaData getMetaData() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public void setAutoCommit(boolean autoCommit) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public boolean getAutoCommit() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public void commit() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public void rollback() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  /*-------------------------*/
-  /*       Holdability       */
-  /*-------------------------*/
-
-  @Override public void setHoldability(int holdability) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public int getHoldability() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  /*------------------------------*/
-  /*       Create Statement       */
-  /*------------------------------*/
-
-  @Override public java.sql.Statement createStatement() throws SQLException {
-    this.checkClosed();
-    return new RestppStatement(this, this.debug);
-  }
-
-  @Override public java.sql.Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public java.sql.Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  /*-------------------------------*/
-  /*       Prepare Statement       */
-  /*-------------------------------*/
-
-  @Override public PreparedStatement prepareStatement(String query) throws SQLException {
-    this.checkClosed();
-    return new RestppPreparedStatement(this, query, this.debug);
-  }
-
-  @Override public PreparedStatement prepareStatement(String query, int resultSetType, int resultSetConcurrency) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  @Override public PreparedStatement prepareStatement(String query, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
-      throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
-  }
-
-  /*-------------------*/
-  /*       Close       */
-  /*-------------------*/
-
   @Override public boolean isClosed() throws SQLException {
-    return isClosed;
+    return closed;
   }
 
   @Override public void close() throws SQLException {
+    closed = Boolean.TRUE;
     try {
       httpClient.close();
     } catch (IOException e) {
-      throw new SQLException(e);
+      throw new SQLException("Failed to close the http client: " + e);
     }
-    isClosed = true;
+  }
+
+  /**
+   * Methods not implemented yet.
+   */
+
+  @Override public DatabaseMetaData getMetaData() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public void setAutoCommit(boolean autoCommit) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public boolean getAutoCommit() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public void commit() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public void rollback() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public void setHoldability(int holdability) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public int getHoldability() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public java.sql.Statement createStatement() throws SQLException {
+    return new RestppStatement(this, this.debug);
+  }
+
+  @Override public java.sql.Statement createStatement(int resultSetType,
+    int resultSetConcurrency) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public java.sql.Statement createStatement(int resultSetType,
+    int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public PreparedStatement prepareStatement(String query) throws SQLException {
+    return new RestppPreparedStatement(this, query, this.debug);
+  }
+
+  @Override public PreparedStatement prepareStatement(String query,
+    int resultSetType, int resultSetConcurrency) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public PreparedStatement prepareStatement(String query,
+    int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+      throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public boolean isValid(int timeout) throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }

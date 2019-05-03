@@ -1,6 +1,5 @@
 package com.tigergraph.jdbc.restpp;
 
-import com.tigergraph.jdbc.utils.ExceptionBuilder;
 import com.tigergraph.jdbc.restpp.RestppConnection;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
@@ -16,7 +15,6 @@ import java.util.Map;
 
 public class RestppPreparedStatement extends PreparedStatement {
 
-  private List<String> batchStatements;
   private String query;
   private Boolean debug = Boolean.FALSE;
 
@@ -24,7 +22,6 @@ public class RestppPreparedStatement extends PreparedStatement {
     super(restppConnection, query);
     this.query = query;
     this.debug = debug;
-    batchStatements = new ArrayList<>();
   }
 
   @Override public ResultSet executeQuery() throws SQLException {
@@ -32,14 +29,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     return currentResultSet;
   }
 
-  @Override public int executeUpdate() throws SQLException {
-    this.execute();
-    return currentUpdateCount;
-  }
-
   @Override public boolean execute() throws SQLException {
-    checkClosed();
-
     // execute the query
     RestppResponse response =
       ((RestppConnection) getConnection()).
@@ -57,43 +47,44 @@ public class RestppPreparedStatement extends PreparedStatement {
     return hasResultSets;
   }
 
+  /**
+   * Methods not implemented yet.
+   */
+
   @Override public int getResultSetConcurrency() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getResultSetType() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int getResultSetHoldability() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public ParameterMetaData getParameterMetaData() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public ResultSetMetaData getMetaData() throws SQLException {
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  /*-------------------*/
-  /*       Batch       */
-  /*-------------------*/
+  @Override public int executeUpdate() throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 
   @Override public void addBatch(String sql) throws SQLException {
-    this.checkClosed();
-    this.batchStatements.add(sql);
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public void clearBatch() throws SQLException {
-    this.checkClosed();
-    this.batchStatements.clear();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override public int[] executeBatch() throws SQLException {
-    this.checkClosed();
-    throw ExceptionBuilder.buildUnsupportedOperationException();
+    throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }
