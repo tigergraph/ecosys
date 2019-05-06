@@ -20,7 +20,7 @@ CREATE QUERY ic_6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
         t.@visited += True,
         @@friendAll += t;
 
-    i += 1;
+    i = i + 1;
   END;
 
   vFriend = { @@friendAll };
