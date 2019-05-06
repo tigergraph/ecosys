@@ -34,7 +34,7 @@ public class RestppResponse {
 
   public RestppResponse(HttpResponse response, Boolean debug) throws SQLException {
     if (response.getStatusLine() == null) {
-      throw new SQLException("Received request without a status code.");
+      throw new SQLException("Received response with no status code.");
     }
 
     this.debug = debug;
