@@ -19,7 +19,7 @@ CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear
         t.@visited += True,
         @@friendAll += t;
 
-    i += 1;
+    i = i + 1;
   END;
 
   vCompany = { Company.* };
