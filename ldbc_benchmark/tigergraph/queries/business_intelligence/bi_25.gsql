@@ -183,9 +183,9 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
         FROM vComment:s-(Comment_REPLY_OF_Comment:e)-Comment:t
         ACCUM CASE WHEN @@commentForum.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
 
-      jsonStr += bigint_to_string(path.get(i).id) + ",";
+      jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
     END;
-    jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
+    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
     @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
   END;
 
