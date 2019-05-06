@@ -24,7 +24,7 @@ CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYN
         t.@visited += True,
         @@friendAll += t;
 
-    i += 1;
+    i = i + 1;
   END;
 
   vCountry = { Country.* };
