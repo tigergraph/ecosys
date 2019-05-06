@@ -1,0 +1,7 @@
+cleanDeletedSegments.sh
+
+DELETE MODE
+ bash cleanDeletedSegments.sh, the script will clean up the binary of segments after a deleted_by_type operation on that segment, the script will set all vertex.bin as empty file and set vertexsize.bin as pointed to zero. In this way, the gpe will not load any of these binary into memory. The deleted vertex.bin and vertexsize.bin will be copied into .bak.timestamp file.
+
+RCOVER MODE
+  -r $timestamp : run cleanDeletedSegments.sh as recover mode to recover the vertex.bin and vertexsize.bin from a prvious run
