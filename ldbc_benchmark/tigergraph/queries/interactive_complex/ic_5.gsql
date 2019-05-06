@@ -16,7 +16,7 @@ CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb 
         s.@visited += True,
         t.@visited += True,
         @@friendAll += t;
-    i += 1;
+    i = i + 1;
   END;
   
   vFriends = { @@friendAll };
