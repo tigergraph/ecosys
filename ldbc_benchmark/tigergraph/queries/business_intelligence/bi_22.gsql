@@ -3,7 +3,8 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
 
   SumAccum<STRING> @city1Name;
   SumAccum<INT> @person1Id;
-  SetAccum<INT> @@person2Ids;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@person2Ids;
   MapAccum<INT, INT> @@messagePersonIds;
   MapAccum<STRING, 
       GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
@@ -33,7 +34,8 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
   vPerson2 =
     SELECT t
     FROM vCity2:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
-    POST-ACCUM @@person2Ids += t.id;
+    POST-ACCUM t.@valid = true;
+    //POST-ACCUM @@person2Ids += t.id;
 
   // case 1 and 4
   vMessage =
@@ -90,7 +92,8 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
   vMessage =
     SELECT s
     FROM vMessage1:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
-    WHERE @@person2Ids.contains(t.id)
+    WHERE t.@valid == true
+    //WHERE @@person2Ids.contains(t.id)
     ACCUM @@pairScoreMap += (s.@city1Name -> 
         (s.@person1Id, t.id -> False, False, False, False, True));
 
@@ -98,7 +101,8 @@ CREATE QUERY bi_22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb 
   vPerson1 =
     SELECT s
     FROM vPerson1:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
-    WHERE @@person2Ids.contains(t.id)
+    WHERE t.@valid == true
+    //WHERE @@person2Ids.contains(t.id)
     ACCUM @@pairScoreMap += (s.@city1Name -> (s.id, t.id -> False, False, True, False, False));
 
   @@pairScoreTop.resize(@@pairScoreMap.size());

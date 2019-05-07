@@ -3,7 +3,9 @@ CREATE QUERY bi_16(VERTEX<Person> personId, STRING countryName, STRING tagClassN
 
   SumAccum<INT> @@counter = 1;
   SetAccum<INT> @visited;
-  SetAccum<VERTEX<Person>> @@personAll, @@personRange;
+  //SetAccum<VERTEX<Person>> @@personAll, @@personRange;
+  OrAccum @valid = false;
+  SetAccum<VERTEX<Person>> @@personRange;
   SumAccum<INT> @creatorId;
   SetAccum<VERTEX<Tag>> @@tagSel;
   OrAccum @isValid;
@@ -20,7 +22,8 @@ CREATE QUERY bi_16(VERTEX<Person> personId, STRING countryName, STRING tagClassN
   vPerson =
     SELECT t
     FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
-    POST-ACCUM @@personAll += t;
+    POST-ACCUM t.@valid = true;
+    //POST-ACCUM @@personAll += t;
 
   vPerson = { personId };
   WHILE @@counter <= maxPathDistance DO
@@ -30,7 +33,8 @@ CREATE QUERY bi_16(VERTEX<Person> personId, STRING countryName, STRING tagClassN
       WHERE NOT t.@visited.contains(s.id)
       ACCUM 
         t.@visited += s.id,
-        CASE WHEN @@counter >= minPathDistance AND @@personAll.contains(t) THEN 
+        //CASE WHEN @@counter >= minPathDistance AND @@personAll.contains(t) THEN 
+        CASE WHEN @@counter >= minPathDistance AND t.@valid == true THEN
           @@personRange += t
         END;
 

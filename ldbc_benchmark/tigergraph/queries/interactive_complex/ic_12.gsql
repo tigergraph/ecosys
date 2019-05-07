@@ -2,7 +2,8 @@ CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, JSONARRAY tagNames, INT replyCount> replyStats;
 
   SumAccum<INT> @@numTagsFound, @authorId;
-  SetAccum<VERTEX<Tag>> @@tagAll;
+  //SetAccum<VERTEX<Tag>> @@tagAll;
+  OrAccum @valid = false;
   MapAccum<INT, SetAccum<STRING>> @@postAndTag;
   HeapAccum<replyStats>(20, replyCount DESC, personId ASC) @@replyStatsTop;
   GroupByAccum<INT authorId, SumAccum<INT> replyCount, SetAccum<STRING> tagNames> @@replyStatsAgg;
@@ -18,7 +19,8 @@ CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_
       SELECT t
       FROM vTagClass:s-((TagClass_IS_SUBCLASS_OF_TagClass_REVERSE|Tag_HAS_TYPE_TagClass_REVERSE):e)->(TagClass|Tag):t
       ACCUM 
-        CASE WHEN t.type == "Tag" THEN @@tagAll += t END,
+        CASE WHEN t.type == "Tag" THEN t.@valid = true END,
+        //CASE WHEN t.type == "Tag" THEN @@tagAll += t END,
         @@numTagsFound += 1;
 
     IF @@numTagsFound == 0 THEN BREAK; END;
@@ -42,7 +44,8 @@ CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_
   aggPostTag = 
     SELECT t
     FROM vPost:s-(Post_HAS_TAG_Tag)->Tag:t
-    WHERE @@tagAll.contains(t)
+    WHERE t.@valid == true
+    //WHERE @@tagAll.contains(t)
     ACCUM @@postAndTag += (s.id -> t.name);
 
   aggComment = 

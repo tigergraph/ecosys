@@ -2,8 +2,9 @@ CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb {
   SetAccum<INT> @postSet, @commentSet;
 	SumAccum<INT> @messageCount, @months;
 	SumAccum<FLOAT> @zombieScore;
-	SetAccum<INT> @@zombies;
-	SetAccum<INT> @likeSet, @zombieLikeSet;
+	//SetAccum<INT> @@zombies;
+	OrAccum @valid = false;
+        SetAccum<INT> @likeSet, @zombieLikeSet;
 	SumAccum<FLOAT> @likeCount, @zombieLikeCount;
 	
 	vCountry = { Country.* };
@@ -35,7 +36,8 @@ CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb {
 	  SELECT s
 	  FROM vPerson:s
 	  WHERE s.@messageCount < s.@months
-	  ACCUM @@zombies += s.id,
+	  ACCUM s.@valid = true,
+          //ACCUM @@zombies += s.id,
 	        s.@zombieLikeCount = 0,
 	        s.@likeCount = 0,
 	        s.@zombieScore = 0;
@@ -50,7 +52,8 @@ CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb {
     WHERE t.creationDate < endDate
 	  ACCUM
 	    s.@likeSet += t.id,
-	    CASE WHEN t.id IN @@zombies THEN
+	    CASE WHEN t.@valid == true THEN
+            //CASE WHEN t.id IN @@zombies THEN
 	      s.@zombieLikeSet += t.id
 	    END;
 	

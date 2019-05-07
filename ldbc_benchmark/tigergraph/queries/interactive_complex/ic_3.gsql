@@ -4,7 +4,8 @@ CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYN
 
   ListAccum<VERTEX<Person>> @@friendAll;
   OrAccum @visited;
-  SetAccum<INT> @@cityIds;
+  //SetAccum<INT> @@cityIds;
+  OrAccum @valid = false;
   SumAccum<INT> @personId;
   MapAccum<INT, fullName> @@personNameMap;
   GroupByAccum<INT personId, SumAccum<INT> xCount, SumAccum<INT> yCount> @@msgStatsGroup;
@@ -31,13 +32,15 @@ CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYN
   vCountry =
     SELECT s
     FROM vCountry:s-(City_IS_PART_OF_Country_REVERSE:e)-City:t
-    ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN @@cityIds += t.id END;
+    //ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN @@cityIds += t.id END;
+    ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN t.@valid = true END;
 
   vFriend = { @@friendAll };
   vFriend = 
     SELECT s
     FROM vFriend:s-(Person_IS_LOCATED_IN_City:e)->City:t
-    WHERE NOT @@cityIds.contains(t.id);
+    //WHERE NOT @@cityIds.contains(t.id);
+    WHERE NOT t.@valid == true;
 
   endDate = datetime_add(startDate, INTERVAL durationDays DAY);
 

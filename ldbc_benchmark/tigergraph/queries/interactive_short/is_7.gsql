@@ -1,6 +1,7 @@
 CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
   SetAccum<STRING> @@seed;
-  SetAccum<INT> @@friendIds;
+  //SetAccum<INT> @@friendIds;
+  OrAccum @valid = false;
   SumAccum<INT> @replierId;
   SumAccum<STRING> @replierFirstName, @replierLastName;
   OrAccum @knows;
@@ -30,7 +31,8 @@ CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
   vFriend =
     SELECT t
     FROM vCreator:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
-    POST-ACCUM @@friendIds += t.id;
+    //POST-ACCUM @@friendIds += t.id;
+    POST-ACCUM t.@valid = true;	       
 
   vReply =
     SELECT s
@@ -39,7 +41,8 @@ CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
       s.@replierId = t.id,
       s.@replierFirstName = t.firstName,
       s.@replierLastName = t.lastName,
-      CASE WHEN @@friendIds.contains(t.id) THEN s.@knows += True END
+      //CASE WHEN @@friendIds.contains(t.id) THEN s.@knows += True END
+      CASE WHEN t.@valid THEN s.@knows += True END
     ORDER BY s.creationDate DESC, s.@replierId ASC;
 
   PRINT vReply[

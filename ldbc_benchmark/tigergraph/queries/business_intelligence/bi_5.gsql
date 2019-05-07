@@ -1,10 +1,11 @@
 CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
 	OrAccum @isCitizen;
 	SetAccum<INT> @popCount;
-	SetAccum<INT> @@topForum;
+	//SetAccum<INT> @@topForum;
 	SetAccum<INT> @postCount;
-	SetAccum<INT> @@topPost;
-	
+	//SetAccum<INT> @@topPost;
+        OrAccum @valid = false;	
+
   vStart(ANY) = { Country.* };
 
   vStart = SELECT s
@@ -39,7 +40,8 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
   tmp2 =
     SELECT s
     FROM topForum:s
-    ACCUM @@topForum += s.id;
+    ;
+    //ACCUM @@topForum += s.id;
 	
   vPerson2 =
     SELECT t
@@ -48,12 +50,14 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
   topPost =
     SELECT t
     FROM topForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
-    ACCUM @@topPost += t.id; 
+    ACCUM t.@valid = true;
+    //ACCUM @@topPost += t.id; 
 	
   vPost =
     SELECT t
     FROM vPerson2:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    WHERE t.id IN @@topPost
+    WHERE t.@valid == true
+    //WHERE t.id IN @@topPost
     ACCUM s.@postCount += t.id;
 	
   res =

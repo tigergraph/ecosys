@@ -8,7 +8,8 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
   ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
   SumAccum<DOUBLE> @@weight = 0.0;
   SetAccum<VERTEX<Person>> @@personAllInPathAll;
-  SetAccum<VERTEX<Post>> @@postValid;
+  OrAccum @valid = false;
+  //SetAccum<VERTEX<Post>> @@postValid;
   SumAccum<INT> @creatorId;
   SetAccum<VERTEX<Comment>> @root;
   OrAccum @@hasComment = True;
@@ -114,7 +115,8 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
     SELECT t
     FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
     WHERE s.creationDate BETWEEN startDate AND endDate
-    POST-ACCUM @@postValid += t;
+    POST-ACCUM t.@valid = true;
+    //POST-ACCUM @@postValid += t;
 
   // Comment created by each Person in the shortest paths
   vPerson = { @@personAllInPathAll };
@@ -142,7 +144,8 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
         CASE 
           WHEN t.type == "Comment" THEN
             @@hasComment += True
-          WHEN t.type == "Post" AND @@postValid.contains(t) THEN 
+	  WHEN t.type == "Post" AND t.@valid == true THEN
+//          WHEN t.type == "Post" AND @@postValid.contains(t) THEN 
             @@commentForum += (t.@creatorId -> t.@root)
         END;
   END;
@@ -151,7 +154,8 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
   vPost = 
     SELECT t
     FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t) END;
+    ACCUM CASE WHEN t.@valid == true THEN @@postForum += (s.id -> t) END;
+//    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t) END;
 
   FOREACH path IN @@pathAll DO
     jsonStr = "[";

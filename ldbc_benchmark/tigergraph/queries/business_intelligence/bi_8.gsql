@@ -1,6 +1,7 @@
 CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb { 
   SumAccum<INT> @count;
-  SetAccum<INT> @@invalidComment;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@invalidComment;
 	
   vTag = { Tag.* };
   vTag = 
@@ -20,12 +21,14 @@ CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb {
     SELECT t
     FROM vComments:s-(Comment_HAS_TAG_Tag:e)->Tag:t
     WHERE t.name == tagName
-    ACCUM @@invalidComment += s.id;
+    ACCUM s.@valid = true;
+    //ACCUM @@invalidComment += s.id;
 	
   vRelatedTags = 
     SELECT t 
     FROM vComments:s-(Comment_HAS_TAG_Tag:e)->:t
-    WHERE NOT @@invalidComment.contains(s.id)
+    WHERE NOT s.@valid
+    //WHERE NOT @@invalidComment.contains(s.id)
     ACCUM t.@count += 1 # no duplicated names for tags
     ORDER BY t.@count DESC, t.name ASC
     LIMIT 100;

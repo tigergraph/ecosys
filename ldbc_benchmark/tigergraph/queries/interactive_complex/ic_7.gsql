@@ -2,7 +2,8 @@ CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent, DATETIME commentOrPostCreationDate, BOOL isNew> liker;
   //TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
   HeapAccum<liker>(1, likeCreationDate DESC, commentOrPostId DESC) @mostRecentLike;
-  SetAccum<INT> @@friendIds;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@friendIds;
   HeapAccum<liker>(20, likeCreationDate DESC, personId ASC) @@likerTop;
 
   vPerson = { personId };
@@ -13,7 +14,8 @@ CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   vFriend =
     SELECT t
     FROM vPerson-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)-Person:t
-    ACCUM @@friendIds += t.id;
+    //ACCUM @@friendIds += t.id;
+    ACCUM t.@valid = true;
 
   vLiker = 
     SELECT t
@@ -21,10 +23,12 @@ CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
     ACCUM
       CASE
         WHEN s.type == "Comment" OR (s.type == "Post" AND s.content != "") THEN
-          t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.content, s.creationDate, NOT @@friendIds.contains(t.id))
+          t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.content, s.creationDate, NOT t.@valid)
+	  //t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.content, s.creationDate, NOT @@friendIds.contains(t.id))
           //t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.content, (datetime_diff(e.creationDate, s.creationDate) / 60), NOT @@friendIds.contains(t.id))
         ELSE
-          t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.imageFile, s.creationDate, NOT @@friendIds.contains(t.id))
+          t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.imageFile, s.creationDate, NOT t.@valid)
+          //t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.imageFile, s.creationDate, NOT @@friendIds.contains(t.id))
           //t.@mostRecentLike += liker(t.id, t.firstName, t.lastName, e.creationDate, s.id, s.imageFile, (datetime_diff(e.creationDate, s.creationDate) / 60), NOT @@friendIds.contains(t.id))
       END
     POST-ACCUM @@likerTop += t.@mostRecentLike.pop();

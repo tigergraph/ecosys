@@ -14,7 +14,8 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
   SetAccum<INT> @postTagSet2;
   SetAccum<INT> @commentTagSet2;
   SetAccum<INT> @replyTagSet2;
-  SetAccum<INT> @@invalidReplySet;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@invalidReplySet;
 	
   FOREACH word IN blacklist DO
     @@blacklistP += ("%" + word + "%");
@@ -83,12 +84,14 @@ CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb
     SELECT s
     FROM vReply:s-(Comment_HAS_TAG_Tag:e)->Tag:t
     WHERE s.@replyTagSet2.contains(t.id)
-    ACCUM @@invalidReplySet += s.id;
+    ACCUM s.@valid = true;
+    //ACCUM @@invalidReplySet += s.id;
 	
   vReply =
     SELECT s
     FROM vReply:s
-    WHERE NOT @@invalidReplySet.contains(s.id);
+    WHERE NOT s.@valid;
+    //WHERE NOT @@invalidReplySet.contains(s.id);
 	
   vComments =
     SELECT s

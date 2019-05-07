@@ -6,14 +6,11 @@ CREATE QUERY bi_7(STRING tagName) FOR GRAPH ldbc_snb {
 	MapAccum<INT, INT> @@personPopScore;
 	
   vTag = {Tag.*};
-  vTag = 
-    SELECT s 
-    FROM vTag:s 
-    WHERE s.name == tagName;
 	
   vMessage1 = 
     SELECT t 
     FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t
+    WHERE s.name == tagName
     ACCUM t.@hasGivenTag = TRUE; 
 	
   vPerson1 =

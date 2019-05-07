@@ -3,7 +3,8 @@ CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH 
 
   OrAccum @visited;
   SumAccum<STRING> @city;
-  SetAccum<VERTEX<Tag>> @@tagInterest;
+  //SetAccum<VERTEX<Tag>> @@tagInterest;
+  OrAccum @valid = false;
 	OrAccum @hasCommonInterest;
   SumAccum<INT> @commonInterestScore;
   HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
@@ -12,7 +13,8 @@ CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH 
   vTag = 
     SELECT t
     FROM vPerson:s-(Person_HAS_INTEREST_Tag:e)->Tag:t
-    POST-ACCUM @@tagInterest += t;
+    POST-ACCUM t.@valid = true;
+    //POST-ACCUM @@tagInterest += t;
 
   vFriend1h = 
     SELECT t
@@ -40,7 +42,8 @@ CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH 
   findCommonInterest = 
     SELECT t
     FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
-    ACCUM CASE WHEN @@tagInterest.contains(t) THEN s.@hasCommonInterest += True END;
+    ACCUM CASE WHEN t.@valid THEN s.@hasCommonInterest += True END;
+    //ACCUM CASE WHEN @@tagInterest.contains(t) THEN s.@hasCommonInterest += True END;
 
 	calcCommonInterestScore = 
 	  SELECT t
