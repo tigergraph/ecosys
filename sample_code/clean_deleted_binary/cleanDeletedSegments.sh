@@ -1,4 +1,12 @@
 #!/bin/bash
+echo -en "This script needs to \e[31mstop gpe\e[0m, do you want continue [yes|NO]: "
+read action
+if [ ! "$action" = "yes" ]; then
+  echo "'"$action"' entered, exit"
+  exit
+fi
+~/.gium/gadmin stop gpe -y
+
 gstore=$(cat ~/.gsql/gsql.cfg|grep tigergraph.storage|cut -d" " -f2)"/0/part"
 ts=$(date "+%s")
 
@@ -33,12 +41,14 @@ else
   echo "Running in DELETE mode with ts = "$ts
 fi
 
+num=0
 for i in $(ls -d $gstore/*/);
 do 
   NumOfDeletedVertices=$(grep -E 'NumOfVertices|NumOfDeletedVertices' "$i"segmentconfig.yaml | cut -d" " -f2 |uniq)
   if [ $(echo $NumOfDeletedVertices|awk '{print NF}') -eq 1 ];
   then
-    echo "Found deleted segment: "$i" with "$NumOfDeletedVertices
+    num=$((num + 1))
+    echo "  Found deleted segment: "$i" with "$NumOfDeletedVertices
     #grep -E 'VertexTypeId|NumOfVertices|NumOfDeletedVertices' "$i"segmentconfig.yaml
     cd $i
     if [ "$recover" = false ]; then
@@ -49,3 +59,6 @@ do
     cd - > /dev/null
   fi
 done
+if [ "$num" -eq 0 ]; then
+  echo -e "\e[32mNo deleted segment has been found, do nothing!\e[0m"
+fi
