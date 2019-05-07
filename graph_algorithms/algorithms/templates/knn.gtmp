@@ -1,0 +1,30 @@
+CREATE QUERY knn(SET<VERTEX> source, STRING edgeType, INT k, BOOL useSimilarity) FOR GRAPH movie { 
+  SumAccum<FLOAT> @score;
+  MapAccum<STRING, INT> @@count;
+  INT maxCount = 0;
+  STRING chosenLabel;
+  Source = {source};
+  // find the top k nearest neighbors
+  kNN = SELECT t
+        FROM Source:s -(edgeType:e)-> :t
+        WHERE t.known_label != ""     // only consider the ones with known label
+        ACCUM IF useSimilarity AND e.score > 0 THEN
+                t.@score = 1/e.score
+              ELSE 
+                t.@score = e.score    // also keep the 0 distance
+              END
+        ORDER BY t.@score ASC
+        LIMIT k;
+  
+  kNN = SELECT s
+        FROM kNN:s
+        ACCUM @@count += (s.known_label -> 1);
+  FOREACH (label, cnt) IN @@count DO
+      IF cnt > maxCount THEN
+          maxCount = cnt;
+          chosenLabel = label;
+      END;
+  END;
+  
+  PRINT chosenLabel;
+}
