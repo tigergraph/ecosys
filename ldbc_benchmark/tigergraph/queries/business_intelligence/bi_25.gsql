@@ -8,13 +8,13 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
   ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
   SumAccum<DOUBLE> @@weight = 0.0;
   SetAccum<VERTEX<Person>> @@personAllInPathAll;
-  OrAccum @valid = false;
-  //SetAccum<VERTEX<Post>> @@postValid;
+//  SetAccum<VERTEX<Post>> @@postValid;
   SumAccum<INT> @creatorId;
-  SetAccum<VERTEX<Comment>> @root;
+  SetAccum<INT> @root;
+  OrAccum @valid = false;
   OrAccum @@hasComment = True;
-  MapAccum<INT, SetAccum<VERTEX<Comment>>> @@commentAll, @@commentForum;
-  MapAccum<INT, SetAccum<VERTEX<Post>>> @@postForum;
+  MapAccum<INT, SetAccum<VERTEX<Comment>>> @@commentAll;
+  MapAccum<INT, SetAccum<INT>> @@postForum, @@commentForum;
   SetAccum<VERTEX<Comment>> @@commentSeed;
   HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
 
@@ -22,12 +22,12 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
 
   IF person1Id != person2Id THEN
     vPerson = { person1Id, person2Id };
-    vPerson = 
+    vPerson =
       SELECT v
       FROM vPerson:v
-      ACCUM 
-        CASE 
-          WHEN v == person1Id THEN 
+      ACCUM
+        CASE
+          WHEN v == person1Id THEN
             v.@dist1 = 0
           WHEN v == person2Id THEN
             v.@dist2 = 0
@@ -36,10 +36,12 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
     @@personAllInPathAll += person1Id;
     @@personAllInPathAll += person2Id;
 
-    WHILE NOT @@found DO
+LOG(TRUE, "checkpoint1");
+
+WHILE NOT @@found DO
       @@next = 0;
 
-      vPerson = 
+      vPerson =
         SELECT t
         FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
         WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
@@ -83,6 +85,7 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
                 t.@path2 += [s]
               END
           END
+
         POST-ACCUM
           IF NOT @@found AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
             @@found += True,
@@ -107,26 +110,41 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
     END;
   END;
 
+LOG(TRUE, "checkpoint2");
+
+//log one time.
   @@pathInfoTop.resize(@@pathAll.size());
 
   // all posts from forums within the given date interval
   vForum = { Forum.* };
-  vPostValid = 
+
+  vForums2 = SELECT t
+             FROM vForum:t
+             WHERE t.creationDate BETWEEN startDate AND endDate;
+
+LOG(TRUE, "checkpoint3");
+
+vPostValid =
     SELECT t
-    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
-    WHERE s.creationDate BETWEEN startDate AND endDate
-    POST-ACCUM t.@valid = true;
-    //POST-ACCUM @@postValid += t;
+    FROM vForums2:s-(Forum_CONTAINER_OF_Post:e)->Post:t
+    ACCUM t.@valid = true;
+//    WHERE s.creationDate BETWEEN startDate AND endDate
+//    POST-ACCUM @@postValid += t;
+
+
+LOG(TRUE, "checkpoint4");
 
   // Comment created by each Person in the shortest paths
   vPerson = { @@personAllInPathAll };
-  vComment = 
+  vComment =
     SELECT t
     FROM vPerson:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
-    ACCUM 
+    ACCUM
       t.@creatorId = s.id,
-      t.@root = t,
+      t.@root = t.id,
       @@commentAll += (s.id -> t);
+
+LOG(TRUE, "checkpoint5");
 
   // hop until we meet the original Post and check it's valid
   vRoot(Comment|Post) = vComment;
@@ -134,28 +152,31 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
     @@hasComment = False;
 
     // Comment within the given date interval
-    vRoot = 
+    vRoot =
       SELECT t
       FROM vRoot:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post):e)->(Comment|Post):t
-      ACCUM 
+      ACCUM
         t.@creatorId = s.@creatorId,
         t.@root += s.@root
-      POST-ACCUM 
-        CASE 
+      POST-ACCUM
+        CASE
           WHEN t.type == "Comment" THEN
             @@hasComment += True
-	  WHEN t.type == "Post" AND t.@valid == true THEN
-//          WHEN t.type == "Post" AND @@postValid.contains(t) THEN 
+//          WHEN t.type == "Post" AND @@postValid.contains(t) THEN
+            WHEN t.type == "Post" AND t.@valid THEN
             @@commentForum += (t.@creatorId -> t.@root)
         END;
   END;
+LOG(TRUE, "checkpoint6");
 
-  // Post within the given date interval
-  vPost = 
+// Post within the given date interval
+  vPost =
     SELECT t
     FROM vPerson:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
-    ACCUM CASE WHEN t.@valid == true THEN @@postForum += (s.id -> t) END;
-//    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t) END;
+//    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t.id) END;
+    ACCUM CASE WHEN t.@valid THEN @@postForum += (s.id -> t.id) END;
+
+LOG(TRUE, "checkpoint7");
 
   FOREACH path IN @@pathAll DO
     jsonStr = "[";
@@ -164,34 +185,38 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
       // person1's Comment -(replyOf)-> person2's Post|Comment
       @@commentSeed = @@commentAll.get(path.get(i).id);
       vComment = { @@commentSeed };
-      c2p = 
+      c2p =
         SELECT s
         FROM vComment:s-(Comment_REPLY_OF_Post:e)-Post:t
-        ACCUM CASE WHEN @@postForum.get(path.get(i+1).id).contains(t) THEN @@weight += 1 END;
+        ACCUM CASE WHEN @@postForum.get(path.get(i+1).id).contains(t.id) THEN @@weight += 1 END;
 
-      c2c = 
+      c2c =
         SELECT s
         FROM vComment:s-(Comment_REPLY_OF_Comment:e)-Comment:t
-        ACCUM CASE WHEN @@commentForum.get(path.get(i+1).id).contains(t) THEN @@weight += 0.5 END;
+        ACCUM CASE WHEN @@commentForum.get(path.get(i+1).id).contains(t.id) THEN @@weight += 0.5 END;
 
       // person2's Comment -(replyOf)-> person1's Post|Comment
       @@commentSeed = @@commentAll.get(path.get(i+1).id);
       vComment = { @@commentSeed };
-      c2p = 
+      c2p =
         SELECT s
         FROM vComment:s-(Comment_REPLY_OF_Post:e)-Post:t
-        ACCUM CASE WHEN @@postForum.get(path.get(i).id).contains(t) THEN @@weight += 1 END;
+        ACCUM CASE WHEN @@postForum.get(path.get(i).id).contains(t.id) THEN @@weight += 1 END;
 
-      c2c = 
+      c2c =
         SELECT s
         FROM vComment:s-(Comment_REPLY_OF_Comment:e)-Comment:t
-        ACCUM CASE WHEN @@commentForum.get(path.get(i).id).contains(t) THEN @@weight += 0.5 END;
+        ACCUM CASE WHEN @@commentForum.get(path.get(i).id).contains(t.id) THEN @@weight += 0.5 END;
 
-      jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+      jsonStr += bigint_to_string(path.get(i).id) + ",";
     END;
-    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
     @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
   END;
+LOG(TRUE, "checkpoint8");
 
-  PRINT @@pathInfoTop;
+PRINT @@pathInfoTop;
+
+LOG(TRUE, "checkpoint9");
+
 }
