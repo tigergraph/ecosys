@@ -6,21 +6,7 @@ if [ ! "$action" = "yes" ]; then
   exit
 fi
 ~/.gium/gadmin stop gpe -y
-
-gstore=$(cat ~/.gsql/gsql.cfg|grep tigergraph.storage|cut -d" " -f2)"/0/part"
 ts=$(date "+%s")
-
-CleanUp() {
-  mv vertex.bin vertex.bin.bak.$ts
-  touch vertex.bin
-  mv vertexsize.bin vertexsize.bin.bak.$ts
-  head -c $NumOfDeletedVertices < /dev/zero > vertexsize.bin
-}
-
-Recover() {
-  mv vertex.bin.bak.$ts vertex.bin 
-  mv vertexsize.bin.bak.$ts vertexsize.bin
-}
 
 # setup the running mode
 recover=false
@@ -41,24 +27,52 @@ else
   echo "Running in DELETE mode with ts = "$ts
 fi
 
+#create the script file
+file=./cleanScript.sh
+
+echo "
+#!/bin/bash
+CleanUp() {
+  mv vertex.bin vertex.bin.bak.$ts
+  touch vertex.bin
+  mv vertexsize.bin vertexsize.bin.bak.$ts
+  head -c \$NumOfDeletedVertices < /dev/zero > vertexsize.bin
+}
+
+Recover() {
+  mv vertex.bin.bak.$ts vertex.bin 
+  mv vertexsize.bin.bak.$ts vertexsize.bin
+}" > $file
+
+echo '
+gstore=$(cat ~/.gsql/gsql.cfg|grep tigergraph.storage|cut -d" " -f2)"/0/part"
 num=0
 for i in $(ls -d $gstore/*/);
 do 
-  NumOfDeletedVertices=$(grep -E 'NumOfVertices|NumOfDeletedVertices' "$i"segmentconfig.yaml | cut -d" " -f2 |uniq)
-  if [ $(echo $NumOfDeletedVertices|awk '{print NF}') -eq 1 ];
+  NumOfDeletedVertices=$(grep -E "NumOfVertices\|NumOfDeletedVertices" "$i"segmentconfig.yaml | cut -d" " -f2 |uniq)
+  if [ $(echo $NumOfDeletedVertices|awk "{print NF}") -eq 1 ];
   then
     num=$((num + 1))
     echo "  Found deleted segment: "$i" with "$NumOfDeletedVertices
-    #grep -E 'VertexTypeId|NumOfVertices|NumOfDeletedVertices' "$i"segmentconfig.yaml
+    #grep -E "VertexTypeId\|NumOfVertices\|NumOfDeletedVertices" "$i"segmentconfig.yaml
     cd $i
-    if [ "$recover" = false ]; then
-      CleanUp
-    else
-      Recover
-    fi
+' >> $file
+
+if [ "$recover" = false ]; then
+      
+   echo '    CleanUp' >> $file
+else
+   echo '    Recover' >> $file
+fi
+
+echo '
     cd - > /dev/null
   fi
 done
 if [ "$num" -eq 0 ]; then
   echo -e "\e[32mNo deleted segment has been found, do nothing!\e[0m"
-fi
+fi' >> $file
+
+gscp all $file "/tmp/"
+grun all "bash /tmp/$file"
+rm $file
