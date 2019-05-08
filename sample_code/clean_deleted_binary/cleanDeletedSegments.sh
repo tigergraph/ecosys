@@ -15,18 +15,18 @@ then
   if [ ! $# -eq 2 ]; then
   echo "cleanDeleteSegments only takes two arguments as ' -r \$timestamp ' to recover a previous run, but "$#" arguments are provided."
   exit
-  elif [ ! $1 -eq "-r" ]; then
+  elif [ ! $1 = "-r" ]; then
   echo "cleanDeleteSegments only takes ' -r \$timestamp ' option to recover a previous run"
   exit
   else
     recover=true
     ts=$2
-    echo "Running in RECOVER mode with ts = "$ts
+    Mode="Running in RECOVER mode with ts = "$ts
   fi
 else
-  echo "Running in DELETE mode with ts = "$ts
+  Mode="Running in DELETE mode with ts = "$ts
 fi
-
+echo $Mode
 #create the script file
 file=./cleanScript.sh
 
@@ -34,11 +34,10 @@ echo "
 #!/bin/bash
 CleanUp() {
   mv vertex.bin vertex.bin.bak.$ts
-  touch vertex.bin
+  head -c 1 < /dev/zero > vertex.bin
   mv vertexsize.bin vertexsize.bin.bak.$ts
   head -c \$NumOfDeletedVertices < /dev/zero > vertexsize.bin
 }
-
 Recover() {
   mv vertex.bin.bak.$ts vertex.bin 
   mv vertexsize.bin.bak.$ts vertexsize.bin
@@ -49,12 +48,12 @@ gstore=$(cat ~/.gsql/gsql.cfg|grep tigergraph.storage|cut -d" " -f2)"/0/part"
 num=0
 for i in $(ls -d $gstore/*/);
 do 
-  NumOfDeletedVertices=$(grep -E "NumOfVertices\|NumOfDeletedVertices" "$i"segmentconfig.yaml | cut -d" " -f2 |uniq)
+  NumOfDeletedVertices=$(grep -E "NumOfVertices|NumOfDeletedVertices" "$i"segmentconfig.yaml | cut -d" " -f2 |uniq)
   if [ $(echo $NumOfDeletedVertices|awk "{print NF}") -eq 1 ];
   then
     num=$((num + 1))
     echo "  Found deleted segment: "$i" with "$NumOfDeletedVertices
-    #grep -E "VertexTypeId\|NumOfVertices\|NumOfDeletedVertices" "$i"segmentconfig.yaml
+    #grep -E "VertexTypeId|NumOfVertices|NumOfDeletedVertices" "$i"segmentconfig.yaml
     cd $i
 ' >> $file
 
@@ -75,4 +74,8 @@ fi' >> $file
 
 gscp all $file "/tmp/"
 grun all "bash /tmp/$file"
-rm $file
+grun all "rm /tmp/$file" > /dev/null
+echo $Mode
+#rm $file
+~/.gium/gadmin start gpe
+
