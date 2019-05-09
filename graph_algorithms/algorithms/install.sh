@@ -39,7 +39,7 @@ fi
 finished=false
 while [ !$finished ]; do
 	echo; echo "Please enter the index of the algorithm you want to create or EXIT:"
-	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Louvain Method with Parallelism and Refinement" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)"; do
+	select algo in "EXIT" "Closeness Centrality" "Connected Components" "Label Propagation" "Louvain Method with Parallelism and Refinement" "PageRank" "Weighted PageRank" "Personalized PageRank" "Shortest Path, Single-Source, No Weight" "Shortest Path, Single-Source, Positive Weight" "Shortest Path, Single-Source, Any Weight" "Minimal Spanning Tree (MST)" "Cycle Detection" "Triangle Counting(minimal memory)" "Triangle Counting(fast, more memory)" "Cosine Similarity (single vertex)" "Jaccard Similarity (single vertex)" "Cosine Neighbor Similarity (single vertex)" "Cosine Neighbor Similarity (all vertices)" "Jaccard Neighbor Similarity (single vertex)" "Jaccard Neighbor Similarity (all vertices)" "k-Nearest Neighbors Cosine Neighbor Similarity"; do
     	case $algo in
 			"Closeness Centrality" )
 				algoName="closeness_cent"
@@ -120,6 +120,14 @@ while [ !$finished ]; do
                         'Jaccard Neighbor Similarity (all vertices)' )
                                 algoName="jaccard_nbor_ap"
                                 echo "  jaccard_nbor_ap() calculates the similarity between all vertices"
+                                break;;
+                        'k-Nearest Neighbors Cosine Neighbor Similarity (single vertex)' )
+                                algoName="knn_cosine_ss"
+                                echo "  knn_cosine_ss() returns the predicted label based on the nearest neighbors calculated with cosine similarity"
+                                break;;
+                        'k-Nearest Neighbors Cosine Neighbor Similarity (single vertex)' )
+                                algoName="knn_cosine_ss"
+                                echo "  knn_cosine_ss() returns the predicted label based on the nearest neighbors calculated with cosine similarity"
                                 break;;
 			"EXIT" )
 				finished=true

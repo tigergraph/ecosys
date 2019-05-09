@@ -6,7 +6,6 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
         SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
-
         start = {source};
         subjects = SELECT t
                    FROM start:s -(Likes:e)-> :t

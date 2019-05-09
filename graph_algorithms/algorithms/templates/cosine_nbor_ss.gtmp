@@ -1,5 +1,5 @@
 *ATTR*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX<*vertex-types*> source, INT topK) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK) FOR GRAPH *graph* RETURNS (MapAccum<VERTEX, FLOAT>) {
 *FILE*CREATE QUERY cosine_nbor_ss*EXT* (VERTEX source, INT topK, FILE f) FOR GRAPH *graph* {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
@@ -8,7 +8,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
         SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
-
+*ACCM*  MapAccum<VERTEX, FLOAT> @@topK_result;
         start = {source};
         subjects = SELECT t
                    FROM start:s -(*edge-types*:e)-> :t
@@ -32,8 +32,11 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 *ATTR*               POST-ACCUM insert into *insert-edge-name* values(source, s, s.@similarity);
 
 *ACCM*  PRINT neighbours.@similarity;
+*ACCM*  neighbours = SELECT s
+*ACCM*               FROM neighbours:s
+*ACCM*               ACCUM @@topK_result += (s -> s.@similarity);
+*ACCM*  return @@topK_result;
 
-*FILE*  f.println("Vertex1", "Vertex2", "Similarity");
 *FILE*  neighbours = SELECT s 
 *FILE*               FROM neighbours:s
 *FILE*               POST-ACCUM f.println(source, s, s.@similarity);

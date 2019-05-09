@@ -1,0 +1,16 @@
+*ATTR*CREATE QUERY knn_cosine_all*EXT* (INT topK) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY knn_cosine_all*EXT* (INT topK) FOR GRAPH *graph* {
+*FILE*CREATE QUERY knn_cosine_all*EXT* (INT topK, FILE f) FOR GRAPH *graph* {
+        SumAccum<STRING> @predicted_label;
+        
+        Source = {*vertex-types*.*};        
+        Source = SELECT s
+                 FROM Source:s 
+                 WHERE s.*vertex-label* == ""
+*ACCM*           ACCUM s.@predicted_label = knn_cosine_ss(s, topK);    
+*ATTR*           POST-ACCUM s.*vStrAttr* = knn_cosine_ss(s, topK);
+*FILE*           ACCUM s.@predicted_label = knn_cosine_ss(s, topK)
+*FILE*           POST-ACCUM f.println(s, s.@predicted_label);
+*ACCM*  PRINT Source;
+  
+}

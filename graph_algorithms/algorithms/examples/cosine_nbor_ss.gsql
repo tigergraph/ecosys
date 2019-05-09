@@ -1,4 +1,4 @@
-CREATE QUERY cosine_nbor_ss (VERTEX source, INT topK) FOR GRAPH movie {
+CREATE QUERY cosine_nbor_ss (VERTEX source, INT topK) FOR GRAPH movie RETURNS (MapAccum<VERTEX, FLOAT>) {
 /* This query calculates the Cosine Similarity between a given vertex and every other vertex.
 Cosine similarity = A \dot B / ||A|| \dot ||B||
 1. The JSON and FILE version keeps the top k pairs of vertices. The result in FILE version is not in order.
@@ -6,7 +6,7 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
    A similarity edge with one FLOAT attribute in the schema is required for this version.
 */
         SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
-
+        MapAccum<VERTEX, FLOAT> @@topK_result;
         start = {source};
         subjects = SELECT t
                    FROM start:s -(Likes:e)-> :t
@@ -27,6 +27,10 @@ Cosine similarity = A \dot B / ||A|| \dot ||B||
 
 
         PRINT neighbours.@similarity;
+        neighbours = SELECT s
+                     FROM neighbours:s
+                     ACCUM @@topK_result += (s -> s.@similarity);
+        return @@topK_result;
 
 
 }
