@@ -35,9 +35,7 @@ CREATE QUERY bi_25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME 
 
     @@personAllInPathAll += person1Id;
     @@personAllInPathAll += person2Id;
-
-LOG(TRUE, "checkpoint1");
-
+    
 WHILE NOT @@found DO
       @@next = 0;
 
@@ -110,9 +108,6 @@ WHILE NOT @@found DO
     END;
   END;
 
-LOG(TRUE, "checkpoint2");
-
-//log one time.
   @@pathInfoTop.resize(@@pathAll.size());
 
   // all posts from forums within the given date interval
@@ -122,8 +117,6 @@ LOG(TRUE, "checkpoint2");
              FROM vForum:t
              WHERE t.creationDate BETWEEN startDate AND endDate;
 
-LOG(TRUE, "checkpoint3");
-
 vPostValid =
     SELECT t
     FROM vForums2:s-(Forum_CONTAINER_OF_Post:e)->Post:t
@@ -131,8 +124,6 @@ vPostValid =
 //    WHERE s.creationDate BETWEEN startDate AND endDate
 //    POST-ACCUM @@postValid += t;
 
-
-LOG(TRUE, "checkpoint4");
 
   // Comment created by each Person in the shortest paths
   vPerson = { @@personAllInPathAll };
@@ -143,8 +134,6 @@ LOG(TRUE, "checkpoint4");
       t.@creatorId = s.id,
       t.@root = t.id,
       @@commentAll += (s.id -> t);
-
-LOG(TRUE, "checkpoint5");
 
   // hop until we meet the original Post and check it's valid
   vRoot(Comment|Post) = vComment;
@@ -167,7 +156,7 @@ LOG(TRUE, "checkpoint5");
             @@commentForum += (t.@creatorId -> t.@root)
         END;
   END;
-LOG(TRUE, "checkpoint6");
+
 
 // Post within the given date interval
   vPost =
@@ -176,7 +165,6 @@ LOG(TRUE, "checkpoint6");
 //    ACCUM CASE WHEN @@postValid.contains(t) THEN @@postForum += (s.id -> t.id) END;
     ACCUM CASE WHEN t.@valid THEN @@postForum += (s.id -> t.id) END;
 
-LOG(TRUE, "checkpoint7");
 
   FOREACH path IN @@pathAll DO
     jsonStr = "[";
@@ -213,10 +201,7 @@ LOG(TRUE, "checkpoint7");
     jsonStr += bigint_to_string(path.get(path.size()-1).id) + "]";
     @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
   END;
-LOG(TRUE, "checkpoint8");
 
 PRINT @@pathInfoTop;
-
-LOG(TRUE, "checkpoint9");
 
 }
