@@ -44,13 +44,6 @@ public class RestppConnection extends Connection {
 
   /**
    * Default constructor.
-   *
-   * @param host       Hostname or IP of the TigerGraph server
-   * @param port       HTTP port of the TigerGraph server
-   * @param secure     https or not
-   * @param properties Properties of the url connection.
-   * @param url        Url
-   * @throws SQLException sqlexption
    */
   public RestppConnection(String host, Integer port, Boolean secure,
       Properties properties, String url, Boolean debug) throws SQLException {
