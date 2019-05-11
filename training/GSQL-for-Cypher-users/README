@@ -32,7 +32,7 @@ Please follow these steps to install the solution.
 
 2. Copy data under data/ to /home/tigergraph/tigergraph/loadingData/
 
-4. Run loading from GraphStudio. i.e. on the "Load Data" page, click Start Loading
+4. Run loading job from GraphStudio. i.e. on the "Load Data" page, click Start Loading
 
 5. Install queries in the "Write Queries" page of GraphStudio i.e. click Install All
 
