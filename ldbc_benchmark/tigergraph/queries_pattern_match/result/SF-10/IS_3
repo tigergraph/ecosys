@@ -1,0 +1,156 @@
+[
+{
+'vFriend':[
+{
+'v_id':'30786325622854',
+'v_type':'Person',
+'attributes':{
+'personId':30786325622854,
+'firstName':'Ali',
+'lastName':'Mammadov',
+'friendshipCreationDate':'2012-06-28 03:53:42'
+}
+},
+{
+'v_id':'6597069817957',
+'v_type':'Person',
+'attributes':{
+'personId':6597069817957,
+'firstName':'Ernest',
+'lastName':'Ferrer',
+'friendshipCreationDate':'2012-06-19 06:20:44'
+}
+},
+{
+'v_id':'15393162821215',
+'v_type':'Person',
+'attributes':{
+'personId':15393162821215,
+'firstName':'Amara',
+'lastName':'Boy',
+'friendshipCreationDate':'2012-06-19 05:26:33'
+}
+},
+{
+'v_id':'26388279068563',
+'v_type':'Person',
+'attributes':{
+'personId':26388279068563,
+'firstName':'Patrick',
+'lastName':'Ambane',
+'friendshipCreationDate':'2012-06-19 01:21:25'
+}
+},
+{
+'v_id':'19791209362698',
+'v_type':'Person',
+'attributes':{
+'personId':19791209362698,
+'firstName':'Pol',
+'lastName':'Dany',
+'friendshipCreationDate':'2012-06-18 09:59:03'
+}
+},
+{
+'v_id':'28587302346530',
+'v_type':'Person',
+'attributes':{
+'personId':28587302346530,
+'firstName':'Alexandre',
+'lastName':'Bologan',
+'friendshipCreationDate':'2012-06-06 14:30:51'
+}
+},
+{
+'v_id':'13194139553304',
+'v_type':'Person',
+'attributes':{
+'personId':13194139553304,
+'firstName':'Meera',
+'lastName':'Kapoor',
+'friendshipCreationDate':'2012-06-04 01:32:31'
+}
+},
+{
+'v_id':'26388279101750',
+'v_type':'Person',
+'attributes':{
+'personId':26388279101750,
+'firstName':'Chuon',
+'lastName':'Pilika',
+'friendshipCreationDate':'2012-06-01 04:22:45'
+}
+},
+{
+'v_id':'26388279120799',
+'v_type':'Person',
+'attributes':{
+'personId':26388279120799,
+'firstName':'Hector Hugh',
+'lastName':'Karat',
+'friendshipCreationDate':'2012-06-01 02:44:06'
+}
+},
+{
+'v_id':'8796093037807',
+'v_type':'Person',
+'attributes':{
+'personId':8796093037807,
+'firstName':'Hector Hugh',
+'lastName':'Michie',
+'friendshipCreationDate':'2012-05-30 16:40:28'
+}
+},
+{
+'v_id':'17592186049366',
+'v_type':'Person',
+'attributes':{
+'personId':17592186049366,
+'firstName':'Fritz',
+'lastName':'Muller',
+'friendshipCreationDate':'2012-05-30 12:59:30'
+}
+},
+{
+'v_id':'26388279119067',
+'v_type':'Person',
+'attributes':{
+'personId':26388279119067,
+'firstName':'Nim',
+'lastName':'Pilika',
+'friendshipCreationDate':'2012-05-30 00:07:16'
+}
+},
+{
+'v_id':'21990232605707',
+'v_type':'Person',
+'attributes':{
+'personId':21990232605707,
+'firstName':'Henrie',
+'lastName':'Asoyo',
+'friendshipCreationDate':'2012-05-27 08:51:13'
+}
+},
+{
+'v_id':'4398046565439',
+'v_type':'Person',
+'attributes':{
+'personId':4398046565439,
+'firstName':'Vinod',
+'lastName':'Sharma',
+'friendshipCreationDate':'2012-05-23 02:14:30'
+}
+},
+{
+'v_id':'19791209309631',
+'v_type':'Person',
+'attributes':{
+'personId':19791209309631,
+'firstName':'Antonio',
+'lastName':'Alvarez',
+'friendshipCreationDate':'2012-05-22 06:46:25'
+}
+}
+]
+}
+]
