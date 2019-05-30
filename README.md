@@ -1,7 +1,7 @@
 # TigerGraph JDBC Driver
-Currently this driver only supports builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver), and the driver will talk to TigerGraph Rest++ to run queries and get their results.
+Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver), and the driver will talk to TigerGraph Rest++ to run queries and get their results.
 
-Going forward there will also be support for interpreted mode, which means it could install queries as well as run queries.
+Support for GSQL interpreted mode is on the roadmap. It means the driver can run queries without compilation and installation within TigerGraph server in the future. 
 
 ## Versions compatibility
 
