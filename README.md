@@ -1,7 +1,7 @@
 # TigerGraph JDBC Driver
 Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver), and the driver will talk to TigerGraph Rest++ to run queries and get their results.
 
-Support for GSQL interpreted mode is on the roadmap. It means the driver can run queries without compilation and installation within TigerGraph server in the future. 
+Support for GSQL interpreted mode is on the roadmap. It means the driver can run GSQL queries without compilation and installation in the future. 
 
 ## Versions compatibility
 
@@ -14,7 +14,7 @@ Parameters could be passed as properties when creating a connection, like token 
 
 You may specify IP address and port as needed. Please change 'http' to 'https' when SSL is enabled.
 
-For each ResultSet, there is only one column, which is a JSON object, representing each print statement in GQuery. You may use any JSON library to parse it.
+For each ResultSet, there is only one column, which is a JSON object, representing each print statement in GQuery. You can use any JSON library to parse the returned JSON object.
 ```
 Properties properties = new Properties();
 properties.put("token", "84d37c434950e7e54339057e93af72de79728ba7");
@@ -68,12 +68,12 @@ get edge(Page, ?, Linkto, Page, ?)
 run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
 ```
 
-Detailed examples could be found at [tg-jdbc-examples](https://github.com/tigergraph/tg-java-driver/tg-jdbc-examples).
+Detailed examples can be found at [tg-jdbc-examples](https://github.com/tigergraph/tg-java-driver/tg-jdbc-examples).
 
 ## Run examples
-There are 3 demo applications, all of them take 3 parameters: IP address, port, debug. The default IP address is 127.0.0.1, and the default port is 9000. Other values may be specified as needed. Debug mode could be turned on when the third parameter is larger than 0.
+There are 3 demo applications. All of them take 3 parameters: IP address, port, debug. The default IP address is 127.0.0.1, and the default port is 9000. Other values can be specified as needed. Debug mode could be turned on when the third parameter is larger than 0.
 
-To run the examples, first clone [the repository](https://github.com/tigergraph/tg-java-driver), then compile it and run it like this:
+To run the examples, first clone [the repository](https://github.com/tigergraph/tg-java-driver), then compile and run it as following:
 
 ```
 mvn compile
