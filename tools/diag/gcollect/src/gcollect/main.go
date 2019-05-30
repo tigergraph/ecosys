@@ -111,6 +111,16 @@ func usage() {
   fmt.Println("grep                              search patterns from logs files that have been collected before.")
   fmt.Println("show                              show all the requests during the specified time window.")
   fmt.Println("collect                           collect all the debugging information which satisfy all the requirements specified by Options.")
+  fmt.Println("")
+  fmt.Println("Examples:")
+  fmt.Println("  # show all requests during the last hour")
+  fmt.Println("  ./bin/gcollect -t 3600 show")
+  fmt.Println("  # collect debug info for a specific request")
+  fmt.Println("  ./bin/gcollect -r RESTPP_2_1.1559075028795 -b 60 -d 120 -p \"error\" collect")
+  fmt.Println("  # collect debug info for all components")
+  fmt.Println("  ./bin/gcollect -i -p \"error\" -p \"FAILED\" -s \"2019-05-22,18:00:00\" -e \"2019-05-22,19:00:00\" collect")
+  fmt.Println("  # Search from log files that have been collected before")
+  fmt.Println("  ./bin/gcollect -i -p \"unknown\" -c admin,gpe -D -A 1 -B 2 grep")
 }
 
 // Get log dir for a specific component

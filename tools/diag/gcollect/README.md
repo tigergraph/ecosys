@@ -13,7 +13,7 @@ go install gcollect
 ## Examples of typical usage
 
 ```
-# show all requests during last hour
+# show all requests during the last hour
 ./bin/gcollect -t 3600 show
 # collect debug info for a specific request, either contains "RESTPP_2_1.1559075028795" or "error", from [T - 60s] to [T + 120s] (T is the time when the request was issued)
 ./bin/gcollect -r RESTPP_2_1.1559075028795 -b 60 -d 120 -p "error" collect
