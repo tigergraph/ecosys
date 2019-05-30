@@ -18,6 +18,7 @@ import (
   "time"
   "tsar"
   "path/filepath"
+  "gopkg.in/yaml.v2"
   "golang.org/x/crypto/ssh"
 )
 
@@ -45,14 +46,18 @@ var components string
 var master_dest_dir string
 // Node id: m1/m2/m3...
 var node_id string
+// IP Addr of local machine
 var master_ip string
 // wether it is running on a slave machine
 var slave bool = false
 var display bool = false
 var tgRootDir string = "/home/tigergraph/tigergraph"
-var slave_tmp_folder string = "/tmp/tigergraph_gcollect_output"
-// For printing to screen
-var tg_tmp_file string = "/tmp/tigergraph_gcollect_tmp_file"
+var tgLogDir string = "/home/tigergraph/tigergraph/logs"
+// Temp folder for slave nodes to store result files,
+// A subdirectory of 'tgLogDir' instead of "/tmp/"
+var slave_tmp_folder string = "gcollect_tmp"
+// A temp file under 'tgLogDir', for printing to screen
+var tg_tmp_file string = "gcollect_tmp_file"
 // All the arguments without program name
 // Used to invoke itself on slave nodes
 var argsWithoutProg string
@@ -115,13 +120,13 @@ func getLogDir(root, component, node string) string {
   id := strings.Replace(node, "m", "", 1)
   switch component {
   case "rest":
-    return fmt.Sprintf("%s/logs/RESTPP_%s_1", root, id)
+    return fmt.Sprintf("%s/RESTPP_%s_1", root, id)
   case "restpp_loader":
-    return fmt.Sprintf("%s/logs/RESTPP-LOADER_%s_1", root, id)
+    return fmt.Sprintf("%s/RESTPP-LOADER_%s_1", root, id)
   case "gpe":
-    return fmt.Sprintf("%s/logs/GPE_%s_1", root, id)
+    return fmt.Sprintf("%s/GPE_%s_1", root, id)
   case "gse":
-    return fmt.Sprintf("%s/logs/GSE_%s_1", root, id)
+    return fmt.Sprintf("%s/GSE_%s_1", root, id)
   default:
     log.Fatal("Unsupported component: ", component)
     return ""
@@ -139,20 +144,20 @@ func syncSlaveNodes () {
 // Invoke the program itself on slave nodes with slave model enabled.
 // The binary must be copied to slave nodes before.
 func runCmdOnSlave() {
-  prefix := "/tmp/gcollect --slave -O " + master_dest_dir
+  // Some systems may not allow to invoke a binary from "/tmp",
+  // so we use tgLogDir instead.
+  prefix := tgLogDir + "/gcollect --slave -O " + master_dest_dir
   for name, client := range name2client {
-    if name == "m1" {
+    if name == node_id {
       continue
     }
-    cmd := prefix + " -id " + name + argsWithoutProg
+    cmd := prefix + " -ip " + master_ip + argsWithoutProg
     go utils.RunCmds_async(client, cmd, sync_chan)
   }
 }
 
 func collectDebugInfo() {
   // Copy files to output dir
-  utils.LocalRun("cp -r " + tgRootDir + "/data/ts3.db " + output_dir)
-  utils.LocalRun("cp -r " + tgRootDir + "/logs/gui/gui_INFO.log* " + output_dir)
   utils.LocalRun("rm -rf " + output_dir + "/catalog")
   utils.LocalRun("mkdir " + output_dir + "/catalog")
   utils.LocalRun("gadmin __pullfromdict " + output_dir + "/catalog")
@@ -170,7 +175,7 @@ func collectDebugInfo() {
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"free -g\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
   utils.LocalRun("free -g >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"dmesg | grep -i oom\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRunIgnoreError("dmesg | grep -i oom >> " + sysInfo)
+  _, err := utils.LocalRunIgnoreError("dmesg | grep -i oom >> " + sysInfo)
 
   f, err := os.OpenFile(sysInfo, os.O_APPEND|os.O_WRONLY, 0600)
   if err != nil {
@@ -198,12 +203,18 @@ func collectDebugInfo() {
   f.Close()
 
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> Service Status History <<<<<<<<<<<<<<' >> " + sysInfo)
-  cmd := "curl -s \"http://127.0.0.1:19000/api/datapoints?from=" + strconv.FormatInt(startEpoch, 10)
-  cmd += "&to=" + strconv.FormatInt(endEpoch, 10) + "&what=servicestate\" | python -m json.tool >> " + sysInfo
-  utils.LocalRunIgnoreError(cmd)
+  m1_ip, ok := name2ip["m1"]
+  if ok {
+    cmd := "curl -s \"http://" + m1_ip + ":14240/ts3/api/datapoints?from=" + strconv.FormatInt(startEpoch, 10)
+    cmd += "&to=" + strconv.FormatInt(endEpoch, 10) + "&what=servicestate\" | python -m json.tool >> " + sysInfo
+    utils.LocalRunIgnoreError(cmd)
+  } else {
+    fmt.Println("Cannot find ip address of m1.")
+  }
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin status <<<<<<<<<<<<<<' >> " + sysInfo)
   // "gadmin status" need ~20s, so we run it in the background
-  go utils.LocalRun("gadmin status >> " + sysInfo)
+  // It may fail when license expired
+  go utils.LocalRunIgnoreError("gadmin status >> " + sysInfo)
 }
 
 func getComponentLogFilename(component string) []string {
@@ -356,7 +367,7 @@ func main() {
 
   // Hidden options used internally on slave nodes
   flag.BoolVar(&slave, "slave", false, "Running on a slave.")
-  flag.StringVar(&node_id, "id",  "", "m1/m2/m3...")
+  flag.StringVar(&master_ip, "ip",  "", "Ip address of the machine on which the binary was invoked")
   flag.StringVar(&master_dest_dir, "O",  "", "Dest dir on master")
 
   flag.Parse()
@@ -481,51 +492,78 @@ func main() {
   } else if os.IsNotExist(err) {
     log.Fatalf("GSQL config file not found. Please run \"gsql_admin --configure\" first.")
   }
-  str := utils.LocalRun("grep ssh.port " + gsqlCfgFile + " | awk '{print $2}'")
-  sshPort := strings.Replace(str, "\n", "", -1)
-  str = utils.LocalRun("grep restpp.timeout_seconds " + gsqlCfgFile + " | awk '{print $2}'")
-  timeout_seconds := strings.Replace(str, "\n", "", -1)
-  timeout, err := strconv.Atoi(timeout_seconds)
+  yamlFile, err := ioutil.ReadFile(gsqlCfgFile)
+  if err != nil {
+    log.Fatalf("Failed to open [%s] with error: %s", gsqlCfgFile, err)
+  }
+  m := make(map[string]string)
+  err = yaml.Unmarshal(yamlFile, &m)
+  if err != nil {
+    log.Fatalf("yaml.Unmarshal failed: %v", err)
+  }
+  sshPort, _ := m["ssh.port"]
+  str, _ := m["restpp.timeout_seconds"]
+  timeout, err := strconv.Atoi(str)
 
   // Get nodes' name and IP
   name2ip = make(map[string]string)
-  clusterNodes := utils.LocalRun("grep cluster.nodes " + gsqlCfgFile + " | awk '{print $2}'")
+  clusterNodes, _ := m["cluster.nodes"]
   for _, value := range strings.Split(clusterNodes, ",") {
     value = strings.Replace(value, "\n", "", -1)
     pair := strings.Split(value, ":")
     if len(pair) == 2 {
       name2ip[pair[0]] = pair[1]
     }
-    if pair[0] == "m1" {
-      master_ip = pair[1]
-    }
   }
 
   // Get servers of each component
-  gpeServers = utils.LocalRun("grep gpe.servers " + gsqlCfgFile + " | awk '{print $2}'")
-  gseServers = utils.LocalRun("grep gse.servers " + gsqlCfgFile + " | awk '{print $2}'")
-  kafkaServers = utils.LocalRun("grep kafka.servers " + gsqlCfgFile + " | awk '{print $2}'")
-  restServers = utils.LocalRun("grep restpp.servers " + gsqlCfgFile + " | awk '{print $2}'")
-  zkServers = utils.LocalRun("grep zk.servers " + gsqlCfgFile + " | awk '{print $2}'")
+  gpeServers, _ = m["gpe.servers"]
+  gseServers, _ = m["gse.servers"]
+  kafkaServers, _ = m["kafka.servers"]
+  restServers, _ = m["restpp.servers"]
+  zkServers, _ = m["zk.servers"]
 
   // Get sshkey and TigerGraph root dir
-  str = utils.LocalRun("grep cluster.user " + gsqlCfgFile + " | awk '{print $2}'")
-  username := strings.Replace(str, "\n", "", -1)
-  str = utils.LocalRun("grep cluster.sshkey " + gsqlCfgFile + " | awk '{print $2}'")
-  sshkey := strings.Replace(str, "\n", "", -1)
-  str = utils.LocalRun("grep tigergraph.root.dir " + gsqlCfgFile + " | awk '{print $2}'")
-  tgRootDir = strings.Replace(str, "\n", "", -1)
+  username, _ := m["cluster.user"]
+  sshkey, _ := m["cluster.sshkey"]
+  tgRootDir, _ = m["tigergraph.root.dir"]
+  tgLogDir, _ = m["tigergraph.log.root"]
+
+  // print config if debugging is enabled
   if *debugPtr {
     fmt.Println("sshPort: ", sshPort)
     fmt.Println("name2ip: ", name2ip)
     fmt.Println("username: ", username)
     fmt.Println("sshkey: ", sshkey)
     fmt.Println("timeout: ", timeout)
+    fmt.Println("gpeServers: ", gpeServers)
+    fmt.Println("gseServers: ", gseServers)
+    fmt.Println("kafkaServers: ", kafkaServers)
+    fmt.Println("restServers: ", restServers)
+    fmt.Println("zkServers: ", zkServers)
+    fmt.Println("tgRootDir: ", tgRootDir)
+    fmt.Println("tgLogDir: ", tgLogDir)
   }
+
+  slave_tmp_folder = tgLogDir + "/" + slave_tmp_folder
+  tg_tmp_file = tgLogDir + "/" + tg_tmp_file
 
   if command[0] == "grep" {
     grepLogFiles()
     return
+  }
+
+  // find node_id of current machine, e.g., m1/m2/m3...
+  myIpMap := utils.GetMyIpMap()
+  for name, ip := range name2ip {
+    _, ok := myIpMap[ip]
+    if ok {
+      node_id = name
+      if !slave {
+        master_ip = ip
+      }
+      break
+    }
   }
 
   sync_chan = make(chan int)
@@ -534,7 +572,6 @@ func main() {
     utils.CreateDirectory(slave_tmp_folder)
   } else {
     // Create output dir and subdirectories on master
-    node_id = "m1"
     utils.CreateDirectory(output_dir)
     for name, _ := range name2ip {
       utils.CreateDirectory(output_dir + "/" + name)
@@ -547,11 +584,8 @@ func main() {
     name2client = make(map[string]*ssh.Client)
 
     for name, ip := range name2ip {
-      if name == "m1" {
-        continue
-      }
       // Copy the binary to other nodes, so that it could be run remotely.
-      err = utils.Scp(username, "", ip, sshPort, sshkey, exe, "/tmp/")
+      err = utils.Scp(username, "", ip, sshPort, sshkey, exe, tgLogDir)
       if err != nil {
         fmt.Printf("Scp to [%s] failed with %s\n", name, err)
         failed_nodes_array = append(failed_nodes_array, name)
@@ -577,7 +611,7 @@ func main() {
     } else {
       outFile = output_dir + "/" + node_id + "/" + request_id_filename
     }
-    logs.GetRequestIDs(getLogDir(tgRootDir, "rest", node_id), outFile, startEpoch, endEpoch, timeout)
+    logs.GetRequestIDs(getLogDir(tgLogDir, "rest", node_id), outFile, startEpoch, endEpoch, timeout)
 
     var id2desc map[string]string
     var id2status map[string]string
@@ -689,20 +723,38 @@ func main() {
     }
   }
 
+  // Get all dmesg info when OOM occurs
+  _, err = utils.LocalRunIgnoreError("dmesg | grep -i oom")
+  if err == nil {
+    utils.LocalRun("dmesg > " + outFolder + "/dmesg")
+  }
+  if utils.CheckFileExisted(tgRootDir + "/data/ts3.db") {
+    utils.LocalRun("cp -r " + tgRootDir + "/data/ts3.db " + outFolder)
+  }
+  if utils.CheckFileExisted(tgLogDir + "/gui/gui_INFO.log") {
+    utils.LocalRun("cp -r " + tgLogDir + "/gui/gui_INFO.log* " + outFolder)
+  }
+
   // Only collect yaml files and loader logs when components is not specified.
   if components == "" {
-    utils.LocalRun("cp -r " + tgRootDir + "/gstore/0/part/config.yaml " + outFolder)
-    utils.LocalRun("cp -r " + tgRootDir + "/gstore/0/1/ids/graph_config.yaml " + outFolder)
-    utils.LocalRun("cp -r " + tgRootDir + "/logs/restpp/restpp_loader_logs " + outFolder)
+    if utils.CheckFileExisted(tgRootDir + "/gstore/0/part/config.yaml") {
+      utils.LocalRun("cp -r " + tgRootDir + "/gstore/0/part/config.yaml " + outFolder)
+    }
+    if utils.CheckFileExisted(tgRootDir + "/gstore/0/1/ids/graph_config.yaml") {
+      utils.LocalRun("cp -r " + tgRootDir + "/gstore/0/1/ids/graph_config.yaml " + outFolder)
+    }
+    if utils.CheckDirExisted(tgLogDir + "/restpp/restpp_loader_logs") {
+      utils.LocalRun("cp -r " + tgLogDir + "/restpp/restpp_loader_logs " + outFolder)
+    }
   }
 
   // If there is no other regex except request_id, only gpe/gse/restpp logs will be collected.
   if request_id != "" && len(patterns) == 1 {
-    logs.FilterLogs(getLogDir(tgRootDir, "rest", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "rest", node_id),
       outFolder + "/restpp.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterLogs(getLogDir(tgRootDir, "gpe", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "gpe", node_id),
       outFolder + "/gpe.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterLogs(getLogDir(tgRootDir, "gse", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "gse", node_id),
       outFolder + "/gse.log", patterns, startEpoch, endEpoch, before, after)
   } else {
     // Otherwise, collect all the logs.
@@ -714,7 +766,7 @@ func main() {
     syncSlaveNodes()
     // Close all ssh connections to slave nodes
     for name, client := range name2client {
-      if name == "m1" {
+      if name == node_id {
         continue
       }
       client.Close()
@@ -815,23 +867,23 @@ func needToFilter(component string) bool {
 
 func filterLogs(outFolder string) {
   if needToFilter("rest") && strings.Contains(restServers, node_id) {
-    logs.FilterLogs(getLogDir(tgRootDir, "rest", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "rest", node_id),
       outFolder + "/restpp.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterOutLogs(tgRootDir + "/logs/restpp",
+    logs.FilterOutLogs(tgLogDir + "/restpp",
       outFolder + "/restpp.out", "restpp", patterns, startEpoch, endEpoch, before, after)
   }
 
   if needToFilter("gpe") && strings.Contains(gpeServers, node_id) {
-    logs.FilterLogs(getLogDir(tgRootDir, "gpe", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "gpe", node_id),
       outFolder + "/gpe.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterOutLogs(tgRootDir + "/logs/gpe",
+    logs.FilterOutLogs(tgLogDir + "/gpe",
       outFolder + "/gpe.out", "gpe", patterns, startEpoch, endEpoch, before, after)
   }
 
   if needToFilter("gse") && strings.Contains(gseServers, node_id) {
-    logs.FilterLogs(getLogDir(tgRootDir, "gse", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "gse", node_id),
       outFolder + "/gse.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterOutLogs(tgRootDir + "/logs/gse",
+    logs.FilterOutLogs(tgLogDir + "/gse",
       outFolder + "/gse.out", "gse", patterns, startEpoch, endEpoch, before, after)
   }
 
@@ -840,22 +892,22 @@ func filterLogs(outFolder string) {
   }
 
   if needToFilter("nginx") {
-    logs.NginxFilterLogs(tgRootDir + "/logs/nginx",
+    logs.NginxFilterLogs(tgLogDir + "/nginx",
       outFolder + "/nginx.log", patterns, startEpoch, endEpoch, before, after)
   }
 
   if needToFilter("admin") {
-    logs.FilterLogs(tgRootDir + "/logs/admin_server",
+    logs.FilterLogs(tgLogDir + "/admin_server",
       outFolder + "/admin_server.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterOutLogs(tgRootDir + "/logs/admin_server",
+    logs.FilterOutLogs(tgLogDir + "/admin_server",
       outFolder + "/admin_server.out", "gadmin_server.out",
       patterns, startEpoch, endEpoch, before, after)
   }
 
   if needToFilter("dict") {
-    logs.FilterLogs(tgRootDir + "/logs/dict",
+    logs.FilterLogs(tgLogDir + "/dict",
       outFolder + "/gdict_server.log", patterns, startEpoch, endEpoch, before, after)
-    logs.FilterOutLogs(tgRootDir + "/logs/dict",
+    logs.FilterOutLogs(tgLogDir + "/dict",
       outFolder + "/gdict_client.log", "gdict_client__INFO",
       patterns, startEpoch, endEpoch, before, after)
   }
@@ -881,7 +933,7 @@ func filterLogs(outFolder string) {
   }
 
   if needToFilter("restpp_loader") {
-    logs.FilterLogs(getLogDir(tgRootDir, "restpp_loader", node_id),
+    logs.FilterLogs(getLogDir(tgLogDir, "restpp_loader", node_id),
       outFolder + "/restpp_loader.log", patterns, startEpoch, endEpoch, before, after)
   }
 
@@ -893,13 +945,17 @@ func filterLogs(outFolder string) {
   if needToFilter("gsql") {
     gsql_log := tgRootDir + "/dev/gdk/gsql/logs/GSQL_LOG"
     if utils.CheckFileExisted(gsql_log) {
-      utils.LocalRun("cp -r " + gsql_log + " " + output_dir)
+      utils.LocalRun("cp -r " + gsql_log + " " + outFolder)
     }
-    gsql_log = tgRootDir + "/logs/gsql_server_log/gsql.out"
+    gsql_log = tgLogDir + "/gsql_server_log/gsql.out"
     if utils.CheckFileExisted(gsql_log) {
-      utils.LocalRun("cp -r " + gsql_log + " " + output_dir)
+      utils.LocalRun("cp -r " + gsql_log + " " + outFolder)
     }
-    logs.GsqlFilterLogs(tgRootDir + "/logs/gsql_server_log/",
+    gsql_log = tgLogDir + "/gsql_server_log/gsql_ADMIN.log"
+    if utils.CheckFileExisted(gsql_log) {
+      utils.LocalRun("cp -r " + gsql_log + " " + outFolder)
+    }
+    logs.GsqlFilterLogs(tgLogDir + "/gsql_server_log/",
       outFolder + "/gsql.log", patterns, startEpoch, endEpoch, before, after)
   }
 }

@@ -75,7 +75,7 @@ func GetRequestIDs(logDir, outFile string, startEpoch, endEpoch int64, timeout i
     }
 
     // Get request id and its url
-    str = utils.LocalRunIgnoreError("grep -ar '/query' " + logInfo + " | grep -i Engine_req")
+    str, _ = utils.LocalRunIgnoreError("grep -ar '/query' " + logInfo + " | grep -i Engine_req")
     for _, line := range strings.Split(str, "\n") {
       if len(line) < 60 {
         continue
@@ -109,7 +109,7 @@ func GetRequestIDs(logDir, outFile string, startEpoch, endEpoch int64, timeout i
     // Get requests that have finished.
     lastEpoch = begin_epoch
     year = begin_year
-    str = utils.LocalRunIgnoreError("grep -ar 'ReturnResult' " + logInfo)
+    str, err = utils.LocalRunIgnoreError("grep -ar 'ReturnResult' " + logInfo)
     for _, line := range strings.Split(str, "\n") {
       if len(line) < 60 {
         continue

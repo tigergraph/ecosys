@@ -139,9 +139,9 @@ func LocalRun (cmd string) string {
 	return string(out)
 }
 
-func LocalRunIgnoreError(cmd string) string {
-  out, _ := exec.Command("bash", "-c", cmd).Output()
-	return string(out)
+func LocalRunIgnoreError(cmd string) (string, error) {
+  out, err := exec.Command("bash", "-c", cmd).Output()
+	return string(out), err
 }
 
 func CheckError(str string, err error) {
@@ -326,9 +326,9 @@ func Scp(user, password, host, port, key, src, dest string) error {
 
   cmdString := ""
   if password != "" {
-    cmdString = fmt.Sprintf("sshpass -p %s scp -o \"StrictHostKeyChecking no\" -P %s -r %s %s@%s:%s", password, port, src, user, host, dest)
+    cmdString = fmt.Sprintf("sshpass -p %s scp -o ConnectTimeout=30 -o \"StrictHostKeyChecking no\" -P %s -r %s %s@%s:%s", password, port, src, user, host, dest)
   } else {
-    cmdString = fmt.Sprintf("scp -o \"StrictHostKeyChecking no\" -i %s -P %s -r %s %s@%s:%s", key, port, src, user, host, dest)
+    cmdString = fmt.Sprintf("scp -o ConnectTimeout=30 -o \"StrictHostKeyChecking no\" -i %s -P %s -r %s %s@%s:%s", key, port, src, user, host, dest)
   }
   cmdWriter.Write([]byte(cmdString + "\n"))
   cmdWriter.Write([]byte("exit"    + "\n"))
@@ -372,5 +372,33 @@ func Interface2Str(inter interface{}) string {
   default:
     return ""
   }
+}
+
+// Get local ip addresses
+// return a map for better search performance
+func GetMyIpMap() map[string]int {
+  var myIpMap map[string]int
+  myIpMap = make(map[string]int)
+  ifaces, err := net.Interfaces()
+  if err != nil {
+    log.Fatal(err)
+  }
+  for _, i := range ifaces {
+    addrs, err := i.Addrs()
+    if err != nil {
+      log.Fatal(err)
+    }
+    for _, addr := range addrs {
+      var ip net.IP
+      switch v := addr.(type) {
+        case *net.IPNet:
+          ip = v.IP
+        case *net.IPAddr:
+          ip = v.IP
+      }
+      myIpMap[ip.String()] = 1
+    }
+  }
+  return myIpMap
 }
 

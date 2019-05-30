@@ -6,6 +6,7 @@ To compile this tool, please install the latest Golang on your computer, and clo
 ```
 export GOPATH=/path/to/gcollect
 go get golang.org/x/crypto/ssh
+go get gopkg.in/yaml.v2
 go install gcollect
 ```
 
@@ -16,9 +17,9 @@ go install gcollect
 ./bin/gcollect -t 3600 show
 # collect debug info for a specific request, either contains "RESTPP_2_1.1559075028795" or "error", from [T - 60s] to [T + 120s] (T is the time when the request was issued)
 ./bin/gcollect -r RESTPP_2_1.1559075028795 -b 60 -d 120 -p "error" collect
-# collect debug info during "5/22/2019,18:00" and "5/22/2019,19:00" for all components, either contains "error" or "FAILED", case insensitive.
+# collect debug info from "5/22/2019,18:00" to "5/22/2019,19:00" for all components, either contains "error" or "FAILED", case insensitive.
 ./bin/gcollect -i -p "error" -p "FAILED" -s "2019-05-22,18:00:00" -e "2019-05-22,19:00:00" collect
-# Search for "unknown" from logs files that have been collected before, only search components "admin" and "gpe", case insensitive, print 1 line of trailing context after matching lines, print 2 lines of leading context before matching lines, print to screen.
+# Search for "unknown" from log files that have been collected before, only search components "admin" and "gpe", case insensitive, print 1 line of trailing context after matching lines, print 2 lines of leading context before matching lines, print to screen.
 ./bin/gcollect -i -p "unknown" -c admin,gpe -D -A 1 -B 2 grep
 ```
 
