@@ -2,7 +2,7 @@
 gcollect is a TigerGraph debug tool, which could be used to collect all the debug information that is needed for TigerGraph debugging.
 
 ## Installation
-To compile this tool, please install the latest Golang on your computer, and clone this repo to your local machine.
+To compile this tool, please install the latest Golang and clone this repo on your computer.
 ```
 export GOPATH=/path/to/gcollect
 go get golang.org/x/crypto/ssh

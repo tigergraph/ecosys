@@ -25,6 +25,10 @@ import (
 type arrayFlags []string
 var supported_components string = "gpe,gse,gsql,dict,tsar,kafka,zk,rest,nginx,admin,restpp_loader,fab,kafka-stream,kafka-connect"
 
+type NodeFolders struct {
+  gpe_folder, restpp_folder, restpp_loader_folder, kafka_loader_folder, gse_folder string
+}
+
 // Only logs between startEpoch and endEpoch will be printed.
 var startEpoch int64 = 0
 var endEpoch int64 = 0
@@ -40,6 +44,7 @@ var duration int = 0
 var patterns arrayFlags
 // search for patterns for the specified nodes (e.g., m1,m2,m3...)
 var nodes string
+var nginx_port string = "14240"
 var request_id string
 var output_dir string
 var components string
@@ -67,8 +72,10 @@ var name2client map[string]*ssh.Client
 var sync_chan chan int
 // Mapping from node id to IP address 
 var name2ip map[string]string
-// Map contains all the components specified to be collected.
+// A map contains all the components specified to be collected.
 var need_components_map map[string]int
+// A map contains folders of each component on each node
+var nodes_folders_map map[string]NodeFolders
 var failed_nodes_array []string
 var gpeServers string
 var gseServers string
@@ -127,16 +134,15 @@ func usage() {
 // component: rest/gpe/gse
 // node: m1, m2, m3, ...
 func getLogDir(root, component, node string) string {
-  id := strings.Replace(node, "m", "", 1)
   switch component {
   case "rest":
-    return fmt.Sprintf("%s/RESTPP_%s_1", root, id)
+    return fmt.Sprintf("%s/%s", root, nodes_folders_map[node].restpp_folder)
   case "restpp_loader":
-    return fmt.Sprintf("%s/RESTPP-LOADER_%s_1", root, id)
+    return fmt.Sprintf("%s/%s", root, nodes_folders_map[node].restpp_loader_folder)
   case "gpe":
-    return fmt.Sprintf("%s/GPE_%s_1", root, id)
+    return fmt.Sprintf("%s/%s", root, nodes_folders_map[node].gpe_folder)
   case "gse":
-    return fmt.Sprintf("%s/GSE_%s_1", root, id)
+    return fmt.Sprintf("%s/%s", root, nodes_folders_map[node].gse_folder)
   default:
     log.Fatal("Unsupported component: ", component)
     return ""
@@ -170,15 +176,15 @@ func collectDebugInfo() {
   // Copy files to output dir
   utils.LocalRun("rm -rf " + output_dir + "/catalog")
   utils.LocalRun("mkdir " + output_dir + "/catalog")
-  utils.LocalRun("gadmin __pullfromdict " + output_dir + "/catalog")
-  utils.LocalRun("gadmin --dump-config > " + output_dir + "/gsql.cfg")
+  utils.LocalRunIgnoreError("gadmin __pullfromdict " + output_dir + "/catalog")
+  utils.LocalRunIgnoreError("gadmin --dump-config > " + output_dir + "/gsql.cfg")
 
   // Get system info
   sysInfo := output_dir + "/sysInfo.txt"
   utils.LocalRun("echo '>>>>>>>>>>>>>> cat /etc/os-release <<<<<<<<<<<<<<' > " + sysInfo)
   utils.LocalRun("cat /etc/os-release >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin version <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRun("gadmin version >> " + sysInfo + " 2>&1")
+  utils.LocalRunIgnoreError("gadmin version >> " + sysInfo + " 2>&1")
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> TigerGraph root Dir: " + tgRootDir + "' >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"df -lh\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
   utils.LocalRun("df -lh >> " + sysInfo)
@@ -215,16 +221,17 @@ func collectDebugInfo() {
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> Service Status History <<<<<<<<<<<<<<' >> " + sysInfo)
   m1_ip, ok := name2ip["m1"]
   if ok {
-    cmd := "curl -s \"http://" + m1_ip + ":14240/ts3/api/datapoints?from=" + strconv.FormatInt(startEpoch, 10)
+    cmd := "curl -s \"http://" + m1_ip + ":" + nginx_port + "/ts3/api/datapoints?from=" +
+      strconv.FormatInt(startEpoch, 10)
     cmd += "&to=" + strconv.FormatInt(endEpoch, 10) + "&what=servicestate\" | python -m json.tool >> " + sysInfo
     utils.LocalRunIgnoreError(cmd)
   } else {
     fmt.Println("Cannot find ip address of m1.")
   }
-  utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin status <<<<<<<<<<<<<<' >> " + sysInfo)
+  utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin status -v <<<<<<<<<<<<<<' >> " + sysInfo)
   // "gadmin status" need ~20s, so we run it in the background
   // It may fail when license expired
-  go utils.LocalRunIgnoreError("gadmin status >> " + sysInfo)
+  go utils.LocalRunIgnoreError("gadmin status -v >> " + sysInfo)
 }
 
 func getComponentLogFilename(component string) []string {
@@ -275,7 +282,7 @@ func grepLogFiles() {
     log.Fatalf("Please specify a \"pattern\" at least.")
   }
   if !utils.CheckDirExisted(output_dir) {
-    log.Fatalf("Please running \"collect\" before using \"grep\".")
+    log.Fatalf("Please run \"collect\" before using \"grep\".")
   }
   // Clear & create the tmp file
   utils.LocalRun("echo -n \"\" > " + tg_tmp_file)
@@ -489,7 +496,7 @@ func main() {
   }
 
   //////////////////////////////////////////
-  //        Get TierGrph config           //
+  //        Get TigerGraph config         //
   //////////////////////////////////////////
 
   usr, err := user.Current()
@@ -498,8 +505,7 @@ func main() {
   }
   homeDir := usr.HomeDir
   gsqlCfgFile := homeDir + "/.gsql/gsql.cfg"
-  if _, err := os.Stat(gsqlCfgFile); err == nil {
-  } else if os.IsNotExist(err) {
+  if !utils.CheckFileExisted(gsqlCfgFile) {
     log.Fatalf("GSQL config file not found. Please run \"gsql_admin --configure\" first.")
   }
   yamlFile, err := ioutil.ReadFile(gsqlCfgFile)
@@ -513,6 +519,7 @@ func main() {
   }
   sshPort, _ := m["ssh.port"]
   str, _ := m["restpp.timeout_seconds"]
+  nginx_port, _ := m["nginx.services.port"]
   timeout, err := strconv.Atoi(str)
 
   // Get nodes' name and IP
@@ -539,6 +546,37 @@ func main() {
   tgRootDir, _ = m["tigergraph.root.dir"]
   tgLogDir, _ = m["tigergraph.log.root"]
 
+  // Parse folders for each component on each node
+  nodes_folders_map = make(map[string]NodeFolders)
+  sshCfgFile := homeDir + "/.gsql/ssh_config"
+  if !utils.CheckFileExisted(sshCfgFile) {
+    log.Fatalf("Failed to find file: %s", sshCfgFile)
+  }
+  for name, _ := range name2ip {
+    stdout := utils.LocalRun("grep " + name + " " + sshCfgFile)
+    stdout = strings.Replace(stdout, "\n", "", -1)
+    gpe_folder := ""
+    restpp_folder := ""
+    restpp_loader_folder := ""
+    kafka_loader_folder := ""
+    gse_folder := ""
+    for _, str := range strings.Split(stdout, " ") {
+      if strings.HasPrefix(str, "GPE") {
+        gpe_folder = str
+      } else if strings.HasPrefix(str, "RESTPP_") {
+        restpp_folder = str
+      } else if strings.HasPrefix(str, "RESTPP-LOADER_") {
+        restpp_loader_folder = str
+      } else if strings.HasPrefix(str, "KAFKA-LOADER_") {
+        kafka_loader_folder = str
+      } else if strings.HasPrefix(str, "GSE") {
+        gse_folder = str
+      }
+    }
+    nodes_folders_map[name] = NodeFolders{gpe_folder, restpp_folder,
+      restpp_loader_folder, kafka_loader_folder, gse_folder}
+  }
+
   // print config if debugging is enabled
   if *debugPtr {
     fmt.Println("sshPort: ", sshPort)
@@ -553,6 +591,8 @@ func main() {
     fmt.Println("zkServers: ", zkServers)
     fmt.Println("tgRootDir: ", tgRootDir)
     fmt.Println("tgLogDir: ", tgLogDir)
+    fmt.Println("nginx_port: ", nginx_port)
+    fmt.Println("nodes_folders_map: ", nodes_folders_map)
   }
 
   slave_tmp_folder = tgLogDir + "/" + slave_tmp_folder
