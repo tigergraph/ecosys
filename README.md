@@ -1,7 +1,8 @@
 # TigerGraph JDBC Driver
-Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver), and the driver will talk to TigerGraph Rest++ to run queries and get their results.
+version 1.0
+The TigerGraph JDBC Driver is a Type 4 JDBC, converting JDBC calls directly into TigerGraph database commands. Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver). The driver will then talk to TigerGraph Rest++ server to run queries and get their results.
 
-Support for GSQL interpreted mode is on the roadmap. It means the driver can run GSQL queries without compilation and installation in the future. 
+Support for GSQL interpreted mode is on the roadmap, meaning it will be able to run ad hoc queries, without needing to compile and install the quries beforehand. 
 
 ## Versions compatibility
 
@@ -10,11 +11,11 @@ Support for GSQL interpreted mode is on the roadmap. It means the driver can run
 | 1.0.0 | 2.2.4+ | 1.8 | Rest++ |
 
 ## Minimum viable snippet
-Parameters could be passed as properties when creating a connection, like token and graph name. Once REST++ authentication is enabled, token is needed to be specified. Graph name is needed especially when multi-graph is enabled.
+Parameters are passed as properties when creating a connection, such as token and graph name. Once REST++ authentication is enabled, a token must be specified. Graph name is required when multi-graph is enabled.
 
 You may specify IP address and port as needed. Please change 'http' to 'https' when SSL is enabled.
 
-For each ResultSet, there is only one column, which is a JSON object, representing each print statement in GQuery. You can use any JSON library to parse the returned JSON object.
+For each ResultSet, there is only one column, which is a JSON object, representing each PRINT statement in the GSQL query. You can use any JSON library to parse the returned JSON object.
 ```
 Properties properties = new Properties();
 properties.put("token", "84d37c434950e7e54339057e93af72de79728ba7");
@@ -40,40 +41,41 @@ try {
 
 ## Supported Queries
 ```
-// Get vertex number of a specific type
+// Run a pre-installed query with parameters (example: the pageRank query from the GSQL Demo Examples)
+run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
+
+// Get the number of vertices of a specific type
 builtins stat_vertex_number(type=?)
 
-// Get edge number statistics.
+// Get the number of edges
 builtins stat_edge_number
 
-// Get edge number of a specific type
+// Get the number of edges of a specific type
 builtins stat_edge_number(type=?)
 
-// Get any k vertices of Page type
+// Get any k vertices of a specified type (example: Page type)
 get Page(limit=?)
 
-// Get a Page which has the given id
+// Get a vertex which has the given id (example: Page type vertex)
 get Page(limit=?)
 
-// Get a Page which is satisfied with certain condition
+// Get a vertex which is satisfied with certain condition (example: Page t ype vertex)
 get Page(filter=?)
 
-// Get all edges from a given vertex
+// Get all edges whose source vertex has the specified type and if (example: Page type)
 get edges(Page, ?)
 
 // Get a specific edge from a given vertex to another specific vertex
+// (example: from Page type vertex, across Linkto type edge, to Page type vertex)
 get edge(Page, ?, Linkto, Page, ?)
-
-// Run a pre-installed query with parameters
-run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
 ```
 
 Detailed examples can be found at [tg-jdbc-examples](https://github.com/tigergraph/tg-java-driver/tg-jdbc-examples).
 
 ## Run examples
-There are 3 demo applications. All of them take 3 parameters: IP address, port, debug. The default IP address is 127.0.0.1, and the default port is 9000. Other values can be specified as needed. Debug mode could be turned on when the third parameter is larger than 0.
+There are 3 demo applications. All of them take 3 parameters: IP address, port, debug. The default IP address is 127.0.0.1, and the default port is 9000. Other values can be specified as needed. Debug mode is turned on when the third parameter is larger than 0.
 
-To run the examples, first clone [the repository](https://github.com/tigergraph/tg-java-driver), then compile and run it as following:
+To run the examples, first clone [the repository](https://github.com/tigergraph/tg-java-driver), then compile and run the examples like the following:
 
 ```
 mvn compile
@@ -84,5 +86,5 @@ mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args
 ```
 
 ## Limitation of ResultSet
-The response package size from TigerGraph server should be less than 2GB, which is the largest reponse size supported in TigerGraph Restful API.
+The response packet size from the TigerGraph server should be less than 2GB, which is the largest response size supported by the TigerGraph Restful API.
 
