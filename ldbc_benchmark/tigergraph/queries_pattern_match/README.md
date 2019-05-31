@@ -29,6 +29,13 @@ pip3 install tornado pycurl --user
 ```
 
 ### Usage
+
+#### Make a directory to store the results:
+
+```
+mkdir res
+```
+
 #### For interpret mode:
 
 ```
