@@ -1,8 +1,9 @@
 # TigerGraph JDBC Driver
 version 1.0
-The TigerGraph JDBC Driver is a Type 4 JDBC, converting JDBC calls directly into TigerGraph database commands. Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver). The driver will then talk to TigerGraph Rest++ server to run queries and get their results.
 
-Support for GSQL interpreted mode is on the roadmap, meaning it will be able to run ad hoc queries, without needing to compile and install the quries beforehand. 
+The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. Currently this driver only supports TigerGraph builtin queries and compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
+
+Support for GSQL interpreted mode is on the roadmap, meaning the driver will be able to run ad hoc queries, without needing to compile and install the queries beforehand. 
 
 ## Versions compatibility
 
@@ -11,7 +12,7 @@ Support for GSQL interpreted mode is on the roadmap, meaning it will be able to 
 | 1.0.0 | 2.2.4+ | 1.8 | Rest++ |
 
 ## Minimum viable snippet
-Parameters are passed as properties when creating a connection, such as token and graph name. Once REST++ authentication is enabled, a token must be specified. Graph name is required when multi-graph is enabled.
+Parameters are passed as properties when creating a connection, such as token and graph name. Once REST++ authentication is enabled, a token must be specified. Graph name is required when MultiGraph is enabled.
 
 You may specify IP address and port as needed. Please change 'http' to 'https' when SSL is enabled.
 
@@ -53,22 +54,23 @@ builtins stat_edge_number
 // Get the number of edges of a specific type
 builtins stat_edge_number(type=?)
 
-// Get any k vertices of a specified type (example: Page type)
+// Get any k vertices of a specified type (example: Page type vertex)
 get Page(limit=?)
 
 // Get a vertex which has the given id (example: Page type vertex)
-get Page(limit=?)
+get Page(id=?)
 
-// Get a vertex which is satisfied with certain condition (example: Page t ype vertex)
+// Get all vertices which satisfy the given filter (example: Page type vertex)
 get Page(filter=?)
 
-// Get all edges whose source vertex has the specified type and if (example: Page type)
-get edges(Page, ?)
+// Get all edges whose source vertex has the specified type and id (example: Page vertex with id)
+get edges(Page, id)
 
 // Get a specific edge from a given vertex to another specific vertex
-// (example: from Page type vertex, across Linkto type edge, to Page type vertex)
-get edge(Page, ?, Linkto, Page, ?)
+// (example: from a Page vertex, across a Linkto edge, to a Page vertex)
+get edge(Page, id1, Linkto, Page, id2)
 ```
+See [RESTPP API User Guide: Built-in Endpoints](https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints) for more details about the built-in endpoints.
 
 Detailed examples can be found at [tg-jdbc-examples](https://github.com/tigergraph/tg-java-driver/tg-jdbc-examples).
 
