@@ -1,0 +1,18 @@
+USE GRAPH ldbc_snb
+#pattern match syntax version is v2
+SET syntax_version="v2"
+
+#1-hop fixed length, single edge type.
+# find 3 oldest person who knows viktor.
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+   #start with all persons.
+   Seed = {Person.*};
+   #1-hop pattern. 
+   friends = SELECT p
+             FROM Seed:s - (<Person_KNOWS_Person:e) - Person:p
+             WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+             ORDER BY p.birthday ASC
+             LIMIT 3;
+             
+    PRINT  friends[friends.firstName, friends.lastName, friends.birthday];
+}
