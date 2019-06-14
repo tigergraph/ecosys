@@ -1,4 +1,4 @@
-import sys, csv
+import sys, csv, os
 from tornado.httputil import url_concat
 from datetime import datetime
 if sys.version_info < (3, 0):
@@ -149,7 +149,7 @@ def get_endpoints(path, num, query_type, query_num):
   f_name = "interactive_{}_param.txt".format(query_num) if query_type == "ic" \
       else "bi_{}_param.txt".format(query_num)
 
-  with open(path + f_name, "r") as f:
+  with open(os.path.join(path, f_name), "r") as f:
     reader = csv.reader(f, delimiter="|")
     next(reader) # skip header
     seeds = []

@@ -69,7 +69,7 @@ def handle_response(response):
 # so generate them using a helper query from a seed for interactive complex queries.
 # We'll use interactive_7_param.txt to generate seeds for interactive short queries
 def generate_is_seeds(http_client, path, num, query_num = 0):
-  with open(path + "interactive_7_param.txt", "r") as f:
+  with open(os.path.join(path, "interactive_7_param.txt"), "r") as f:
     reader = csv.reader(f, delimiter="|")
     next(reader) # skip header
     person_ids = []
