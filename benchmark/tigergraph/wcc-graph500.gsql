@@ -32,7 +32,7 @@ create query wcc() for graph graph500 {
         @@group_cnt += -1, y.@changed_group+=true
      end;
 
-     loop_count += 1;
+     loop_count = loop_count + 1;
   end;
   Print @@group_cnt, loop_count;
 }
