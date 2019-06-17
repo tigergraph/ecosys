@@ -161,8 +161,8 @@ A random seed file has been generated.
 2. k=2 for k-hop-path-neighbor-count query over 300 random selected vertices.
 3. k=3 for k-hop-path-neighbor-count query over 10 random selected vertices.
 4. k=6 for k-hop-path-neighbor-count query over 10 random selected vertices.
-5. 3 times of the wcc algorithm over the graph500 data 
-6. 3 times of the page rank algorithm 10 iterations over the graph500 data 
+5. 3 times of the wcc algorithm over the twitter data 
+6. 3 times of the page rank algorithm 10 iterations over the twitter data 
 
 Run throughput benchmark 
 -------------------------
