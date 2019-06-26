@@ -9,7 +9,7 @@ Key Folders:
   * tg_connect
   * JDBC driver (type 4)
 
-* graph_algorithms - The GSQL graph algorithm library
+* graph_algorithms - moved to https://github.com/tigergraph/gsql-graph-algorithms
 
 * gurus_scripts - Data and GSQL scripts so users can replicate the demostrations in our Graph Gurus webinar series
   * comm_dect_demo
