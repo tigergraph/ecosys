@@ -53,6 +53,8 @@ public class Client {
   private boolean isHttps = false;
   private boolean isFromGraphStudio = false;
   private String theCAFilename = null;
+  private String welcomeMessage = null;
+  private String shellPrompt = null;
   private static final String CONNECTION_ERR_MSG
       = "Connection refused.\n"
       + "Please check the status of GSQL server using \"gadmin status gsql\".\n"
@@ -99,6 +101,7 @@ public class Client {
     try {
       URL urlChecker = new URL(serverEndpoint);
     } catch (MalformedURLException e) {
+      Util.LogText("Illegal IP: " + serverEndpoint);
       System.out.println("The given ip " + serverIpAddress + " is illegal");
       System.exit(0);
     }
@@ -194,11 +197,20 @@ public class Client {
     if (cli.hasGraph()) {
       graphName = cli.getGraph();
     }
+
+    if (cli.hasLogdir()) {
+      Util.LOG_DIR = cli.getLogdir();
+    } else {
+      Util.LOG_DIR = System.getProperty("user.home") + "/.gsql_client_log";
+    }
+
+    Util.setClientLogFile(username, serverEndpoint, !isFromGraphStudio);
+
     JSONObject json;
     // for default user
     if (username.equals(DEFAULT_USER)) {
       json = executeAuth(loginEndpoint);
-      if (!cli.hasPassword() && (json == null || json.optBoolean("error", true))) {
+      if (!cli.hasPassword() && json != null && json.optBoolean("error", true)) {
         // if password is changed, let user input password
         if (json.optString("message").contains("Wrong password!")) {
           password = Util.Prompt4Password(false, false, username);
@@ -213,14 +225,25 @@ public class Client {
       }
       json = executeAuth(loginEndpoint);
     }
-    CheckAndExit(json);
+    handleServerResponse(json);
   }
 
-  private void CheckAndExit(JSONObject json) {
-    System.out.print(json.optString("message"));
+  private void handleServerResponse(JSONObject json) {
+    if (json != null) System.out.print(json.optString("message"));
     if (json == null || json.optBoolean("error", true)) {
       System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);
+    } else if (!json.has("isClientCompatible")) {
+      // if server is outdated that doesn't have compatibility check logic,
+      // isClientCompatible won't be available and message will be null so manually handle here
+      System.out.print("GSQL client is not compatible with GSQL server. "
+          + "Please contact support@tigergraph.com\n");
+      System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);
+    } else if (!json.optBoolean("isClientCompatible", true)) {
+      System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);
     }
+    // if not caught by any error, retrieve welcomeMessage and shellPrompt
+    welcomeMessage = json.getString("welcomeMessage");
+    shellPrompt = json.getString("shellPrompt");
   }
 
   /**
@@ -281,14 +304,11 @@ public class Client {
     isShell = true;
 
     if (!isFromGraphStudio) {
-      System.out.println("Welcome to TigerGraph.");
+      System.out.println(welcomeMessage);
     }
 
     // set the console
-    String ANSI_BLUE = "\u001B[1;34m";
-    String ANSI_RESET = "\u001B[0m";
-    String prompt = new String();
-    prompt = ANSI_BLUE + "GSQL > " + ANSI_RESET;
+    String prompt = "\u001B[1;34m" + shellPrompt + "\u001B[0m";
 
     ConsoleReader console = null;
 
@@ -296,8 +316,10 @@ public class Client {
       console =
         new ConsoleReader(
             null, new FileInputStream(FileDescriptor.in), System.out, null, "UTF-8");
-    } catch (IOException e1) {
-      e1.printStackTrace();
+    } catch (IOException e) {
+      System.out.println("Got error: " + e.getMessage());
+      Util.LogExceptions(e);
+      System.exit(ReturnCode.UNKNOWN_ERROR);
     }
     console.setPrompt(prompt);
 
@@ -308,7 +330,7 @@ public class Client {
         console.addCompleter(new AutoCompleter(keys.split(",")));
       }
     } catch (Exception e){
-      e.printStackTrace();
+      Util.LogExceptions(e);
     }
 
     console.addCompleter(new ArgumentCompleter(new FileNameCompleter()));
@@ -317,32 +339,10 @@ public class Client {
 
     File cmdlogFile = null;
     try {
-      // The .gsql_shell_history.log is located at the same path as .gsql_client.jar.
-      cmdlogFile = new File(System. getProperty("user.dir")
-          + "/.gsql_shell_history.log");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    //set cmd history file if it is not existed
-    if (console != null) {
-      //create .gsql_shell_history file if it does not exist
-      if (!cmdlogFile.exists()) {
-        try {
-          cmdlogFile.createNewFile();
-        } catch (IOException e) {
-          System.out.println(
-              "The file .gsql_shell_history cannot be created! Thus, "
-              + "shell command history will not be logged.");
-        }
-      }
+      cmdlogFile = Util.getClientLogFile("history", username, serverEndpoint, false);
 
       //bind .gsql_shell_history file to console
-      History cmdHistoryFile = null;
-      try {
-        cmdHistoryFile = new FileHistory(cmdlogFile);
-      } catch (IOException e) {
-        System.out.println("Shell command history error.");
-      }
+      History cmdHistoryFile = new FileHistory(cmdlogFile);
       console.setHistory(cmdHistoryFile);
       console.setHistoryEnabled(true);
 
@@ -353,10 +353,16 @@ public class Client {
           try {
             ((FileHistory) finalConsole.getHistory()).flush();
           } catch (IOException e) {
-            e.printStackTrace();
+            Util.LogExceptions(e);
           }
         }
       });
+    } catch (Exception e) {
+      console.setHistoryEnabled(false);
+      System.out.println(
+          "The file .gsql_shell_history cannot be created! Thus, "
+              + "shell command history will not be logged.");
+      Util.LogExceptions(e);
     }
 
     while (true) {
@@ -377,11 +383,6 @@ public class Client {
         if (inputCommand.equalsIgnoreCase("exit")
             || inputCommand.equalsIgnoreCase("quit")) {
 
-          if (cmdlogFile != null && cmdlogFile.exists()) {
-            if (console != null) {
-              ((FileHistory) console.getHistory()).flush();
-            }
-          }
           System.exit(0);
         }
 
@@ -409,14 +410,15 @@ public class Client {
             executePost(fileEndpoint, urlParameters);
             continue;
           } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Can't read file " + commandFileName);
+            Util.LogExceptions(e);
           }
         }
 
         String urlParameters = URLEncoder.encode(inputCommand, "UTF-8");
         executePost(commandEndpoint, urlParameters);
       } catch (IOException e) {
-        e.printStackTrace();
+        Util.LogExceptions(e);
       }
     }
   }
@@ -456,6 +458,7 @@ public class Client {
       ps.close();
 
       if (connection.getResponseCode() == 401) {
+        Util.LogText("Authentication failed. " + connection.getResponseMessage());
         System.out.println("Authentication failed.");
         if (connection != null) {
           connection.disconnect();
@@ -464,7 +467,8 @@ public class Client {
       } else if (connection.getResponseCode() != 200) {
         String errMsg = "Connection Error.\n"
           + "Response Code : " + connection.getResponseCode() + "\n"
-          + URLEncoder.encode(urlParameters, "UTF-8") + "\n";
+          + URLEncoder.encode(urlParameters, "UTF-8");
+        Util.LogText("Connection error: " + connection.getResponseMessage());
         System.out.println(errMsg);
         if (connection != null) {
           connection.disconnect();
@@ -485,7 +489,7 @@ public class Client {
       System.out.println(CONNECTION_ERR_MSG);
       System.exit(ReturnCode.CONNECTION_ERROR);
     } catch (Exception e) {
-      e.printStackTrace();
+      Util.LogExceptions(e);
     } finally {
 
       if (connection != null) {
@@ -529,6 +533,7 @@ public class Client {
       ps.close();
 
       if (connection.getResponseCode() == 401) {
+        Util.LogText("Authentication failed. " + connection.getResponseMessage());
         System.out.println("Authentication failed.");
         if (connection != null) {
           connection.disconnect();
@@ -563,6 +568,7 @@ public class Client {
               int errCode = Integer.valueOf(words[1]);
               System.exit(errCode);
             } catch (NumberFormatException e) {
+              Util.LogText("Can't parse return code: " + words[1]);
               System.out.println("Cannot parse the return code");
               System.exit(ReturnCode.NUM_FORMAT_ERROR);
             }
@@ -597,7 +603,8 @@ public class Client {
       System.out.println(CONNECTION_ERR_MSG);
       System.exit(ReturnCode.CONNECTION_ERROR);
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println("Got error: " + e.getMessage());
+      Util.LogExceptions(e);
     } finally {
 
       if (connection != null) {
@@ -622,7 +629,7 @@ public class Client {
           String pass = console.readLine(new Character((char) 0));
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + pass, "UTF-8"));
         } catch (IOException e) {
-          e.printStackTrace();
+          Util.LogExceptions(e);
         }
         break;
 
@@ -631,7 +638,7 @@ public class Client {
           String pass = Util.Prompt4Password(true, true, null);
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + pass, "UTF-8"));
         } catch (UnsupportedEncodingException e1) {
-          e1.printStackTrace();
+          Util.LogExceptions(e1);
         }
         break;
 
@@ -641,7 +648,7 @@ public class Client {
           String pass = Util.Prompt4Password(true, true, null);
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + name + ":" + pass, "UTF-8"));
         } catch (UnsupportedEncodingException e1) {
-          e1.printStackTrace();
+          Util.LogExceptions(e1);
         }
         break;
 
@@ -650,7 +657,7 @@ public class Client {
           String secret = Util.ColorPrompt("Secret : ");
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + secret, "UTF-8"));
         } catch (UnsupportedEncodingException e1) {
-          e1.printStackTrace();
+          Util.LogExceptions(e1);
         }
         break;
 
@@ -666,7 +673,7 @@ public class Client {
           }
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + command, "UTF-8"));
         } catch (IOException e) {
-          e.printStackTrace();
+          Util.LogExceptions(e);
         }
         break;
 
@@ -681,7 +688,7 @@ public class Client {
           }
           sendPost(dialogEndpoint, URLEncoder.encode(dialogId + "," + command, "UTF-8"));
         } catch (IOException e) {
-          e.printStackTrace();
+          Util.LogExceptions(e);
         }
         break;
 
@@ -689,6 +696,7 @@ public class Client {
         System.out.println("Please add the post action of " + qb
                            + " in com/tigergraph/client/Client.java");
         System.exit(0);
+
     }
   }
 
@@ -739,6 +747,7 @@ public class Client {
       List<String> cookies = connection.getHeaderFields().get("Set-cookie");
       if (cookies != null && cookies.size() > 0) {
         userSession = cookies.get(0);
+        Util.SESSION = userSession;
       }
       if (connection != null) {
         connection.disconnect();
@@ -749,7 +758,10 @@ public class Client {
       System.out.println(CONNECTION_ERR_MSG);
       System.exit(ReturnCode.CONNECTION_ERROR);
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println("Got error: " + e.getMessage());
+      System.out.println("If SSL/TLS is enabled for TigerGraph, please use -cacert with a "
+          + "certificate file, check TigerGraph document for details.");
+      Util.LogExceptions(e);
     } finally {
       if (connection != null) {
         connection.disconnect();
@@ -788,6 +800,7 @@ public class Client {
       ps.close();
 
       if (connection.getResponseCode() == 401) {
+        Util.LogText("Authentication failed. " + connection.getResponseMessage());
         System.out.println("Authentication failed.");
         if (connection != null) {
           connection.disconnect();
@@ -799,7 +812,8 @@ public class Client {
       System.out.println(CONNECTION_ERR_MSG);
       System.exit(ReturnCode.CONNECTION_ERROR);
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println("Got error: " + e.getMessage());
+      Util.LogExceptions(e);
     } finally {
 
       if (connection != null) {
@@ -849,6 +863,12 @@ public class Client {
     // Add to cookie if caller is from Graph Studio
     if (isFromGraphStudio) {
       cookieJSON.put("FromGraphStudio", "true");
+    }
+
+    // get client commit hash to check compatibility
+    String commitClient = Util.getCommitClient();
+    if (commitClient != null) {
+      cookieJSON.put("commitClient", commitClient);
     }
 
     return cookieJSON.toString();

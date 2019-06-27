@@ -1,5 +1,6 @@
 package com.tigergraph.client;
 
+import com.tigergraph.common.GSQL_LOG;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,8 +42,10 @@ public class Driver {
     try {
       client.start(cli);
     } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("\nPlease send the error message above to TigerGraph.\n");
+      Util.LogExceptions(e);
+      System.out.println("\nGot error: " + e.getMessage()
+          + "\nPlease send the log file '" + GSQL_LOG.LOG_FILE + "' to TigerGraph.\n");
+      System.exit(ReturnCode.UNKNOWN_ERROR);
     }
 
   } // end main

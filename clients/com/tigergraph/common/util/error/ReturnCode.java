@@ -21,6 +21,7 @@ public class ReturnCode {
   // client error
   public static final int CLIENT_ARGUMENT_ERROR = 201;
   public static final int CONNECTION_ERROR = 202;
+  public static final int CLIENT_COMPATIBILITY_ERROR = 203;
 
   // unknown
   public static final int UNKNOWN_ERROR = 255;

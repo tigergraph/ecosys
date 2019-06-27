@@ -35,6 +35,7 @@ public class GsqlCli {
     options.addOption(Option.builder("i").longOpt("ip").hasArg(true).build());
     options.addOption(Option.builder("cacert").longOpt("cacert").hasArg(true).build());
     options.addOption(Option.builder("graphstudio").longOpt("graphstudio").hasArg(false).build());
+    options.addOption(Option.builder("logdir").longOpt("logdir").hasArg(true).build());
   }
 
   public boolean parse(String[] args) {
@@ -128,6 +129,15 @@ public class GsqlCli {
   }
 
   public boolean isFromGraphStudio() { return cli.hasOption("graphstudio"); }
+
+  public boolean hasLogdir() {
+    return cli.hasOption("logdir");
+  }
+
+  public String getLogdir() {
+    return cli.getOptionValue("logdir");
+  }
+
   /**
    * return the command argument for gsql, e.g. in "gsql -u chengjie show user",
    * "show user" is the command argument.
