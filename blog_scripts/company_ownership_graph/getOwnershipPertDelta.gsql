@@ -1,4 +1,4 @@
-CREATE QUERY getOwnershipPert(vertex<Company> inputComp) FOR GRAPH MyGraph { 
+CREATE QUERY getOwnershipPertDelta(vertex<Company> inputComp) FOR GRAPH MyGraph { 
 
 SumAccum<int> @msgCnt1, @msgCnt2;
 OrAccum<bool> @visited;
