@@ -5,6 +5,7 @@ import (
   "fmt"
   "os"
   "io"
+  "path"
   "bufio"
   "bytes"
   "os/user"
@@ -23,7 +24,7 @@ import (
 )
 
 type arrayFlags []string
-var supported_components string = "gpe,gse,gsql,dict,tsar,kafka,zk,rest,nginx,admin,restpp_loader,fab,kafka-stream,kafka-connect"
+var supported_components string = "gpe,gse,gsql,dict,tsar,kafka,zk,rest,nginx,admin,restpp_loader,fab,kafka-stream,kafka-connect,gui"
 
 type NodeFolders struct {
   gpe_folder, restpp_folder, restpp_loader_folder, kafka_loader_folder, gse_folder string
@@ -56,6 +57,8 @@ var master_ip string
 // wether it is running on a slave machine
 var slave bool = false
 var display bool = false
+var external bool = false
+var under_gium bool = false
 var tgRootDir string = "/home/tigergraph/tigergraph"
 var tgLogDir string = "/home/tigergraph/tigergraph/logs"
 // Temp folder for slave nodes to store result files,
@@ -113,6 +116,7 @@ func usage() {
   fmt.Println("-p, --pattern regex               collect lines from logs which match the regular expression. (Could have more than one regex, lines that match any of the regular expressions will be printed.)")
   fmt.Println("-i, --ignore-case                 ignore case distinctions in both the PATTERN and the input files.")
   fmt.Println("-D, --display                     print to screen.")
+  fmt.Println("-g                                For GraphStudio to collect logs.")
   fmt.Println("")
   fmt.Println("Commands:")
   fmt.Println("grep                              search patterns from logs files that have been collected before.")
@@ -159,10 +163,10 @@ func syncSlaveNodes () {
 
 // Invoke the program itself on slave nodes with slave model enabled.
 // The binary must be copied to slave nodes before.
-func runCmdOnSlave() {
+func runCmdOnSlave(parent string) {
   // Some systems may not allow to invoke a binary from "/tmp",
   // so we use tgLogDir instead.
-  prefix := tgLogDir + "/gcollect --slave -O " + master_dest_dir
+  prefix := parent + "/gcollect --slave -O " + master_dest_dir
   for name, client := range name2client {
     if name == node_id {
       continue
@@ -174,17 +178,19 @@ func runCmdOnSlave() {
 
 func collectDebugInfo() {
   // Copy files to output dir
-  utils.LocalRun("rm -rf " + output_dir + "/catalog")
-  utils.LocalRun("mkdir " + output_dir + "/catalog")
-  utils.LocalRunIgnoreError("gadmin __pullfromdict " + output_dir + "/catalog")
-  utils.LocalRunIgnoreError("gadmin --dump-config > " + output_dir + "/gsql.cfg")
+  if !external {
+    utils.LocalRun("rm -rf " + output_dir + "/catalog")
+    utils.LocalRun("mkdir " + output_dir + "/catalog")
+    utils.LocalRunIgnoreError("~/.gium/gadmin __pullfromdict " + output_dir + "/catalog")
+    utils.LocalRunIgnoreError("~/.gium/gadmin --dump-config > " + output_dir + "/gsql.cfg")
+  }
 
   // Get system info
   sysInfo := output_dir + "/sysInfo.txt"
   utils.LocalRun("echo '>>>>>>>>>>>>>> cat /etc/os-release <<<<<<<<<<<<<<' > " + sysInfo)
   utils.LocalRun("cat /etc/os-release >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin version <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRunIgnoreError("gadmin version >> " + sysInfo + " 2>&1")
+  utils.LocalRunIgnoreError("~/.gium/gadmin version >> " + sysInfo + " 2>&1")
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> TigerGraph root Dir: " + tgRootDir + "' >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"df -lh\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
   utils.LocalRun("df -lh >> " + sysInfo)
@@ -218,20 +224,29 @@ func collectDebugInfo() {
   }
   f.Close()
 
-  utils.LocalRun("echo '\n>>>>>>>>>>>>>> Service Status History <<<<<<<<<<<<<<' >> " + sysInfo)
-  m1_ip, ok := name2ip["m1"]
-  if ok {
-    cmd := "curl -s \"http://" + m1_ip + ":" + nginx_port + "/ts3/api/datapoints?from=" +
-      strconv.FormatInt(startEpoch, 10)
-    cmd += "&to=" + strconv.FormatInt(endEpoch, 10) + "&what=servicestate\" | python -m json.tool >> " + sysInfo
-    utils.LocalRunIgnoreError(cmd)
-  } else {
-    fmt.Println("Cannot find ip address of m1.")
+  if !external {
+    utils.LocalRun("echo '\n>>>>>>>>>>>>>> Service Status History <<<<<<<<<<<<<<' >> " + sysInfo)
+    m1_ip, ok := name2ip["m1"]
+    if ok {
+      cmd := "curl -s \"http://" + m1_ip + ":" + nginx_port + "/ts3/api/datapoints?from=" +
+        strconv.FormatInt(startEpoch, 10)
+      cmd += "&to=" + strconv.FormatInt(endEpoch, 10) + "&what=servicestate\" | python -m json.tool >> " + sysInfo
+      utils.LocalRunIgnoreError(cmd)
+    } else {
+      fmt.Println("Cannot find ip address of m1.")
+    }
   }
+
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin status -v <<<<<<<<<<<<<<' >> " + sysInfo)
-  // "gadmin status" need ~20s, so we run it in the background
   // It may fail when license expired
-  go utils.LocalRunIgnoreError("gadmin status -v >> " + sysInfo)
+  if external {
+    // for GraphStudio, we have to wait for its execution
+    // otherwise users may get partial results.
+    utils.LocalRunIgnoreError("~/.gium/gadmin status -v >> " + sysInfo)
+  } else {
+    // "gadmin status" may needs ~20s, so we run it in the background
+    go utils.LocalRunIgnoreError("~/.gium/gadmin status -v >> " + sysInfo)
+  }
 }
 
 func getComponentLogFilename(component string) []string {
@@ -329,6 +344,8 @@ func main() {
 
   debugPtr := flag.Bool("debug", false, "show debug info.")
 
+  externalPtr := flag.Bool("g", false, "For GraphStudio to collect logs.")
+
   // start & end DateTime
   var start string
   var end string
@@ -388,6 +405,7 @@ func main() {
   flag.StringVar(&master_dest_dir, "O",  "", "Dest dir on master")
 
   flag.Parse()
+  external = *externalPtr
   command := flag.Args()
 
   // Check components against supported components
@@ -453,6 +471,7 @@ func main() {
     fmt.Println("output_dir: ", output_dir)
     fmt.Println("tminus: ", tminus)
     fmt.Println("command: ", command)
+    fmt.Println("GraphStudio: ", external)
   }
 
   if *helpPtr {
@@ -616,6 +635,11 @@ func main() {
     }
   }
 
+  if *debugPtr {
+    fmt.Println("myIpMap: ", myIpMap)
+    fmt.Println("node_id: ", node_id)
+  }
+
   sync_chan = make(chan int)
   if slave {
     // Create tmp folder on slave nodes
@@ -630,16 +654,32 @@ func main() {
     utils.CheckError("Failed to get absolute path: %s", err)
 
     exe, err := filepath.Abs(os.Args[0])
+    parentDir := filepath.Dir(exe)
+    _, str := path.Split(parentDir)
+    if str == ".gium" {
+      under_gium = true
+    }
+    if *debugPtr {
+      fmt.Println("parent dir: ", parentDir)
+      fmt.Println("under_gium: ", under_gium)
+    }
+
     utils.CheckError("Failed to get absolute path: %s", err)
     name2client = make(map[string]*ssh.Client)
 
     for name, ip := range name2ip {
-      // Copy the binary to other nodes, so that it could be run remotely.
-      err = utils.Scp(username, "", ip, sshPort, sshkey, exe, tgLogDir)
-      if err != nil {
-        fmt.Printf("Scp to [%s] failed with %s\n", name, err)
-        failed_nodes_array = append(failed_nodes_array, name)
+      if node_id == name {
         continue
+      }
+
+      if !under_gium {
+        // Copy the binary to other nodes, so that it could be run remotely.
+        err = utils.Scp(username, "", ip, sshPort, sshkey, exe, tgLogDir)
+        if err != nil {
+          fmt.Printf("Scp to [%s] failed with %s\n", name, err)
+          failed_nodes_array = append(failed_nodes_array, name)
+          continue
+        }
       }
 
       // Setup ssh connection to slave nodes.
@@ -649,7 +689,11 @@ func main() {
     }
 
     // Asynchronously launch the command on slaves, with "--slave" option
-    runCmdOnSlave()
+    if under_gium {
+      runCmdOnSlave(parentDir)
+    } else {
+      runCmdOnSlave(tgLogDir)
+    }
   }
 
   // show all requests during the specified time window
@@ -778,15 +822,12 @@ func main() {
   if err == nil {
     utils.LocalRun("dmesg > " + outFolder + "/dmesg")
   }
-  if utils.CheckFileExisted(tgRootDir + "/data/ts3.db") {
+  if !external && utils.CheckFileExisted(tgRootDir + "/data/ts3.db") {
     utils.LocalRun("cp -r " + tgRootDir + "/data/ts3.db " + outFolder)
-  }
-  if utils.CheckFileExisted(tgLogDir + "/gui/gui_INFO.log") {
-    utils.LocalRun("cp -r " + tgLogDir + "/gui/gui_INFO.log* " + outFolder)
   }
 
   // Only collect yaml files and loader logs when components is not specified.
-  if components == "" {
+  if !external && components == "" {
     if utils.CheckFileExisted(tgRootDir + "/gstore/0/part/config.yaml") {
       utils.LocalRun("cp -r " + tgRootDir + "/gstore/0/part/config.yaml " + outFolder)
     }
@@ -980,6 +1021,11 @@ func filterLogs(outFolder string) {
   if needToFilter("kafka-stream") && strings.Contains(kafkaServers, node_id){
     logs.KafkaFilterLogs(tgRootDir + "/kafka",
       outFolder + "/kafka-stream.log", "kafka-stream.out", patterns, startEpoch, endEpoch, before, after)
+  }
+
+  if needToFilter("gui") {
+    logs.GuiFilterLogs(tgLogDir + "/gui",
+      outFolder + "/gui.log", "gui_INFO.log", patterns, startEpoch, endEpoch, before, after)
   }
 
   if needToFilter("restpp_loader") {
