@@ -5,6 +5,7 @@ import (
   "fmt"
   "os"
   "io"
+  "path"
   "bufio"
   "bytes"
   "os/user"
@@ -57,6 +58,7 @@ var master_ip string
 var slave bool = false
 var display bool = false
 var external bool = false
+var under_gium bool = false
 var tgRootDir string = "/home/tigergraph/tigergraph"
 var tgLogDir string = "/home/tigergraph/tigergraph/logs"
 // Temp folder for slave nodes to store result files,
@@ -161,10 +163,10 @@ func syncSlaveNodes () {
 
 // Invoke the program itself on slave nodes with slave model enabled.
 // The binary must be copied to slave nodes before.
-func runCmdOnSlave() {
+func runCmdOnSlave(parent string) {
   // Some systems may not allow to invoke a binary from "/tmp",
   // so we use tgLogDir instead.
-  prefix := tgLogDir + "/gcollect --slave -O " + master_dest_dir
+  prefix := parent + "/gcollect --slave -O " + master_dest_dir
   for name, client := range name2client {
     if name == node_id {
       continue
@@ -179,8 +181,8 @@ func collectDebugInfo() {
   if !external {
     utils.LocalRun("rm -rf " + output_dir + "/catalog")
     utils.LocalRun("mkdir " + output_dir + "/catalog")
-    utils.LocalRunIgnoreError("gadmin __pullfromdict " + output_dir + "/catalog")
-    utils.LocalRunIgnoreError("gadmin --dump-config > " + output_dir + "/gsql.cfg")
+    utils.LocalRunIgnoreError("~/.gium/gadmin __pullfromdict " + output_dir + "/catalog")
+    utils.LocalRunIgnoreError("~/.gium/gadmin --dump-config > " + output_dir + "/gsql.cfg")
   }
 
   // Get system info
@@ -188,7 +190,7 @@ func collectDebugInfo() {
   utils.LocalRun("echo '>>>>>>>>>>>>>> cat /etc/os-release <<<<<<<<<<<<<<' > " + sysInfo)
   utils.LocalRun("cat /etc/os-release >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin version <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRunIgnoreError("gadmin version >> " + sysInfo + " 2>&1")
+  utils.LocalRunIgnoreError("~/.gium/gadmin version >> " + sysInfo + " 2>&1")
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> TigerGraph root Dir: " + tgRootDir + "' >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"df -lh\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
   utils.LocalRun("df -lh >> " + sysInfo)
@@ -236,9 +238,15 @@ func collectDebugInfo() {
   }
 
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin status -v <<<<<<<<<<<<<<' >> " + sysInfo)
-  // "gadmin status" need ~20s, so we run it in the background
   // It may fail when license expired
-  go utils.LocalRunIgnoreError("gadmin status -v >> " + sysInfo)
+  if external {
+    // for GraphStudio, we have to wait for its execution
+    // otherwise users may get partial results.
+    utils.LocalRunIgnoreError("~/.gium/gadmin status -v >> " + sysInfo)
+  } else {
+    // "gadmin status" may needs ~20s, so we run it in the background
+    go utils.LocalRunIgnoreError("~/.gium/gadmin status -v >> " + sysInfo)
+  }
 }
 
 func getComponentLogFilename(component string) []string {
@@ -626,6 +634,7 @@ func main() {
       break
     }
   }
+
   if *debugPtr {
     fmt.Println("myIpMap: ", myIpMap)
     fmt.Println("node_id: ", node_id)
@@ -645,6 +654,16 @@ func main() {
     utils.CheckError("Failed to get absolute path: %s", err)
 
     exe, err := filepath.Abs(os.Args[0])
+    parentDir := filepath.Dir(exe)
+    _, str := path.Split(parentDir)
+    if str == ".gium" {
+      under_gium = true
+    }
+    if *debugPtr {
+      fmt.Println("parent dir: ", parentDir)
+      fmt.Println("under_gium: ", under_gium)
+    }
+
     utils.CheckError("Failed to get absolute path: %s", err)
     name2client = make(map[string]*ssh.Client)
 
@@ -652,12 +671,15 @@ func main() {
       if node_id == name {
         continue
       }
-      // Copy the binary to other nodes, so that it could be run remotely.
-      err = utils.Scp(username, "", ip, sshPort, sshkey, exe, tgLogDir)
-      if err != nil {
-        fmt.Printf("Scp to [%s] failed with %s\n", name, err)
-        failed_nodes_array = append(failed_nodes_array, name)
-        continue
+
+      if !under_gium {
+        // Copy the binary to other nodes, so that it could be run remotely.
+        err = utils.Scp(username, "", ip, sshPort, sshkey, exe, tgLogDir)
+        if err != nil {
+          fmt.Printf("Scp to [%s] failed with %s\n", name, err)
+          failed_nodes_array = append(failed_nodes_array, name)
+          continue
+        }
       }
 
       // Setup ssh connection to slave nodes.
@@ -667,7 +689,11 @@ func main() {
     }
 
     // Asynchronously launch the command on slaves, with "--slave" option
-    runCmdOnSlave()
+    if under_gium {
+      runCmdOnSlave(parentDir)
+    } else {
+      runCmdOnSlave(tgLogDir)
+    }
   }
 
   // show all requests during the specified time window
