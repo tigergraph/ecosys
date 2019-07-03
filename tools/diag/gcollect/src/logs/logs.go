@@ -68,14 +68,13 @@ func GetRequestIDs(logDir, outFile string, startEpoch, endEpoch int64, timeout i
 
     // Check the time of the last log in the file.
     logInfo = logDir + "/" + logInfo
-    str := utils.LocalRun("tail -n 1 " + logInfo)
-    epoch = utils.Datetime2EpochNoYear(year, str[0:20])
+    epoch = file.ModTime().Unix()
     if epoch > 0 && startEpoch > epoch {
       continue
     }
 
     // Get request id and its url
-    str, _ = utils.LocalRunIgnoreError("grep -ar '/query' " + logInfo + " | grep -i Engine_req")
+    str, _ := utils.LocalRunIgnoreError("grep -ar '/query' " + logInfo + " | grep -i Engine_req")
     for _, line := range strings.Split(str, "\n") {
       if len(line) < 60 {
         continue
@@ -176,6 +175,7 @@ func FilterLogs(logDir, outFile string, patterns []string, startEpoch,
   var lastEpoch int64 = 0
   // Wether the last line's timestamp is between startEpoch and endEpoch
   var lastLineIncluded bool = false
+  var hasSth bool = false
   var regexArray []*regexp.Regexp
   afterMatch := 0
   buff := list.New()
@@ -229,8 +229,7 @@ func FilterLogs(logDir, outFile string, patterns []string, startEpoch,
     t := time.Unix(epoch, 0)
     year := strconv.Itoa(t.Year())
     logInfo = logDir + "/" + logInfo
-    str := utils.LocalRun("tail -n 1 " + logInfo)
-    epoch = utils.Datetime2EpochNoYear(year, str[0:20])
+    epoch = file.ModTime().Unix()
     if epoch > 0 && startEpoch > epoch {
       continue
     }
@@ -284,6 +283,7 @@ func FilterLogs(logDir, outFile string, patterns []string, startEpoch,
       // Match patterns and write to file
       lastLineIncluded = true
       if utils.MatchAnyRegex(line, regexArray) {
+        hasSth = true
         if needToWriteHeader {
           if _, err = fw.WriteString(">>>>>>>>>" + logInfo + "\n"); err != nil {
             panic(err)
@@ -295,7 +295,7 @@ func FilterLogs(logDir, outFile string, patterns []string, startEpoch,
           lastLineMatched = true
           afterMatch = after
 	        for e := buff.Front(); e != nil; e = e.Next() {
-            str = utils.Interface2Str(e.Value)
+            str := utils.Interface2Str(e.Value)
             if _, err = fw.WriteString(str); err != nil {
               panic(err)
             }
@@ -320,6 +320,11 @@ func FilterLogs(logDir, outFile string, patterns []string, startEpoch,
     }
     f.Close()
   }
+
+  // remove output file if it is empty.
+  if (!hasSth) {
+    os.Remove(outFile)
+  }
 }
 
 // Get all the logs between startEpoch and endEpoch from logDir
@@ -331,6 +336,7 @@ func FilterOutLogs(logDir, outFile, prefix string, patterns []string,
   var lastEpoch int64 = 0
   // Wether the last line's timestamp is between startEpoch and endEpoch
   var lastLineIncluded bool = false
+  var hasSth bool = false
   var regexArray []*regexp.Regexp
   afterMatch := 0
   buff := list.New()
@@ -469,6 +475,7 @@ func FilterOutLogs(logDir, outFile, prefix string, patterns []string,
       // Match patterns and write to file
       lastLineIncluded = true
       if utils.MatchAnyRegex(line, regexArray) {
+        hasSth = true
         if needToWriteHeader {
           if _, err = fw.WriteString(">>>>>>>>>" + logInfo + "\n"); err != nil {
             panic(err)
@@ -506,11 +513,17 @@ func FilterOutLogs(logDir, outFile, prefix string, patterns []string,
 
     f.Close()
   }
+
+  // remove output file if it is empty.
+  if (!hasSth) {
+    os.Remove(outFile)
+  }
 }
 
 // Get all the logs between startEpoch and endEpoch for a specific file
 func GrepLogFile(filename, outFile string, patterns []string, before, after int) {
   var regexArray []*regexp.Regexp
+  var hasSth bool = false
   afterMatch := 0
   buff := list.New()
 
@@ -544,6 +557,7 @@ func GrepLogFile(filename, outFile string, patterns []string, before, after int)
 
     // Match patterns and write to file
     if utils.MatchAnyRegex(line, regexArray) {
+      hasSth = true
       if needToWriteHeader {
         if _, err = fw.WriteString(">>>>>>>>>" + filename + "\n"); err != nil {
           panic(err)
@@ -579,6 +593,11 @@ func GrepLogFile(filename, outFile string, patterns []string, before, after int)
     }
   }
   f.Close()
+
+  // remove output file if it is empty.
+  if (!hasSth) {
+    os.Remove(outFile)
+  }
 }
 
 // Get all the logs between startEpoch and endEpoch from logDir
@@ -586,6 +605,7 @@ func GrepLogFile(filename, outFile string, patterns []string, before, after int)
 func FilterLogsFunc(line2Epoch func(string) int64, logDir, outFile, prefix, suffix string,
   patterns []string, startEpoch, endEpoch int64, before, after, head int) {
   var regexArray []*regexp.Regexp
+  var hasSth bool = false
   afterMatch := 0
   buff := list.New()
 
@@ -691,6 +711,7 @@ func FilterLogsFunc(line2Epoch func(string) int64, logDir, outFile, prefix, suff
 
       // Match patterns and write to file
       if utils.MatchAnyRegex(line, regexArray) {
+        hasSth = true
         if needToWriteHeader {
           if _, err = fw.WriteString(">>>>>>>>>" + logInfo + "\n"); err != nil {
             panic(err)
@@ -726,6 +747,11 @@ func FilterLogsFunc(line2Epoch func(string) int64, logDir, outFile, prefix, suff
       }
     }
     f.Close()
+  }
+
+  // remove output file if it is empty.
+  if (!hasSth) {
+    os.Remove(outFile)
   }
 }
 
@@ -788,6 +814,31 @@ func kafkaLine2Epoch(line string) int64 {
 func KafkaFilterLogs(logDir, outFile, prefix string, patterns []string,
   startEpoch, endEpoch int64, before, after int) {
   FilterLogsFunc(kafkaLine2Epoch, logDir, outFile, prefix, "", patterns,
+    startEpoch, endEpoch, before, after, 10)
+}
+
+// Logs filter for GraphStudio logs
+func guiLine2Epoch(line string) int64 {
+  tokens := strings.Split(line, "|")
+  length := len(tokens)
+  if length < 2 {
+    return -1
+  }
+  str := strings.Split(tokens[length - 1], ".")[0]
+  timeFormat := "2006-01-02T15:04:05"
+  if (strings.Index(str, "T") < 0) {
+    timeFormat = "2006-01-02 15:04:05"
+  }
+  t, err := time.Parse(timeFormat, str)
+  if err != nil {
+    return -1
+  }
+  return t.Unix()
+}
+
+func GuiFilterLogs(logDir, outFile, prefix string, patterns []string,
+  startEpoch, endEpoch int64, before, after int) {
+  FilterLogsFunc(guiLine2Epoch, logDir, outFile, prefix, "", patterns,
     startEpoch, endEpoch, before, after, 10)
 }
 
