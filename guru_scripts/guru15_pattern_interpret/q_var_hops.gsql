@@ -1,0 +1,15 @@
+USE GRAPH ldbc_snb
+DROP QUERY var_hops
+
+// Count the number of friends within the given range of separation from the Subject person whose
+//   first and last names are given as the input parameters.
+//   E.g., Person_KNOWS_Person>*1..3 means friends who are from 1 to 3 degrees of separation away.
+CREATE QUERY var_hops (STRING fName, STRING lName) FOR GRAPH ldbc_snb SYNTAX("v2") { 
+  persons = {Person.*};
+  friends = SELECT f
+      FROM persons:subj -(Person_KNOWS_Person>*1..1)- Person:f
+      WHERE subj.firstName == fName AND subj.lastName == lName
+     ;
+  PRINT friends.size();
+}
+INTERPRET QUERY var_hops("Antonio", "Chavez")
