@@ -23,20 +23,24 @@ Open a shell on your host machine
 cd ~/
 #below is the folder to share between your host machine and docker container.
 mkdir data
+#make sure tigergraph user has write permission on the data folder
+chmod 777 data
 #rm old version, only do this step if you upgrade your docker  image
-docker rm -f tigergraph-dev-latest > /dev/null 2>&1
-#pull the tigergraph docker image
-docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/data -t docker.tigergraph.com/tigergraph-latest:tigergraph-dev-latest
+docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
+#stop and remove existing container only if an old version is being used
+docker stop tigergraph_dev
+docker rm tigergraph_dev
+#pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
+docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
 
 #see running container
-docker container ls
-
-# start container
-docker container start tigergraph-dev-latest
+docker container ls | grep tigergraph_dev
 
 # stop container
-docker container stop tigergraph-dev-latest
+docker container stop tigergraph_dev
 
+# start container
+docker container start tigergraph_dev
 
 Content of the Docker Image
 ================================
@@ -49,8 +53,6 @@ In the dev image, we include
 - emac, vim etc. 
 - tar
 - g++ version 4.8
-- java version 1.8.0_212
-- latest github gsql algorithm library
 - tutorial: gsql 101, gsql 102 folder, tutorial folder
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
@@ -61,10 +63,10 @@ cd ~/
 #below is the folder to share between your host machine and docker container.
 mkdir data
 chmod 777 data
-#mount it  to /home/tigergraph/data when you download the image
-docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/data -t docker.tigergraph.com/tigergraph-latest:tigergraph-dev-latest
+#mount it  to /home/tigergraph/tigergraph/loadingData when you download the image
+docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
 
-# once you mount the data drive, on your host, you can put files under ~/data, it will be visible in /home/tigergraph/data. Vice versa, anything you put under /home/tigergraph/data within the container, 
+# once you mount the data drive, on your host, you can put files under ~/data, it will be visible in /home/tigergraph/tigergraph/loadingData. Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
 # will be visible on your host machchine ~/data folder.
 
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.)  on the data volume
@@ -78,9 +80,12 @@ Start/shutdown Docker Desktop
 Start/shutdown TigerGraph service
 ==================================
 #After you start Docker Desktop, #use the below command to start the container
-docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/data -t docker.tigergraph.com/tigergraph-latest:tigergraph-dev-latest
+docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
 #ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 ssh -p 14022 tigergraph@localhost
+#or
+docker inspect tigergraph_dev | grep IPAddress
+ssh tigergraph@<ip_address>
 #enter password for tigergraph user
 tigergraph
 #start tigergraph service
