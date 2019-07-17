@@ -22,7 +22,7 @@ create query wcc() for graph twitter {
  
   Start = {MyNode.*};
   @@group_cnt = Start.size();
-  Start = select x from Start:x accum x.@cc_id = uid_to_vid(x); 
+  Start = select x from Start:x accum x.@cc_id = getvid(x); 
  
   while (Start.size()>0) do
      Start= select y from Start:x - (MyEdge:e)-> :y
