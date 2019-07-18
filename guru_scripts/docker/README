@@ -13,33 +13,45 @@ https://www.youtube.com/watch?v=ymlWt1MqURY
 click Dock Desktop icon, click Preferences...>>Advance menu, drag CPU and Memory slide to the desired confi.
 quit and restart docker desktop
 
-Pull Pre-built TigerGraph Docker Image 
-============================================
-One command pull docker image and bind all ports for first time user from TigerGraph  docker registry 
-
-this image should start as a daemon, so user can ssh to it. 
-
-Open a shell on your host machine
+Prepare shared data drive on your host with docker container
+=============================================================
+#Open a shell on your host machine 
 cd ~/
+
 #below is the folder to share between your host machine and docker container.
 mkdir data
-#make sure tigergraph user has write permission on the data folder
 chmod 777 data
+
+# You can put files under ~/data, it will be visible in /home/tigergraph/tigergraph/loadingData, which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData
+" in the docker command
+# Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, will be visible on your host machchine ~/data folder. 
+
+Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.)  on the data volume
+After upgrading Dev version, you can start a new container using the same data volume. 
+
+Pull Pre-built TigerGraph Docker Image and Run it as a Deamon
+=====================================================
+One command pull docker image and bind all ports for first time user from TigerGraph  docker registry. This image will start as a daemon, so user can ssh to it. 
+
 #rm old version, only do this step if you upgrade your docker  image
 docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
+
 #stop and remove existing container only if an old version is being used
+docker container ls | grep tigergraph_dev
 docker stop tigergraph_dev
 docker rm tigergraph_dev
+
 #pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
 docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
 
-#see running container
-docker container ls | grep tigergraph_dev
+#verify that container is running
+docker ps | grep tigergraph_dev
 
-# stop container
+#get ip address of the running container
+docker inspect tigergraph_dev | grep IPAddress
+
+#Optional: stop/start container
 docker container stop tigergraph_dev
-
-# start container
 docker container start tigergraph_dev
 
 Content of the Docker Image
@@ -56,21 +68,6 @@ In the dev image, we include
 - tutorial: gsql 101, gsql 102 folder, tutorial folder
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
-How to share data drive on your host with docker container
-=============================================================
-#e.g. 
-cd ~/
-#below is the folder to share between your host machine and docker container.
-mkdir data
-chmod 777 data
-#mount it  to /home/tigergraph/tigergraph/loadingData when you download the image
-docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
-
-# once you mount the data drive, on your host, you can put files under ~/data, it will be visible in /home/tigergraph/tigergraph/loadingData. Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
-# will be visible on your host machchine ~/data folder.
-
-Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.)  on the data volume
-After upgrading Dev version, you can start a new container using the same data volume. 
 
 Start/shutdown Docker Desktop
 ===============================
@@ -79,13 +76,14 @@ Start/shutdown Docker Desktop
 
 Start/shutdown TigerGraph service
 ==================================
-#After you start Docker Desktop, #use the below command to start the container
-docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
+#After you start Docker Desktop, use the below command to start the container created 
+docker start tigergraph_dev
+
 #ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 ssh -p 14022 tigergraph@localhost
 #or
-docker inspect tigergraph_dev | grep IPAddress
-ssh -p 14022 tigergraph@<ip_address>
+ssh tigergraph@<container_ip_address>
+
 #enter password for tigergraph user
 tigergraph
 #start tigergraph service
