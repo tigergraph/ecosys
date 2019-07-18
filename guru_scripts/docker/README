@@ -85,7 +85,7 @@ docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ul
 ssh -p 14022 tigergraph@localhost
 #or
 docker inspect tigergraph_dev | grep IPAddress
-ssh tigergraph@<ip_address>
+ssh -p 14022 tigergraph@<ip_address>
 #enter password for tigergraph user
 tigergraph
 #start tigergraph service
