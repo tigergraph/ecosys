@@ -38,6 +38,8 @@ curl --user tigergraph:tigergraph -X POST 'localhost:14240/gsqlserver/interprete
 
 Others
 ======
-You can check this doc link https://docs.tigergraph.com/dev/restpp-api/
+You can check this doc link 
+- Builtin REST endpoint: https://docs.tigergraph.com/dev/restpp-api/
+- Query REST endpoint: https://docs.tigergraph.com/dev/gsql-ref/querying/query-operations
 to see different REST endpoints and modify the sample code to call each of them. 
 
