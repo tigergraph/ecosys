@@ -6,7 +6,7 @@ import json
 
 #your TigerGraph host machine URL
 url = "http://localhost:14240/gsqlserver/interpreted_query"
-#your GSQLK query
+#your GSQL query
 payload = "INTERPRET QUERY (int a, int b) FOR GRAPH social { start = {person.*}; PRINT start; PRINT a, b; }"
 #query parameters
 params = {"a": 10, "b": 4}
