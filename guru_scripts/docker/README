@@ -22,7 +22,7 @@ cd ~/
 mkdir data
 chmod 777 data
 
-# You can put files under ~/data, it will be visible in /home/tigergraph/tigergraph/loadingData, which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData
+# You can put files under ~/data, it will be visible in docker container under /home/tigergraph/tigergraph/loadingData, which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData
 " in the docker command
 # Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, will be visible on your host machchine ~/data folder. 
 
