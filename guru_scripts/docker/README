@@ -22,16 +22,19 @@ cd ~/
 mkdir data
 chmod 777 data
 
-# You can put files under ~/data, it will be visible in docker container under /home/tigergraph/tigergraph/loadingData, which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData
-" in the docker command
-# Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, will be visible on your host machchine ~/data folder. 
+You can put files under ~/data, it will be visible in docker container under /home/tigergraph/tigergraph/loadingData, 
+which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData" in the docker command
 
-Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.)  on the data volume
-After upgrading Dev version, you can start a new container using the same data volume. 
+Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
+will be visible on your host machchine ~/data folder. 
+
+Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
+on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
 
 Pull Pre-built TigerGraph Docker Image and Run it as a Deamon
 =====================================================
-One command pull docker image and bind all ports for first time user from TigerGraph  docker registry. This image will start as a daemon, so user can ssh to it. 
+One command pull docker image and bind all ports for first time user from TigerGraph  docker registry. 
+This image will start as a daemon, so user can ssh to it. 
 
 #rm old version, only do this step if you upgrade your docker  image
 docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
