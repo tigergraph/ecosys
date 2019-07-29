@@ -67,6 +67,7 @@ In the dev image, we include
 - wget
 - curl
 - emac, vim etc. 
+- jq
 - tar
 - tutorial: gsql 101, gsql 102 folder, tutorial folder
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder

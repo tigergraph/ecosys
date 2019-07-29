@@ -10,7 +10,8 @@ This GSQL 102 tutorial contains
 How To Run
 ===============
 
-We have generated scale-factor 1 data set (approximate 1GB). You can download it from https://s3-us-west-1.amazonaws.com/tigergraph-benchmark-dataset/LDBC/SF-1/ldbc_snb_data-sf1.tar.gz 
+We have generated scale-factor 1 data set (approximate 1GB). You can download it via:
+wget --no-check-certificate https://s3-us-west-1.amazonaws.com/tigergraph-benchmark-dataset/LDBC/SF-1/ldbc_snb_data-sf1.tar.gz 
 
 - After downloading the raw file, you can run tar command below to decompress the downloaded file. 
 tar -xzf  ldbc_snb_data-sf1.tar.gz
