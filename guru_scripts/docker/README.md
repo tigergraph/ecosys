@@ -15,10 +15,10 @@ quit and restart docker desktop
 
 Prepare shared data drive on your host with docker container
 =============================================================
-#Open a shell on your host machine 
+1. Open a shell on your host machine 
 cd ~/
 
-#below is the folder to share between your host machine and docker container.
+1. Create the data folder to share between your host machine and docker container.
 mkdir data
 chmod 777 data
 
@@ -36,25 +36,25 @@ Pull Pre-built TigerGraph Docker Image and Run it as a server
 One command pull docker image and bind all ports for first time user from TigerGraph  docker registry. 
 This image will start as a daemon, so user can ssh to it. 
 
-#rm old version, only do this step if you upgrade your docker  image
+1. rm old version, only do this step if you upgrade your docker  image
 docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
 
-#stop and remove existing container only if an old version is being used
+1. stop and remove existing container only if an old version is being used
 docker container ls | grep tigergraph_dev
 docker stop tigergraph_dev
 docker rm tigergraph_dev
 
-#pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
+1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
 docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
 #note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
 
-#verify that container is running
+1. verify that container is running
 docker ps | grep tigergraph_dev
 
-#get ip address of the running container
+1. get ip address of the running container
 docker inspect tigergraph_dev | grep IPAddress
 
-#Optional: stop/start container
+1. Optional: stop/start container
 docker container stop tigergraph_dev
 docker container start tigergraph_dev
 
@@ -80,24 +80,25 @@ Start/shutdown Docker Desktop
 
 Start/shutdown TigerGraph service
 ==================================
-#After you start Docker Desktop, use the below command to start the container created 
+1. After you start Docker Desktop, use the below command to start the container created 
 docker start tigergraph_dev
 
-#ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
+1. ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 ssh -p 14022 tigergraph@localhost
-#or
+  - or
 ssh tigergraph@<container_ip_address>
 
-#enter password for tigergraph user
+1. enter password for tigergraph user
 tigergraph
-#start tigergraph service
+
+1. start tigergraph service
 gadmin start 
 
-#start graph studio
+1. start graph studio
 open a browser on your laptop
 http://localhost:14240
 
-#check version
+1. check version
 gsql version
 #use 2.4 and above
 
