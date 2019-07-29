@@ -28,7 +28,7 @@ public enum JsonAPIVersion {
   //Given a version string, return its corresponding enum obj
   public static JsonAPIVersion getInstance(String version) {
     for (JsonAPIVersion obj: JsonAPIVersion.values()) {
-      if (obj.version.compareTo(version) == 0) {
+      if (obj.version.equalsIgnoreCase(version)) {
         return obj;
       }
     }
