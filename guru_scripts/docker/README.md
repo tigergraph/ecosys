@@ -68,7 +68,6 @@ In the dev image, we include
 - curl
 - emac, vim etc. 
 - tar
-- g++ version 4.8
 - tutorial: gsql 101, gsql 102 folder, tutorial folder
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
