@@ -15,8 +15,8 @@ Installing Docker Desktop
   - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory slide to the desired configuration,
 quit and restart docker desktop
 
-Prepare shared data drive on your host with docker container
-=============================================================
+Prepare shared data drive on your host OS with docker container
+=================================================================
 1. Open a shell on your host machine 
 
         cd ~/
