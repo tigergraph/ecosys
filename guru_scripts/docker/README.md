@@ -1,16 +1,20 @@
 Installing Docker Desktop
 ============================
 - Intsall Docker for Mac OS laptop, follow this video
-https://www.youtube.com/watch?v=MU8HUVlJTEY
+
+    https://www.youtube.com/watch?v=MU8HUVlJTEY
 
 - Install Docker for Linux, follow this video
-https://www.youtube.com/watch?v=KCckWweNSrM
+
+    https://www.youtube.com/watch?v=KCckWweNSrM
 
 - Intsall Docker for Windows OS laptop, follow this video
-https://www.youtube.com/watch?v=ymlWt1MqURY
+
+    https://www.youtube.com/watch?v=ymlWt1MqURY
 
 - Configure Docker Desktop using at least 2 cores, and 10G memory. Recommend 4 cores, 16G memory
-click Dock Desktop icon, click Preferences...>>Advance menu, drag CPU and Memory slide to the desired configuration,
+
+    click Dock Desktop icon, click Preferences...>>Advance menu, drag CPU and Memory slide to the desired configuration,
 quit and restart docker desktop
 
 Prepare shared data drive on your host with docker container
@@ -121,24 +125,24 @@ Documents and Forum
 =====================
 - Tutorial
 
-https://docs.tigergraph.com/intro/gsql-101
+    https://docs.tigergraph.com/intro/gsql-101
 
-https://docs.tigergraph.com/intro/gsql-102
+    https://docs.tigergraph.com/intro/gsql-102
 
 - Forum
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
-https://groups.google.com/a/opengsql.org/forum/?hl=en#!forum/gsql-users
+    https://groups.google.com/a/opengsql.org/forum/?hl=en#!forum/gsql-users
 
 - Videos to learn
 
-https://www.youtube.com/channel/UCnSOlBNWim68MYzcKbEswCA/videos
+    https://www.youtube.com/channel/UCnSOlBNWim68MYzcKbEswCA/videos
 
 - ebook 
 
-https://info.tigergraph.com/ebook
+    https://info.tigergraph.com/ebook
 
 - webinars 
 
-https://www.tigergraph.com/webinars-and-events/
+    https://www.tigergraph.com/webinars-and-events/
 
