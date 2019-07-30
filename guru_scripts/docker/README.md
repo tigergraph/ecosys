@@ -29,7 +29,7 @@ Prepare shared data drive on your host with docker container
         chmod 777 data
 
 You can put files under ~/data, it will be visible in docker container under /home/tigergraph/tigergraph/loadingData, 
-which is defined by "-v ~/data:/home/tigergraph/tigergraph/loadingData" in the docker command
+which is defined by **"-v ~/data:/home/tigergraph/tigergraph/loadingData"** in the docker command
 
 Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
 will be visible on your host machchine ~/data folder. 
@@ -45,6 +45,8 @@ This image will start as a daemon, so user can ssh to it.
 1. remove old version, only do this step if you upgrade your docker image
 
         docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
+        docker pull docker.tigergraph.com/tigergraph-dev:latest
+    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used
 
 1. stop and remove existing container only if an old version is being used
 
