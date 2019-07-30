@@ -14,7 +14,7 @@ Installing Docker Desktop
 
 - Configure Docker Desktop using at least 2 cores, and 10G memory. Recommend 4 cores, 16G memory
 
-    click Dock Desktop icon, click Preferences...>>Advance menu, drag CPU and Memory slide to the desired configuration,
+    --Click Dock Desktop icon, click Preferences...>>Advance menu, drag CPU and Memory slide to the desired configuration,
 quit and restart docker desktop
 
 Prepare shared data drive on your host with docker container
