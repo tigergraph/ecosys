@@ -122,18 +122,23 @@ Documents and Forum
 - Tutorial
 
 https://docs.tigergraph.com/intro/gsql-101
+
 https://docs.tigergraph.com/intro/gsql-102
 
 - Forum
 If you like the tutorial and want to explore more, join the GSQL developer community at 
+
 https://groups.google.com/a/opengsql.org/forum/?hl=en#!forum/gsql-users
 
 - Videos to learn
+
 https://www.youtube.com/channel/UCnSOlBNWim68MYzcKbEswCA/videos
 
 - ebook 
+
 https://info.tigergraph.com/ebook
 
 - webinars 
+
 https://www.tigergraph.com/webinars-and-events/
 
