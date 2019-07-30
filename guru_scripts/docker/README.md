@@ -1,16 +1,14 @@
 Installing Docker Desktop
 ============================
-- Intsall Docker for Mac OS laptop, follow this video
+- Install Docker on your OS (choose one)
+   - Intsall Docker for Mac OS laptop, follow this video
+     https://www.youtube.com/watch?v=MU8HUVlJTEY
 
-    https://www.youtube.com/watch?v=MU8HUVlJTEY
+   - Install Docker for Linux, follow this video
+     https://www.youtube.com/watch?v=KCckWweNSrM
 
-- Install Docker for Linux, follow this video
-
-    https://www.youtube.com/watch?v=KCckWweNSrM
-
-- Intsall Docker for Windows OS laptop, follow this video
-
-    https://www.youtube.com/watch?v=ymlWt1MqURY
+   - Intsall Docker for Windows OS laptop, follow this video
+     https://www.youtube.com/watch?v=ymlWt1MqURY
 
 - Configure Docker Desktop using at least 2 cores, and 10G memory. Recommend 4 cores, 16G memory
 
