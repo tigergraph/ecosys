@@ -51,7 +51,7 @@ This image will start as a daemon, so user can ssh to it.
 1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
 
         docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
-        #note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
+    > #note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
 
 1. verify that container is running
 
@@ -93,6 +93,7 @@ Start/shutdown TigerGraph service
         docker start tigergraph_dev
 
 1. ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
+
         sed -i.bak '/localhost/d' ~/.ssh/known_hosts
         ssh -p 14022 tigergraph@localhost
         or
@@ -107,14 +108,14 @@ Start/shutdown TigerGraph service
         gadmin start 
 
 1. start graph studio
+open a browser on your laptop and access:
 
-        open a browser on your laptop
         http://localhost:14240
 
 1. check version
 
         gsql version
-        #use 2.4 and above
+    > #use 2.4 and above
 
 Documents and Forum
 =====================
@@ -125,6 +126,7 @@ https://docs.tigergraph.com/intro/gsql-102
 
 - Forum
 If you like the tutorial and want to explore more, join the GSQL developer community at 
+
 https://groups.google.com/a/opengsql.org/forum/?hl=en#!forum/gsql-users
 
 - Videos to learn
