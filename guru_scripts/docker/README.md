@@ -15,6 +15,9 @@ Installing Docker Desktop
   - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory slide to the desired configuration,
 quit and restart docker desktop
 
+- Undersand Docker Container and Image concepts by watching this video
+  https://www.youtube.com/watch?v=Rv3DAJbDrS0
+
 Prepare Shared Folder On Host OS With Docker Container
 =================================================================
 1. Open a shell on your host machine 
