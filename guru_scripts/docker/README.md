@@ -63,10 +63,6 @@ This image will start as a daemon, so user can ssh to it.
 
         docker ps | grep tigergraph_dev
 
-1. get ip address of the running container
-
-        docker inspect tigergraph_dev | grep IPAddress
-
 1. Optional: stop/start container
 
         docker container stop tigergraph_dev
@@ -102,8 +98,9 @@ Start/shutdown TigerGraph service
 
         sed -i.bak '/localhost/d' ~/.ssh/known_hosts
         ssh -p 14022 tigergraph@localhost
-        or
-        ssh tigergraph@<container_ip_address>
+    > Linux users can access the container through its ip address directly
+    >   docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph_dev
+    >   ssh tigergraph@<container_ip_address>
 
 1. enter password for tigergraph user
 
