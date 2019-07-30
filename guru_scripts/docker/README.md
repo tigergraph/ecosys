@@ -99,8 +99,8 @@ Start/shutdown TigerGraph service
         sed -i.bak '/localhost/d' ~/.ssh/known_hosts
         ssh -p 14022 tigergraph@localhost
     > Linux users can access the container through its ip address directly
-    >   docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph_dev
-    >   ssh tigergraph@<container_ip_address>
+        docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph_dev
+        ssh tigergraph@<container_ip_address>
 
 1. enter password for tigergraph user
 
