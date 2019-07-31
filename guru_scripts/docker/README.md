@@ -66,14 +66,22 @@ This image will start as a daemon, so user can ssh to it.
 ```        
 
 After pulling the image and launch the container in the background, you can try the following to verify it's running. 
-1. verify that container is running
+1. verify that container is running, you should see a row to describe the running container.
 
         docker ps | grep tigergraph_dev
+        
+1. open a shell to ssh to the container. 
+```bash
+    ssh -p 14022 tigergraph@localhost
+```
+At prompt, enter "tigergraph" without quotes as password.
 
 1. Optional: stop/start container
 
         docker container stop tigergraph_dev
         docker container start tigergraph_dev
+        
+        
 
 Content of the Docker Image
 ================================
