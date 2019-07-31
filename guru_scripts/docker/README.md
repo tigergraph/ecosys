@@ -125,7 +125,7 @@ Operation Commands Cheat Sheet
         gadmin start 
         gadmin stop 
 
-- start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
+- After "gadmin start", you can start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
 
         http://localhost:14240
 
