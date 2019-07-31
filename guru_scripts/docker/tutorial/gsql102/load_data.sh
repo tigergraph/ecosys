@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################
-# Copyright (c)  2015-now, TigerGraph Inc.
+# Copyright (c)  2019, TigerGraph Inc.
 # All rights reserved
 # It is provided as it is for training purpose.
 # Author: mingxi.wu@tigergraph.com
