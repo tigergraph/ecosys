@@ -97,7 +97,7 @@ In the dev image, we include
 
 Operation Commands Cheat Sheet
 ================================
-- Start/shutdown Docker Desktop
+- Start/Stop Docker Desktop
   - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
   - To start it, find the Docker Desktop icon, double click it. 
 
