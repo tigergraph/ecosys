@@ -55,11 +55,11 @@ This image will start as a daemon, so user can ssh to it.
 1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict. 
    - the command is very long, user need to drag the horizontal bar to the right to see the full command. 
    - The command does the follwoing
-     - map docker 22 port to host OS 14022 port, 
-     - docker 9000 port to host OS 9000 port, same for 14240 to 14240. 
-         We give the container name tigergraph_dev. Set the ulimit (the number of open file descriptors per process) to 
-         1M. Mount the host OS ~/data folder to docker /home/tigergraph/mydata folder using the -v option. 
-         From the TigerGraph docker registry URL docker.tigergraph.com/tigergraph-dev, we download the latest image. 
+     - map docker 22 port to host OS 14022 port, 9000 port to host OS 9000 port, 14240 port to host OS 14240 port.
+     - name the container  tigergraph_dev. 
+     - set the ulimit (the number of open file descriptors per process) to 1 million.
+     - mount the host OS ~/data folder to the docker /home/tigergraph/mydata folder using the -v option. 
+     - download the "latest" docker image from the TigerGraph docker registry url docker.tigergraph.com/tigergraph-dev. 
 
         docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph-dev:latest
     > Note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
