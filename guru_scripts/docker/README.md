@@ -73,11 +73,11 @@ After pulling the image and launch the container in the background, you can try 
 1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
          
          ssh -p 14022 tigergraph@localhost
-1. start TigerGraph service， may take up to 1 minute. 
+1. after ssh to the container, start the TigerGraph service under bash shell (may take up to 1 minute). 
 
          gadmin start
 
-1. start gsql shell
+1. start gsql shell under bash shell.
 
          gsql 
 
