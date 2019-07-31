@@ -77,7 +77,7 @@ After pulling the image and launch the container in the background, you can try 
 
          gadmin start
 
-1. start gsql shell under bash shell.
+1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/intro/gsql-101
 
          gsql 
 
