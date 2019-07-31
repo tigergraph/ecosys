@@ -44,7 +44,7 @@ This image will start as a daemon, so user can ssh to it.
         docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
         docker pull docker.tigergraph.com/tigergraph-dev:latest
     > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 2.4.1 version, the following would be the URL. 
-     docker pull docker.tigergraph.com/tigergraph-dev:2.4.0
+     docker pull docker.tigergraph.com/tigergraph-dev:2.4.1
 
 1. stop and remove existing container in shell only if an old version is being used
 
