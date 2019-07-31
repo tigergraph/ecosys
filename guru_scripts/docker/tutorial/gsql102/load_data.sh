@@ -1,12 +1,5 @@
 #!/bin/bash
 
-###############################################
-# Copyright (c)  2019, TigerGraph Inc.
-# All rights reserved
-# It is provided as it is for training purpose.
-# Author: mingxi.wu@tigergraph.com
-################################################
-
 ## PLEASE modify the line below to the directory where your raw file sits and remove the '#'
 # export LDBC_SNB_DATA_DIR=/home/tigergraph/ldbc_snb_data/social_network/
 
