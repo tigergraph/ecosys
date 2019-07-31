@@ -29,8 +29,10 @@ Prepare Shared Folder On Host OS With Docker Container
         mkdir data
         chmod 777 data
 
-You can put files under ~/data, it will be visible in docker container under /home/tigergraph/tigergraph/loadingData, 
-which is defined by **"-v ~/data:/home/tigergraph/tigergraph/loadingData"** in the docker command
+You can map the ~/data folder to a folder under Docker container. 
+Then, you can share files between your host OS and Docker OS. 
+
+Suppose we map ~/data to a docker folder /home/tigergraph/tigergraph/loading data. 
 
 Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
 will be visible on your host machchine ~/data folder. 
@@ -47,7 +49,8 @@ This image will start as a daemon, so user can ssh to it.
 
         docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
         docker pull docker.tigergraph.com/tigergraph-dev:latest
-    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used
+    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 2.4.1 version, the following would be the URL. 
+     docker pull docker.tigergraph.com/tigergraph-dev:2.4.0
 
 1. stop and remove existing container only if an old version is being used
 
