@@ -71,11 +71,13 @@ After pulling the image and launch the container in the background, you can try 
         docker ps | grep tigergraph_dev
         
 1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
-```bash
-    ssh -p 14022 tigergraph@localhost
-```
+         
+         ssh -p 14022 tigergraph@localhost
+1. start TigerGraph service 
 
-1. Optional: stop/start container
+         gadmin start
+
+Optional: stop/start container
 
         docker container stop tigergraph_dev
         docker container start tigergraph_dev
@@ -93,18 +95,17 @@ In the dev image, we include
 - emac, vim etc. 
 - jq
 - tar
-- tutorial: gsql 101, gsql 102 folder, tutorial folder
+- tutorial: gsql 101, gsql 102 sub folders.
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
+More Operation Commands
+==========================
+- Start/shutdown Docker Desktop
+  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
+  - To start it, find the Docker Desktop icon, double click it. 
 
-Start/shutdown Docker Desktop
-===============================
-- To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
-- To start it, find the Docker Desktop icon, double click it. 
-
-Start/shutdown TigerGraph service
-==================================
-1. After you start Docker Desktop, use the below command to start the container created 
+- Start/shutdown TigerGraph service
+  - After you start Docker Desktop, use the below command to start the container created 
 
         docker start tigergraph_dev
 
