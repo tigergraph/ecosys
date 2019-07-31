@@ -39,20 +39,25 @@ Pull Pre-built TigerGraph Docker Image And Run It As A Server
 One command pull docker image and bind all ports for first time user from the TigerGraph docker registry. 
 This image will start as a daemon, so user can ssh to it. 
 
-1. remove old version, only do this step if you upgrade your docker image
+1. remove old version, only do this step in shell if you upgrade your docker image
 
         docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
         docker pull docker.tigergraph.com/tigergraph-dev:latest
     > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 2.4.1 version, the following would be the URL. 
      docker pull docker.tigergraph.com/tigergraph-dev:2.4.0
 
-1. stop and remove existing container only if an old version is being used
+1. stop and remove existing container in shell only if an old version is being used
 
         docker ps -a | grep tigergraph_dev
         docker stop tigergraph_dev
         docker rm tigergraph_dev
 
-1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
+1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict. 
+   Note: the command is very long, user need to drag the horizontal bar to the right to see the full command. 
+         We map docker 22 port to host OS 14022 port, docker 9000 port to host OS 9000 port, same for 14240 to 14240. 
+         We give the container name tigergraph_dev. Set the ulimit (the number of open file descriptors per process) to 
+         1M. Mount the host OS ~/data folder to docker /home/tigergraph/mydata folder using the -v option. 
+         From the TigerGraph docker registry URL docker.tigergraph.com/tigergraph-dev, we download the latest image. 
 
         docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph-dev:latest
     > Note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
