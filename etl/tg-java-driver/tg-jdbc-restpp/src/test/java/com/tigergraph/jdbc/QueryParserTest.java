@@ -23,44 +23,44 @@ public class QueryParserTest extends TestCase {
 	public QueryParserTest(String name) {
 		super(name);
 	}
-	
+
 	public void testFormat() throws Exception {
     String query = "get Page(limit=?)";
-    Map<String, Object> parameters = new HashMap<>(10);
-    parameters.put("0", "3");
+    Map<Integer, Object> parameters = new HashMap<>(10);
+    parameters.put(1, "3");
     StringBuilder sb = new StringBuilder();
-		QueryParser parser = new QueryParser(query, parameters, Boolean.FALSE);
+		QueryParser parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
     query = "get Page(filter=?)";
     parameters.clear();
-    parameters.put("0", "page_id=1");
-		parser = new QueryParser(query, parameters, Boolean.FALSE);
+    parameters.put(1, "page_id=1");
+		parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
     query = "get edges(Page, ?)";
     parameters.clear();
-    parameters.put("0", "2");
-		parser = new QueryParser(query, parameters, Boolean.FALSE);
+    parameters.put(1, "2");
+		parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
     query = "get edge(Page, ?, Linkto, Page, ?)";
     parameters.clear();
-    parameters.put("0", "2");
-    parameters.put("1", "3");
-		parser = new QueryParser(query, parameters, Boolean.FALSE);
+    parameters.put(1, "2");
+    parameters.put(2, "3");
+		parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
     query = "run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)";
     parameters.clear();
-    parameters.put("0", "0.001");
-    parameters.put("1", 10);
-    parameters.put("2", "0.15");
-		parser = new QueryParser(query, parameters, Boolean.FALSE);
+    parameters.put(1, "0.001");
+    parameters.put(2, 10);
+    parameters.put(3, "0.15");
+		parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
 		String formattedResult = sb.toString();
-		InputStream expected = 
+		InputStream expected =
 			getClass().getClassLoader().getResourceAsStream("endpoint-expected.dat");
 		assertEquals(IOUtils.toString(expected), formattedResult);
 	}

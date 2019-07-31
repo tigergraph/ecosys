@@ -14,8 +14,6 @@ import java.net.MalformedURLException;
  */
 public class RestppDriver extends BaseDriver {
 
-  private Boolean debug = Boolean.FALSE;
-
   public final static String JDBC_RESTPP_PREFIX = "http(s)?";
 
   /**
@@ -23,11 +21,6 @@ public class RestppDriver extends BaseDriver {
    */
   public RestppDriver() throws SQLException {
     super(JDBC_RESTPP_PREFIX);
-  }
-
-  @Override public Connection connect(String url, Properties params, Boolean debug) throws SQLException {
-    this.debug = debug;
-    return connect(url, params);
   }
 
   @Override public Connection connect(String url, Properties params) throws SQLException {
@@ -39,9 +32,9 @@ public class RestppDriver extends BaseDriver {
         Boolean secure = tgUrl.getProtocol().equals("https");
         int port = tgUrl.getPort();
         if (port < 0 || port > 65535) {
-          port = 9000;
+          port = 14240;
         }
-        connection = new RestppConnection(host, port, secure, params, url, this.debug);
+        connection = new RestppConnection(host, port, secure, params, url);
       } else {
         throw new SQLException("The URL is invalid.\nA valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
       }

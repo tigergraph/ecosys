@@ -1,23 +1,106 @@
 package com.tigergraph.jdbc;
 
+import com.tigergraph.jdbc.Attribute;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ResultSetMetaData implements java.sql.ResultSetMetaData {
+public class ResultSetMetaData implements java.sql.ResultSetMetaData {
+
+  private String table_name;
+  private List<Attribute> attributeList;
+  private int column_size;
 
   /**
    * Default constructor.
    */
-  protected ResultSetMetaData() {
+  public ResultSetMetaData(String table_name, List<Attribute> attributeList) {
+    this.table_name = table_name;
+    this.attributeList = attributeList;
+    this.column_size = attributeList.size();
+  }
+
+  private int getValidColumnIndex(int column) throws SQLException {
+    int index = column - 1;
+    if ((index < 0) || (index >= this.column_size)) {
+      throw new SQLException("column number exceeds the boundary.");
+    }
+
+    return index;
   }
 
   @Override public int getColumnCount() throws SQLException {
-    /**
-     * Only one column for each ResultSet.
-     */
-    return 1;
+    return this.column_size;
+  }
+
+  @Override public String getColumnLabel(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+
+    return this.attributeList.get(index).getName();
+  }
+
+  @Override public String getColumnName(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+
+    return this.attributeList.get(index).getName();
+  }
+
+  @Override public String getCatalogName(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+
+    return this.table_name;
+  }
+
+  @Override public boolean isAutoIncrement(int column) throws SQLException {
+    return Boolean.FALSE;
+  }
+
+  @Override public boolean isSearchable(int column) throws SQLException {
+    return Boolean.FALSE;
+  }
+
+  @Override public boolean isCurrency(int column) throws SQLException {
+    return Boolean.FALSE;
+  }
+
+  @Override public int isNullable(int column) throws SQLException {
+    return java.sql.ResultSetMetaData.columnNoNulls;
+  }
+
+  @Override public boolean isSigned(int column) throws SQLException {
+    return Boolean.FALSE;
+  }
+
+  @Override public int getPrecision(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+    return this.attributeList.get(index).getPrecision();
+  }
+
+  @Override public int getScale(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+    return this.attributeList.get(index).getScale();
+  }
+
+  @Override public int getColumnType(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+    String type = this.attributeList.get(index).getType().toLowerCase();
+    if (type.equals("string")) {
+      return Types.VARCHAR;
+    }
+    if (type.equals("int")) {
+      return Types.INTEGER;
+    }
+    if (type.equals("double")) {
+      return Types.REAL;
+    }
+    return Types.OTHER;
+  }
+  
+  @Override public String getColumnTypeName(int column) throws SQLException {
+    int index = getValidColumnIndex(column);
+
+    return this.attributeList.get(index).getType();
   }
 
   /**
@@ -40,58 +123,6 @@ public abstract class ResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getColumnLabel(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public String getColumnName(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public String getCatalogName(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int getColumnDisplaySize(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isAutoIncrement(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isSearchable(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isCurrency(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int isNullable(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isSigned(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int getPrecision(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int getScale(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int getColumnType(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-  
-  @Override public String getColumnTypeName(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
   @Override public String getColumnClassName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
@@ -109,6 +140,10 @@ public abstract class ResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   @Override public boolean isReadOnly(int column) throws SQLException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
+
+  @Override public int getColumnDisplaySize(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

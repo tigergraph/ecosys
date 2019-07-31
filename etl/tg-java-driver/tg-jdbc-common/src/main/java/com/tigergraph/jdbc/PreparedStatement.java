@@ -16,7 +16,7 @@ import static java.sql.Types.*;
 
 public abstract class PreparedStatement extends Statement implements java.sql.PreparedStatement {
 
-  protected HashMap<String, Object> parameters;
+  protected HashMap<Integer, Object> parameters;
   protected String statement;
   private int parametersNumber;
 
@@ -38,7 +38,8 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
    * Check if the given parameter index is out of boundary.
    */
   private void checkParamsNumber(int parameterIndex) throws SQLException {
-    if (parameterIndex > this.parametersNumber) {
+    // Interpreted queries need one additional parameter for query body.
+    if (parameterIndex > this.parametersNumber + 1) {
       throw new SQLException("ParameterIndex is out of range.");
     }
   }
@@ -47,7 +48,7 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
    * Insert a parameter into the map.
    */
   private void insertParameter(int index, Object obj) {
-    this.parameters.put(Integer.toString(index), obj);
+    this.parameters.put(index, obj);
   }
 
   /*
@@ -338,4 +339,3 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
 }
-

@@ -23,11 +23,7 @@ public class Driver extends BaseDriver {
   }
 
   @Override public Connection connect(String url, Properties info) throws SQLException {
-    return connect(url, info, Boolean.FALSE);
-  }
-
-  @Override public Connection connect(String url, Properties info, Boolean debug) throws SQLException {
-    return getDriver(url).connect(url, info, debug);
+    return getDriver(url).connect(url, info);
   }
 
   /**
