@@ -22,14 +22,12 @@ Prepare Shared Folder On Host OS With Docker Container
 =================================================================
 1. Open a shell on your host machine 
 
-        cd ~/
-
-1. Create the data folder to share between your host machine and docker container.
+1. Create the data folder to share between your host machine and docker container. Grant read/write/execute permission to the folder. 
 
         mkdir data
         chmod 777 data
 
-You can mount(map) the ~/data folder to a folder under the docker container. 
+You can mount(map) the "data" folder to a folder under the docker container. 
 Then, you can share files between your host OS and Docker OS. 
 
 Suppose we map ~/data to a docker folder /home/tigergraph/mydata, then anything we put on ~/data will be visible in docker container under /home/tigergraph/mydata, and vice versa.  
