@@ -73,16 +73,13 @@ After pulling the image and launch the container in the background, you can try 
 1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
          
          ssh -p 14022 tigergraph@localhost
-1. start TigerGraph service 
+1. start TigerGraph service， may take up to 1 minute. 
 
          gadmin start
 
-Optional: stop/start container
+1. start gsql shell
 
-        docker container stop tigergraph_dev
-        docker container start tigergraph_dev
-        
-        
+         gsql 
 
 Content of the Docker Image
 ================================
@@ -98,18 +95,19 @@ In the dev image, we include
 - tutorial: gsql 101, gsql 102 sub folders.
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
-More Operation Commands
-==========================
+Operation Commands Cheat Sheet
+================================
 - Start/shutdown Docker Desktop
   - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
   - To start it, find the Docker Desktop icon, double click it. 
 
-- Start/shutdown TigerGraph service
-  - After you start Docker Desktop, use the below command to start the container created 
 
-        docker start tigergraph_dev
+- After you start Docker Desktop, use the below command to start/stop the container created 
+    
+        docker container stop tigergraph_dev
+        docker container start tigergraph_dev
 
-1. ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
+- ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 
         sed -i.bak '/localhost/d' ~/.ssh/known_hosts
         ssh -p 14022 tigergraph@localhost
@@ -118,23 +116,22 @@ More Operation Commands
         docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph_dev
         ssh tigergraph@<container_ip_address>
 
-1. enter password for tigergraph user
+- enter password for tigergraph user
 
         tigergraph
 
-1. start tigergraph service
+- start/stop tigergraph service within container
 
         gadmin start 
+        gadmin stop 
 
-1. start graph studio
-open a browser on your laptop and access:
+- start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
 
         http://localhost:14240
 
-1. check version
+-  Check GSQL version within container shell. 
 
         gsql version
-    > Use 2.4 and above
 
 Documents and Forum
 =====================
