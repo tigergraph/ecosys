@@ -20,9 +20,8 @@ quit and restart docker desktop
 
 Prepare Shared Folder On Host OS With Docker Container
 =================================================================
-1. Open a shell on your host machine 
-
-1. Create the data folder to share between your host machine and docker container. Grant read/write/execute permission to the folder. 
+Open a shell on your host machine, find a directory where you want to share data with docker container. 
+Create the data folder there to share between your host machine and docker container. Grant read/write/execute permission to the folder. 
 
         mkdir data
         chmod 777 data
