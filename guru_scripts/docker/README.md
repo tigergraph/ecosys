@@ -60,7 +60,7 @@ This image will start as a daemon, so user can ssh to it.
 
 1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict
 
-        docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/tigergraph/loadingData -t docker.tigergraph.com/tigergraph-dev:latest
+        docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph-dev:latest
     > Note: if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
 
 1. verify that container is running
