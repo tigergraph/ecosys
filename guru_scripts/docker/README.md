@@ -29,20 +29,17 @@ Prepare Shared Folder On Host OS With Docker Container
         mkdir data
         chmod 777 data
 
-You can map the ~/data folder to a folder under Docker container. 
+You can mount(map) the ~/data folder to a folder under the docker container. 
 Then, you can share files between your host OS and Docker OS. 
 
-Suppose we map ~/data to a docker folder /home/tigergraph/tigergraph/loading data. 
-
-Vice versa, anything you put under /home/tigergraph/tigergraph/loadingData within the container, 
-will be visible on your host machchine ~/data folder. 
+Suppose we map ~/data to a docker folder /home/tigergraph/mydata, then anything we put on ~/data will be visible in docker container under /home/tigergraph/mydata, and vice versa.  
 
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
 on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
 
-Pull Pre-built TigerGraph Docker Image and Run it as a server
+Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
-One command pull docker image and bind all ports for first time user from TigerGraph  docker registry. 
+One command pull docker image and bind all ports for first time user from the TigerGraph docker registry. 
 This image will start as a daemon, so user can ssh to it. 
 
 1. remove old version, only do this step if you upgrade your docker image
