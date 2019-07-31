@@ -70,11 +70,10 @@ After pulling the image and launch the container in the background, you can try 
 
         docker ps | grep tigergraph_dev
         
-1. open a shell on your host OS to ssh to the container. 
+1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
 ```bash
     ssh -p 14022 tigergraph@localhost
 ```
-At prompt, enter "tigergraph" without quotes as password.
 
 1. Optional: stop/start container
 
