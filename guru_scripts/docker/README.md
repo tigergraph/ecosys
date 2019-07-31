@@ -26,10 +26,10 @@ Create the data folder there to share between your host machine and docker conta
         mkdir data
         chmod 777 data
 
-You can mount(map) the "data" folder to a folder under the docker container. 
+You can mount(map) the "data" folder to a folder under the docker container (will show -v of the mount command later). 
 Then, you can share files between your host OS and Docker OS. 
 
-Suppose we map ~/data to a docker folder /home/tigergraph/mydata, then anything we put on ~/data will be visible in docker container under /home/tigergraph/mydata, and vice versa.  
+Suppose we mount the host OS ~/data folder to a docker folder /home/tigergraph/mydata, then anything we put on ~/data will be visible in docker container under /home/tigergraph/mydata, and vice versa.  
 
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
 on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
