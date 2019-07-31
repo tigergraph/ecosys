@@ -53,8 +53,10 @@ This image will start as a daemon, so user can ssh to it.
         docker rm tigergraph_dev
 
 1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict. 
-   Note: the command is very long, user need to drag the horizontal bar to the right to see the full command. 
-         We map docker 22 port to host OS 14022 port, docker 9000 port to host OS 9000 port, same for 14240 to 14240. 
+   - the command is very long, user need to drag the horizontal bar to the right to see the full command. 
+   - The command does the follwoing
+     - map docker 22 port to host OS 14022 port, 
+     - docker 9000 port to host OS 9000 port, same for 14240 to 14240. 
          We give the container name tigergraph_dev. Set the ulimit (the number of open file descriptors per process) to 
          1M. Mount the host OS ~/data folder to docker /home/tigergraph/mydata folder using the -v option. 
          From the TigerGraph docker registry URL docker.tigergraph.com/tigergraph-dev, we download the latest image. 
