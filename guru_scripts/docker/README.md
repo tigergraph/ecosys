@@ -12,7 +12,7 @@ Installing Docker Desktop
 
 - Configure Docker Desktop using at least 2 cores, and 10G memory. Recommend 4 cores, 16G memory
 
-  - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory slide to the desired configuration,
+  - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory scroll button to the desired configuration,
 quit and restart docker desktop
 
 - Master Docker Container and Image concepts by watching this video
@@ -53,7 +53,7 @@ This image will start as a daemon, so user can ssh to it.
         docker rm tigergraph_dev
 
 1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict. 
-   - the command is very long, user need to drag the horizontal bar to the right to see the full command. 
+   - the command is very long, user need to drag the horizontal scroll bar to the right to see the full command. 
    - The command does the following
      - "-d" make the container run in the background. 
      - "-p" map docker 22 port to host OS 14022 port, 9000 port to host OS 9000 port, 14240 port to host OS 14240 port.
