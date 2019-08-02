@@ -4,8 +4,9 @@ Installing Docker Desktop
    - Intsall Docker for Mac OS laptop, follow this video
      https://www.youtube.com/watch?v=MU8HUVlJTEY
 
-   - Install Docker for Linux, follow this video
-     https://www.youtube.com/watch?v=KCckWweNSrM
+   - Install Docker for Linux, follow this instructions.
+     - Centos https://docs.docker.com/install/linux/docker-ce/centos/
+     - Ubuntu https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
    - Intsall Docker for Windows OS laptop, follow this video
      https://www.youtube.com/watch?v=ymlWt1MqURY
