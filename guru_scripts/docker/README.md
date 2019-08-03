@@ -11,7 +11,7 @@ Installing Docker Desktop
    - Intsall Docker for Windows OS laptop, follow this video
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
-- Configure Docker Desktop using at least 2 cores, and 10G memory. Recommend 4 cores, 16G memory
+- Configure Docker Desktop using at least 2 cores, and 10G memory. *Recommend 4 cores, 16G memory*
 
   - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory scroll button to the desired configuration,
 quit and restart docker desktop
