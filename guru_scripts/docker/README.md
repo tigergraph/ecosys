@@ -1,33 +1,34 @@
-Installing Docker Desktop
-============================
-- Install Docker on your OS (choose one)
-   - Intsall Docker for Mac OS laptop, follow this video
+Install Docker Desktop
+=========================
+1. Install Docker on your OS (choose one)
+   - To install Docker for Mac OS, follow this video
      https://www.youtube.com/watch?v=MU8HUVlJTEY
 
-   - Install Docker for Linux, follow this instructions.
+   - To install Docker for Linux, follow this instructions.
      - Centos https://docs.docker.com/install/linux/docker-ce/centos/
      - Ubuntu https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
-   - Intsall Docker for Windows OS laptop, follow this video
+   - To install Docker for Windows OS, follow this video
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
-- Configure Docker Desktop using 4 cores 16G memory (for minimum requirement, 2 cores 10G memory).
+2. Configure Docker Desktop with sufficient resources:
+    Recommended: 4 cores and 16GB memory
+    Minimum: 2 cores and 10GB memory (performance will be degraded)
 
-  - Click Dock Desktop icon, click Preferences...>>Advanced menu, drag CPU and Memory scroll button to the desired configuration,
-quit and restart docker desktop
+    Click the Docker Desktop icon, click Preferences...>>Advanced menu, drag the CPU and Memory sliders
+    to the desired configuration, save and restart Docker Desktop
 
-- Master Docker *Container* and *Image* concepts by watching this video
+3. To understand the Docker *Container* and *Image* concepts, watch this video:
   https://www.youtube.com/watch?v=Rv3DAJbDrS0
 
-Prepare Shared Folder On Host OS With Docker Container
-=================================================================
-Open a shell on your host machine, find a directory where you want to share data with docker container. 
-Create the data folder there to share between your host machine and docker container. Grant read/write/execute permission to the folder. 
+Prepare a Shared Folder on Host OS shared with Docker Container
+===============================================================
+Open a shell on your host machine and create or select a directory for sharing data between your host machine and docker container. Grant read/write/execute permission to the folder. For example, to create a folder called data in Linux:
 
         mkdir data
         chmod 777 data
 
-You can mount(map) the "data" folder to a folder under the docker container (will show -v of the mount command later). 
+You can mount(map) the data folder to a folder under the docker container (will show -v of the mount command later). 
 Then, you can share files between your host OS and Docker OS. 
 
 Suppose we mount the host OS ~/data folder to a docker folder /home/tigergraph/mydata, then anything we put on ~/data will be visible in docker container under /home/tigergraph/mydata, and vice versa.  
