@@ -82,7 +82,10 @@ After pulling the image and launch the container in the background, you can try 
 1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/intro/gsql-101
 
          gsql 
+1. start GraphStudio, TigerGraph's visual IDE,  by opening a browser on your laptop (host OS) and access:
 
+        http://localhost:14240
+        
 Content of the Docker Image
 ================================
 In the dev image, we include 
