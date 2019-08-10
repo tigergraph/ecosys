@@ -16,13 +16,23 @@ fi
 #######################################
 mkdir -p com/tigergraph/client
 rm -rf com/tigergraph/client/Driver.java
-echo "package com.tigergraph.client;
+cat <<EOT >> com/tigergraph/client/Driver.java
+package com.tigergraph.client;
 import java.io.OutputStream;
 
 public class Driver {
     public static void main(String[] args) {
-" >> com/tigergraph/client/Driver.java
-
+        String Gsql_Client_Version= System.getenv("GSQL_CLIENT_VERSION");
+        if (Gsql_Client_Version == null) {
+            Gsql_Client_Version = System.getProperty("GSQL_CLIENT_VERSION");
+        }
+        if (Gsql_Client_Version == null) {
+            Gsql_Client_Version = "";
+        }
+        // do two loops: 1st to try the given Gsql_Client_Version;
+        // 2nd is to try each one except the given Gsql_Client_Version
+        for (int i = 1; i <= 2; i++) {
+EOT
 ########################################################################
 # 2. add each version. Make sure we can CD to the first GLE directory. #
 ########################################################################
@@ -36,7 +46,10 @@ cd $GLE_DIR; git checkout tg_2.5.0_dev; cd -
 ######################################
 # 3. finish Driver.java endi section #
 ######################################
-echo "     } // end main
-}"    >> com/tigergraph/client/Driver.java
+cat <<EOT >> com/tigergraph/client/Driver.java
+        }
+     } // end main
+}
+EOT
 
-# Contuine with " mvn package "
+# Continue with " mvn package "

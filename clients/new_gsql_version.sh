@@ -8,12 +8,15 @@ VSTR=$3  # version_string: should be sth like v2_4_0
 
 #Step 0:  add this version in AIO driver
 cat <<EOT >> com/tigergraph/client/Driver.java
-        try {
-            System.out.println("trying $VSTR");
-            com.tigergraph.$VSTR.client.Driver.main(args);
-        } catch (SecurityException e) {
-            ;
-        }
+            if ( ( i==1 && Gsql_Client_Version.equalsIgnoreCase("$VSTR") ) ||
+                 ( i==2 && (!Gsql_Client_Version.equalsIgnoreCase("$VSTR")) )){
+                try {
+                    System.out.println("trying $VSTR");
+                    com.tigergraph.$VSTR.client.Driver.main(args);
+                } catch (SecurityException e) {
+                    ;
+                }
+            }
 EOT
 
 #Step 1: clean up and then create the target dir
@@ -22,7 +25,11 @@ rm -rf $VSTR;  mkdir $VSTR
 
 #Step 2: switch the source to correct branch (release). Get client commit
 cd $SRC; 
-git checkout $BRN; git pull; 
+git fetch --all -p
+git checkout $BRN
+git clean -df
+git reset --hard origin/$BRN
+git pull
 client_commit="\"$(git log -1 --pretty="format:%H" -- com/tigergraph/client/ com/tigergraph/common/)\""
 cd -
 
