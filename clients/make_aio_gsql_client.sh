@@ -31,7 +31,11 @@ public class Driver {
         }
         // do two loops: 1st to try the given Gsql_Client_Version;
         // 2nd is to try each one except the given Gsql_Client_Version
+        String Supported_Versions="";
         for (int i = 1; i <= 2; i++) {
+            if ( i==2) {
+                System.out.println( "Supported Versions ( " + Supported_Versions +")");
+            }
 EOT
 ########################################################################
 # 2. add each version. Make sure we can CD to the first GLE directory. #

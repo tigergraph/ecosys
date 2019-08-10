@@ -8,6 +8,9 @@ VSTR=$3  # version_string: should be sth like v2_4_0
 
 #Step 0:  add this version in AIO driver
 cat <<EOT >> com/tigergraph/client/Driver.java
+            if ( i==1 ) {
+                Supported_Versions = Supported_Versions + "$VSTR ";
+            }
             if ( ( i==1 && Gsql_Client_Version.equalsIgnoreCase("$VSTR") ) ||
                  ( i==2 && (!Gsql_Client_Version.equalsIgnoreCase("$VSTR")) )){
                 try {
