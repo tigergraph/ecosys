@@ -72,7 +72,7 @@ After pulling the image and launch the container in the background, you can try 
 
         docker ps | grep tigergraph_dev
         
-1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
+1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password. Note that we have mapped the host 14022 port to the container's 22 port (the ssh default port). So, on host we ssh to 14022. 
          
          ssh -p 14022 tigergraph@localhost
 1. after ssh to the container, start the TigerGraph service under bash shell (may take up to 1 minute). 
