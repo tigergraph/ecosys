@@ -1,6 +1,6 @@
 Overview Video
 =================
-This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+This video shows the setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
 
 Install Docker Desktop
 =========================
