@@ -1,3 +1,7 @@
+Overview Video
+=================
+This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+
 Install Docker Desktop
 =========================
 1. Install Docker on your OS (choose one)
