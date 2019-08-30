@@ -106,15 +106,20 @@ In the dev image, we include
 
 Operation Commands Cheat Sheet
 ================================
-- Start/Stop Docker Desktop
-  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
-  - To start it, find the Docker Desktop icon, double click it. 
-
 
 - After you start Docker Desktop, use the below command to start/stop the container created 
     
         docker container stop tigergraph_dev
         docker container start tigergraph_dev
+        
+- start/stop tigergraph service within container
+
+        gadmin start 
+        gadmin stop 
+        
+- Start/Stop Docker Desktop
+  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph_dev container.
+  - To start it, find the Docker Desktop icon, double click it. 
 
 - ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 
@@ -128,11 +133,6 @@ Operation Commands Cheat Sheet
 - enter password for tigergraph user
 
         tigergraph
-
-- start/stop tigergraph service within container
-
-        gadmin start 
-        gadmin stop 
 
 - After "gadmin start", you can start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
 
