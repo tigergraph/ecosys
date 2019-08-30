@@ -16,16 +16,16 @@ import java.sql.Statement;
 public class GraphQuery
 {
   public static void main( String[] args ) throws SQLException {
-    Boolean debug = Boolean.FALSE;
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
-    Integer port = 9000;
+    // port of GraphStudio
+    Integer port = 14240;
 
     /**
-     * Need to specify token once REST++ authentication is enabled.
-     * Token could be got from gsql shell or administrator.
+     * Need to specify username and password once REST++ authentication is enabled.
      */
-    properties.put("token", "36oaj9gck3rrqc9jo2ve6fh6796i629c");
+    properties.put("username", "tigergraph");
+    properties.put("password", "tigergraph");
 
     /**
      * Specify the graph name, especially when multi-graph is enabled.
@@ -39,7 +39,7 @@ public class GraphQuery
     if (args.length == 3) {
       ipAddr = args[0];
       port = Integer.valueOf(args[1]);
-      debug = (Integer.valueOf(args[2]) > 0);
+      properties.put("debug", args[2]);
     }
 
     /**
@@ -52,19 +52,32 @@ public class GraphQuery
     try {
       com.tigergraph.jdbc.Driver driver = new Driver();
 
-      try (Connection con = driver.connect(sb.toString(), properties, debug)) {
+      try (Connection con = driver.connect(sb.toString(), properties)) {
         /**
-         * To get any 3 vertices of Page type
+         * To get vertices of Page type whose 'account' is larger than 3.
          */
-        String query = "get Page(limit=?)";
-        System.out.println("Running \"get Page(limit=?)\"...");
+        String query = "get Page(filter=?)";
+        System.out.println("Running \"get Page(filter=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setInt(0, 3);
+          pstmt.setString(1, "account>3");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -77,30 +90,25 @@ public class GraphQuery
         query = "get Page(id=?)";
         System.out.println("Running \"get Page(id=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "2");
+          pstmt.setString(1, "2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
-          }
-        } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
-        }
-
-        /**
-         * To get a Page whose page_id is 2
-         */
-        System.out.println();
-        query = "get Page(filter=?)";
-        System.out.println("Running \"get Page(filter=?)\"...");
-        try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "page_id=2");
-          try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -113,12 +121,25 @@ public class GraphQuery
         query = "get edges(Page, ?)";
         System.out.println("Running \"get edges(Page, ?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "2");
+          pstmt.setString(1, "2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -131,13 +152,26 @@ public class GraphQuery
         query = "get edge(Page, ?, Linkto, Page, ?)";
         System.out.println("Running \"get edge(Page, ?, Linkto, Page, ?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "2");
-          pstmt.setString(1, "3");
+          pstmt.setString(1, "2");
+          pstmt.setString(2, "3");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -150,4 +184,3 @@ public class GraphQuery
     }
   }
 }
-

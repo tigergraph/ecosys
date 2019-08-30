@@ -21,8 +21,6 @@ public abstract class BaseDriver implements java.sql.Driver {
 
   @Override public abstract Connection connect(String url, Properties info) throws SQLException;
 
-  public abstract Connection connect(String url, Properties info, Boolean debug) throws SQLException;
-
 	@Override public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
 		return new DriverPropertyInfo[0];
 	}
