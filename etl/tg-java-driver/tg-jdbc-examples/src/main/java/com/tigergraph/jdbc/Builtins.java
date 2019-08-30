@@ -15,16 +15,16 @@ import java.sql.Statement;
  */
 public class Builtins {
   public static void main( String[] args ) throws SQLException {
-    Boolean debug = Boolean.FALSE;
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
-    Integer port = 9000;
+    // port of GraphStudio
+    Integer port = 14240;
 
     /**
-     * Need to specify token once REST++ authentication is enabled.
-     * Token could be got from gsql shell or administrator.
+     * Need to specify username and password once REST++ authentication is enabled.
      */
-    properties.put("token", "36oaj9gck3rrqc9jo2ve6fh6796i629c");
+    properties.put("username", "tigergraph");
+    properties.put("password", "tigergraph");
 
     /**
      * Specify the graph name, especially when multi-graph is enabled.
@@ -38,7 +38,7 @@ public class Builtins {
     if (args.length == 3) {
       ipAddr = args[0];
       port = Integer.valueOf(args[1]);
-      debug = (Integer.valueOf(args[2]) > 0);
+      properties.put("debug", args[2]);
     }
 
     /**
@@ -50,7 +50,7 @@ public class Builtins {
 
     try {
       com.tigergraph.jdbc.Driver driver = new Driver();
-      try (Connection con = driver.connect(sb.toString(), properties, debug)) {
+      try (Connection con = driver.connect(sb.toString(), properties)) {
         try (Statement stmt = con.createStatement()) {
           /**
            * Run a builtin query without any parameter.
@@ -58,10 +58,22 @@ public class Builtins {
           String query = "builtins stat_vertex_number";
           System.out.println("Running \"builtins stat_vertex_number\"...");
           try (java.sql.ResultSet rs = stmt.executeQuery(query)) {
-              while (rs.next()) {
-                Object obj = rs.getObject(0);
-                System.out.println(String.valueOf(obj));
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
               }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.println("\t" + String.valueOf(obj));
+                }
+              }
+            } while (!rs.isLast());
           }
 
           /**
@@ -71,12 +83,24 @@ public class Builtins {
           System.out.println("Running \"builtins stat_vertex_number(type=?)\"...");
           query = "builtins stat_vertex_number(type=?)";
           try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(0, "*");
+            pstmt.setString(1, "*");
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-              while (rs.next()) {
-                Object obj = rs.getObject(0);
-                System.out.println(String.valueOf(obj));
-              }
+              do {
+                java.sql.ResultSetMetaData metaData = rs.getMetaData();
+                System.out.println("Table: " + metaData.getCatalogName(1));
+                System.out.print(metaData.getColumnName(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  System.out.print("\t" + metaData.getColumnName(i));
+                }
+                System.out.println("");
+                while (rs.next()) {
+                  System.out.print(rs.getObject(1));
+                  for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                    Object obj = rs.getObject(i);
+                    System.out.println("\t" + String.valueOf(obj));
+                  }
+                }
+              } while (!rs.isLast());
             }
           }
 
@@ -87,10 +111,22 @@ public class Builtins {
           System.out.println("Running \"builtins stat_edge_number\"...");
           query = "builtins stat_edge_number";
           try (java.sql.ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.println("\t" + String.valueOf(obj));
+                }
+              }
+            } while (!rs.isLast());
           }
 
           /**
@@ -100,12 +136,24 @@ public class Builtins {
           System.out.println("Running \"builtins stat_edge_number(type=?)\"...");
           query = "builtins stat_edge_number(type=?)";
           try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(0, "Linkto");
+            pstmt.setString(1, "Linkto");
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-              while (rs.next()) {
-                Object obj = rs.getObject(0);
-                System.out.println(String.valueOf(obj));
-              }
+              do {
+                java.sql.ResultSetMetaData metaData = rs.getMetaData();
+                System.out.println("Table: " + metaData.getCatalogName(1));
+                System.out.print(metaData.getColumnName(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  System.out.print("\t" + metaData.getColumnName(i));
+                }
+                System.out.println("");
+                while (rs.next()) {
+                  System.out.print(rs.getObject(1));
+                  for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                    Object obj = rs.getObject(i);
+                    System.out.println("\t" + String.valueOf(obj));
+                  }
+                }
+              } while (!rs.isLast());
             }
           }
         } catch (SQLException e) {

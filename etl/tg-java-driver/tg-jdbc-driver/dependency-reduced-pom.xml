@@ -3,15 +3,14 @@
   <parent>
     <artifactId>tg-java-driver</artifactId>
     <groupId>com.tigergraph</groupId>
-    <version>1.0</version>
+    <version>1.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.tigergraph</groupId>
   <artifactId>tg-jdbc-driver</artifactId>
   <name>TigerGraph JDBC Driver Packaging</name>
-  <version>1.0</version>
+  <version>1.2</version>
   <description>Module to package TigerGraph JDBC Driver into one jar</description>
-  <url>https://github.com/tigergraph/tg-java-driver</url>
   <build>
     <plugins>
       <plugin>

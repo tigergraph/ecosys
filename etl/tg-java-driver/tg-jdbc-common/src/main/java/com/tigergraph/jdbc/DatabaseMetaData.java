@@ -12,17 +12,17 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class DatabaseMetaData implements java.sql.DatabaseMetaData {
+public class DatabaseMetaData implements java.sql.DatabaseMetaData {
 
   private String driverName;
   private String driverVersion;
   private Connection connection;
-  private boolean debug = false;
+  private Integer debug = 0;
 
   /**
    * Default constructor.
    */
-  public DatabaseMetaData(Connection connection, boolean debug) {
+  public DatabaseMetaData(Connection connection, Integer debug) {
     this.connection = connection;
     this.debug = debug;
 
@@ -65,7 +65,19 @@ public abstract class DatabaseMetaData implements java.sql.DatabaseMetaData {
   @Override public String getURL() throws SQLException {
     return this.connection.getUrl();
   }
-  
+
+  @Override public boolean supportsTransactions() throws SQLException {
+    return Boolean.TRUE;
+  }
+
+  @Override public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
+    return (level < 2);
+  }
+
+  @Override public int getDefaultTransactionIsolation() throws SQLException {
+    return 1;
+  }
+
   /**
    * Methods not implemented yet.
    */
@@ -370,10 +382,6 @@ public abstract class DatabaseMetaData implements java.sql.DatabaseMetaData {
   }
 
   @Override public int getMaxUserNameLength() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -686,14 +694,6 @@ public abstract class DatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getDefaultTransactionIsolation() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean supportsTransactions() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
   @Override public String getSearchStringEscape() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
@@ -757,26 +757,25 @@ public abstract class DatabaseMetaData implements java.sql.DatabaseMetaData {
   @Override public boolean allProceduresAreCallable() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public boolean allTablesAreSelectable() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public boolean nullsAreSortedHigh() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public boolean nullsAreSortedLow() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public boolean nullsAreSortedAtStart() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public boolean nullsAreSortedAtEnd() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
 }
-

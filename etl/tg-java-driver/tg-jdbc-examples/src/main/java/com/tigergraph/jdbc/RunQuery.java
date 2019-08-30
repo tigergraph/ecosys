@@ -16,16 +16,16 @@ import java.sql.Statement;
 public class RunQuery
 {
   public static void main( String[] args ) throws SQLException {
-    Boolean debug = Boolean.FALSE;
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
-    Integer port = 9000;
+    // port of GraphStudio
+    Integer port = 14240;
 
     /**
-     * Need to specify token once REST++ authentication is enabled.
-     * Token could be got from gsql shell or administrator.
+     * Need to specify username and password once REST++ authentication is enabled.
      */
-    properties.put("token", "36oaj9gck3rrqc9jo2ve6fh6796i629c");
+    properties.put("username", "tigergraph");
+    properties.put("password", "tigergraph");
 
     /**
      * Specify the graph name, especially when multi-graph is enabled.
@@ -39,7 +39,7 @@ public class RunQuery
     if (args.length == 3) {
       ipAddr = args[0];
       port = Integer.valueOf(args[1]);
-      debug = (Integer.valueOf(args[2]) > 0);
+      properties.put("debug", args[2]);
     }
 
     /**
@@ -52,21 +52,40 @@ public class RunQuery
     try {
       com.tigergraph.jdbc.Driver driver = new Driver();
 
-      try (Connection con = driver.connect(sb.toString(), properties, debug)) {
+      try (Connection con = driver.connect(sb.toString(), properties)) {
         /**
          * Run a pre-installed query with parameters.
          */
         System.out.println("Running \"run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)\"...");
         String query = "run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "0.001");
-          pstmt.setInt(1, 10);
-          pstmt.setString(2, "0.15");
+          // Set timeout (in seconds).
+          pstmt.setQueryTimeout(60);
+          pstmt.setString(1, "0.001");
+          pstmt.setInt(2, 10);
+          pstmt.setString(3, "0.15");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("\n>>>Table: " + metaData.getCatalogName(1));
+              for (int i = 1; i <= metaData.getColumnCount(); ++i) {
+                if (i > 1) {
+                  System.out.print("\t");
+                }
+                System.out.print(metaData.getColumnName(i));
+                System.out.print("," + String.valueOf(metaData.getScale(i)));
+                System.out.print("," + String.valueOf(metaData.getPrecision(i)));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -79,30 +98,60 @@ public class RunQuery
         System.out.println("Running \"run pageRank(maxChange=?)\"...");
         query = "run pageRank(maxChange=?)";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "0.001");
+          pstmt.setString(1, "0.001");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
         }
 
         /**
-         * Run a none-existed query.
+         * Run an interpreted query with parameters.
          */
         System.out.println("");
-        System.out.println("Running none-existed query \"run none-existed(param=?)\"...");
-        query = "run none-existed(param=?)";
+        System.out.println("Running interpreted query \"run interpreted(a=?, b=?)\"...");
+        query = "run interpreted(a=?, b=?)";
+        String query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH gsql_demo {\n"
+                     + "PRINT a, b;\n"
+                     + "}\n";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-          pstmt.setString(0, "0.001");
+          pstmt.setString(1, "10");
+          pstmt.setString(2, "20");
+          pstmt.setString(3, query_body); // The query body is passed as a parameter.
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-              Object obj = rs.getObject(0);
-              System.out.println(String.valueOf(obj));
-            }
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.println("\t" + String.valueOf(obj));
+                }
+              }
+            } while (!rs.isLast());
           }
         } catch (SQLException e) {
           System.out.println( "Failed to createStatement: " + e);
@@ -115,4 +164,3 @@ public class RunQuery
     }
   }
 }
-

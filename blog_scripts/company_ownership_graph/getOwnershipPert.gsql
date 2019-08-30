@@ -1,0 +1,36 @@
+CREATE QUERY getOwnershipPert(vertex<Company> inputComp) FOR GRAPH MyGraph { 
+
+  SumAccum<int> @msgCnt1, @msgCnt2;
+  OrAccum<bool> @visited;
+  SumAccum<float> @score = 0;
+  SetAccum<vertex> @@results;
+
+  Start = {inputComp};
+
+  WHILE Start.size() > 0 limit 8 DO
+    Start = SELECT t FROM Start:s-(ControlledBy:e)-:t
+            ACCUM t.@msgCnt1 += 1
+            POST-ACCUM s.@visited = true
+            HAVING t.@visited == false;  // don't start again for the second visit;
+  end;
+
+  Start = {inputComp};
+
+  Start = SELECT s FROM Start:s ACCUM s.@score = 1; // initialize @score
+
+  WHILE Start.size() > 0 LIMIT 8 DO
+    Start = SELECT t FROM Start:s-(ControlledBy:e)-:t
+            ACCUM t.@msgCnt2 += 1, t.@score += s.@score * e.weight
+            POST-ACCUM 
+            CASE WHEN t.outdegree("ControlledBy") == 0 THEN
+              @@results += t 
+            END
+            HAVING t.@msgCnt2 ==  t.@msgCnt1; // make sure got all the scores
+  END;
+
+  Start = @@results;
+
+  Start = SELECT s FROM Start:s ORDER BY s.@score desc LIMIT 5;
+	
+  PRINT Start;
+}

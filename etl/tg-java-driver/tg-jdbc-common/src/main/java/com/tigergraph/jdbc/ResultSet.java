@@ -31,6 +31,8 @@ public abstract class ResultSet implements java.sql.ResultSet {
    * Abstract Methods.
    */
 
+  @Override public abstract boolean isLast() throws SQLException;
+
   @Override public abstract int getType() throws SQLException;
 
   @Override public abstract int getConcurrency() throws SQLException;
@@ -172,10 +174,6 @@ public abstract class ResultSet implements java.sql.ResultSet {
   }
 
   @Override public boolean isFirst() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isLast() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

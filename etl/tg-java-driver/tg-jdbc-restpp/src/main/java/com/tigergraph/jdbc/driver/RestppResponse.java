@@ -23,35 +23,51 @@ public class RestppResponse {
   private String errCode;
   private String errMsg;
   private List<JSONObject> results;
-  private Boolean debug = Boolean.FALSE;
+  private Integer debug = 0;
 
   /**
    * For unit test only.
    */
   public RestppResponse() {
+    this.results = new ArrayList<>();
     this.code = HttpStatus.SC_OK;
   }
 
-  public RestppResponse(HttpResponse response, Boolean debug) throws SQLException {
+  public RestppResponse(HttpResponse response, Boolean panic_on_fail,
+      Integer debug) throws SQLException {
+    this.results = new ArrayList<>();
+
     if (response.getStatusLine() == null) {
-      throw new SQLException("Received response with no status code.");
+      if (panic_on_fail) {
+        throw new SQLException("Received response with no status code.");
+      } else {
+        return;
+      }
     }
 
     this.debug = debug;
     this.code = response.getStatusLine().getStatusCode();
 
     if (this.code != HttpStatus.SC_OK) {
-      throw new SQLException("Failed to send http request: " + String.valueOf(this.code));
+      if (panic_on_fail) {
+        throw new SQLException("Failed to send http request: " + String.valueOf(this.code));
+      } else {
+        return;
+      }
     }
 
     HttpEntity entity = response.getEntity();
     if (null == entity) {
-      throw new SQLException("Received no entity.");
+      if (panic_on_fail) {
+        throw new SQLException("Received no entity.");
+      } else {
+        return;
+      }
     }
 
     try {
       String content = EntityUtils.toString(entity);
-      if (debug) {
+      if (debug > 0) {
         System.out.println(">>> Response: " + content);
       }
       parse(content);
@@ -64,7 +80,6 @@ public class RestppResponse {
     JSONObject obj;
     obj = new JSONObject(content);
     this.is_error = obj.getBoolean("error");
-    this.results = new ArrayList<>();
     if (this.is_error) {
       this.errMsg = obj.getString("message");
       /**
@@ -72,9 +87,14 @@ public class RestppResponse {
        */
       // this.errCode = obj.getString("code");
     } else {
-      JSONArray resultList = obj.getJSONArray("results");
-      for(int i = 0; i < resultList.length(); i++){
-        this.results.add(resultList.getJSONObject(i));
+      Object value = obj.get("results");
+      if (value instanceof JSONObject) {
+        this.results.add((JSONObject)value);
+      } else if (value instanceof JSONArray) {
+        JSONArray resultList = (JSONArray)value;
+        for(int i = 0; i < resultList.length(); i++){
+          this.results.add(resultList.getJSONObject(i));
+        }
       }
     }
   }
@@ -84,7 +104,7 @@ public class RestppResponse {
   }
 
   public Boolean hasResultSets() {
-    return (this.results != null);
+    return (this.results.size() > 0);
   }
 
   public String getErrMsg() {
@@ -111,4 +131,3 @@ public class RestppResponse {
     return sb.toString();
   }
 }
-

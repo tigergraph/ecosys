@@ -4,7 +4,7 @@
   <parent>
     <artifactId>tg-java-driver</artifactId>
     <groupId>com.tigergraph</groupId>
-    <version>1.0</version>
+    <version>1.2</version>
   </parent>
 
   <groupId>com.tigergraph</groupId>
@@ -12,9 +12,7 @@
   <packaging>jar</packaging>
   <name>TigerGraph JDBC Driver Common Module</name>
   <description>Common module used by TigerGraph JDBC Driver</description>
-  <version>1.0</version>
-
-  <url>https://github.com/tigergraph/tg-java-driver</url>
+  <version>1.2</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

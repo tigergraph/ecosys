@@ -8,6 +8,8 @@ public abstract class Statement implements java.sql.Statement {
 
   protected Connection connection;
   protected ResultSet currentResultSet;
+  protected int fetchSize;
+  protected int timeout = -1;
 
   /**
    * Default constructor.
@@ -21,6 +23,11 @@ public abstract class Statement implements java.sql.Statement {
     return this.connection;
   }
 
+  @Override public void setFetchSize(int rows) throws SQLException {
+    this.fetchSize = rows;
+    return;
+  }
+
   @Override public ResultSet getResultSet() throws SQLException {
     ResultSet rs = this.currentResultSet;
     this.currentResultSet = null;
@@ -29,6 +36,19 @@ public abstract class Statement implements java.sql.Statement {
 
   @Override public void close() throws SQLException {
     return; // Nothing to do
+  }
+
+  @Override public void setQueryTimeout(int seconds) throws SQLException {
+    if (seconds < 0) {
+      throw new SQLException("Timeout should be greater than or equal to 0.");
+    }
+
+    // The unit of timeout for TigerGraph is millisecond.
+    timeout = seconds * 1000;
+  }
+
+  @Override public int getQueryTimeout() throws SQLException {
+    return timeout / 1000;
   }
 
   /*
@@ -154,18 +174,6 @@ public abstract class Statement implements java.sql.Statement {
   }
 
   @Override public void setMaxRows(int max) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public int getQueryTimeout() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public void setQueryTimeout(int seconds) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public void setFetchSize(int rows) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

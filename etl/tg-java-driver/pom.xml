@@ -4,11 +4,10 @@
 
   <groupId>com.tigergraph</groupId>
   <artifactId>tg-java-driver</artifactId>
-  <version>1.0</version>
+  <version>1.2</version>
   <packaging>pom</packaging>
   <name>TigerGraph JDBC Driver Parent</name>
   <description>Parent POM for TigerGraph JDBC Driver and Modules</description>
-  <url>https://github.com/tigergraph/tg-java-driver</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,7 +16,7 @@
   </properties>
 
   <organization>
-    <name>TigerGraph</name>
+    <name>TigerGraph Inc.</name>
     <url>http://www.tigergraph.com</url>
   </organization>
 
@@ -54,6 +53,17 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <configuration>
+          <archive>
+            <manifestEntries>
+              <url>${project.organization.url}</url>
+              <Bundle-Vendor>${project.organization.name}</Bundle-Vendor>
+              <Bundle-ClassPath>"."</Bundle-ClassPath>
+              <Bundle-Version>${project.version}</Bundle-Version>
+              <Bundle-Name>TigerGraph JDBC driver</Bundle-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
