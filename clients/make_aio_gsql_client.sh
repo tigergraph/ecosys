@@ -14,8 +14,8 @@ fi
 #######################################
 # 1. create Driver.java begin section #
 #######################################
+rm -rf com/tigergraph/*
 mkdir -p com/tigergraph/client
-rm -rf com/tigergraph/client/Driver.java
 cat <<EOT >> com/tigergraph/client/Driver.java
 package com.tigergraph.client;
 import java.io.OutputStream;
@@ -35,6 +35,7 @@ public class Driver {
         for (int i = 1; i <= 2; i++) {
             if ( i==2) {
                 System.out.println( "Supported Versions ( " + Supported_Versions +")");
+                System.out.println( "You may use 'GSQL_CLIENT_VERSION=v? java ...' or \n    'java -DGSQL_CLIENT_VERSION=v? ...' to specify the version");
             }
 EOT
 ########################################################################
@@ -46,7 +47,6 @@ cd $GLE_DIR; git checkout tg_2.5.0_dev; cd -
 ./new_gsql_version.sh $GLE_DIR                  tg_2.4.1_dev    v2_4_1
 ./new_gsql_version.sh $GLE_DIR                  tg_2.4.0_dev    v2_4_0
 ./new_gsql_version.sh $GLE_DIR                  tg_2.3.2_dev    v2_3_2
-
 ######################################
 # 3. finish Driver.java endi section #
 ######################################

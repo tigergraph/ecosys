@@ -14,7 +14,8 @@ cat <<EOT >> com/tigergraph/client/Driver.java
             if ( ( i==1 && Gsql_Client_Version.equalsIgnoreCase("$VSTR") ) ||
                  ( i==2 && (!Gsql_Client_Version.equalsIgnoreCase("$VSTR")) )){
                 try {
-                    System.out.println("trying $VSTR");
+                    System.out.println("========================");
+                    System.out.println("Trying version: $VSTR");
                     com.tigergraph.$VSTR.client.Driver.main(args);
                 } catch (SecurityException e) {
                     ;
@@ -54,6 +55,8 @@ if [ "$(uname)" == "Darwin" ]; then
     LC_ALL=C find . -type f -name 'Client.java' -exec sed -i '' "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
     #4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
     LC_ALL=C find . -type f -name 'Driver.java' -exec sed -i '' "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
+    #4.5: exit if license expires
+    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i '' "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }/" {} +
 else
     #4.1: fix package name with VSTR
     LC_ALL=C find . -type f -name '*.java'      -exec sed -i    "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} + 
@@ -64,5 +67,7 @@ else
     LC_ALL=C find . -type f -name 'Client.java' -exec sed -i    "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
     #4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
     LC_ALL=C find . -type f -name 'Driver.java' -exec sed -i    "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
+    #4.5: exit if license expires
+    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i    "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }/" {} +
 fi
 
