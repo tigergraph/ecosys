@@ -1,6 +1,6 @@
-use graph mygraph
+use graph _graphname_
 drop query DeleteUnknownEdge
-create query DeleteUnknownEdge(string sourceTypeName, string targetTypeName, string edgeTypeName, bool dryrun = true) for Graph mygraph {
+create query DeleteUnknownEdge(string sourceTypeName, string targetTypeName, string edgeTypeName, bool dryrun = true) for Graph _graphname_ {
  SetAccum<vertex> @@vSet;
  ListAccum<vertex> @@vlist;
  string msg;
