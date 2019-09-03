@@ -1,3 +1,7 @@
+Overview Video
+=================
+This video shows the setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+
 Install Docker Desktop
 =========================
 1. Install Docker on your OS (choose one)
@@ -72,7 +76,7 @@ After pulling the image and launch the container in the background, you can try 
 
         docker ps | grep tigergraph_dev
         
-1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password.
+1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password. Note that we have mapped the host 14022 port to the container's 22 port (the ssh default port). So, on host we ssh to 14022. 
          
          ssh -p 14022 tigergraph@localhost
 1. after ssh to the container, start the TigerGraph service under bash shell (may take up to 1 minute). 
@@ -118,15 +122,20 @@ To customize the Tigergraph Docker image, e.g., integrate another docker images
 
 Operation Commands Cheat Sheet
 ================================
-- Start/Stop Docker Desktop
-  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
-  - To start it, find the Docker Desktop icon, double click it. 
-
 
 - After you start Docker Desktop, use the below command to start/stop the container created 
     
         docker container stop tigergraph_dev
         docker container start tigergraph_dev
+        
+- start/stop tigergraph service within container
+
+        gadmin start 
+        gadmin stop 
+        
+- Start/Stop Docker Desktop
+  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph_dev container.
+  - To start it, find the Docker Desktop icon, double click it. 
 
 - ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 
@@ -140,11 +149,6 @@ Operation Commands Cheat Sheet
 - enter password for tigergraph user
 
         tigergraph
-
-- start/stop tigergraph service within container
-
-        gadmin start 
-        gadmin stop 
 
 - After "gadmin start", you can start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
 
