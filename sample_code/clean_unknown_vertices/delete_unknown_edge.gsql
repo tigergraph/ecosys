@@ -4,9 +4,9 @@ create query DeleteUnknownEdge(string sourceTypeName, string targetTypeName, str
  ListAccum<vertex> @@vlist;
  string msg;
  Seed = {sourceTypeName.*};
- X = SELECT src 
+ X = SELECT tgt 
      FROM Seed:src - (edgeTypeName) - targetTypeName: tgt
-     ACCUM @@vlist += tgt;
+     POST-ACCUM @@vlist += tgt;
  RemoveUnknownID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, targetTypeName, @@vlist, msg, dryrun);
  print msg;
 }
