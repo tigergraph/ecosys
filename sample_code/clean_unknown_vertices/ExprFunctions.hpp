@@ -64,6 +64,10 @@ namespace UDIMPL {
     return string(result);
   }
 
+  inline VERTEX getTgtVid(const EDGE& e) {
+    return e.tgtVid;
+  }
+
   inline void RemoveUnknownID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               const std::string& vtype,

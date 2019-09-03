@@ -1,12 +1,19 @@
-use graph _graphname_
+use graph mygraph
 drop query DeleteUnknownEdge
-create query DeleteUnknownEdge(string sourceTypeName, string targetTypeName, string edgeTypeName, bool dryrun = true) for Graph _graphname_ {
+create query DeleteUnknownEdge(string sourceTypeName, string targetTypeName, string edgeTypeName, bool dryrun = true) for Graph mygraph {
+ SetAccum<vertex> @@vSet;
  ListAccum<vertex> @@vlist;
  string msg;
  Seed = {sourceTypeName.*};
- X = SELECT tgt 
-     FROM Seed:src - (edgeTypeName) - targetTypeName: tgt
-     POST-ACCUM @@vlist += tgt;
+ X = SELECT src
+     FROM Seed:src - (edgeTypeName: e) - targetTypeName
+     ACCUM @@vSet += getTgtVid(e);
+
+ // convert vSet into vlist
+ foreach vid in @@vSet DO
+   @@vlist += vid;
+ end;
+
  RemoveUnknownID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, targetTypeName, @@vlist, msg, dryrun);
  print msg;
 }
