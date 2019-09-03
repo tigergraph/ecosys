@@ -104,22 +104,6 @@ In the dev image, we include
 - tutorial: gsql 101, gsql 102 sub folders.
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
-Build your own Docker Image
-================================
-To customize the Tigergraph Docker image, e.g., integrate another docker images
-1. Create a tigergraph folder
-1. Download the [dockerfile](https://github.com/tigergraph/ecosys/blob/master/guru_scripts/docker/dockerfile) shared in this repo to the folder
-1. Revise the docker file to add more tools, or integrate with another dockerfile
-1. Run the following command:
-
-```
-        cd tigergraph
-        docker build -t tigergraph .
-```
-
-- Please note that you may need to change the URL of the TigerGraph developer package to reflect the version you need.
-
-
 Operation Commands Cheat Sheet
 ================================
 
@@ -182,4 +166,20 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 - webinars 
 
     https://www.tigergraph.com/webinars-and-events/
+    
+    
+Build your own Docker Image
+================================
+To customize the Tigergraph Docker image, e.g., integrate another docker images
+1. Create a tigergraph folder
+1. Download the [dockerfile](https://github.com/tigergraph/ecosys/blob/master/guru_scripts/docker/dockerfile) shared in this repo to the folder
+1. Revise the docker file to add more tools, or integrate with another dockerfile
+1. Run the following command:
+
+```
+        cd tigergraph
+        docker build -t tigergraph .
+```
+
+- Please note that you may need to change the URL of the TigerGraph developer package to reflect the version you need.
 
