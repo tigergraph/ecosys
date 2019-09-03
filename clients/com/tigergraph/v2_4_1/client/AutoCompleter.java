@@ -1,4 +1,4 @@
-package com.tigergraph.client;
+package com.tigergraph.v2_4_1.client;
 
 import java.util.ArrayList;
 import java.util.List;

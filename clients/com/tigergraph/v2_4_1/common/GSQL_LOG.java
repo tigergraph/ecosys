@@ -1,4 +1,4 @@
-package com.tigergraph.common;
+package com.tigergraph.v2_4_1.common;
 
 import java.io.BufferedWriter;
 import java.io.File;

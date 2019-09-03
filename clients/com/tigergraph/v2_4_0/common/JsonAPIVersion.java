@@ -1,4 +1,13 @@
-package com.tigergraph.common;
+/**
+ * ***************************************************************************
+ * Copyright (c)  2014-2017, TigerGraph Inc. 
+ * All rights reserved 
+ * Unauthorized copying of this file, via any medium is
+ * strictly prohibited 
+ * Proprietary and confidential
+ * ****************************************************************************
+ */
+package com.tigergraph.v2_4_0.common;
 import java.util.List;
 import java.util.ArrayList;
 

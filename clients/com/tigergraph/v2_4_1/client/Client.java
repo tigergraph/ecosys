@@ -1,7 +1,16 @@
-package com.tigergraph.client;
+/**
+ * ***************************************************************************
+ * Copyright (c) 2017, TigerGraph Inc.
+ * All rights reserved
+ * Unauthorized copying of this file, via any medium is
+ * strictly prohibited
+ * Proprietary and confidential
+ * ****************************************************************************
+ */
+package com.tigergraph.v2_4_1.client;
 
-import com.tigergraph.common.Constant;
-import com.tigergraph.common.util.error.ReturnCode;
+import com.tigergraph.v2_4_1.common.Constant;
+import com.tigergraph.v2_4_1.common.util.error.ReturnCode;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -229,9 +238,9 @@ public class Client {
   }
 
   private void handleServerResponse(JSONObject json) {
-    if (json != null) System.out.print(json.optString("message"));
+    if (json != null) {System.out.print(json.optString("message")); if (json.optString("message").contains("License expired")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }
     if (json == null || json.optBoolean("error", true)) {
-      System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);
+      throw new SecurityException();
     } else if (!json.has("isClientCompatible")) {
       // if server is outdated that doesn't have compatibility check logic,
       // isClientCompatible won't be available and message will be null so manually handle here
@@ -538,7 +547,7 @@ public class Client {
         if (connection != null) {
           connection.disconnect();
         }
-        System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);
+      throw new SecurityException();
       } else if (connection.getResponseCode() != 200) {
         String errMsg = "Connection Error.\n"
           + "Response Code : " + connection.getResponseCode() + "\n"
@@ -694,7 +703,7 @@ public class Client {
 
       default:
         System.out.println("Please add the post action of " + qb
-                           + " in com/tigergraph/client/Client.java");
+                           + " in com.tigergraph.v2_4_1.client/Client.java");
         System.exit(0);
 
     }

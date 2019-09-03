@@ -1,23 +1,30 @@
-package com.tigergraph.common;
+/**
+ * ***************************************************************************
+ * Copyright (c)  2014-2017, TigerGraph Inc. 
+ * All rights reserved 
+ * Unauthorized copying of this file, via any medium is
+ * strictly prohibited 
+ * Proprietary and confidential
+ * ****************************************************************************
+ */
+package com.tigergraph.v2_3_2.common;
 import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Represent the syntax version 
+ * Represent the api version of response that is returned to end-user
  */
-public enum SyntaxVersion {
-  //v1 is syntax <=2.3, -(E)- == - (E) ->
-  //v2 is syntax >=2.4, -(E)- is pattern match. 
+public enum JsonAPIVersion {
+  //add the version here if json format is changed each time
+  //For example: V3, V4 ...
   V1("v1"), 
-  V2("v2"),           //default version, pattern sytnax, no log
-  _V2("_v2"),           //internal use. show transformed query
+  V2("v2"),           //default version
   UNKNOWN("unknown");
 
   private String version;
-  //in  3.0, we should change below to V2. 
-  static public SyntaxVersion defaultVersion = V1;
+  static private JsonAPIVersion defaultVersion = V2;
 
-  private SyntaxVersion(String version) {
+  private JsonAPIVersion(String version) {
     this.version = version;
   }
 
@@ -26,40 +33,40 @@ public enum SyntaxVersion {
   }
   
   //Given a version string, return its corresponding enum obj
-  public static SyntaxVersion getInstance(String version) {
-    for (SyntaxVersion obj: SyntaxVersion.values()) {
+  public static JsonAPIVersion getInstance(String version) {
+    for (JsonAPIVersion obj: JsonAPIVersion.values()) {
       if (obj.version.compareTo(version) == 0) {
         return obj;
       }
     }
 
-    return SyntaxVersion.UNKNOWN;
+    return JsonAPIVersion.UNKNOWN;
   }
 
   //set the default version
-  public static boolean setDefaultSyntaxVersion(String version) {
+  public static boolean setDefaultAPI(String version) {
     defaultVersion = getInstance(version);
     return defaultVersion != UNKNOWN;
   }
 
   //Use the lastest version as default version
-  public static SyntaxVersion defaultSyntax() {
+  public static JsonAPIVersion defaultAPI() {
     return defaultVersion;
   }
 
   public static String defaultVersion() {
-    return defaultSyntax().getVersion();
+    return defaultAPI().getVersion();
   }
 
   // check whether a version string is valid or not
   public static boolean isValidVersion(String version) {
-    return getInstance(version) != SyntaxVersion.UNKNOWN;
+    return getInstance(version) != JsonAPIVersion.UNKNOWN;
   }
 
   public static List<String> supportVersions() {
     List<String> vNames = new ArrayList<>();
 
-    for (SyntaxVersion obj: SyntaxVersion.values()) {
+    for (JsonAPIVersion obj: JsonAPIVersion.values()) {
       if (isValidVersion(obj.version)) {
         vNames.add(obj.version);
       }
@@ -73,8 +80,5 @@ public enum SyntaxVersion {
     // will return [v1,v2]
     String res = "[" + String.join(",", vNames) + "]";
     return res;
-  }
-  public String toString(){
-    return version;
   }
 }

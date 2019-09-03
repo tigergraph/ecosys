@@ -1,4 +1,4 @@
-package com.tigergraph.common.util.error;
+package com.tigergraph.v2_4_1.common.util.error;
 
 /**
  * The ReturnCode constants between client and server.

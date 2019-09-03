@@ -1,4 +1,13 @@
-package com.tigergraph.client;
+/**
+ * ****************************************************************************
+ * Copyright (c) 2017, TigerGraph Inc.
+ * All rights reserved
+ * Unauthorized copying of this file, via any medium is
+ * strictly prohibited
+ * Proprietary and confidential
+ * ****************************************************************************
+ */
+package com.tigergraph.v2_5_0.client;
 
 import org.apache.commons.cli.*;
 import java.io.File;

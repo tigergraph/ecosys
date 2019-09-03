@@ -1,20 +1,27 @@
-package com.tigergraph.client;
+/**
+ * ***************************************************************************
+ * Copyright (c) 2017, TigerGraph Inc.
+ * All rights reserved
+ * Unauthorized copying of this file, via any medium is
+ * strictly prohibited
+ * Proprietary and confidential
+ * ****************************************************************************
+ */
+package com.tigergraph.v2_3_2.client;
 
-import com.tigergraph.common.Constant;
-import com.tigergraph.common.GSQL_LOG;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.util.Properties;
+
 
 import jline.console.ConsoleReader;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.security.cert.X509Certificate;
 
 /**
  * This class define several static utility methods.
@@ -22,9 +29,6 @@ import javax.net.ssl.TrustManagerFactory;
  * <p>This class is a final class and cannot be extended.
  */
 public final class Util {
-  public static String LOG_DIR;
-  public static String SESSION;
-
   /** Grep IUM config from gsql.cfg file. */
   public static String getIUMConfig(String config) {
     String cmd = "grep " + config + " ~/.gsql/gsql.cfg | cut -d ' ' -f 2";
@@ -36,7 +40,7 @@ public final class Util {
    * @param filename the CA filename
    * @return the SSL context
    */
-  public static SSLContext getSSLContext(String filename) throws Exception {
+  public static SSLContext getSSLContext(String filename) {
     try {
       // Load CAs from an InputStream
       // (could be from a resource or ByteArrayInputStream or ...)
@@ -61,64 +65,11 @@ public final class Util {
       context.init(null, tmf.getTrustManagers(), null);
       return context;
     } catch (Exception e) {
-      throw new Exception("Failed to load the CA file: " + e.getMessage(), e);
+      System.out.println("Failed to load the CA file.");
+      return null;
     }
   }
 
-  public static void LogText(String text) {
-    if (GSQL_LOG.LOG_FILE == null) return;
-    try {
-      GSQL_LOG.LogInfo(text, SESSION, 1);
-    } catch (Exception e) {
-    }
-  }
-
-  public static void LogExceptions(Throwable e) {
-    if (GSQL_LOG.LOG_FILE == null) return;
-    try {
-      GSQL_LOG.LogExceptions(e, SESSION, 1);
-    } catch (Exception ioe) {
-    }
-  }
-
-  public static void setClientLogFile(String username, String serverip, boolean printerror) {
-    try {
-      GSQL_LOG.LOG_FILE = Util.getClientLogFile("log", username, serverip, true).getPath();
-      PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(GSQL_LOG.LOG_FILE, true)));
-      writer.print("");
-    } catch (Exception e) {
-      GSQL_LOG.LOG_FILE = null;
-      if (printerror) System.out.println("Can't open log file, " + e.getMessage());
-    }
-    Util.LogText("Client commit: " + Util.getCommitClient());
-  }
-
-  public static File getClientLogFile(String file, String username, String serverip,
-      boolean rotate) throws IOException {
-    if (Util.LOG_DIR == null) {
-      throw new IOException("LogDir is null");
-    }
-
-    String filename = Util.LOG_DIR + "/" + file + ".";
-    filename += Math.abs((username + "." + serverip).hashCode()) % 1000000;
-    File f = new File(filename);
-    if (!f.getParentFile().isDirectory()) {
-      f.getParentFile().mkdirs();
-    }
-
-    if (!f.exists()) {
-      //create file if it does not exist
-      f.createNewFile();
-    } else if (rotate && f.length() > Constant.LogRotateSize) {
-      // rotate log file when file is large than 500M
-      long current = System.currentTimeMillis();
-      // copy the log to a new file with timestamp
-      String LogCopy = filename + "." + current / 1000;
-      Files.move(f.toPath(), Paths.get(LogCopy), StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    return f;
-  }
 
   /**
    * Create a prompt with color and customized prompt text.
@@ -135,7 +86,6 @@ public final class Util {
       tempConsole.setPrompt(prmpt);
       input = tempConsole.readLine();
     } catch (IOException e) {
-      LogExceptions(e);
       System.out.println("Prompt input error!");
     }
     return input;
@@ -179,7 +129,6 @@ public final class Util {
       // need to hash the password so that we do not store it as plain text
       pass = pass1;
     } catch (Exception e) {
-      LogExceptions(e);
       System.out.println("Error while inputting password.");
     }
     return pass;
@@ -223,26 +172,8 @@ public final class Util {
 
       return result;
     } catch (Exception e) {
-      LogExceptions(e);
       return null;
     }
   }
-
-  public static String getCommitClient() {
-    String clientCommitHash = null;
-    try {
-      Properties props = new Properties();
-      InputStream in = Util.class.getClassLoader().getResourceAsStream("Version.prop");
-      props.load(in);
-      in.close();
-      clientCommitHash = props.getProperty("commit_client");
-    } catch (Exception e) {
-      LogExceptions(e);
-      System.out.println("Can't find Version.prop.");
-    }
-
-    return clientCommitHash;
-  }
-
 }
 
