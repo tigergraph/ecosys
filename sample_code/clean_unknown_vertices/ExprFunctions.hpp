@@ -68,8 +68,8 @@ namespace UDIMPL {
                               EngineServiceRequest& request,
                               const std::string& vtype,
                               ListAccum<VERTEX>& vlist,
-                              std::string& msg
-                              bool dryrun = true) {
+                              std::string& msg,
+                              bool dryrun) {
     gvector<VertexLocalId_t> ids;
     gvector<VertexLocalId_t> unknownIds;
     size_t sz = 0;
