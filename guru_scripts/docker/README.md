@@ -114,7 +114,7 @@ To customize the Tigergraph Docker image, e.g., integrate another docker images
 
 ```
         cd tigergraph
-        docker built -t tigergraph .
+        docker build -t tigergraph .
 ```
 
 - Please note that you may need to change the URL of the TigerGraph developer package to reflect the version you need.
