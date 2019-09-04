@@ -73,7 +73,7 @@ var argsWithoutProg string
 var name2client map[string]*ssh.Client
 // Used to sync with slave nodes
 var sync_chan chan int
-// Mapping from node id to IP address 
+// Mapping from node id to IP address
 var name2ip map[string]string
 // A map contains all the components specified to be collected.
 var need_components_map map[string]int
@@ -188,14 +188,14 @@ func collectDebugInfo() {
   // Get system info
   sysInfo := output_dir + "/sysInfo.txt"
   utils.LocalRun("echo '>>>>>>>>>>>>>> cat /etc/os-release <<<<<<<<<<<<<<' > " + sysInfo)
-  utils.LocalRun("cat /etc/os-release >> " + sysInfo)
+  utils.LocalRunIgnoreError("cat /etc/os-release >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> gadmin version <<<<<<<<<<<<<<' >> " + sysInfo)
   utils.LocalRunIgnoreError("~/.gium/gadmin version >> " + sysInfo + " 2>&1")
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> TigerGraph root Dir: " + tgRootDir + "' >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"df -lh\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRun("df -lh >> " + sysInfo)
+  utils.LocalRunIgnoreError("df -lh >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"free -g\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
-  utils.LocalRun("free -g >> " + sysInfo)
+  utils.LocalRunIgnoreError("free -g >> " + sysInfo)
   utils.LocalRun("echo '\n>>>>>>>>>>>>>> \"dmesg | grep -i oom\" on m1 <<<<<<<<<<<<<<' >> " + sysInfo)
   _, err := utils.LocalRunIgnoreError("dmesg | grep -i oom >> " + sysInfo)
 
@@ -436,7 +436,7 @@ func main() {
     startEpoch = endEpoch - int64(tminus)
   } else {
     if start != "" {
-      t1, err := time.Parse(timeFormat, start)
+      t1, err := time.ParseInLocation(timeFormat, start, time.Local)
       if err != nil {
         fmt.Println(err)
         log.Fatal("Support format: 2006-01-02,15:04:05")
@@ -444,7 +444,7 @@ func main() {
       startEpoch = t1.Unix()
     }
     if end != "" {
-      t2, err := time.Parse(timeFormat, end)
+      t2, err := time.ParseInLocation(timeFormat, end, time.Local)
       if err != nil {
         fmt.Println(err)
         log.Fatal("Support format: 2006-01-02,15:04:05")
@@ -1055,4 +1055,3 @@ func filterLogs(outFolder string) {
       outFolder + "/gsql.log", patterns, startEpoch, endEpoch, before, after)
   }
 }
-
