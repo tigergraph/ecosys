@@ -644,7 +644,7 @@ func FilterLogsFunc(line2Epoch func(string) int64, logDir, outFile, prefix, suff
       continue
     }
 
-    // Ignore files not ending with specified suffix 
+    // Ignore files not ending with specified suffix
     if suffix != "" && !strings.HasSuffix(logInfo, suffix) {
       continue
     }
@@ -763,7 +763,7 @@ func GsqlLine2Epoch(line string) int64 {
     return -1
   }
   ts := line[2:19]
-  t, err := time.Parse(timeFormat, ts)
+  t, err := time.ParseInLocation(timeFormat, ts, time.Local)
   if err != nil {
     return -1
   }
@@ -778,11 +778,13 @@ func GsqlFilterLogs(logDir, outFile string, patterns []string,
 
 // Logs filter for Nginx
 func NginxLine2Epoch(line string) int64 {
-  const timeFormat = "02/Jan/2006:15:04:05 +0000"
+  const timeFormat = "02/Jan/2006:15:04:05"
   start := strings.Index(line, "[")
   end := strings.Index(line, "]")
-  ts := line[start+1:end]
-  t, err := time.Parse(timeFormat, ts)
+  tmp := line[start+1:end]
+  end = strings.Index(tmp, " ")
+  ts := tmp[0:end]
+  t, err := time.ParseInLocation(timeFormat, ts, time.Local)
   if err != nil {
     log.Fatalf("Failed to convert \"%s\" to epoch with error: %s", ts, err)
   }
@@ -804,7 +806,7 @@ func kafkaLine2Epoch(line string) int64 {
     return -1
   }
   ts := line[start+1:end-4]
-  t, err := time.Parse(timeFormat, ts)
+  t, err := time.ParseInLocation(timeFormat, ts, time.Local)
   if err != nil {
     return -1
   }
@@ -829,7 +831,7 @@ func guiLine2Epoch(line string) int64 {
   if (strings.Index(str, "T") < 0) {
     timeFormat = "2006-01-02 15:04:05"
   }
-  t, err := time.Parse(timeFormat, str)
+  t, err := time.ParseInLocation(timeFormat, str, time.Local)
   if err != nil {
     return -1
   }
@@ -841,4 +843,3 @@ func GuiFilterLogs(logDir, outFile, prefix string, patterns []string,
   FilterLogsFunc(guiLine2Epoch, logDir, outFile, prefix, "", patterns,
     startEpoch, endEpoch, before, after, 10)
 }
-
