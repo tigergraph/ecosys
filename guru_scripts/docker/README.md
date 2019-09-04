@@ -1,6 +1,22 @@
-Overview Video
+Overview 
 =================
-This video shows the setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+This document provides step-by-step instructions on how to pull the latest TigerGraph Developer Edition docker image to your host machine. You can follow the sections in sequence to setup the TigerGraph docker enviroment. 
+
+The latest TigerGraph docker image includes the following content.  
+
+- ssh server 
+- git
+- wget
+- curl
+- emac, vim etc. 
+- jq
+- tar
+- tutorial: gsql 101, gsql 102 sub folders.
+- latest gsql open source graph algorithm library: gsql-graph-algorithms folder
+
+This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+
+If you want to customize your own docker image, the last section of this README has instructions on how to accomplish it. 
 
 Install Docker Desktop
 =========================
@@ -90,20 +106,6 @@ After pulling the image and launch the container in the background, you can try 
 
         http://localhost:14240
         
-Content of the Docker Image
-================================
-In the dev image, we include 
-
-- ssh server 
-- git
-- wget
-- curl
-- emac, vim etc. 
-- jq
-- tar
-- tutorial: gsql 101, gsql 102 sub folders.
-- latest gsql open source graph algorithm library: gsql-graph-algorithms folder
-
 Operation Commands Cheat Sheet
 ================================
 
