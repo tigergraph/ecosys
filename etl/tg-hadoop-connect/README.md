@@ -22,9 +22,9 @@ Tip 2: remove the log from hadoop before the run
 >> hadoop fs -rm -r <log_path>
 
 
-===================================================================
+
 Advanced Usage
-===================================================================
+==============
 >> How to modify the source Java code, which are all under com.tigergraph.connector.hadoop
 HadoopTGWriter.java	Hdfs2Tg.java		TGHadoopConfig.java
 
@@ -62,8 +62,8 @@ Explanation:
   Normally the larger, the better loading speed. But TigerGraph has the binary size limit on a post message,
   so choose this value based on the record size. Normally 100 to 500 is good.
 
-===================================================================
+
 License and contributing
-===================================================================
+========================
 All this code is in the public domain. The first version was created by TigerGraph.
 If you'd like to contribute something, we would love to add your name to this list.
