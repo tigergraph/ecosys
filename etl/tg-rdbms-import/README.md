@@ -19,9 +19,8 @@ Tip 2: you may specify the database password in command line, which will overrid
 >> ./etl_tgjdbc.sh config_X.json  mydbpassword
 
 
-===================================================================
 Advanced Usage
-===================================================================
+==============
 >> How to modify the source Java code, which are all under com.tigergraph.connector.jdbc
  - TGJDBCSelectRunner
     main class, read in config, select from RDBMS as a ResultSet, and post to TigerGraph
@@ -70,8 +69,8 @@ Explanation:
   Normally the larger, the better loading speed. But TigerGraph has the binary size limit on a post message,
   so choose this value based on the record size. Normally 100 to 500 is good.
 
-===================================================================
+
 License and contributing
-===================================================================
+========================
 All this code is in the public domain. The first version was created by TigerGraph.
 If you'd like to contribute something, we would love to add your name to this list.
