@@ -1,6 +1,6 @@
 # TigerGraph JDBC Driver
 
-The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. This driver supports TigerGraph builtin queries, loading jobs, compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
+The TigerGraph JDBC Driver is a [Type 4 Driver](https://en.wikipedia.org/wiki/JDBC_driver), converting JDBC calls directly into TigerGraph HTTP REST calls. This JDBC driver supports to ingest data into TigerGraph and read query result from TigerGraph. The JDBC driver supports the access to TigerGraph's builtin queries, loading jobs, compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). Via TigerGraph JDBC Driver, an instantiation of Spark Connector is also provided, allowing spark programs to write data into TigerGraph, and read query results from TigerGraph.
 
 ## Versions compatibility
 
@@ -363,6 +363,137 @@ The default behavior of saving a DataFrame to TigerGraph is **upsert**:
 > otherwise, a new vertex/edge will be created.
 
 We do have other modes, like only update graph when the corresponding vertex/edge exists and do not create any new vertex/edge. But sadly it seems this mode cannot be mapped to any Spark SaveMode directly.
+
+## How to use in Python
+The JDBC driver could be used in Python via pyspark. 'pyspark' needs to be installed first:
+```
+sudo pip install pypandoc pyspark
+```
+
+Then you can read from/write to TigerGraph in Python like this:
+```
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField
+from pyspark.sql.types import StringType, IntegerType
+
+spark = SparkSession.builder \
+  .appName("TigerGraphAnalysis") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.2.jar") \
+  .getOrCreate()
+
+# read vertex
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "vertex Page") \
+  .option("limit", "10") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# read edge
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "edge Linkto") \
+  .option("limit", "10") \
+  .option("source", "3") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# invoke pre-intalled query
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "query pageRank(maxChange=0.001, maxIteration=10, dampingFactor=0.15)") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# write vertices
+schema = StructType([
+  StructField("id", IntegerType(), True),
+  StructField("account", IntegerType(), True)])
+data = [(8, 8), (9, 9)]
+jdbcDF = spark.createDataFrame(data, schema)
+print(jdbcDF)
+jdbcDF.show()
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "vertex Person") \
+  .option("debug", "1") \
+  .save()
+
+# write edges
+schema = StructType([
+  StructField("Person", IntegerType(), True),
+  StructField("Person", IntegerType(), True),
+  StructField("weight", IntegerType(), True)])
+data = [(4,5,1), (5,6,1)]
+jdbcDF = spark.createDataFrame(data, schema)
+print(jdbcDF)
+jdbcDF.show()
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "edge Follow") \
+  .option("debug", "1") \
+  .save()
+
+# invoke loading job
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "job load_pagerank") \
+  .option("filename", "f") \
+  .option("sep", ",") \
+  .option("eol", ";") \
+  .option("schema", "Person,Person,weight") \
+  .option("batchsize", "100") \
+  .option("debug", "1") \
+  .save()
+```
+
+Sometimes it may complain that "Incompatible Jackson version: 2.x.x". You may add the following code to [tg-jdbc-driver/pom.xml](tg-jdbc-driver/pom.xml) and recompile the jar package. (It will make the jar package much bigger, so we don't add this by default)
+```
+  <dependency>
+    <groupId>com.fasterxml.jackson.module</groupId>
+    <artifactId>jackson-module-scala_2.11</artifactId>
+    <version>2.6.5</version>
+  </dependency>
+```
 
 ## Limitation of ResultSet
 The response packet size from the TigerGraph server should be less than 2GB, which is the largest response size supported by the TigerGraph Restful API.
