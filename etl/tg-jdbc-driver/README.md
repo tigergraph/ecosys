@@ -1,6 +1,6 @@
 # TigerGraph JDBC Driver
 
-The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. This driver supports TigerGraph builtin queries, loading jobs, compiled queries (i.e., queries must be compiled and installed before being invoked via the JDBC driver) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
+The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. This driver supports TigerGraph builtin queries, loading jobs, compiled queries (i.e., queries which has been installed to the GSQL server) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
 
 ## Versions compatibility
 
