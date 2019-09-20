@@ -1,6 +1,22 @@
-Overview Video
+Overview 
 =================
-This video shows the setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+This document provides step-by-step instructions on how to pull the latest TigerGraph Developer Edition docker image to your host machine. You can follow the sections in sequence to setup the TigerGraph docker enviroment. 
+
+The latest TigerGraph docker image includes the following content.  
+
+- ssh server 
+- git
+- wget
+- curl
+- emac, vim etc. 
+- jq
+- tar
+- tutorial: gsql 101, gsql 102 sub folders.
+- latest gsql open source graph algorithm library: gsql-graph-algorithms folder
+
+This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
+
+If you want to customize your own docker image, the last section of this README has instructions on how to accomplish it. 
 
 Install Docker Desktop
 =========================
@@ -90,31 +106,22 @@ After pulling the image and launch the container in the background, you can try 
 
         http://localhost:14240
         
-Content of the Docker Image
-================================
-In the dev image, we include 
-
-- ssh server 
-- git
-- wget
-- curl
-- emac, vim etc. 
-- jq
-- tar
-- tutorial: gsql 101, gsql 102 sub folders.
-- latest gsql open source graph algorithm library: gsql-graph-algorithms folder
-
 Operation Commands Cheat Sheet
 ================================
-- Start/Stop Docker Desktop
-  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. 
-  - To start it, find the Docker Desktop icon, double click it. 
-
 
 - After you start Docker Desktop, use the below command to start/stop the container created 
     
         docker container stop tigergraph_dev
         docker container start tigergraph_dev
+        
+- start/stop tigergraph service within container
+
+        gadmin start 
+        gadmin stop 
+        
+- Start/Stop Docker Desktop
+  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph_dev container.
+  - To start it, find the Docker Desktop icon, double click it. 
 
 - ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
 
@@ -128,11 +135,6 @@ Operation Commands Cheat Sheet
 - enter password for tigergraph user
 
         tigergraph
-
-- start/stop tigergraph service within container
-
-        gadmin start 
-        gadmin stop 
 
 - After "gadmin start", you can start graph studio of TigerGraph. Open a browser on your laptop (host OS) and access:
 
@@ -166,4 +168,20 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 - webinars 
 
     https://www.tigergraph.com/webinars-and-events/
+    
+    
+Build your own Docker Image
+================================
+To customize the Tigergraph Docker image, e.g., integrate another docker images
+1. Create a tigergraph folder
+1. Download the [dockerfile](https://github.com/tigergraph/ecosys/blob/master/guru_scripts/docker/dockerfile) shared in this repo to the folder
+1. Revise the docker file to add more tools, or integrate with another dockerfile
+1. Run the following command:
+
+```
+        cd tigergraph
+        docker build -t tigergraph .
+```
+
+- Please note that you may need to change the URL of the TigerGraph developer package to reflect the version you need.
 

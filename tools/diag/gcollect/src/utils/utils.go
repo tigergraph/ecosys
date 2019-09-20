@@ -7,7 +7,7 @@ import (
   "bytes"
   "io/ioutil"
   "path/filepath"
-  // "runtime/debug" 
+  // "runtime/debug"
   "fmt"
   "time"
   "net"
@@ -23,7 +23,7 @@ const (
     Compact // e.g., 20190507-221634.23248
     NoYear // e.g., I/W/E0507 22:16:49.801210
     Short // 22:47:09.824235
-    Epoch // e.g., %3|1557778930.317 
+    Epoch // e.g., %3|1557778930.317
     Unknown
 )
 
@@ -79,7 +79,7 @@ func Datetime2EpochShort(lastEpoch int64, ts string) int64 {
   t := time.Unix(lastEpoch, 0)
   year, month, day := t.Date()
   formattedTime := fmt.Sprintf("%4d-%02d-%02dT%sZ", year, month, day, ts[0:8])
-  t, err := time.Parse(time.RFC3339, formattedTime)
+  t, err := time.ParseInLocation(time.RFC3339, formattedTime, time.Local)
   if err != nil {
     errInfo := fmt.Sprintf("[IGNORED]Failed to convert \"%s\" to epoch with error: %s\n", ts, err)
     fmt.Printf(errInfo)
@@ -94,7 +94,7 @@ func Datetime2EpochShort(lastEpoch int64, ts string) int64 {
 func Datetime2EpochFull(ts string) int64 {
   const timeFormat = "2006-01-02 15:04:05"
   formattedTime := ts[0:19]
-  t, err := time.Parse(timeFormat, formattedTime)
+  t, err := time.ParseInLocation(timeFormat, formattedTime, time.Local)
   if err != nil {
     errInfo := fmt.Sprintf("Failed to convert \"%s\" to epoch with error: %s", ts, err)
     fmt.Println(errInfo)
@@ -108,7 +108,7 @@ func Datetime2EpochFull(ts string) int64 {
 func Datetime2EpochCompact(ts string) int64 {
   const timeFormat = "20060102-150405"
   formattedTime := ts[0:15]
-  t, err := time.Parse(timeFormat, formattedTime)
+  t, err := time.ParseInLocation(timeFormat, formattedTime, time.Local)
   if err != nil {
     errInfo := fmt.Sprintf("Failed to convert \"%s\" to epoch with error: %s", ts, err)
     fmt.Println(errInfo)
@@ -122,7 +122,7 @@ func Datetime2EpochCompact(ts string) int64 {
 func Datetime2EpochNoYear(year, str string) int64 {
   const timeFormat = "20060102 15:04:05"
   formattedTime := year + str[1:14]
-  t, err := time.Parse(timeFormat, formattedTime)
+  t, err := time.ParseInLocation(timeFormat, formattedTime, time.Local)
   if err != nil {
     errInfo := fmt.Sprintf("Failed to convert \"%s\" to epoch with error: %s", str, err)
     fmt.Println(errInfo)
@@ -277,7 +277,7 @@ func Connect(user, password, host, port, key string) (*ssh.Client, error) {
   return client, nil
 }
 
-// run several commands(separated with ";") one by one on remote server 
+// run several commands(separated with ";") one by one on remote server
 func RunCmds(client *ssh.Client, cmds string) (string, string) {
   cmdlist := strings.Split(cmds, ";")
   var stdoutBuff bytes.Buffer
@@ -401,4 +401,3 @@ func GetMyIpMap() map[string]int {
   }
   return myIpMap
 }
-

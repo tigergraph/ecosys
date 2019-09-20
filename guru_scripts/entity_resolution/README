@@ -1,0 +1,7 @@
+Please follow the steps to install:
+
+1. copy all csv files to ~/tigergraph/loadingData
+
+2. import the solution tar.gz file from your GraphStudio home page
+
+3. start loading job from load data page

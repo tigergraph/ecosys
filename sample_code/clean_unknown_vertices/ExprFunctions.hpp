@@ -64,11 +64,16 @@ namespace UDIMPL {
     return string(result);
   }
 
+  inline VERTEX getTgtVid(const EDGE& e) {
+    return e.tgtVid;
+  }
+
   inline void RemoveUnknownID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               const std::string& vtype,
                               ListAccum<VERTEX>& vlist,
-                              std::string& msg) {
+                              std::string& msg,
+                              bool dryrun) {
     gvector<VertexLocalId_t> ids;
     gvector<VertexLocalId_t> unknownIds;
     size_t sz = 0;
@@ -106,6 +111,11 @@ namespace UDIMPL {
     std::stringstream ss;
     ss << "Scanned " << vlist.size() << " \'" << vtype << "\' vertices, there are "
        << unknownIds.size() << " unknown vids being removed from engine." << std::endl;
+    if (dryrun) {
+      ss << " Dryrun is enabled, quit." << std::endl;
+      msg = ss.str();
+      return;
+    }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
     size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
     for (auto id : unknownIds) {

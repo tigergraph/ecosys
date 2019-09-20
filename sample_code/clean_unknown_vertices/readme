@@ -15,3 +15,4 @@ There are two CONSTANT
 
 5) check whether the unknown vertices were removed from the graph store or not.
 
+6) if dryrun = true, we only report the number of unknown vertices and no deletion will be done.

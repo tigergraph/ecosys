@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: .
+Rsrc-Main-Class: com.tigergraph.client.Driver
+Main-Class: org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader
