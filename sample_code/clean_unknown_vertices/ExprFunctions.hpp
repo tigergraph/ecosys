@@ -68,6 +68,64 @@ namespace UDIMPL {
     return e.tgtVid;
   }
 
+  inline void RemoveUnknownIID(ServiceAPI* api,
+                              EngineServiceRequest& request,
+                              const std::string& vtype,
+                              ListAccum<int64_t>& vlist,
+                              std::string& msg,
+                              bool dryrun) {
+    gvector<VertexLocalId_t> ids;
+    gvector<VertexLocalId_t> unknownIds;
+    size_t sz = 0;
+    uint32_t batch = 0;
+    //scan all found internal ids, batch by batch (10000 per batch)
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "The total \'" << vtype << "\' vertices that need to be scanned is: " << vlist.size() << std::endl;
+    for (auto& vt : vlist.data_) {
+      ++sz;
+      ids.push_back(vt);
+      //sending out one batch
+      if (ids.size() == 10000 || sz == vlist.data_.size()) {
+        ++batch;
+        std::vector<std::string> uids = std::move(api->VIdtoUId(&request, ids));
+        //Get the offset for current batch
+        size_t offset = sz - ids.size();
+        for (size_t k = 0; k < uids.size(); ++k) {
+          if (uids[k] == "UNKNOWN") {
+            unknownIds.push_back(vlist.data_[offset + k]);
+          }
+        }
+        GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "Finished scan " << batch << "-th batch with vertex size = " << ids.size() << " and the total unknown vertices size = " << unknownIds.size() << std::endl;
+        ids.clear();
+      }
+    }
+
+    if (unknownIds.empty()) {
+      GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "No unknown vertex has been found, do nothing!!!" << std::endl;
+      std::stringstream ss;
+      ss << "Scanned " << vlist.size() << " \'" << vtype << "\' vertices and no unknown vid has been found, do nothing!!!";
+      msg = ss.str();
+      return;
+    }
+
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "There are total " << unknownIds.size() << " vertices have been found, start sending out delete signal." << std::endl;
+    std::stringstream ss;
+    ss << "Scanned " << vlist.size() << " \'" << vtype << "\' vertices, there are "
+       << unknownIds.size() << " unknown vids being removed from engine." << std::endl;
+    if (dryrun) {
+      ss << " Dryrun is enabled, quit." << std::endl;
+      msg = ss.str();
+      return;
+    }
+    gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    for (auto id : unknownIds) {
+      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "Finished creating updates and now waiting for commit." << std::endl;
+    graphupdates->Commit();
+    msg = ss.str();
+  }
+
   inline void RemoveUnknownID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               const std::string& vtype,

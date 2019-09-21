@@ -1,0 +1,21 @@
+use graph _graphname_
+drop query GetTargetIID
+create distributed query GetTargetIID(string filename = "/tmp/unknownIIDList.csv") for Graph _graphname_ {
+ SumAccum<int> @@cnt = 0;
+ SetAccum<int> @@iidSet = 0;
+ FILE f(filename);
+ Seed = {_sourceTypeName_.*};
+ X = SELECT src
+     FROM Seed:src - (_edgeTypeName_: e) - _targetTypeName_
+     ACCUM 
+       @@iidSet += vertex_to_int(getTgtVid(e)),
+       @@cnt += 1
+     ;
+ //print the found internal id into the given file
+ foreach item in @@iidSet do
+   f.println(item);
+ end;
+
+ print @@cnt; 
+}
+install query GetTargetIID
