@@ -1,0 +1,24 @@
+use graph _graphname_
+drop query DeleteGhostByIIDList
+create query DeleteGhostByIIDList(string TgtVertexType, string filename = "/tmp/iiDList.csv.@@iidDiffSet", bool dryrun = true) for Graph _graphname_ {
+ SumAccum<int> @@cnt = 0;
+ ListAccum<int> @@iidList;
+ ListAccum<vertex> @@vList;
+ string msg;
+ @@iidList = {LOADACCUM (filename, $0, ",", false)};
+ GetVertexListFromIIDList(@@iidList, @@vList);
+ Seed = {@@vList};
+ X = SELECT src
+     FROM Seed:src
+     ACCUM @@cnt += 1
+     ;
+
+ CASE WHEN @@cnt == 0
+ THEN
+   RemoveVertexByIID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, TgtVertexType, @@iidList, msg, dryrun);
+   print Seed.size(), @@cnt, msg;
+ ELSE
+   print Seed.size(), @@cnt;
+ END;
+}
+install query DeleteGhostByIIDList

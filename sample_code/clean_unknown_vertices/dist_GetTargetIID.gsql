@@ -1,6 +1,6 @@
 use graph _graphname_
 drop query GetTargetIID
-create distributed query GetTargetIID(string filename = "/tmp/unknownIIDList.csv") for Graph _graphname_ {
+create distributed query GetTargetIID(string filename = "/tmp/iidList.csv") for Graph _graphname_ {
  SumAccum<int> @@cnt = 0;
  SetAccum<int> @@iidSet;
  SetAccum<int> @@iidActiveSet;

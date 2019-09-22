@@ -68,6 +68,14 @@ namespace UDIMPL {
     return e.tgtVid;
   }
 
+  inline void GetVertexListFromIIDList(const ListAccum<int64_t>& iidList,
+                                       ListAccum<VERTEX>& vList) {
+    for (auto it: iidList.data_) {
+      vList += VERTEX(it);
+    }
+    return;
+  }
+
   inline void PrintSetToDisk(const SetAccum<int64_t>& idSet,
                              const std::string& filename) {
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << "Collected " << idSet.size() << " vertices and start printing" << std::endl; 
@@ -83,6 +91,33 @@ namespace UDIMPL {
     }
     fs.close();
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << " Printing finished." << std::endl; 
+  }
+
+  inline void RemoveVertexByIID(ServiceAPI* api,
+                              EngineServiceRequest& request,
+                              const std::string& vtype,
+                              ListAccum<int64_t>& vlist,
+                              std::string& msg,
+                              bool dryrun) {
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Receive " << vlist.size() << " internal ids of type: \"" 
+      << vtype << "\"" << std::endl;
+    std::stringstream ss;
+    ss << "Found " << vlist.size() << " \'" << vtype << "\' vertices" << std::endl;
+    if (dryrun) {
+     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Dryrun, nothing deleted!!!!" << std::endl;
+     ss << "Dryrun, do nothing!!!" << std::endl;
+     msg = ss.str();
+     return;
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tStart deleting." << std::endl;
+    gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    for (auto id : vlist) {
+      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tFinished creating updates and now waiting for commit." << std::endl;
+    graphupdates->Commit();
+    msg = ss.str();
   }
 
   inline void RemoveUnknownIID(ServiceAPI* api,
