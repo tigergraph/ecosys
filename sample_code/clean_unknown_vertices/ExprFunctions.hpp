@@ -68,6 +68,23 @@ namespace UDIMPL {
     return e.tgtVid;
   }
 
+  inline void PrintSetToDisk(const SetAccum<int64_t>& idSet,
+                             const std::string& filename) {
+    GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << "Collected " << idSet.size() << " vertices and start printing" << std::endl; 
+    std::fstream fs;
+    fs.open(filename.c_str(), std::fstream::out);
+    if (!fs.is_open()) {
+      GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") 
+        << "Open filename: " << filename << " failed, quit!!!" <<std::endl;
+      return;
+    }
+    for (int64_t it : idSet.data_) {
+      fs << it << "\n";
+    }
+    fs.close();
+    GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << " Printing finished." << std::endl; 
+  }
+
   inline void RemoveUnknownIID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               const std::string& vtype,

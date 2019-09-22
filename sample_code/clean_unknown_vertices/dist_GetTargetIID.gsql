@@ -2,20 +2,25 @@ use graph _graphname_
 drop query GetTargetIID
 create distributed query GetTargetIID(string filename = "/tmp/unknownIIDList.csv") for Graph _graphname_ {
  SumAccum<int> @@cnt = 0;
- SetAccum<int> @@iidSet = 0;
+ SetAccum<int> @@iidSet;
+ SetAccum<int> @@iidActiveSet;
+ SetAccum<int> @@iidDiffSet;
  FILE f(filename);
  Seed = {_sourceTypeName_.*};
  X = SELECT src
-     FROM Seed:src - (_edgeTypeName_: e) - _targetTypeName_
+     FROM Seed:src - (_edgeTypeName_: e) - _targetTypeName_:tgt
      ACCUM 
        @@iidSet += vertex_to_int(getTgtVid(e)),
        @@cnt += 1
+     POST-ACCUM
+       @@iidActiveSet += vertex_to_int(tgt)
      ;
  //print the found internal id into the given file
- foreach item in @@iidSet do
-   f.println(item);
- end;
+ @@iidDiffSet = @@iidSet MINUS @@iidActiveSet;
 
- print @@cnt; 
+ PrintSetToDisk(@@iidSet, filename + ".@@iidSet");
+ PrintSetToDisk(@@iidActiveSet, filename + ".@@iidActiveSet");
+ PrintSetToDisk(@@iidDiffSet, filename + ".@@iidDiffSet");
+ print @@cnt, @@iidSet.size(), @@iidActiveSet.size(), @@iidDiffSet.size();
 }
 install query GetTargetIID
