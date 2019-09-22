@@ -76,6 +76,19 @@ namespace UDIMPL {
     return;
   }
 
+  inline void ReadVertexListFromIIDListFile(ListAccum<VERTEX>& vList,
+                             const std::string& filename) {
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        std::string line;
+        while (getline(file, line)) {
+            // using printf() in all tests for consistency
+            vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+        }
+        file.close();
+    }
+  }
+
   inline void PrintSetToDisk(const SetAccum<int64_t>& idSet,
                              const std::string& filename) {
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << "Collected " << idSet.size() << " vertices and start printing" << std::endl; 
