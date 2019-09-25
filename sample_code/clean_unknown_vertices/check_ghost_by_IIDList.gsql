@@ -1,10 +1,9 @@
 use graph _graphname_
 drop query CheckGhostByIIDList
-create distributed query CheckGhostByIIDList(string TgtVertexType, string filename = "/tmp/iiDList.csv.@@iidDiffSet", bool dryrun = true) for Graph _graphname_ {
+create distributed query CheckGhostByIIDList(string filename = "/tmp/iiDList.csv.@@iidDiffSet") for Graph _graphname_ {
  SumAccum<int> @@cnt = 0;
  ListAccum<vertex> @@vList;
- //@@iidList = {LOADACCUM (filename, $0, ",", false)};
- ReadVertexListFromIIDListFile(@@vList, filename);
+ ReadVertexListFromPath(filename, @@vList);
  Seed = {@@vList};
  X = SELECT src
      FROM Seed:src

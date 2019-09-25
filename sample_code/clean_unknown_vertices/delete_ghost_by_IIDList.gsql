@@ -1,10 +1,10 @@
 use graph _graphname_
 drop query DeleteGhostByIIDList
-create query DeleteGhostByIIDList(string TgtVertexType, string filename = "/tmp/iiDList.csv.@@iidDiffSet", bool dryrun = true) for Graph _graphname_ {
- SumAccum<int> @@cnt = 0;
+create query DeleteGhostByIIDList(string filename = "/tmp/iiDList.csv.@@iidDiffSet", bool dryrun = true) for Graph _graphname_ {
  ListAccum<int> @@iidList;
  string msg;
  @@iidList = {LOADACCUM (filename, $0, ",", false)};
- RemoveVertexByIID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, TgtVertexType, @@iidList, msg, dryrun);
+ RemoveVertexByIID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, @@iidList, msg, dryrun);
+ print msg;
 }
 install query DeleteGhostByIIDList

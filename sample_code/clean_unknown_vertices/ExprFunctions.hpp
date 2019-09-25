@@ -108,10 +108,21 @@ namespace UDIMPL {
 
   inline void RemoveVertexByIID(ServiceAPI* api,
                               EngineServiceRequest& request,
-                              const std::string& vtype,
+                              gpelib4::MasterContext* context,
                               ListAccum<int64_t>& vlist,
                               std::string& msg,
                               bool dryrun) {
+    if (vlist.size() == 0) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Receive empty vlist, exist!!!";
+      return;
+    }
+    uint32_t vTypeId  = context->GraphAPI()->GetVertexType(vlist.data_[0]);
+    if (vTypeId == -1) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Get type id failed, the input vid = " << vlist.data_[0];
+      return;
+    }
+
+    std::string vtype = api->GetTopologyMeta()->GetVertexType(vTypeId).typename_;
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Receive " << vlist.size() << " internal ids of type: \"" 
       << vtype << "\"" << std::endl;
     std::stringstream ss;
@@ -124,14 +135,108 @@ namespace UDIMPL {
     }
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tStart deleting." << std::endl;
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
-    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
     for (auto id : vlist) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tFinished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
-    msg = ss.str();
+    msg += "\n" + ss.str();
   }
+
+  inline void ReadVertexListFromPath(const std::string& path,
+                                     ListAccum<VERTEX>& vList) {
+    std::vector<std::string> fileList;
+    if (boost::filesystem::is_directory(path)) {
+      // we cannot loop directory in GSQL side since it may not locate in m1
+      boost::filesystem::directory_iterator it(path);
+      boost::filesystem::directory_iterator end_it;
+      while (it != end_it){
+        //no hidden files
+        std::string localfile 
+          =  boost::filesystem::path(it->path().string()).filename().string();
+        if (boost::filesystem::is_regular_file(it->status()) && localfile[0] != '.') {
+          fileList.push_back(it->path().string());
+        } else {
+          GEngineInfo(InfoLvl::Brief, "ReadVertexListFromPath")
+            << "[WARNING] The file \""
+            << it->path().string()
+            << "\" is skipped because it is either a irregular file or a hidden file.";
+        }
+        ++ it;
+      }
+    } else if (boost::filesystem::is_regular_file(path)){
+      fileList.push_back(path);
+    }
+    GEngineInfo(InfoLvl::Brief, "ReadVertexListFromPath") << "Found total " << fileList.size() << " segment files.";
+    for (auto& filename : fileList) {
+      std::ifstream file(filename);
+      if (file.is_open()) {
+          std::string line;
+          while (getline(file, line)) {
+              // using printf() in all tests for consistency
+              vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+          }
+          file.close();
+      } else {
+        GEngineInfo(InfoLvl::Brief, "ReadVertexListFromPath") << "Can not open the segment file: " << filename << " skip it.";
+        continue;
+      }
+    }
+    GEngineInfo(InfoLvl::Brief, "ReadVertexListFromPath") << "Total deleted vertex ids: " << vList.size();
+  }
+
+  inline void RemoveVertexByIIDFolder(ServiceAPI* api,
+                              EngineServiceRequest& request,
+                              gpelib4::MasterContext* context,
+                              const std::string& path,
+                              std::string& msg,
+                              bool dryrun) {
+    std::vector<std::string> fileList;
+    if (boost::filesystem::is_directory(path)) {
+      // we cannot loop directory in GSQL side since it may not locate in m1
+      boost::filesystem::directory_iterator it(path);
+      boost::filesystem::directory_iterator end_it;
+      while (it != end_it){
+        //no hidden files
+        std::string localfile 
+          =  boost::filesystem::path(it->path().string()).filename().string();
+        if (boost::filesystem::is_regular_file(it->status()) && localfile[0] != '.') {
+          fileList.push_back(it->path().string());
+        } else {
+          GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder")
+            << "[WARNING] The file \""
+            << it->path().string()
+            << "\" is skipped because it is either a irregular file or a hidden file.";
+        }
+        ++ it;
+      }
+    } else if (boost::filesystem::is_regular_file(path)){
+      fileList.push_back(path);
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Found total " << fileList.size() << " segment files.";
+    ListAccum<int64_t> vList;
+    for (auto& filename : fileList) {
+      vList.data_.clear();
+      std::ifstream file(filename);
+      if (file.is_open()) {
+          std::string line;
+          while (getline(file, line)) {
+              // using printf() in all tests for consistency
+              vList += strtoll(line.c_str(), nullptr, 10);
+          }
+          file.close();
+      } else {
+        GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Can not open the segment file: " << filename << " skip it.";
+        continue;
+      }
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Start processing segment file: " << filename << " with total ids: " << vList.size() ;
+      if (vList.size() > 0) {
+        RemoveVertexByIID(api, request, context, vList, msg, dryrun);
+      }
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Finished processing segment file: " << filename << " with total ids: " << vList.size() ;
+    }
+  }
+
 
   inline void RemoveUnknownIID(ServiceAPI* api,
                               EngineServiceRequest& request,
