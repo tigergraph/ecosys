@@ -83,7 +83,11 @@ namespace UDIMPL {
         std::string line;
         while (getline(file, line)) {
             // using printf() in all tests for consistency
-            vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+            try {
+              vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+            } catch (std::exception& e) {
+              GEngineInfo(InfoLvl::Brief, "ReadVertexListFromIIDListFile") << "Bad line: " << e.what();
+            }
         }
         file.close();
     }
@@ -106,7 +110,7 @@ namespace UDIMPL {
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << " Printing finished." << std::endl; 
   }
 
-  inline void RemoveVertexByIID(ServiceAPI* api,
+  inline std::string RemoveVertexByIID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               gpelib4::MasterContext* context,
                               ListAccum<int64_t>& vlist,
@@ -114,12 +118,12 @@ namespace UDIMPL {
                               bool dryrun) {
     if (vlist.size() == 0) {
       GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Receive empty vlist, exist!!!";
-      return;
+      return "";
     }
     uint32_t vTypeId  = context->GraphAPI()->GetVertexType(vlist.data_[0]);
     if (vTypeId == -1) {
       GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Get type id failed, the input vid = " << vlist.data_[0];
-      return;
+      return "";
     }
 
     std::string vtype = api->GetTopologyMeta()->GetVertexType(vTypeId).typename_;
@@ -130,8 +134,8 @@ namespace UDIMPL {
     if (dryrun) {
      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "Dryrun, nothing deleted!!!!" << std::endl;
      ss << "Dryrun, do nothing!!!" << std::endl;
-     msg = ss.str();
-     return;
+     msg += ss.str();
+     return vtype;
     }
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tStart deleting." << std::endl;
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
@@ -141,6 +145,7 @@ namespace UDIMPL {
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIID") << "\tFinished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
     msg += "\n" + ss.str();
+    return vtype;
   }
 
   inline void ReadVertexListFromPath(const std::string& path,
@@ -174,7 +179,11 @@ namespace UDIMPL {
           std::string line;
           while (getline(file, line)) {
               // using printf() in all tests for consistency
+             try {
               vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+             } catch (std::exception& e) {
+              GEngineInfo(InfoLvl::Brief, "ReadVertexListFromPath") << "Bad line: " << e.what();
+             }
           }
           file.close();
       } else {
@@ -215,6 +224,7 @@ namespace UDIMPL {
     }
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Found total " << fileList.size() << " segment files.";
     ListAccum<int64_t> vList;
+    std::unordered_map<std::string, uint64_t> cntmap;
     for (auto& filename : fileList) {
       vList.data_.clear();
       std::ifstream file(filename);
@@ -222,7 +232,11 @@ namespace UDIMPL {
           std::string line;
           while (getline(file, line)) {
               // using printf() in all tests for consistency
+             try {
               vList += strtoll(line.c_str(), nullptr, 10);
+             } catch (std::exception& e) {
+              GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Bad line: " << e.what();
+             }
           }
           file.close();
       } else {
@@ -231,9 +245,16 @@ namespace UDIMPL {
       }
       GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Start processing segment file: " << filename << " with total ids: " << vList.size() ;
       if (vList.size() > 0) {
-        RemoveVertexByIID(api, request, context, vList, msg, dryrun);
+        std::string m;
+        std::string vtype = RemoveVertexByIID(api, request, context, vList, m, dryrun);
+        if (!vtype.empty()) {
+          cntmap[vtype] += vList.size();
+        }
       }
       GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Finished processing segment file: " << filename << " with total ids: " << vList.size() ;
+    }
+    for (auto it : cntmap) {
+      msg += "\'" + it.first + "\' : " + std::to_string(it.second) + " | ";
     }
   }
 
@@ -273,7 +294,7 @@ namespace UDIMPL {
       GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "No unknown vertex has been found, do nothing!!!" << std::endl;
       std::stringstream ss;
       ss << "Scanned " << vlist.size() << " \'" << vtype << "\' vertices and no unknown vid has been found, do nothing!!!";
-      msg = ss.str();
+      msg += ss.str();
       return;
     }
 
@@ -283,7 +304,7 @@ namespace UDIMPL {
        << unknownIds.size() << " unknown vids being removed from engine." << std::endl;
     if (dryrun) {
       ss << " Dryrun is enabled, quit." << std::endl;
-      msg = ss.str();
+      msg += ss.str();
       return;
     }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
@@ -293,7 +314,7 @@ namespace UDIMPL {
     }
     GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "Finished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
-    msg = ss.str();
+    msg += ss.str();
   }
 
   inline void RemoveUnknownID(ServiceAPI* api,
