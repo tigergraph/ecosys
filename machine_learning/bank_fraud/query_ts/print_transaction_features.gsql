@@ -1,0 +1,21 @@
+CREATE QUERY print_transaction_features() FOR GRAPH Bank { 
+  /* Print out the attributes of Transaction vertices.  It will output a csv file
+  suffix = suffix of the output file name.*/
+ # FILE ofile ("/home/tigergraph/usecases/bank_fraud/data/training_data/Tranaction.csv");
+  FILE ofile ("/home/tigergraph/bank_fraud/data/training_data/Transaction.csv");
+
+  
+  PRINT "transaction_id,c_avg_amt_per_transaction,merchant_score,past_m_fraud,past_c_fraud"
+  TO_CSV ofile;
+  
+  Source = {Transaction.*};
+  Result = SELECT s FROM Source:s -(Transaction_to_Customer:e) -> :t
+           ACCUM 
+             ofile.println(s.id,
+               t.attr_map.get("avg_amt_per_transaction"),
+               s.attr_map.get("merchant_score"),
+               s.attr_map.get("past_fraud"),
+               s.attr_map.get("past_c_fraud"));
+
+  PRINT "print_transaction_features finished." AS Msg;
+}

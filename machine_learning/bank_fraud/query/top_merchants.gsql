@@ -1,0 +1,58 @@
+CREATE QUERY top_merchants(/* Parameters here */) FOR GRAPH Bank { 
+	TYPEDEF TUPLE<STRING merchant, DOUBLE amt> merchant_amt;
+	TYPEDEF TUPLE<STRING merchant, DOUBLE cnt> merchant_cnt;
+  HeapAccum<merchant_amt>(5, amt DESC) @merchant_amt_heap; 
+	HeapAccum<merchant_cnt>(5, cnt DESC) @merchant_cnt_heap; 
+	SumAccum<STRING> @merchant_id;
+  MapAccum<STRING,SumAccum<DOUBLE>> @merchant_amt_map;
+	MapAccum<STRING,SumAccum<DOUBLE>> @merchant_cnt_map;
+	SetAccum<STRING> @top_merchants_amt;
+	SetAccum<STRING> @top_merchants_cnt;
+	SumAccum<INT> @is_top_merchants_amt;
+	SumAccum<INT> @is_top_merchants_cnt;
+	
+	Merchants = {Merchant.*};
+	
+	Transactions = SELECT t FROM Merchants:s -(Transaction_to_Merchant:e)-> Transaction:t
+	               ACCUM
+	                 t.@merchant_id += s.id;
+	
+	Customers = SELECT t FROM Transactions:s -(Transaction_to_Customer:e)-> Customer:t
+	         ACCUM
+	           t.@merchant_amt_map += (s.@merchant_id->s.amount),
+             t.@merchant_cnt_map += (s.@merchant_id->1)
+	         POST-ACCUM
+	           FOREACH (k,v) IN t.@merchant_amt_map DO
+	             t.@merchant_amt_heap += merchant_amt(k,v)
+	           END,
+	           FOREACH (k,v) IN t.@merchant_cnt_map DO
+	             t.@merchant_cnt_heap += merchant_cnt(k,v)
+	           END,
+	           FOREACH i IN RANGE[0,4] DO
+	             t.@top_merchants_amt += t.@merchant_amt_heap.top().merchant,
+               t.@top_merchants_cnt += t.@merchant_cnt_heap.top().merchant,
+	             t.@merchant_amt_heap.pop(),
+	             t.@merchant_cnt_heap.pop()
+	           END,
+	           t.attr_map += ("tot_diff_merchants"->t.@merchant_amt_map.size());
+	
+	Transactions = SELECT t FROM Customers:s -(Transaction_to_Customer:e)-> Transaction:t
+	            ACCUM
+	              IF s.@top_merchants_amt.contains(t.@merchant_id) THEN 
+	                  t.@is_top_merchants_amt = 1
+	              ELSE
+	                  t.@is_top_merchants_amt = 0
+	              END,
+	              IF s.@top_merchants_cnt.contains(t.@merchant_id) THEN 
+	                  t.@is_top_merchants_cnt = 1
+	              ELSE
+	                  t.@is_top_merchants_cnt = 0
+	              END
+              POST-ACCUM
+	              t.attr_map += ("is_top_merchants_amt"->t.@is_top_merchants_amt);
+	              
+	Transactions = SELECT s FROM Transactions:s
+	               POST-ACCUM
+	                 s.attr_map += ("is_top_merchants_cnt"->s.@is_top_merchants_cnt);
+#  PRINT Transactions; 
+}

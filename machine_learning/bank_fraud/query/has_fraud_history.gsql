@@ -1,0 +1,23 @@
+CREATE QUERY has_fraud_history(/* Parameters here */) FOR GRAPH Bank { 
+SumAccum<DOUBLE> @@cnt_has_fraud_hist; 
+SumAccum<DOUBLE> @cnt_fraud;
+	
+	Start = {Customer.*};
+	Customers = SELECT s FROM Start:s -(Transaction_to_Customer:e)-> Transaction:t
+	            ACCUM
+	               s.@cnt_fraud += t.fraud;
+	
+	Transactions = {Transaction.*};
+	
+	Transactions = SELECT s FROM Transactions:s -(Transaction_to_Customer:e)-> Customer:t
+	               WHERE s.fraud ==1
+	               ACCUM
+	                 IF t.@cnt_fraud > 1 THEN 
+	                    @@cnt_has_fraud_hist += 1
+	                 END;
+	                
+	
+	PRINT @@cnt_has_fraud_hist;
+	PRINT @@cnt_has_fraud_hist/Transactions.size();
+
+}

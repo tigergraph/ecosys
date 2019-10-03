@@ -1,0 +1,21 @@
+CREATE QUERY avg_num_of_diff_merchants_per_day(/* Parameters here */) FOR GRAPH Bank { 
+	SumAccum<STRING> @merchant_id;
+  MapAccum<INT,SetAccum<STRING>> @day_merchant_map;
+	SumAccum<DOUBLE> @avg_num_of_diff_merchants;
+	Merchants = {Merchant.*};
+	
+	Transactions = SELECT t FROM Merchants:s -(Transaction_to_Merchant:e)-> Transaction:t
+	               ACCUM
+	                 t.@merchant_id += s.id;
+	
+	Customers = SELECT t FROM Transactions:s -(Transaction_to_Customer:e)-> Customer:t
+	         ACCUM
+	           t.@day_merchant_map += (s.time_step->s.@merchant_id)
+	         POST-ACCUM
+	           FOREACH (k,v) IN t.@day_merchant_map DO
+	             t.@avg_num_of_diff_merchants += v.size()
+	           END,
+	             t.@avg_num_of_diff_merchants = t.@avg_num_of_diff_merchants/t.@day_merchant_map.size(),
+	             t.attr_map += ("avg_num_of_diff_merchants_per_day"->t.@avg_num_of_diff_merchants);
+#  PRINT Customers; 
+}

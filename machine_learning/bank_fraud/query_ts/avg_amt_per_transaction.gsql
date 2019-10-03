@@ -1,0 +1,12 @@
+CREATE QUERY avg_amt_per_transaction() FOR GRAPH Bank { 
+  SumAccum<DOUBLE> @amt_avg;
+  
+  Source = {Customer.*};
+  Result = SELECT s FROM Source:s -(Transaction_to_Customer:e)-> Transaction:t
+           ACCUM
+             s.@amt_avg += t.amount
+           POST-ACCUM 
+             s.@amt_avg = s.@amt_avg/s.outdegree("Transaction_to_Customer"),
+             s.attr_map += ("avg_amt_per_transaction"->s.@amt_avg);
+#  PRINT Result; 
+}

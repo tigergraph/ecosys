@@ -1,0 +1,34 @@
+CREATE QUERY merchant_visited_before_fraud(INT window_size = 10, INT training_ts = 126) FOR GRAPH Bank { 
+  # Card shopped at these merchants before performing fraud
+  SumAccum<INT> @cnt_fraud, @total_trans;
+  SumAccum<FLOAT> @rate_fraud;
+  MinAccum<INT> @earlist_fraud_ts;
+  
+  trans = {Transaction.*};
+  trans = SELECT s
+          FROM trans:s
+          WHERE s.fraud == 1 AND s.time_step < training_ts;
+  fraud_cus = SELECT t
+              FROM trans:s -(Transaction_to_Customer:e) ->:t
+              ACCUM t.@earlist_fraud_ts += s.time_step;
+  
+  non_fraud_trans = SELECT t
+                    FROM fraud_cus:s -(Transaction_to_Customer:e) ->:t
+                    WHERE t.fraud == 0 AND t.time_step BETWEEN s.@earlist_fraud_ts - window_size AND s.@earlist_fraud_ts;
+    
+  merchants = {Merchant.*};
+  merchants = SELECT s
+              FROM merchants:s -(Transaction_to_Merchant:e) ->:t
+              WHERE t.time_step < training_ts
+              ACCUM s.@total_trans += 1;
+  
+  top_merchants = SELECT t
+              FROM non_fraud_trans:s -(Transaction_to_Merchant:e) ->:t
+              ACCUM t.@cnt_fraud += 1
+              POST-ACCUM t.@rate_fraud = t.@cnt_fraud/t.@total_trans,
+                         t.card_stolen_score = t.@rate_fraud
+              ORDER BY t.@rate_fraud DESC
+              LIMIT 10;
+  PRINT top_merchants;
+  
+}

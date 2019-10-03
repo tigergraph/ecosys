@@ -1,0 +1,16 @@
+CREATE QUERY num_of_fraud_merchants(/* Parameters here */) FOR GRAPH Bank { 
+  SumAccum<DOUBLE> @cnt;
+	SumAccum<DOUBLE> @fraud_fraction;
+	
+	Source = {Merchant.*};
+	Result = SELECT s FROM Source:s -(Transaction_to_Merchant:e)-> Transaction:t
+	         ACCUM
+	           s.@cnt += t.fraud
+	         POST-ACCUM 
+	           s.@fraud_fraction = s.@cnt/s.outdegree("Transaction_to_Merchant"),
+	           s.attr_map += ("fraud_fraction"->s.@fraud_fraction);
+	
+	Result = SELECT s FROM Source:s
+	         POST-ACCUM 
+	           s.attr_map += ("num_of_fraud"->s.@cnt);
+}

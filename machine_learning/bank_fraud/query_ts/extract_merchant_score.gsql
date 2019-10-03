@@ -1,0 +1,14 @@
+CREATE QUERY extract_merchant_score() FOR GRAPH Bank { 
+# extract for all
+  SumAccum<FLOAT> @merchant_score;
+  trans = {Transaction.*};
+  
+  trans = SELECT s 
+          FROM trans:s -(Transaction_to_Merchant:e) ->:t 
+          ACCUM s.@merchant_score += t.card_stolen_score
+          POST-ACCUM s.attr_map += ("merchant_score"->s.@merchant_score)
+          ORDER BY s.@merchant_score DESC
+          LIMIT 10;
+  PRINT trans;
+             
+}

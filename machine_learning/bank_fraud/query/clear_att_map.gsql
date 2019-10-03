@@ -1,0 +1,7 @@
+CREATE QUERY clear_att_map(string vType) FOR GRAPH Bank { 
+  /* Clear the attribute map of the given vertex type (vType) */ 
+  Source = {vType.*};
+	Result = SELECT s FROM Source:s
+	  POST-ACCUM s.attr_map.clear();
+	PRINT "attr_map of " + vType + " cleared." AS msg;
+}

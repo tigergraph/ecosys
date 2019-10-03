@@ -1,0 +1,40 @@
+CREATE QUERY sub_dist_to_fraud(VERTEX source, INT maxHops=5) FOR GRAPH Bank { 
+  # returns average distance to default for vertex source in graph
+        SumAccum<double> @@currDist,@@cur_fraud_cnt;
+        OrAccum<bool> @visited;
+	      ListAccum<double> @@fraud_cnt;
+ 
+# Initialize: Set the input vertex source as the starting point
+        Start = {source};
+	      Start = SELECT s FROM Start:s
+	              ACCUM s.@visited += true;
+        
+ 
+# totalDist = sum (distance between vertex s and all connected default neighbors)
+        WHILE (Start.size() > 0) LIMIT maxHops DO    # explore up to (maxHops) hops FROM s
+                @@currDist += 1;
+	              @@cur_fraud_cnt = 0;
+                Start = SELECT t FROM Start:s -()-> :t			# edge_type or similarTo
+                        WHERE t.@visited == false
+                        ACCUM 
+	                            t.@visited += true,
+	                            IF t.type == "Transaction" AND t.fraud == 1 THEN 
+	                               @@cur_fraud_cnt += 1
+	                            END;
+	              @@fraud_cnt += @@cur_fraud_cnt;
+        END;
+ 
+	Start = {source};
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_1hop"->@@fraud_cnt.get(0));
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_2hop"->@@fraud_cnt.get(2));
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_3hop"->@@fraud_cnt.get(4));
+	        
+#  PRINT Start;
+#	PRINT @@fraud_cnt;
+}

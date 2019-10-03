@@ -1,0 +1,7 @@
+CREATE QUERY fraud_in_nHops(INT a, INT b) FOR GRAPH Bank { 
+  Start = {Transaction.*};
+	Start = SELECT s FROM Start:s
+	        WHERE a<= s.id and s.id <= b
+	        ACCUM
+	          sub_fraud_in_nHops(s);
+}

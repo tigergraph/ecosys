@@ -1,0 +1,35 @@
+CREATE QUERY extract_m_past_fraud(/* Parameters here */) FOR GRAPH Bank { 
+  TYPEDEF TUPLE <trans VERTEX, time_step INT, fraud INT> trans_ts; 
+  HeapAccum<trans_ts>(6000000, time_step ASC) @m_trans;
+  SumAccum<FLOAT> @fraud_rate;
+  MapAccum<VERTEX, FLOAT> @fraud_rate_map;
+  
+  trans = {Transaction.*};
+  merchant = SELECT t 
+              FROM trans:s -(Transaction_to_Merchant:e) ->:t 
+              ACCUM t.@m_trans += trans_ts(s, s.time_step, s.fraud)
+              POST-ACCUM INT fraud_cnt = 0,
+                         INT index = 0,
+                         FOREACH item IN t.@m_trans DO
+                             IF index == 0 THEN
+                                 t.@fraud_rate_map += (item.trans -> 0)
+                             ELSE IF item.fraud == 1 THEN
+                                 fraud_cnt = fraud_cnt + 1,
+                                 t.@fraud_rate_map += (item.trans -> fraud_cnt/index)
+                             END,
+                             index = index + 1
+                         END;
+  
+  trans = SELECT s 
+          FROM trans:s -(Transaction_to_Merchant:e) ->:t 
+          ACCUM s.@fraud_rate += t.@fraud_rate_map.get(s)
+          POST-ACCUM IF s.@fraud_rate > 0 THEN
+                         s.attr_map += ("past_fraud" -> 1)
+                     ELSE 
+                         s.attr_map += ("past_fraud" -> 0)
+                     END
+          ORDER BY s.@fraud_rate DESC
+          LIMIT 10;
+  
+  PRINT trans;
+}

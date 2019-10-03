@@ -1,0 +1,14 @@
+DROP JOB load_bank
+CREATE LOADING JOB load_bank FOR GRAPH Bank {
+	DEFINE FILENAME f;
+	LOAD f
+		TO VERTEX Customer VALUES ($2,$3,$4,_),
+		TO VERTEX Merchant VALUES ($6,_),
+		TO VERTEX Transaction VALUES ($0,$1,$8,$9,$10,_),
+		TO EDGE Transaction_to_Customer VALUES ($0,$2),
+		TO EDGE Transaction_to_Merchant VALUES ($0,$6),
+        TO EDGE Customer_to_Merchant VALUES ($2,$6)
+		USING HEADER="true", SEPARATOR=",", QUOTE="single";
+}
+
+RUN LOADING JOB load_bank USING f="../data/bs140513_032310.csv_idnums"

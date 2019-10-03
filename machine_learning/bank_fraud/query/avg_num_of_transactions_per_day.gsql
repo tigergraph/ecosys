@@ -1,0 +1,11 @@
+CREATE QUERY avg_num_of_transactions_per_day() FOR GRAPH Bank { 
+  SumAccum<DOUBLE> @cnt_avg;
+	DOUBLE total_num_of_day = 180;
+	
+	Source = {Customer.*};
+	Result = SELECT s FROM Source:s 
+	         POST-ACCUM 
+	           s.@cnt_avg = s.outdegree("Transaction_to_Customer")/total_num_of_day,
+	           s.attr_map += ("avg_num_of_transactions_per_day"->s.@cnt_avg);
+  # PRINT Result; 
+}

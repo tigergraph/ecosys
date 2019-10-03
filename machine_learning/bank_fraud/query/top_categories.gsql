@@ -1,0 +1,53 @@
+CREATE QUERY top_categories(/* Parameters here */) FOR GRAPH Bank { 
+	TYPEDEF TUPLE<STRING cat, DOUBLE amt> category_amt;
+	TYPEDEF TUPLE<STRING cat, INT cnt> category_cnt;
+  HeapAccum<category_amt>(3, amt DESC) @category_amt_heap;
+	HeapAccum<category_cnt>(3, cnt DESC) @category_cnt_heap;
+  MapAccum<STRING,SumAccum<DOUBLE>> @category_amt_map;
+	MapAccum<STRING,SumAccum<INT>> @category_cnt_map;
+	SetAccum<STRING> @top_categories_amt;
+	SetAccum<STRING> @top_categories_cnt;
+	SumAccum<INT> @is_top_categories_amt;
+	SumAccum<INT> @is_top_categories_cnt;
+	
+	Transactions = {Transaction.*};
+	
+	
+	Customers = SELECT t FROM Transactions:s -(Transaction_to_Customer:e)-> Customer:t
+	         ACCUM
+	           t.@category_amt_map += (s.category->s.amount),
+	           t.@category_cnt_map += (s.category->1)
+	         POST-ACCUM
+	           FOREACH (k,v) IN t.@category_amt_map DO
+	             t.@category_amt_heap += category_amt(k,v)
+	           END,
+	           FOREACH (k,v) IN t.@category_cnt_map DO
+	             t.@category_cnt_heap += category_cnt(k,v)
+	           END,
+	           FOREACH i IN RANGE[0,2] DO
+	             t.@top_categories_amt += t.@category_amt_heap.top().cat,
+	             t.@top_categories_cnt += t.@category_cnt_heap.top().cat,
+	             t.@category_amt_heap.pop(),
+	             t.@category_cnt_heap.pop()
+	           END;
+	
+	Transactions = SELECT t FROM Customers:s -(Transaction_to_Customer:e)-> Transaction:t
+	            ACCUM
+	              IF s.@top_categories_amt.contains(t.category) THEN 
+	                  t.@is_top_categories_amt = 1
+	              ELSE
+	                  t.@is_top_categories_amt = 0
+	              END,
+	              IF s.@top_categories_cnt.contains(t.category) THEN 
+	                  t.@is_top_categories_cnt = 1
+	              ELSE
+	                  t.@is_top_categories_cnt = 0
+	              END
+              POST-ACCUM
+	              t.attr_map += ("is_top_categories_amt"->t.@is_top_categories_amt);
+	
+	Transactions = SELECT s FROM Transactions:s
+	               POST-ACCUM
+	                 s.attr_map += ("is_top_categories_cnt"->s.@is_top_categories_cnt);
+#  PRINT Transactions; 
+}

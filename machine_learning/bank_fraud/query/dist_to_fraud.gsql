@@ -1,0 +1,6 @@
+CREATE QUERY dist_to_fraud(/* Parameters here */) FOR GRAPH Bank { 
+  Start = {Transaction.*};
+	Start = SELECT s FROM Start:s
+	        ACCUM
+	          sub_dist_to_fraud(s,5);
+}

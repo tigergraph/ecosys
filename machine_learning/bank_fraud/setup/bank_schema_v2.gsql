@@ -1,0 +1,15 @@
+DROP ALL
+
+CREATE VERTEX Customer (PRIMARY_ID id string, age_group string, gender string,
+	attr_map MAP<string, double>) WITH primary_id_as_attribute="true"
+CREATE VERTEX Merchant (PRIMARY_ID id string,
+	attr_map MAP<string, double>) WITH primary_id_as_attribute="true"
+CREATE VERTEX Transaction (
+    PRIMARY_ID id int, time_step int, category string, amount double, fraud int,
+    attr_map MAP<string, double>) WITH primary_id_as_attribute="true"
+
+CREATE UNDIRECTED EDGE Transaction_to_Customer (FROM Transaction, TO Customer)
+CREATE UNDIRECTED EDGE Transaction_to_Merchant (FROM Transaction, TO Merchant)
+CREATE UNDIRECTED EDGE Customer_to_Merchant (FROM Customer, TO Merchant)
+
+CREATE GRAPH Bank (*)

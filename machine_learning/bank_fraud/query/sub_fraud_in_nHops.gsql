@@ -1,0 +1,43 @@
+CREATE QUERY sub_fraud_in_nHops(VERTEX source) FOR GRAPH Bank { 
+        OrAccum<bool> @visited;
+	      SumAccum<double> @@fraud_in_1Hop;
+	      SumAccum<double> @@fraud_in_2Hop;
+	      SumAccum<double> @@fraud_in_3Hop;
+	
+ 
+# Initialize: Set the input vertex source as the starting point
+        Start = {source};
+	      Start = SELECT s FROM Start:s
+	              ACCUM s.@visited += true;
+	
+	      Merchant_1Hop = SELECT t FROM Start:s -(Transaction_to_Merchant)-> :t
+	                      WHERE t.@visited == false
+	                      POST-ACCUM
+	                        @@fraud_in_1Hop += t.attr_map.get("num_of_fraud"),
+	                        t.@visited += true;
+	
+	      Customer_2Hop = SELECT t FROM Merchant_1Hop:s -(Customer_to_Merchant:e)-> :t
+	                      WHERE t.@visited == false
+	                      POST-ACCUM
+	                        @@fraud_in_2Hop += t.attr_map.get("num_of_fraud"),
+	                        t.@visited += true;
+	
+	      Merchant_3Hop = SELECT t FROM Customer_2Hop:s -(Customer_to_Merchant:e)-> :t
+	                      WHERE t.@visited == false
+	                      POST-ACCUM
+	                        @@fraud_in_3Hop += t.attr_map.get("num_of_fraud"),
+	                        t.@visited += true;
+	
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_1hop"->@@fraud_in_1Hop);
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_2hop"->(@@fraud_in_2Hop-@@fraud_in_1Hop));
+	Start = SELECT s FROM Start:s
+	        POST-ACCUM
+	            s.attr_map += ("fraud_cnt_3hop"->(@@fraud_in_3Hop-@@fraud_in_2Hop));
+	
+#	PRINT @@tot_fraud;
+#	PRINT Start;
+}

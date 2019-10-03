@@ -1,0 +1,16 @@
+CREATE QUERY print_transaction_features() FOR GRAPH Bank { 
+  /* Print out the attributes of Transaction vertices.  It will output a csv file
+	suffix = suffix of the output file name.*/
+ # FILE ofile ("/home/tigergraph/usecases/bank_fraud/data/training_data/Tranaction.csv");
+  FILE ofile ("/home/tigergraph/use_case/ML_workshop_London/bank_fraud/data/training_data/Tranaction.csv");
+
+  
+	PRINT "transaction_id,fraud,time_step,category,amount,fraud_cnt_1hop,fraud_cnt_2hop,fraud_cnt_3hop,is_top_merchants_cnt,is_top_merchants_amt,is_top_categories_cnt,is_top_categories_amt,c_age_group,c_gender,c_avg_amt_per_transaction,c_avg_num_of_diff_merchants_per_day,c_avg_num_of_transactions_per_day,c_tot_diff_merchants,c_num_of_fraud,c_fraud_fraction," TO_CSV ofile;
+	
+  Source = {Transaction.*};
+  Result = SELECT s FROM Source:s -(Transaction_to_Customer:e)->Customer:t
+	         ACCUM 
+	           ofile.println(s.id, s.fraud, s.time_step, s.category, s.amount,s.attr_map.get("fraud_cnt_1hop"),s.attr_map.get("fraud_cnt_2hop"),s.attr_map.get("fraud_cnt_3hop"),s.attr_map.get("is_top_merchants_cnt"),s.attr_map.get("is_top_merchants_amt"),s.attr_map.get("is_top_categories_cnt"),s.attr_map.get("is_top_categories_amt"),t.age_group,t.gender,t.attr_map.get("avg_amt_per_transaction"),t.attr_map.get("avg_num_of_diff_merchants_per_day"),t.attr_map.get("avg_num_of_transactions_per_day"),t.attr_map.get("tot_diff_merchants"),t.attr_map.get("num_of_fraud"),t.attr_map.get("fraud_fraction"));
+
+	PRINT "print_transaction_features finished." AS Msg;
+}
