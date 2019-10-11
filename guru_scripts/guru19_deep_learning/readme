@@ -18,7 +18,7 @@ cp ExprFunctions.app /home/tigergraph/tigergraph/dev/gdk/gsql/src/QueryUdf
 5.Install the queries:
 bash setup.sh
 
-6. To train the model, run the command below.  This bash script will run the training.gsql query to train the neural network and also print the cost function for training and validation data for each iteration. It will also run the prediction_accuracy.gsql query to show the prediction accuracy on validation data for each iteration.
+6. To train the model, run the command below.  This bash script will run the training.gsql query to train the neural network and also print the cost function for training and validation data for each iteration. It will also run the prediction_accuracy.gsql query to show the prediction accuracy on validation data for each iteration. (You also skip this step by running gsql -g NeuralNetwork loader_trained.gsql to load the trained result into the graph) 
 bash iteration.sh
 
 7.To use our trained neural network to recognize a digit you draw, you can draw a digit yourself using an online sketchpad:https://sketch.io/sketchpad/. After drawing the digit, you can export the drawing as a .jpeg file using the Export icon at the bottom left of the page.  (You are strongly recommended to draw your digit at the very center of the sketchpad for better prediction accuracy)
