@@ -1,0 +1,32 @@
+README for Graph Gurus 19 GSQL Demo
+October 9, 2019
+Changran Liu
+
+This folder includes the queries and the data files to build a neural network to recognize handwritten digits. 
+Follow the instructions below to reproduce the demo in Graph Gurus 19:
+1. In a Linux shell for your TigerGraph machine, change to the neural_network folder:
+
+2. Create the graph schema for the NeuralNetwork graph:
+gsql schema.gsql
+
+3. Load the training and validation data into the NeuralNetwork graph and initialize the weight of the neural network:
+gsql -g NeuralNetwork loader.gsql
+
+4. Add the expression functions by copying the ExprFunctions.hpp file to the TigerGraph folder for query user-defined functions:
+cp ExprFunctions.app /home/tigergraph/tigergraph/dev/gdk/gsql/src/QueryUdf
+
+5.Install the queries:
+bash setup.sh
+
+6. To train the model, run the command below.  This bash script will run the training.gsql query to train the neural network and also print the cost function for training and validation data for each iteration. It will also run the prediction_accuracy.gsql query to show the prediction accuracy on validation data for each iteration.
+bash iteration.sh
+
+7.To use our trained neural network to recognize a digit you draw, you can draw a digit yourself using an online sketchpad:https://sketch.io/sketchpad/. After drawing the digit, you can export the drawing as a .jpeg file using the Export icon at the bottom left of the page.  (You are strongly recommended to draw your digit at the very center of the sketchpad for better prediction accuracy)
+
+8. Run Image2vec.py using the command below. This will convert your jpeg image to a scaled and cropped 20 by 20 grayscale image and save the result in the ./data/prediction folder of the neural_network use case.(Pillow is required to run this python script: https://pillow.readthedocs.io/en/stable/installation.html) If you file is called myDigit.jpeg, then the command
+Python3 image2vec.py myDigit.jpeg
+will convert your file and save it to /data/prediction/myDigit.csv. 
+
+9. Run the command below to run the prediction_sketchpad.gsql query. This will show a 0 to 1 value for each one of the digits (0~9). The higher the value is, the more likely that your image corresponds to that digit.
+gsql -g NeuralNetwork 'run query prediction_sketchpad("<filepath>")'
+where <filename> is the path to a csv-formatted digit image, such as /home/tigergraph/neural_network/data/prediction/myDigit.csv.
