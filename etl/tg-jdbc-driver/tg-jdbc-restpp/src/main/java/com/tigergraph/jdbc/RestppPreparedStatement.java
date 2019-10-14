@@ -75,7 +75,7 @@ public class RestppPreparedStatement extends PreparedStatement {
      * otherwise Spark will panic.
      */
     this.currentResultSet = new RestppResultSet(this,
-        response.getResults(), this.query_type, isGettingEdge);
+        response.getResults(), parser.getFieldList(), this.query_type, isGettingEdge);
 
     return hasResultSets;
   }

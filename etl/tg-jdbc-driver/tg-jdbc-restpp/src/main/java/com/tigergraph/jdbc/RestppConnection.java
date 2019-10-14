@@ -290,7 +290,7 @@ public class RestppConnection extends Connection {
         result = new RestppResponse(response, Boolean.TRUE, this.debug);
         break;
       } catch (Exception e) {
-        if (retry >= max_retry) {
+        if (retry >= max_retry - 1) {
           throw new SQLException("Request: " + request +
              ", payload size: " + json.length() + ", error: " + e);
         }

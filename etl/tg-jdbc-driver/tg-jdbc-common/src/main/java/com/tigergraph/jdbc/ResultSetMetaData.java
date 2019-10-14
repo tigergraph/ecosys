@@ -85,18 +85,34 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
   @Override public int getColumnType(int column) throws SQLException {
     int index = getValidColumnIndex(column);
     String type = this.attributeList.get(index).getType().toLowerCase();
-    if (type.equals("string")) {
+    if (type.equals("string") || type.equals("string compress")) {
       return Types.VARCHAR;
+    }
+    if (type.equals("bool")) {
+      return Types.BOOLEAN;
     }
     if (type.equals("int")) {
       return Types.INTEGER;
     }
+    if (type.equals("uint")) {
+      return Types.INTEGER;
+    }
     if (type.equals("double")) {
+      return Types.DOUBLE;
+    }
+    if (type.equals("real")) {
       return Types.REAL;
     }
-    return Types.OTHER;
+    if (type.equals("float")) {
+      return Types.FLOAT;
+    }
+    /*
+     * For set/list/map/udt and other types, they will be treated as "Types.VARCHAR".
+     * Spark will panic if it returns "Types.OTHER".
+     */
+    return Types.VARCHAR;
   }
-  
+
   @Override public String getColumnTypeName(int column) throws SQLException {
     int index = getValidColumnIndex(column);
 
@@ -126,7 +142,7 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
   @Override public String getColumnClassName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-  
+
   @Override public String getTableName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
@@ -148,4 +164,3 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
 }
-
