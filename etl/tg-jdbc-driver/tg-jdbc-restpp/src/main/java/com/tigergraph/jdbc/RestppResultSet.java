@@ -33,6 +33,7 @@ public class RestppResultSet extends ResultSet {
   private List<Attribute> attribute_list_;
   private List<Integer> scale_list_ = null;
   private List<Integer> precision_list_ = null;
+  private List<String> field_list_;
   // Set of current table's column names.
   private Set<String> key_set_;
   // vertex type or edge type.
@@ -45,7 +46,8 @@ public class RestppResultSet extends ResultSet {
   private QueryType query_type_ = QueryType.QUERY_TYPE_UNKNOWN;
 
   public RestppResultSet(Statement statement,
-      List<JSONObject> resultList, QueryType query_type, boolean isGettingEdge) throws SQLException {
+      List<JSONObject> resultList, List<String> field_list, QueryType query_type,
+      boolean isGettingEdge) throws SQLException {
     this.statement_ = statement;
     this.query_type_ = query_type;
     this.isGettingEdge_ = isGettingEdge;
@@ -53,6 +55,7 @@ public class RestppResultSet extends ResultSet {
     this.resultSets_ = new ArrayList<>();
     this.key_set_ = new HashSet<String>();
     this.attribute_list_ = new ArrayList<>();
+    this.field_list_ = field_list;
     for(int i = 0; i < resultList.size(); i++) {
       parseResult(resultList.get(i), this.query_type_);
     }
@@ -89,7 +92,12 @@ public class RestppResultSet extends ResultSet {
     String attr_type = "";
     if (value instanceof JSONObject) {
       attr_type = ((JSONObject)value).getString("Name");
-      this.attribute_list_.add(new Attribute(attr_name, attr_type, Boolean.TRUE));
+      /**
+       * When retrieving vertex schema, the primary_id is denoted as the name defined in schema.
+       * While in the query results, primary_id is denoted as "v_id".
+       * So "v_id" is used for both cases for consistency.
+       */
+      this.attribute_list_.add(new Attribute("v_id", attr_type, Boolean.TRUE));
     }
     // Get attributes.
     JSONArray attributes = obj.getJSONArray("Attributes");
@@ -139,10 +147,13 @@ public class RestppResultSet extends ResultSet {
     String str = String.valueOf(value);
     int length = str.length();
     precision_list.add(length);
-    if (value instanceof Integer) {
-      attribute_list.add(new Attribute(key, "INT", Boolean.FALSE));
-      scale_list.add(0);
-    } else if (value instanceof Double) {
+    /**
+     * An attribute's values could be int for some vertices,
+     * and float for others (e.g., pagerank score).
+     * As a workaround, all integers are treated as float.
+     * Will change it back after supporting retrieving query schema.
+     */
+    if ((value instanceof Double) || (value instanceof Integer)) {
       int index = str.indexOf('.');
       if (index < 0) {
         scale_list.add(0);
@@ -167,11 +178,11 @@ public class RestppResultSet extends ResultSet {
     Set<String> key_set = new HashSet<String>();
     String table_name = obj.getString("v_type");
     String id = obj.getString("v_id");
-    attribute_list.add(new Attribute("id", "STRING", Boolean.TRUE));
+    attribute_list.add(new Attribute("v_id", "STRING", Boolean.TRUE));
     scale_list.add(0);
     precision_list.add(id.length());
-    key_set.add("id");
-    map.put("id", id);
+    key_set.add("v_id");
+    map.put("v_id", id);
     JSONObject attributes = obj.getJSONObject("attributes");
     Iterator<String> keysItr = attributes.keys();
     while (keysItr.hasNext()) {
@@ -421,6 +432,14 @@ public class RestppResultSet extends ResultSet {
 
   @Override
   public Object getObject(int columnIndex) throws SQLException {
+    // Attributes reordering for Spark
+    if (this.field_list_.size() > 0) {
+      if (columnIndex > this.field_list_.size()) {
+        throw new SQLException("Column index out of range.");
+      }
+      return getObject(this.field_list_.get(columnIndex - 1));
+    }
+
     if (columnIndex > this.attribute_list_.size()) {
       throw new SQLException("Column index out of range.");
     }
