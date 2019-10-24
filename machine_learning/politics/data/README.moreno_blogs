@@ -1,0 +1,60 @@
+Blogs network, part of the Koblenz Network Collection
+===========================================================================
+
+This directory contains the TSV and related files of the moreno_blogs network:
+
+This directed network contains front-page hyperlinks between blogs in the context of the 2004 US election. A node represents a blog and an edge represents a hyperlink between two blogs.
+
+
+More information about the network is provided here: 
+http://konect.uni-koblenz.de/networks/moreno_blogs
+
+Files: 
+    meta.moreno_blogs -- Metadata about the network 
+    out.moreno_blogs -- The adjacency matrix of the network in space separated values format, with one edge per line
+      The meaning of the columns in out.moreno_blogs are: 
+        First column: ID of from node 
+        Second column: ID of to node
+    ent.moreno_blogs.blog.orientation -- Contains the attribute `orientation` of entity `blog` of the network
+
+
+Complete documentation about the file format can be found in the KONECT
+handbook, in the section File Formats, available at:
+
+http://konect.uni-koblenz.de/publications
+
+All files are licensed under a Creative Commons Attribution-ShareAlike 2.0 Germany License.
+For more information concerning license visit http://konect.uni-koblenz.de/license.
+
+
+
+Use the following References for citation:
+
+@MISC{konect:2016:moreno_blogs,
+    title = {Blogs network dataset -- {KONECT}},
+    month = sep,
+    year = {2016},
+    url = {http://konect.uni-koblenz.de/networks/moreno_blogs}
+}
+
+@inproceedings{konect:adamic2005,
+  title={{The Political Blogosphere and the 2004 {US} Election: Divided they Blog}},
+  author={Adamic, Lada A and Glance, Natalie},
+  booktitle={Proceedings of the 3rd International Workshop on Link Discovery},
+  pages={36--43},
+  year={2005},
+  organization={ACM}
+}
+
+
+@inproceedings{konect,
+	title = {{KONECT} -- {The} {Koblenz} {Network} {Collection}},
+	author = {Jérôme Kunegis},
+	year = {2013},
+	booktitle = {Proc. Int. Conf. on World Wide Web Companion},
+	pages = {1343--1350},
+	url = {http://userpages.uni-koblenz.de/~kunegis/paper/kunegis-koblenz-network-collection.pdf}, 
+	url_presentation = {http://userpages.uni-koblenz.de/~kunegis/paper/kunegis-koblenz-network-collection.presentation.pdf},
+}
+
+

@@ -1,0 +1,14 @@
+DROP ALL
+
+CREATE VERTEX Member(
+		     PRIMARY_ID member_id INT,
+ 		     role STRING,
+		     community STRING
+		    )
+
+CREATE UNDIRECTED EDGE Interacted( 
+				  FROM Member,
+				  TO Member
+				 ) 
+
+CREATE GRAPH karate_club(*)

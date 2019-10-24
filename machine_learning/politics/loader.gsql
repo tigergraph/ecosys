@@ -1,0 +1,15 @@
+USE GRAPH politics
+DROP JOB loader
+
+CREATE LOADING JOB loader FOR GRAPH politics{
+        
+	LOAD "./data/labels"
+                TO VERTEX Blog VALUES ($0, $1)
+        USING separator = " ";
+
+        LOAD "./data/edges"
+                TO EDGE Link_To VALUES ($0, $1)
+        USING separator = " ";
+}
+
+RUN LOADING JOB loader

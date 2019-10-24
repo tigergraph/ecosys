@@ -1,0 +1,11 @@
+category: Hyperlink
+code: Mg
+name: Blogs
+description: Blog–blog hyperlinks
+entity-names: blog
+extr: moreno
+url: http://moreno.ss.uci.edu/data.html#blogs
+long-description: This directed network contains front-page hyperlinks between blogs in the context of the 2004 US election. A node represents a blog and an edge represents a hyperlink between two blogs.
+relationship-names: hyperlink
+cite: konect:adamic2005 
+tags:  #loop

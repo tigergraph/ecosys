@@ -1,0 +1,15 @@
+USE GRAPH karate_club
+DROP JOB load_karate
+
+create loading job load_karate for graph karate_club{
+
+	LOAD "./attributes.csv"
+		TO VERTEX Member VALUES ($0, $1, $2)
+	USING HEADER = "true";	
+
+	LOAD "./edges.tsv"
+		to edge Interacted values ($0, $1)
+		using Separator=" ";
+}
+
+run loading job load_karate

@@ -1,0 +1,13 @@
+DROP ALL
+
+CREATE VERTEX Blog(
+PRIMARY_ID id INT
+, label STRING
+)
+
+CREATE DIRECTED EDGE Link_To(
+FROM Blog
+, To Blog
+) with reverse_edge = "Link_From"
+
+CREATE GRAPH politics(*)
