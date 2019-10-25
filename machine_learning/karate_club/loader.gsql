@@ -4,7 +4,7 @@ DROP JOB load_karate
 create loading job load_karate for graph karate_club{
 
 	LOAD "./attributes.csv"
-		TO VERTEX Member VALUES ($0, $1, $2)
+		TO VERTEX Member VALUES ($0, $0, $1, $2)
 	USING HEADER = "true";	
 
 	LOAD "./edges.tsv"

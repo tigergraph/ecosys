@@ -2,6 +2,7 @@ DROP ALL
 
 CREATE VERTEX Member(
 		     PRIMARY_ID member_id INT,
+	             member_id INT,
  		     role STRING,
 		     community STRING
 		    )
