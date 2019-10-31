@@ -3,8 +3,8 @@ DROP ALL
 CREATE VERTEX Member(
 		     PRIMARY_ID member_id INT,
 	             member_id INT,
- 		     role STRING,
-		     community STRING
+ 		     in_training BOOL,
+		     community_label INT
 		    )
 
 CREATE UNDIRECTED EDGE Interacted( 
