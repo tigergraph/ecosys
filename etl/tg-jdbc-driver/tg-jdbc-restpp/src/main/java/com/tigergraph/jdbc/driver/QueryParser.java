@@ -50,6 +50,7 @@ public class QueryParser {
   private HttpTypes httpType;
   private QueryType query_type;
   private RestppConnection connection;
+  private List<String> field_list_;
   private String line;
   private String job;
   private int timeout;
@@ -355,6 +356,7 @@ public class QueryParser {
     this.connection = con;
     this.timeout = timeout;
     this.query = query;
+    this.field_list_ = new ArrayList<>();
 
     if (parameters != null) {
       map2Array(parameters);
@@ -441,7 +443,8 @@ public class QueryParser {
         sb.append("*\"");
       }
       sb.append("}");
-      this.payload = new StringEntity(sb.toString(), ContentType.APPLICATION_JSON);
+      this.payload = new StringEntity(sb.toString(), "UTF-8");
+      this.payload.setContentType("application/json");
     } else if (tokens[0].toLowerCase().equals("run")) {
       StringBuilder sb = new StringBuilder();
       Integer size = this.paramArray.length;
@@ -454,7 +457,7 @@ public class QueryParser {
         size -= 1; // The last parameter is query body.
         this.query_type = QueryType.QUERY_TYPE_INTERPRETED;
         this.httpType = HttpTypes.HttpPost;
-        this.payload = new StringEntity(query_body, ContentType.TEXT_PLAIN);
+        this.payload = new StringEntity(query_body, "UTF-8");
         sb.append("interpreted_query?");
       } else {
         /**
@@ -489,6 +492,13 @@ public class QueryParser {
       Integer where_index = getIndexInArray(tokens, "where");
       Integer length = tokens.length;
       Boolean isGetSchema = Boolean.FALSE;
+      /**
+       * Spark may reorder attributes when issuing queries,
+       * so we need to keep its order.
+       */
+      for (int i = 1; i < from_index; ++i) {
+        this.field_list_.add(tokens[i]);
+      }
       if (query.replace(" ", "").indexOf("1=0") >= 0) { // Spark is trying to get schema
         isGetSchema = Boolean.TRUE;
         if (tokens[from_index + 1].toLowerCase().equals("vertex")) {
@@ -559,7 +569,7 @@ public class QueryParser {
           throw new SQLException("No query body was found for interpreted queries.");
         }
         String query_body = query.substring(start, end + 1);
-        this.payload = new StringEntity(query_body, ContentType.TEXT_PLAIN);
+        this.payload = new StringEntity(query_body, "UTF-8");
         // Re-parse the query without query body
         String new_query = query.substring(0, start) + query.substring(end + 1);
         tokens = new_query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
@@ -762,14 +772,14 @@ public class QueryParser {
       case HttpPost:
         HttpPost post = new HttpPost(url);
         if (!"".equals(json)) {
-          if (!"".equals(this.job)) {
-            StringEntity payload = new StringEntity(json, ContentType.TEXT_PLAIN);
-            post.setEntity(payload);
-          } else {
-            StringEntity payload = new StringEntity(json, ContentType.APPLICATION_JSON);
-            post.setEntity(payload);
+          StringEntity payload = new StringEntity(json, "UTF-8");
+          if ("".equals(this.job)) {
+            payload.setContentType("application/json");
           }
+          payload.setContentEncoding("UTF-8");
+          post.setEntity(payload);
         } else {
+          this.payload.setContentEncoding("UTF-8");
           post.setEntity(this.payload);
         }
         Header[] headers = post.getAllHeaders();
@@ -822,6 +832,10 @@ public class QueryParser {
 
   public String getLine() {
     return this.line;
+  }
+
+  public List<String> getFieldList() {
+    return this.field_list_;
   }
 
   public String getJob() {

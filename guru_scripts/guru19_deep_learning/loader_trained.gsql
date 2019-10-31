@@ -1,0 +1,13 @@
+drop job loader
+
+CREATE LOADING JOB loader FOR GRAPH NeuralNetwork{
+LOAD "./data/new/Theta2.csv"
+TO EDGE Theta2 VALUES($"v_hid_id", $"v_out_id", $"theta") USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+LOAD "./data/new/Theta1.csv"
+TO EDGE Theta1 VALUES($"v_in_id", $"v_hid_id", $"theta") USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+
+}
+
+RUN LOADING JOB loader

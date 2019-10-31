@@ -54,7 +54,7 @@ public class RestppStatement extends Statement {
     // If source vertex id is not null, Spark is trying to retrieve edge.
     boolean isGettingEdge = ((RestppConnection) getConnection()).getSource() != null;
     this.currentResultSet = hasResultSets ? new RestppResultSet(this,
-        response.getResults(), this.query_type, isGettingEdge) : null;
+        response.getResults(), parser.getFieldList(), this.query_type, isGettingEdge) : null;
 
     return hasResultSets;
   }
