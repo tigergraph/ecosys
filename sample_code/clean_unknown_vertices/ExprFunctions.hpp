@@ -308,7 +308,7 @@ namespace UDIMPL {
       return;
     }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
-    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
     for (auto id : unknownIds) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
@@ -366,7 +366,7 @@ namespace UDIMPL {
       return;
     }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
-    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
     for (auto id : unknownIds) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
@@ -374,6 +374,60 @@ namespace UDIMPL {
     graphupdates->Commit();
     msg = ss.str();
   }
+
+inline void DeleteEdge(ServiceAPI* api,
+    EngineServiceRequest& request,
+    gpelib4::MasterContext* context,
+    string srcType, string tgtType,
+    string edgeType, string rEdgeType,
+    string edgeFile, string rEdgeFile) {
+  // create graph updates
+  gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+
+  // get from, to type id
+  uint32_t srcTypeId = api->GetTopologyMeta()->GetVertexTypeId(srcType, request.graph_id_);
+  uint32_t tgtTypeId = api->GetTopologyMeta()->GetVertexTypeId(tgtType, request.graph_id_);
+
+  std::string line;
+  // delete direct edge
+  {
+    uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(edgeType, request.graph_id_);
+    std::ifstream infile(edgeFile);
+    if (infile.is_open()) {
+      VertexLocalId_t addr, city;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> addr >> city;
+        topology4::DeltaVertexId srcid(srcTypeId, addr);
+        topology4::DeltaVertexId tgtid(tgtTypeId, city);
+        graphupdates->DeleteEdge(srcid, tgtid, eTypeId);
+      }
+      infile.close();
+    }
+  }
+
+  // delete reverse edge
+  {
+    uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(rEdgeType, request.graph_id_);
+    std::ifstream infile(rEdgeFile);
+    if (infile.is_open()) {
+      VertexLocalId_t addr, city;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> addr >> city;
+        topology4::DeltaVertexId srcid(srcTypeId, addr);
+        topology4::DeltaVertexId tgtid(tgtTypeId, city);
+        graphupdates->DeleteEdge(tgtid, srcid, eTypeId);
+      }
+      infile.close();
+    }
+  }
+}
+inline string CombineTwoNumbers(int64_t one, int64_t two) {
+  std::stringstream ss;
+  ss << one << " " << two;
+  return ss.str();
+}
 }
 /****************************************/
 
