@@ -20,7 +20,7 @@ CREATE DISTRIBUTED QUERY findInconsistentEdge(string edgeFile, string rEdgeFile)
 
    D = SELECT src
        FROM T:src -(REVERSE_ADDRESS_WITHIN_CITY:e)-> Address:tgt
-       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(getTgtVid(e))
+       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src)
    ;
 
    D = SELECT src
