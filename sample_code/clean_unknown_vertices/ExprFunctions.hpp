@@ -422,6 +422,7 @@ inline void DeleteEdge(ServiceAPI* api,
       infile.close();
     }
   }
+  graphupdates->Commit(true);
 }
 inline string CombineTwoNumbers(int64_t one, int64_t two) {
   std::stringstream ss;
