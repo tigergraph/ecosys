@@ -1,7 +1,7 @@
 USE GRAPH karate_club
 DROP QUERY mean_rule_arrayaccum
 
-CREATE QUERY mean_rule_arrayaccum(double learning_rate = 0.01, double epsilon = 0.000001) FOR GRAPH karate_club {
+CREATE QUERY mean_rule_arrayaccum(INT iter = 10, double learning_rate = 0.01, double epsilon = 0.000001) FOR GRAPH karate_club {
 /* Propagate:
    1. Add self-loop
    2. normalization
@@ -15,18 +15,18 @@ CREATE QUERY mean_rule_arrayaccum(double learning_rate = 0.01, double epsilon = 
    4. Backpropagate the loss and update the weight matrices W in each layer.
 */
         //MapAccum<INT, DOUBLE> @features, @old_features, ;
-        ArrayAccum<SumAccum<DOUBLE>> @x[];
-        ArrayAccum<SumAccum<DOUBLE>> @z1[];
-        ArrayAccum<SumAccum<DOUBLE>> @a1[];
-        ArrayAccum<SumAccum<DOUBLE>> @dz1[];
-        ArrayAccum<SumAccum<DOUBLE>> @z2[];
-        ArrayAccum<SumAccum<DOUBLE>> @a2[];
-        ArrayAccum<SumAccum<DOUBLE>> @dz2[];
-        ArrayAccum<SumAccum<DOUBLE>> @tmp[];
-        ArrayAccum<SumAccum<DOUBLE>> @@dW2[][];
-        ArrayAccum<SumAccum<DOUBLE>> @@dW1[][];
-//      ArrayAccum<ArrayAccum<SumAccum<DOUBLE>>> @@dW2[];
-//      ArrayAccum<ArrayAccum<SumAccum<DOUBLE>>> @@dW1[];
+        ArrayAccum<SumAccum<DOUBLE>> @x[34];
+        ArrayAccum<SumAccum<DOUBLE>> @z1[4];
+        ArrayAccum<SumAccum<DOUBLE>> @a1[4];
+        ArrayAccum<SumAccum<DOUBLE>> @dz1[4];
+        ArrayAccum<SumAccum<DOUBLE>> @z2[2];
+        ArrayAccum<SumAccum<DOUBLE>> @a2[2];
+        ArrayAccum<SumAccum<DOUBLE>> @dz2[2];
+        ArrayAccum<SumAccum<DOUBLE>> @tmp_n[34];
+	      ArrayAccum<SumAccum<DOUBLE>> @tmp_n1[4];
+	      ArrayAccum<SumAccum<DOUBLE>> @tmp_n2[2];
+        ArrayAccum<SumAccum<DOUBLE>> @@dW2[4][2];
+        ArrayAccum<SumAccum<DOUBLE>> @@dW1[34][4];
         ListAccum<ListAccum<DOUBLE>> @@W_1, @@W_2;
         SumAccum<DOUBLE> @@loss, @@diff;
         INT n, n_layer1, n_layer2;
@@ -83,28 +83,32 @@ CREATE QUERY mean_rule_arrayaccum(double learning_rate = 0.01, double epsilon = 
         // initialize feature: x is 1 * n
         all_nodes = SELECT s
                     FROM all_nodes:s
-                    POST-ACCUM s.@x.reallocate(n)
-                               , s.@x[s.member_id] += 1  // build one-hot vector
-                               , s.@tmp.reallocate(n);
+                    POST-ACCUM //s.@x.reallocate(n)
+                                s.@x[s.member_id] += 1  // build one-hot vector
+	                             ;
 
-        WHILE abs(@@diff) > epsilon DO
+ //       WHILE abs(@@diff) > epsilon LIMIT iter DO
+	      all_nodes = SELECT s
+                    FROM all_nodes:s 
+	                  ACCUM s.@tmp_n.reallocate(n)  // tmp:1*n
+	                        , s.@tmp_n1.reallocate(n_layer1)  // tmp:1*n1
+	                        ;
         // first layer: z1 is 1 * n_layer1, W_1 is n * n_layer1
         nodes = SELECT t
                 FROM all_nodes:s -(:e) -> :t
-                ACCUM t.@tmp += s.@x
-                POST-ACCUM t.@tmp += t.@x   // add self
-                           , t.@z1.reallocate(n_layer1)
-                           , t.@z1 = multiply_ArrayAccum_ListOfList(t.@tmp, @@W_1)
-                           , t.@z1 = multiply_ArrayAccum_const(t.@z1, 1.0/(t.outdegree()+1))
+                ACCUM t.@tmp_n += s.@x   // tmp:1*n, x:1*n
+                POST-ACCUM t.@tmp_n += t.@x   // add self
+                           , t.@z1.reallocate(n_layer1)  // z1:1*n1
+                           , t.@z1 = multiply_ArrayAccum_ListOfList(t.@tmp_n, @@W_1)  // tmp:1*n, W1:n*n1, z1:1*n1
+                           , t.@z1 = multiply_ArrayAccum_const(t.@z1, 1.0/(t.outdegree()+1))  // z1:1*n1
                            , t.@a1 += tanh_ArrayAccum(t.@z1)  // tanh activation function
-                           , t.@tmp.reallocate(n_layer1)
                            ;
 
         // second layer: z2 is 1 * n_layer2, W_2 is n_layer1 * n_layer2
         nodes = SELECT t
                 FROM all_nodes:s -(:e) -> :t
-                ACCUM t.@tmp += s.@z1
-                POST-ACCUM t.@tmp += t.@z1  // add self
+                ACCUM t.@tmp_n1 += s.@z1   // z1:1*n1
+                POST-ACCUM t.@tmp_n1 += t.@z1  // add self
                            , t.@z2.reallocate(n_layer2)
                            , t.@z2 = multiply_ArrayAccum_ListOfList(t.@z1, @@W_2)
                            , t.@z2 = multiply_ArrayAccum_const(t.@z2, 1.0/(t.outdegree()+1))
@@ -121,15 +125,12 @@ CREATE QUERY mean_rule_arrayaccum(double learning_rate = 0.01, double epsilon = 
                                   , s.@a2[0] += t0/(t0+t1)
                                   , s.@a2[1] += t1/(t0+t1);
 
-                PRINT all_nodes;
+        PRINT all_nodes;
 
-        /*
+        
         // calculate cross-entropy loss function
-        @@dW2.reallocate(n_layer1);//, n_layer2);
-        FOREACH i IN RANGE[0, n_layer1] DO
-            @@dW2[i].reallocate(n_layer2);
-        END;
-        @@dW1.reallocate(n);//, n_layer1);
+        //@@dW2.reallocate(n_layer1, n_layer2);
+        //@@dW1.reallocate(n, n_layer1);
 
         training_set = SELECT s
                        FROM all_nodes:s
@@ -142,23 +143,27 @@ CREATE QUERY mean_rule_arrayaccum(double learning_rate = 0.01, double epsilon = 
                                       @@loss += -log(s.@a2[1])/n
                                   END
                                   // backpropagation
-                                  , FOREACH i IN RANGE[0, n_layer1] DO
-                                      @@dW2[i] += multiply_ArrayAccum_const(s.@dz2, s.@a1[i]/n)
-                                  END
+	                                , s.@tmp_n2.reallocate(n_layer2)
+	                                , s.@tmp_n2 = multiply_ArrayAccum_const(s.@dz2, 1/n)
+	                                , @@dW2 += multiply_ArrayAccum_ArrayAccum(s.@a1, s.@tmp_n2)
+                                 
                                   // dz1 = W2^Tdz2 * g[1]'(z1)
                                   , s.@dz1 = multiply_ArrayAccum_ListOfListT(s.@dz2, @@W_2)
-                                  , s.@tmp.reallocate(n_layer1)
-                                  , s.@tmp = tanh_prime_ArrayAccum(s.@z1)
-                                  , s.@dz1 = dotProduct_ArrayAccum_ArrayAccum(s.@dz1, s.@tmp)   // derivative of tanh is 1-tanh(z)^2
-                                  , FOREACH i IN RANGE[0, n] DO
-                                      @@dW1[i] += multiply_ArrayAccum_const(s.@dz1, s.@x[i]/n)  //dW1 = dz1x^T
-                                  END
+                                  , s.@tmp_n1.reallocate(n_layer1)
+                                  , s.@tmp_n1 = tanh_prime_ArrayAccum(s.@z1)
+                                  , s.@dz1 = elementProduct_ArrayAccum_ArrayAccum(s.@dz1, s.@tmp_n1)   // derivative of tanh is 1-tanh(z)^2
+	                                , log(TRUE, "before", s.@tmp_n1)
+	                                , s.@tmp_n1.reallocate(n_layer1)
+	                                , log(TRUE, "after", s.@tmp_n1)
+	                                , s.@tmp_n1 = multiply_ArrayAccum_const(s.@dz1, 1/n)
+	                                , @@dW1 += multiply_ArrayAccum_ArrayAccum(s.@x, s.@tmp_n1)
 
                                   ;
+	
 
   @@diff = @@diff - @@loss;
         PRINT @@loss;
-*/
-        END;
+
+ //       END;
         
 }
