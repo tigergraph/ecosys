@@ -390,6 +390,7 @@ inline void DeleteEdge(ServiceAPI* api,
 
   std::string line;
   // delete direct edge
+  uint32_t cnt1 = 0;
   {
     uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(edgeType, request.graph_id_);
     std::ifstream infile(edgeFile);
@@ -401,11 +402,16 @@ inline void DeleteEdge(ServiceAPI* api,
         topology4::DeltaVertexId srcid(srcTypeId, addr);
         topology4::DeltaVertexId tgtid(tgtTypeId, city);
         graphupdates->DeleteEdge(srcid, tgtid, eTypeId);
+        ++cnt1;
       }
       infile.close();
     }
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") 
+      << "Deleted " << cnt1  << " type \'"<< edgeType 
+      << "\' edges from " << edgeFile 
+      << " with typeid: " << eTypeId << std::endl;
   }
-
+  cnt1 = 0;
   // delete reverse edge
   {
     uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(rEdgeType, request.graph_id_);
@@ -418,9 +424,14 @@ inline void DeleteEdge(ServiceAPI* api,
         topology4::DeltaVertexId srcid(srcTypeId, addr);
         topology4::DeltaVertexId tgtid(tgtTypeId, city);
         graphupdates->DeleteEdge(tgtid, srcid, eTypeId);
+        ++cnt1;
       }
       infile.close();
     }
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") 
+      << "Deleted " << cnt1  << " \'"<< rEdgeType 
+      << "\' Rev-edges from " << rEdgeFile 
+      << " with typeid: " << eTypeId << std::endl;
   }
   graphupdates->Commit(true);
 }

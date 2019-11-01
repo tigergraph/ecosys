@@ -9,18 +9,22 @@ CREATE DISTRIBUTED QUERY findInconsistentEdge(string edgeFile, string rEdgeFile)
 
    SumAccum<int> @@NoDirectEdgeCnt;
    SumAccum<int> @@NoReverseEdgeCnt;
+   SumAccum<int> @@edgeCnt = 0;
+   SumAccum<int> @@revEdgeCnt = 0;
 
    S = { Address.* };
    T = { City.* };
 
    D(_) = SELECT src
        FROM S:src -(ADDRESS_WITHIN_CITY:e)-> City:tgt
-       ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e))
+       ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e)),
+             @@edgeCnt += 1
    ;
 
    D = SELECT src
        FROM T:src -(REVERSE_ADDRESS_WITHIN_CITY:e)-> Address:tgt
-       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src)
+       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src),
+             @@revEdgeCnt += 1
    ;
 
    D = SELECT src
@@ -40,7 +44,7 @@ CREATE DISTRIBUTED QUERY findInconsistentEdge(string edgeFile, string rEdgeFile)
          END
    ;
 
-   PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt;
+   PRINT @@edgeCnt, @@revEdgeCnt, @@NoDirectEdgeCnt, @@NoReverseEdgeCnt;
 }
 
 DROP QUERY deleteInconsistentEdge
