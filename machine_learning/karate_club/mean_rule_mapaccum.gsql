@@ -1,0 +1,248 @@
+USE GRAPH karate_club
+DROP QUERY mean_rule_mapaccum
+
+CREATE QUERY mean_rule_mapaccum(INT iter = 100, double learning_rate = 0.1, double epsilon = 0.000001) FOR GRAPH karate_club { 
+/* Propagate: 
+   1. Add self-loop
+   2. normalization
+   3. weight
+   4. activation function
+   
+   Semi-Supervised Classification:
+   1. Perform forward propagation through the GCN.
+   2. Apply the sigmoid function row-wise on the last layer in the GCN.
+   3. Compute the cross entropy loss on known node labels.
+   4. Backpropagate the loss and update the weight matrices W in each layer.
+*/
+  
+        MapAccum<INT, DOUBLE> @x;  //[34];  
+        MapAccum<INT, DOUBLE> @z1; //[4];
+        MapAccum<INT, DOUBLE> @a1; //[4];
+        MapAccum<INT, DOUBLE> @dz1; //[4];
+        MapAccum<INT, DOUBLE> @z2; //[2];
+        MapAccum<INT, DOUBLE> @a2; //[2];
+        MapAccum<INT, DOUBLE> @dz2; //[2];
+        MapAccum<INT, DOUBLE> @tmp_n; //[34];
+        MapAccum<INT, DOUBLE> @tmp_n1; //[4];
+        MapAccum<INT, MapAccum<INT, DOUBLE>> @@dW2; //[4][2];
+        MapAccum<INT, MapAccum<INT, DOUBLE>> @@dW1; //[34][4];
+        MapAccum<INT, MapAccum<INT, DOUBLE>> @@W_2; //[4][2];
+        MapAccum<INT, MapAccum<INT, DOUBLE>> @@W_1; 
+        ListAccum<ListAccum<DOUBLE>> @@W_1_list, @@W_2_list;
+        SumAccum<DOUBLE> @@loss, @@diff, @@accuracy;
+        INT n, n_layer1, n_layer2, n_training;
+    
+
+  
+  // initialize weight
+  @@W_1_list += [[0.07958724,0.41393423,2.61319453,0.3974282]
+,[1.7433738,-0.42154567,1.9645318,-1.1894275]
+,[1.33326457,-0.11742257,-0.76402826,1.80756004]
+,[-0.93287385,-1.03186914,-1.20829323,2.83467797]
+,[-1.93607551,-0.34255435,0.16058544,1.44502767]
+,[-0.83975565,1.26265919,-0.29115232,0.39024524]
+,[0.68746817,1.12589213,0.48983897,-0.2819816]
+,[0.20503101,-0.21094416,0.56781114,-1.29460156]
+,[0.82850177,1.08452738,-0.40054922,-0.38113591]
+,[-0.32132121,-0.16208315,0.09393929,0.15692015]
+,[-1.84817319,1.15287529,0.35042802,1.29060893]
+,[-0.10513013,0.99319201,1.10720677,0.17733811]
+,[-0.33123951,-0.78584322,-1.00220281,-0.24719436]
+,[-0.74898195,0.43883237,-0.3224015,-1.15195773]
+,[0.71997328,-1.02099508,1.41645986,-0.22661059]
+,[1.86900896,0.20020973,-0.11206868,0.29238163]
+,[0.3336336,1.16015907,1.27842678,-0.48621194]
+,[-1.31631368,-0.54264572,1.47825611,-0.04091017]
+,[-0.06242896,-0.26758257,0.0072831,0.01817562]
+,[0.02840864,-1.69125836,-0.01391545,-1.13737052]
+,[-1.07452197,-0.90577322,-0.88108005,0.72557385]
+,[-1.44646041,-1.7530518,0.32618876,-0.64484053]
+,[0.47558205,-1.2365559,-2.20544062,-1.13161411]
+,[0.30359955,1.73437499,1.09163664,0.53105984]
+,[-0.50785298,0.22205533,-0.50664548,1.40717628]
+,[-0.20354942,-0.1688182,-0.43944922,1.44116952]
+,[-2.61969327,-0.78730932,-0.15409387,-0.80296547]
+,[0.095067,-0.16837898,-1.20080908,-0.96101499]
+,[0.12038993,1.2140307,-1.08564918,0.28648878]
+,[-1.71487346,0.36095012,0.67088934,-0.93817124]
+,[1.10054354,-2.97042878,-1.26233138,1.35631573]
+,[0.8235679,-1.77120161,-0.10460913,1.26118244]
+,[-0.21731931,-1.87528341,0.65372554,0.01150124]
+,[-0.21227417,0.00803616,-0.04198122,0.48204424]];
+  
+  @@W_2_list += [[0.38030149,0.97287903]
+,[0.80663453,0.58020131]
+,[1.06390283,0.37900075]
+,[-0.05380065,1.29779552]];
+  
+  
+  
+        all_nodes = {Member.*};
+        n = all_nodes.size();
+        training_set = SELECT s
+                       FROM all_nodes:s
+                       WHERE s.in_training == TRUE;
+        n_training = training_set.size();
+        n_layer1 = @@W_1_list.get(0).size();
+        n_layer2 = @@W_2_list.get(0).size();
+
+        FOREACH i IN RANGE[0, n - 1] DO
+                FOREACH j IN RANGE[0, n_layer1 - 1] DO 
+                        @@W_1 += (i -> (j -> @@W_1_list.get(i).get(j)));
+                END;
+        END;
+        FOREACH i IN RANGE[0, n_layer1 - 1] DO
+                FOREACH j IN RANGE[0, n_layer2 - 1] DO 
+                        @@W_2 += (i -> (j -> @@W_2_list.get(i).get(j)));
+                END;
+        END;
+  
+        // initialize feature: x is 1 * n
+        all_nodes = SELECT s
+                    FROM all_nodes:s
+                    POST-ACCUM FOREACH i IN RANGE[0, n-1] DO    
+                                 s.@x += (i -> 0)
+                               END,
+                               s.@x += (s.member_id -> 1);
+        @@diff = 1;
+        
+WHILE abs(@@diff) > epsilon LIMIT iter DO
+    
+        all_nodes = SELECT s
+                    FROM all_nodes:s
+                    POST-ACCUM s.@a1.clear(),
+                               s.@a2.clear(),
+                               s.@z1.clear(),
+                               s.@z2.clear();
+  
+        // first layer: z1 is 1 * n_layer1, W_1 is n * n_layer1
+        nodes = SELECT t
+                FROM all_nodes:s -(:e) -> :t 
+                ACCUM t.@tmp_n += s.@x   // tmp:1*n, x:1*n
+                POST-ACCUM INT t_outdegree = t.outdegree()+1
+                     , DOUBLE tmp = 0
+                     , t.@tmp_n += t.@x   // add self
+                     //tmp_n * W_1, tmp:1*n, W1:n*n1, z1:1*n1
+                     , FOREACH i IN RANGE[0, n_layer1-1] DO   // every column in W1
+                         tmp = 0
+                         , FOREACH (key, value) IN t.@tmp_n DO   // key is row in W1
+                             tmp = tmp + value * @@W_1.get(key).get(i)   
+                         END
+                         , t.@z1 += (i -> tmp/t_outdegree)      // z1:1*n1  need to devide by outdegree
+                         // tanh activation function
+                         , t.@a1 += (i -> tanh(tmp/t_outdegree))
+                     END
+                     , t.@tmp_n.clear()
+                     ;  
+  
+        // second layer: z2 is 1 * n_layer2, W_2 is n_layer1 * n_layer2
+        nodes = SELECT t
+                FROM all_nodes:s -(:e) -> :t 
+                ACCUM t.@tmp_n1 += s.@z1   // z1:1*n1
+                POST-ACCUM INT t_outdegree = t.outdegree() + 1
+                           , DOUBLE tmp = 0
+                           , t.@tmp_n1 += t.@z1  // add self
+                           , FOREACH i IN RANGE[0, n_layer2-1] DO
+                                   tmp = 0
+                                   , FOREACH (key, value) IN t.@tmp_n1 DO
+                                   tmp = tmp + value * @@W_2.get(key).get(i)  
+                                   END
+                                   , t.@z2 += (i -> tmp/t_outdegree)
+                           END
+                           , t.@tmp_n1.clear()
+                           ;  
+  
+        // apply softmax activation function (sigmoid works too here, but softmax is better)
+        nodes = SELECT s
+                FROM nodes:s
+                POST-ACCUM double t0=0, double t1=0,
+                               t0 = exp(s.@z2.get(0)),
+                               t1 = exp(s.@z2.get(1)),
+                               s.@a2 += (0 -> t0/(t0+t1)),
+                               s.@a2 += (1 -> t1/(t0+t1))
+                               ;
+                            //FOREACH (key, value) IN s.@old_features DO
+                            //    s.@features += (key -> exp(value)/(exp(value)+1))
+                            //END;
+  
+        //PRINT all_nodes;
+        
+        // calculate cross-entropy loss function              
+        training_set = SELECT s
+                       FROM all_nodes:s
+                       WHERE s.in_training == TRUE
+                       POST-ACCUM DOUBLE tmp = 0
+                                  , IF s.community_label == 0 THEN  // one-hot vector: [1 0]
+                                      @@loss += -log(s.@a2.get(0))   // -log(y^hat_0)    a is just y^hat
+                                      , s.@dz2 += (0 -> s.@a2.get(0) - 1)
+                                      , s.@dz2 += (1 -> s.@a2.get(1) - 0)
+                                  ELSE  
+                                      @@loss += -log(s.@a2.get(1))   // -log(y^hat_0)    a is just y^hat
+                                      , s.@dz2 += (0 -> s.@a2.get(0) - 0)
+                                      , s.@dz2 += (1 -> s.@a2.get(1) - 1)
+                                  END
+                                  // backpropagation
+                                  // dW2 = 1/m dz2 dot a1^T, dz2 is 1*n2, a1 is 1*n1, dW2 is n1*n2
+                                  // so should be n1*1*1*n2
+                                  , FOREACH i IN RANGE[0, n_layer1-1] DO
+                                          FOREACH j IN RANGE[0, n_layer2-1] DO
+                                                  @@dW2 += (i -> (j -> 
+                                                    - s.@a1.get(i) * s.@dz2.get(j) / n_training * learning_rate))
+                                          END
+                                  END
+                                 
+                                  // dz1 = W2^Tdz2 * g[1]'(z1)
+                                  // W2 is n1*n2, dz2 is 1*n2, then it is 1*n2*n2*n1; z1 is 1*n1
+                                  , FOREACH i IN RANGE[0, n_layer1-1] DO
+                                          tmp = 0
+                                          , FOREACH j IN RANGE[0, n_layer2-1] DO
+                                                  tmp = tmp + s.@dz2.get(j) * @@W_2.get(i).get(j)   
+                                          END
+                                          , 
+                                          s.@dz1 += (i -> tmp * (1 - pow(
+                                                                         tanh(s.@z1.get(i))
+                                                                         , 2
+                                                                         )
+                                                                 )    // derivative of tanh is 1-tanh(z)^2
+                                                     )
+                                  END
+                                                    
+                                  // dW1 = 1/m dz1 dot x^T, dz1 is 1*n1, x is 1*n, dW1 is n*n1  
+                                  // so should be n*1 * 1*n1
+                                  , FOREACH i IN RANGE[0, n-1] DO
+                                          FOREACH j IN RANGE[0, n_layer1-1] DO
+                                                  @@dW1 += (i -> (j -> 
+                                                    - s.@x.get(i) * s.@dz1.get(j) / n_training * learning_rate))
+                                          END
+                                  END
+                                  , s.@dz1.clear()
+                                  , s.@dz2.clear()
+                                  ;
+        // update weight matrix
+        //PRINT @@W_1;
+        //PRINT @@dW1;
+        //PRINT @@dW2;
+        @@W_1 += @@dW1;
+        @@W_2 += @@dW2;
+        //PRINT @@W_1;
+        
+        @@loss = @@loss / n_training;
+        PRINT @@loss;
+        @@loss = 0;
+        @@dW1.clear();
+        @@dW2.clear();
+        
+  END;
+  
+  testing_set = SELECT s
+                FROM all_nodes:s
+                WHERE s.in_training == FALSE
+                ACCUM IF s.@a2.get(0) > 0.5 AND s.community_label == 0 OR s.@a2.get(1) > 0.5 AND s.community_label == 1 THEN 
+                              @@accuracy += 1
+                      END;
+  @@accuracy = @@accuracy/testing_set.size();
+  PRINT @@accuracy;
+  PRINT training_set;
+  PRINT testing_set;
+  
+}
