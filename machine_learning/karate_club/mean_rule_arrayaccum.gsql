@@ -107,10 +107,10 @@ CREATE QUERY mean_rule_arrayaccum(INT iter = 10, double learning_rate = 0.01, do
         // second layer: z2 is 1 * n_layer2, W_2 is n_layer1 * n_layer2
         nodes = SELECT t
                 FROM all_nodes:s -(:e) -> :t
-                ACCUM t.@tmp_n1 += s.@z1   // z1:1*n1
-                POST-ACCUM t.@tmp_n1 += t.@z1  // add self
+                ACCUM t.@tmp_n1 += s.@a1   // a1:1*n1
+                POST-ACCUM t.@tmp_n1 += t.@a1  // add self
                            , t.@z2.reallocate(n_layer2)
-                           , t.@z2 = multiply_ArrayAccum_ListOfList(t.@z1, @@W_2)
+                           , t.@z2 = multiply_ArrayAccum_ListOfList(t.@tmp_n1, @@W_2)
                            , t.@z2 = multiply_ArrayAccum_const(t.@z2, 1.0/(t.outdegree()+1))
                            ;
 

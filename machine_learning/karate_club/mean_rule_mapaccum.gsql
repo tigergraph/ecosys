@@ -138,10 +138,10 @@ WHILE abs(@@diff) > epsilon LIMIT iter DO
         // second layer: z2 is 1 * n_layer2, W_2 is n_layer1 * n_layer2
         nodes = SELECT t
                 FROM all_nodes:s -(:e) -> :t 
-                ACCUM t.@tmp_n1 += s.@z1   // z1:1*n1
+                ACCUM t.@tmp_n1 += s.@a1   // z1:1*n1
                 POST-ACCUM INT t_outdegree = t.outdegree() + 1
                            , DOUBLE tmp = 0
-                           , t.@tmp_n1 += t.@z1  // add self
+                           , t.@tmp_n1 += t.@a1  // add self
                            , FOREACH i IN RANGE[0, n_layer2-1] DO
                                    tmp = 0
                                    , FOREACH (key, value) IN t.@tmp_n1 DO
