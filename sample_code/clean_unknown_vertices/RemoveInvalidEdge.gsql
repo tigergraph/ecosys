@@ -1,0 +1,44 @@
+use graph Healthcare
+drop query RemoveInvalidEdge
+create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, string edgeType, string rEdgeType) for Graph Healthcare {
+ SumAccum<int> @@edgeCount = 0;
+ SetAccum<int> @@tgtSet;
+ SetAccum<int> @@activeTgtSet;
+ SetAccum<int> @@tgtDiffSet;
+
+ SumAccum<int> @@rEdgeCount = 0;
+ SetAccum<int> @@srcSet;
+ SetAccum<int> @@activeSrcSet;
+ SetAccum<int> @@srcDiffSet;
+
+ S = {srcVType.*};
+ S1 = SELECT src
+     FROM S:src - (edgeType: e) - tgtVType:tgt
+     ACCUM 
+       @@tgtSet += vertex_to_int(getTgtVid(e)),
+       @@edgeCount += 1
+     POST-ACCUM
+       @@activeTgtSet += vertex_to_int(tgt)
+     ;
+ //find the diff 
+ @@tgtDiffSet = @@tgtSet MINUS @@activeTgtSet;
+ 
+ PRINT @@edgeCount, S.size(), S1.size(), @@tgtSet.size(), @@activeTgtSet, @@tgtDiffSet.size();
+ PRINT RemoveVertexByIIDSet(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, tgtVType, @@tgtDiffSet);
+
+ T = {tgtVType.*};
+ T1 = SELECT tgt
+     FROM T:tgt - (rEdgeType: e) - srcVType:src
+     ACCUM 
+       @@srcSet += vertex_to_int(getTgtVid(e)),
+       @@rEdgeCount += 1
+     POST-ACCUM
+       @@activeSrcSet += vertex_to_int(tgt)
+     ;
+ //find the diff 
+ @@srcDiffSet = @@srcSet MINUS @@activeSrcSet;
+ 
+ PRINT @@rEdgeCount, T.size(), T1.size(), @@srcSet.size(), @@activeSrcSet, @@srcDiffSet.size();
+ PRINT RemoveVertexByIIDSet(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, srcVType, @@srcDiffSet);
+
+}

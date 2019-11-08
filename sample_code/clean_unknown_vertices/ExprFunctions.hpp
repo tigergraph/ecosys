@@ -110,6 +110,7 @@ namespace UDIMPL {
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << " Printing finished." << std::endl; 
   }
 
+
   inline std::string RemoveVertexByIID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               gpelib4::MasterContext* context,
@@ -435,11 +436,99 @@ inline void DeleteEdge(ServiceAPI* api,
   }
   graphupdates->Commit(true);
 }
+
 inline string CombineTwoNumbers(int64_t one, int64_t two) {
   std::stringstream ss;
   ss << one << " " << two;
   return ss.str();
 }
+
+  inline ListAccum<EDGE> RecoverEdgeFromFile(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      gpelib4::MasterContext* context,
+      const std::string& edgeType,
+      const std::string& filename) {
+    auto eid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    std::string line;
+    std::ifstream infile(filename);
+    ListAccum<EDGE> eList;
+    if (infile.is_open()) {
+      VertexLocalId_t src, tgt;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> src >> tgt;
+        auto eAttr = context->GraphAPI()->GetOneEdge(src, tgt, eid);
+        auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+        if (attr_up->Set(eAttr)) {
+          graphupdate->UpsertEdge(
+              topology4::DeltaVertexId(context->GraphAPI()->GetVertexType(src), src),
+              topology4::DeltaVertexId(context->GraphAPI()->GetVertexType(tgt), tgt),
+              attr_up,
+              eid);
+          eList += EDGE(VERTEX(src), VERTEX(tgt), eid);
+        }
+      }
+      infile.close();
+    }
+    graphupdate->Commit();
+    return eList;
+  }
+
+  inline EDGE RecoverEdge(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      //gpelib4::MasterContext* context,
+      gpr::Context& context,
+      const std::string& edgeType,
+      int64_t src,
+      int64_t tgt) {
+    auto eid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    auto eAttr = context.GraphAPI()->GetOneEdge(src, tgt, eid);
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    if (attr_up->Set(eAttr)) {
+      graphupdate->UpsertEdge(
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
+          attr_up,
+          eid);
+      graphupdate->Commit();
+      return EDGE(VERTEX(src), VERTEX(tgt), eid);
+    } else {
+      return EDGE();
+    }
+  }
+
+  inline std::string RemoveVertexByIIDSet(ServiceAPI* api,
+                              EngineServiceRequest& request,
+                              //gpelib4::MasterContext* context,
+                              std::string& vtype,
+                              SetAccum<int64_t>& vSet) {
+    if (vSet.size() == 0) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Receive empty vSet, exist!!!";
+      return "Empty vSet, do nothing";
+    }
+    uint32_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
+    if (vTypeId == -1) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Get type id failed, the input vid = " << *(vSet.data_.begin());
+      return "Get type id failed";
+    }
+
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Receive " << vSet.size() << " internal ids of type: \"" 
+      << vtype << "\"" << std::endl;
+    std::stringstream ss;
+    ss << "Found " << vSet.size() << " \'" << vtype << "\' vertices" << std::endl;
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tStart deleting." << std::endl;
+    gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+    for (auto id : vSet) {
+      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tFinished creating updates and now waiting for commit." << std::endl;
+    graphupdates->Commit();
+    return ss.str();
+  }
 }
 /****************************************/
 

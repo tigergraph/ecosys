@@ -1,0 +1,46 @@
+USE graph Healthcare
+DROP QUERY RecoverMisMatchedEdges
+CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType) FOR GRAPH Healthcare {
+   SetAccum<int> @EdgeTgtSet;
+   SetAccum<int> @rEdgeTgtSet;
+
+   SumAccum<int> @@NoDirectEdgeCnt;
+   SumAccum<int> @@NoReverseEdgeCnt;
+   ListAccum<Edge> @@MisMatchedEdgeList;
+   ListAccum<Edge> @@MisMatchedRevEdgeList;
+
+   S = { srcVType.* };
+   T = { tgtVType.* };
+
+   T1 = SELECT tgt
+       FROM S:src -(edgeType:e)-> tgtVType:tgt
+       ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e))
+   ;
+
+   S1 = SELECT tgt
+       FROM T:src -(rEdgeType:e)-> srcVType:tgt
+       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src)
+   ;
+
+   X = SELECT src
+       FROM S:src
+       POST-ACCUM
+         FOREACH tgt in src.@EdgeTgtSet do
+           IF NOT src.@rEdgeTgtSet.contains(tgt) THEN
+             @@MisMatchedEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, edgeType, vertex_to_int(src), tgt),
+             @@NoReverseEdgeCnt += 1
+           END
+         END,
+         FOREACH tgt in src.@rEdgeTgtSet do
+           IF NOT src.@EdgeTgtSet.contains(tgt) THEN
+             @@MisMatchedRevEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, rEdgeType, tgt, vertex_to_int(src)),
+             @@NoDirectEdgeCnt += 1
+           END
+         END
+   ;
+
+
+   PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), T.size(), S1.size(), T1.size(), X.size();
+   PRINT @@MisMatchedEdgeList;
+   PRINT @@MisMatchedRevEdgeList;
+}
