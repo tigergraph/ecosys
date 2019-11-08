@@ -482,9 +482,13 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
       gpr::Context& context,
       const std::string& edgeType,
       int64_t src,
-      int64_t tgt) {
+      int64_t tgt,
+      bool dryrun) {
     auto eid = serviceapi->GetTopologyMeta()
       ->GetEdgeTypeId(edgeType, request.graph_id_);
+    if (dryrun) {
+      return EDGE(VERTEX(src), VERTEX(tgt), eid);
+    }
     auto eAttr = context.GraphAPI()->GetOneEdge(src, tgt, eid);
     auto graphupdate = serviceapi->CreateGraphUpdates(&request);
     auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
