@@ -29,7 +29,7 @@ def Clean():
   #print segment_folder_list
   mv_segments = list()
   for folder in segment_folder_list:
-      config = yaml.load(open(folder + "/segmentconfig.yaml", "r"), Loader=yaml.FullLoader)
+      config = yaml.load(open(folder + "/segmentconfig.yaml", "r"))
       statusFile = folder + "/vertexstatus.bin"
       if int(config["NumOfDeletedVertices"]) == 0 and os.path.isfile(statusFile):
           segid = folder.split("/")[-1]
