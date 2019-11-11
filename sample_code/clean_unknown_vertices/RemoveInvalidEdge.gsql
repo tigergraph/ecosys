@@ -2,14 +2,15 @@ use graph Healthcare
 drop query RemoveInvalidEdge
 create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true) for Graph Healthcare {
  SumAccum<int> @@edgeCount = 0;
- SetAccum<int> @@tgtSet;
- SetAccum<int> @@activeTgtSet;
- SetAccum<int> @@tgtDiffSet;
+ SetAccum<VERTEX> @@tgtSet;
+ SetAccum<VERTEX> @@activeTgtSet;
+ SetAccum<VERTEX> @@tgtDiffSet;
 
  SumAccum<int> @@rEdgeCount = 0;
- SetAccum<int> @@srcSet;
- SetAccum<int> @@activeSrcSet;
- SetAccum<int> @@srcDiffSet;
+ SetAccum<VERTEX> @@srcSet;
+ SetAccum<VERTEX> @@activeSrcSet;
+ SetAccum<VERTEX> @@srcDiffSet;
+ 
  SumAccum<int> @@SDiffSize = 0;
  SumAccum<int> @@TDiffSize = 0;
 
@@ -17,17 +18,17 @@ create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, str
  S1 = SELECT src
      FROM S:src - (edgeType: e) - tgtVType:tgt
      ACCUM 
-       @@tgtSet += vertex_to_int(getTgtVid(e)),
+       @@tgtSet += getTgtVid(e),
        @@edgeCount += 1
      POST-ACCUM
-       @@activeTgtSet += vertex_to_int(tgt)
+       @@activeTgtSet += tgt
      ;
  //find the diff 
  @@tgtDiffSet = @@tgtSet MINUS @@activeTgtSet;
  
  PRINT @@edgeCount, S.size(), S1.size(), @@tgtSet.size(), @@activeTgtSet.size(), @@tgtDiffSet.size();
 
- TDiff = {GetVertexList(@@tgtDiffSet)};
+ TDiff = {@@tgtDiffSet};
  TDiff_1 = SELECT src
            FROM TDiff:src
            ACCUM @@TDiffSize +=1
@@ -42,16 +43,17 @@ create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, str
  T1 = SELECT src
      FROM T:src - (rEdgeType: e) - srcVType:tgt
      ACCUM 
-       @@srcSet += vertex_to_int(getTgtVid(e)),
+       @@srcSet += getTgtVid(e),
        @@rEdgeCount += 1
      POST-ACCUM
-       @@activeSrcSet += vertex_to_int(tgt)
+       @@activeSrcSet += tgt
      ;
  //find the diff 
  @@srcDiffSet = @@srcSet MINUS @@activeSrcSet;
  
  PRINT @@rEdgeCount, T.size(), T1.size(), @@srcSet.size(), @@activeSrcSet.size(), @@srcDiffSet.size();
- SDiff = {GetVertexList(@@srcDiffSet)};
+
+ SDiff = {@@srcDiffSet};
  SDiff_1 = SELECT src
            FROM SDiff:src
            ACCUM @@SDiffSize +=1

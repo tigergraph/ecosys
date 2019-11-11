@@ -509,7 +509,7 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
                               EngineServiceRequest& request,
                               //gpelib4::MasterContext* context,
                               std::string& vtype,
-                              SetAccum<int64_t>& vSet) {
+                              SetAccum<VERTEX>& vSet) {
     if (vSet.size() == 0) {
       GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Receive empty vSet, exist!!!";
       return "Empty vSet, do nothing";
@@ -527,7 +527,7 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tStart deleting." << std::endl;
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
     for (auto id : vSet) {
-      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
+      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id.vid));
     }
     GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tFinished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
