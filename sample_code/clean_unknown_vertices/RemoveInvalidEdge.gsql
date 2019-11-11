@@ -10,6 +10,8 @@ create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, str
  SetAccum<int> @@srcSet;
  SetAccum<int> @@activeSrcSet;
  SetAccum<int> @@srcDiffSet;
+ SumAccum<int> @@SDiffSize = 0;
+ SumAccum<int> @@TDiffSize = 0;
 
  S = {srcVType.*};
  S1 = SELECT src
@@ -24,7 +26,15 @@ create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, str
  @@tgtDiffSet = @@tgtSet MINUS @@activeTgtSet;
  
  PRINT @@edgeCount, S.size(), S1.size(), @@tgtSet.size(), @@activeTgtSet.size(), @@tgtDiffSet.size();
- CASE WHEN NOT dryrun THEN
+
+ TDiff = {GetVertexList(@@tgtDiffSet)};
+ TDiff_1 = SELECT src
+           FROM TDiff:src
+           ACCUM @@TDiffSize +=1
+          ;
+ PRINT TDiff.size(), TDiff_1.size(), @@TDiffSize;
+
+ CASE WHEN (NOT dryrun) AND (@@TDiffSize == 0) THEN
    PRINT RemoveVertexByIIDSet(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, tgtVType, @@tgtDiffSet);
  END;
 
@@ -41,7 +51,14 @@ create distributed query RemoveInvalidEdge(string srcVType, string tgtVType, str
  @@srcDiffSet = @@srcSet MINUS @@activeSrcSet;
  
  PRINT @@rEdgeCount, T.size(), T1.size(), @@srcSet.size(), @@activeSrcSet.size(), @@srcDiffSet.size();
- CASE WHEN NOT dryrun THEN
+ SDiff = {GetVertexList(@@srcDiffSet)};
+ SDiff_1 = SELECT src
+           FROM SDiff:src
+           ACCUM @@SDiffSize +=1
+          ;
+ PRINT SDiff.size(), SDiff_1.size(), @@SDiffSize;
+
+ CASE WHEN (NOT dryrun) AND (@@SDiffSize == 0) THEN
    PRINT RemoveVertexByIIDSet(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, srcVType, @@srcDiffSet);
  END;
 

@@ -533,6 +533,14 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
     graphupdates->Commit();
     return ss.str();
   }
+
+  inline ListAccum<VERTEX> GetVertexList(SetAccum<int64_t>& inputSet) {
+    ListAccum<VERTEX> outputList;
+    for (auto id: inputSet) {
+      outputList += VERTEX(id);
+    }
+    return outputList;
+  }
 }
 /****************************************/
 
