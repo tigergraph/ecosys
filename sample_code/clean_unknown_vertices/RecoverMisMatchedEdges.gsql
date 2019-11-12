@@ -33,7 +33,7 @@ CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType
          END,
          FOREACH tgt in src.@rEdgeTgtSet do
            IF NOT src.@EdgeTgtSet.contains(tgt) THEN
-             @@MisMatchedRevEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, rEdgeType, tgt, vertex_to_int(src)i, dryrun),
+             @@MisMatchedRevEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, rEdgeType, tgt, vertex_to_int(src), dryrun),
              @@NoDirectEdgeCnt += 1
            END
          END
