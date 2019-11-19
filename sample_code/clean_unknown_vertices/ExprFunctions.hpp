@@ -548,9 +548,13 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
       uint32_t eid,
       topology4::EdgeAttribute* eAttr,
       int64_t src,
-      int64_t tgt) {
+      int64_t tgt,
+      bool dryrun) {
     auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
     if (attr_up->Set(eAttr)) {
+      //dryrun will do nothing
+      if (dryrun) return;
+      //only do the upsert if it is not dryrun mode
       graphupdate->UpsertEdge(
           topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
           topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
@@ -601,7 +605,7 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
       } else if (fTgtList[i] > rTgtList[j]) {
         //rEdgeList[j] is one target that only have reversed edge
         auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
-        RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
+        RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid, dryrun);
         gstream << "src: ";
         gstream.WriteVertexId(rTgtList[j]);
         gstream << "|tgt: ";
@@ -612,7 +616,7 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
       } else {
         //fEdgeList[i] is one target that only have forward edge
         auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
-        RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
+        RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i], dryrun);
         gstream << "src: ";
         gstream.WriteVertexId(src.vid);
         gstream << "|tgt: ";
@@ -624,14 +628,14 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
     }
     while(i < fTgtList.size()) {
       auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
-      RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
+      RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i], dryrun);
       ++i;
       ++missingReverse;
     }
     while(j < rTgtList.size()) {
       //rEdgeList[j] is one target that only have reversed edge
       auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
-      RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
+      RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid, dryrun);
       ++j;
       ++missingForward;
     }
