@@ -1,11 +1,13 @@
 USE graph Healthcare
 DROP QUERY RecoverMisMatchedEdges
-CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true) FOR GRAPH Healthcare {
+CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true, string path = "/tmp/mistmatchedEdges.log") FOR GRAPH Healthcare {
    ListAccum<int> @EdgeTgtSet;
    ListAccum<int> @rEdgeTgtSet;
 
    SumAccum<int> @@NoDirectEdgeCnt;
    SumAccum<int> @@NoReverseEdgeCnt;
+
+   File fobj(path);
 
    PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
 
@@ -41,9 +43,8 @@ CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType
              dryrun),
          @@NoDirectEdgeCnt += missingForward,
          @@NoReverseEdgeCnt += missingReverse,
-         #clear existing tgt list
-         src.@EdgeTgtSet.clear(),
-         src.@rEdgeTgtSet.clear()
+         //force the gquery to use file object inside post-accum
+         fobj.println("")
    ;
 
    PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), T.size(), S1.size(), T1.size(), X.size();

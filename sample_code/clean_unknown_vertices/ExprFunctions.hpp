@@ -587,6 +587,8 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
 
     auto& fTgtList = fEdgeList.data_;
     auto& rTgtList = rEdgeList.data_;
+    //Get the output stream from context
+    auto& gstream = context.GetOStream(0);
     std::sort(rTgtList.begin(), rTgtList.end());
 
     //scan the two sorted list to figure out which target has missing edge
@@ -600,28 +602,38 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
         //rEdgeList[j] is one target that only have reversed edge
         auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
         RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
+        gstream << "src: ";
+        gstream.WriteVertexId(rTgtList[j]);
+        gstream << "|tgt: ";
+        gstream.WriteVertexId(src.vid);
+        gstream << "|edge: " << *eAttr << "\n";
         ++j;
-        ++missingReverse;
+        ++missingForward;
       } else {
-        //fEdgeList[i] is one target that only have reversed edge
+        //fEdgeList[i] is one target that only have forward edge
         auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
         RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
+        gstream << "src: ";
+        gstream.WriteVertexId(src.vid);
+        gstream << "|tgt: ";
+        gstream.WriteVertexId(fTgtList[i]);
+        gstream << "|edge: " << *eAttr << "\n";
         ++i;
-        ++missingForward;
+        ++missingReverse;
       }
     }
     while(i < fTgtList.size()) {
       auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
       RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
       ++i;
-      ++missingForward;
+      ++missingReverse;
     }
     while(j < rTgtList.size()) {
       //rEdgeList[j] is one target that only have reversed edge
       auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
       RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
       ++j;
-      ++missingReverse;
+      ++missingForward;
     }
     //clean up the target list to release memory
     fEdgeList.clear();
