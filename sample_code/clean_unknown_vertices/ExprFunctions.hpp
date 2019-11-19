@@ -541,6 +541,105 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
     }
     return outputList;
   }
+
+  inline void RecoverOneEdge(
+      gpr::Context& context,
+      gshared_ptr<topology4::GraphUpdates> graphupdate,
+      uint32_t eid,
+      topology4::EdgeAttribute* eAttr,
+      int64_t src,
+      int64_t tgt) {
+    auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    if (attr_up->Set(eAttr)) {
+      graphupdate->UpsertEdge(
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
+          attr_up,
+          eid);
+    } else {
+      GEngineInfo(InfoLvl::Brief, "RecoverOneEdge")
+      << "[ERROR]: Insert edge (src: "
+      << src
+      << ", tgt: "
+      << tgt
+      << ", eid: "
+      << eid
+      << ") failed.";
+    }
+  }
+
+inline void RecoverEdges(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      gpr::Context& context,
+      const std::string& edgeType,
+      const std::string& rEdgeType,
+      VERTEX src,
+      ListAccum<int64_t>& fEdgeList,
+      ListAccum<int64_t>& rEdgeList,
+      int64_t& missingForward,
+      int64_t& missingReverse,
+      bool dryrun) {
+
+    auto fEid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    auto rEid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(rEdgeType, request.graph_id_);
+
+    auto& fTgtList = fEdgeList.data_;
+    auto& rTgtList = rEdgeList.data_;
+    //Get the output stream from context
+    auto& gstream = context.GetOStream(0);
+    std::sort(rTgtList.begin(), rTgtList.end());
+
+    //scan the two sorted list to figure out which target has missing edge
+    uint32_t i = 0,  j = 0;
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    while(i < fTgtList.size() && j < rTgtList.size()) {
+      if (fTgtList[i] == rTgtList[j]) {
+        ++i;
+        ++j;
+      } else if (fTgtList[i] > rTgtList[j]) {
+        //rEdgeList[j] is one target that only have reversed edge
+        auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
+        RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
+        gstream << "src: ";
+        gstream.WriteVertexId(rTgtList[j]);
+        gstream << "|tgt: ";
+        gstream.WriteVertexId(src.vid);
+        gstream << "|edge: " << *eAttr << "\n";
+        ++j;
+        ++missingForward;
+      } else {
+        //fEdgeList[i] is one target that only have forward edge
+        auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
+        RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
+        gstream << "src: ";
+        gstream.WriteVertexId(src.vid);
+        gstream << "|tgt: ";
+        gstream.WriteVertexId(fTgtList[i]);
+        gstream << "|edge: " << *eAttr << "\n";
+        ++i;
+        ++missingReverse;
+      }
+    }
+    while(i < fTgtList.size()) {
+      auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
+      RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i]);
+      ++i;
+      ++missingReverse;
+    }
+    while(j < rTgtList.size()) {
+      //rEdgeList[j] is one target that only have reversed edge
+      auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
+      RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid);
+      ++j;
+      ++missingForward;
+    }
+    //clean up the target list to release memory
+    fEdgeList.clear();
+    rEdgeList.clear();
+    graphupdate->Commit();
+  }
 }
 /****************************************/
 
