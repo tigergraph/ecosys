@@ -1,22 +1,23 @@
 USE graph Healthcare
 DROP QUERY RecoverMisMatchedEdges
 CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true) FOR GRAPH Healthcare {
-   SetAccum<int> @EdgeTgtSet;
-   SetAccum<int> @rEdgeTgtSet;
+   ListAccum<int> @EdgeTgtSet;
+   ListAccum<int> @rEdgeTgtSet;
 
    SumAccum<int> @@NoDirectEdgeCnt;
    SumAccum<int> @@NoReverseEdgeCnt;
-   ListAccum<Edge> @@MisMatchedEdgeList;
-   ListAccum<Edge> @@MisMatchedRevEdgeList;
+
+   PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
 
    S = { srcVType.* };
-   T = { tgtVType.* };
 
    T1 = SELECT tgt
        FROM S:src -(edgeType:e)-> tgtVType:tgt
        ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e))
    ;
 
+
+   T = { tgtVType.* };
    S1 = SELECT tgt
        FROM T:src -(rEdgeType:e)-> srcVType:tgt
        ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src)
@@ -25,22 +26,25 @@ CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType
    X = SELECT src
        FROM S:src
        POST-ACCUM
-         FOREACH tgt in src.@EdgeTgtSet do
-           IF NOT src.@rEdgeTgtSet.contains(tgt) THEN
-             @@MisMatchedEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, edgeType, vertex_to_int(src), tgt, dryrun),
-             @@NoReverseEdgeCnt += 1
-           END
-         END,
-         FOREACH tgt in src.@rEdgeTgtSet do
-           IF NOT src.@EdgeTgtSet.contains(tgt) THEN
-             @@MisMatchedRevEdgeList += RecoverEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, rEdgeType, tgt, vertex_to_int(src), dryrun),
-             @@NoDirectEdgeCnt += 1
-           END
-         END
+         int missingForward = 0,
+         int missingReverse = 0,
+         RecoverEdges(__ENGINE__SERVICEAPI,
+             __ENGINE__REQUEST,
+             __ENGINE__CONTEXT,
+             edgeType,
+             rEdgeType,
+             src,
+             src.@EdgeTgtSet,
+             src.@rEdgeTgtSet,
+             missingForward,
+             missingReverse,
+             dryrun),
+         @@NoDirectEdgeCnt += missingForward,
+         @@NoReverseEdgeCnt += missingReverse,
+         #clear existing tgt list
+         src.@EdgeTgtSet.clear(),
+         src.@rEdgeTgtSet.clear()
    ;
 
-
    PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), T.size(), S1.size(), T1.size(), X.size();
-   PRINT @@MisMatchedEdgeList;
-   PRINT @@MisMatchedRevEdgeList;
 }
