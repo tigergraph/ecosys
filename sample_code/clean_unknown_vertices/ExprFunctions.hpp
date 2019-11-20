@@ -551,6 +551,7 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
       int64_t tgt,
       bool dryrun) {
     auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    //Get the output stream from context
     auto& gstream = context.GetOStream(0);
     if (attr_up->Set(eAttr)) {
       //dryrun will do nothing
@@ -590,9 +591,10 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
     auto rEid = serviceapi->GetTopologyMeta()
       ->GetEdgeTypeId(rEdgeType, request.graph_id_);
 
+    //forward edge are automatically sorted by target id 
     auto& fTgtList = fEdgeList.data_;
+    //reverse edge are not automatically sorted by target id and require a sort operation
     auto& rTgtList = rEdgeList.data_;
-    //Get the output stream from context
     std::sort(rTgtList.begin(), rTgtList.end());
 
     //scan the two sorted list to figure out which target has missing edge
