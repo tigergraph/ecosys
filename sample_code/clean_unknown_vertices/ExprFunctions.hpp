@@ -551,25 +551,26 @@ inline string CombineTwoNumbers(int64_t one, int64_t two) {
       int64_t tgt,
       bool dryrun) {
     auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    auto& gstream = context.GetOStream(0);
     if (attr_up->Set(eAttr)) {
       //dryrun will do nothing
-      if (dryrun) return;
-      //only do the upsert if it is not dryrun mode
-      graphupdate->UpsertEdge(
-          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
-          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
-          attr_up,
-          eid);
+      gstream << dryrun ? "[DRYRUN]": "[UPSERT]";
+      if (!dryrun) {
+        //only do the upsert if it is not dryrun mode
+        graphupdate->UpsertEdge(
+            topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
+            topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
+            attr_up,
+            eid);
+      }
     } else {
-      GEngineInfo(InfoLvl::Brief, "RecoverOneEdge")
-      << "[ERROR]: Insert edge (src: "
-      << src
-      << ", tgt: "
-      << tgt
-      << ", eid: "
-      << eid
-      << ") failed.";
+      gstream << "[ERROR]";
     }
+    gstream << "src: ";
+    gstream.WriteVertexId(src);
+    gstream << "|tgt: ";
+    gstream.WriteVertexId(tgt);
+    gstream << "|edge: " << *eAttr << "\n";
   }
 
 inline void RecoverEdges(ServiceAPI* serviceapi,
@@ -592,7 +593,6 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
     auto& fTgtList = fEdgeList.data_;
     auto& rTgtList = rEdgeList.data_;
     //Get the output stream from context
-    auto& gstream = context.GetOStream(0);
     std::sort(rTgtList.begin(), rTgtList.end());
 
     //scan the two sorted list to figure out which target has missing edge
@@ -606,22 +606,12 @@ inline void RecoverEdges(ServiceAPI* serviceapi,
         //rEdgeList[j] is one target that only have reversed edge
         auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
         RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid, dryrun);
-        gstream << "src: ";
-        gstream.WriteVertexId(rTgtList[j]);
-        gstream << "|tgt: ";
-        gstream.WriteVertexId(src.vid);
-        gstream << "|edge: " << *eAttr << "\n";
         ++j;
         ++missingForward;
       } else {
         //fEdgeList[i] is one target that only have forward edge
         auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
         RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i], dryrun);
-        gstream << "src: ";
-        gstream.WriteVertexId(src.vid);
-        gstream << "|tgt: ";
-        gstream.WriteVertexId(fTgtList[i]);
-        gstream << "|edge: " << *eAttr << "\n";
         ++i;
         ++missingReverse;
       }
