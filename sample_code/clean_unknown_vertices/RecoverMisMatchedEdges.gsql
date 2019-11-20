@@ -1,13 +1,13 @@
 USE graph Healthcare
 DROP QUERY RecoverMisMatchedEdges
-CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true, string path = "/tmp/mistmatchedEdges.log") FOR GRAPH Healthcare {
+CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true) FOR GRAPH Healthcare {
    ListAccum<int> @EdgeTgtSet;
    ListAccum<int> @rEdgeTgtSet;
 
    SumAccum<int> @@NoDirectEdgeCnt;
    SumAccum<int> @@NoReverseEdgeCnt;
 
-   File fobj(path);
+   File fobj( "/tmp/" + edgeType + datetime_format(now(),"%m%d%Y_%H%M%S") + ".csv");
 
    PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
 
