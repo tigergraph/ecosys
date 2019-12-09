@@ -1,28 +1,31 @@
 CREATE QUERY ic_1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<VERTEX<Person> v, INT distanceFromPerson, STRING lastName, INT id> friendInfo;
-  TYPEDEF TUPLE<STRING orgName, INT orgYear, STRING orgPlace> org; 
+  TYPEDEF TUPLE<STRING orgName, INT orgYear, STRING orgPlace> org;
 
   HeapAccum<friendInfo>(20, distanceFromPerson ASC, lastName ASC, id ASC) @@friendInfoTop;
   SetAccum<VERTEX<Person>> @@friendAll;
   SetAccum<org> @comp, @univ;
   SumAccum<STRING> @cityName;
-  SumAccum<INT> @distance, @pId, @orgYear;
+  SumAccum<INT> @distance;
+  MapAccum<INT, INT> @personInfo;
   MapAccum<INT, SetAccum<org>> @@compInfo, @@univInfo;
+
   OrAccum @visited = False;
   INT i = 0;
 
   vPerson = { personId };
 
   WHILE i < 3 DO
-    vPerson = 
+    vPerson =
       SELECT t
       FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
       WHERE t.@visited == False
-      ACCUM 
+      ACCUM
         s.@visited += True,
         t.@visited += True,
-        t.@distance += (i+1),
-        CASE WHEN t.firstName == firstName THEN 
+        t.@distance = (i+1)
+      POST-ACCUM
+        CASE WHEN t.firstName == firstName THEN
           @@friendInfoTop += friendInfo(t, t.@distance, t.lastName, t.id)
         END;
 
@@ -35,39 +38,41 @@ CREATE QUERY ic_1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb 
   END;
 
   vFriend = { @@friendAll };
-  vFriend = 
+  vFriend =
     SELECT s
     FROM vFriend:s-(Person_IS_LOCATED_IN_City:e)->City:t
     ACCUM s.@cityName = t.name;
 
-  vUniv = 
+  vUniv =
     SELECT t
     FROM vFriend:s-(Person_STUDY_AT_University:e)->University:t
-    ACCUM 
-      t.@pId += s.id,
-      t.@orgYear = e.classYear;
+    ACCUM t.@personInfo += (s.id -> e.classYear);
 
-  vUniv = 
+  vUniv =
     SELECT s
     FROM vUniv:s-(University_IS_LOCATED_IN_City:e)->City:t
-    ACCUM @@univInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+    ACCUM
+      FOREACH (pId, orgYear) in s.@personInfo DO
+        @@univInfo += (pId -> org(s.name, orgYear, t.name))
+      END;
 
-  vComp = 
+  vComp =
     SELECT t
     FROM vFriend:s-(Person_WORK_AT_Company:e)->Company:t
-    ACCUM 
-      t.@pId += s.id,
-      t.@orgYear = e.workFrom;
+    ACCUM t.@personInfo += (s.id -> e.workFrom);
 
-  vComp = 
+  vComp =
     SELECT s
     FROM vComp:s-(Company_IS_LOCATED_IN_Country:e)->Country:t
-    ACCUM @@compInfo += (s.@pId -> org(s.name, s.@orgYear, t.name));
+    ACCUM
+      FOREACH (pId, orgYear) in s.@personInfo DO
+        @@compInfo += (pId -> org(s.name, orgYear, t.name))
+      END;
 
-  vFriend = 
+  vFriend =
     SELECT v
     FROM vFriend:v
-    ACCUM 
+    ACCUM
       v.@univ += @@univInfo.get(v.id),
       v.@comp += @@compInfo.get(v.id)
     ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC;

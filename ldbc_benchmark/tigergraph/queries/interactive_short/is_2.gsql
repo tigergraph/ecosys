@@ -1,8 +1,13 @@
 CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate> replyInfo;
+  TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate, INT originalPostId, INT originalPostAuthorId, STRING originalPostAuthorFirstName, STRING originalPostAuthorLastName> opInfo;
+
   SetAccum<VERTEX<Comment>> @@commentsRecent;
   SetAccum<VERTEX<Post>> @@postsRecent;
-  SumAccum<INT> @messageId, @messageCreationDate, @authorOgId;
-  SumAccum<STRING> @messageContent, @authorOgFN, @authorOgLN;
+  SumAccum<INT> @authorOgId;
+  SumAccum<STRING> @authorOgFN, @authorOgLN;
+  SetAccum<replyInfo> @replies;
+  HeapAccum<opInfo>(10, messageCreationDate DESC, messageId DESC) @@opInfoHeap;
 
   BOOL isPost;
 
@@ -21,14 +26,10 @@ CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
         WHEN v.type == "Comment" THEN 
           @@commentsRecent += v
         WHEN v.type == "Post" AND v.content != "" THEN 
-          v.@messageId = v.id, 
-          v.@messageContent = v.content,
-          v.@messageCreationDate = datetime_to_epoch(v.creationDate),
+          v.@replies += replyInfo(v.id, v.content, v.creationDate),
           @@postsRecent += v
         WHEN v.type == "Post" THEN 
-          v.@messageId = v.id, 
-          v.@messageContent = v.imageFile,
-          v.@messageCreationDate = datetime_to_epoch(v.creationDate),
+          v.@replies += replyInfo(v.id, v.imageFile, v.creationDate),
           @@postsRecent += v
       END;
 
@@ -39,13 +40,11 @@ CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
       vRoot = 
         SELECT t
         FROM vRoot:s-((Comment_REPLY_OF_Comment|Comment_REPLY_OF_Post):e)->(Comment|Post):t
-        ACCUM 
-          t.@messageId = c.id,
-          t.@messageContent = c.content,
-          t.@messageCreationDate = datetime_to_epoch(c.creationDate),
+        POST-ACCUM
           CASE WHEN t.type == "Post" THEN 
             isPost = True,
-            @@postsRecent += t           
+            t.@replies += replyInfo(c.id, c.content, c.creationDate),
+            @@postsRecent += t
           END;
     END;
   END;
@@ -58,16 +57,10 @@ CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
       s.@authorOgId = t.id,
       s.@authorOgFN = t.firstName,
       s.@authorOgLN = t.lastName
-    ORDER BY 
-      s.@messageCreationDate DESC, 
-      s.@messageId DESC;
+    POST-ACCUM
+      FOREACH ri IN s.@replies DO
+        @@opInfoHeap += opInfo(ri.messageId, ri.messageContent, ri.messageCreationDate, s.id, s.@authorOgId, s.@authorOgFN, s.@authorOgLN)
+      END;
 
-  PRINT vMessage[
-      vMessage.@messageId AS messageId,
-      vMessage.@messageContent AS messageContent,
-      epoch_to_datetime(vMessage.@messageCreationDate) AS messageCreationDate,
-      vMessage.id AS originalPostId,
-      vMessage.@authorOgId AS originalPostAuthorId,
-      vMessage.@authorOgFN AS originalPostAuthorFirstName,
-      vMessage.@authorOgLN AS originalPostAuthorLastName];
+  PRINT @@opInfoHeap;
 }
