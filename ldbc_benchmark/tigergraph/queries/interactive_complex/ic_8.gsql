@@ -1,30 +1,31 @@
 CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
-  TYPEDEF TUPLE<VERTEX<Comment> v, DATETIME commentCreationDate, INT commentId> reply;
-  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
 
-  SetAccum<VERTEX<Comment>> @@replies;
-  HeapAccum<reply>(20, commentCreationDate DESC, commentId ASC) @@replyTop;
-  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
+  SumAccum<STRING> @personFirstName, @personLastName;
+	SumAccum<INT> @personId;
+	
 
-  vPerson = { personId };
-  vMessage = 
-    SELECT t
+  vPerson = {personId};
+  vMessage = SELECT t
     FROM vPerson:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t;
 
   vReply = 
     SELECT t
     FROM vMessage:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE):e)->Comment:t
-    POST-ACCUM @@replyTop += reply(t, t.creationDate, t.id);
-
-  FOREACH r IN @@replyTop DO
-    @@replies += r.v;
-  END;
-
-  vReply = { @@replies };
+    ORDER BY t.creationDate DESC, t.id ASC
+	  LIMIT 20;    
+	
   vReply = 
     SELECT s
     FROM vReply:s-(Comment_HAS_CREATOR_Person:e)->Person:t
-    ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
-
-  PRINT @@replierTop;
+    ACCUM s.@personFirstName = t.firstName,
+	        s.@personLastName = t.lastName,
+	        s.@personId = t.id
+	  ORDER BY s.creationDate DESC, s.id ASC;
+	 
+	  PRINT vReply[vReply.@personId AS personId,
+	        vReply.@personFirstName AS personFirstName,    
+			    vReply.@personLastName AS personLastName,
+			    vReply.creationDate AS commentCreationDate, 
+			    vReply.id AS commentId, 
+			    vReply.content AS commentContent];
 }
