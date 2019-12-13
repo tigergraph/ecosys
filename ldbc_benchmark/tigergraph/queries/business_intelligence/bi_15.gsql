@@ -1,4 +1,4 @@
-CREATE OR REPLACE QUERY b15_(STRING countryName) FOR GRAPH ldbc_snb {
+CREATE OR REPLACE QUERY bi_15(STRING countryName) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, INT count_> socialNormalPerson;
 
 #  SetAccum<VERTEX<Person>> @@personInCountry;
