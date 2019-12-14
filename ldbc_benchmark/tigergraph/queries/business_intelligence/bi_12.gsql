@@ -1,25 +1,35 @@
-CREATE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
-  TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
+CREATE OR REPLACE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
 
   SumAccum<STRING> @creatorFirstName, @creatorLastName;
   SumAccum<INT> @likeCount;
-  HeapAccum<msg>(100, likeCount DESC, messageId ASC) @@trendingMsg;
 
   vMessage = { Comment.*, Post.* };
   vMessage = 
     SELECT s
-    FROM vMessage:s-((Comment_HAS_CREATOR_Person|Post_HAS_CREATOR_Person):e)->Person:t
-    WHERE s.creationDate > minDate
-    ACCUM 
-      s.@creatorFirstName = t.firstName,
-      s.@creatorLastName = t.lastName;
-
+    FROM vMessage:s
+    WHERE s.creationDate > minDate;
+    
   vMessage =
     SELECT s
     FROM vMessage:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
     ACCUM s.@likeCount += 1
-    POST-ACCUM @@trendingMsg += 
-        msg(s.id, s.creationDate, s.@creatorFirstName, s.@creatorLastName, s.@likeCount);
+    HAVING s.@likeCount > likeThreshold
+	  ORDER BY s.@likeCount DESC
+	  LIMIT 100;
 
-  PRINT @@trendingMsg;
+	  vMessage = 
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person|Post_HAS_CREATOR_Person):e)->Person:t
+	  ACCUM 
+      s.@creatorFirstName = t.firstName,
+      s.@creatorLastName = t.lastName
+	  ORDER BY s.@likeCount DESC, s.id ASC
+	  LIMIT 100;
+
+  PRINT vMessage[vMessage.id,
+	vMessage.creationDate,
+	vMessage.@creatorFirstName,
+	vMessage.@creatorLastName,
+	vMessage.@likeCount
+	];
 }
