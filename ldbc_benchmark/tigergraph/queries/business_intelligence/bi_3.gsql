@@ -1,48 +1,38 @@
 # Tag evolution
-CREATE or REPLACE QUERY b3_(DATETIME s1, DATETIME e1, DATETIME s2, DATETIME e2) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_3(INT year1, INT month1) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
 
-#  GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
   HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
-  SumAccum<INT> @m1;
-  SumAccum<INT> @m2;
+	SumAccum<INT> @countMonth1;
+  SumAccum<INT> @countMonth2;
 
-  INT y, m;
-  y = year(s1);
-  m = month(e1);
+  INT year2, month2;
+  year2 = year1 + (month1 / 12);
+  month2 = 1 + month1 % 12;
 
   vMessages = { Post.*, Comment.* };
   vMessages = 
     SELECT s
     FROM vMessages:s
-    WHERE (s.creationDate between s1 and e1) OR (s.creationDate between s2 and e2);
+    WHERE (year(s.creationDate) == year1 AND month(s.creationDate) == month1)
+        OR (year(s.creationDate) == year2 AND month(s.creationDate) == month2);
 
   vMessages = 
     SELECT s
     FROM vMessages:s-(:e)->Tag:t
     ACCUM 
-      IF year(s.creationDate) == y AND month(s.creationDate) == m THEN
-        t.@m1 += 1
-      ELSE 
-        t.@m2 += 1
+      IF year(s.creationDate) == year1 AND month(s.creationDate) == month1 THEN 
+        t.@countMonth1 += 1
+      ELSE
+         t.@countMonth2 += 1
       END;
 
-#      IF year(s.creationDate) == y AND month(s.creationDate) == m THEN 
-#      IF s.creationDate between s1 and e1 THEN
-#        @@count += (t.name -> 1, 0)
-#      ELSE
-#        @@count += (t.name -> 0, 1)
-#      END;
-
   vTag = { Tag.* };
-  g = SELECT v
-      FROM vTag:v
-      WHERE v.@m1 > 0 OR v.@m2 > 0
-      ACCUM
-         @@result += TAG_COUNT(v.name, v.@m1, v.@m2, abs(v.@m1 - v.@m2));
-#  FOREACH c IN @@count DO
-#    @@result += TAG_COUNT(c.tagName, c.countMonth1, c.countMonth2, abs(c.countMonth1 - c.countMonth2));
-#  END;
+  vTag = SELECT v
+         FROM vTag:v
+         WHERE v.@countMonth1 > 0 OR v.@countMonth2 > 0
+         ACCUM
+             @@result += TAG_COUNT(v.name, v.@countMonth1, v.@countMonth2, abs(v.@countMonth1 - v.@countMonth2));
 
   PRINT @@result;
 }
