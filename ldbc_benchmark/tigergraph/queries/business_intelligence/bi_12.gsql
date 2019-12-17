@@ -18,8 +18,10 @@ CREATE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb {
     SELECT s
     FROM vMessage:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
     ACCUM s.@likeCount += 1
-    POST-ACCUM @@trendingMsg += 
-        msg(s.id, s.creationDate, s.@creatorFirstName, s.@creatorLastName, s.@likeCount);
+    POST-ACCUM
+      IF s.@likeCount > likeThreshold THEN
+        @@trendingMsg += msg(s.id, s.creationDate, s.@creatorFirstName, s.@creatorLastName, s.@likeCount)
+      END;
 
   PRINT @@trendingMsg;
 }
