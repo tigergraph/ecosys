@@ -1,24 +1,21 @@
 CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
 
   ListAccum<VERTEX<Person>> @@friendAll;
   OrAccum @visited;
   OrAccum @locatedInGivenCountry;
-	SumAccum<String> @organizationName;
-	SumAccum<INT> @worksFrom;
-  //HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@friendInfoTop;
+  HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@friendInfoTop;
 
-  INT i = 0;
+  INT i;
 
   vPerson = { personId };
-	vPerson = SELECT s
-	          FROM vPerson:s
-	          ACCUM s.@visited = TRUE;
   WHILE i < 2 DO
     vPerson = 
       SELECT t
       FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t
       WHERE t.@visited == False
       ACCUM 
+        s.@visited += True,
         t.@visited += True,
         @@friendAll += t;
 
@@ -34,20 +31,11 @@ CREATE QUERY ic_11(VERTEX<Person> personId, STRING countryName, INT workFromYear
 
   vFriend = { @@friendAll };
   aggFriend = 
-    SELECT s
+    SELECT t
     FROM vFriend:s-(Person_WORK_AT_Company:e)->Company:t
     WHERE e.workFrom < workFromYear
-          AND t.@locatedInGivenCountry == True
-    ACCUM s.@organizationName = t.name, 
-	        s.@worksFrom = e.workFrom
-    ORDER BY s.@worksFrom ASC,
-	           s.id ASC,
-	           s.@organizationName DESC
-	  LIMIT 10;
+    AND t.@locatedInGivenCountry == True
+    ACCUM @@friendInfoTop += friendInfo(s.id, s.firstName, s.lastName, t.name, e.workFrom);
 
-  PRINT aggFriend[aggFriend.id AS personId,
-	      aggFriend.firstName AS personFirstName,
-		    aggFriend.lastName AS personLastName,
-		    aggFriend.@organizationName AS organizationName,
-		    aggFriend.@worksFrom AS organizationWorkFromYear];
+  PRINT @@friendInfoTop;
 }
