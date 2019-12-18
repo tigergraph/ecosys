@@ -1,4 +1,7 @@
 CREATE OR REPLACE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb { 
+
+## result not correct yet
+
   TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
 
   OrAccum @isType1, @isType2;
