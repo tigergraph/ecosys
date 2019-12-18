@@ -1,5 +1,7 @@
 CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
 
+	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
   SumAccum<STRING> @personFirstName, @personLastName;
 	SumAccum<INT> @personId;
 	
@@ -17,15 +19,8 @@ CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   vReply = 
     SELECT s
     FROM vReply:s-(Comment_HAS_CREATOR_Person:e)->Person:t
-    ACCUM s.@personFirstName = t.firstName,
-	        s.@personLastName = t.lastName,
-	        s.@personId = t.id
-	  ORDER BY s.creationDate DESC, s.id ASC;
-	 
-	  PRINT vReply[vReply.@personId AS personId,
-	        vReply.@personFirstName AS personFirstName,    
-			    vReply.@personLastName AS personLastName,
-			    vReply.creationDate AS commentCreationDate, 
-			    vReply.id AS commentId, 
-			    vReply.content AS commentContent];
+	  ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
+
+  PRINT @@replierTop;
+
 }
