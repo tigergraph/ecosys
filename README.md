@@ -4,7 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues-raw/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/issues)
 [![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 [![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat)](https://discordapp.com/channels/640707678297128980)
-[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)](https://www.reddit.com/r/tigergraph/)
+[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=flat)](https://www.reddit.com/r/tigergraph/)
 
 ## TigerGraph's Ecosystem 
 
@@ -41,21 +41,20 @@
 
 ### Connecting with Community
 
-![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) Join the community lead chat room 
+Join the community lead chat room  ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
 
-![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social) Share the latest news or thoughts
+Share the latest news or your thoughts ![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
 
-![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social) Watch and follow the community growth in Github
+Watch and follow the community growth in Github ![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
 
-![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social) Keep up-to-date on TigerGraph's latest news
-
+Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
 ### Contributing to the Community
-
-[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
 
 <a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
+
+[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 
 ### Talk with TigerGraph Developers
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
