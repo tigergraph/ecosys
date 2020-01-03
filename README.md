@@ -1,7 +1,8 @@
 ![TigerGraph Social Banner](https://s3.amazonaws.com/TigerGraph/wide-social-banner.png)
 
 [![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discordapp.com/channels/640707678297128980)  
+[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/issues/)
+[![Discord Chat](https://img.shields.io/discord/640707678297128980?logo=discord)](https://discordapp.com/channels/640707678297128980)  
 
 ## TigerGraph's open-source codebase and curriculum
 
@@ -136,7 +137,12 @@ If you think you have found a vulnerability, please report responsibly. Don't cr
 
 ### Contributing
 
-> ### [Please follow these steps to contribute.](CONTRIBUTING.md)
+> [Please follow these steps to contribute.](CONTRIBUTING.md)
+
+#### Active Contributors
+
+<a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
+
 
 ### Community and Social
 
@@ -149,3 +155,5 @@ Copyright © 2020 TigerGraph
 The content of this repository is bound by the following licenses:
 
 - The computer software is licensed under the [Apache License 2.0](LICENSE.md) license.
+
+[![ForTheBadge built-with-love](http://ForTheBadge.com/images/badges/built-with-love.svg)](https://tigergraph.com)
