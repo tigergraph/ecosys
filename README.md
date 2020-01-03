@@ -1,8 +1,8 @@
 ![TigerGraph Banner](docs/images/github/tgcloudbanner.png)
 
 [![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![Contributors]https://img.shields.io/github/contributors/tigergraph/ecosys](https://github.com/tigergraph/ecosys/graphs/contributors)
-[![GitHub issues](https://img.shields.io/github/issues/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/issues/)
+[![GitHub issues](https://img.shields.io/github/issues-raw/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/issues)
+[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 [![Discord Chat](https://img.shields.io/discord/640707678297128980?logo=discord)](https://discordapp.com/channels/640707678297128980)
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)](https://www.reddit.com/r/tigergraph/)
 
@@ -39,16 +39,19 @@
 - A [Blogs](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
 - A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
 
-#### Connecting with Community
+### Connecting with Community
 
 ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social)
+
 ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
+
 ![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
+
 ![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
 
 ### Contributing to the Community
 
-[![GitHub contributors](https://img.shields.io/github/contributors/Naereen/StrapDown.js.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/contributors/)
+[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
 
@@ -56,6 +59,7 @@
 
 ### Talk with TigerGraph Developers
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
+
 [Developer Fourm](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
 
 <!--- TODO: add link to actual report a bug--->
@@ -68,7 +72,7 @@ If you're confident it's a new bug and have confirmed that someone else is facin
 
 #### Security Issue?
 
-If you think you have found a vulnerability, please report responsibly. Don't create GitHub issues for security issues. Instead, please send an email to `security@TigerGraph` and we'll look into it immediately.
+If you think you have found a vulnerability, please report responsibly. Don't create GitHub issues for security issues. Instead, please send an email to `security@tigergraph.com` and we'll look into it immediately.
 
 ### License
 
