@@ -3,7 +3,7 @@
 [![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![GitHub issues](https://img.shields.io/github/issues-raw/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/issues)
 [![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
-[![Discord Chat](https://img.shields.io/discord/640707678297128980?logo=discord)](https://discordapp.com/channels/640707678297128980)
+[![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat)](https://discordapp.com/channels/640707678297128980)
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)](https://www.reddit.com/r/tigergraph/)
 
 ## TigerGraph's Ecosystem 
@@ -41,13 +41,13 @@
 
 ### Connecting with Community
 
-![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social)
+![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) Join the community lead chat room 
 
-![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
+![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social) Share the latest news or thoughts
 
-![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
+![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social) Watch and follow the community growth in Github
 
-![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
+![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social) Keep up-to-date on TigerGraph's latest news
 
 ### Contributing to the Community
 
