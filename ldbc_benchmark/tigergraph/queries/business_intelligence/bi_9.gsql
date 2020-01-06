@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 9 query description is on page 67 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
 
