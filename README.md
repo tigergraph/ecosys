@@ -52,6 +52,8 @@
 
 ## Certifications
 
+![TigerGraph Badges](docs/images/github/badges.png)
+
 [Graph Fundementals](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
 
 [GSQL 101](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution
