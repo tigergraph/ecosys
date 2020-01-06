@@ -24,6 +24,8 @@
 
 
 ## Developer Guides
+> [For a complete list of resources we highly encourage you to checkout TigerGraph's Community Driven AWESOME page](AWESOME.md)
+
 ### Getting Started
 * [What is graph](https://www.tigergraph.com/certification-graph-fundamentals/) - Certification 1
 * [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
