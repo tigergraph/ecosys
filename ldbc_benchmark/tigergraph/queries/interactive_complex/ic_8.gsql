@@ -1,3 +1,6 @@
+  
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 8 query description is on page 39 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<VERTEX<Comment> v, DATETIME commentCreationDate, INT commentId> reply;
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
