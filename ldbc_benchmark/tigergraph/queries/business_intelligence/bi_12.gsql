@@ -1,3 +1,6 @@
+  
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 12 query description is on page 70 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
 
