@@ -27,7 +27,7 @@
 #### Getting Started
 * [What is graph](/) - Certification 1
 * [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
-* [Useful Development Tools and Patterns](/) - Coming Soon
+* [Useful Development Tools and Patterns](./third-party/README.md) - Coming Soon
 * [Schema Development](/) - Coming Soon
 * [GSQL Basics](https://www.tigergraph.com/certification-gsql-101/) - Certification 2
 * [GSQL Algorithms](https://docs.tigergraph.com/graph-algorithm-library)
