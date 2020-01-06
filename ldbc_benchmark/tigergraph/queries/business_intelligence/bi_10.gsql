@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 10 query description is on page 68 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_10(STRING tagName, DATETIME minDate) FOR GRAPH ldbc_snb { 
   OrAccum @isInterested;
   OrAccum @hasTag;
