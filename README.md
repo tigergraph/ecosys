@@ -66,7 +66,11 @@
 - A [Blog](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
 - A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
 
-## Connecting with Community
+## Community
+
+<a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
+
+### Connecting
 
 Join the community lead chat room  ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
 
@@ -76,12 +80,9 @@ Watch and follow the community growth in Github ![GitHub stars](https://img.shie
 
 Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
 
-## Contributing to the Community
+### Contributing
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
-
-<a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
-
 
 ## Talk with TigerGraph Developers
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
