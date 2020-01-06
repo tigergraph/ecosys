@@ -25,7 +25,7 @@
 
 ## Developer Guides
 ### Getting Started
-* [What is graph](/) - Certification 1
+* [What is graph](https://www.tigergraph.com/certification-graph-fundamentals/) - Certification 1
 * [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
 * [Useful Development Tools and Patterns](./third-party/README.md) - Coming Soon
 * [Schema Development](/) - Coming Soon
@@ -73,13 +73,13 @@ Share the latest news or your thoughts ![Subreddit subscribers](https://img.shie
 Watch and follow the community growth in Github ![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
 
 Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
+
 ## Contributing to the Community
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
 
 <a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
 
-[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 
 ## Talk with TigerGraph Developers
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
