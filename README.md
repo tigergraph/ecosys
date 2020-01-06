@@ -12,10 +12,10 @@
 
 ## Table of Contents
 
-* [TigerGraph Ecosystem](#certifications)
+* [Developer Guides](#developer-guides)
 * [Getting Started](#getting-started)
 * [Certifications](#certifications)
-* [Developer Resources](#the-learning-platform)
+* [Developer Resources](#tigergraphs-developer-resources)
 * [Connect with Community](#connecting-with-community)
 * [Contributing](#contributing-to-the-comunity)
 * [Talk to Developers](#talk-with-tigergraph-developers)
