@@ -23,8 +23,8 @@
 * [License](#license)
 
 
-### Developer Guides
-#### Getting Started
+## Developer Guides
+### Getting Started
 * [What is graph](/) - Certification 1
 * [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
 * [Useful Development Tools and Patterns](./third-party/README.md) - Coming Soon
@@ -33,10 +33,10 @@
 * [GSQL Algorithms](https://docs.tigergraph.com/graph-algorithm-library)
 * [Projects Showcase](/) - Coming Soon
 
-#### Data Import Export
+### Data Import Export
 * [How to Import Data into List Structure](/) - Coming Soon
 
-#### Tools and Integration Guides
+### Tools and Integration Guides
 * [Full Stack Architecture](/) - Coming Soon
 * [TigerGraph and Apache Spark](/) - Coming Soon
 * [TigerGraph and Kafka](/) - Coming Soon
@@ -45,26 +45,26 @@
 * [TigerGraph and Jupyter Notebooks](/) - Coming Soon
 * [TigerGraph and Flutter](/) - Coming Soon
 
-#### Visualizations
+### Visualizations
 * [Visualization Tools](/) - Coming Soon
 * [Visualization Examples](/) - Coming Soon
 
 
-### Certifications
+## Certifications
 
 [Graph Fundementals](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
 
 [GSQL 101](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution
 
 
-### TigerGraph's Developer Resources
+## TigerGraph's Developer Resources
 
 - A [Documentation](https://docs.tigergraph.com/) place that contains patterns, code snippts, and all of TigerGraph's functionality.
 - A [YouTube channel](https://youtube.com/TigerGraph) with recorded guru sessions, starter kit demos, and GSQL functions.
 - A [Blog](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
 - A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
 
-### Connecting with Community
+## Connecting with Community
 
 Join the community lead chat room  ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
 
@@ -73,7 +73,7 @@ Share the latest news or your thoughts ![Subreddit subscribers](https://img.shie
 Watch and follow the community growth in Github ![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
 
 Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
-### Contributing to the Community
+## Contributing to the Community
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
 
@@ -81,24 +81,24 @@ Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shield
 
 [![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
 
-### Talk with TigerGraph Developers
+## Talk with TigerGraph Developers
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
 
 [Developer Fourm](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
 
 <!--- TODO: add link to actual report a bug--->
-### Reporting Issues
+## Reporting Issues
 
-#### Bug Issue?
+### Bug Issue?
 If you think you've found a bug, first read the [how to report a bug](https://www.TigerGraph/bog/how-to-report-a-bug/) article and follow its instructions.
 
 If you're confident it's a new bug and have confirmed that someone else is facing the same issue, go ahead and create a new GitHub issue. Be sure to include as much information as possible so we can reproduce the bug.
 
-#### Security Issue?
+### Security Issue?
 
 If you think you have found a vulnerability, please report responsibly. Don't create GitHub issues for security issues. Instead, please send an email to `security@tigergraph.com` and we'll look into it immediately.
 
-### License
+## License
 
 Copyright © 2020 TigerGraph
 
