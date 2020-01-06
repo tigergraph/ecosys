@@ -1,3 +1,6 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 2 query description is on page 47 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
 set syntax_version = "v2"
 use graph ldbc_snb
 DROP QUERY is_2
