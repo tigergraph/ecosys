@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 13 query description is on page 44 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY ic_13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
   SumAccum<INT> @dist1 = -1, @dist2 = -1;
   SumAccum<INT> @@next;
