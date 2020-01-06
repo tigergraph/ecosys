@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 1 query description is on page 59 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
 
