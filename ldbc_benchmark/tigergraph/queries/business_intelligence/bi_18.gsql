@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 18 query description is on page 76 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <INT messageCount, INT personCount> INFO;
 
