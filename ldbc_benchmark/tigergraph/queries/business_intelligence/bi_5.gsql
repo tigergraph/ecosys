@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
 	OrAccum @isCitizen;
 	SetAccum<INT> @popCount;
