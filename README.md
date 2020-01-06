@@ -23,9 +23,34 @@
 * [License](#license)
 
 
-### Getting Started
+### Developer Guides
+#### Getting Started
+* [What is graph](/) - Certification 1
+* [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
+* [Useful Development Tools and Patterns](/) - Coming Soon
+* [Schema Development](/) - Coming Soon
+* [GSQL Basics](https://www.tigergraph.com/certification-gsql-101/) - Certification 2
+* [GSQL Algorithms](https://docs.tigergraph.com/graph-algorithm-library)
+* [Projects Showcase](/) - Coming Soon
 
-#### Certifications
+#### Data Import Export
+* [How to Import Data into List Structure](/) - Coming Soon
+
+#### Tools and Integration Guides
+* [Full Stack Architecture](/) - Coming Soon
+* [TigerGraph and Apache Spark](/) - Coming Soon
+* [TigerGraph and Kafka](/) - Coming Soon
+* [TigerGraph and Elastic{Search}](/) - Coming Soon
+* [TigerGraph and Docker](/) - Coming Soon
+* [TigerGraph and Jupyter Notebooks](/) - Coming Soon
+* [TigerGraph and Flutter](/) - Coming Soon
+
+#### Visualizations
+* [Visualization Tools](/) - Coming Soon
+* [Visualization Examples](/) - Coming Soon
+
+
+### Certifications
 
 [Graph Fundementals](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
 
@@ -34,9 +59,9 @@
 
 ### TigerGraph's Developer Resources
 
-- A [Documentation](https://docs.tigergraph.com/) a place that contains patterns, code snippts, and all of TigerGraph's functionality.
+- A [Documentation](https://docs.tigergraph.com/) place that contains patterns, code snippts, and all of TigerGraph's functionality.
 - A [YouTube channel](https://youtube.com/TigerGraph) with recorded guru sessions, starter kit demos, and GSQL functions.
-- A [Blogs](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
+- A [Blog](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
 - A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
 
 ### Connecting with Community
