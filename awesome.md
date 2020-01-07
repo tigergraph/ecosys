@@ -22,14 +22,6 @@ A curated list of AWESOME TigerGraph community resources.
 * [Videos](#videos)
 * [Local Meetup](#local-meetup) 
 
-## Communities
-* [YouTube](https://www.youtube.com/tigergraph)
-* [LinkedIn](https://www.linkedin.com/company/tigergraph/)
-* [Twitter](https://twitter.com/TigerGraphDB)
-* [Facebook](https://www.facebook.com/TigerGraphDB/)
-* [Discord](https://discord.gg/F2c9b9v)
-* [Reddit](https://www.reddit.com/r/tigergraph/)
-
 ## Demos
 * [pattern_match](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pattern_match)
 * [temporal_data](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/temporal_data)
@@ -45,6 +37,13 @@ A curated list of AWESOME TigerGraph community resources.
 <!--- Is this an actual repo --->
 * [entity_resolution](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/entity_resolution)
 
+## Communities
+* [YouTube](https://www.youtube.com/tigergraph)
+* [LinkedIn](https://www.linkedin.com/company/tigergraph/)
+* [Twitter](https://twitter.com/TigerGraphDB)
+* [Facebook](https://www.facebook.com/TigerGraphDB/)
+* [Discord](https://discord.gg/F2c9b9v)
+* [Reddit](https://www.reddit.com/r/tigergraph/)
 
 ## TigerGraphs Resources
 * [Official Documentation]()
