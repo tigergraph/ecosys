@@ -1,0 +1,54 @@
+use graph Healthcare
+drop query recoverMismatchedEdgeInBatch
+
+CREATE DISTRIBUTED QUERY recoverMismatchedEdgeInBatch(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true, int total = 4, int num = 0) FOR GRAPH Healthcare {
+    ListAccum<int> @EdgeTgtSet;
+    ListAccum<int> @rEdgeTgtSet; 
+
+    SumAccum<int> @@NoDirectEdgeCnt;
+    SumAccum<int> @@NoReverseEdgeCnt;
+
+    File fobj( "tmp/" + edgeType + datetime_format(now(),"%m%d%Y_%H%M%S") + ".csv");
+
+    PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
+
+    S = { srcVType.* };
+    S = SELECT src 
+        FROM S: src 
+        WHERE vertex_to_int(src) % str_to_int(total) == str_to_int(num);
+
+    T1 = SELECT tgt
+         FROM S:src -(edgeType:e)-> tgtVType:tgt
+         ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e));
+	
+	
+    S1 = SELECT tgt
+         FROM T1:src -(rEdgeType:e)-> srcVType: tgt
+         ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src);
+
+    X = SELECT src
+        FROM S:src
+        POST-ACCUM
+          int missingForward = 0,
+          int missingReverse = 0,
+          RecoverEdges(__ENGINE__SERVICEAPI,
+              __ENGINE__REQUEST,
+              __ENGINE__CONTEXT,
+              edgeType,
+              rEdgeType,
+              src,
+              src.@EdgeTgtSet,
+              src.@rEdgeTgtSet,
+              missingForward,
+              missingReverse,
+              dryrun),
+          @@NoDirectEdgeCnt += missingForward,
+          @@NoReverseEdgeCnt += missingReverse,
+          //force the gquery to use file object inside post-accum
+          fobj.println("")
+    ;
+
+  PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), S1.size(), T1.size(), X.size();
+}
+
+install query recoverMismatchedEdgeInBatch
