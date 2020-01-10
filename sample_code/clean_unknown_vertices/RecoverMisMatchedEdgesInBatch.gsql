@@ -10,7 +10,7 @@ CREATE DISTRIBUTED QUERY recoverMismatchedEdgeInBatch(string srcVType, string tg
 
     File fobj( "tmp/" + edgeType + datetime_format(now(),"%m%d%Y_%H%M%S") + ".csv");
 
-    PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
+    PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun, total, num;
 
     S = { srcVType.* };
     S = SELECT src 
@@ -50,5 +50,3 @@ CREATE DISTRIBUTED QUERY recoverMismatchedEdgeInBatch(string srcVType, string tg
 
   PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), S1.size(), T1.size(), X.size();
 }
-
-install query recoverMismatchedEdgeInBatch

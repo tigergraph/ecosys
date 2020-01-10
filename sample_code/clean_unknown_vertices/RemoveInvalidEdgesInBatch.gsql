@@ -69,5 +69,3 @@ create distributed query removeInvalidEdgeInBatch(string srcVType, string tgtVTy
  END;
 
 }
-
-install query removeInvalidEdgeInBatch
