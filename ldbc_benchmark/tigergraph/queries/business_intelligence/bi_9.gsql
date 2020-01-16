@@ -1,30 +1,12 @@
 CREATE OR REPLACE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb { 
 
-## result not correct yet
-
   TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
-
   OrAccum @isType1, @isType2;
   SumAccum<INT> @numMembers;
-#  SetAccum<VERTEX<Forum>> @@forumLarge;
-#  SumAccum<INT> @forumId;
-#  GroupByAccum<INT forumId, SumAccum<INT> count1, SumAccum<INT> count2> @@forumStatsGroup;
   SumAccum<INT> @m1, @m2;
   HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
 
   vTagClass = { TagClass.* };
-/*  vTagClass =
-    SELECT v
-    FROM vTagClass:v
-    WHERE v.name == tagClass1Name OR v.name == tagClass2Name
-    ACCUM 
-      CASE 
-        WHEN v.name == tagClass1Name THEN 
-          v.@isType1 += True
-        WHEN v.name == tagClass2Name THEN 
-          v.@isType2 += True
-      END;
-*/
   vTag =
     SELECT t
     FROM vTagClass:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->Tag:t
