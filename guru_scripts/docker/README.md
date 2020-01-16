@@ -85,7 +85,11 @@ This image will start as a daemon, so user can ssh to it.
      - download the "latest" docker image from the TigerGraph docker registry url docker.tigergraph.com/tigergraph-dev. 
 ```bash
    docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph-dev:latest
-```        
+```      
+Note that if you use Windows, and have disk drive permission issue with the above command, please try the following
+```bash
+   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -t docker.tigergraph.com/tigergraph-dev:latest
+```   
 
 After pulling the image and launch the container in the background, you can try the following to verify it's running. 
 1. verify that container is running, you should see a row to describe the running container.

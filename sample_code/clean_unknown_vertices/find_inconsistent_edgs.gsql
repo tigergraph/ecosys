@@ -1,0 +1,55 @@
+USE graph xxx
+DROP QUERY findInconsistentEdge
+CREATE DISTRIBUTED QUERY findInconsistentEdge(string edgeFile, string rEdgeFile) FOR GRAPH xxx {
+   File fEdge(edgeFile);
+   File fREdge(rEdgeFile);
+
+   SetAccum<int> @EdgeTgtSet;
+   SetAccum<int> @rEdgeTgtSet;
+
+   SumAccum<int> @@NoDirectEdgeCnt;
+   SumAccum<int> @@NoReverseEdgeCnt;
+   SumAccum<int> @@edgeCnt = 0;
+   SumAccum<int> @@revEdgeCnt = 0;
+
+   S = { Address.* };
+   T = { City.* };
+
+   D(_) = SELECT src
+       FROM S:src -(ADDRESS_WITHIN_CITY:e)-> City:tgt
+       ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e)),
+             @@edgeCnt += 1
+   ;
+
+   D = SELECT src
+       FROM T:src -(REVERSE_ADDRESS_WITHIN_CITY:e)-> Address:tgt
+       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src),
+             @@revEdgeCnt += 1
+   ;
+
+   D = SELECT src
+       FROM S:src
+       POST-ACCUM
+         FOREACH tgt in src.@EdgeTgtSet do
+           IF NOT src.@rEdgeTgtSet.contains(tgt) THEN
+             fEdge.println(CombineTwoNumbers(vertex_to_int(src), tgt)),
+             @@NoReverseEdgeCnt += 1
+           END
+         END,
+         FOREACH tgt in src.@rEdgeTgtSet do
+           IF NOT src.@EdgeTgtSet.contains(tgt) THEN
+             fREdge.println(CombineTwoNumbers(vertex_to_int(src), tgt)),
+             @@NoDirectEdgeCnt += 1
+           END
+         END
+   ;
+
+   PRINT @@edgeCnt, @@revEdgeCnt, @@NoDirectEdgeCnt, @@NoReverseEdgeCnt;
+}
+
+DROP QUERY deleteInconsistentEdge
+CREATE QUERY deleteInconsistentEdge(string edgeFile, string rEdgeFile) FOR GRAPH xxx {
+  DeleteEdge(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT,
+      "Address", "City", "ADDRESS_WITHIN_CITY",
+      "RESERVE_ADDRESS_WITHIN_CITY", edgeFile, rEdgeFile);
+}

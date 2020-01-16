@@ -1,0 +1,48 @@
+CREATE QUERY prediction_accuracy() FOR GRAPH NeuralNetwork {
+	TYPEDEF TUPLE<VERTEX prediction, FLOAT a> output;
+  HeapAccum<output>(1, a DESC) @@prediction_heap;
+	SumAccum<INT>    @@cnt;
+  ArrayAccum<SumAccum<DOUBLE>> @a[1000];
+	ListAccum<DOUBLE> @@ones;
+
+	@@ones = unit_List(1000);
+
+    InputLayer = {inputLayer.*};
+
+	  InputLayer = SELECT s FROM InputLayer:s -(Theta1:e)->hiddenLayer:t
+	               ACCUM
+	                 IF s.v_in_id == "401" THEN
+	                   t.@a += product_List_const(@@ones, e.theta)
+	                 ELSE
+	                   t.@a += product_List_const(s.x_validation, e.theta)
+	                 END
+	               POST-ACCUM
+	                  t.@a += sigmoid_ArrayAccum(t.@a);
+
+	  HiddenLayer = {hiddenLayer.*};
+	  HiddenLayer = SELECT s FROM HiddenLayer:s -(Theta2:e)->outputLayer:t
+	                ACCUM
+	                  IF s.v_hid_id == "26" THEN
+	                    t.@a += product_List_const(@@ones, e.theta)
+	                  ELSE
+	                    t.@a += product_ArrayAccum_const(s.@a, e.theta)
+	                 END
+	                POST-ACCUM
+	                    t.@a += sigmoid_ArrayAccum(t.@a);
+
+	  OutputLayer = {outputLayer.*};
+	  FOREACH i IN RANGE[0, 999] DO
+	  OutputLayer = SELECT s FROM OutputLayer:s
+	                ACCUM
+	                    @@prediction_heap += output(s, s.@a[i])
+	                POST-ACCUM
+	                  IF abs(s.y_validation.get(i) - 1)<0.1 AND  @@prediction_heap.top().prediction == s THEN
+	                     @@cnt += 1
+	                  END;
+	  @@prediction_heap.pop();
+	  END;
+
+
+	PRINT @@cnt/1000.0;
+
+}

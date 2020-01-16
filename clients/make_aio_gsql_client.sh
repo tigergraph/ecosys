@@ -43,6 +43,7 @@ EOT
 ########################################################################
 cd $GLE_DIR; git checkout tg_2.5.0_dev; cd -
 #                      client path,             branch,       version_string in combined client
+./new_gsql_version.sh $GLE_DIR/src/main/java/   tg_2.5.2_dev    v2_5_2
 ./new_gsql_version.sh $GLE_DIR/src/main/java/   tg_2.5.0_dev    v2_5_0
 ./new_gsql_version.sh $GLE_DIR                  tg_2.4.1_dev    v2_4_1
 ./new_gsql_version.sh $GLE_DIR                  tg_2.4.0_dev    v2_4_0

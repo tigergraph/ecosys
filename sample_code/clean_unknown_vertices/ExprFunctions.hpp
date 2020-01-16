@@ -110,6 +110,7 @@ namespace UDIMPL {
     GEngineInfo(InfoLvl::Brief, "PrintSetToDisk") << " Printing finished." << std::endl; 
   }
 
+
   inline std::string RemoveVertexByIID(ServiceAPI* api,
                               EngineServiceRequest& request,
                               gpelib4::MasterContext* context,
@@ -308,7 +309,7 @@ namespace UDIMPL {
       return;
     }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
-    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
     for (auto id : unknownIds) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
@@ -366,13 +367,274 @@ namespace UDIMPL {
       return;
     }
     gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
-    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype);
+    size_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
     for (auto id : unknownIds) {
       graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id));
     }
     GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") << "Finished creating updates and now waiting for commit." << std::endl;
     graphupdates->Commit();
     msg = ss.str();
+  }
+
+inline void DeleteEdge(ServiceAPI* api,
+    EngineServiceRequest& request,
+    gpelib4::MasterContext* context,
+    string srcType, string tgtType,
+    string edgeType, string rEdgeType,
+    string edgeFile, string rEdgeFile) {
+  // create graph updates
+  gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+
+  // get from, to type id
+  uint32_t srcTypeId = api->GetTopologyMeta()->GetVertexTypeId(srcType, request.graph_id_);
+  uint32_t tgtTypeId = api->GetTopologyMeta()->GetVertexTypeId(tgtType, request.graph_id_);
+
+  std::string line;
+  // delete direct edge
+  uint32_t cnt1 = 0;
+  {
+    uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(edgeType, request.graph_id_);
+    std::ifstream infile(edgeFile);
+    if (infile.is_open()) {
+      VertexLocalId_t addr, city;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> addr >> city;
+        topology4::DeltaVertexId srcid(srcTypeId, addr);
+        topology4::DeltaVertexId tgtid(tgtTypeId, city);
+        graphupdates->DeleteEdge(srcid, tgtid, eTypeId);
+        ++cnt1;
+      }
+      infile.close();
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") 
+      << "Deleted " << cnt1  << " type \'"<< edgeType 
+      << "\' edges from " << edgeFile 
+      << " with typeid: " << eTypeId << std::endl;
+  }
+  cnt1 = 0;
+  // delete reverse edge
+  {
+    uint32_t eTypeId = api->GetTopologyMeta()->GetEdgeTypeId(rEdgeType, request.graph_id_);
+    std::ifstream infile(rEdgeFile);
+    if (infile.is_open()) {
+      VertexLocalId_t addr, city;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> addr >> city;
+        topology4::DeltaVertexId srcid(srcTypeId, addr);
+        topology4::DeltaVertexId tgtid(tgtTypeId, city);
+        graphupdates->DeleteEdge(tgtid, srcid, eTypeId);
+        ++cnt1;
+      }
+      infile.close();
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveUnknownID") 
+      << "Deleted " << cnt1  << " \'"<< rEdgeType 
+      << "\' Rev-edges from " << rEdgeFile 
+      << " with typeid: " << eTypeId << std::endl;
+  }
+  graphupdates->Commit(true);
+}
+
+inline string CombineTwoNumbers(int64_t one, int64_t two) {
+  std::stringstream ss;
+  ss << one << " " << two;
+  return ss.str();
+}
+
+  inline ListAccum<EDGE> RecoverEdgeFromFile(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      gpelib4::MasterContext* context,
+      const std::string& edgeType,
+      const std::string& filename) {
+    auto eid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    std::string line;
+    std::ifstream infile(filename);
+    ListAccum<EDGE> eList;
+    if (infile.is_open()) {
+      VertexLocalId_t src, tgt;
+      while (std::getline(infile,line)) {
+        std::istringstream iline(line);
+        iline >> src >> tgt;
+        auto eAttr = context->GraphAPI()->GetOneEdge(src, tgt, eid);
+        auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+        if (attr_up->Set(eAttr)) {
+          graphupdate->UpsertEdge(
+              topology4::DeltaVertexId(context->GraphAPI()->GetVertexType(src), src),
+              topology4::DeltaVertexId(context->GraphAPI()->GetVertexType(tgt), tgt),
+              attr_up,
+              eid);
+          eList += EDGE(VERTEX(src), VERTEX(tgt), eid);
+        }
+      }
+      infile.close();
+    }
+    graphupdate->Commit();
+    return eList;
+  }
+
+  inline EDGE RecoverEdge(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      //gpelib4::MasterContext* context,
+      gpr::Context& context,
+      const std::string& edgeType,
+      int64_t src,
+      int64_t tgt,
+      bool dryrun) {
+    auto eid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    if (dryrun) {
+      return EDGE(VERTEX(src), VERTEX(tgt), eid);
+    }
+    auto eAttr = context.GraphAPI()->GetOneEdge(src, tgt, eid);
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    if (attr_up->Set(eAttr)) {
+      graphupdate->UpsertEdge(
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
+          topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
+          attr_up,
+          eid);
+      graphupdate->Commit();
+      return EDGE(VERTEX(src), VERTEX(tgt), eid);
+    } else {
+      return EDGE();
+    }
+  }
+
+  inline std::string RemoveVertexByIIDSet(ServiceAPI* api,
+                              EngineServiceRequest& request,
+                              //gpelib4::MasterContext* context,
+                              std::string& vtype,
+                              SetAccum<VERTEX>& vSet) {
+    if (vSet.size() == 0) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Receive empty vSet, exist!!!";
+      return "Empty vSet, do nothing";
+    }
+    uint32_t vTypeId = api->GetTopologyMeta()->GetVertexTypeId(vtype, request.graph_id_);
+    if (vTypeId == -1) {
+      GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Get type id failed, the input vid = " << *(vSet.data_.begin());
+      return "Get type id failed";
+    }
+
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "Receive " << vSet.size() << " internal ids of type: \"" 
+      << vtype << "\"" << std::endl;
+    std::stringstream ss;
+    ss << "Found " << vSet.size() << " \'" << vtype << "\' vertices" << std::endl;
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tStart deleting." << std::endl;
+    gshared_ptr<topology4::GraphUpdates> graphupdates = api->CreateGraphUpdates(&request);
+    for (auto id : vSet) {
+      graphupdates->DeleteVertex(true, topology4::DeltaVertexId(vTypeId, id.vid));
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDSet") << "\tFinished creating updates and now waiting for commit." << std::endl;
+    graphupdates->Commit();
+    return ss.str();
+  }
+
+  inline ListAccum<VERTEX> GetVertexList(SetAccum<int64_t>& inputSet) {
+    ListAccum<VERTEX> outputList;
+    for (auto id: inputSet) {
+      outputList += VERTEX(id);
+    }
+    return outputList;
+  }
+
+  inline void RecoverOneEdge(
+      gpr::Context& context,
+      gshared_ptr<topology4::GraphUpdates> graphupdate,
+      uint32_t eid,
+      topology4::EdgeAttribute* eAttr,
+      int64_t src,
+      int64_t tgt,
+      bool dryrun) {
+    auto attr_up = graphupdate->GetEdgeAttributeUpdate(eid);
+    //Get the output stream from context
+    auto& gstream = context.GetOStream(0);
+    if (attr_up->Set(eAttr)) {
+      //dryrun will do nothing
+      gstream << dryrun ? "[DRYRUN]": "[UPSERT]";
+      if (!dryrun) {
+        //only do the upsert if it is not dryrun mode
+        graphupdate->UpsertEdge(
+            topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(src), src),
+            topology4::DeltaVertexId(context.GraphAPI()->GetVertexType(tgt), tgt),
+            attr_up,
+            eid);
+      }
+    } else {
+      gstream << "[ERROR]";
+    }
+    gstream << "src: ";
+    gstream.WriteVertexId(src);
+    gstream << "|tgt: ";
+    gstream.WriteVertexId(tgt);
+    gstream << "|edge: " << *eAttr << "\n";
+  }
+
+inline void RecoverEdges(ServiceAPI* serviceapi,
+      EngineServiceRequest& request,
+      gpr::Context& context,
+      const std::string& edgeType,
+      const std::string& rEdgeType,
+      VERTEX src,
+      ListAccum<int64_t>& fEdgeList,
+      ListAccum<int64_t>& rEdgeList,
+      int64_t& missingForward,
+      int64_t& missingReverse,
+      bool dryrun) {
+
+    auto fEid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(edgeType, request.graph_id_);
+    auto rEid = serviceapi->GetTopologyMeta()
+      ->GetEdgeTypeId(rEdgeType, request.graph_id_);
+
+    //forward edge are automatically sorted by target id 
+    auto& fTgtList = fEdgeList.data_;
+    //reverse edge are not automatically sorted by target id and require a sort operation
+    auto& rTgtList = rEdgeList.data_;
+    std::sort(rTgtList.begin(), rTgtList.end());
+
+    //scan the two sorted list to figure out which target has missing edge
+    uint32_t i = 0,  j = 0;
+    auto graphupdate = serviceapi->CreateGraphUpdates(&request);
+    while(i < fTgtList.size() && j < rTgtList.size()) {
+      if (fTgtList[i] == rTgtList[j]) {
+        ++i;
+        ++j;
+      } else if (fTgtList[i] > rTgtList[j]) {
+        //rEdgeList[j] is one target that only have reversed edge
+        auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
+        RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid, dryrun);
+        ++j;
+        ++missingForward;
+      } else {
+        //fEdgeList[i] is one target that only have forward edge
+        auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
+        RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i], dryrun);
+        ++i;
+        ++missingReverse;
+      }
+    }
+    while(i < fTgtList.size()) {
+      auto eAttr = context.GraphAPI()->GetOneEdge(src.vid, fTgtList[i], fEid);
+      RecoverOneEdge(context, graphupdate, fEid, eAttr, src.vid, fTgtList[i], dryrun);
+      ++i;
+      ++missingReverse;
+    }
+    while(j < rTgtList.size()) {
+      //rEdgeList[j] is one target that only have reversed edge
+      auto eAttr = context.GraphAPI()->GetOneEdge(rTgtList[j], src.vid, rEid);
+      RecoverOneEdge(context, graphupdate, rEid, eAttr, rTgtList[j], src.vid, dryrun);
+      ++j;
+      ++missingForward;
+    }
+    //clean up the target list to release memory
+    fEdgeList.clear();
+    rEdgeList.clear();
+    graphupdate->Commit();
   }
 }
 /****************************************/
