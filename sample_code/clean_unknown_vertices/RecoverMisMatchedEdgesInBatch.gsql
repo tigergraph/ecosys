@@ -15,7 +15,7 @@ CREATE DISTRIBUTED QUERY recoverMismatchedEdgeInBatch(string srcVType, string tg
     S = { srcVType.* };
     S = SELECT src 
         FROM S: src 
-        WHERE vertex_to_int(src) % str_to_int(total) == str_to_int(num);
+        WHERE vertex_to_int(src) % total == num;
 
     T1 = SELECT tgt
          FROM S:src -(edgeType:e)-> tgtVType:tgt

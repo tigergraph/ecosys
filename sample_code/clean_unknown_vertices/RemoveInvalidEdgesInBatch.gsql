@@ -15,7 +15,7 @@ create distributed query removeInvalidEdgeInBatch(string srcVType, string tgtVTy
  S = {srcVType.*};
  S = SELECT src 
      FROM S: src
-     WHERE vertex_to_int(src) % str_to_int(total) == str_to_int(num);  
+     WHERE vertex_to_int(src) % total == num;  
 
  S1 = SELECT src
      FROM S:src - (edgeType: e) - tgtVType:tgt 
@@ -44,7 +44,7 @@ create distributed query removeInvalidEdgeInBatch(string srcVType, string tgtVTy
  T = {tgtVType.*};
  T = SELECT src 
      FROM T: src
-     WHERE vertex_to_int(src) % str_to_int(total) == str_to_int(num);
+     WHERE vertex_to_int(src) % total == num;
 
  T1 = SELECT src
      FROM T:src - (rEdgeType: e) - srcVType:tgt
