@@ -10,21 +10,51 @@
 
 [TigerGraph](https://www.tigergraph.com) is dedicated to building the world's fastest and most scalable graph platform. We also know that a product is nothing without it's community. This repository is dedicated to provide TigerGraph's community with all the essential in-house and community developed tools to get the most value out of your TigerGraph solutions. 
 
-## Table of Contents
+## I don't want to read this whole thing I just have a question!!!
 
-* [Developer Guides](#developer-guides)
+* [Ask Questions to TigerGraph](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
+* [TigerGraph FAQ](https://www.tigergraph.com/developerfaq/)
+
+If chat is more your speed, you can join the TigerGraph Community Chat:
+
+* [Join the TigerGraph Community Chat](https://discord.gg/F2c9b9v)
+    * Use the `#general` channel for casual conversations around TigerGraph
+    * Use the `#support` channel for general questions or discussion about TigerGraph
+    * Use the `#tools` channel for questions about TigerGraph community tools
+    * Use the `#app-showcase` channel for showing the things you build
+    * Use the `#articles-blogs-news` channel for posting intersting things you find on the web
+    * There are many other channels available, check the channel list
+
+## What should I know before I get started?
+
+Browse the section below & quickly navigate one that interests you! 
+
+* [Awesome Resource List](#developer-resource)
+* [Connect with Community](#connecting-with-community)
 * [Getting Started](#getting-started)
 * [Certifications](#certifications)
-* [Developer Resources](#tigergraphs-developer-resources)
-* [Connect with Community](#connecting-with-community)
-* [Contributing](#contributing-to-the-comunity)
+* [TigerGraph Resources](#tigergraphs-resources)
+* [Contributing](#contributing)
 * [Talk to Developers](#talk-with-tigergraph-developers)
 * [Reporting Issues](#reporting-issues)
 * [License](#license)
 
+### TigerGraph Ecosystem
+* [Ecosys](https://github.com/tigergraph/ecosys)
+    * Use the `awesome` markdown file to list resources you have built or curated that enhance the tigerGraph ecosystem
+    * Use the `tigerLab` channel for general questions or discussion about TigerGraph
+    * Use the `userDefinedFunctions` user defined functions that the community hs developed
+    * Use the `tools/scripts` user defined functions that the community hs developed
+    * Use the `tools/` user defined functions that the community hs developed
 
-## Developer Guides
-> [For a complete list of resources we highly encourage you to checkout TigerGraph's Community Driven AWESOME page](awesome.md)
+* [mediaKit](https://github.com/tigergraph/meetup)
+    * Use the `images` to include in your slides, blogs, and other resources 
+    * Use the `slides` for when presenting "What is TigerGraph?" and other relevant templates
+    * Use the `handouts` if you need to give your audience takeaways
+    * Use the `workshopStyles` if you want to host structured workshops
+
+## Awesome Resource
+> [For the complete list of all TigerGraph's tools, patterns, guides, and much more!](awesome.md)
 
 ### Getting Started
 * [What is graph](https://www.tigergraph.com/certification-graph-fundamentals/) - Certification 1
@@ -34,23 +64,6 @@
 * [GSQL Basics](https://www.tigergraph.com/certification-gsql-101/) - Certification 2
 * [GSQL Algorithms](https://docs.tigergraph.com/graph-algorithm-library)
 * [Projects Showcase](/) - Coming Soon
-
-### Data Import Export
-* [How to Import Data into List Structure](/) - Coming Soon
-
-### Tools and Integration Guides
-* [Full Stack Architecture](/) - Coming Soon
-* [TigerGraph and Apache Spark](/) - Coming Soon
-* [TigerGraph and Kafka](/) - Coming Soon
-* [TigerGraph and Elastic{Search}](/) - Coming Soon
-* [TigerGraph and Docker](/) - Coming Soon
-* [TigerGraph and Jupyter Notebooks](/) - Coming Soon
-* [TigerGraph and Flutter](/) - Coming Soon
-
-### Visualizations
-* [Visualization Tools](/) - Coming Soon
-* [Visualization Examples](/) - Coming Soon
-
 
 ## Certifications
 
@@ -74,28 +87,29 @@
 
 ### Connecting
 
-Join the community lead chat room  ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
+Join the TG community chat ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
 
-Share the latest news or your thoughts ![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
+Share the latest news or your thoughts ![Reddit](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
 
-Watch and follow the community growth in Github ![GitHub stars](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
+Watch and follow the community growth in Github ![GitHub](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
 
-Keep up-to-date on TigerGraph's latest news ![Twitter Follow](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
+Keep up-to-date on TigerGraph's latest news ![Twitter](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
 
 ### Contributing
 
 > [Please follow these steps to contribute.](CONTRIBUTING.md)
 
 ## Talk with TigerGraph Developers
+
 [Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
 
 [Developer Fourm](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
 
-<!--- TODO: add link to actual report a bug--->
 ## Reporting Issues
 
 ### Bug Issue?
-If you think you've found a bug, first read the [how to report a bug](https://www.TigerGraph/bog/how-to-report-a-bug/) article and follow its instructions.
+
+If you think you've found a bug, first read the [how to report a bug](CONTRIBUTING.md) and follow its instructions.
 
 If you're confident it's a new bug and have confirmed that someone else is facing the same issue, go ahead and create a new GitHub issue. Be sure to include as much information as possible so we can reproduce the bug.
 
