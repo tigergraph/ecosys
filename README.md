@@ -24,7 +24,7 @@
 
 
 ## Developer Guides
-> [For a complete list of resources we highly encourage you to checkout TigerGraph's Community Driven AWESOME page](./awesome.md)
+> [For a complete list of resources we highly encourage you to checkout TigerGraph's Community Driven AWESOME page](awesome.md)
 
 ### Getting Started
 * [What is graph](https://www.tigergraph.com/certification-graph-fundamentals/) - Certification 1
