@@ -20,6 +20,21 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
+import javax.net.ssl.SSLContext;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.File;
+import java.security.KeyStore;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 
 import org.apache.http.util.EntityUtils;
 import org.apache.http.HttpEntity;
@@ -34,6 +49,13 @@ import java.util.Base64;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Random;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.KeyStoreException;
+import java.io.FileNotFoundException;
+import java.security.cert.CertificateException;
+import java.security.UnrecoverableKeyException;
+import java.security.KeyManagementException;
 
 public class RestppConnection extends Connection {
 
@@ -68,6 +90,8 @@ public class RestppConnection extends Connection {
     this.secure = secure;
     this.host = host;
     this.port = port;
+    SSLContext sslContext = null;
+    Boolean hasSSLContext = Boolean.FALSE;
 
     if (null != properties) {
 
@@ -147,6 +171,68 @@ public class RestppConnection extends Connection {
         }
         this.ipArray = strList.toArray(new String[strList.size()]);
       }
+
+      SSLContextBuilder sslBuilder = SSLContexts.custom();
+      String trustStorePassword = "";
+      if (properties.containsKey("trustStorePassword")) {
+        trustStorePassword = properties.getProperty("trustStorePassword");
+      }
+
+      String trustStoreType = "JKS";
+      if (properties.containsKey("trustStoreType")) {
+        trustStoreType = properties.getProperty("trustStoreType");
+      }
+
+      String keyStorePassword = "";
+      if (properties.containsKey("keyStorePassword")) {
+        keyStorePassword = properties.getProperty("keyStorePassword");
+      }
+
+      String keyStoreType = "JKS";
+      if (properties.containsKey("keyStoreType")) {
+        keyStoreType = properties.getProperty("keyStoreType");
+      }
+
+      try {
+        if (properties.containsKey("trustStore")) {
+          hasSSLContext = Boolean.TRUE;
+          String trustFilename = properties.getProperty("trustStore");
+          final KeyStore truststore = KeyStore.getInstance(trustStoreType);
+          try (final InputStream in = new FileInputStream(new File(trustFilename))) {
+            truststore.load(in, trustStorePassword.toCharArray());
+          }
+          sslBuilder = sslBuilder.loadTrustMaterial(truststore, new TrustSelfSignedStrategy());
+        }
+
+        if (properties.containsKey("keyStore")) {
+          hasSSLContext = Boolean.TRUE;
+          String keyFilename = properties.getProperty("keyStore");
+          final KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+          try (final InputStream in = new FileInputStream(new File(keyFilename))) {
+            keyStore.load(in, keyStorePassword.toCharArray());
+          }
+          sslBuilder = sslBuilder.loadKeyMaterial(keyStore, keyStorePassword.toCharArray());
+        }
+
+        if (hasSSLContext) {
+          sslContext = sslBuilder.build();
+        }
+      } catch (MalformedURLException e) {
+        throw new SQLException(e);
+      } catch (IOException e) {
+        throw new SQLException(e);
+      } catch (NoSuchAlgorithmException e) {
+        throw new SQLException(e);
+      } catch (KeyStoreException e) {
+        throw new SQLException(e);
+      } catch (CertificateException e) {
+        throw new SQLException(e);
+      } catch (UnrecoverableKeyException e) {
+        throw new SQLException(e);
+      } catch (KeyManagementException e) {
+        throw new SQLException(e);
+      }
+
     }
 
     /**
@@ -161,6 +247,22 @@ public class RestppConnection extends Connection {
 
     // Create the http client builder.
     HttpClientBuilder builder = HttpClients.custom();
+    if (hasSSLContext) {
+      this.secure = Boolean.TRUE;
+      SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+        new String[]{"TLSv1.2", "TLSv1.1"},
+        null,
+        SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+      builder.setSSLSocketFactory(sslConnectionFactory)
+        .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+      Registry<ConnectionSocketFactory> registry =
+        RegistryBuilder.<ConnectionSocketFactory>create()
+        .register("https", sslConnectionFactory)
+        .register("http", new PlainConnectionSocketFactory())
+        .build();
+      HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+      builder.setConnectionManager(ccm);
+    }
     if (null != properties && properties.containsKey("useragent")) {
       String userAgent = properties.getProperty("useragent");
       builder.setUserAgent(userAgent);

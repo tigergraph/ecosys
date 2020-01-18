@@ -13,9 +13,9 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 ## Minimum viable snippet
 Parameters are passed as properties when creating a connection, such as username, password and graph name. Once REST++ authentication is enabled, username and password is mandatory. Graph name is required when MultiGraph is enabled.
 
-You may specify IP address and port as needed, and the port is the one used by GraphStudio. Please change 'http' to 'https' when SSL is enabled.
+You may specify IP address and port as needed, and the port is the one used by GraphStudio.
 
-For each ResultSet, there might be several tables with different tabular formats. **'isLast()' was overridden to switch to the next table. Otherwise, only the first table could be retrieved.**
+For each ResultSet, there might be several tables with different tabular formats. **'isLast()' could be used to switch to the next table.**
 
 ```
 Properties properties = new Properties();
@@ -52,6 +52,26 @@ try {
 }
 ```
 
+## Support SSL
+To support SSL, please config TigerGraph first according to [Encrypting Connections](https://docs.tigergraph.com/admin/admin-guide/data-encryption/encrypting-connections). Then specify your SSL certificate like this:
+```
+properties.put("trustStore", "/path/to/trust.jks");
+properties.put("trustStorePassword", "password");
+properties.put("trustStoreType", "JKS");
+
+properties.put("keyStore", "/path/to/identity.jks");
+properties.put("keyStorePassword", "password");
+properties.put("keyStoreType", "JKS");
+try {
+  com.tigergraph.jdbc.Driver driver = new Driver();
+  try (Connection con =
+      driver.connect("jdbc:tg:https://127.0.0.1:14240", properties)) {
+    ...
+  }
+}
+```
+Remember to use "jdbc:tg:https:" as its prefix instead of "jdbc:tg:http:". The certificate needs to be converted to JKS format.
+
 ## Supported Queries
 ```
 // Run a pre-installed query with parameters (example: the pageRank query from the GSQL Demo Examples)
@@ -75,8 +95,18 @@ get Page(id=?)
 // Get all vertices which satisfy the given filter (example: Page type vertex)
 get Page(filter=?)
 
-// Get all edges whose source vertex has the specified type and id (example: Page vertex with id)
+// Get all edges whose source vertex has the specified type and id
+// (example: Page vertex with id)
 get edges(Page, id)
+
+// Get all edges of given type (example: Linkto) whose source vertex
+// has the specified type and id (example: Page vertex with id)
+get edges(Page, id, Linkto)
+
+// Get all edges of given type (example: Linkto) whose source vertex
+// has the specified type and id (example: Page vertex with id),
+// and the target vertex type is also given (example: Page)
+get edges(Page, id, Linkto, Page)
 
 // Get a specific edge from a given vertex to another specific vertex
 // (example: from a Page vertex, across a Linkto edge, to a Page vertex)
@@ -86,7 +116,14 @@ get edge(Page, id1, Linkto, Page, id2)
 run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
 
 // Run an interpreted query
-run interpreted(a=?)
+query = "run interpreted(a=?, b=?)";
+pstmt = con.prepareStatement(query)
+query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH gsql_demo {\n"
+  + "PRINT a, b;\n"
+  + "}\n";
+pstmt.setString(1, "10");
+pstmt.setString(2, "20");
+pstmt.setString(3, query_body); // The query body is passed as a parameter.
 
 // Run a pre-installed loading job
 INSERT INTO job load_pagerank(line) VALUES(?)
@@ -99,7 +136,7 @@ INSERT INTO edge Linkto(Page, Page) VALUES(?, ?)
 ```
 See [RESTPP API User Guide: Built-in Endpoints](https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints) for more details about the built-in endpoints.
 
-The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds)** to change timeout for any specific query.
+The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds)** of java.sql.Statement to change timeout for any specific query.
 
 Detailed examples can be found at [tg-jdbc-examples](tg-jdbc-examples).
 
@@ -342,7 +379,7 @@ Save any piece of the above script in a file, and run it like this:
 /path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar -i read.scala
 ```
 
-**Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your gquery if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
+**Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your query if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
 
 ### Load balancing
 For TigerGraph clusters, all the machines' ip addresses (separated by a comma) could be passed via option **"ip_list"** to the driver, and the driver will pick one ip randomly to issue the query.
@@ -363,6 +400,137 @@ The default behavior of saving a DataFrame to TigerGraph is **upsert**:
 > otherwise, a new vertex/edge will be created.
 
 We do have other modes, like only update graph when the corresponding vertex/edge exists and do not create any new vertex/edge. But sadly it seems this mode cannot be mapped to any Spark SaveMode directly.
+
+## How to use it in Python
+The JDBC driver could be used in Python via pyspark. 'pyspark' needs to be installed first:
+```
+sudo pip install pypandoc pyspark
+```
+
+Then you can read from/write to TigerGraph in Python like this:
+```
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField
+from pyspark.sql.types import StringType, IntegerType
+
+spark = SparkSession.builder \
+  .appName("TigerGraphAnalysis") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.2.jar") \
+  .getOrCreate()
+
+# read vertex
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "vertex Page") \
+  .option("limit", "10") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# read edge
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "edge Linkto") \
+  .option("limit", "10") \
+  .option("source", "3") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# invoke pre-intalled query
+jdbcDF = spark.read \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "query pageRank(maxChange=0.001, maxIteration=10, dampingFactor=0.15)") \
+  .option("debug", "0") \
+  .load()
+
+jdbcDF.show()
+
+# write vertices
+schema = StructType([
+  StructField("id", IntegerType(), True),
+  StructField("account", IntegerType(), True)])
+data = [(8, 8), (9, 9)]
+jdbcDF = spark.createDataFrame(data, schema)
+print(jdbcDF)
+jdbcDF.show()
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "vertex Person") \
+  .option("debug", "1") \
+  .save()
+
+# write edges
+schema = StructType([
+  StructField("Person", IntegerType(), True),
+  StructField("Person", IntegerType(), True),
+  StructField("weight", IntegerType(), True)])
+data = [(4,5,1), (5,6,1)]
+jdbcDF = spark.createDataFrame(data, schema)
+print(jdbcDF)
+jdbcDF.show()
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "edge Follow") \
+  .option("debug", "1") \
+  .save()
+
+# invoke loading job
+jdbcDF.write \
+  .mode("overwrite") \
+  .format("jdbc") \
+  .option("driver", "com.tigergraph.jdbc.Driver") \
+  .option("url", "jdbc:tg:http://127.0.0.1:14240") \
+  .option("user", "tigergraph") \
+  .option("password", "tigergraph") \
+  .option("graph", "gsql_demo") \
+  .option("dbtable", "job load_pagerank") \
+  .option("filename", "f") \
+  .option("sep", ",") \
+  .option("eol", ";") \
+  .option("schema", "Person,Person,weight") \
+  .option("batchsize", "100") \
+  .option("debug", "1") \
+  .save()
+```
+
+Sometimes it may complain that "Incompatible Jackson version: 2.x.x". You may add the following code to [tg-jdbc-driver/pom.xml](tg-jdbc-driver/pom.xml) and recompile the jar package. (It will make the jar package much bigger, so we don't add this by default)
+```
+  <dependency>
+    <groupId>com.fasterxml.jackson.module</groupId>
+    <artifactId>jackson-module-scala_2.11</artifactId>
+    <version>2.6.5</version>
+  </dependency>
+```
 
 ## Limitation of ResultSet
 The response packet size from the TigerGraph server should be less than 2GB, which is the largest response size supported by the TigerGraph Restful API.
