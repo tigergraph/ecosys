@@ -1,4 +1,4 @@
-CREATE DISTRIBUTED QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb { 
+CREATE QUERY ic_5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb { 
 	
 	TYPEDEF TUPLE<STRING title, INT postCount, INT id> forumInfo;
 	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@forumHeap;
