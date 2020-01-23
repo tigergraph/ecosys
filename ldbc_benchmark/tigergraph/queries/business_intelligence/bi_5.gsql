@@ -1,10 +1,13 @@
-CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
+CREATE DISTRIBUTED QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
+	TYPEDEF TUPLE <VERTEX v, INT popCount, INT id> forumInfo;
+	TYPEDEF TUPLE <INT postCount, STRING firstName, STRING lastName, DATETIME creationDate, INT id> personInfo;
+	HeapAccum<forumInfo>(100, popCount DESC, id ASC) @@forumHeap;
+	HeapAccum<personInfo>(100, postCount DESC, id ASC) @@result;
 	OrAccum @isCitizen;
 	SetAccum<INT> @popCount;
-	//SetAccum<INT> @@topForum;
+	SetAccum<VERTEX> @@topForum;
 	SetAccum<INT> @postCount;
-	//SetAccum<INT> @@topPost;
-        OrAccum @valid = false;	
+  OrAccum @valid = false;	
 
   vStart(ANY) = { Country.* };
 
@@ -31,17 +34,15 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
     WHERE t.@isCitizen
     ACCUM s.@popCount += t.id;
 	
-  topForum =
+  vForum =
     SELECT s
     FROM vForum:s
-    ORDER BY s.@popCount.size() DESC, s.id ASC
-    LIMIT 100;
+	  ACCUM @@forumHeap += forumInfo(s, s.@popCount.size(), s.id);
 	
-  tmp2 =
-    SELECT s
-    FROM topForum:s
-    ;
-    //ACCUM @@topForum += s.id;
+	FOREACH item IN @@forumHeap DO
+	    @@topForum += item.v;
+	END;
+	topForum = {@@topForum};
 	
   vPerson2 =
     SELECT t
@@ -51,20 +52,17 @@ CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
     SELECT t
     FROM topForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
     ACCUM t.@valid = true;
-    //ACCUM @@topPost += t.id; 
 	
   vPost =
     SELECT t
     FROM vPerson2:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
     WHERE t.@valid == true
-    //WHERE t.id IN @@topPost
     ACCUM s.@postCount += t.id;
 	
-  res =
+  vPerson2 =
     SELECT s
     FROM vPerson2:s
-    ORDER BY s.@postCount.SIZE() DESC, s.id ASC
-    LIMIT 100;
+    ACCUM @@result += personInfo(s.@postCount.size(), s.firstName, s.lastName, s.creationDate, s.id);
   
-  PRINT res[res.@postCount.size() AS postCount, res.firstName AS firstName, res.lastName AS lastName, res.creationDate AS creationDate, res.id AS id];	
+  PRINT @@result;	
 }
