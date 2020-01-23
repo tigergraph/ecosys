@@ -1,4 +1,4 @@
-CREATE DISTRIBUTED QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
+CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
 	TYPEDEF TUPLE <VERTEX v, INT popCount, INT id> forumInfo;
 	TYPEDEF TUPLE <INT postCount, STRING firstName, STRING lastName, DATETIME creationDate, INT id> personInfo;
 	HeapAccum<forumInfo>(100, popCount DESC, id ASC) @@forumHeap;
