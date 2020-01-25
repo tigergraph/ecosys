@@ -32,6 +32,14 @@ public class GraphQuery
      */
     properties.put("graph", "gsql_demo");
 
+    properties.put("trustStore", "/tmp/trust.jks");
+    properties.put("trustStorePassword", "password");
+    properties.put("trustStoreType", "JKS");
+
+    properties.put("keyStore", "/tmp/identity.jks");
+    properties.put("keyStorePassword", "password");
+    properties.put("keyStoreType", "JKS");
+
     /**
      * Only accept 3 parameters: ip address, port and debug.
      * Enable debug when the third parameter's value is larger than 0.
@@ -47,7 +55,7 @@ public class GraphQuery
      * Please use 'https' instead once ssl is enabled.
      */
     StringBuilder sb = new StringBuilder();
-    sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
+    sb.append("jdbc:tg:https://").append(ipAddr).append(":").append(port);
 
     try {
       com.tigergraph.jdbc.Driver driver = new Driver();
@@ -120,6 +128,68 @@ public class GraphQuery
         System.out.println();
         query = "get edges(Page, ?)";
         System.out.println("Running \"get edges(Page, ?)\"...");
+        try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
+          pstmt.setString(1, "2");
+          try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
+          }
+        } catch (SQLException e) {
+          System.out.println( "Failed to createStatement: " + e);
+        }
+
+        /**
+         * To get all edges from a given vertex and edge type
+         */
+        System.out.println();
+        query = "get edges(Page, ?, Linkto)";
+        System.out.println("Running \"get edges(Page, ?, Linkto)\"...");
+        try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
+          pstmt.setString(1, "2");
+          try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+            do {
+              java.sql.ResultSetMetaData metaData = rs.getMetaData();
+              System.out.println("Table: " + metaData.getCatalogName(1));
+              System.out.print(metaData.getColumnName(1));
+              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                System.out.print("\t" + metaData.getColumnName(i));
+              }
+              System.out.println("");
+              while (rs.next()) {
+                System.out.print(rs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                  Object obj = rs.getObject(i);
+                  System.out.print("\t" + String.valueOf(obj));
+                }
+                System.out.println("");
+              }
+            } while (!rs.isLast());
+          }
+        } catch (SQLException e) {
+          System.out.println( "Failed to createStatement: " + e);
+        }
+
+        /**
+         * To get all edges from a given vertex, edge type and target vertex type
+         */
+        System.out.println();
+        query = "get edges(Page, ?, Linkto, Page)";
+        System.out.println("Running \"get edges(Page, ?, Linkto, Page)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
