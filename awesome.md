@@ -6,7 +6,6 @@ A curated list of AWESOME TigerGraph community resources.
 
 ## Table of Contents
 
-* [Demos](#demos)
 * [Communties](#communities)
 * [TigerGraph Resources](#tigergraph-resources)
 * [Developer Tools](#developer-tools)
@@ -14,6 +13,7 @@ A curated list of AWESOME TigerGraph community resources.
 * [Visualizations](#visualizations)
 * [Enviornments](#enviornments)
 * [Certifications](#certifications)
+* [Pre-Built Demos](#pre-built-demos)
 * [User Defined Functions](#user-defined-functions)
 * [Benchmarking](#benchmarking)
 * [Extensions](#extensions)
@@ -21,32 +21,6 @@ A curated list of AWESOME TigerGraph community resources.
 * [Blogs](#blogs)
 * [Videos](#videos)
 * [Local Meetup](#local-meetup) 
-
-## Demos
-[pattern_match](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pattern_match)
-
-[temporal_data](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/temporal_data)
-
-[pagerank](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pagerank_demo) Healthcare Demo
-
-[label_propagation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/comm_dect_demo) Healthcare Demo that will find communities
-
-[loop_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/loop_detection_demo)
-
-[movie_reccomendation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/movie_recommendation)
-
-[network_IT](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/network_IT_resource)
-
-[deep_learning](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru19_deep_learning)
-
-[RDF](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/RDF)
-
-[pattern_interpret](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru15_pattern_interpret)
-
-[fraud_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/fraud_detection_demo)
-<!--- Is this an actual repo --->
-
-[entity_resolution](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/entity_resolution)
 
 ## Communities
 * [YouTube](https://www.youtube.com/tigergraph)
@@ -121,6 +95,21 @@ A curated list of AWESOME TigerGraph community resources.
 ## Certifications
 * [Graph Fundementals](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics
 * [GSQL 101](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution
+
+## Pre-Built Demos
+* [pattern_match](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pattern_match)
+* [temporal_data](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/temporal_data)
+* [pagerank](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pagerank_demo) Healthcare Demo
+* [label_propagation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/comm_dect_demo) Healthcare Demo that will find communities
+* [loop_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/loop_detection_demo)
+* [movie_reccomendation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/movie_recommendation)
+* [network_IT](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/network_IT_resource)
+* [deep_learning](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru19_deep_learning)
+* [RDF](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/RDF)
+* [pattern_interpret](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru15_pattern_interpret)
+* [fraud_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/fraud_detection_demo)
+<!--- Is this an actual repo --->
+* [entity_resolution](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/entity_resolution)
 
 ## User Defined Functions
 ## Benchmarking
