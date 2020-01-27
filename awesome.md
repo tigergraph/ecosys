@@ -20,7 +20,7 @@ A curated list of AWESOME TigerGraph community resources.
 * [Books](#books)
 * [Blogs](#blogs)
 * [Videos](#videos)
-* [Local Meetup](#local-meetup) 
+* [Local Meetups](#local-meetups) 
 
 ## Communities
 * [YouTube](https://www.youtube.com/tigergraph)
@@ -117,4 +117,4 @@ A curated list of AWESOME TigerGraph community resources.
 ## Books
 ## Blogs
 ## Videos
-## Local Meetup 
+## Local Meetups
