@@ -1,4 +1,4 @@
-At a minimum please provide the following
+At a minimum please provide the following:
 
 ### Description of the Change
 
