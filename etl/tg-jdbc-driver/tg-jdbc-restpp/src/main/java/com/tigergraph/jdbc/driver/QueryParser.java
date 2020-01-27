@@ -158,6 +158,8 @@ public class QueryParser {
       /**
        * Query syntax:
        * get edges(src_vertex_type, src_vertex_id)
+       * get edges(src_vertex_type, src_vertex_id, edge_type)
+       * get edges(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type)
        */
       ret = 1;
       sb.append("edges/").append(tokens[2]);
@@ -165,6 +167,9 @@ public class QueryParser {
         sb.append("/").append(getObjectStr(this.paramArray[0]));
       } else {
         throw new SQLException("Parameter number not match for edge query.");
+      }
+      for (int i = 4; i < tokens.length; ++i) {
+        sb.append("/").append(tokens[i]);
       }
     } else if (tokens[1].toLowerCase().equals("edge")) {
       /**
