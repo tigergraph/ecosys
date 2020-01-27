@@ -8,9 +8,9 @@
 
 ## TigerGraph's Ecosystem 
 
-[TigerGraph](https://www.tigergraph.com) is dedicated to building the world's fastest and most scalable graph platform. We also know that a product is nothing without it's community. This repository is dedicated to provide TigerGraph's community with all the essential in-house and community developed tools to get the most value out of your TigerGraph solutions. 
+[TigerGraph](https://www.tigergraph.com) is dedicated to building the world's fastest and most scalable graph platform. We also know that a product is nothing without its community. This repository is dedicated to providing TigerGraph's community with all the essential in-house and community-developed tools to get the most value out of your TigerGraph solutions. 
 
-## I don't want to read this whole thing I just have a question!!!
+## I don't want to read this whole thing -- I just have a question!!!
 
 * [Ask Questions to TigerGraph](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
 * [TigerGraph FAQ](https://www.tigergraph.com/developerfaq/)
@@ -22,7 +22,7 @@ If chat is more your speed, you can join the TigerGraph Community Chat:
     * Use the `#support` channel for general questions or discussion about TigerGraph
     * Use the `#tools` channel for questions about TigerGraph community tools
     * Use the `#app-showcase` channel for showing the things you build
-    * Use the `#articles-blogs-news` channel for posting intersting things you find on the web
+    * Use the `#articles-blogs-news` channel for posting interesting things you find on the web
     * There are many other channels available, check the channel list
 
 ## What should I know before I get started?
@@ -40,14 +40,13 @@ Browse the section below & quickly navigate one that interests you!
 * [License](#license)
 
 ### TigerGraph Ecosystem
-* [Ecosys](https://github.com/tigergraph/ecosys)
-    * Use the `awesome` markdown file to list resources you have built or curated that enhance the tigerGraph ecosystem
-    * Use the `tigerLab` channel for general questions or discussion about TigerGraph
-    * Use the `userDefinedFunctions` user defined functions that the community hs developed
-    * Use the `tools/scripts` user defined functions that the community hs developed
-    * Use the `tools/` user defined functions that the community hs developed
+* [ecosys](https://github.com/tigergraph/ecosys)
+    * Use the `awesome` markdown file to list resources you have built or curated that enhance the TigerGraph ecosystem
+    * Use the `tigerLab` to experiment with pre-built patterns, and tools that integrate with TigerGraph that the community has developed
+    * Use the `userDefinedFunctions` user defined functions that the community has developed
+    * Use the `tools/scripts` to find useful scripts that can help with certain tasks
 
-* [mediaKit](https://github.com/tigergraph/meetup)
+* [media_kit](https://github.com/tigergraph/meetup)
     * Use the `images` to include in your slides, blogs, and other resources 
     * Use the `slides` for when presenting "What is TigerGraph?" and other relevant templates
     * Use the `handouts` if you need to give your audience takeaways
@@ -76,7 +75,7 @@ Browse the section below & quickly navigate one that interests you!
 
 ## TigerGraph's Developer Resources
 
-- A [Documentation](https://docs.tigergraph.com/) place that contains patterns, code snippts, and all of TigerGraph's functionality.
+- A [Documentation](https://docs.tigergraph.com/) place that contains patterns, code snippets, and all of TigerGraph's functionality.
 - A [YouTube channel](https://youtube.com/TigerGraph) with recorded guru sessions, starter kit demos, and GSQL functions.
 - A [Blog](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
 - A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
