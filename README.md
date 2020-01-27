@@ -42,7 +42,7 @@ Browse the section below & quickly navigate one that interests you!
 ### TigerGraph Ecosystem
 * [ecosys](https://github.com/tigergraph/ecosys)
     * Use the `awesome` markdown file to list resources you have built or curated that enhance the TigerGraph ecosystem
-    * Use the `tigerLab` to experiment with pre-built patterns, and tools that integrate with TigerGraph that the community has developed
+    * Use the `tigerLab` to experiment with pre-built patterns, and tools that integrate with TigerGraph
     * Use the `userDefinedFunctions` user defined functions that the community has developed
     * Use the `tools/scripts` to find useful scripts that can help with certain tasks
 
