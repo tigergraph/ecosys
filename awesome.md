@@ -60,7 +60,7 @@ A curated list of AWESOME TigerGraph community resources.
 * [tg-hadoop-connect](https://github.com/tigergraph/ecosys/tree/master/etl/tg-hadoop-connect) a utility to read csv files from Hadoop and then POST to TigerGraph
 * [tg-jdbc-driver](https://github.com/tigergraph/ecosys/tree/master/etl/tg-jdbc-driver) a JDBC Type 4 Driver for Spark, Python and Java
 
-## Python
+### Python
 * [tg-python-wrapper](https://github.com/tigergraph/ecosys/tree/master/etl/tg-python-wrapper)
 * [pyTigerGraph](https://pypi.org/project/pyTigerGraph/)
 * [gsql_client](https://github.com/dingmaotu/gsql_client)
