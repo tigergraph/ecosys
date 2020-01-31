@@ -18,14 +18,19 @@ bash setup.sh
 5. Load the data into the Recommender graph 
 gsql loader.gsql
 
-6. To train the model, run the queries below.  
-splitData
-normalization
-Initialization
-Training_validation
+6. To train the latent factor model, run the queries below in sequence 
+6.1 splitData
+6.2 normalization
+6.3 Initialization
+6.4 Training_validation
 
-7. To test the model and use it for recommendation, run the queries below.
-(TFIDF,TFIDF_normalization, userProfile, userProfile_normalization,validation)
+7. To compute the TF-IDF scores for the movies and users, run the queries below in sequence
+7.1 TFIDF
+7.2 TFIDF_normalization
+7.3 userProfile
+7.4 userProfile_normalization
+
+8. To test the model and use it for recommendation, run the queries below
 test
 recommend
 
