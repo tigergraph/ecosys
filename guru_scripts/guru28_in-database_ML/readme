@@ -10,7 +10,7 @@ Follow the instructions below to reproduce the demo in Graph Gurus 28:
 gsql schema.gsql
 
 3. Add the expression functions by copying the ExprFunctions.hpp file to the TigerGraph folder for query user-defined functions:
-cp ExprFunctions.app /home/tigergraph/tigergraph/dev/gdk/gsql/src/QueryUdf
+cp ExprFunctions.hpp /home/tigergraph/tigergraph/dev/gdk/gsql/src/QueryUdf
 
 4.Install the queries:
 bash setup.sh
