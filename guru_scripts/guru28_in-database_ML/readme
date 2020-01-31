@@ -1,1 +1,31 @@
+README for Graph Gurus 28 GSQL Demo
+January 29, 2020
+Changran Liu
+
+This folder includes the queries and the data files to build a movie recommendation system using TigerGraph. The recommendation system can predict the movie ratings based on both the latent factor (model-based) and TF-IDF (content-based) methods.
+Follow the instructions below to reproduce the demo in Graph Gurus 28:
+1. In a Linux shell for your TigerGraph machine, change to the recommendation_system folder:
+
+2. Create the graph schema for the Recommender graph:
+gsql schema.gsql
+
+3. Add the expression functions by copying the ExprFunctions.hpp file to the TigerGraph folder for query user-defined functions:
+cp ExprFunctions.app /home/tigergraph/tigergraph/dev/gdk/gsql/src/QueryUdf
+
+4.Install the queries:
+bash setup.sh
+
+5. Load the data into the Recommender graph 
+gsql loader.gsql
+
+6. To train the model, run the queries below.  
+splitData
+normalization
+Initialization
+Training_validation
+
+7. To test the model and use it for recommendation, run the queries below.
+(TFIDF,TFIDF_normalization, userProfile, userProfile_normalization,validation)
+test
+recommend
 

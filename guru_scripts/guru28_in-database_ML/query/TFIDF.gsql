@@ -1,0 +1,35 @@
+CREATE QUERY TFIDF(/* Parameters here */) FOR GRAPH Recommender { 
+  SumAccum<FLOAT> @DF;
+	SumAccum<FLOAT> @IDF;
+	MapAccum<STRING,SumAccum<FLOAT>> @TF;
+	MapAccum<STRING,SumAccum<FLOAT>> @TFIDF;
+	SumAccum<FLOAT> @@movie_cnt;
+	
+	Start = {TAG.*};
+	
+	Movies = SELECT t FROM Start:s -(movie_tag:e)-> MOVIE:t
+	        ACCUM
+	          t.@TF += (s.term -> 1);
+	
+	@@movie_cnt = Movies.size();
+	
+	Terms = SELECT t FROM Movies:s -(movie_term:e)-> TERM:t
+	        ACCUM 
+	          t.@DF += 1
+	        POST-ACCUM
+	          t.@IDF = log(@@movie_cnt/t.@DF);
+	
+	Movies = SELECT s FROM Movies:s -(movie_term:e)-> TERM:t
+	         ACCUM 
+#	          s.@TFIDF += (t.term -> s.@TF.get(t.term)*t.@IDF)
+#	          e.TFIDF = s.@TF.get(t.term)*t.@IDF  # ml-20m data
+	          e.TFIDF = e.TFIDF*t.@IDF  # ml-20m data
+	#         LIMIT 10
+	         ;
+	#PRINT Movies;
+	#Terms = SELECT s FROM Terms:s
+	#        LIMIT 10
+	#        ;
+	#PRINT Terms;
+}
+
