@@ -1,0 +1,13 @@
+use graph _graphname_
+drop query FindUnknownByType
+create DISTRIBUTED query FindUnknownByType(string vType, int pos, string prefix, string output = "/app/data/unknown_vertices") for Graph _graphname_ {
+ ListAccum<vertex> @@vlist;
+ int unknown_size = 0;
+ Seed = {vType.*};
+ X = SELECT src 
+     FROM Seed:src
+     ACCUM @@vlist += src;
+ unknown_size = PrintUnknownVertices(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, @@vlist, vType, pos, prefix, output);
+ PRINT @@vlist.size(), unknown_size;
+}
+
