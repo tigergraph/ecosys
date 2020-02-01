@@ -1,0 +1,45 @@
+USE graph Healthcare
+DROP QUERY RecoverMisMatchedEdges
+CREATE DISTRIBUTED QUERY RecoverMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, bool dryrun = true, int total = 4, int num = 0) FOR GRAPH Healthcare {
+   #ListAccum<int> @EdgeTgtSet;
+   #ListAccum<int> @rEdgeTgtSet;
+   OrAccum @hasReverse = false;
+   SumAccum<int> @@NoReverseEdgeCnt;
+
+   File fobj( "/tmp/" + edgeType + datetime_format(now(),"%m%d%Y_%H%M%S") + ".csv");
+   fobj.println(srcVType, tgtVType, edgeType, rEdgeType, dryrun);
+
+   PRINT srcVType, tgtVType, edgeType, rEdgeType, dryrun;
+
+   S = { srcVType.* };
+   S = SELECT src 
+     FROM S: src
+     WHERE vertex_to_int(src) % total == num;
+
+   T1 = SELECT tgt
+       FROM S:src -(edgeType:e)-> tgtVType:tgt;
+
+   S1 = SELECT src
+       FROM T1:src -(rEdgeType:e)-> srcVType:tgt
+       POST-ACCUM src.@hasReverse = true;
+   ;
+
+   T1 = SELECT tgt
+       FROM S:src -(edgeType:e)-> tgtVType:tgt;
+       WHERE tgt.@hasReverse == false
+       ACCUM
+         int missingReverse = 0,
+         RecoverReverseEdges(__ENGINE__SERVICEAPI,
+             __ENGINE__REQUEST,
+             __ENGINE__CONTEXT,
+             src,
+             tgt,
+             e,
+             missingReverse,
+             dryrun),
+         @@NoReverseEdgeCnt += missingReverse
+         fobj.println("")
+         ;
+
+   PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), T.size(), S1.size(), T1.size(), X.size();
+}

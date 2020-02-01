@@ -79,7 +79,7 @@ public class RestppStatement extends Statement {
 
   @Override public int[] executeBatch() throws SQLException {
     int[] count = new int[2];
-    if (this.edge_list.size() > 0 && this.vertex_list.size() == 0) {
+    if (this.edge_list.size() == 0 && this.vertex_list.size() == 0) {
       return count;
     }
 

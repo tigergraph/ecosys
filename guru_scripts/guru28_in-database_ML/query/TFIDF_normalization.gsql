@@ -1,0 +1,14 @@
+CREATE QUERY TFIDF_normalization(/* Parameters here */) FOR GRAPH Recommender { 
+  	SumAccum<FLOAT> @norm;
+	
+  	Movies = {MOVIE.*};
+    Movies = SELECT s FROM Movies:s -(movie_term:e)-> TERM:t
+	           ACCUM
+	             s.@norm += e.TFIDF*e.TFIDF
+	           POST-ACCUM
+	             s.@norm = sqrt(s.@norm);
+	  Movies = SELECT s FROM Movies:s -(movie_term:e)-> TERM:t
+	           ACCUM
+	             e.TFIDF = e.TFIDF/s.@norm;
+}
+

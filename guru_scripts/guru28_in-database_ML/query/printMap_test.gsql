@@ -1,0 +1,9 @@
+CREATE QUERY printMap_test(/* Parameters here */) FOR GRAPH Recommender { 
+  MapAccum<STRING,STRING> @@m;
+	STRING key = "\"a\"";
+	
+	@@m += (key -> "b");
+	PRINT @@m;
+	
+}
+
