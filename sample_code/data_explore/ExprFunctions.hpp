@@ -144,7 +144,15 @@ inline int64_t PrintUnknownVertices(ServiceAPI* api,
     VertexAttribute attr;
     for (auto id : unknownIds) {
       if (graphAPIptr->GetOneVertex(id, attr)) {
-        fs << id << ',' << attr.GetString(pos) << '\n';
+        uint32_t tid = -1;
+        if (graphAPIptr->GetOneVertexType(id, tid) && tid != -1) {
+          fs << tid << ',' << id << ',' << prefix << attr.GetString(pos) << '\n';
+        } else {
+          GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
+              << "GetOneVertexType got wrong: id =  " 
+              << id 
+              << ", with obtained type id: " << tid; 
+        }
       } else {
         GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
             << "Invalid vertex with iid: " << id;
