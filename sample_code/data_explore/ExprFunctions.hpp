@@ -97,6 +97,24 @@ inline string GetExternalID(gpr::Context& context,
   return ss.str();
 }
 
+inline string GetExternalID(gpr::Context& context,
+                            VERTEX& src,
+                            const std::string& prefix,
+                            SumAccum<string>& eid) {
+  auto graphAPIptr = context.GraphAPI();
+  std::stringstream ss;
+  uint32_t tid = graphAPIptr->GetVertexType(src.vid);
+  if ( tid != -1) {
+    ss << tid << ',' << src.vid << ',' << prefix << eid.data_;
+  } else {
+    GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
+        << "GetOneVertexType got wrong: id =  " 
+        << src.vid 
+        << ", with obtained type id: " << tid; 
+  }
+  return ss.str();
+}
+
 inline ListAccum<VERTEX> GetUnknownVertices(ServiceAPI* api,
                             EngineServiceRequest& request,
                             ListAccum<VERTEX>& vlist,
