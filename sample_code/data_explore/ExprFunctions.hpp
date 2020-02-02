@@ -73,23 +73,34 @@ namespace UDIMPL {
   }
 
 //ExprFunction.hpp
-inline int64_t PrintUnknownVertices(ServiceAPI* api,
+inline string GetExternalID(gpr::Context& context,
+                            VERTEX& src,
+                            int64_t pos,
+                            const std::string& prefix) {
+  auto graphAPIptr = context.GraphAPI();
+  VertexAttribute attr;
+  std::stringstream ss;
+  if (graphAPIptr->GetVertex(src.vid, attr)) {
+    uint32_t tid = graphAPIptr->GetVertexType(src.vid);
+    if ( tid != -1) {
+      ss << tid << ',' << src.vid << ',' << prefix << attr.GetString(pos);
+    } else {
+      GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
+          << "GetOneVertexType got wrong: id =  " 
+          << src.vid 
+          << ", with obtained type id: " << tid; 
+    }
+  } else {
+    GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
+        << "Invalid vertex with iid: " << src.vid;
+  }
+  return ss.str();
+}
+
+inline ListAccum<VERTEX> GetUnknownVertices(ServiceAPI* api,
                             EngineServiceRequest& request,
                             ListAccum<VERTEX>& vlist,
-                            const std::string& vtype,
-                            int64_t pos,
-                            const std::string& prefix,
-                            const std::string& outputfolder) {
-  std::fstream fs;
-  fs.open(outputfolder.c_str(), std::fstream::out);
-  if (!fs.is_open()) {
-    GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-      << "Open filename: " 
-      << outputfolder 
-      << " failed, quit!!!";
-    return 0;
-  }
-  fs.close();
+                            const std::string& vtype) {
   //scan all found internal ids, batch by batch (10000 per batch)
   GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
       << "The total \'" 
@@ -97,7 +108,7 @@ inline int64_t PrintUnknownVertices(ServiceAPI* api,
       << "\' vertices that need to be scanned is: "
       << vlist.size();
   gvector<VertexLocalId_t> ids;
-  gvector<VertexLocalId_t> unknownIds;
+  ListAccum<VERTEX> unknownIds;
   size_t sz = 0;
   uint32_t batch = 0;
   for (auto& vt : vlist.data_) {
@@ -111,7 +122,7 @@ inline int64_t PrintUnknownVertices(ServiceAPI* api,
       size_t offset = sz - ids.size();
       for (size_t k = 0; k < uids.size(); ++k) {
         if (uids[k] == "UNKNOWN") {
-          unknownIds.push_back(vlist.data_[offset + k].vid);
+          unknownIds += VERTEX(vlist.data_[offset + k].vid);
         }
       }
       GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
@@ -125,50 +136,13 @@ inline int64_t PrintUnknownVertices(ServiceAPI* api,
     }
   }
 
-  if (unknownIds.empty()) {
+  if (unknownIds.size() == 0) {
     GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
         << "No unknown vertex has been found, do nothing!!!";
-    return 0;
   }
-
-  GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-      << "There are total " 
-      << unknownIds.size() 
-      << " vertices have been found, start write data into target folder: " 
-      << outputfolder;
-
-  //open file for output
-  fs.open(outputfolder.c_str(), std::fstream::out);
-  if (fs.is_open()) {
-    auto graphAPIptr = api->CreateGraphAPI(&request);
-    VertexAttribute attr;
-    for (auto id : unknownIds) {
-      if (graphAPIptr->GetOneVertex(id, attr)) {
-        uint32_t tid = -1;
-        if (graphAPIptr->GetOneVertexType(id, tid) && tid != -1) {
-          fs << tid << ',' << id << ',' << prefix << attr.GetString(pos) << '\n';
-        } else {
-          GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-              << "GetOneVertexType got wrong: id =  " 
-              << id 
-              << ", with obtained type id: " << tid; 
-        }
-      } else {
-        GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-            << "Invalid vertex with iid: " << id;
-      }
-    }
-    fs.close();
-    GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-      << "all done!!!";
-  } else {
-    GEngineInfo(InfoLvl::Brief, "PrintUnknownVertices") 
-      << "Open filename: " 
-      << outputfolder 
-      << " failed, quit!!!";
-  }
-  return unknownIds.size();
+  return unknownIds;
 }
+
 }
 /****************************************/
 

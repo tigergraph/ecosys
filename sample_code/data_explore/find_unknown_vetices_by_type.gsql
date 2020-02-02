@@ -2,12 +2,24 @@ use graph _graphname_
 drop query FindUnknownByType
 create DISTRIBUTED query FindUnknownByType(string vType, int pos, string prefix, string output = "/app/data/unknown_vertices") for Graph _graphname_ {
  ListAccum<vertex> @@vlist;
- int unknown_size = 0;
+ File fobj(output);
+ 
  Seed = {vType.*};
  X = SELECT src 
      FROM Seed:src
      ACCUM @@vlist += src;
- unknown_size = PrintUnknownVertices(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, @@vlist, vType, pos, prefix, output);
- PRINT @@vlist.size(), unknown_size;
+ 
+ PRINT @@vlist.size();
+
+ @@vlist = GetUnknownVertices(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, @@vlist, vType);
+
+ Y = {@@vlist};
+
+ Y = SELECT src
+     FROM Y:src
+     POST-ACCUM 
+       fobj.println(GetExternalID(__ENGINE__CONTEXT, src, pos, prefix));
+
+ PRINT @@vlist.size(), Y.size();
 }
 
