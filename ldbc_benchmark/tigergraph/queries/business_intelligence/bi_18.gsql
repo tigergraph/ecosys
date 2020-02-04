@@ -3,7 +3,6 @@ CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages)
 
   HeapAccum<INFO>(1, personCount DESC, messageCount DESC) @@result;
   MapAccum<INT, INT> @@count;
-  SetAccum<INT> @messages;
   SumAccum<INT> @messageCount;
   OrAccum @inLanguages;
   INT tot = 0;
@@ -41,9 +40,8 @@ CREATE QUERY bi_18(DATETIME minDate, INT lengthThreshold, SET<STRING> languages)
         AND t.length < lengthThreshold 
         AND t.creationDate > minDate 
         AND t.@inLanguages
-  ACCUM s.@messages += t.id
-  POST-ACCUM s.@messageCount = s.@messages.size(),
-  @@count += (s.@messageCount -> 1);
+  ACCUM s.@messageCount += 1
+  POST-ACCUM @@count += (s.@messageCount -> 1);
   
   num_0 = tot - vPerson.size();
   IF num_0 != 0 THEN
