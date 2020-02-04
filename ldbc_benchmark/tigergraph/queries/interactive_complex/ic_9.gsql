@@ -2,12 +2,12 @@ CREATE QUERY ic_9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb 
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
 
   OrAccum @visited;
-  SetAccum<VERTEX<Person>> @@friendAll;
   HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@msgInfoTop;
 
-  INT i = 0;
+  INT i = 0;  
 
   vPerson = { personId };
+	vFriend = {};
   WHILE i < 2 DO
     vPerson = 
       SELECT t
@@ -15,13 +15,12 @@ CREATE QUERY ic_9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb 
       WHERE t.@visited == False
       ACCUM 
         s.@visited += True,
-        t.@visited += True,
-        @@friendAll += t;
+        t.@visited += True;
+	  vFriend = vFriend UNION vPerson;
 
     i = i + 1;
   END;
 
-  vFriend = { @@friendAll };
   vMessage = 
     SELECT t
     FROM vFriend:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
