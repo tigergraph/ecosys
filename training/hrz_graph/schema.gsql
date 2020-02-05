@@ -21,4 +21,4 @@ CREATE UNDIRECTED EDGE referral(FROM Prescriber, TO Prescriber, num_patient INT)
 
 CREATE DIRECTED EDGE associated(FROM Claim, TO Patient) WITH REVERSE_EDGE="rev_associated"
 
-CREATE GRAPH MyGraph(*)
+CREATE GRAPH hrz_graph(*)
