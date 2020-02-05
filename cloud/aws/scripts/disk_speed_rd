@@ -1,3 +1,0 @@
-echo 3 |  sudo tee /proc/sys/vm/drop_caches
-time dd if=/tmp/test2.img of=/dev/null bs=8k
-

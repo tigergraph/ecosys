@@ -1,7 +1,7 @@
-use graph MyGraph
+use graph hrz_graph
 drop query CreateReferralEdge_Simple
 
-CREATE QUERY CreateReferralEdge_Simple(VERTEX<Prescriber> input) FOR GRAPH MyGraph { 
+CREATE QUERY CreateReferralEdge_Simple(VERTEX<Prescriber> input) FOR GRAPH hrz_graph { 
   /* for each prescriber find other prescribers who filed claim for common patients
 	*/
 

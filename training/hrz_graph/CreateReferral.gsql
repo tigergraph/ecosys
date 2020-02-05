@@ -1,7 +1,7 @@
-use graph MyGraph
+use graph hrz_graph
 drop query CreateReferral
 
-CREATE BATCH QUERY CreateReferral() FOR GRAPH MyGraph { 
+CREATE BATCH QUERY CreateReferral() FOR GRAPH hrz_graph { 
   
   Start = {Prescriber.*};
 
