@@ -15,7 +15,7 @@ CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
     SELECT s
     FROM vStart:s
     WHERE s.creationDate < maxDate
-    ACCUM 
+    POST-ACCUM 
       s.@isComment = (s.type == "Comment"),
       IF s.length < 40 THEN
         s.@lengthCategory = "0"
@@ -25,8 +25,8 @@ CREATE QUERY bi_1(DATETIME maxDate) FOR GRAPH ldbc_snb {
         s.@lengthCategory = "2"
       ELSE
         s.@lengthCategory = "3"
-      END
-    POST-ACCUM @@calc += (year(s.creationDate), s.@isComment, s.@lengthCategory -> 1, s.length);
+      END,
+     @@calc += (year(s.creationDate), s.@isComment, s.@lengthCategory -> 1, s.length);
 
   total = vStart.size();
   @@result.resize(total);

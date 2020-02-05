@@ -2,12 +2,12 @@
 //BI 4 query description is on page 62 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 # Popular topics in a Country
 CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb { 
-  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> INFO;
-
-  GroupByAccum<INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, SumAccum<INT> postCount> @@count;
-  HeapAccum<INFO>(20, postCount DESC, forumId ASC) @@result;
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
+  HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@result;
+	SumAccum<INT> @postCount;
   OrAccum @visited;
   SumAccum<INT> @personId;
+	SetAccum<VERTEX> @@forums;
 
   vStart(ANY) = { Country.* };
   vStart = SELECT s
@@ -46,11 +46,11 @@ CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb {
     SELECT t 
     FROM vStart:s-(Forum_CONTAINER_OF_Post_REVERSE:e)->:t 
     WHERE t.@visited == TRUE
-    ACCUM @@count += (t.id, t.title, t.creationDate, t.@personId -> 1);
-
-  FOREACH c IN @@count DO
-    @@result += INFO(c.forumId, c.forumTitle, c.forumCreationDate, c.personId, c.postCount);
-  END;
-
+    ACCUM t.@postCount += 1;
+	vForum = {Forum.*};
+	vForum = SELECT s
+	  FROM vForum:s
+	  POST-ACCUM @@result += forumInfo(s.id, s.title, s.creationDate, s.@personId, s.@postCount);
+	
   PRINT @@result;
 }
