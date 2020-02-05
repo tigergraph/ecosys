@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 10 query description is on page 41 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
 

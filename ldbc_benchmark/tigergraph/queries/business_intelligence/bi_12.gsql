@@ -1,4 +1,6 @@
-CREATE OR REPLACE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
+  //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 12 query description is on page 70 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldbc_snb { 
 
 	TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
   SumAccum<STRING> @creatorFirstName, @creatorLastName;
@@ -15,6 +17,7 @@ CREATE OR REPLACE QUERY bi_12(DATETIME minDate, INT likeThreshold) FOR GRAPH ldb
     SELECT s
     FROM vMessage:s-((Person_LIKES_Comment_REVERSE|Person_LIKES_Post_REVERSE):e)->Person:t
     ACCUM s.@likeCount += 1
+
     HAVING s.@likeCount > likeThreshold
 	  ORDER BY s.@likeCount DESC
 	  LIMIT 100;

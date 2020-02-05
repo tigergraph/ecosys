@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 20 query description is on page 78 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_20(SET<STRING> tagClassNames) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<STRING tagClassName, INT messageCount> INFO;
 

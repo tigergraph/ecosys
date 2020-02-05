@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 24 query description is on page 82 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 # Messages by Topic and Continent
 CREATE QUERY bi_24(STRING tagClassName) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <INT messageCount, INT likeCount, INT year, INT month, STRING continentName> info;

@@ -1,3 +1,6 @@
+ //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 1 query description is on page 32 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
 CREATE QUERY ic_1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<VERTEX<Person> v, INT distanceFromPerson, STRING lastName, INT id> friendInfo;
   TYPEDEF TUPLE<STRING orgName, INT orgYear, STRING orgPlace> org;

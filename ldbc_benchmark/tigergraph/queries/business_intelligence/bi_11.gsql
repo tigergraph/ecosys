@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 11 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
 

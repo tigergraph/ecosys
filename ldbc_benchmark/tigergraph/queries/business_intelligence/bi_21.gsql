@@ -1,3 +1,6 @@
+
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 21 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_21(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> zombie;
 

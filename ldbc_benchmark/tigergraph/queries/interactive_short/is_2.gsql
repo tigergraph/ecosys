@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 2 query description is on page 47 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate> replyInfo;
   TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate, INT originalPostId, INT originalPostAuthorId, STRING originalPostAuthorFirstName, STRING originalPostAuthorLastName> opInfo;

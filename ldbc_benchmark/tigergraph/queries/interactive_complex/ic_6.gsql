@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 6 query description is on page 37 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY ic_6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<STRING tagName, INT postCount> tagStats;
 

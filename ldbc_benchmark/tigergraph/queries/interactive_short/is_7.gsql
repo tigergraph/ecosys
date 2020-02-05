@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 7 query description is on page 50 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY is_7(STRING messageId) FOR GRAPH ldbc_snb {
   SetAccum<STRING> @@seed;
   //SetAccum<INT> @@friendIds;

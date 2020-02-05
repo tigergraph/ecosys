@@ -1,3 +1,5 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 17 query description is on page 75 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE QUERY bi_17(STRING countryName) FOR GRAPH ldbc_snb { 
   SumAccum<INT> @@cnt;
   SumAccum<String> @country;
