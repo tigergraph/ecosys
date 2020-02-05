@@ -1,9 +1,0 @@
-+------------------------------------------------+
-| tagName                            | postCount |
-+------------------------------------------------+
-| "Hassan_II_of_Morocco"             | 2         |
-| "Appeal_to_Reason"                 | 1         |
-| "Principality_of_Littoral_Croatia" | 1         |
-| "Rivers_of_Babylon"                | 1         |
-| "Van_Morrison"                     | 1         |
-+------------------------------------------------+
