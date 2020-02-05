@@ -1,0 +1,24 @@
+//seed: startDate=2010-01-01 00:00:00&endDate=2010-11-08 00:00:00&country1Name=Ethiopia&country2Name=Spain
+
+[
+{
+'@@result':[
+{
+'countryName':'Spain',
+'messageMonth':1,
+'personGender':'female',
+'ageGroup':6,
+'tagName':'Nicolás_Almagro',
+'messageCount':108
+},
+{
+'countryName':'Ethiopia',
+'messageMonth':8,
+'personGender':'male',
+'ageGroup':5,
+'tagName':'Haile_Selassie_I',
+'messageCount':102
+}
+]
+}
+]

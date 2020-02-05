@@ -1,0 +1,33 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 2 query description is on page 33 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_2
+
+CREATE QUERY ic_2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
+
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
+
+  vPerson = { personId };
+  accPersonMessage = 
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e1)-Person:t1
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e2)-(Comment|Post):t2
+    WHERE t2.creationDate < maxDate
+    ACCUM 
+      CASE
+        WHEN t2.type == "Comment" OR t2.content != "" THEN
+          @@msgTop += msg(t1.id, t1.firstName, t1.lastName, t2.id, t2.content, t2.creationDate)
+        ELSE
+          @@msgTop += msg(t1.id, t1.firstName, t1.lastName, t2.id, t2.imageFile, t2.creationDate)
+      END;
+
+  PRINT @@msgTop;
+}
+
+// INSTALL QUERY ic_2
+// RUN QUERY ic_2(17592186052613,"2012-11-27T16:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY ic_2(17592186052613,"2012-11-27T16:00:00")

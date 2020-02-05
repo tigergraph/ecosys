@@ -1,0 +1,17 @@
+CREATE QUERY get_messages_from_person(VERTEX<Person> seed, INT numMessages) FOR GRAPH ldbc_snb {
+  ListAccum<UINT> @@messagesLiked;
+
+  vPerson = {seed};
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((Person_LIKES_Comment|Person_LIKES_Post):e)->(Comment|Post):t
+    ORDER BY t.id
+    LIMIT numMessages;
+
+  tmp = 
+    SELECT v
+    FROM vMessage:v
+    ACCUM @@messagesLiked += v.id;
+
+  PRINT @@messagesLiked as message_ids;
+}

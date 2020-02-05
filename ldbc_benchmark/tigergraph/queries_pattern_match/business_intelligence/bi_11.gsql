@@ -1,0 +1,73 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 11 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_11
+
+CREATE QUERY bi_11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
+
+  SetAccum<STRING> @@blacklistP;
+  AndAccum @isValid;
+  SumAccum<INT> @creatorId;
+  SetAccum<VERTEX<Comment>> @@commentValid;
+  SetAccum<STRING> @tagNames;
+  SumAccum<INT> @likeCount;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
+	
+  FOREACH word IN blacklist DO
+    @@blacklistP += ("%" + word + "%");
+  END;
+
+  vCountry = { Country.* };
+  accCountryPersonComment = 
+    SELECT s
+    FROM vCountry:s
+        -(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t1
+        -(<Comment_HAS_CREATOR_Person:e2)-Comment:t2
+    WHERE s.name == countryName
+    ACCUM 
+      t2.@creatorId = t1.id,
+      FOREACH word IN @@blacklistP DO // FOREACH is not available in WHERE, so ACCUM to filter
+        CASE WHEN t2.content LIKE word THEN
+          t2.@isValid += False,
+          BREAK
+        END
+      END
+    POST-ACCUM CASE WHEN t2.@isValid THEN @@commentValid += t2 END;
+    
+  vComment = { @@commentValid };
+  vComment =
+    SELECT s
+    FROM vComment:s-(Comment_HAS_TAG_Tag>:e)-Tag:t
+    ACCUM s.@tagNames += t.name;
+
+  accCommentMessageTag =
+    SELECT s
+    FROM vComment:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>):e1)-(Comment|Post):t1
+        -((Comment_HAS_TAG_Tag>|Post_HAS_TAG_Tag>):e2)-Tag:t2
+    ACCUM CASE WHEN t2.name IN s.@tagNames THEN s.@isValid += False END;
+
+  accReply =
+    SELECT s
+    FROM vComment:s-(<Person_LIKES_Comment:e)-Person:t
+    WHERE s.@isValid
+    ACCUM s.@likeCount += 1
+    POST-ACCUM 
+      FOREACH tn IN s.@tagNames DO
+        @@replyGroup += (s.@creatorId, tn -> s.@likeCount, 1)
+      END;
+
+  FOREACH (p,t,l,r) IN @@replyGroup DO
+    @@replyTop += reply(p,t,l,r);
+  END;
+
+  PRINT @@replyTop;
+}
+
+// INSTALL QUERY bi_11
+// RUN QUERY bi_11("Germany", ["one","has","David"])
+SET query_timeout = 180000
+INTERPRET QUERY bi_11("Germany", ["one","has","David"])

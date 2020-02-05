@@ -1,0 +1,56 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 2 query description is on page 47 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+set syntax_version = "v2"
+use graph ldbc_snb
+DROP QUERY is_2
+
+CREATE QUERY is_2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate, INT originalPostId, INT originalPostAuthorId, STRING originalPostAuthorFirstName, STRING originalPostAuthorLastName> ogPostInfo;
+
+  SumAccum<INT> @messageId, @messageCreationDate, @authorOgId;
+  SumAccum<STRING> @messageContent, @authorOgFN, @authorOgLN;
+  HeapAccum<ogPostInfo>(10, messageCreationDate DESC, messageId DESC) @@ogPostInfoTop;
+
+  vPerson = { personId };
+  vMessage = 
+    SELECT t
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e)-(Comment|Post):t
+    ORDER BY t.creationDate DESC, t.id DESC
+    LIMIT 10;
+
+  accMessage = 
+    SELECT s
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(Post_HAS_CREATOR_Person>:e2)-Person:t2
+    ACCUM 
+      CASE
+        WHEN s.type == "Comment" THEN
+          t1.@messageId = s.id,
+          t1.@messageCreationDate = datetime_to_epoch(s.creationDate),
+          t1.@messageContent = s.content
+        ELSE
+          t1.@messageId = t1.id,
+          t1.@messageCreationDate = datetime_to_epoch(t1.creationDate),
+          IF s.content != "" THEN
+            t1.@messageContent = t1.content
+          ELSE
+            t1.@messageContent = t1.imageFile
+          END
+      END,
+      t1.@authorOgId = t2.id,
+      t1.@authorOgFN = t2.firstName,
+      t1.@authorOgLN = t2.lastName
+    POST-ACCUM @@ogPostInfoTop += 
+        ogPostInfo(t1.@messageId, t1.@messageContent, epoch_to_datetime(t1.@messageCreationDate), 
+            t1.id, t1.@authorOgId, t1.@authorOgFN, t1.@authorOgLN);
+
+  PRINT @@ogPostInfoTop;
+
+}
+
+//INSTALL QUERY is_2
+//RUN QUERY is_2(30786325583618)
+SET query_timeout = 180000
+INTERPRET QUERY is_2(30786325583618)

@@ -1,0 +1,24 @@
++------------------------------------------------------+
+| forumTitle                               | postCount |
++------------------------------------------------------+
+| "Group for Guy_Forget in Batna"          | 1         |
+| "Group for Hamid_Karzai in Moga"         | 1         |
+| "Group for Bing_Crosby in Nilore"        | 1         |
+| "Album 22 of Arap Amanaka"               | 0         |
+| "Album 34 of Arap Amanaka"               | 0         |
+| "Wall of Lei Zhang"                      | 0         |
+| "Wall of Frederick Kawawa"               | 0         |
+| "Album 14 of Meera Singh"                | 0         |
+| "Wall of Andre Buysse"                   | 0         |
+| "Album 7 of Chen Yang"                   | 0         |
+| "Album 33 of Walter Hoffmann"            | 0         |
+| "Album 1 of Wolfgang Schmidt"            | 0         |
+| "Album 21 of Mehmet Ayhan"               | 0         |
+| "Album 2 of Hans Johansson"              | 0         |
+| "Album 5 of Hideki Kato"                 | 0         |
+| "Wall of Abdel Halim Ali Shabana Hassan" | 0         |
+| "Album 32 of Jharana Gurung"             | 0         |
+| "Wall of Fernanda Oliveira"              | 0         |
+| "Wall of Bingjian Zhang"                 | 0         |
+| "Wall of Antonio Aristizábal Vásquez"    | 0         |
++------------------------------------------------------+

@@ -1,0 +1,35 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 8 query description is on page 39 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_8
+
+CREATE QUERY ic_8(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  //TYPEDEF TUPLE<VERTEX<Comment> v, DATETIME commentCreationDate, INT commentId> reply;
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+
+  SetAccum<VERTEX<Comment>> @@replies;
+  //HeapAccum<reply>(20, commentCreationDate DESC, commentId ASC) @@replyTop;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
+
+  vPerson = { personId };
+  vReply = 
+    SELECT t2
+    FROM vPerson:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e2)-Comment:t2
+    ORDER BY t2.creationDate DESC, t2.id ASC
+    LIMIT 20;
+
+  vReply = 
+    SELECT s
+    FROM vReply:s-(Comment_HAS_CREATOR_Person>:e)-Person:t
+    ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
+
+  PRINT @@replierTop;
+}
+
+// INSTALL QUERY ic_8
+// RUN QUERY ic_8(24189255818757)
+SET query_timeout = 180000
+INTERPRET QUERY ic_8(24189255818757)

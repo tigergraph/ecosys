@@ -1,0 +1,41 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 7 query description is on page 38 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_7
+
+CREATE QUERY ic_7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent, DATETIME commentOrPostCreationDate, BOOL isNew> liker;
+  //TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
+  HeapAccum<liker>(1, likeCreationDate DESC, commentOrPostId DESC) @mostRecentLike;
+  SetAccum<INT> @@friendIds;
+  HeapAccum<liker>(20, likeCreationDate DESC, personId ASC) @@likerTop;
+
+  vPerson = { personId };
+  accFriend =
+    SELECT t
+    FROM vPerson-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+    ACCUM @@friendIds += t.id;
+
+  accLiker = 
+    SELECT s
+    FROM vPerson:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((<Person_LIKES_Comment|<Person_LIKES_Post):e2)-Person:t2
+    ACCUM
+      CASE
+        WHEN t1.type == "Comment" OR t1.content != "" THEN
+          t2.@mostRecentLike += liker(t2.id, t2.firstName, t2.lastName, e2.creationDate, t1.id, t1.content, t1.creationDate, NOT @@friendIds.contains(t2.id))
+          //t2.@mostRecentLike += liker(t2.id, t2.firstName, t2.lastName, e2.creationDate, t1.id, t1.content, (datetime_diff(e2.creationDate, t1.creationDate) / 60), NOT @@friendIds.contains(t2.id))
+        ELSE
+          t2.@mostRecentLike += liker(t2.id, t2.firstName, t2.lastName, e2.creationDate, t1.id, t1.imageFile, t1.creationDate, NOT @@friendIds.contains(t2.id))
+          //t2.@mostRecentLike += liker(t2.id, t2.firstName, t2.lastName, e2.creationDate, t1.id, t1.imageFile, (datetime_diff(e2.creationDate, t1.creationDate) / 60), NOT @@friendIds.contains(t2.id))
+      END
+    POST-ACCUM @@likerTop += t2.@mostRecentLike.pop();
+
+  PRINT @@likerTop;
+}
+
+// INSTALL QUERY ic_7
+// RUN QUERY ic_7(17592186053137)
+SET query_timeout = 180000
+INTERPRET QUERY ic_7(17592186053137)

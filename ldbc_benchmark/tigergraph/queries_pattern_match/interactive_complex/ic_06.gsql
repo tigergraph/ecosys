@@ -1,0 +1,37 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 6 query description is on page 37 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_6
+
+CREATE QUERY ic_6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<STRING tagName, INT postCount> tagStats;
+
+  SetAccum<VERTEX<Post>> @@postAll;
+  SumAccum<INT> @postCount;
+  HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@tagStatsTop;
+
+  vPerson = { personId };
+  aggPersonPostTag =
+    SELECT t3
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person)*1..2)-Person:t1
+        -(<Post_HAS_CREATOR_Person:e2)-Post:t2
+        -(Post_HAS_TAG_Tag>:e3)-Tag:t3
+    WHERE s != t1
+    ACCUM CASE WHEN t3.name == tagName THEN @@postAll += t2 END;
+
+  vPost = { @@postAll };
+  vTag = 
+    SELECT t
+    FROM vPost:s-(Post_HAS_TAG_Tag>:e)-Tag:t
+    ACCUM CASE WHEN t.name != tagName THEN t.@postCount += 1 END
+    POST-ACCUM @@tagStatsTop += tagStats(t.name, t.@postCount);
+
+  PRINT @@tagStatsTop;
+}
+
+// INSTALL QUERY ic_6
+// RUN QUERY ic_6(30786325583618,"Angola")
+SET query_timeout = 180000
+INTERPRET QUERY ic_6(30786325583618,"Angola")
