@@ -1,0 +1,53 @@
+USE graph Healthcare
+DROP QUERY FindMisMatchedEdges
+CREATE DISTRIBUTED QUERY FindMisMatchedEdges(string srcVType, string tgtVType, string edgeType, string rEdgeType, string edgeFile, string rEdgeFile) FOR GRAPH Healthcare {
+   File fEdge(edgeFile);
+   File fREdge(rEdgeFile);
+   SetAccum<int> @EdgeTgtSet;
+   SetAccum<int> @rEdgeTgtSet;
+
+   SumAccum<int> @@NoDirectEdgeCnt;
+   SumAccum<int> @@NoReverseEdgeCnt;
+
+   S = { srcVType.* };
+   T = { tgtVType.* };
+
+   T1 = SELECT tgt
+       FROM S:src -(edgeType:e)-> tgtVType:tgt
+       ACCUM src.@EdgeTgtSet += vertex_to_int(getTgtVid(e))
+   ;
+
+   S1 = SELECT tgt
+       FROM T:src -(rEdgeType:e)-> srcVType:tgt
+       ACCUM tgt.@rEdgeTgtSet += vertex_to_int(src)
+   ;
+
+   X = SELECT src
+       FROM S:src
+       POST-ACCUM
+         FOREACH tgt in src.@EdgeTgtSet do
+           IF NOT src.@rEdgeTgtSet.contains(tgt) THEN
+             fEdge.println(CombineTwoNumbers(vertex_to_int(src), tgt)),
+             @@NoReverseEdgeCnt += 1
+           END
+         END,
+         FOREACH tgt in src.@rEdgeTgtSet do
+           IF NOT src.@EdgeTgtSet.contains(tgt) THEN
+             fREdge.println(CombineTwoNumbers(tgt, vertex_to_int(src))),
+             @@NoDirectEdgeCnt += 1
+           END
+         END
+   ;
+
+
+   PRINT @@NoDirectEdgeCnt, @@NoReverseEdgeCnt, S.size(), T.size(), S1.size(), T1.size(), X.size();
+}
+
+CREATE QUERY RecoverEdgeByFile(string srcVType, string tgtVType, string edgeType, string rEdgeType, string edgeFile, string rEdgeFile) FOR GRAPH Healthcare {
+   ListAccum<Edge> @@MisMatchedEdgeList;
+   ListAccum<Edge> @@MisMatchedRevEdgeList;
+   @@MisMatchedEdgeList = RecoverEdgeFromFile(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, edgeType, edgeFile);
+   @@MisMatchedRevEdgeList = RecoverEdgeFromFile(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, rEdgeType, rEdgeFile);
+   PRINT @@MisMatchedEdgeList;
+   PRINT @@MisMatchedRevEdgeList;
+}

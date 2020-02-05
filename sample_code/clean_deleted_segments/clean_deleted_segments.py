@@ -3,7 +3,6 @@ import re
 import sys
 import os
 import shutil
-import csv
 
 # The folder for the mv operation, user need to make sure that this folder is large enough to hold all deleted segments
 dest = "/tmp/deleted_segments/"
@@ -61,15 +60,25 @@ def CleanUp():
   unlinked_segments, mv_segments = Clean(deletedlist);
   #print unlinked_segments
   #print mv_segments
-  unlinklist = ['|'.join(x) for x in unlinked_segments]
-  mvlist = ['|'.join(x) for x in mv_segments]
-  with open(gstore_path + "/unlink_info", 'w') as myfile:
-      myfile.write('\n'.join(unlinklist))
-  with open(gstore_path + "/mv_info", 'w') as myfile:
-      myfile.write('\n'.join(mvlist))
+  if len(unlinked_segments) > 0:
+    unlinklist = ['|'.join(x) for x in unlinked_segments]
+    with open(gstore_path + "/unlink_info", 'w') as myfile:
+        myfile.write('\n'.join(unlinklist))
+  else:
+    print "No dropped segment found with symlinked folder."
+  if len(mv_segments) > 0:
+    mvlist = ['|'.join(x) for x in mv_segments]
+    with open(gstore_path + "/mv_info", 'w') as myfile:
+        myfile.write('\n'.join(mvlist))
+  else:
+    print "No dropped segment found with regluar folder."
 
 def Recover():
-  with open(gstore_path + "/unlink_info", 'r') as myfile:
+  unlink_info_file = gstore_path + "/unlink_info"
+  mv_info_file = gstore_path + "/mv_info"
+
+  if os.path.exists(unlink_info_file):
+    with open(unlink_info_file, 'r') as myfile:
       data = myfile.read()
       if len(data) > 0 :
         print "Recover from unlink_info"
@@ -81,7 +90,8 @@ def Recover():
             os.symlink(path[1], path[0])
           else:
             print "Got wrong info from line: \'%s\' with size = %d" %(line, len(path))
-  with open(gstore_path + "/mv_info", 'r') as myfile:
+  if os.path.exists(mv_info_file):
+    with open(mv_info_file, 'r') as myfile:
       data = myfile.read()
       if len(data) > 0 :
         print "Recover from mv_info"
@@ -94,8 +104,60 @@ def Recover():
           else:
             print "Got wrong info from line: \'%s\' with size = %d" %(line, len(path))
 
+def Purge():
+  unlink_info_file = gstore_path + "/unlink_info"
+  mv_info_file = gstore_path + "/mv_info"
+  mv_error_count = 0
+  ln_error_count = 0
+
+  if os.path.exists(unlink_info_file):
+    with open(unlink_info_file, 'r') as myfile:
+      data = myfile.read()
+      if len(data) > 0 :
+        print "Purge from unlink_info"
+        datalist = data.split("\n")
+        for line in datalist:
+          path = line.split('|')
+          if len(path) == 2:
+            # get parent: we will remove this segment, not only this version
+            parent_dir = os.path.abspath(os.path.join(path[1], os.pardir))
+            # make sure the last subdir is a segment ID (int)
+            last_dir = parent_dir.rpartition('/')[2]
+            if last_dir.isdigit():
+                print "Purge %s" %(parent_dir)
+                shutil.rmtree(parent_dir)
+            else:
+                print "Skip invalid directory: %s" %(parent_dir)
+                ln_error_count += 1
+          else:
+            print "Got wrong info from line: \'%s\' with size = %d" %(line, len(path))
+            ln_error_count += 1
+
+  if os.path.exists(mv_info_file):
+    with open(mv_info_file, 'r') as myfile:
+      data = myfile.read()
+      if len(data) > 0 :
+        print "Purge from mv_info"
+        datalist = data.split("\n")
+        for line in datalist:
+          path = line.split('|')
+          if len(path) == 2:
+            print "Remove folder %s" %(path[1])
+            shutil.rmtree(path[1])
+          else:
+            print "Got wrong info from line: \'%s\' with size = %d" %(line, len(path))
+            mv_error_count += 1
+
+  if ln_error_count == 0 and os.path.exists(unlink_info_file):
+      print "Purge linked data finished. Please remove %s" %(unlink_info_file)
+  if mv_error_count == 0 and os.path.exists(mv_info_file):
+      print "Purge moved data finished.  Please remove %s" %(mv_info_file)
+
+
 arglist =  sys.argv
 if len(arglist) == 1:
   CleanUp()
 elif arglist[1] == "-r":
   Recover()
+elif arglist[1] == "-p":
+  Purge()

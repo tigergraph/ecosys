@@ -1,84 +1,73 @@
-# The Bellman-Ford algorithm for Single-Source Shortest Path with edge weights,
-# possibly negative.
-# If any loop in the graph has a net negative weight, the algorithm will exit. 
+*ATTR*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source, BOOL display) FOR GRAPH *graph* {
+*FILE*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX source, STRING filepath) FOR GRAPH *graph* {
+/* The Bellman-Ford algorithm for single-Source Shortest Path with edge weights,
+ possibly negative.
+ If any loop in the graph has a net negative weight, the algorithm will exit.
+*/
 
-*ATTR*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
-*ACCM*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, BOOL display) FOR GRAPH *graph* {
-*FILE*CREATE QUERY shortest_ss_any_wt*EXT* (VERTEX v, BOOL display, STRING filepath) FOR GRAPH *graph* {
-
-*FILE*FILE f(filepath);
-  # per-vertex accumulators
-  MinAccum<FLOAT> @dist;                      # best-known shortest distance from v
-  SumAccum<STRING> @path;                     # best-known path from v
-  OrAccum @visited = false;                   # whether this vertex has been visited
-  
-  #Global accumulators
-  OrAccum @@hasNegLoop;                       # indicates a negative loop is found
-  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
-    
-  STRING sourceName;
-  STRING errMsg = "There is a loop with negative length. Shortest path is undefined.";
-  INT maxVal = 1000000000;                    # Should be larger than any possible path
-  EXCEPTION negLoop (40999);
-         
-  VSET = {*vertex-types*};
-  Source = {v}; 
+*FILE*  FILE f(filepath);
+        MinAccum<FLOAT> @dist;                      # best-known shortest distance FROM source
+        SumAccum<STRING> @path;                     # best-known path FROM source
+        OrAccum @visited = false;                   # whether this vertex has been visited
+        OrAccum @@hasNegLoop;                       # Indicates a negative loop is found
+*ACCM*  SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
+        STRING sourceName;
+        STRING errMsg = "There is a loop with negative length. Shortest path is undefined.";
+        INT maxVal = 1000000000;                    # Should be larger than any possible path
+        EXCEPTION negLoop (40999);
+        VSET = {*vertex-types*};
+        Source = {source}; 
 
   ##### Initialization: Set the best-known distance to a maxValue (pseudo-infinite)
-  Source = SELECT s FROM Source:s
-         POST-ACCUM sourceName = s.name;        # Get the name of the source vertex
-  VSET = SELECT s FROM VSET:s
-         POST-ACCUM
-             s.@dist = maxVal,
-             s.@path = sourceName;
-  Source = SELECT s FROM Source:s               # The distance from s to itself is 0.
-           POST-ACCUM
-             s.@dist = 0,
-             s.@visited = true;
+        Source = SELECT s FROM Source:s
+                 POST-ACCUM sourceName = s.name;        # Get the name of the source vertex
+        VSET = SELECT s FROM VSET:s
+               POST-ACCUM s.@dist = maxVal,
+                          s.@path = sourceName;
+        Source = SELECT s FROM Source:s               # The distance FROM s to itself is 0.
+                 POST-ACCUM s.@dist = 0,
+                            s.@visited = true;
   
   ##### Do N-1 iterations: Consider whether each edge lowers the best-known distance.
-  FOREACH i IN RANGE[1, VSET.size()-1] DO
-    VSET = SELECT s
-           FROM VSET:s -(*edge-types*:e)-> :t
-           ACCUM
-             IF s.@visited THEN
-               IF s.@dist + e.weight < t.@dist THEN
-                 t.@dist = s.@dist + e.weight,             # @dist is a MinAccum
-                 t.@path = s.@path +"-"+ t.name
-               END,
-               t.@visited += true
-             END;
-  END;
+        FOREACH i IN RANGE[1, VSET.size()-1] DO
+                VSET = SELECT s
+                       FROM VSET:s -(*edge-types*:e)-> :t
+                       ACCUM IF s.@visited THEN
+                                IF s.@dist + e.*edge-weight* < t.@dist THEN
+                                        t.@dist = s.@dist + e.*edge-weight*,             # @dist is a MinAccum
+                                        t.@path = s.@path +"-"+ t.name
+                                END,
+                                t.@visited += true
+                             END;
+        END;
              
   ##### Check for loops with net negative weight #####
-  VSET = SELECT s
-         FROM VSET:s -(*edge-types*:e)-> :t
-         ACCUM @@hasNegLoop +=s.@dist + e.weight < t.@dist;
+        VSET = SELECT s
+               FROM VSET:s -(*edge-types*:e)-> :t
+               ACCUM @@hasNegLoop +=s.@dist + e.*edge-weight* < t.@dist;
          
-  IF @@hasNegLoop THEN        
-    RAISE negLoop (errMsg);
-  END;
+        IF @@hasNegLoop THEN        
+                RAISE negLoop (errMsg);
+        END;
   
   ##### Print the results #####
-
-*ATTR*VSET = SELECT s
+*ATTR*  VSET = SELECT s
 *ATTR*         FROM VSET:s
 *ATTR*         POST-ACCUM s.*vFltAttr* = s.@dist,  
 *ATTR*                    s.*vStrAttr* = s.@path;
                     
-*ACCM* PRINT VSET[VSET.@dist, VSET.@path];
-  IF display THEN
-*ATTR*     PRINT VSET[VSET.@dist, VSET.@path];
-*FILE*     PRINT VSET[VSET.@dist, VSET.@path];
-     VSET = SELECT s
-          FROM VSET:s -(*edge-types*:e)-> :t
-         ACCUM @@edgeSet += e;
-     PRINT @@edgeSet;
-  END;
+*ACCM*  PRINT VSET[VSET.@dist, VSET.@path];
+*ACCM*  IF display THEN
+*ACCM*          VSET = SELECT s
+*ACCM*                 FROM VSET:s -(*edge-types*:e)-> :t
+*ACCM*                 ACCUM @@edgeSet += e;
+*ACCM*          PRINT @@edgeSet;
+*ACCM*  END;
 
-*FILE*   f.println("Vertex_ID","Distance","Shortest_Path");
-*FILE*   VSET = SELECT s FROM VSET:s
-*FILE*           POST-ACCUM f.println(s, s.@dist, s.@path);
+*FILE*  f.println("Vertex_ID","Distance","Shortest_Path");
+*FILE*  VSET = SELECT s FROM VSET:s
+*FILE*         POST-ACCUM f.println(s, s.@dist, s.@path);
 }
 
 #INSTALL QUERY shortest_ss_any_wt*EXT*

@@ -1,0 +1,48 @@
+      CREATE QUERY label_prop_file (INT maxIter, FILE f) FOR GRAPH social {
+# Partition the vertices into communities, according to the Label Propagation method.
+# Indicate community membership by assigning each vertex a community ID.
+
+        OrAccum @@changed = true;
+        MapAccum<int, int> @map;     # <communityId, numNeighbors>
+        MapAccum<int, int> @@commSizes;   # <communityId, members>
+        SumAccum<int> @label, @num;    
+        Start = {ANY};
+
+# Assign unique labels to each vertex
+        Start = SELECT s FROM Start:s ACCUM s.@label = getvid(s);
+
+# Propagate labels to neighbors until labels converge or the max iterations is reached
+        WHILE @@changed == true LIMIT maxIter DO
+                @@changed = false;
+                Start = SELECT s 
+                        FROM Start:s -(Coworker:e)-> :t
+                        ACCUM t.@map += (s.@label -> 1)  # count the occurrences of neighbor's labels
+                        POST-ACCUM
+                                INT maxV = 0,
+                                INT label = 0,
+                                # Iterate over the map to get the neighbor label that occurs most often
+                                FOREACH (k,v) IN t.@map DO
+                                        CASE WHEN v > maxV THEN
+                                                maxV = v,
+                                                label = k
+                                        END
+                                END,
+                                # When the neighbor search finds a label AND it is a new label
+                                # AND the label's count has increased, update the label.
+                                CASE WHEN label != 0 AND t.@label != label AND maxV > t.@num THEN
+                                        @@changed += true,
+                                        t.@label = label,
+                                        t.@num = maxV
+                                END,
+                                t.@map.clear();
+        END;
+
+        Start = {ANY};
+
+ 
+        f.println("Vertex_ID", "Label");
+        Start = SELECT s FROM Start:s
+                POST-ACCUM f.println(s, s.@label);
+}
+
+#INSTALL QUERY label_prop_file

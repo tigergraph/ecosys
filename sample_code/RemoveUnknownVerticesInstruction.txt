@@ -1,0 +1,11 @@
+Instructions for removal of unknown vertices from tigergraph
+
+1) clean_unknown_vertices : 
+This is a gsql query which can be used to delete the unknown vertices in one run and all unknown vertices will be deleted from current data. 
+However, if there are too many unknown vertices, the memory will not be released. Please use the readme as detailed instruction on how to 
+install and run the query.
+
+2) clean_deleted_segments: This is a script used to delete all deleted segments and release the corresponding memory. 
+In order to be used to clean out all unknown vertices, one need to drop all vertex types with unknown vertices. Then follow the readme to 
+reset the system and run the script. As a result, the unknown vertices will be cleanly wiped out from tigergraph system.
+Disadvantage of this approach is that all data related with such type of vertices will be also deleted.

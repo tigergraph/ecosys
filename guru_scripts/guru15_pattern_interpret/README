@@ -1,0 +1,63 @@
+README for Graph Gurus 15 GSQL Demo
+July 10, 2019
+Victor Lee
+
+This Demo shows a few examples of Pattern Matching and Interpreted Mode GSQL,
+which are new features of TigerGraph 2.4.
+
+Creating the Graph Schema and Loading Data
+------------------------------------------
+The dataset used for this Demo is a subset of the full dataset (ldbc_snb_data-sf1)
+used in the GSQL 102 tutorial at https://docs.tigergraph.com/intro/gsql-102
+
+This demo will run fine on most machines with the full ~1GB ldbc_snb_data.
+We used only a subset for the webinar because the demo machine was a laptop which was
+also broadcasting video for the webinar, and the video broadcasting app takes away a
+significant chunk of CPU and memory resources.
+
+To use the full dataset, just follow the instructions in GSQL 102.
+
+To use the reduced dataset, download and uncompress the original tutorial data from
+https://s3-us-west-1.amazonaws.com/tigergraph-benchmark-dataset/LDBC/SF-1/ldbc_snb_data-sf1.tar.gz 
+but then follow these additional steps:
+
+1) We will use smaller sets of Comments and Posts.  We will keep the full sets of other
+vertices. In the data folder of this packet are two files:
+comment_0.0.csv.small and post_0_0.csv.small
+
+Overwrite the original comment_0.0.csv file with comment_0.0.csv.small
+Overwrite the original post_0.0.csv file with post_0.0.csv.small
+* You want to keep the names of the original large files.
+
+2) The tutorial instructions ask you to run two command files: setup_schema.gsql and
+load_data.sh.  This packet includes two modified files which you should run instead.
+
+setup_schema.gsql adds the option
+  vertexmustexist="true"
+to the edge loading jobs.  Since we have removed many comment and post instances, many
+of the data lines in the edge files will refer to vertices which are missing. This option
+tells the loader not to automatically create dummy vertices, but to just ignore those
+edges. The result is we will have a smaller graph. Due to this added option, we
+split up the original single loading job into two jobs.
+
+The load_data.sh was modified to call these two jobs.
+
+Note: modify the 'export LDBC_SNB_DATA_DIR' line in load_data.sh to point to your
+actual location of your main data folder.
+
+
+Queries
+-------
+The demo started with two queries, and then created a third one by modifying one of them.
+
+q_friends_posts.gsql
+  // List and count the posts by each friend of the subject Person
+  
+q_var_hops.gsql
+  // Count the number of friends within the given range of separation from the Subject person
+
+q_friends_comments.gsql
+  // List and count the comments by each friend within the given range of separation from the subject Person
+  
+
+

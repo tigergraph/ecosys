@@ -1,0 +1,30 @@
+drop job loader
+
+CREATE LOADING JOB loader FOR GRAPH NeuralNetwork{
+LOAD "./data/validation/X_training.csv"
+TO VERTEX inputLayer VALUES($"v_in_id",SPLIT($"dataX", "|"),_) USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+LOAD "./data/validation/X_validation.csv"
+TO VERTEX inputLayer VALUES($"v_in_id",_,SPLIT($"dataX", "|")) USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+LOAD "./data/validation/Y_training.csv"
+TO VERTEX outputLayer VALUES($"v_out_id", SPLIT($"dataY", "|"), _) USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+LOAD "./data/validation/Y_validation.csv"
+TO VERTEX outputLayer VALUES($"v_out_id", _, SPLIT($"dataY", "|")) USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+
+LOAD "./data/new/Theta2_init.csv"
+TO VERTEX hiddenLayer VALUES($"v_hid_id"),
+TO VERTEX outputLayer VALUES($"v_out_id",_,_),
+TO EDGE Theta2 VALUES($"v_hid_id", $"v_out_id", $"theta") USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+LOAD "./data/new/Theta1_init.csv"
+TO VERTEX hiddenLayer VALUES($"v_hid_id"),
+TO VERTEX inputLayer VALUES($"v_in_id",_,_),
+TO EDGE Theta1 VALUES($"v_in_id", $"v_hid_id", $"theta") USING SEPARATOR=",", HEADER="true", EOL="\n";
+
+
+}
+
+RUN LOADING JOB loader

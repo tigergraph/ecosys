@@ -1,0 +1,26 @@
+CREATE QUERY getOwnershipPertDelta (vertex<Company> inputComp) FOR GRAPH MyGraph { 
+	
+  SumAccum<float> @deltaOld, @deltaNew, @score;
+  SetAccum<vertex> @@results;
+	
+  Start = {inputComp};
+	
+  Start = SELECT s FROM Start:s ACCUM s.@score = 1, s.@deltaOld = 1;
+
+  WHILE Start.size() > 0 LIMIT 8 DO
+    Start = SELECT t FROM Start:s-(ControlledBy:e)-:t
+            ACCUM t.@deltaNew += s.@deltaOld * e.weight
+            POST-ACCUM 
+	            t.@score += t.@deltaNew, 
+              t.@deltaOld = t.@deltaNew, 
+              t.@deltaNew = 0,
+	            CASE WHEN t.outdegree("ControlledBy") == 0 THEN 
+                @@results += t
+              END;
+  end;
+
+  Start = @@results;
+  Start = SELECT s FROM Start:s ORDER BY s.@score desc LIMIT 5;
+  PRINT Start;
+
+}

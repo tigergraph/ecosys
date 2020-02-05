@@ -1,0 +1,70 @@
+#reset the catalog
+DROP ALL
+
+#create the schema
+CREATE VERTEX person (PRIMARY_ID name STRING, name STRING, age INT, gender STRING, state STRING)
+CREATE UNDIRECTED EDGE friendship (FROM person, TO person, connect_day DATETIME)
+
+CREATE GRAPH social (person, friendship)
+
+#create the loading job
+CREATE LOADING JOB load_social FOR GRAPH social {
+   DEFINE FILENAME file1="/home/tigergraph/tutorial/gsql101/person.csv";
+   DEFINE FILENAME file2="/home/tigergraph/tutorial/gsql101/friendship.csv";
+
+   LOAD file1 TO VERTEX person VALUES ($"name", $"name", $"age", $"gender", $"state") USING header="true", separator=",";
+   LOAD file2 TO EDGE friendship VALUES ($0, $1, $2) USING header="true", separator=",";
+}
+
+#run the loading job
+RUN LOADING JOB load_social
+
+#built-in queries
+Use Graph Social
+SELECT count(*) FROM person
+SELECT count(*) FROM person-(friendship)->person
+
+SELECT * FROM person WHERE primary_id=="Tom"
+SELECT name FROM person WHERE state=="ca"
+SELECT name, age FROM person WHERE age > 30
+
+SELECT * FROM person-(friendship)->person WHERE from_id =="Tom"
+SELECT * FROM person-(ANY)->ANY WHERE from_id =="Tom"
+
+#create a stored procedure.
+CREATE QUERY hello(VERTEX<person> p) FOR GRAPH social{
+  Start = {p};
+  Result = SELECT tgt
+           FROM Start:s-(friendship:e) ->person:tgt;
+  PRINT Result;
+}
+
+#create a second stored procedure
+CREATE QUERY hello2 (VERTEX<person> p) FOR GRAPH social{
+  OrAccum  @visited = false;
+  AvgAccum @@avgAge;
+  Start = {p};
+  FirstNeighbors = SELECT tgt
+                              FROM Start:s -(friendship:e)-> person:tgt
+                              ACCUM tgt.@visited += true, s.@visited += true;
+  SecondNeighbors = SELECT tgt
+                                   FROM FirstNeighbors -(:e)-> :tgt
+                                   WHERE tgt.@visited == false
+                                   POST_ACCUM @@avgAge += tgt.age;
+  PRINT SecondNeighbors;
+  PRINT @@avgAge;
+}
+
+#install the two stored procedures
+INSTALL QUERY hello, hello2
+
+#run the stored procedure with parameter
+RUN QUERY hello("Tom")
+#You can also use the REST end point to call the stored procedure via a bash shell in docker.
+# curl -X GET 'http://localhost:9000/query/social/hello?p=Tom'
+
+
+#run the stored procedure with parameter
+RUN QUERY hello2("Tom")
+#You can also use the REST end point to call the stored procedure via a bash shell in docker.
+# curl -X GET 'http://localhost:9000/query/social/hello2?p=Tom'

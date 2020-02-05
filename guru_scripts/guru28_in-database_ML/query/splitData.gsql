@@ -1,0 +1,35 @@
+CREATE QUERY splitData(DOUBLE testingDataFraction = 0.3) FOR GRAPH Recommender {
+  ## split data set
+	SumAccum<INT> @@cnt_total;
+	SumAccum<INT> @@cnt_validation;
+	SumAccum<INT> @@cnt_training;
+	AvgAccum @avg_rating;
+	
+	INT remainer;
+	remainer = 10*testingDataFraction;
+	USERs = {USER.*};
+	USERs = SELECT s FROM USERs:s -(rate:e)-> MOVIE:t
+	        ACCUM
+	          @@cnt_total += 1,
+	          IF (getvid(t)+getvid(s)) % 10 < remainer THEN
+	             e.label = FALSE,
+	             @@cnt_validation += 1
+	          ELSE
+	             t.@avg_rating += e.rating
+	          END
+	          POST-ACCUM
+	            t.avg_rating = t.@avg_rating
+	          ;   
+
+	
+	## normalization
+  USERs = SELECT s FROM USERs:s -(rate:e)-> MOVIE:t
+	        ACCUM
+	          e.rating = e.rating - t.@avg_rating;
+	
+	@@cnt_training = @@cnt_total-@@cnt_validation;
+	PRINT @@cnt_total,@@cnt_validation,@@cnt_training;
+	
+	
+}
+

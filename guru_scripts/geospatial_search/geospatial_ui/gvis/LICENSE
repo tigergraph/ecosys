@@ -1,0 +1,73 @@
+Copyright (c) TigerGraph, Inc. 2017. All Rights Reserved. Unauthorized copying of this file, via any medium is strictly prohibited.
+ * Proprietary and confidential 
+TigerGraph : http://tigergraph.com/
+
+3rd party software license acknowledgement:
+  d3.js
+    version : ^4.0.0
+    author : Mike Bostock, Jeffrey Heer, Vadim Ogievetsky, and community
+    license : BSD
+    https://github.com/d3/d3
+
+  lodash.js
+    version : ^4.0.0
+    author : John-David Dalton
+    license : MIT
+    https://github.com/lodash/lodash
+
+  moment.js
+    author : Tim Wood
+    license : MIT
+    github.com/moment/moment/
+
+  Moment TimeZone 
+    author : Tim Wood
+    license : MIT
+    github.com/moment/moment-timezone/
+
+  Leaflet.js
+    author : Vladimir Agafonkin
+    license : BSD
+    github.com/Leaflet/Leaflet/blob/master/LICENSE
+
+  CssColorParser.js
+    author : Dean McNamee, 2012.
+    license : MIT
+    github.com/deanm/css-color-parser-js
+
+  SHA-256 implementation in JavaScript
+    author : Chris Veness 
+    license: MIT
+    github.com/chrisveness/crypto
+
+  jsrsasign (RSA-Sign JavaScript Library)
+    version : 4.7.2
+    author : Kenji Urushima
+    license : MIT
+    kjur.github.io/jsrsasign/
+
+  jsbn (RSA and ECC in JavaScript)
+    version : 1.4
+    author : Tom Wu
+    license : BSD
+    www-cs-students.stanford.edu/~tjw/jsbn/
+
+  echarts (A powerful charting and visualization library for browser)
+    version : 3.4.0
+    author : Baidu Inc.
+    license : AS IS
+    Copyright (c) 2013, Baidu Inc. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    The views and conclusions contained in the software and documentation are those of the authors and should not be interpreted as representing official policies, either expressed or implied, of the FreeBSD Project.
+    http://echarts.baidu.com/
+
+
+
+
+

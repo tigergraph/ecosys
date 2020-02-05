@@ -1,0 +1,23 @@
+use graph ldbc_snb
+set syntax_version="v2"
+
+#exact  bound with accumulation.
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+   SumAccum<int> @@commentCnt = 0;
+   
+   #start with all persons.
+   Seed = {Person.*};
+
+   # find top 3 latest comments that is liked or created by Viktor Akhiezer
+   # and the total number of comments related to Viktor Akhiezer
+   Top3Comments = SELECT p
+                  FROM Seed:s - ((<Comment_HAS_CREATOR_Person|Person_LIKES_Comment>)*1) - Comment:p
+                  WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+                  ACCUM @@commentCnt += 1
+                  ORDER BY p.creationDate DESC
+                  LIMIT 3;
+
+    PRINT Top3Comments;
+    # total number of comments related to Viktor Akhiezer
+    PRINT  @@commentCnt;
+}

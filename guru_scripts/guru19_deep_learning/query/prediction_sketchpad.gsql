@@ -1,0 +1,42 @@
+CREATE QUERY prediction_sketchpad(STRING filePath = "/home/tigergraph/machine_learning/FNN/data/prediction/Val.csv") FOR GRAPH NeuralNetwork {
+  TYPEDEF TUPLE<INT digit, FLOAT a> output;
+	MapAccum<STRING, DOUBLE> @@Drawing;
+  HeapAccum<output>(10, a DESC) @@prediction_heap;
+	SumAccum<DOUBLE> @a;
+
+	
+	
+    @@Drawing = { LOADACCUM (filePath, $0, $1, ",", true)};
+	
+    InputLayer = {inputLayer.*};	
+	  InputLayer = SELECT s FROM InputLayer:s -(Theta1:e)->hiddenLayer:t
+	               ACCUM
+	                 IF s.v_in_id == "401" THEN
+	                     t.@a += e.theta
+	                 ELSE
+	                     t.@a += @@Drawing.get(s.v_in_id)*e.theta
+	                 END
+
+	               POST-ACCUM
+	                   t.@a = 1/(1+exp(-t.@a));
+
+	  HiddenLayer = {hiddenLayer.*};
+	  HiddenLayer = SELECT s FROM HiddenLayer:s -(Theta2:e)->outputLayer:t
+	                ACCUM
+	                  IF s.v_hid_id == "26" THEN
+	                     t.@a += e.theta
+	                  ELSE
+	                     t.@a += s.@a*e.theta
+	                  END
+	                POST-ACCUM
+	                    t.@a = 1/(1+exp(-t.@a));
+
+	  OutputLayer = {outputLayer.*};
+	  OutputLayer = SELECT s FROM OutputLayer:s
+	                ACCUM
+	                    @@prediction_heap += output(str_to_int(s.v_out_id)%10, s.@a);
+
+	  PRINT @@prediction_heap;
+	  # PRINT HiddenLayer.@a;
+# PRINT OutputLayer.@a;
+}
