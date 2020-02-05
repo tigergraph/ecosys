@@ -1,0 +1,50 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 15 query description is on page 73 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_15
+
+CREATE QUERY bi_15(STRING countryName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, INT count_> socialNormalPerson;
+
+  OrAccum @isLocatedInCountry;
+  SumAccum<INT> @@numFriendsAll;
+  SumAccum<INT> @numFriends;
+  HeapAccum<socialNormalPerson>(100, personId ASC) @@socialNormalPersonTop;
+
+  INT socialNormal = 0;
+
+  vCountry = { Country.* };
+  vPersonInCountry = 
+    SELECT t
+    FROM vCountry:s-(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t
+    WHERE s.name == countryName
+    ACCUM t.@isLocatedInCountry += True;
+
+  // phase 1. calculate social normal, i.e. floor(avg(#friends))
+  accSocialNormal =
+    SELECT s
+    FROM vPersonInCountry:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+    ACCUM CASE WHEN t.@isLocatedInCountry THEN @@numFriendsAll += 1 END;
+
+  socialNormal = @@numFriendsAll / vPersonInCountry.size();
+
+  // phase 2. find persons in Country, whose # friends in Country == socialNormal
+  vPersonInCountry =
+    SELECT s
+    FROM vPersonInCountry:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+    ACCUM CASE WHEN t.@isLocatedInCountry THEN s.@numFriends += 1 END
+    POST-ACCUM 
+      CASE 
+        WHEN s.@numFriends == socialNormal THEN 
+          @@socialNormalPersonTop += socialNormalPerson(s.id, s.@numFriends) 
+      END;
+
+  PRINT @@socialNormalPersonTop;
+}
+
+// INSTALL QUERY bi_15
+// RUN QUERY bi_15("Burma")
+SET query_timeout = 180000
+INTERPRET QUERY bi_15("Burma")

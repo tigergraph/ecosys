@@ -1,0 +1,37 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 6 query description is on page 49 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is_6
+
+CREATE QUERY is_6(STRING messageId) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @forumId;
+  SumAccum<STRING> @forumTitle;
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
+
+  vModerator =
+    SELECT t3
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(<Forum_CONTAINER_OF_Post:e2)-Forum:t2
+        -(Forum_HAS_MODERATOR_Person>:e3)-Person:t3
+    ACCUM t3.@forumId = t2.id, t3.@forumTitle = t2.title;
+
+  PRINT vModerator[
+      vModerator.@forumId AS forumId,
+      vModerator.@forumTitle AS forumTitle,
+      vModerator.id AS moderatorId,
+      vModerator.firstName AS moderatorFirstName,
+      vModerator.lastName AS moderatorLastName];
+}
+
+// INSTALL QUERY is_6
+// RUN QUERY is_6(1236950581248)
+SET query_timeout = 180000
+INTERPRET QUERY is_6(1236950581248)

@@ -1,0 +1,16 @@
+CREATE QUERY to_jsonarray(SET<STRING> src) FOR GRAPH ldbc_snb RETURNS(JSONARRAY) {
+  BOOL needComma = False;
+  STRING jsonStr = "[";
+
+  FOREACH s IN src DO
+    IF needComma THEN
+      jsonStr = jsonStr + ",";
+    ELSE
+      needComma = True;
+    END;
+    jsonStr = jsonStr + "\"" + s + "\"";
+  END;
+  jsonStr = jsonStr + "]";
+
+  RETURN parse_json_array(jsonStr);
+}

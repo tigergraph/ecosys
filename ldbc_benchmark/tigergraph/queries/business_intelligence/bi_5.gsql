@@ -1,0 +1,70 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb { 
+	TYPEDEF TUPLE <VERTEX v, INT popCount, INT id> forumInfo;
+	TYPEDEF TUPLE <INT postCount, STRING firstName, STRING lastName, DATETIME creationDate, INT id> personInfo;
+	HeapAccum<forumInfo>(100, popCount DESC, id ASC) @@forumHeap;
+	HeapAccum<personInfo>(100, postCount DESC, id ASC) @@result;
+	OrAccum @isCitizen;
+	SetAccum<INT> @popCount;
+	SetAccum<VERTEX> @@topForum;
+	SetAccum<INT> @postCount;
+  OrAccum @valid = false;	
+
+  vStart(ANY) = { Country.* };
+
+  vStart = SELECT s
+    FROM vStart:s
+    WHERE s.name == countryName;
+	
+  vCity =
+    SELECT t
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t;
+	
+  vPerson =
+    SELECT t
+    FROM vCity:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t
+    ACCUM t.@isCitizen = TRUE;
+	
+  vForum =
+    SELECT t
+    FROM vPerson:s-(Forum_HAS_MEMBER_Person_REVERSE:e)->Forum:t;
+	
+  tmp =
+    SELECT t
+    FROM vForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t
+    WHERE t.@isCitizen
+    ACCUM s.@popCount += t.id;
+	
+  vForum =
+    SELECT s
+    FROM vForum:s
+	  ACCUM @@forumHeap += forumInfo(s, s.@popCount.size(), s.id);
+	
+	FOREACH item IN @@forumHeap DO
+	    @@topForum += item.v;
+	END;
+	topForum = {@@topForum};
+	
+  vPerson2 =
+    SELECT t
+    FROM topForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t;
+	
+  topPost =
+    SELECT t
+    FROM topForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t
+    ACCUM t.@valid = true;
+	
+  vPost =
+    SELECT t
+    FROM vPerson2:s-(Post_HAS_CREATOR_Person_REVERSE:e)->Post:t
+    WHERE t.@valid == true
+    ACCUM s.@postCount += t.id;
+	
+  vPerson2 =
+    SELECT s
+    FROM vPerson2:s
+    ACCUM @@result += personInfo(s.@postCount.size(), s.firstName, s.lastName, s.creationDate, s.id);
+  
+  PRINT @@result;	
+}

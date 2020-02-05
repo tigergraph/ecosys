@@ -1,0 +1,29 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 2 query description is on page 33 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY ic_2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
+
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
+
+  vPerson = { personId };
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t;
+
+  vMessage = 
+    SELECT t
+    FROM vFriend:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->(Comment|Post):t
+    WHERE t.creationDate < maxDate
+    ACCUM 
+      CASE
+        WHEN t.type == "Comment" THEN
+          @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+        WHEN t.type == "Post" AND t.content != ""  THEN
+          @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+
+        ELSE
+          @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
+      END;
+
+  PRINT @@msgTop;
+}

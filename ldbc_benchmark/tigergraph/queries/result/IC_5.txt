@@ -1,0 +1,161 @@
+
+{
+'v_id':'1099511675091',
+'v_type':'Forum',
+'attributes':{
+'title':'Group for Guy_Forget in Batna',
+'postCount':1
+}
+},
+{
+'v_id':'2061584320728',
+'v_type':'Forum',
+'attributes':{
+'title':'Group for Hamid_Karzai in Moga',
+'postCount':1
+}
+},
+{
+'v_id':'2061584326494',
+'v_type':'Forum',
+'attributes':{
+'title':'Group for Bing_Crosby in Nilore',
+'postCount':1
+}
+},
+{
+'v_id':'1155',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 22 of Arap Amanaka',
+'postCount':0
+}
+},
+{
+'v_id':'1167',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 34 of Arap Amanaka',
+'postCount':0
+}
+},
+{
+'v_id':'4671',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Lei Zhang',
+'postCount':0
+}
+},
+{
+'v_id':'5802',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Frederick Kawawa',
+'postCount':0
+}
+},
+{
+'v_id':'5902',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 14 of Meera Singh',
+'postCount':0
+}
+},
+{
+'v_id':'8284',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Andre Buysse',
+'postCount':0
+}
+},
+{
+'v_id':'12612',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 7 of Chen Yang',
+'postCount':0
+}
+},
+{
+'v_id':'13675',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 33 of Walter Hoffmann',
+'postCount':0
+}
+},
+{
+'v_id':'13682',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 1 of Wolfgang Schmidt',
+'postCount':0
+}
+},
+{
+'v_id':'15752',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 21 of Mehmet Ayhan',
+'postCount':0
+}
+},
+{
+'v_id':'20955',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 2 of Hans Johansson',
+'postCount':0
+}
+},
+{
+'v_id':'20996',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 5 of Hideki Kato',
+'postCount':0
+}
+},
+{
+'v_id':'22004',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Abdel Halim Ali Shabana Hassan',
+'postCount':0
+}
+},
+{
+'v_id':'23563',
+'v_type':'Forum',
+'attributes':{
+'title':'Album 32 of Jharana Gurung',
+'postCount':0
+}
+},
+{
+'v_id':'24746',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Fernanda Oliveira',
+'postCount':0
+}
+},
+{
+'v_id':'31391',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Bingjian Zhang',
+'postCount':0
+}
+},
+{
+'v_id':'38592',
+'v_type':'Forum',
+'attributes':{
+'title':'Wall of Antonio Aristizábal Vásquez',
+'postCount':0
+}
+}

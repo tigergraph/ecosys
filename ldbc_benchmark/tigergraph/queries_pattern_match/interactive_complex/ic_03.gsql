@@ -1,0 +1,60 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 3 query description is on page 34 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_3
+
+CREATE QUERY ic_3(VERTEX<Person> personId, STRING countryXName, STRING countryYName, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
+
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<INT> @@cityIds;
+  GroupByAccum<INT personId, STRING personFirstName, STRING personLastName, SumAccum<INT> xCount, SumAccum<INT> yCount> @@msgStatsGroup;
+  HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@msgStatsTop;
+
+  DATETIME endDate;
+  endDate = datetime_add(startDate, INTERVAL durationDays DAY);
+
+  vCountry = { Country.* };
+  vCountry =
+    SELECT s
+    FROM vCountry:s-(<City_IS_PART_OF_Country:e)-City:t
+    ACCUM CASE WHEN s.name == countryXName OR s.name == countryYName THEN @@cityIds += t.id END;
+
+  vPerson = { personId };
+  accFriend =
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person)*1..2)-Person:t1
+        -(Person_IS_LOCATED_IN_City>:e2)-City:t2
+    WHERE s != t1
+      AND NOT @@cityIds.contains(t2.id)
+    ACCUM @@friendAll += t1;
+
+  vFriend = { @@friendAll };
+  accFriendMessage = 
+    SELECT s
+    FROM vFriend:s
+        -((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t1
+        -((Comment_IS_LOCATED_IN_Country>|Post_IS_LOCATED_IN_Country>):e2)-Country:t2
+    WHERE startDate <= t1.creationDate AND t1.creationDate < endDate
+    ACCUM
+      CASE
+        WHEN t2.name == countryXName THEN
+          @@msgStatsGroup += (s.id, s.firstName, s.lastName -> 1, 0)
+        WHEN t2.name == countryYName THEN
+          @@msgStatsGroup += (s.id, s.firstName, s.lastName -> 0, 1)
+      END;
+
+  FOREACH (id,fn,ln,x,y) IN @@msgStatsGroup DO
+    @@msgStatsTop += msgStats(id, fn, ln, x, y, (x + y));
+  END;
+
+  PRINT @@msgStatsTop;
+}
+
+//INSTALL QUERY ic_3
+//RUN QUERY ic_3(17592186055119, "Laos", "Scotland", "2011-05-31T17:00:00", 42)
+SET query_timeout = 180000
+INTERPRET QUERY ic_3(17592186055119, "Laos", "Scotland", "2011-05-31T17:00:00", 42)

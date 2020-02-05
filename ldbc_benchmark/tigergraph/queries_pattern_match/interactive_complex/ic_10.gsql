@@ -1,0 +1,68 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 10 query description is on page 41 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_10
+
+CREATE QUERY ic_10(VERTEX<Person> personId, INT month, INT nextMonth) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
+
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<VERTEX<Post>> @@postAll;
+  SumAccum<STRING> @city;
+  SetAccum<VERTEX<Tag>> @@tagInterest;
+	OrAccum @hasCommonInterest;
+  SumAccum<INT> @commonInterestScore;
+  HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@friendInfoTop;
+
+  vPerson = { personId };
+  vTag = 
+    SELECT t
+    FROM vPerson:s-(Person_HAS_INTEREST_Tag>:e)-Tag:t
+    POST-ACCUM @@tagInterest += t;
+
+  accFriend = 
+    SELECT s
+    FROM vPerson:s
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e1)-Person:t1
+        -((Person_KNOWS_Person>|<Person_KNOWS_Person):e2)-Person:t2
+        -(Person_IS_LOCATED_IN_City>:e3)-City:t3
+    WHERE s != t2
+      AND ((month(t2.birthday) == month AND day(t2.birthday) >= 21)
+          OR (month(t2.birthday) == nextMonth AND day(t2.birthday) < 22))
+    ACCUM t2.@city = t3.name
+    POST-ACCUM @@friendAll += t2;
+
+  vFriend = { @@friendAll };
+  vPost = 
+    SELECT t
+    FROM vFriend:s-(<Post_HAS_CREATOR_Person:e)-Post:t;
+
+  accPostTag =
+    SELECT s
+    FROM vPost:s-(Post_HAS_TAG_Tag>:e)-Tag:t
+    ACCUM CASE WHEN @@tagInterest.contains(t) THEN s.@hasCommonInterest += True END;
+
+	accPostPerson = 
+	  SELECT t
+	  FROM vPost:s-(Post_HAS_CREATOR_Person>:e)-Person:t
+	  ACCUM
+	    CASE
+	      WHEN NOT s.@hasCommonInterest THEN
+	        t.@commonInterestScore += (-1)
+	      ELSE
+	        t.@commonInterestScore += 1
+	    END;
+
+	accFriend = 
+    SELECT v
+    FROM vFriend:v
+    ACCUM @@friendInfoTop += friendInfo(v.id, v.firstName, v.lastName, v.@commonInterestScore, v.gender, v.@city);
+
+  PRINT @@friendInfoTop;
+}
+
+//INSTALL QUERY ic_10
+//RUN QUERY ic_10(30786325583618, 11, 12)
+SET query_timeout = 180000
+INTERPRET QUERY ic_10(30786325583618, 11, 12)

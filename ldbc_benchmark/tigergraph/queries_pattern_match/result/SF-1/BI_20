@@ -1,0 +1,20 @@
+//seed: tagClassNames=Writer&tagClassNames=Single&tagClassNames=Country
+
+[
+{
+'@@tagInfoTop':[
+{
+'tagClassName':'Country',
+'messageCount':455856
+},
+{
+'tagClassName':'Single',
+'messageCount':310879
+},
+{
+'tagClassName':'Writer',
+'messageCount':159442
+}
+]
+}
+]

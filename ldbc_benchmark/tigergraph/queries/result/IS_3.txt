@@ -1,0 +1,101 @@
+
+{
+'v_id':'32985348841922',
+'v_type':'Person',
+'attributes':{
+'personId':32985348841922,
+'firstName':'Monja',
+'lastName':'Tsiranana',
+'friendshipCreationDate':'2012-07-26 21:23:21'
+}
+},
+{
+'v_id':'30786325585162',
+'v_type':'Person',
+'attributes':{
+'personId':30786325585162,
+'firstName':'John',
+'lastName':'Singh',
+'friendshipCreationDate':'2012-07-17 02:03:41'
+}
+},
+{
+'v_id':'26388279077604',
+'v_type':'Person',
+'attributes':{
+'personId':26388279077604,
+'firstName':'Abdala',
+'lastName':'Seck',
+'friendshipCreationDate':'2012-06-18 08:49:40'
+}
+},
+{
+'v_id':'6597069777302',
+'v_type':'Person',
+'attributes':{
+'personId':6597069777302,
+'firstName':'John',
+'lastName':'Singh',
+'friendshipCreationDate':'2012-06-14 12:57:53'
+}
+},
+{
+'v_id':'4398046519395',
+'v_type':'Person',
+'attributes':{
+'personId':4398046519395,
+'firstName':'Alexander',
+'lastName':'Popov',
+'friendshipCreationDate':'2012-06-12 19:51:11'
+}
+},
+{
+'v_id':'19791209301252',
+'v_type':'Person',
+'attributes':{
+'personId':19791209301252,
+'firstName':'Narong',
+'lastName':'Boy',
+'friendshipCreationDate':'2012-06-09 07:03:59'
+}
+},
+{
+'v_id':'24189255819727',
+'v_type':'Person',
+'attributes':{
+'personId':24189255819727,
+'firstName':'Abhishek',
+'lastName':'Sen',
+'friendshipCreationDate':'2012-06-06 03:44:04'
+}
+},
+{
+'v_id':'459',
+'v_type':'Person',
+'attributes':{
+'personId':459,
+'firstName':'Jharana Bajracharya Rashid',
+'lastName':'Shrestha',
+'friendshipCreationDate':'2012-05-27 10:58:03'
+}
+},
+{
+'v_id':'4398046517229',
+'v_type':'Person',
+'attributes':{
+'personId':4398046517229,
+'firstName':'David',
+'lastName':'Watson',
+'friendshipCreationDate':'2012-05-23 15:50:47'
+}
+},
+{
+'v_id':'21990232560143',
+'v_type':'Person',
+'attributes':{
+'personId':21990232560143,
+'firstName':'Tep',
+'lastName':'Hu',
+'friendshipCreationDate':'2012-05-22 03:31:22'
+}
+}

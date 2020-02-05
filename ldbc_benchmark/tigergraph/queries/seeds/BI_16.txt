@@ -1,0 +1,14 @@
+personId: 
+19791209310731,
+    
+country: 
+Pakistan
+
+tagClass:
+MusicalArtist
+
+minPathDistance:
+3
+
+maxPathDistance: 
+5

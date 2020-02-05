@@ -1,0 +1,51 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_5
+
+CREATE QUERY bi_5(STRING countryName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT id, STRING firstName, STRING lastName, DATETIME creationDate, INT postCount> poster;
+
+  SumAccum<INT> @count;
+  OrAccum @visited;
+  HeapAccum<poster>(100, postCount DESC, id ASC) @@posterTop;
+
+  vCountry = { Country.* };
+  vForum =
+    SELECT t2
+    FROM vCountry:s
+        -(<City_IS_PART_OF_Country.<Person_IS_LOCATED_IN_City)-Person:t1
+        -(<Forum_HAS_MEMBER_Person:e2)-Forum:t2
+    WHERE s.name == countryName
+    ACCUM t2.@count += 1
+    ORDER BY t2.@count DESC, t2.id ASC
+    LIMIT 100;
+  
+  vPerson =
+    SELECT t
+    FROM vForum:s-(Forum_HAS_MEMBER_Person>:e)-Person:t
+    ACCUM s.@visited += True;
+
+  vPersonHasPost =
+    SELECT s
+    FROM vPerson:s
+        -(<Post_HAS_CREATOR_Person:e1)-Post:t1
+        -(<Forum_CONTAINER_OF_Post:e2)-Forum:t2
+    WHERE t2.@visited
+    ACCUM s.@count += 1
+    POST-ACCUM @@posterTop += poster(s.id, s.firstName, s.lastName, s.creationDate, s.@count);
+
+  vPersonNoPost = vPerson MINUS vPersonHasPost;
+  accPersonNoPost =
+    SELECT v
+    FROM vPersonNoPost:v
+    ACCUM @@posterTop += poster(v.id, v.firstName, v.lastName, v.creationDate, v.@count);
+
+  PRINT @@posterTop;
+}
+
+// INSTALL QUERY bi_5
+// RUN QUERY bi_5("Belarus")
+SET query_timeout = 180000
+INTERPRET QUERY bi_5("Belarus")

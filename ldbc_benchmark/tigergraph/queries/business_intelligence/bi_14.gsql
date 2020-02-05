@@ -1,0 +1,44 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 14 query description is on page 72 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
+
+  SumAccum<INT> @personId;
+  SumAccum<INT> @threadCount;
+  MapAccum<INT, INT> @@initiatorGroup;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
+
+  vPost = { Post.* };
+  vPost =
+    SELECT v
+    FROM vPost:v
+    WHERE v.creationDate BETWEEN startDate AND endDate;
+
+  vPerson = 
+    SELECT t
+    FROM vPost:s-(Post_HAS_CREATOR_Person:e)->Person:t
+    ACCUM
+      t.@threadCount += 1,
+      s.@personId = t.id,
+      @@initiatorGroup += (t.id -> 1);
+
+  vMessage(Comment|Post) = vPost;
+  WHILE vMessage.size() > 0 DO
+    vMessage =
+      SELECT t
+      FROM vMessage:s-((Comment_REPLY_OF_Comment_REVERSE|Comment_REPLY_OF_Post_REVERSE):e)->Comment:t
+      ACCUM
+        t.@personId = s.@personId,
+        CASE
+          WHEN t.creationDate BETWEEN startDate AND endDate THEN
+            @@initiatorGroup += (s.@personId -> 1)
+        END;
+  END;
+
+  vPerson =
+    SELECT v
+    FROM vPerson:v
+    ACCUM @@initiatorTop += initiator(v.id, v.firstName, v.lastName, v.@threadCount, @@initiatorGroup.get(v.id));
+
+  PRINT @@initiatorTop;
+}

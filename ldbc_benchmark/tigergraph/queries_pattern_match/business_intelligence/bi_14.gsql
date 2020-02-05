@@ -1,0 +1,31 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 14 query description is on page 72 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_14
+
+CREATE QUERY bi_14(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
+
+  SumAccum<INT> @messageCount;
+  SetAccum<INT> @threadIds;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
+
+  vMessage = { Comment.*, Post.* };
+  accMsgPostPerson =
+    SELECT s
+    FROM vMessage:s
+        -((Comment_REPLY_OF_Comment>|Comment_REPLY_OF_Post>)*0..)-Post:t1
+        -(Post_HAS_CREATOR_Person>:e2)-Person:t2
+    WHERE s.creationDate >= startDate AND s.creationDate <= endDate
+      AND t1.creationDate >= startDate AND t1.creationDate <= endDate
+    ACCUM t2.@messageCount += 1, t2.@threadIds += t1.id
+    POST-ACCUM @@initiatorTop += initiator(t2.id, t2.firstName, t2.lastName, t2.@threadIds.size(), t2.@messageCount);
+
+  PRINT @@initiatorTop;
+}
+
+// INSTALL QUERY bi_14
+// RUN QUERY bi_14("2012-05-31 22:00:00", "2012-06-30 22:00:00")
+SET query_timeout = 180000
+INTERPRET QUERY bi_14("2012-05-31 22:00:00", "2012-06-30 22:00:00")
