@@ -1,0 +1,53 @@
+*ATTR*CREATE QUERY mst*EXT* (VERTEX source) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY mst*EXT* (VERTEX source) FOR GRAPH *graph* {
+*FILE*CREATE QUERY mst*EXT* (VERTEX source, FILE f) FOR GRAPH *graph* {
+/* Minimum Spanning Tree (MST)
+Given an undirected graph, and a source vertex, print out a MST for the connected subgraph which contains the source vertex.
+1. Start with a set MSTNodes = {source vertex}
+2. For all vertices in MSTNodes, find another vertex y in the graph but not MSTNodes which is connected to a vertex x in MSTNodes such that the weight on the edge e(x,y) is the smallest among all such edges from a vertex in MSTNodes to a vertex not in MSTNodes. Add y to MSTNodes, and add the edge (x,y) to MST
+3. Repeat 2 until MSTNodes has no edge linking to any other vertex in the graph.
+The ACCM version shows display by default.  
+*/
+*ATTR*  TYPEDEF TUPLE<VERTEX fromV, VERTEX toV, FLOAT weight> EDGE_WEIGHT;
+*ACCM*  TYPEDEF TUPLE<VERTEX toV, EDGE their_edge, FLOAT weight> EDGE_WEIGHT;
+*FILE*  TYPEDEF TUPLE<VERTEX fromV, VERTEX toV, FLOAT weight> EDGE_WEIGHT;
+        HeapAccum<EDGE_WEIGHT>(1, weight ASC) @@chosen_edge; //only need to keep the minimal tuple
+*ACCM*  SetAccum<EDGE> @@mst;
+*FILE*  SetAccum<EDGE_WEIGHT> @@mst;
+        OrAccum @chosen;
+
+        MSTNodes = {source};
+        // initialize the source vertex
+        Current = SELECT s
+                  FROM MSTNodes:s
+                  ACCUM s.@chosen = true;
+
+        WHILE (Current.size() > 0) DO
+                Current = SELECT t
+                          FROM MSTNodes:s -(*edge-types*:e) -> :t
+                          WHERE t.@chosen == false    // vertex not in MSTNodes
+*ATTR*                    ACCUM @@chosen_edge += EDGE_WEIGHT(s, t, e.*edge-weight*)
+*ACCM*                    ACCUM @@chosen_edge += EDGE_WEIGHT(t, e, e.*edge-weight*)
+*FILE*                    ACCUM @@chosen_edge += EDGE_WEIGHT(s, t, e.*edge-weight*)
+                          POST-ACCUM IF t == @@chosen_edge.top().toV THEN    
+                                              t.@chosen = TRUE      // mark the chosen vertex to add into MSTNodes
+                                     END
+                          HAVING t.@chosen == true;
+                IF @@chosen_edge.size() > 0 THEN
+*ATTR*                  S = SELECT s
+*ATTR*                      FROM Current:s -(*edge-types*:e) -> :t
+*ATTR*                      WHERE t == @@chosen_edge.top().fromV
+*ATTR*                      ACCUM e.*eBoolAttr* = TRUE;
+*ACCM*                  @@mst += @@chosen_edge.top().their_edge;
+*FILE*                  @@mst += @@chosen_edge.top();
+                END;    
+                @@chosen_edge.clear();
+                MSTNodes = MSTNodes UNION Current;      // update MSTNodes
+        END;
+
+*ACCM*  PRINT @@mst;
+*FILE*  f.println("From", "To", "Weight");
+*FILE*  FOREACH e IN @@mst DO 
+*FILE*      f.println(e.fromV, e.toV, e.weight);
+*FILE*  END;
+}

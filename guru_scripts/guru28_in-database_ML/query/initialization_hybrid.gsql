@@ -1,0 +1,21 @@
+CREATE QUERY initialization_hybrid(INT num_latent_factors = 19) FOR GRAPH Recommender {
+	ListAccum<DOUBLE> @init;
+  MOVIEs = {MOVIE.*};
+	MOVIEs = SELECT s FROM MOVIEs:s
+	         ACCUM
+	           FOREACH i IN RANGE[1,num_latent_factors] DO
+	             s.@init += 0.1*randn()+0.08
+	           END
+	         POST-ACCUM
+	           s.x = s.@init;
+
+	USERs = {USER.*};
+	USERs = SELECT s FROM USERs:s
+	        ACCUM
+	           FOREACH i IN RANGE[1,num_latent_factors] DO
+	             s.@init += 0.1*randn()-0.08
+	           END
+	        POST-ACCUM
+	          s.theta = s.@init;
+}
+

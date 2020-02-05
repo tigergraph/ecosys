@@ -1,0 +1,15 @@
+use graph ldbc_snb
+set syntax_version="v2"
+
+#Find Viktor Akhiezer's 2012 favorite author whose last name begins with character 'S', and how many LIKES Viktor give to the author's post or comment. 
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+  SumAccum<int> @likesCnt;
+  PersonAll = {Person.*};
+
+  FavoriteAuthors =  SELECT t
+               FROM PersonAll:s-((Person_LIKES_Comment>|Person_LIKES_Post>)) -:msg - ((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>))-Person:t
+               WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer" AND t.lastName LIKE "S%" AND year(msg.creationDate) == 2012
+               ACCUM t.@likesCnt +=1;
+
+  PRINT  FavoriteAuthors[FavoriteAuthors.firstName, FavoriteAuthors.lastName, FavoriteAuthors.@likesCnt];
+}

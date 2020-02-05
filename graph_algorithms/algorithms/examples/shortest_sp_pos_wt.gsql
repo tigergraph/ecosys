@@ -1,0 +1,92 @@
+// 1 May 2018: v2.0 - ListAccum "+" behavior changed.  Need to use FOREACH.
+CREATE QUERY shortest_path_2D (VERTEX<company> S, VERTEX<company> T , INT maxDepth) FOR GRAPH work_graph
+{
+  OrAccum @@stop = false;       // global variable controlling whether to continue the search
+  OrAccum  @seenS = false;      // a vertex has been seen by S
+  OrAccum  @seenT = false;      // a vertex has been seen by T
+  OrAccum @meet = false;        // vertex flag indicating whether it is 'meeting' point
+  SumAccum<int>   @sLength = 0;  // vertex runtime attribute: # steps from origin vertex S
+  SumAccum<int>   @tLength = 0;  // vertex runtime attribute: # steps from origin vertex T
+  SumAccum<int>   @resultLength = 0; // the final length of shortest path
+  ListAccum<string>  @pathS;  //list of paths so far from S
+  ListAccum<string>  @pathT;  //list of paths so far from T
+  ListAccum<string>  @pathResults; //final set of shortest paths
+ 
+  Start = {S,T};
+ 
+  //initialize S, T vertices
+  StartSet (ANY) = SELECT v         // _ means StartSet can contain any vertex type
+             FROM Start:v
+             ACCUM CASE WHEN v==S THEN v.@seenS=true, v.@pathS +=  ""
+                        WHEN v==T THEN v.@seenT=true, v.@pathT +=  ""
+                   END;
+  WHILE @@stop == false LIMIT maxDepth DO
+    StartSet  = SELECT v
+        // Consider each edge from S or T's frontier (u) to outside (v),
+        // i.e., each edge that moves "out" from the frontier.
+        // Note how StartSet is updated to be v (pushing the frontier forward).
+        FROM StartSet:u-(:e)->:v
+        WHERE ((u.@seenS==true AND v.@seenS!=true) OR // from S frontier to outside
+               (u.@seenT==true AND v.@seenT!=true))   // from T frontier to outside
+        ACCUM
+            // If u->v joins the S and T frontiers, an odd-length path is found (Case III)
+            CASE WHEN ((u.@seenS == true AND v.@seenT == true) OR
+                       (u.@seenT == true AND v.@seenS == true))
+                THEN @@stop += true,
+                    // we don't want to print the results twice
+                    // v.@pathResults  stores all shortest paths
+                    // between S and T where v is in the middle of
+                    // every such path.
+                    // only need to print out the result once, see above step 3 (b)
+                    CASE WHEN (u.@seenS == true AND v.@seenT == true)
+                        THEN
+                                            STRING joiner = u.id + "-" + v.id + "-",
+                                            FOREACH pathS IN u.@pathS DO
+                                                FOREACH pathT in v.@pathT DO
+                                                    v.@pathResults += pathS + joiner + pathT
+                                                END
+                                            END,
+                            v.@meet = true,
+                            v.@resultLength =  u.@sLength + v.@tLength + 1
+                    END
+            // Else, since u->v does not complete a path, move the frontiers forward.
+            // If u is in S's frontier, then extend S's frontier to v. Assign path info to v.
+            WHEN u.@seenS == true
+                THEN v.@seenS = true,
+                    FOREACH uPath IN u.@pathS DO
+                        v.@pathS += uPath + ( u.id + "-")
+                    END,
+                    v.@sLength = u.@sLength + 1
+            // If u is in T's frontier, then extend T's frontier to v. Assign path info to v.
+            WHEN  u.@seenT == true
+                THEN v.@seenT =true,
+                    FOREACH uPath IN u.@pathT DO
+                        v.@pathT += (u.id + "-") + uPath
+                    END,
+                    v.@tLength = u.@tLength + 1
+            END
+        POST-ACCUM
+            // If the two frontiers meet at v, an even-length path is found (Case II)
+            CASE WHEN (v.@seenS == true AND v.@seenT == true AND @@stop == false)
+                THEN @@stop += true,
+                    // Insert v.id between the source paths and the target paths
+                    FOREACH pathS in v.@pathS DO
+                            FOREACH pathT in v.@pathT DO
+                                    v.@pathResults += pathS + v.id + "-" + pathT
+                            END
+                    END,
+                    v.@resultLength = v.@sLength + v.@tLength,
+                    v.@meet = true
+            END;
+  END;
+ 
+  // print out the final result stored at the vertex who marked
+  // as meet vertex
+  StartSet = SELECT v
+             FROM StartSet:v
+             WHERE v.@meet == true;
+ 
+  #PRINT StartSet.@resultLength, StartSet.@pathResults;           # JSON Output v1
+  PRINT StartSet [StartSet.@resultLength, StartSet.@pathResults]; # JSON Output v2
+}
+INSTALL QUERY shortest_path_2D

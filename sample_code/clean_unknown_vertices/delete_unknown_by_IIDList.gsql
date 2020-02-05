@@ -1,0 +1,10 @@
+use graph _graphname_
+drop query DeleteUnknownByIIDList
+create query DeleteUnknownByIIDList(string TgtVertexType, string filename = "/tmp/unknownIIDList.csv", bool dryrun = true) for Graph _graphname_ {
+ ListAccum<int> @@iidList;
+ string msg;
+ @@iidList = {LOADACCUM (filename, $0, ",", false)};
+ RemoveUnknownIID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, TgtVertexType, @@iidList, msg, dryrun);
+ print msg;
+}
+install query DeleteUnknownByIIDList

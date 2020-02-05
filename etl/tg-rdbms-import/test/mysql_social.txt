@@ -1,0 +1,16 @@
+# below DB table definition matches TG's document/doc/examples/tutorial/social
+
+CREATE table SocialUser (uid varchar(50), name varchar(50), isActive bool, registration_timestamp int);
+CREATE table SocialConn ( fromUser varchar(50), toUser varchar(50));
+
+
+insert into SocialUser values(0,"luke",1,1400000000);
+insert into SocialUser values(1,"john",1,1410000000);
+insert into SocialUser values(2,"matthew",0,1420000000);
+insert into SocialUser values(3,"mark",1,143000000);
+insert into SocialUser values(4,"paul",1,144000000);
+insert into SocialUser values(5,"steven",0,145000000);
+insert into SocialUser values(6,"peter",1,146000000);
+insert into SocialUser values(7,"james",1,147000000);
+insert into SocialUser values(8,"joseph",1,148000000);
+insert into SocialUser values(9,"thomas",1,149000000);

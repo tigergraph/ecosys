@@ -1,0 +1,63 @@
+CREATE QUERY shortest_ss_any_wt (VERTEX source, BOOL display) FOR GRAPH generic {
+/* The Bellman-Ford algorithm for single-Source Shortest Path with edge weights,
+ possibly negative.
+ If any loop in the graph has a net negative weight, the algorithm will exit.
+*/
+
+        MinAccum<FLOAT> @dist;                      # best-known shortest distance FROM source
+        SumAccum<STRING> @path;                     # best-known path FROM source
+        OrAccum @visited = false;                   # whether this vertex has been visited
+        OrAccum @@hasNegLoop;                       # Indicates a negative loop is found
+        SetAccum<EDGE> @@edgeSet;                   # list of all edges, if display is needed
+        STRING sourceName;
+        STRING errMsg = "There is a loop with negative length. Shortest path is undefined.";
+        INT maxVal = 1000000000;                    # Should be larger than any possible path
+        EXCEPTION negLoop (40999);
+        VSET = {Node.*};
+        Source = {source}; 
+
+  ##### Initialization: Set the best-known distance to a maxValue (pseudo-infinite)
+        Source = SELECT s FROM Source:s
+                 POST-ACCUM sourceName = s.name;        # Get the name of the source vertex
+        VSET = SELECT s FROM VSET:s
+               POST-ACCUM s.@dist = maxVal,
+                          s.@path = sourceName;
+        Source = SELECT s FROM Source:s               # The distance FROM s to itself is 0.
+                 POST-ACCUM s.@dist = 0,
+                            s.@visited = true;
+  
+  ##### Do N-1 iterations: Consider whether each edge lowers the best-known distance.
+        FOREACH i IN RANGE[1, VSET.size()-1] DO
+                VSET = SELECT s
+                       FROM VSET:s -(LinkTo:e)-> :t
+                       ACCUM IF s.@visited THEN
+                                IF s.@dist + e.weight < t.@dist THEN
+                                        t.@dist = s.@dist + e.weight,             # @dist is a MinAccum
+                                        t.@path = s.@path +"-"+ t.name
+                                END,
+                                t.@visited += true
+                             END;
+        END;
+             
+  ##### Check for loops with net negative weight #####
+        VSET = SELECT s
+               FROM VSET:s -(LinkTo:e)-> :t
+               ACCUM @@hasNegLoop +=s.@dist + e.weight < t.@dist;
+         
+        IF @@hasNegLoop THEN        
+                RAISE negLoop (errMsg);
+        END;
+  
+  ##### Print the results #####
+                    
+        PRINT VSET[VSET.@dist, VSET.@path];
+        IF display THEN
+                VSET = SELECT s
+                       FROM VSET:s -(LinkTo:e)-> :t
+                       ACCUM @@edgeSet += e;
+                PRINT @@edgeSet;
+        END;
+
+}
+
+#INSTALL QUERY shortest_ss_any_wt

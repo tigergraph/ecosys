@@ -1,0 +1,49 @@
+CREATE QUERY shortest_ss_pos_wt_attr (VERTEX source) FOR GRAPH generic {
+/* This query is Single-Source Shortest Path with positive weights on edges
+It calculates the shortest distance from the given vertex source to all other connected vertices, 
+and shows one shortest path between them.
+The JSON version also show visualization of the network.
+The attribute version only store the distance into attribute, not the path.
+*/ 
+
+        MinAccum<float> @dis;
+        OrAccum @visited;
+        ListAccum<vertex> @path;
+        float epsilon = 0.000000001;
+
+  ##### Initialization  #####
+        Source = {source};
+        Source = SELECT s FROM Source:s 
+                 ACCUM s.@visited += true, s.@dis = 0;
+        ResultSet = {source};
+
+  ##### Calculate distances  #####
+        WHILE(Source.size()>0) DO
+                Source = SELECT t
+                         FROM Source:s -(LinkTo:e)-> :t
+                         WHERE t.@dis > s.@dis + e.weight
+                         ACCUM t.@dis += s.@dis + e.weight,
+                               t.@visited += true;
+                ResultSet = ResultSet UNION Source;
+        END;
+
+  ##### Find the paths  #####
+        Source = {source};
+        WHILE(Source.size()>0) DO
+          Source = SELECT t
+                   FROM Source:s -(LinkTo:e)-> :t
+                   WHERE abs((t.@dis) - (s.@dis+e.weight)) < epsilon
+                   ACCUM t.@path = s.@path + [t];
+        END;
+
+ ##### Print the results #####
+        ResultSet = SELECT s
+                    FROM ResultSet:s
+                    POST-ACCUM s.score = s.@dis;  
+                  
+
+
+}
+
+
+

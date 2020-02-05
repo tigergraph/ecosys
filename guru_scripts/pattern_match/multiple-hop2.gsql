@@ -1,0 +1,23 @@
+use graph ldbc_snb
+set syntax_version="v2"
+
+set query_timeout=60000
+
+#2 hop with 1st hop is a disjunction.
+#Find in which continents were the top 3  latest messages in Jan 2011  created ?
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+
+  SumAccum<String> @continentName;
+
+  msg = {Comment.*, Post.*};
+
+  accMsgContinent =
+    SELECT s
+    FROM msg:s-((Post_IS_LOCATED_IN_Country>|Comment_IS_LOCATED_IN_Country>).Country_IS_PART_OF_Continent>)-Continent:t
+    WHERE  year(s.creationDate) == 2011 AND month(s.creationDate) == 1
+    ACCUM s.@continentName = t.name
+    ORDER BY s.creationDate DESC
+    LIMIT 3;
+
+  PRINT  accMsgContinent;
+}

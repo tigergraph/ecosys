@@ -1,0 +1,30 @@
+use graph Healthcare
+drop query EdgeCountStatDist
+create distributed query EdgeCountStatDist(string srcVType, string edgeType) for Graph Healthcare {
+ SumAccum<int> @@edgeCount = 0;
+ #map used to stat vertex count for each segment
+ MapAccum<int, SumAccum<int>> @@segVertexCountMap;
+ #map used to stat edge count for each segment
+ MapAccum<int, SumAccum<int>> @@segEdgeCountMap;
+
+ S = {srcVType.*};
+
+ X = SELECT src
+     FROM S:src
+     ACCUM @@segVertexCountMap += (GetSegmentId(__ENGINE__SERVICEAPI, src) -> 1)
+     ;
+     
+ Y = SELECT tgt
+     FROM S:src - (edgeType: e) - :tgt
+     ACCUM 
+       @@edgeCount += 1,
+       @@segEdgeCountMap += (GetSegmentId(__ENGINE__SERVICEAPI, src) -> 1) 
+     ;
+
+ PRINT srcVType, edgeType;
+ PRINT @@segVertexCountMap;
+ PRINT @@segEdgeCountMap;
+ PRINT @@edgeCount;
+ PRINT S.size(), X.size(), Y.size();
+}
+install query EdgeCountStatDist

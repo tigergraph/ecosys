@@ -1,0 +1,14 @@
+CREATE QUERY user_profile_normalization(/* Parameters here */) FOR GRAPH Recommender { 
+  	SumAccum<FLOAT> @norm;
+	
+  	Users = {USER.*};
+    Users = SELECT s FROM Users:s -(user_term:e)-> TERM:t
+	           ACCUM
+	             s.@norm += e.score*e.score
+	           POST-ACCUM
+	             s.@norm = sqrt(s.@norm);
+	  Users = SELECT s FROM Users:s -(user_term:e)-> TERM:t
+	           ACCUM
+	             e.score = e.score/s.@norm;
+}
+
