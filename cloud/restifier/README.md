@@ -16,7 +16,7 @@ Run `go build -o server` to build a server executable
 
 ### Run
 
-run `PORT=<port> ./server` to serve at given port.
+run `PORT=<port> ./server` to serve at given port on **m1** (the first node in the cluster).
 
 
 ### API
@@ -39,3 +39,8 @@ Refer to `example.sh` for more details.
 * `POST /api/user/revoke`: revoke role from users
 
 For usage, please refer to `example.sh`
+
+
+## Copyright
+
+Every file in the same directory of this README.md for this specific tool is in public domain.
