@@ -1,29 +1,18 @@
 use graph ldbc_snb
+
 drop query groups
 
-CREATE DISTRIBUTED QUERY groups() FOR GRAPH ldbc_snb SYNTAX v1 {
+CREATE QUERY groups() FOR GRAPH ldbc_snb SYNTAX v2 {
 
 
 Typedef tuple <length int , ts DATETIME, message vertex> messageTuple;
+
 Typedef HeapAccum <messageTuple> (20, ts desc, length desc) messageHeap1;
 Typedef HeapAccum <messageTuple> (20, ts asc, length desc) messageHeap2;
 Typedef HeapAccum <messageTuple> (20, length desc, ts desc) messageHeap3;
 Typedef HeapAccum <messageTuple> (20, length asc, ts desc) messageHeap4;
 Typedef HeapAccum <messageTuple> (10, ts desc, length desc) messageHeap5;
 Typedef HeapAccum <messageTuple> (10, ts asc, length desc) messageHeap6;
-/* __TF_HOP_BEGIN:0 */
-
-// for src id propagation
-MapAccum<VERTEX, SumAccum<int>> @srcIdPropagAcc_1;// @srcIdPropagAcc_2;
-
-// for VSet global accums
-SetAccum<VERTEX> @@GVS1;
-
-// while loop iteration counter
-int i;
-
-/* __TF_HOP_END:0 */
-
 
 
 GroupByAccum<vertex city, int yy, messageHeap1 topk_latest_message, messageHeap2 topk_earliest_message, 
@@ -40,20 +29,11 @@ GroupByAccum<vertex city, string gender, string browser, int yy, int mm,  messag
 
 
 
-/* __TF_HOP_BEGIN:32 */
+T = SELECT m
+FROM City:city - (<IS_LOCATED_IN) - Person:ps - (LIKES>) - Comment:m
+WHERE  year(m.creationDate) >= 2010  AND year(m.creationDate) <= 2012 
+ACCUM  
 
-
-
-VS_city = {City.*};
-VS__1 =
-	select ps
-	from   VS_city:city -(IS_LOCATED_IN_REVERSE:x)-> Person:ps
-	accum  ps.@srcIdPropagAcc_1 += (city -> 1);
-
-T =
-	select m
-	from   VS__1:ps -(LIKES:x_2)-> Comment:m
-	accum  
     int len = m.length,
     int len_with_cap = len,
     Datetime ts = m.creationDate,
@@ -63,24 +43,14 @@ T =
 
     case when len_with_cap > 100 then len_with_cap = 100 end, 
  
-
-  CASE WHEN yy >= 2010  AND yy <= 2012 THEN 
-    foreach (city, mult_4) in ps.@srcIdPropagAcc_1 do
-		
-		
-		      // accumulator input must reflect multiplicity of matches
-		      foreach i_5 in range [1,  mult_4] do
-		           
-
     @@groupby_city_yy += (city, yy-> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len), 
 
     @@groupby_city_browser_yy_mm_len +=  (city, m.browserUsed, yy, mm, len_with_cap -> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len),
 
-    @@groupby_city_gender_browser_yy_mm +=  (city, ps.gender, m.browserUsed, yy, mm -> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len)
-		
-		   end
-		end
-  END;
-/* __TF_HOP_END:48 */
-    
+    @@groupby_city_gender_browser_yy_mm +=  (city, ps.gender, m.browserUsed, yy, mm -> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len);
+	
+
 }
+
+
+
