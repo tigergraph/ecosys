@@ -29,3 +29,10 @@ NUMA node5 CPU(s):   40-47
 NUMA node6 CPU(s):   48-55
 NUMA node7 CPU(s):   56-63
 Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm rep_good nopl cpuid extd_apicid pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext ssbd vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves xsaveerptr arat umip rdpid
+
+
+MemTotal:       528378420 kB
+MemFree:        15706464 kB
+MemAvailable:   97957392 kB
+Buffers:          122356 kB
+Cached:         83946240 kB
