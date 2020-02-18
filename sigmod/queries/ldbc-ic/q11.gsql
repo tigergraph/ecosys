@@ -1,0 +1,3 @@
+use graph ldbc_snb
+
+RUN QUERY ic_11(30786325583618, "Laos", 2010)

@@ -1,0 +1,19 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY ic_6(vertex<Person> pid, string tagName) for graph ldbc_snb syntax _v2 {
+  SetAccum<vertex<Post>> @postSet;
+  SumAccum<int> @postCount;
+  S = { pid };
+  T =
+    SELECT ot
+    FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_CREATOR)- Post:m,
+         :m -(HAS_TAG>)- Tag:t,
+         :m -(HAS_TAG>)- Tag:ot
+    WHERE p != s AND t.name == tagName AND ot.name != tagName
+    ACCUM ot.@postSet += m
+    POST-ACCUM ot.@postCount = ot.@postSet.size(), ot.@postSet.clear()
+    ORDER BY ot.@postCount DESC, ot.name ASC
+    LIMIT 10;
+  PRINT T[T.name AS tagName, T.@postCount AS postCount];
+}
+
