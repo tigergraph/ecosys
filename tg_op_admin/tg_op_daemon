@@ -1,0 +1,176 @@
+#!/usr/bin/env python
+import sys
+import os
+import socket
+import subprocess
+import yaml
+import random
+import string
+import time
+
+
+# below port will be provided in command line
+TCP_PORT = 5005  
+
+# gamin command won't be that long
+BUFFER_SIZE = 100
+
+# Secret path and how often to refresh
+SEC_PATH = "will be under logs/.tg_daemon.secret"
+SEC_MAX  = 10
+SEC_Count = 0
+
+ERROR_RETURN=None
+
+# now build the bricks
+def validiate_cmd(cmd):
+    allowed_cmds=[
+            "start", 
+            "stop",
+            "log",
+            "status",
+            "restart"]
+    if cmd[0] in allowed_cmds:
+        return enforce_yes(cmd)
+    else:
+        return False
+
+def enforce_yes(cmd):
+    global ERROR_RETURN
+    # some command asks "Yes" so -y must be provided
+    if cmd[0] == "stop":
+        for opt in cmd[1:]:
+            if  opt == "-y" \
+                or opt == "-fy" \
+                or opt == "-yf":
+                return True
+        ERROR_RETURN = cmd[0] + " must have -y option"
+        return False
+    return True
+
+def time_print(str):
+    t = time.time()
+    tstring=time.strftime('%Y-%m-%d %H:%M %Z', time.localtime(t))
+    print "["+tstring+"] " + str
+
+def randomString(stringLength=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+def init_sec_path():
+    global SEC_PATH
+    cfg = gsql_cfg()
+    log_dir = cfg["tigergraph.log.root"]
+    SEC_PATH = os.path.join(log_dir, ".tg_daemon.secret") 
+
+def refresh_secret():
+    global SEC_PATH
+    global SEC_Count
+    new_secret = randomString(32)
+    if os.path.isfile(SEC_PATH):
+        with open(SEC_PATH) as fp:
+            curren_secret = fp.readline()
+    else:
+        # start or missing secret file
+        curren_secret = new_secret
+        SEC_Count = 0
+
+    if SEC_Count % SEC_MAX == 0:
+        with open(SEC_PATH, 'w') as out_file:
+            out_file.write(new_secret)
+
+    SEC_Count = SEC_Count + 1
+    return curren_secret
+
+
+def gsql_cfg():
+    cfg_file=os.path.join(os.path.expanduser("~"), ".gsql/gsql.cfg")
+    if not os.path.isfile(cfg_file):
+        raise FileNotExistException(cfg_file)
+    f = open(cfg_file)
+    content = yaml.safe_load(f)
+    f.close()
+    return content
+
+def format_cmd(mystring):
+    cmd = mystring.lower().split()
+    if len(cmd) < 2:
+        return None
+    else:
+        return cmd
+
+def validate_secret(client_secret):
+    if client_secret == refresh_secret():
+        return True
+    else:
+        return False
+
+def run_gadmin_cmd(org_cmd):
+    cmd = format_cmd(org_cmd)
+    validate_state = 0
+    if cmd is not None: 
+        validate_state = 1
+        if validate_secret(cmd[0]):
+            validate_state = 2
+            if validiate_cmd(cmd[1:]):
+                validate_state = 3
+                cmd[0] = "gadmin"
+                process = subprocess.Popen(cmd, shell=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+                output = process.communicate()[0].strip()
+                return output
+    if validate_state == 0:
+        return "Error: empty command"
+    elif validate_state == 1:
+        return "Error: wrong secret"
+    elif validate_state == 2:
+        global ERROR_RETURN
+        if ERROR_RETURN is not None:
+            return "Error: " + ERROR_RETURN
+        else:
+            return "Error: not supported command: " + " ".join(cmd[1:]) 
+    else:
+        return "Invalid command: " + org_cmd
+
+
+def parse_argv():
+    global TCP_PORT
+    # count the arguments
+    arguments = len(sys.argv) - 1
+    if arguments != 1:
+        time_print('Need provide 1 parameter: port')
+        sys.exit(-2)
+    TCP_PORT = int(sys.argv[1])
+
+
+
+if __name__ == '__main__':
+    parse_argv()
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Bind the socket to the address given on the command line
+    server_address = ('', TCP_PORT)
+    sock.bind(server_address)
+    time_print('starting up on %s port %s' % sock.getsockname())
+    sock.listen(1)
+    init_sec_path()
+    refresh_secret()
+
+    while True:
+        time_print('waiting for a connection')
+        connection, client_address = sock.accept()
+        try:
+            time_print('client connected: ' + client_address[0] + ":" + str(client_address[1]))
+            #while True:
+            data = connection.recv(BUFFER_SIZE)
+            time_print('received "%s"' % data)
+            if data:
+                result = run_gadmin_cmd(data)
+                connection.sendall(result)
+                time_print("done")
+            else:
+                 break
+        finally:
+            connection.close()
+
