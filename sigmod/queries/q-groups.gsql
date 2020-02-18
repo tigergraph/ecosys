@@ -1,56 +1,49 @@
 use graph ldbc_snb
-
 drop query groups
 
-CREATE QUERY groups() FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE QUERY groups() FOR GRAPH ldbc_snb SYNTAX v1 {
 
 
-Typedef tuple <length int , ts DATETIME, message vertex> messageTuple;
+Typedef tuple <length int , ts DATETIME, comment vertex> commentTuple;
 
-Typedef HeapAccum <messageTuple> (20, ts desc, length desc) messageHeap1;
-Typedef HeapAccum <messageTuple> (20, ts asc, length desc) messageHeap2;
-Typedef HeapAccum <messageTuple> (20, length desc, ts desc) messageHeap3;
-Typedef HeapAccum <messageTuple> (20, length asc, ts desc) messageHeap4;
-Typedef HeapAccum <messageTuple> (10, ts desc, length desc) messageHeap5;
-Typedef HeapAccum <messageTuple> (10, ts asc, length desc) messageHeap6;
-
-
-GroupByAccum<vertex city, int yy, messageHeap1 topk_latest_message, messageHeap2 topk_earliest_message, 
-                          messageHeap3 topk_longest_message, messageHeap4 topk_shortest_message, 
-                          messageHeap5 topk_oldest_author_message, messageHeap6 topk_youngest_author_message, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_city_yy;  
-
-GroupByAccum<vertex city, string browser, int yy, int mm,  int len, messageHeap1 topk_latest_message, messageHeap2 topk_earliest_message, 
-                          messageHeap3 topk_longest_message, messageHeap4 topk_shortest_message, 
-                          messageHeap5 topk_oldest_author_message, messageHeap6 topk_youngest_author_message, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_city_browser_yy_mm_len;  
-
-GroupByAccum<vertex city, string gender, string browser, int yy, int mm,  messageHeap1 topk_latest_message, messageHeap2 topk_earliest_message, 
-                          messageHeap3 topk_longest_message, messageHeap4 topk_shortest_message, 
-                          messageHeap5 topk_oldest_author_message, messageHeap6 topk_youngest_author_message, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_city_gender_browser_yy_mm;  
+Typedef HeapAccum <commentTuple> (20, ts desc, length desc) commentHeap1;
+Typedef HeapAccum <commentTuple> (20, ts asc, length desc) commentHeap2;
+Typedef HeapAccum <commentTuple> (20, length desc, ts desc) commentHeap3;
+Typedef HeapAccum <commentTuple> (20, length asc, ts desc) commentHeap4;
+Typedef HeapAccum <commentTuple> (10, ts desc, length desc) commentHeap5;
+Typedef HeapAccum <commentTuple> (10, ts asc, length desc) commentHeap6;
 
 
+GroupByAccum<int yy, commentHeap1 topk_latest_comment, commentHeap2 topk_earliest_comment, 
+                          commentHeap3 topk_longest_comment, commentHeap4 topk_shortest_comment, 
+                          commentHeap5 topk_oldest_author_comment, commentHeap6 topk_youngest_author_comment, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_yy;  
 
-T = SELECT m
-FROM City:city - (<IS_LOCATED_IN) - Person:ps - (LIKES>) - Comment:m
-WHERE  year(m.creationDate) >= 2010  AND year(m.creationDate) <= 2012 
-ACCUM  
+GroupByAccum<vertex city, string browser, int yy, int mm,  int len, commentHeap1 topk_latest_comment, commentHeap2 topk_earliest_comment, 
+                          commentHeap3 topk_longest_comment, commentHeap4 topk_shortest_comment, 
+                          commentHeap5 topk_oldest_author_comment, commentHeap6 topk_youngest_author_comment, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_city_browser_yy_mm_len;  
 
-    int len = m.length,
-    int len_with_cap = len,
-    Datetime ts = m.creationDate,
-    Datetime dob = ps.birthday,
-    int mm  = month(m.creationDate),
-    int yy  = year(m.creationDate),
+GroupByAccum<vertex city, string gender, string browser, int yy, int mm,  commentHeap1 topk_latest_comment, commentHeap2 topk_earliest_comment, 
+                          commentHeap3 topk_longest_comment, commentHeap4 topk_shortest_comment, 
+                          commentHeap5 topk_oldest_author_comment, commentHeap6 topk_youngest_author_comment, SumAccum<int> cnt, AvgAccum avg_len> @@groupby_city_gender_browser_yy_mm;  
 
-    case when len_with_cap > 100 then len_with_cap = 100 end, 
- 
-    @@groupby_city_yy += (city, yy-> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len), 
 
-    @@groupby_city_browser_yy_mm_len +=  (city, m.browserUsed, yy, mm, len_with_cap -> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len),
 
-    @@groupby_city_gender_browser_yy_mm +=  (city, ps.gender, m.browserUsed, yy, mm -> messageTuple(len, ts, m), messageTuple(len, ts, m), messageTuple(len,ts, m), messageTuple(len, ts, m), messageTuple(len, dob, m), messageTuple(len, dob, m), 1, len);
-	
 
+T = SELECT c 
+    FROM City:city - (<IS_LOCATED_IN) - Person:ps - (LIKES>) - Comment:c
+    WHERE year(c.creationDate) >= 2010 AND  year(c.creationDate) <= 2012
+    ACCUM  
+      int len = c.length,
+      int len_with_cap = len,
+      Datetime ts = c.creationDate,
+      Datetime dob = ps.birthday,
+      int mm  = month(c.creationDate),
+      int yy  = year(c.creationDate),
+
+      CASE WHEN len_with_cap > 100 THEN len_with_cap = 100 END, 
+
+      @@groupby_yy += (yy -> commentTuple(len, ts, c), commentTuple(len, ts, c), commentTuple(len,ts, c), commentTuple(len, ts, c), commentTuple(len, dob, c), commentTuple(len, dob, c), 1, len), 
+      @@groupby_city_browser_yy_mm_len +=  (city, c.browserUsed, yy, mm, len_with_cap -> commentTuple(len, ts, c), commentTuple(len, ts, c), commentTuple(len,ts, c), commentTuple(len, ts, c), commentTuple(len, dob, c), commentTuple(len, dob, c), 1, len),
+      @@groupby_city_gender_browser_yy_mm +=  (city, ps.gender, c.browserUsed, yy, mm -> commentTuple(len, ts, c), commentTuple(len, ts, c), commentTuple(len,ts, c), commentTuple(len, ts, c), commentTuple(len, dob, c), commentTuple(len, dob, c), 1, len);
+    
 }
-
-
-
