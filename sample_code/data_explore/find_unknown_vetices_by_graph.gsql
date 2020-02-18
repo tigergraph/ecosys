@@ -24,7 +24,7 @@ create DISTRIBUTED query FindUnknownClaimLine(string prefix, string output = "/a
  Y = SELECT src
      FROM Y:src
      POST-ACCUM 
-       fobj.println(GetExternalID(__ENGINE__CONTEXT, src, prefix, src.@eId));
+       fobj.println(GetExternalIDII(__ENGINE__CONTEXT, src, prefix, src.@eId));
 
  PRINT @@vlist.size(), Y.size();
 }

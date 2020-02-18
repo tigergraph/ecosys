@@ -97,7 +97,7 @@ inline string GetExternalID(gpr::Context& context,
   return ss.str();
 }
 
-inline string GetExternalID(gpr::Context& context,
+inline string GetExternalIDII(gpr::Context& context,
                             VERTEX& src,
                             const std::string& prefix,
                             SumAccum<string>& eid) {
@@ -159,6 +159,27 @@ inline ListAccum<VERTEX> GetUnknownVertices(ServiceAPI* api,
         << "No unknown vertex has been found, do nothing!!!";
   }
   return unknownIds;
+}
+
+inline int64_t GetUnknownVertexCount(ServiceAPI* api,
+                            EngineServiceRequest& request,
+                            ListAccum<VERTEX>& vlist,
+                            const std::string& vtype,
+                            const std::string& outputfolder) {
+  ListAccum<VERTEX> unknownIds = GetUnknownVertices(api, request, vlist, vtype);
+  std::string filename = outputfolder + "/" + vtype + ".unknown";
+  std::fstream fs;
+  fs.open(filename.c_str(), std::fstream::out);
+  if (!fs.is_open()) {
+    GEngineInfo(InfoLvl::Brief, "GetUnknownVertexCount") 
+      << "Open filename: " << filename << " failed, quit!!!" <<std::endl;
+    return unknownIds.size();
+  }
+  for (auto& vt: unknownIds.data_) {
+    fs << vt.vid << "\n";
+  }
+  fs.close();
+  return unknownIds.size();
 }
 
 }
