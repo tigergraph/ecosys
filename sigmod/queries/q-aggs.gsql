@@ -1,7 +1,7 @@
 use graph ldbc_snb
 drop query aggs
 
-CREATE QUERY aggs() FOR GRAPH ldbc_snb SYNTAX v1 {
+CREATE QUERY aggs() FOR GRAPH ldbc_snb SYNTAX v2 {
 
 
 Typedef tuple <length int , ts DATETIME, comment vertex> commentTuple;
