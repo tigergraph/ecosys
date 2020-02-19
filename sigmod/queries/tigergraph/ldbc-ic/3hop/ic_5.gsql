@@ -3,7 +3,7 @@ drop query ic_5
 
 CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb syntax _v2 {
 
-  SetAccum<vertex<Forum>> @forumSet;
+  SetAccum<vertex> @forumSet;
 
   SetAccum<vertex<Post>> @postSet;
   SumAccum<int> @postCount;
@@ -11,15 +11,16 @@ CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb synta
 
   F =
     SELECT f
-    FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_MEMBER:e)- Forum:f
+    FROM S:s -(KNOWS*1..3)- Person:p -(<HAS_MEMBER:e)- Forum:f
     WHERE p != s AND e.joinDate > minDate
     ACCUM p.@forumSet += f;
 
   R = 
       SELECT  f 
       FROM F:f -(CONTAINER_OF>)- Post:m -(HAS_CREATOR>)- :p
-      WHERE f in p.@forumSet 
-      ACCUM f.@postCount += 1;
+      ACCUM  CASE WHEN  p.@forumSet.contains(f) THEN
+           f.@postCount += 1
+           END;
 
    F = SELECT f
        FROM F:f

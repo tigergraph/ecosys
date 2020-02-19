@@ -1,0 +1,29 @@
+USE GRAPH ldbc_snb
+drop query ic_9
+
+CREATE QUERY ic_9(vertex<Person> pid, datetime maxDate) FOR GRAPH ldbc_snb SYNTAX _v2 {
+  SumAccum<uint> @personId;
+  SumAccum<string> @personFirstName, @personLastName, @messageContent;
+  S = { pid };
+
+  M =
+    SELECT m
+    FROM S:s -(KNOWS*1..4)- Person:p -(<HAS_CREATOR)- (Post|Comment):m
+    WHERE p != s and m.creationDate < maxDate
+    ACCUM
+      m.@personId = p.id,
+      m.@personFirstName = p.firstName,
+      m.@personLastName = p.lastName,
+      IF m.type == "Post" AND m.imageFile != "" THEN
+        m.@messageContent = m.imageFile
+      ELSE
+        m.@messageContent = m.content
+      END
+    ORDER BY m.creationDate DESC, m.id ASC
+    LIMIT 20;
+
+  PRINT M[M.@personId, M.@personFirstName, M.@personLastName,
+          M.id AS messageId, M.@messageContent,
+          M.creationDate AS messageCreationDate];
+}
+

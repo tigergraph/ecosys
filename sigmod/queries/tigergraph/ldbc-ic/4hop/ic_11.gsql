@@ -1,0 +1,24 @@
+USE GRAPH ldbc_snb
+drop query ic_11
+
+CREATE QUERY ic_11(vertex<Person> pid, string cName,
+    int year) FOR GRAPH ldbc_snb SYNTAX _v2 {
+  SumAccum<string> @organizationName;
+  SumAccum<int> @organizationWorkFromYear;
+  S = { pid };
+
+  P =
+    SELECT p
+    FROM S:s -(KNOWS*1..4)- Person:p -(WORK_AT>:e)- Company:org,
+         :org -(IS_LOCATED_IN>)- Country:c
+    WHERE p != s AND e.workFrom < year AND c.name == cName
+    ACCUM p.@organizationName = org.name,
+          p.@organizationWorkFromYear = e.workFrom
+    ORDER BY p.@organizationWorkFromYear ASC, p.id ASC, p.@organizationName DESC
+    LIMIT 10;
+
+  PRINT P[P.id AS personId, P.firstName AS personFirstName,
+          P.lastName AS personLastName, P.@organizationName,
+          P.@organizationWorkFromYear];
+}
+

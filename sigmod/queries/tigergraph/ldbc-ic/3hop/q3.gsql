@@ -1,0 +1,3 @@
+use graph ldbc_snb
+
+RUN QUERY ic_3(17592186055119, "Laos", "Scotland", "2011-05-31 17:00:00", 42)

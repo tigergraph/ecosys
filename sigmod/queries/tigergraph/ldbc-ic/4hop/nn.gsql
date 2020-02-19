@@ -1,0 +1,29 @@
+use graph ldbc_snb
+drop query nn
+CREATE QUERY nn(vertex<Person> pid) FOR GRAPH ldbc_snb {
+
+  OrAccum  @visited = false;
+
+  Start = {pid};
+
+  FirstNeighbors = SELECT tgt
+                   FROM Start:s -(KNOWS:e)-> Person:tgt
+                   ACCUM tgt.@visited += true, s.@visited += true;
+
+
+  SecondAndFirstNeighbors = SELECT tgt
+                    FROM FirstNeighbors -(KNOWS:e)-> Person:tgt
+                    WHERE tgt.@visited == true;
+
+  SecondNeighbors = SELECT tgt
+                    FROM FirstNeighbors -(KNOWS:e)-> Person:tgt
+                    WHERE tgt != pid;
+
+
+  Print FirstNeighbors.size();
+  Print SecondAndFirstNeighbors.size();
+  Print SecondNeighbors.size();
+
+}
+
+install query nn

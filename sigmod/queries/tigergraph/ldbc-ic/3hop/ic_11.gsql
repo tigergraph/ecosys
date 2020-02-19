@@ -8,7 +8,7 @@ CREATE QUERY ic_11(vertex<Person> pid, string cName,
 
   P =
     SELECT p
-    FROM S:s -(KNOWS*1..2)- Person:p -(WORK_AT>:e)- Company:org,
+    FROM S:s -(KNOWS*1..3)- Person:p -(WORK_AT>:e)- Company:org,
          :org -(IS_LOCATED_IN>)- Country:c
     WHERE p != s AND e.workFrom < year AND c.name == cName
     ACCUM p.@organizationName = org.name,
