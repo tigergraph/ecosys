@@ -1,4 +1,5 @@
 USE GRAPH ldbc_snb
+drop query ic_5
 
 CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb syntax _v2 {
 
@@ -14,10 +15,10 @@ CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb synta
     WHERE p != s AND e.joinDate > minDate
     ACCUM p.@forumSet += f;
 
-  R =
-      SELECT  f
+  R = 
+      SELECT  f 
       FROM F:f -(CONTAINER_OF>)- Post:m -(HAS_CREATOR>)- :p
-      WHERE f in p.@forumSet
+      WHERE f in p.@forumSet 
       ACCUM f.@postCount += 1;
 
    F = SELECT f
@@ -27,4 +28,3 @@ CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb synta
 
   PRINT F[F.title AS forumTitle, F.@postCount AS postCount];
 }
-

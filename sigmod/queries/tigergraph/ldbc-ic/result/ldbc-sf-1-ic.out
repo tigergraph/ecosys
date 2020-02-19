@@ -8,253 +8,12 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"S": [
-    {
-      "v_id": "4273",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4273,
-        "personLastName": "Lu",
-        "personFirstName": "Jun",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6944",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6944,
-        "personLastName": "Balawan",
-        "personFirstName": "Aburizal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "7725",
-      "attributes": {
-        "yCount": 0,
-        "personId": 7725,
-        "personLastName": "Khan",
-        "personFirstName": "Shweta",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8309",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8309,
-        "personLastName": "Brown",
-        "personFirstName": "David",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "9401",
-      "attributes": {
-        "yCount": 0,
-        "personId": 9401,
-        "personLastName": "Sharma",
-        "personFirstName": "R.",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257143",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257143,
-        "personLastName": "Laszlo",
-        "personFirstName": "Gyula",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257653",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257653,
-        "personLastName": "Yamada",
-        "personFirstName": "Prince",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023260059",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023260059,
-        "personLastName": "Basov",
-        "personFirstName": "Igor",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023262021",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023262021,
-        "personLastName": "Le",
-        "personFirstName": "Huong",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046514593",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046514593,
-        "personLastName": "Qureshi",
-        "personFirstName": "Aamer",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046516196",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046516196,
-        "personLastName": "Linchuk",
-        "personFirstName": "Aleksej",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046518993",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046518993,
-        "personLastName": "Smith",
-        "personFirstName": "Peter",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069766720",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069766720,
-        "personLastName": "Araujo Castro",
-        "personFirstName": "Jorge",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069770100",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069770100,
-        "personLastName": "Shrestha",
-        "personFirstName": "Ganesh",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069773924",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069773924,
-        "personLastName": "Singh",
-        "personFirstName": "Abhishek",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069776242",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069776242,
-        "personLastName": "Kapoor",
-        "personFirstName": "Meera",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069777107",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069777107,
-        "personLastName": "Suissa",
-        "personFirstName": "Rafael",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029689",
-      "attributes": {
-        "yCount": 1,
-        "personId": 8796093029689,
-        "personLastName": "Yoon",
-        "personFirstName": "Eun-Hye",
-        "totalCount": 2,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029854",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8796093029854,
-        "personLastName": "Budjana",
-        "personFirstName": "Zaenal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116282664",
-      "attributes": {
-        "yCount": 0,
-        "personId": 10995116282664,
-        "personLastName": "Bravo",
-        "personFirstName": "Eduardo",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    }
-  ]}]
+  "results": [{"S": []}]
 }
 
-real	0m0.736s
-user	0m0.471s
-sys	0m0.146s
+real	0m0.524s
+user	0m0.443s
+sys	0m0.070s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -264,253 +23,12 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"S": [
-    {
-      "v_id": "4273",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4273,
-        "personLastName": "Lu",
-        "personFirstName": "Jun",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6944",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6944,
-        "personLastName": "Balawan",
-        "personFirstName": "Aburizal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "7725",
-      "attributes": {
-        "yCount": 0,
-        "personId": 7725,
-        "personLastName": "Khan",
-        "personFirstName": "Shweta",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8309",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8309,
-        "personLastName": "Brown",
-        "personFirstName": "David",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "9401",
-      "attributes": {
-        "yCount": 0,
-        "personId": 9401,
-        "personLastName": "Sharma",
-        "personFirstName": "R.",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257143",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257143,
-        "personLastName": "Laszlo",
-        "personFirstName": "Gyula",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257653",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257653,
-        "personLastName": "Yamada",
-        "personFirstName": "Prince",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023260059",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023260059,
-        "personLastName": "Basov",
-        "personFirstName": "Igor",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023262021",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023262021,
-        "personLastName": "Le",
-        "personFirstName": "Huong",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046514593",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046514593,
-        "personLastName": "Qureshi",
-        "personFirstName": "Aamer",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046516196",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046516196,
-        "personLastName": "Linchuk",
-        "personFirstName": "Aleksej",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046518993",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046518993,
-        "personLastName": "Smith",
-        "personFirstName": "Peter",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069766720",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069766720,
-        "personLastName": "Araujo Castro",
-        "personFirstName": "Jorge",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069770100",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069770100,
-        "personLastName": "Shrestha",
-        "personFirstName": "Ganesh",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069773924",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069773924,
-        "personLastName": "Singh",
-        "personFirstName": "Abhishek",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069776242",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069776242,
-        "personLastName": "Kapoor",
-        "personFirstName": "Meera",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069777107",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069777107,
-        "personLastName": "Suissa",
-        "personFirstName": "Rafael",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029689",
-      "attributes": {
-        "yCount": 1,
-        "personId": 8796093029689,
-        "personLastName": "Yoon",
-        "personFirstName": "Eun-Hye",
-        "totalCount": 2,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029854",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8796093029854,
-        "personLastName": "Budjana",
-        "personFirstName": "Zaenal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116282664",
-      "attributes": {
-        "yCount": 0,
-        "personId": 10995116282664,
-        "personLastName": "Bravo",
-        "personFirstName": "Eduardo",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    }
-  ]}]
+  "results": [{"S": []}]
 }
 
-real	0m0.494s
-user	0m0.531s
-sys	0m0.086s
+real	0m0.484s
+user	0m0.435s
+sys	0m0.095s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -520,253 +38,12 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"S": [
-    {
-      "v_id": "4273",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4273,
-        "personLastName": "Lu",
-        "personFirstName": "Jun",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6944",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6944,
-        "personLastName": "Balawan",
-        "personFirstName": "Aburizal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "7725",
-      "attributes": {
-        "yCount": 0,
-        "personId": 7725,
-        "personLastName": "Khan",
-        "personFirstName": "Shweta",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8309",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8309,
-        "personLastName": "Brown",
-        "personFirstName": "David",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "9401",
-      "attributes": {
-        "yCount": 0,
-        "personId": 9401,
-        "personLastName": "Sharma",
-        "personFirstName": "R.",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257143",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257143,
-        "personLastName": "Laszlo",
-        "personFirstName": "Gyula",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257653",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257653,
-        "personLastName": "Yamada",
-        "personFirstName": "Prince",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023260059",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023260059,
-        "personLastName": "Basov",
-        "personFirstName": "Igor",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023262021",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023262021,
-        "personLastName": "Le",
-        "personFirstName": "Huong",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046514593",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046514593,
-        "personLastName": "Qureshi",
-        "personFirstName": "Aamer",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046516196",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046516196,
-        "personLastName": "Linchuk",
-        "personFirstName": "Aleksej",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046518993",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046518993,
-        "personLastName": "Smith",
-        "personFirstName": "Peter",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069766720",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069766720,
-        "personLastName": "Araujo Castro",
-        "personFirstName": "Jorge",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069770100",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069770100,
-        "personLastName": "Shrestha",
-        "personFirstName": "Ganesh",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069773924",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069773924,
-        "personLastName": "Singh",
-        "personFirstName": "Abhishek",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069776242",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069776242,
-        "personLastName": "Kapoor",
-        "personFirstName": "Meera",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069777107",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069777107,
-        "personLastName": "Suissa",
-        "personFirstName": "Rafael",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029689",
-      "attributes": {
-        "yCount": 1,
-        "personId": 8796093029689,
-        "personLastName": "Yoon",
-        "personFirstName": "Eun-Hye",
-        "totalCount": 2,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029854",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8796093029854,
-        "personLastName": "Budjana",
-        "personFirstName": "Zaenal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116282664",
-      "attributes": {
-        "yCount": 0,
-        "personId": 10995116282664,
-        "personLastName": "Bravo",
-        "personFirstName": "Eduardo",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    }
-  ]}]
+  "results": [{"S": []}]
 }
 
-real	0m0.507s
-user	0m0.428s
-sys	0m0.170s
+real	0m0.484s
+user	0m0.448s
+sys	0m0.064s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -776,253 +53,12 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"S": [
-    {
-      "v_id": "4273",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4273,
-        "personLastName": "Lu",
-        "personFirstName": "Jun",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6944",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6944,
-        "personLastName": "Balawan",
-        "personFirstName": "Aburizal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "7725",
-      "attributes": {
-        "yCount": 0,
-        "personId": 7725,
-        "personLastName": "Khan",
-        "personFirstName": "Shweta",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8309",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8309,
-        "personLastName": "Brown",
-        "personFirstName": "David",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "9401",
-      "attributes": {
-        "yCount": 0,
-        "personId": 9401,
-        "personLastName": "Sharma",
-        "personFirstName": "R.",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257143",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257143,
-        "personLastName": "Laszlo",
-        "personFirstName": "Gyula",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257653",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257653,
-        "personLastName": "Yamada",
-        "personFirstName": "Prince",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023260059",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023260059,
-        "personLastName": "Basov",
-        "personFirstName": "Igor",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023262021",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023262021,
-        "personLastName": "Le",
-        "personFirstName": "Huong",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046514593",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046514593,
-        "personLastName": "Qureshi",
-        "personFirstName": "Aamer",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046516196",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046516196,
-        "personLastName": "Linchuk",
-        "personFirstName": "Aleksej",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046518993",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046518993,
-        "personLastName": "Smith",
-        "personFirstName": "Peter",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069766720",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069766720,
-        "personLastName": "Araujo Castro",
-        "personFirstName": "Jorge",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069770100",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069770100,
-        "personLastName": "Shrestha",
-        "personFirstName": "Ganesh",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069773924",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069773924,
-        "personLastName": "Singh",
-        "personFirstName": "Abhishek",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069776242",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069776242,
-        "personLastName": "Kapoor",
-        "personFirstName": "Meera",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069777107",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069777107,
-        "personLastName": "Suissa",
-        "personFirstName": "Rafael",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029689",
-      "attributes": {
-        "yCount": 1,
-        "personId": 8796093029689,
-        "personLastName": "Yoon",
-        "personFirstName": "Eun-Hye",
-        "totalCount": 2,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029854",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8796093029854,
-        "personLastName": "Budjana",
-        "personFirstName": "Zaenal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116282664",
-      "attributes": {
-        "yCount": 0,
-        "personId": 10995116282664,
-        "personLastName": "Bravo",
-        "personFirstName": "Eduardo",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    }
-  ]}]
+  "results": [{"S": []}]
 }
 
-real	0m0.489s
-user	0m0.540s
-sys	0m0.078s
+real	0m0.492s
+user	0m0.422s
+sys	0m0.105s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1032,253 +68,12 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"S": [
-    {
-      "v_id": "4273",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4273,
-        "personLastName": "Lu",
-        "personFirstName": "Jun",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6944",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6944,
-        "personLastName": "Balawan",
-        "personFirstName": "Aburizal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "7725",
-      "attributes": {
-        "yCount": 0,
-        "personId": 7725,
-        "personLastName": "Khan",
-        "personFirstName": "Shweta",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8309",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8309,
-        "personLastName": "Brown",
-        "personFirstName": "David",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "9401",
-      "attributes": {
-        "yCount": 0,
-        "personId": 9401,
-        "personLastName": "Sharma",
-        "personFirstName": "R.",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257143",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257143,
-        "personLastName": "Laszlo",
-        "personFirstName": "Gyula",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023257653",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023257653,
-        "personLastName": "Yamada",
-        "personFirstName": "Prince",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023260059",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023260059,
-        "personLastName": "Basov",
-        "personFirstName": "Igor",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023262021",
-      "attributes": {
-        "yCount": 0,
-        "personId": 2199023262021,
-        "personLastName": "Le",
-        "personFirstName": "Huong",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046514593",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046514593,
-        "personLastName": "Qureshi",
-        "personFirstName": "Aamer",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046516196",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046516196,
-        "personLastName": "Linchuk",
-        "personFirstName": "Aleksej",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "4398046518993",
-      "attributes": {
-        "yCount": 0,
-        "personId": 4398046518993,
-        "personLastName": "Smith",
-        "personFirstName": "Peter",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069766720",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069766720,
-        "personLastName": "Araujo Castro",
-        "personFirstName": "Jorge",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069770100",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069770100,
-        "personLastName": "Shrestha",
-        "personFirstName": "Ganesh",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069773924",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069773924,
-        "personLastName": "Singh",
-        "personFirstName": "Abhishek",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069776242",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069776242,
-        "personLastName": "Kapoor",
-        "personFirstName": "Meera",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "6597069777107",
-      "attributes": {
-        "yCount": 0,
-        "personId": 6597069777107,
-        "personLastName": "Suissa",
-        "personFirstName": "Rafael",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029689",
-      "attributes": {
-        "yCount": 1,
-        "personId": 8796093029689,
-        "personLastName": "Yoon",
-        "personFirstName": "Eun-Hye",
-        "totalCount": 2,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093029854",
-      "attributes": {
-        "yCount": 0,
-        "personId": 8796093029854,
-        "personLastName": "Budjana",
-        "personFirstName": "Zaenal",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116282664",
-      "attributes": {
-        "yCount": 0,
-        "personId": 10995116282664,
-        "personLastName": "Bravo",
-        "personFirstName": "Eduardo",
-        "totalCount": 1,
-        "xCount": 1
-      },
-      "v_type": "Person"
-    }
-  ]}]
+  "results": [{"S": []}]
 }
 
-real	0m0.486s
-user	0m0.543s
-sys	0m0.063s
+real	0m0.478s
+user	0m0.409s
+sys	0m0.105s
 ic 5
 Using graph 'ldbc_snb'
 {
@@ -1313,13 +108,149 @@ Using graph 'ldbc_snb'
         "postCount": 1
       },
       "v_type": "Forum"
+    },
+    {
+      "v_id": "1155",
+      "attributes": {
+        "forumTitle": "Album 22 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "1167",
+      "attributes": {
+        "forumTitle": "Album 34 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "4671",
+      "attributes": {
+        "forumTitle": "Wall of Lei Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5802",
+      "attributes": {
+        "forumTitle": "Wall of Frederick Kawawa",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5902",
+      "attributes": {
+        "forumTitle": "Album 14 of Meera Singh",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "8284",
+      "attributes": {
+        "forumTitle": "Wall of Andre Buysse",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "12612",
+      "attributes": {
+        "forumTitle": "Album 7 of Chen Yang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13675",
+      "attributes": {
+        "forumTitle": "Album 33 of Walter Hoffmann",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13682",
+      "attributes": {
+        "forumTitle": "Album 1 of Wolfgang Schmidt",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "15752",
+      "attributes": {
+        "forumTitle": "Album 21 of Mehmet Ayhan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20955",
+      "attributes": {
+        "forumTitle": "Album 2 of Hans Johansson",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20996",
+      "attributes": {
+        "forumTitle": "Album 5 of Hideki Kato",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "22004",
+      "attributes": {
+        "forumTitle": "Wall of Abdel Halim Ali Shabana Hassan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "23563",
+      "attributes": {
+        "forumTitle": "Album 32 of Jharana Gurung",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "24746",
+      "attributes": {
+        "forumTitle": "Wall of Fernanda Oliveira",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "31391",
+      "attributes": {
+        "forumTitle": "Wall of Bingjian Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "38592",
+      "attributes": {
+        "forumTitle": "Wall of Antonio Aristizábal Vásquez",
+        "postCount": 0
+      },
+      "v_type": "Forum"
     }
   ]}]
 }
 
-real	0m0.811s
-user	0m0.467s
-sys	0m0.056s
+real	0m0.522s
+user	0m0.483s
+sys	0m0.086s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1353,13 +284,149 @@ Using graph 'ldbc_snb'
         "postCount": 1
       },
       "v_type": "Forum"
+    },
+    {
+      "v_id": "1155",
+      "attributes": {
+        "forumTitle": "Album 22 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "1167",
+      "attributes": {
+        "forumTitle": "Album 34 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "4671",
+      "attributes": {
+        "forumTitle": "Wall of Lei Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5802",
+      "attributes": {
+        "forumTitle": "Wall of Frederick Kawawa",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5902",
+      "attributes": {
+        "forumTitle": "Album 14 of Meera Singh",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "8284",
+      "attributes": {
+        "forumTitle": "Wall of Andre Buysse",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "12612",
+      "attributes": {
+        "forumTitle": "Album 7 of Chen Yang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13675",
+      "attributes": {
+        "forumTitle": "Album 33 of Walter Hoffmann",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13682",
+      "attributes": {
+        "forumTitle": "Album 1 of Wolfgang Schmidt",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "15752",
+      "attributes": {
+        "forumTitle": "Album 21 of Mehmet Ayhan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20955",
+      "attributes": {
+        "forumTitle": "Album 2 of Hans Johansson",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20996",
+      "attributes": {
+        "forumTitle": "Album 5 of Hideki Kato",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "22004",
+      "attributes": {
+        "forumTitle": "Wall of Abdel Halim Ali Shabana Hassan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "23563",
+      "attributes": {
+        "forumTitle": "Album 32 of Jharana Gurung",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "24746",
+      "attributes": {
+        "forumTitle": "Wall of Fernanda Oliveira",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "31391",
+      "attributes": {
+        "forumTitle": "Wall of Bingjian Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "38592",
+      "attributes": {
+        "forumTitle": "Wall of Antonio Aristizábal Vásquez",
+        "postCount": 0
+      },
+      "v_type": "Forum"
     }
   ]}]
 }
 
-real	0m0.828s
-user	0m0.475s
-sys	0m0.070s
+real	0m0.513s
+user	0m0.465s
+sys	0m0.101s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1393,13 +460,149 @@ Using graph 'ldbc_snb'
         "postCount": 1
       },
       "v_type": "Forum"
+    },
+    {
+      "v_id": "1155",
+      "attributes": {
+        "forumTitle": "Album 22 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "1167",
+      "attributes": {
+        "forumTitle": "Album 34 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "4671",
+      "attributes": {
+        "forumTitle": "Wall of Lei Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5802",
+      "attributes": {
+        "forumTitle": "Wall of Frederick Kawawa",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5902",
+      "attributes": {
+        "forumTitle": "Album 14 of Meera Singh",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "8284",
+      "attributes": {
+        "forumTitle": "Wall of Andre Buysse",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "12612",
+      "attributes": {
+        "forumTitle": "Album 7 of Chen Yang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13675",
+      "attributes": {
+        "forumTitle": "Album 33 of Walter Hoffmann",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13682",
+      "attributes": {
+        "forumTitle": "Album 1 of Wolfgang Schmidt",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "15752",
+      "attributes": {
+        "forumTitle": "Album 21 of Mehmet Ayhan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20955",
+      "attributes": {
+        "forumTitle": "Album 2 of Hans Johansson",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20996",
+      "attributes": {
+        "forumTitle": "Album 5 of Hideki Kato",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "22004",
+      "attributes": {
+        "forumTitle": "Wall of Abdel Halim Ali Shabana Hassan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "23563",
+      "attributes": {
+        "forumTitle": "Album 32 of Jharana Gurung",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "24746",
+      "attributes": {
+        "forumTitle": "Wall of Fernanda Oliveira",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "31391",
+      "attributes": {
+        "forumTitle": "Wall of Bingjian Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "38592",
+      "attributes": {
+        "forumTitle": "Wall of Antonio Aristizábal Vásquez",
+        "postCount": 0
+      },
+      "v_type": "Forum"
     }
   ]}]
 }
 
-real	0m0.795s
-user	0m0.475s
-sys	0m0.082s
+real	0m0.511s
+user	0m0.448s
+sys	0m0.112s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1433,13 +636,149 @@ Using graph 'ldbc_snb'
         "postCount": 1
       },
       "v_type": "Forum"
+    },
+    {
+      "v_id": "1155",
+      "attributes": {
+        "forumTitle": "Album 22 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "1167",
+      "attributes": {
+        "forumTitle": "Album 34 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "4671",
+      "attributes": {
+        "forumTitle": "Wall of Lei Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5802",
+      "attributes": {
+        "forumTitle": "Wall of Frederick Kawawa",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5902",
+      "attributes": {
+        "forumTitle": "Album 14 of Meera Singh",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "8284",
+      "attributes": {
+        "forumTitle": "Wall of Andre Buysse",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "12612",
+      "attributes": {
+        "forumTitle": "Album 7 of Chen Yang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13675",
+      "attributes": {
+        "forumTitle": "Album 33 of Walter Hoffmann",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13682",
+      "attributes": {
+        "forumTitle": "Album 1 of Wolfgang Schmidt",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "15752",
+      "attributes": {
+        "forumTitle": "Album 21 of Mehmet Ayhan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20955",
+      "attributes": {
+        "forumTitle": "Album 2 of Hans Johansson",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20996",
+      "attributes": {
+        "forumTitle": "Album 5 of Hideki Kato",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "22004",
+      "attributes": {
+        "forumTitle": "Wall of Abdel Halim Ali Shabana Hassan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "23563",
+      "attributes": {
+        "forumTitle": "Album 32 of Jharana Gurung",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "24746",
+      "attributes": {
+        "forumTitle": "Wall of Fernanda Oliveira",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "31391",
+      "attributes": {
+        "forumTitle": "Wall of Bingjian Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "38592",
+      "attributes": {
+        "forumTitle": "Wall of Antonio Aristizábal Vásquez",
+        "postCount": 0
+      },
+      "v_type": "Forum"
     }
   ]}]
 }
 
-real	0m0.825s
-user	0m0.505s
-sys	0m0.052s
+real	0m0.528s
+user	0m0.388s
+sys	0m0.189s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1473,13 +812,149 @@ Using graph 'ldbc_snb'
         "postCount": 1
       },
       "v_type": "Forum"
+    },
+    {
+      "v_id": "1155",
+      "attributes": {
+        "forumTitle": "Album 22 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "1167",
+      "attributes": {
+        "forumTitle": "Album 34 of Arap Amanaka",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "4671",
+      "attributes": {
+        "forumTitle": "Wall of Lei Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5802",
+      "attributes": {
+        "forumTitle": "Wall of Frederick Kawawa",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "5902",
+      "attributes": {
+        "forumTitle": "Album 14 of Meera Singh",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "8284",
+      "attributes": {
+        "forumTitle": "Wall of Andre Buysse",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "12612",
+      "attributes": {
+        "forumTitle": "Album 7 of Chen Yang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13675",
+      "attributes": {
+        "forumTitle": "Album 33 of Walter Hoffmann",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "13682",
+      "attributes": {
+        "forumTitle": "Album 1 of Wolfgang Schmidt",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "15752",
+      "attributes": {
+        "forumTitle": "Album 21 of Mehmet Ayhan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20955",
+      "attributes": {
+        "forumTitle": "Album 2 of Hans Johansson",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "20996",
+      "attributes": {
+        "forumTitle": "Album 5 of Hideki Kato",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "22004",
+      "attributes": {
+        "forumTitle": "Wall of Abdel Halim Ali Shabana Hassan",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "23563",
+      "attributes": {
+        "forumTitle": "Album 32 of Jharana Gurung",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "24746",
+      "attributes": {
+        "forumTitle": "Wall of Fernanda Oliveira",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "31391",
+      "attributes": {
+        "forumTitle": "Wall of Bingjian Zhang",
+        "postCount": 0
+      },
+      "v_type": "Forum"
+    },
+    {
+      "v_id": "38592",
+      "attributes": {
+        "forumTitle": "Wall of Antonio Aristizábal Vásquez",
+        "postCount": 0
+      },
+      "v_type": "Forum"
     }
   ]}]
 }
 
-real	0m0.796s
-user	0m0.471s
-sys	0m0.077s
+real	0m0.556s
+user	0m0.434s
+sys	0m0.164s
 ic 6
 Using graph 'ldbc_snb'
 {
@@ -1574,9 +1049,9 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m1.435s
-user	0m0.469s
-sys	0m0.091s
+real	0m1.519s
+user	0m0.423s
+sys	0m0.112s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1670,9 +1145,9 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m1.526s
-user	0m0.480s
-sys	0m0.076s
+real	0m1.417s
+user	0m0.376s
+sys	0m0.186s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1766,9 +1241,9 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m1.535s
-user	0m0.475s
-sys	0m0.085s
+real	0m1.401s
+user	0m0.518s
+sys	0m0.073s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1862,9 +1337,9 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m1.598s
-user	0m0.494s
-sys	0m0.068s
+real	0m1.536s
+user	0m0.450s
+sys	0m0.111s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -1958,9 +1433,9 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m1.448s
-user	0m0.475s
-sys	0m0.098s
+real	0m1.564s
+user	0m0.457s
+sys	0m0.114s
 ic 9
 Using graph 'ldbc_snb'
 {
@@ -2215,1411 +1690,8 @@ Using graph 'ldbc_snb'
   ]}]
 }
 
-real	0m0.883s
-user	0m0.553s
-sys	0m0.059s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"M": [
-    {
-      "v_id": "1511830753701",
-      "attributes": {
-        "M.@personLastName": "Carlsson",
-        "M.@messageContent": "no",
-        "messageCreationDate": "2011-12-06 23:59:46",
-        "messageId": 1511830753701,
-        "M.@personId": 6597069776731,
-        "M.@personFirstName": "Sven"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824644",
-      "attributes": {
-        "M.@personLastName": "Rodriguez",
-        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
-        "messageCreationDate": "2011-12-06 23:57:11",
-        "messageId": 1511834824644,
-        "M.@personId": 15393162798801,
-        "M.@personFirstName": "Jorge"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830615171",
-      "attributes": {
-        "M.@personLastName": "Nagy",
-        "M.@messageContent": "no way!",
-        "messageCreationDate": "2011-12-06 23:56:40",
-        "messageId": 1511830615171,
-        "M.@personId": 19791209303491,
-        "M.@personFirstName": "George"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829484942",
-      "attributes": {
-        "M.@personLastName": "Larsson",
-        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
-        "messageCreationDate": "2011-12-06 23:56:26",
-        "messageId": 1511829484942,
-        "M.@personId": 6597069770520,
-        "M.@personFirstName": "Hans"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829820007",
-      "attributes": {
-        "M.@personLastName": "Stewart",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:55:29",
-        "messageId": 1511829820007,
-        "M.@personId": 2199023260376,
-        "M.@personFirstName": "Henry"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828796796",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
-        "messageCreationDate": "2011-12-06 23:54:24",
-        "messageId": 1511828796796,
-        "M.@personId": 4398046517791,
-        "M.@personFirstName": "Deepak"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524285",
-      "attributes": {
-        "M.@personLastName": "Hleb",
-        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
-        "messageCreationDate": "2011-12-06 23:54:13",
-        "messageId": 1511829524285,
-        "M.@personId": 19791209306736,
-        "M.@personFirstName": "David"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811441",
-      "attributes": {
-        "M.@personLastName": "Tekin",
-        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
-        "messageCreationDate": "2011-12-06 23:52:58",
-        "messageId": 1511828811441,
-        "M.@personId": 8796093027714,
-        "M.@personFirstName": "Abdullah"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811431",
-      "attributes": {
-        "M.@personLastName": "Kofler",
-        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
-        "messageCreationDate": "2011-12-06 23:51:04",
-        "messageId": 1511828811431,
-        "M.@personId": 13194139533433,
-        "M.@personFirstName": "Taras"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830618942",
-      "attributes": {
-        "M.@personLastName": "Popov",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:26",
-        "messageId": 1511830618942,
-        "M.@personId": 2530,
-        "M.@personFirstName": "Aleksei"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833690286",
-      "attributes": {
-        "M.@personLastName": "Balawan",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:00",
-        "messageId": 1511833690286,
-        "M.@personId": 19791209302403,
-        "M.@personFirstName": "Bibit"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833100682",
-      "attributes": {
-        "M.@personLastName": "Faye",
-        "M.@messageContent": "LOL",
-        "messageCreationDate": "2011-12-06 23:48:12",
-        "messageId": 1511833100682,
-        "M.@personId": 8047,
-        "M.@personFirstName": "Mahama Johnson"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833045738",
-      "attributes": {
-        "M.@personLastName": "Wilson",
-        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
-        "messageCreationDate": "2011-12-06 23:48:03",
-        "messageId": 1511833045738,
-        "M.@personId": 17592186053218,
-        "M.@personFirstName": "John"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524335",
-      "attributes": {
-        "M.@personLastName": "Barbu",
-        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
-        "messageCreationDate": "2011-12-06 23:45:44",
-        "messageId": 1511829524335,
-        "M.@personId": 8796093030376,
-        "M.@personFirstName": "Alexandru"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824640",
-      "attributes": {
-        "M.@personLastName": "Linchuk",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:44:59",
-        "messageId": 1511834824640,
-        "M.@personId": 4398046516196,
-        "M.@personFirstName": "Aleksej"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828861949",
-      "attributes": {
-        "M.@personLastName": "Nguyen",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:42:39",
-        "messageId": 1511828861949,
-        "M.@personId": 6597069776660,
-        "M.@personFirstName": "Binh"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830881221",
-      "attributes": {
-        "M.@personLastName": "Kanam",
-        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
-        "messageCreationDate": "2011-12-06 23:42:31",
-        "messageId": 1511830881221,
-        "M.@personId": 17592186049473,
-        "M.@personFirstName": "Jean-Pierre"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511831212302",
-      "attributes": {
-        "M.@personLastName": "Yang",
-        "M.@messageContent": "right",
-        "messageCreationDate": "2011-12-06 23:41:44",
-        "messageId": 1511831212302,
-        "M.@personId": 555,
-        "M.@personFirstName": "Chen"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829651262",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:38:16",
-        "messageId": 1511829651262,
-        "M.@personId": 24189255818723,
-        "M.@personFirstName": "K."
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829345809",
-      "attributes": {
-        "M.@personLastName": "Santos",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:35:42",
-        "messageId": 1511829345809,
-        "M.@personId": 4695,
-        "M.@personFirstName": "Jose"
-      },
-      "v_type": "Comment"
-    }
-  ]}]
-}
-
-real	0m0.934s
-user	0m0.469s
-sys	0m0.131s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"M": [
-    {
-      "v_id": "1511830753701",
-      "attributes": {
-        "M.@personLastName": "Carlsson",
-        "M.@messageContent": "no",
-        "messageCreationDate": "2011-12-06 23:59:46",
-        "messageId": 1511830753701,
-        "M.@personId": 6597069776731,
-        "M.@personFirstName": "Sven"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824644",
-      "attributes": {
-        "M.@personLastName": "Rodriguez",
-        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
-        "messageCreationDate": "2011-12-06 23:57:11",
-        "messageId": 1511834824644,
-        "M.@personId": 15393162798801,
-        "M.@personFirstName": "Jorge"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830615171",
-      "attributes": {
-        "M.@personLastName": "Nagy",
-        "M.@messageContent": "no way!",
-        "messageCreationDate": "2011-12-06 23:56:40",
-        "messageId": 1511830615171,
-        "M.@personId": 19791209303491,
-        "M.@personFirstName": "George"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829484942",
-      "attributes": {
-        "M.@personLastName": "Larsson",
-        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
-        "messageCreationDate": "2011-12-06 23:56:26",
-        "messageId": 1511829484942,
-        "M.@personId": 6597069770520,
-        "M.@personFirstName": "Hans"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829820007",
-      "attributes": {
-        "M.@personLastName": "Stewart",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:55:29",
-        "messageId": 1511829820007,
-        "M.@personId": 2199023260376,
-        "M.@personFirstName": "Henry"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828796796",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
-        "messageCreationDate": "2011-12-06 23:54:24",
-        "messageId": 1511828796796,
-        "M.@personId": 4398046517791,
-        "M.@personFirstName": "Deepak"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524285",
-      "attributes": {
-        "M.@personLastName": "Hleb",
-        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
-        "messageCreationDate": "2011-12-06 23:54:13",
-        "messageId": 1511829524285,
-        "M.@personId": 19791209306736,
-        "M.@personFirstName": "David"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811441",
-      "attributes": {
-        "M.@personLastName": "Tekin",
-        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
-        "messageCreationDate": "2011-12-06 23:52:58",
-        "messageId": 1511828811441,
-        "M.@personId": 8796093027714,
-        "M.@personFirstName": "Abdullah"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811431",
-      "attributes": {
-        "M.@personLastName": "Kofler",
-        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
-        "messageCreationDate": "2011-12-06 23:51:04",
-        "messageId": 1511828811431,
-        "M.@personId": 13194139533433,
-        "M.@personFirstName": "Taras"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830618942",
-      "attributes": {
-        "M.@personLastName": "Popov",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:26",
-        "messageId": 1511830618942,
-        "M.@personId": 2530,
-        "M.@personFirstName": "Aleksei"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833690286",
-      "attributes": {
-        "M.@personLastName": "Balawan",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:00",
-        "messageId": 1511833690286,
-        "M.@personId": 19791209302403,
-        "M.@personFirstName": "Bibit"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833100682",
-      "attributes": {
-        "M.@personLastName": "Faye",
-        "M.@messageContent": "LOL",
-        "messageCreationDate": "2011-12-06 23:48:12",
-        "messageId": 1511833100682,
-        "M.@personId": 8047,
-        "M.@personFirstName": "Mahama Johnson"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833045738",
-      "attributes": {
-        "M.@personLastName": "Wilson",
-        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
-        "messageCreationDate": "2011-12-06 23:48:03",
-        "messageId": 1511833045738,
-        "M.@personId": 17592186053218,
-        "M.@personFirstName": "John"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524335",
-      "attributes": {
-        "M.@personLastName": "Barbu",
-        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
-        "messageCreationDate": "2011-12-06 23:45:44",
-        "messageId": 1511829524335,
-        "M.@personId": 8796093030376,
-        "M.@personFirstName": "Alexandru"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824640",
-      "attributes": {
-        "M.@personLastName": "Linchuk",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:44:59",
-        "messageId": 1511834824640,
-        "M.@personId": 4398046516196,
-        "M.@personFirstName": "Aleksej"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828861949",
-      "attributes": {
-        "M.@personLastName": "Nguyen",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:42:39",
-        "messageId": 1511828861949,
-        "M.@personId": 6597069776660,
-        "M.@personFirstName": "Binh"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830881221",
-      "attributes": {
-        "M.@personLastName": "Kanam",
-        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
-        "messageCreationDate": "2011-12-06 23:42:31",
-        "messageId": 1511830881221,
-        "M.@personId": 17592186049473,
-        "M.@personFirstName": "Jean-Pierre"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511831212302",
-      "attributes": {
-        "M.@personLastName": "Yang",
-        "M.@messageContent": "right",
-        "messageCreationDate": "2011-12-06 23:41:44",
-        "messageId": 1511831212302,
-        "M.@personId": 555,
-        "M.@personFirstName": "Chen"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829651262",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:38:16",
-        "messageId": 1511829651262,
-        "M.@personId": 24189255818723,
-        "M.@personFirstName": "K."
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829345809",
-      "attributes": {
-        "M.@personLastName": "Santos",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:35:42",
-        "messageId": 1511829345809,
-        "M.@personId": 4695,
-        "M.@personFirstName": "Jose"
-      },
-      "v_type": "Comment"
-    }
-  ]}]
-}
-
-real	0m1.075s
-user	0m0.438s
-sys	0m0.171s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"M": [
-    {
-      "v_id": "1511830753701",
-      "attributes": {
-        "M.@personLastName": "Carlsson",
-        "M.@messageContent": "no",
-        "messageCreationDate": "2011-12-06 23:59:46",
-        "messageId": 1511830753701,
-        "M.@personId": 6597069776731,
-        "M.@personFirstName": "Sven"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824644",
-      "attributes": {
-        "M.@personLastName": "Rodriguez",
-        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
-        "messageCreationDate": "2011-12-06 23:57:11",
-        "messageId": 1511834824644,
-        "M.@personId": 15393162798801,
-        "M.@personFirstName": "Jorge"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830615171",
-      "attributes": {
-        "M.@personLastName": "Nagy",
-        "M.@messageContent": "no way!",
-        "messageCreationDate": "2011-12-06 23:56:40",
-        "messageId": 1511830615171,
-        "M.@personId": 19791209303491,
-        "M.@personFirstName": "George"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829484942",
-      "attributes": {
-        "M.@personLastName": "Larsson",
-        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
-        "messageCreationDate": "2011-12-06 23:56:26",
-        "messageId": 1511829484942,
-        "M.@personId": 6597069770520,
-        "M.@personFirstName": "Hans"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829820007",
-      "attributes": {
-        "M.@personLastName": "Stewart",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:55:29",
-        "messageId": 1511829820007,
-        "M.@personId": 2199023260376,
-        "M.@personFirstName": "Henry"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828796796",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
-        "messageCreationDate": "2011-12-06 23:54:24",
-        "messageId": 1511828796796,
-        "M.@personId": 4398046517791,
-        "M.@personFirstName": "Deepak"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524285",
-      "attributes": {
-        "M.@personLastName": "Hleb",
-        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
-        "messageCreationDate": "2011-12-06 23:54:13",
-        "messageId": 1511829524285,
-        "M.@personId": 19791209306736,
-        "M.@personFirstName": "David"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811441",
-      "attributes": {
-        "M.@personLastName": "Tekin",
-        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
-        "messageCreationDate": "2011-12-06 23:52:58",
-        "messageId": 1511828811441,
-        "M.@personId": 8796093027714,
-        "M.@personFirstName": "Abdullah"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811431",
-      "attributes": {
-        "M.@personLastName": "Kofler",
-        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
-        "messageCreationDate": "2011-12-06 23:51:04",
-        "messageId": 1511828811431,
-        "M.@personId": 13194139533433,
-        "M.@personFirstName": "Taras"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830618942",
-      "attributes": {
-        "M.@personLastName": "Popov",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:26",
-        "messageId": 1511830618942,
-        "M.@personId": 2530,
-        "M.@personFirstName": "Aleksei"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833690286",
-      "attributes": {
-        "M.@personLastName": "Balawan",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:00",
-        "messageId": 1511833690286,
-        "M.@personId": 19791209302403,
-        "M.@personFirstName": "Bibit"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833100682",
-      "attributes": {
-        "M.@personLastName": "Faye",
-        "M.@messageContent": "LOL",
-        "messageCreationDate": "2011-12-06 23:48:12",
-        "messageId": 1511833100682,
-        "M.@personId": 8047,
-        "M.@personFirstName": "Mahama Johnson"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833045738",
-      "attributes": {
-        "M.@personLastName": "Wilson",
-        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
-        "messageCreationDate": "2011-12-06 23:48:03",
-        "messageId": 1511833045738,
-        "M.@personId": 17592186053218,
-        "M.@personFirstName": "John"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524335",
-      "attributes": {
-        "M.@personLastName": "Barbu",
-        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
-        "messageCreationDate": "2011-12-06 23:45:44",
-        "messageId": 1511829524335,
-        "M.@personId": 8796093030376,
-        "M.@personFirstName": "Alexandru"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824640",
-      "attributes": {
-        "M.@personLastName": "Linchuk",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:44:59",
-        "messageId": 1511834824640,
-        "M.@personId": 4398046516196,
-        "M.@personFirstName": "Aleksej"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828861949",
-      "attributes": {
-        "M.@personLastName": "Nguyen",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:42:39",
-        "messageId": 1511828861949,
-        "M.@personId": 6597069776660,
-        "M.@personFirstName": "Binh"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830881221",
-      "attributes": {
-        "M.@personLastName": "Kanam",
-        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
-        "messageCreationDate": "2011-12-06 23:42:31",
-        "messageId": 1511830881221,
-        "M.@personId": 17592186049473,
-        "M.@personFirstName": "Jean-Pierre"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511831212302",
-      "attributes": {
-        "M.@personLastName": "Yang",
-        "M.@messageContent": "right",
-        "messageCreationDate": "2011-12-06 23:41:44",
-        "messageId": 1511831212302,
-        "M.@personId": 555,
-        "M.@personFirstName": "Chen"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829651262",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:38:16",
-        "messageId": 1511829651262,
-        "M.@personId": 24189255818723,
-        "M.@personFirstName": "K."
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829345809",
-      "attributes": {
-        "M.@personLastName": "Santos",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:35:42",
-        "messageId": 1511829345809,
-        "M.@personId": 4695,
-        "M.@personFirstName": "Jose"
-      },
-      "v_type": "Comment"
-    }
-  ]}]
-}
-
-real	0m0.963s
-user	0m0.539s
-sys	0m0.110s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"M": [
-    {
-      "v_id": "1511830753701",
-      "attributes": {
-        "M.@personLastName": "Carlsson",
-        "M.@messageContent": "no",
-        "messageCreationDate": "2011-12-06 23:59:46",
-        "messageId": 1511830753701,
-        "M.@personId": 6597069776731,
-        "M.@personFirstName": "Sven"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824644",
-      "attributes": {
-        "M.@personLastName": "Rodriguez",
-        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
-        "messageCreationDate": "2011-12-06 23:57:11",
-        "messageId": 1511834824644,
-        "M.@personId": 15393162798801,
-        "M.@personFirstName": "Jorge"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830615171",
-      "attributes": {
-        "M.@personLastName": "Nagy",
-        "M.@messageContent": "no way!",
-        "messageCreationDate": "2011-12-06 23:56:40",
-        "messageId": 1511830615171,
-        "M.@personId": 19791209303491,
-        "M.@personFirstName": "George"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829484942",
-      "attributes": {
-        "M.@personLastName": "Larsson",
-        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
-        "messageCreationDate": "2011-12-06 23:56:26",
-        "messageId": 1511829484942,
-        "M.@personId": 6597069770520,
-        "M.@personFirstName": "Hans"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829820007",
-      "attributes": {
-        "M.@personLastName": "Stewart",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:55:29",
-        "messageId": 1511829820007,
-        "M.@personId": 2199023260376,
-        "M.@personFirstName": "Henry"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828796796",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
-        "messageCreationDate": "2011-12-06 23:54:24",
-        "messageId": 1511828796796,
-        "M.@personId": 4398046517791,
-        "M.@personFirstName": "Deepak"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524285",
-      "attributes": {
-        "M.@personLastName": "Hleb",
-        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
-        "messageCreationDate": "2011-12-06 23:54:13",
-        "messageId": 1511829524285,
-        "M.@personId": 19791209306736,
-        "M.@personFirstName": "David"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811441",
-      "attributes": {
-        "M.@personLastName": "Tekin",
-        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
-        "messageCreationDate": "2011-12-06 23:52:58",
-        "messageId": 1511828811441,
-        "M.@personId": 8796093027714,
-        "M.@personFirstName": "Abdullah"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828811431",
-      "attributes": {
-        "M.@personLastName": "Kofler",
-        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
-        "messageCreationDate": "2011-12-06 23:51:04",
-        "messageId": 1511828811431,
-        "M.@personId": 13194139533433,
-        "M.@personFirstName": "Taras"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830618942",
-      "attributes": {
-        "M.@personLastName": "Popov",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:26",
-        "messageId": 1511830618942,
-        "M.@personId": 2530,
-        "M.@personFirstName": "Aleksei"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833690286",
-      "attributes": {
-        "M.@personLastName": "Balawan",
-        "M.@messageContent": "great",
-        "messageCreationDate": "2011-12-06 23:49:00",
-        "messageId": 1511833690286,
-        "M.@personId": 19791209302403,
-        "M.@personFirstName": "Bibit"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833100682",
-      "attributes": {
-        "M.@personLastName": "Faye",
-        "M.@messageContent": "LOL",
-        "messageCreationDate": "2011-12-06 23:48:12",
-        "messageId": 1511833100682,
-        "M.@personId": 8047,
-        "M.@personFirstName": "Mahama Johnson"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511833045738",
-      "attributes": {
-        "M.@personLastName": "Wilson",
-        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
-        "messageCreationDate": "2011-12-06 23:48:03",
-        "messageId": 1511833045738,
-        "M.@personId": 17592186053218,
-        "M.@personFirstName": "John"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829524335",
-      "attributes": {
-        "M.@personLastName": "Barbu",
-        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
-        "messageCreationDate": "2011-12-06 23:45:44",
-        "messageId": 1511829524335,
-        "M.@personId": 8796093030376,
-        "M.@personFirstName": "Alexandru"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511834824640",
-      "attributes": {
-        "M.@personLastName": "Linchuk",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:44:59",
-        "messageId": 1511834824640,
-        "M.@personId": 4398046516196,
-        "M.@personFirstName": "Aleksej"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511828861949",
-      "attributes": {
-        "M.@personLastName": "Nguyen",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:42:39",
-        "messageId": 1511828861949,
-        "M.@personId": 6597069776660,
-        "M.@personFirstName": "Binh"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511830881221",
-      "attributes": {
-        "M.@personLastName": "Kanam",
-        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
-        "messageCreationDate": "2011-12-06 23:42:31",
-        "messageId": 1511830881221,
-        "M.@personId": 17592186049473,
-        "M.@personFirstName": "Jean-Pierre"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511831212302",
-      "attributes": {
-        "M.@personLastName": "Yang",
-        "M.@messageContent": "right",
-        "messageCreationDate": "2011-12-06 23:41:44",
-        "messageId": 1511831212302,
-        "M.@personId": 555,
-        "M.@personFirstName": "Chen"
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829651262",
-      "attributes": {
-        "M.@personLastName": "Sharma",
-        "M.@messageContent": "cool",
-        "messageCreationDate": "2011-12-06 23:38:16",
-        "messageId": 1511829651262,
-        "M.@personId": 24189255818723,
-        "M.@personFirstName": "K."
-      },
-      "v_type": "Comment"
-    },
-    {
-      "v_id": "1511829345809",
-      "attributes": {
-        "M.@personLastName": "Santos",
-        "M.@messageContent": "roflol",
-        "messageCreationDate": "2011-12-06 23:35:42",
-        "messageId": 1511829345809,
-        "M.@personId": 4695,
-        "M.@personFirstName": "Jose"
-      },
-      "v_type": "Comment"
-    }
-  ]}]
-}
-
-real	0m0.987s
-user	0m0.535s
-sys	0m0.086s
-ic 11
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"P": [
-    {
-      "v_id": "6597069767125",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 6597069767125,
-        "personLastName": "Pham",
-        "personFirstName": "Eve-Mary Thai"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "28587302330691",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 28587302330691,
-        "personLastName": "Hafez",
-        "personFirstName": "Atef"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "5869",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2004,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 5869,
-        "personLastName": "Vorachith",
-        "personFirstName": "Cy"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093022909",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Air",
-        "personId": 8796093022909,
-        "personLastName": "Vang",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116285549",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 10995116285549,
-        "personLastName": "Charoenpura",
-        "personFirstName": "Jetsada"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "24189255815555",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2006,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 24189255815555,
-        "personLastName": "Anwar",
-        "personFirstName": "A."
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023266276",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023266276,
-        "personLastName": "Li",
-        "personFirstName": "Ben"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093027636",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 8796093027636,
-        "personLastName": "Sysavanh",
-        "personFirstName": "Pao"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "1259",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2008,
-        "P.@organizationName": "Lao_Air",
-        "personId": 1259,
-        "personLastName": "Vongvichit",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023258003",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2009,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023258003,
-        "personLastName": "Achiou",
-        "personFirstName": "Ali"
-      },
-      "v_type": "Person"
-    }
-  ]}]
-}
-
-real	0m0.495s
-user	0m0.473s
-sys	0m0.098s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"P": [
-    {
-      "v_id": "6597069767125",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 6597069767125,
-        "personLastName": "Pham",
-        "personFirstName": "Eve-Mary Thai"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "28587302330691",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 28587302330691,
-        "personLastName": "Hafez",
-        "personFirstName": "Atef"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "5869",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2004,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 5869,
-        "personLastName": "Vorachith",
-        "personFirstName": "Cy"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093022909",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Air",
-        "personId": 8796093022909,
-        "personLastName": "Vang",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116285549",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 10995116285549,
-        "personLastName": "Charoenpura",
-        "personFirstName": "Jetsada"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "24189255815555",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2006,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 24189255815555,
-        "personLastName": "Anwar",
-        "personFirstName": "A."
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023266276",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023266276,
-        "personLastName": "Li",
-        "personFirstName": "Ben"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093027636",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 8796093027636,
-        "personLastName": "Sysavanh",
-        "personFirstName": "Pao"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "1259",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2008,
-        "P.@organizationName": "Lao_Air",
-        "personId": 1259,
-        "personLastName": "Vongvichit",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023258003",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2009,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023258003,
-        "personLastName": "Achiou",
-        "personFirstName": "Ali"
-      },
-      "v_type": "Person"
-    }
-  ]}]
-}
-
-real	0m0.411s
-user	0m0.426s
-sys	0m0.126s
-Using graph 'ldbc_snb'
-{
-  "error": false,
-  "message": "",
-  "version": {
-    "schema": 0,
-    "edition": "enterprise",
-    "api": "v2"
-  },
-  "results": [{"P": [
-    {
-      "v_id": "6597069767125",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 6597069767125,
-        "personLastName": "Pham",
-        "personFirstName": "Eve-Mary Thai"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "28587302330691",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 28587302330691,
-        "personLastName": "Hafez",
-        "personFirstName": "Atef"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "5869",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2004,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 5869,
-        "personLastName": "Vorachith",
-        "personFirstName": "Cy"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093022909",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Air",
-        "personId": 8796093022909,
-        "personLastName": "Vang",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "10995116285549",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 10995116285549,
-        "personLastName": "Charoenpura",
-        "personFirstName": "Jetsada"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "24189255815555",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2006,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 24189255815555,
-        "personLastName": "Anwar",
-        "personFirstName": "A."
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023266276",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023266276,
-        "personLastName": "Li",
-        "personFirstName": "Ben"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "8796093027636",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 8796093027636,
-        "personLastName": "Sysavanh",
-        "personFirstName": "Pao"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "1259",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2008,
-        "P.@organizationName": "Lao_Air",
-        "personId": 1259,
-        "personLastName": "Vongvichit",
-        "personFirstName": "Mee"
-      },
-      "v_type": "Person"
-    },
-    {
-      "v_id": "2199023258003",
-      "attributes": {
-        "P.@organizationWorkFromYear": 2009,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023258003,
-        "personLastName": "Achiou",
-        "personFirstName": "Ali"
-      },
-      "v_type": "Person"
-    }
-  ]}]
-}
-
-real	0m0.407s
-user	0m0.481s
+real	0m0.991s
+user	0m0.565s
 sys	0m0.078s
 Using graph 'ldbc_snb'
 {
@@ -3630,123 +1702,253 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"P": [
+  "results": [{"M": [
     {
-      "v_id": "6597069767125",
+      "v_id": "1511830753701",
       "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 6597069767125,
-        "personLastName": "Pham",
-        "personFirstName": "Eve-Mary Thai"
+        "M.@personLastName": "Carlsson",
+        "M.@messageContent": "no",
+        "messageCreationDate": "2011-12-06 23:59:46",
+        "messageId": 1511830753701,
+        "M.@personId": 6597069776731,
+        "M.@personFirstName": "Sven"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "28587302330691",
+      "v_id": "1511834824644",
       "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 28587302330691,
-        "personLastName": "Hafez",
-        "personFirstName": "Atef"
+        "M.@personLastName": "Rodriguez",
+        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
+        "messageCreationDate": "2011-12-06 23:57:11",
+        "messageId": 1511834824644,
+        "M.@personId": 15393162798801,
+        "M.@personFirstName": "Jorge"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "5869",
+      "v_id": "1511830615171",
       "attributes": {
-        "P.@organizationWorkFromYear": 2004,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 5869,
-        "personLastName": "Vorachith",
-        "personFirstName": "Cy"
+        "M.@personLastName": "Nagy",
+        "M.@messageContent": "no way!",
+        "messageCreationDate": "2011-12-06 23:56:40",
+        "messageId": 1511830615171,
+        "M.@personId": 19791209303491,
+        "M.@personFirstName": "George"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "8796093022909",
+      "v_id": "1511829484942",
       "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Air",
-        "personId": 8796093022909,
-        "personLastName": "Vang",
-        "personFirstName": "Mee"
+        "M.@personLastName": "Larsson",
+        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
+        "messageCreationDate": "2011-12-06 23:56:26",
+        "messageId": 1511829484942,
+        "M.@personId": 6597069770520,
+        "M.@personFirstName": "Hans"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "10995116285549",
+      "v_id": "1511829820007",
       "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 10995116285549,
-        "personLastName": "Charoenpura",
-        "personFirstName": "Jetsada"
+        "M.@personLastName": "Stewart",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:55:29",
+        "messageId": 1511829820007,
+        "M.@personId": 2199023260376,
+        "M.@personFirstName": "Henry"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "24189255815555",
+      "v_id": "1511828796796",
       "attributes": {
-        "P.@organizationWorkFromYear": 2006,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 24189255815555,
-        "personLastName": "Anwar",
-        "personFirstName": "A."
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
+        "messageCreationDate": "2011-12-06 23:54:24",
+        "messageId": 1511828796796,
+        "M.@personId": 4398046517791,
+        "M.@personFirstName": "Deepak"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "2199023266276",
+      "v_id": "1511829524285",
       "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023266276,
-        "personLastName": "Li",
-        "personFirstName": "Ben"
+        "M.@personLastName": "Hleb",
+        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
+        "messageCreationDate": "2011-12-06 23:54:13",
+        "messageId": 1511829524285,
+        "M.@personId": 19791209306736,
+        "M.@personFirstName": "David"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "8796093027636",
+      "v_id": "1511828811441",
       "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 8796093027636,
-        "personLastName": "Sysavanh",
-        "personFirstName": "Pao"
+        "M.@personLastName": "Tekin",
+        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
+        "messageCreationDate": "2011-12-06 23:52:58",
+        "messageId": 1511828811441,
+        "M.@personId": 8796093027714,
+        "M.@personFirstName": "Abdullah"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "1259",
+      "v_id": "1511828811431",
       "attributes": {
-        "P.@organizationWorkFromYear": 2008,
-        "P.@organizationName": "Lao_Air",
-        "personId": 1259,
-        "personLastName": "Vongvichit",
-        "personFirstName": "Mee"
+        "M.@personLastName": "Kofler",
+        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
+        "messageCreationDate": "2011-12-06 23:51:04",
+        "messageId": 1511828811431,
+        "M.@personId": 13194139533433,
+        "M.@personFirstName": "Taras"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "2199023258003",
+      "v_id": "1511830618942",
       "attributes": {
-        "P.@organizationWorkFromYear": 2009,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023258003,
-        "personLastName": "Achiou",
-        "personFirstName": "Ali"
+        "M.@personLastName": "Popov",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:26",
+        "messageId": 1511830618942,
+        "M.@personId": 2530,
+        "M.@personFirstName": "Aleksei"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833690286",
+      "attributes": {
+        "M.@personLastName": "Balawan",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:00",
+        "messageId": 1511833690286,
+        "M.@personId": 19791209302403,
+        "M.@personFirstName": "Bibit"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833100682",
+      "attributes": {
+        "M.@personLastName": "Faye",
+        "M.@messageContent": "LOL",
+        "messageCreationDate": "2011-12-06 23:48:12",
+        "messageId": 1511833100682,
+        "M.@personId": 8047,
+        "M.@personFirstName": "Mahama Johnson"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833045738",
+      "attributes": {
+        "M.@personLastName": "Wilson",
+        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
+        "messageCreationDate": "2011-12-06 23:48:03",
+        "messageId": 1511833045738,
+        "M.@personId": 17592186053218,
+        "M.@personFirstName": "John"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524335",
+      "attributes": {
+        "M.@personLastName": "Barbu",
+        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
+        "messageCreationDate": "2011-12-06 23:45:44",
+        "messageId": 1511829524335,
+        "M.@personId": 8796093030376,
+        "M.@personFirstName": "Alexandru"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824640",
+      "attributes": {
+        "M.@personLastName": "Linchuk",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:44:59",
+        "messageId": 1511834824640,
+        "M.@personId": 4398046516196,
+        "M.@personFirstName": "Aleksej"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828861949",
+      "attributes": {
+        "M.@personLastName": "Nguyen",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:42:39",
+        "messageId": 1511828861949,
+        "M.@personId": 6597069776660,
+        "M.@personFirstName": "Binh"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830881221",
+      "attributes": {
+        "M.@personLastName": "Kanam",
+        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
+        "messageCreationDate": "2011-12-06 23:42:31",
+        "messageId": 1511830881221,
+        "M.@personId": 17592186049473,
+        "M.@personFirstName": "Jean-Pierre"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511831212302",
+      "attributes": {
+        "M.@personLastName": "Yang",
+        "M.@messageContent": "right",
+        "messageCreationDate": "2011-12-06 23:41:44",
+        "messageId": 1511831212302,
+        "M.@personId": 555,
+        "M.@personFirstName": "Chen"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829651262",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:38:16",
+        "messageId": 1511829651262,
+        "M.@personId": 24189255818723,
+        "M.@personFirstName": "K."
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829345809",
+      "attributes": {
+        "M.@personLastName": "Santos",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:35:42",
+        "messageId": 1511829345809,
+        "M.@personId": 4695,
+        "M.@personFirstName": "Jose"
+      },
+      "v_type": "Comment"
     }
   ]}]
 }
 
-real	0m0.367s
-user	0m0.460s
-sys	0m0.090s
+real	0m0.896s
+user	0m0.568s
+sys	0m0.063s
 Using graph 'ldbc_snb'
 {
   "error": false,
@@ -3756,120 +1958,838 @@ Using graph 'ldbc_snb'
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"P": [
+  "results": [{"M": [
     {
-      "v_id": "6597069767125",
+      "v_id": "1511830753701",
       "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 6597069767125,
-        "personLastName": "Pham",
-        "personFirstName": "Eve-Mary Thai"
+        "M.@personLastName": "Carlsson",
+        "M.@messageContent": "no",
+        "messageCreationDate": "2011-12-06 23:59:46",
+        "messageId": 1511830753701,
+        "M.@personId": 6597069776731,
+        "M.@personFirstName": "Sven"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "28587302330691",
+      "v_id": "1511834824644",
       "attributes": {
-        "P.@organizationWorkFromYear": 2002,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 28587302330691,
-        "personLastName": "Hafez",
-        "personFirstName": "Atef"
+        "M.@personLastName": "Rodriguez",
+        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
+        "messageCreationDate": "2011-12-06 23:57:11",
+        "messageId": 1511834824644,
+        "M.@personId": 15393162798801,
+        "M.@personFirstName": "Jorge"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "5869",
+      "v_id": "1511830615171",
       "attributes": {
-        "P.@organizationWorkFromYear": 2004,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 5869,
-        "personLastName": "Vorachith",
-        "personFirstName": "Cy"
+        "M.@personLastName": "Nagy",
+        "M.@messageContent": "no way!",
+        "messageCreationDate": "2011-12-06 23:56:40",
+        "messageId": 1511830615171,
+        "M.@personId": 19791209303491,
+        "M.@personFirstName": "George"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "8796093022909",
+      "v_id": "1511829484942",
       "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Air",
-        "personId": 8796093022909,
-        "personLastName": "Vang",
-        "personFirstName": "Mee"
+        "M.@personLastName": "Larsson",
+        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
+        "messageCreationDate": "2011-12-06 23:56:26",
+        "messageId": 1511829484942,
+        "M.@personId": 6597069770520,
+        "M.@personFirstName": "Hans"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "10995116285549",
+      "v_id": "1511829820007",
       "attributes": {
-        "P.@organizationWorkFromYear": 2005,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 10995116285549,
-        "personLastName": "Charoenpura",
-        "personFirstName": "Jetsada"
+        "M.@personLastName": "Stewart",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:55:29",
+        "messageId": 1511829820007,
+        "M.@personId": 2199023260376,
+        "M.@personFirstName": "Henry"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "24189255815555",
+      "v_id": "1511828796796",
       "attributes": {
-        "P.@organizationWorkFromYear": 2006,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 24189255815555,
-        "personLastName": "Anwar",
-        "personFirstName": "A."
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
+        "messageCreationDate": "2011-12-06 23:54:24",
+        "messageId": 1511828796796,
+        "M.@personId": 4398046517791,
+        "M.@personFirstName": "Deepak"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "2199023266276",
+      "v_id": "1511829524285",
       "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023266276,
-        "personLastName": "Li",
-        "personFirstName": "Ben"
+        "M.@personLastName": "Hleb",
+        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
+        "messageCreationDate": "2011-12-06 23:54:13",
+        "messageId": 1511829524285,
+        "M.@personId": 19791209306736,
+        "M.@personFirstName": "David"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "8796093027636",
+      "v_id": "1511828811441",
       "attributes": {
-        "P.@organizationWorkFromYear": 2007,
-        "P.@organizationName": "Lao_Airlines",
-        "personId": 8796093027636,
-        "personLastName": "Sysavanh",
-        "personFirstName": "Pao"
+        "M.@personLastName": "Tekin",
+        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
+        "messageCreationDate": "2011-12-06 23:52:58",
+        "messageId": 1511828811441,
+        "M.@personId": 8796093027714,
+        "M.@personFirstName": "Abdullah"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "1259",
+      "v_id": "1511828811431",
       "attributes": {
-        "P.@organizationWorkFromYear": 2008,
-        "P.@organizationName": "Lao_Air",
-        "personId": 1259,
-        "personLastName": "Vongvichit",
-        "personFirstName": "Mee"
+        "M.@personLastName": "Kofler",
+        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
+        "messageCreationDate": "2011-12-06 23:51:04",
+        "messageId": 1511828811431,
+        "M.@personId": 13194139533433,
+        "M.@personFirstName": "Taras"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
     },
     {
-      "v_id": "2199023258003",
+      "v_id": "1511830618942",
       "attributes": {
-        "P.@organizationWorkFromYear": 2009,
-        "P.@organizationName": "Lao_Air",
-        "personId": 2199023258003,
-        "personLastName": "Achiou",
-        "personFirstName": "Ali"
+        "M.@personLastName": "Popov",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:26",
+        "messageId": 1511830618942,
+        "M.@personId": 2530,
+        "M.@personFirstName": "Aleksei"
       },
-      "v_type": "Person"
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833690286",
+      "attributes": {
+        "M.@personLastName": "Balawan",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:00",
+        "messageId": 1511833690286,
+        "M.@personId": 19791209302403,
+        "M.@personFirstName": "Bibit"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833100682",
+      "attributes": {
+        "M.@personLastName": "Faye",
+        "M.@messageContent": "LOL",
+        "messageCreationDate": "2011-12-06 23:48:12",
+        "messageId": 1511833100682,
+        "M.@personId": 8047,
+        "M.@personFirstName": "Mahama Johnson"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833045738",
+      "attributes": {
+        "M.@personLastName": "Wilson",
+        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
+        "messageCreationDate": "2011-12-06 23:48:03",
+        "messageId": 1511833045738,
+        "M.@personId": 17592186053218,
+        "M.@personFirstName": "John"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524335",
+      "attributes": {
+        "M.@personLastName": "Barbu",
+        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
+        "messageCreationDate": "2011-12-06 23:45:44",
+        "messageId": 1511829524335,
+        "M.@personId": 8796093030376,
+        "M.@personFirstName": "Alexandru"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824640",
+      "attributes": {
+        "M.@personLastName": "Linchuk",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:44:59",
+        "messageId": 1511834824640,
+        "M.@personId": 4398046516196,
+        "M.@personFirstName": "Aleksej"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828861949",
+      "attributes": {
+        "M.@personLastName": "Nguyen",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:42:39",
+        "messageId": 1511828861949,
+        "M.@personId": 6597069776660,
+        "M.@personFirstName": "Binh"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830881221",
+      "attributes": {
+        "M.@personLastName": "Kanam",
+        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
+        "messageCreationDate": "2011-12-06 23:42:31",
+        "messageId": 1511830881221,
+        "M.@personId": 17592186049473,
+        "M.@personFirstName": "Jean-Pierre"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511831212302",
+      "attributes": {
+        "M.@personLastName": "Yang",
+        "M.@messageContent": "right",
+        "messageCreationDate": "2011-12-06 23:41:44",
+        "messageId": 1511831212302,
+        "M.@personId": 555,
+        "M.@personFirstName": "Chen"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829651262",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:38:16",
+        "messageId": 1511829651262,
+        "M.@personId": 24189255818723,
+        "M.@personFirstName": "K."
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829345809",
+      "attributes": {
+        "M.@personLastName": "Santos",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:35:42",
+        "messageId": 1511829345809,
+        "M.@personId": 4695,
+        "M.@personFirstName": "Jose"
+      },
+      "v_type": "Comment"
     }
   ]}]
 }
 
-real	0m0.377s
-user	0m0.440s
-sys	0m0.104s
+real	0m0.995s
+user	0m0.525s
+sys	0m0.096s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"M": [
+    {
+      "v_id": "1511830753701",
+      "attributes": {
+        "M.@personLastName": "Carlsson",
+        "M.@messageContent": "no",
+        "messageCreationDate": "2011-12-06 23:59:46",
+        "messageId": 1511830753701,
+        "M.@personId": 6597069776731,
+        "M.@personFirstName": "Sven"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824644",
+      "attributes": {
+        "M.@personLastName": "Rodriguez",
+        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
+        "messageCreationDate": "2011-12-06 23:57:11",
+        "messageId": 1511834824644,
+        "M.@personId": 15393162798801,
+        "M.@personFirstName": "Jorge"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830615171",
+      "attributes": {
+        "M.@personLastName": "Nagy",
+        "M.@messageContent": "no way!",
+        "messageCreationDate": "2011-12-06 23:56:40",
+        "messageId": 1511830615171,
+        "M.@personId": 19791209303491,
+        "M.@personFirstName": "George"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829484942",
+      "attributes": {
+        "M.@personLastName": "Larsson",
+        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
+        "messageCreationDate": "2011-12-06 23:56:26",
+        "messageId": 1511829484942,
+        "M.@personId": 6597069770520,
+        "M.@personFirstName": "Hans"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829820007",
+      "attributes": {
+        "M.@personLastName": "Stewart",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:55:29",
+        "messageId": 1511829820007,
+        "M.@personId": 2199023260376,
+        "M.@personFirstName": "Henry"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828796796",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
+        "messageCreationDate": "2011-12-06 23:54:24",
+        "messageId": 1511828796796,
+        "M.@personId": 4398046517791,
+        "M.@personFirstName": "Deepak"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524285",
+      "attributes": {
+        "M.@personLastName": "Hleb",
+        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
+        "messageCreationDate": "2011-12-06 23:54:13",
+        "messageId": 1511829524285,
+        "M.@personId": 19791209306736,
+        "M.@personFirstName": "David"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828811441",
+      "attributes": {
+        "M.@personLastName": "Tekin",
+        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
+        "messageCreationDate": "2011-12-06 23:52:58",
+        "messageId": 1511828811441,
+        "M.@personId": 8796093027714,
+        "M.@personFirstName": "Abdullah"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828811431",
+      "attributes": {
+        "M.@personLastName": "Kofler",
+        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
+        "messageCreationDate": "2011-12-06 23:51:04",
+        "messageId": 1511828811431,
+        "M.@personId": 13194139533433,
+        "M.@personFirstName": "Taras"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830618942",
+      "attributes": {
+        "M.@personLastName": "Popov",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:26",
+        "messageId": 1511830618942,
+        "M.@personId": 2530,
+        "M.@personFirstName": "Aleksei"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833690286",
+      "attributes": {
+        "M.@personLastName": "Balawan",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:00",
+        "messageId": 1511833690286,
+        "M.@personId": 19791209302403,
+        "M.@personFirstName": "Bibit"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833100682",
+      "attributes": {
+        "M.@personLastName": "Faye",
+        "M.@messageContent": "LOL",
+        "messageCreationDate": "2011-12-06 23:48:12",
+        "messageId": 1511833100682,
+        "M.@personId": 8047,
+        "M.@personFirstName": "Mahama Johnson"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833045738",
+      "attributes": {
+        "M.@personLastName": "Wilson",
+        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
+        "messageCreationDate": "2011-12-06 23:48:03",
+        "messageId": 1511833045738,
+        "M.@personId": 17592186053218,
+        "M.@personFirstName": "John"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524335",
+      "attributes": {
+        "M.@personLastName": "Barbu",
+        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
+        "messageCreationDate": "2011-12-06 23:45:44",
+        "messageId": 1511829524335,
+        "M.@personId": 8796093030376,
+        "M.@personFirstName": "Alexandru"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824640",
+      "attributes": {
+        "M.@personLastName": "Linchuk",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:44:59",
+        "messageId": 1511834824640,
+        "M.@personId": 4398046516196,
+        "M.@personFirstName": "Aleksej"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828861949",
+      "attributes": {
+        "M.@personLastName": "Nguyen",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:42:39",
+        "messageId": 1511828861949,
+        "M.@personId": 6597069776660,
+        "M.@personFirstName": "Binh"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830881221",
+      "attributes": {
+        "M.@personLastName": "Kanam",
+        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
+        "messageCreationDate": "2011-12-06 23:42:31",
+        "messageId": 1511830881221,
+        "M.@personId": 17592186049473,
+        "M.@personFirstName": "Jean-Pierre"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511831212302",
+      "attributes": {
+        "M.@personLastName": "Yang",
+        "M.@messageContent": "right",
+        "messageCreationDate": "2011-12-06 23:41:44",
+        "messageId": 1511831212302,
+        "M.@personId": 555,
+        "M.@personFirstName": "Chen"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829651262",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:38:16",
+        "messageId": 1511829651262,
+        "M.@personId": 24189255818723,
+        "M.@personFirstName": "K."
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829345809",
+      "attributes": {
+        "M.@personLastName": "Santos",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:35:42",
+        "messageId": 1511829345809,
+        "M.@personId": 4695,
+        "M.@personFirstName": "Jose"
+      },
+      "v_type": "Comment"
+    }
+  ]}]
+}
+
+real	0m1.131s
+user	0m0.558s
+sys	0m0.069s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"M": [
+    {
+      "v_id": "1511830753701",
+      "attributes": {
+        "M.@personLastName": "Carlsson",
+        "M.@messageContent": "no",
+        "messageCreationDate": "2011-12-06 23:59:46",
+        "messageId": 1511830753701,
+        "M.@personId": 6597069776731,
+        "M.@personFirstName": "Sven"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824644",
+      "attributes": {
+        "M.@personLastName": "Rodriguez",
+        "M.@messageContent": "About Leonard Cohen, was subsequently reAbout Mustafa Kemal Atatürk, c, an",
+        "messageCreationDate": "2011-12-06 23:57:11",
+        "messageId": 1511834824644,
+        "M.@personId": 15393162798801,
+        "M.@personFirstName": "Jorge"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830615171",
+      "attributes": {
+        "M.@personLastName": "Nagy",
+        "M.@messageContent": "no way!",
+        "messageCreationDate": "2011-12-06 23:56:40",
+        "messageId": 1511830615171,
+        "M.@personId": 19791209303491,
+        "M.@personFirstName": "George"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829484942",
+      "attributes": {
+        "M.@personLastName": "Larsson",
+        "M.@messageContent": "About Slovakia, o the south. The largest city About Henry III of England, 77), George I",
+        "messageCreationDate": "2011-12-06 23:56:26",
+        "messageId": 1511829484942,
+        "M.@personId": 6597069770520,
+        "M.@personFirstName": "Hans"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829820007",
+      "attributes": {
+        "M.@personLastName": "Stewart",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:55:29",
+        "messageId": 1511829820007,
+        "M.@personId": 2199023260376,
+        "M.@personFirstName": "Henry"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828796796",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "About Augustine of Hippo, atron of the Augustinian religious order; About Randy New",
+        "messageCreationDate": "2011-12-06 23:54:24",
+        "messageId": 1511828796796,
+        "M.@personId": 4398046517791,
+        "M.@personFirstName": "Deepak"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524285",
+      "attributes": {
+        "M.@personLastName": "Hleb",
+        "M.@messageContent": "About Pierre Trudeau, e PrairiAbout Winston Churchill, the resiAbout Jerry Lee Lew",
+        "messageCreationDate": "2011-12-06 23:54:13",
+        "messageId": 1511829524285,
+        "M.@personId": 19791209306736,
+        "M.@personFirstName": "David"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828811441",
+      "attributes": {
+        "M.@personLastName": "Tekin",
+        "M.@messageContent": "About Charles de Gaulle, rench Forces witAbout Mohammad Reza Pahlavi, t notable of whiAbou",
+        "messageCreationDate": "2011-12-06 23:52:58",
+        "messageId": 1511828811441,
+        "M.@personId": 8796093027714,
+        "M.@personFirstName": "Abdullah"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828811431",
+      "attributes": {
+        "M.@personLastName": "Kofler",
+        "M.@messageContent": "About Franz Liszt, and teacherAbout Chiang Kai-shek, resumed. ThAbout Al Gr",
+        "messageCreationDate": "2011-12-06 23:51:04",
+        "messageId": 1511828811431,
+        "M.@personId": 13194139533433,
+        "M.@personFirstName": "Taras"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830618942",
+      "attributes": {
+        "M.@personLastName": "Popov",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:26",
+        "messageId": 1511830618942,
+        "M.@personId": 2530,
+        "M.@personFirstName": "Aleksei"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833690286",
+      "attributes": {
+        "M.@personLastName": "Balawan",
+        "M.@messageContent": "great",
+        "messageCreationDate": "2011-12-06 23:49:00",
+        "messageId": 1511833690286,
+        "M.@personId": 19791209302403,
+        "M.@personFirstName": "Bibit"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833100682",
+      "attributes": {
+        "M.@personLastName": "Faye",
+        "M.@messageContent": "LOL",
+        "messageCreationDate": "2011-12-06 23:48:12",
+        "messageId": 1511833100682,
+        "M.@personId": 8047,
+        "M.@personFirstName": "Mahama Johnson"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511833045738",
+      "attributes": {
+        "M.@personLastName": "Wilson",
+        "M.@messageContent": "About Maximilian I, Holy Roman Emperor, y to Rome always being too risAbout Genghis Khan, erted into that of a bloodthirAbout Charlie Chaplin, ew ",
+        "messageCreationDate": "2011-12-06 23:48:03",
+        "messageId": 1511833045738,
+        "M.@personId": 17592186053218,
+        "M.@personFirstName": "John"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829524335",
+      "attributes": {
+        "M.@personLastName": "Barbu",
+        "M.@messageContent": "About Galileo Galilei, h the church, and expands into the greater, oAbout The Court of t",
+        "messageCreationDate": "2011-12-06 23:45:44",
+        "messageId": 1511829524335,
+        "M.@personId": 8796093030376,
+        "M.@personFirstName": "Alexandru"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511834824640",
+      "attributes": {
+        "M.@personLastName": "Linchuk",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:44:59",
+        "messageId": 1511834824640,
+        "M.@personId": 4398046516196,
+        "M.@personFirstName": "Aleksej"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511828861949",
+      "attributes": {
+        "M.@personLastName": "Nguyen",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:42:39",
+        "messageId": 1511828861949,
+        "M.@personId": 6597069776660,
+        "M.@personFirstName": "Binh"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511830881221",
+      "attributes": {
+        "M.@personLastName": "Kanam",
+        "M.@messageContent": "About George Gershwin, eorge Gershwin (SepAbout B.B. King, ocalist, and fam",
+        "messageCreationDate": "2011-12-06 23:42:31",
+        "messageId": 1511830881221,
+        "M.@personId": 17592186049473,
+        "M.@personFirstName": "Jean-Pierre"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511831212302",
+      "attributes": {
+        "M.@personLastName": "Yang",
+        "M.@messageContent": "right",
+        "messageCreationDate": "2011-12-06 23:41:44",
+        "messageId": 1511831212302,
+        "M.@personId": 555,
+        "M.@personFirstName": "Chen"
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829651262",
+      "attributes": {
+        "M.@personLastName": "Sharma",
+        "M.@messageContent": "cool",
+        "messageCreationDate": "2011-12-06 23:38:16",
+        "messageId": 1511829651262,
+        "M.@personId": 24189255818723,
+        "M.@personFirstName": "K."
+      },
+      "v_type": "Comment"
+    },
+    {
+      "v_id": "1511829345809",
+      "attributes": {
+        "M.@personLastName": "Santos",
+        "M.@messageContent": "roflol",
+        "messageCreationDate": "2011-12-06 23:35:42",
+        "messageId": 1511829345809,
+        "M.@personId": 4695,
+        "M.@personFirstName": "Jose"
+      },
+      "v_type": "Comment"
+    }
+  ]}]
+}
+
+real	0m1.037s
+user	0m0.526s
+sys	0m0.098s
+ic 11
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"P": []}]
+}
+
+real	0m0.526s
+user	0m0.445s
+sys	0m0.074s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"P": []}]
+}
+
+real	0m0.399s
+user	0m0.451s
+sys	0m0.078s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"P": []}]
+}
+
+real	0m0.339s
+user	0m0.453s
+sys	0m0.049s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"P": []}]
+}
+
+real	0m0.343s
+user	0m0.417s
+sys	0m0.089s
+Using graph 'ldbc_snb'
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"P": []}]
+}
+
+real	0m0.338s
+user	0m0.423s
+sys	0m0.080s
