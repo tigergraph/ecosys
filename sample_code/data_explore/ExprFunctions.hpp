@@ -233,7 +233,7 @@ inline string GetAllAttrToStr(gpr::Context& context, VERTEX src, const string& s
    std::stringstream out;
    topology4::VertexAttribute instance;
    if (context.GraphAPI()->GetVertex(src.vid, instance)) {
-     out << instance.type() << separator << src.vid;
+     out << instance.type_name() << separator << src.vid;
      gvector<topology4::AttributeMeta>& attributemetas = instance.GetAttributesMeta()->attributelist_;
      for (uint64_t i = 0; i < instance.numberofattrs(); ++i) {
        AttributeMeta& meta = attributemetas[i];
