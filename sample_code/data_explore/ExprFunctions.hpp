@@ -182,6 +182,78 @@ inline int64_t GetUnknownVertexCount(ServiceAPI* api,
   return unknownIds.size();
 }
 
+  inline ListAccum<VERTEX> CreateVertexListByIIDFolder(const std::string& path) {
+    std::vector<std::string> fileList;
+    if (boost::filesystem::is_directory(path)) {
+      // we cannot loop directory in GSQL side since it may not locate in m1
+      boost::filesystem::directory_iterator it(path);
+      boost::filesystem::directory_iterator end_it;
+      while (it != end_it){
+        //no hidden files
+        std::string localfile 
+          =  boost::filesystem::path(it->path().string()).filename().string();
+        if (boost::filesystem::is_regular_file(it->status()) && localfile[0] != '.') {
+          fileList.push_back(it->path().string());
+        } else {
+          GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder")
+            << "[WARNING] The file \""
+            << it->path().string()
+            << "\" is skipped because it is either a irregular file or a hidden file.";
+        }
+        ++ it;
+      }
+    } else if (boost::filesystem::is_regular_file(path)){
+      fileList.push_back(path);
+    }
+    GEngineInfo(InfoLvl::Brief, "CreateVertexListByIIDFolder") << "Found total " << fileList.size() << " local files.";
+    ListAccum<VERTEX> vList;
+    for (auto& filename : fileList) {
+      std::ifstream file(filename);
+      if (file.is_open()) {
+          std::string line;
+          while (getline(file, line)) {
+              // using printf() in all tests for consistency
+             try {
+              vList += VERTEX(strtoll(line.c_str(), nullptr, 10));
+             } catch (std::exception& e) {
+              GEngineInfo(InfoLvl::Brief, "CreateVertexListByIIDFolder") << "Bad line: " << e.what();
+             }
+          }
+          file.close();
+      } else {
+        GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Can not open the file: " << filename << " skip it.";
+        continue;
+      }
+    }
+    GEngineInfo(InfoLvl::Brief, "RemoveVertexByIIDFolder") << "Read total ids: " << vList.size() ;
+    return vList;
+  }
+
+inline string GetAllAttrToStr(gpr::Context& context, VERTEX src, const string& separator) {
+   std::stringstream out;
+   topology4::VertexAttribute instance;
+   if (context.GraphAPI()->GetVertex(src.vid, instance)) {
+     out << instance.type() << separator << src.vid;
+     gvector<topology4::AttributeMeta>& attributemetas = instance.GetAttributesMeta()->attributelist_;
+     for (uint64_t i = 0; i < instance.numberofattrs(); ++i) {
+       AttributeMeta& meta = attributemetas[i];
+       if (meta.is_deleted_) continue;
+       out << separator;
+       uint8_t* ptr = instance.MoveToPosition(i);
+       if (!ptr) {
+         out << "NULL";
+       } else {
+         topology4::Attribute::PrintOneAttribute(out, meta, ptr);
+       }
+     }
+   } else {
+    GEngineInfo(InfoLvl::Brief, "GetAllAttrToStr") << "Failed to get attribute: " << src.vid ;
+    out << src.vid;
+   }
+   out << std::endl;
+   return out.str();
+}
+
 }
 /****************************************/
 
