@@ -29,3 +29,8 @@ dbms.memory.pagecache.size=194000m
 dbms.transaction.timeout=9000s
 
 dbms.active_database=ldbc10.db
+
+- Modify env_var.sh to point your neo4j installation point. 
+- run source env_var.sh
+- run one_step_load.sh
+
