@@ -1,19 +1,30 @@
 USE GRAPH ldbc_snb
 
-CREATE QUERY ic_5(vertex<Person> pid, datetime minDate)
-    for graph ldbc_snb syntax _v2 {
+CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb syntax _v2 {
+
+  SetAccum<vertex<Forum>> @forumSet;
+
   SetAccum<vertex<Post>> @postSet;
   SumAccum<int> @postCount;
   S = { pid };
+
   F =
     SELECT f
-    FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_MEMBER:e)- Forum:f,
-          :f -(CONTAINER_OF>)- Post:m -(HAS_CREATOR>)- :p
+    FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_MEMBER:e)- Forum:f
     WHERE p != s AND e.joinDate > minDate
-    ACCUM f.@postSet += m
-    POST-ACCUM f.@postCount = f.@postSet.size(), f.@postSet.clear()
-    ORDER BY f.@postCount DESC, f.id ASC
-    LIMIT 20;
+    ACCUM p.@forumSet += f;
+
+  R =
+      SELECT  f
+      FROM F:f -(CONTAINER_OF>)- Post:m -(HAS_CREATOR>)- :p
+      WHERE f in p.@forumSet
+      ACCUM f.@postCount += 1;
+
+   F = SELECT f
+       FROM F:f
+       ORDER BY f.@postCount DESC, f.id ASC
+       LIMIT 20;
+
   PRINT F[F.title AS forumTitle, F.@postCount AS postCount];
 }
 

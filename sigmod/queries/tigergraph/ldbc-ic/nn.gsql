@@ -1,3 +1,4 @@
+use graph ldbc_snb
 drop query nn
 CREATE QUERY nn(vertex<Person> pid) FOR GRAPH ldbc_snb {
 
