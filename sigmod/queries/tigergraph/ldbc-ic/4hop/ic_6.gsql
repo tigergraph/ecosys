@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 drop query ic_6
-CREATE QUERY ic_6(vertex<Person> pid, string tagName) for graph ldbc_snb syntax _v2 {
+CREATE QUERY ic_6(vertex<Person> pid, string tagName) for graph ldbc_snb syntax v2 {
   SetAccum<vertex<Post>> @postSet;
   SumAccum<int> @postCount;
   S = { pid };

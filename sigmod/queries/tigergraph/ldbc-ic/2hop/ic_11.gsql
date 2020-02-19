@@ -2,7 +2,7 @@ USE GRAPH ldbc_snb
 drop query ic_11
 
 CREATE QUERY ic_11(vertex<Person> pid, string cName,
-    int year) FOR GRAPH ldbc_snb SYNTAX _v2 {
+    int year) FOR GRAPH ldbc_snb SYNTAX v2 {
   SumAccum<string> @organizationName;
   SumAccum<int> @organizationWorkFromYear;
   S = { pid };

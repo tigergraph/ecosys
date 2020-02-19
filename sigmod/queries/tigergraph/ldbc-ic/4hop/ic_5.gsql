@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 drop query ic_5
 
-CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb syntax _v2 {
+CREATE QUERY ic_5(vertex<Person> pid, datetime minDate) for graph ldbc_snb syntax v2 {
 
   SetAccum<vertex> @forumSet;
 

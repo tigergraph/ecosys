@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 drop query ic_9
 
-CREATE QUERY ic_9(vertex<Person> pid, datetime maxDate) FOR GRAPH ldbc_snb SYNTAX _v2 {
+CREATE QUERY ic_9(vertex<Person> pid, datetime maxDate) FOR GRAPH ldbc_snb SYNTAX v2 {
   SumAccum<uint> @personId;
   SumAccum<string> @personFirstName, @personLastName, @messageContent;
   S = { pid };
