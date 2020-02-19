@@ -3,8 +3,11 @@ Release Note
 Version 1.0 Initial Release 
 Release Date: Wed, 11 Dec, 2019 at 11:49 PM
 
-By default, TigerGraph OS user has the full rights to start, stop, change configuration, edit files, etc. In production environment, a Operator may have much limited right to  operate the TigerGraph system.
+============================================================
 
+README
+
+By default, TigerGraph OS user has the full rights to start, stop, change configuration, edit files, etc. In production environment, a Operator may have much limited right to  operate the TigerGraph system.
 
 This solution provides a way  such that the Operator can only start, stop and restart TigerGraph system,  check status, and view logs. The Operator can't do others to TigerGraph System.
 
