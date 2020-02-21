@@ -1,6 +1,7 @@
 use graph ldbc_snb
 drop query aggs
 
+#each groupby individually bind one or more aggregate functions
 CREATE QUERY aggs() FOR GRAPH ldbc_snb SYNTAX v2 {
 
 
