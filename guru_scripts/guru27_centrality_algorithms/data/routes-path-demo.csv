@@ -1,0 +1,12 @@
+﻿airline,airline_id,src_airport,src_airport_id,dest_airport,dest_airport_id, codeshare, stops, equipment,src_lat,src_long,dest_lat,dest_long,miles
+,,A,,B,,,,,,,,,2
+,,A,,C,,,,,,,,,4
+,,A,,D,,,,,,,,,2
+,,B,,E,,,,,,,,,2
+,,C,,D,,,,,,,,,1
+,,C,,F,,,,,,,,,3
+,,E,,F,,,,,,,,,2
+,,E,,G,,,,,,,,,3
+,,E,,H,,,,,,,,,5
+,,F,,H,,,,,,,,,2
+,,G,,H,,,,,,,,,3

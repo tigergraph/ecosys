@@ -1,0 +1,22 @@
+CREATE QUERY betweenness_cent (INT maxHops, INT maxItems, STRING country) FOR GRAPH MyGraph {
+# Betweenness Centrality main query
+
+	MapAccum<VERTEX,SumAccum<float>> @@BC;
+	SumAccum<float> @cent;
+  
+        Start = {ANY};
+	      IF country != "" THEN
+	        Start = SELECT v FROM Start:v
+	          WHERE v.country == country;
+	      END;
+	
+        Start = SELECT s FROM Start:s
+                ACCUM @@BC += bc_subquery(s, maxHops);
+	
+        # Write scores to local accumulators of vertices.
+	      Start = SELECT s FROM Start:s
+	            POST-ACCUM s.@cent += @@BC.get(s)
+	            ORDER BY s.@cent DESC
+	            LIMIT maxItems;
+        PRINT Start[Start.name, Start.@cent];
+}
