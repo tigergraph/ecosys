@@ -1,7 +1,11 @@
 Release Note
 
-Version 1.0 Initial Release 
-Release Date: Wed, 11 Dec, 2019 at 11:49 PM
+
++ Version 1.1
+  + Release Date: Mon,  9 Mar, 2020 at 08:40 PM
+  + Set close_fds=True for Python 2.7 (default is False)
++ Version 1.0
+  + Initial Release: Wed, 11 Dec, 2019 at 11:49 PM
 
 ============================================================
 
