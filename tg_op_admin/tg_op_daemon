@@ -1,5 +1,5 @@
-# Version 1.0
-# Release Date: Wed, 11 Dec, 2019 at 11:49 PM
+# Version 1.1
+# Release Date: Mon, 9 Mar, 2020 at 08:40 PM
 #!/usr/bin/env python
 import sys
 import os
@@ -40,7 +40,7 @@ def validiate_cmd(cmd):
 def enforce_yes(cmd):
     global ERROR_RETURN
     # some command asks "Yes" so -y must be provided
-    if cmd[0] == "stop":
+    if cmd[0] == "stop" or cmd[0] == "restart":
         for opt in cmd[1:]:
             if  opt == "-y" \
                 or opt == "-fy" \
@@ -118,7 +118,7 @@ def run_gadmin_cmd(org_cmd):
             if validiate_cmd(cmd[1:]):
                 validate_state = 3
                 cmd[0] = "gadmin"
-                process = subprocess.Popen(cmd, shell=False, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+                process = subprocess.Popen(cmd, shell=False, close_fds=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
                 output = process.communicate()[0].strip()
                 return output
     if validate_state == 0:
