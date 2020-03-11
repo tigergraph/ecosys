@@ -10,6 +10,16 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.1 | 2.4.1+ | 1.8 | Rest++ | ResultSet | Support tabular format and Spark |
 | 1.2 | 2.4.1+ | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
 
+## Dependency list
+| groupId | artifactId | version |
+| --- | --- | --- |
+| org.apache.commons | commons-io | 1.3.2 |
+| org.apache.httpcomponents | httpclient | 4.5.8 |
+| org.json | json | 20180813 |
+| javax.json | javax.json-api | 1.1.4 |
+| org.glassfish | javax.json | 1.1.4 |
+| junit | junit | 4.11 |
+
 ## Minimum viable snippet
 Parameters are passed as properties when creating a connection, such as username, password and graph name. Once REST++ authentication is enabled, username and password is mandatory. Graph name is required when MultiGraph is enabled.
 
