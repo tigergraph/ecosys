@@ -1,0 +1,19 @@
+#SetAccum dedup, print run-time attribute with object
+CREATE QUERY find_risky_order_receivers(int num_senders_per_receiver=3) FOR GRAPH MyGraph {
+
+  SetAccum<VERTEX> @order_senders;
+
+  risky_receivers =
+    SELECT t
+    FROM Account:s -(send_bonus>:e)- Account:t
+    ACCUM t.@order_senders += s
+    HAVING t.@order_senders.size() > num_senders_per_receiver;
+
+  PRINT  risky_receivers;
+}
+
+
+
+
+
+

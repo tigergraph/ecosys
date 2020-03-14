@@ -1,0 +1,16 @@
+#single pass agg
+CREATE QUERY find_t0_accounts() FOR GRAPH MyGraph {
+
+  SetAccum<VERTEX> @@risky_accounts, 
+  SetAccum<Edge> @@risky_orders;
+
+  t0 =
+    SELECT s
+    FROM Account:s -(send_bonus>:e) - Account:t
+    WHERE s.reg_date == e.order_date
+    ACCUM @@risky_accounts += s,
+          @@risky_orders += e;
+
+  PRINT @@risky_accounts AS accounts,
+        @@risky_orders AS orders;
+}

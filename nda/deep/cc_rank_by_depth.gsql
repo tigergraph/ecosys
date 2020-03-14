@@ -1,0 +1,53 @@
+#advanced graph analytics by query block composition using accumulators, 
+#and flow control to do transitive closure , and loop through container entry
+
+# the campagin budget lost is measurable, the economic value of opportuntiy cost is unknown. 
+
+#find top-k cc that has the longest depth.
+
+CREATE QUERY cc_rank_by_depth (int cutoff, int k) FOR GRAPH MyGraph {
+
+
+  TYPEDEF TUPLE<vertex ancestor, int depth> cc_stat;
+  MaxAccum<vertex> @ancestor;
+  MapAccum<vertex cc, MaxAccum<int> depth> @@cc_depth;
+  HeapAccum<cc_stat>(k, depth DESC) @@top_k_cc;
+  int depth = 0;
+
+
+
+  //find all cc's starting account.
+  ancestors =
+    SELECT t
+    FROM Account:t
+    WHERE t.outdegree("invite") > 0 AND t.outdegree("reverse_invite") == 0
+    ACCUM t.@ancestor = t;
+
+  //propagate each cc's starting account to all its cc children.
+  //for each child, we store the path from starting point to that child. 
+  //in this graph, there is no two person invite the same account scenarios.
+  children = ancestors;
+
+  WHILE (children.size() > 0) DO
+    depth = depth +1;
+    children =
+      SELECT t
+      FROM children:s - (invite>:e) - Account:t
+      ACCUM t.@ancestor = s.@ancestor,
+      POST-ACCUM 
+            //only record deep cc
+            CASE WHEN depth > cutoff THEN 
+              @@cc_depth += (t.@ancestor->depth)
+            END
+  END;
+
+  //loop an container entry, do sort using HeapAccum
+  FOREACH (ancestor, depth) IN @@cc_depth_map DO
+    @@top_k_cc += cc_stat(ancestor, depth);
+  END;
+
+  //output the heap entry
+  FOREACH c IN @@top_k_cc DO
+    PRINT c.ancestor AS ancestor, c.depth AS depth;
+  END;
+}

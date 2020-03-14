@@ -1,0 +1,52 @@
+//for each CC, we calculate how many total bonous order this CC has.
+//then for each order, if the sender != receiver, we count it as non-self order.
+//calculate the ratio of  non-self-order/ total_order
+CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph {
+
+  TYPEDEF TUPLE<vertex ancestor, int order_cnt, double nonself_order_ratio> cc_stats;
+  MaxAccum<vertex> @ancestor;
+  GroupByAccum<vertex ancestor, SumAccum<int> tot_orders, SumAccum<int> cnt_nonself_orders>  @@cc_order_summary;
+  HeapAccum<cc_stats>(k, nonself_order_ratio DESC) @@top_k_cc;
+
+  //find all cc's starting account.
+  ancestors =
+    SELECT t
+    FROM Account:t
+    WHERE t.outdegree("invite") > 0 AND t.outdegree("reverse_invite") == 0
+    ACCUM t.@ancestor = t;
+
+  //propagate each cc starting account to its descendent. 
+  children = ancestors;
+  WHILE (children.size() > 0) DO
+    children =
+      SELECT t
+      FROM children:s - (invite>:e) - Account:t
+      ACCUM t.@ancestor = s.@ancestor
+  END;
+
+  
+  #summarize order, add cc order count, and self-order count
+  #using one pass group by accum
+  t = 
+    SELECT tgt
+    FROM Account:src -(send_bonus>:e)- Account:tgt
+    ACCUM 
+         CASE WHEN src == tgt THEN
+              @@cc_order_summary += (src.@ancestor->1, 1)
+          ELSE 
+              @@cc_order_summary += (src.@ancestor->1, 0)
+          END;
+ 
+  //loop an container entry, do sort using HeapAccum
+  FOREACH (cc, order_cnt, non_self_order_cnt ) IN @@cc_order_summary DO
+    IF order_cnt >= cutoff THEN
+      @@top_k_cc += cc_stats(ancestor, order_cnt, 1.0*non_self_order_cnt/order_cnt);
+    END;
+  END;
+
+  //output the heap entry
+  FOREACH c IN @@top_k_cc DO
+    PRINT c.ancestor AS ancestor, c.order_cnt AS cnt, c.nonself_order_ratio AS nonself_order_ratio;
+  END;
+
+}
