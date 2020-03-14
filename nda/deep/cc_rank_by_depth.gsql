@@ -42,7 +42,7 @@ CREATE QUERY cc_rank_by_depth (int cutoff, int k) FOR GRAPH MyGraph {
   END;
 
   //loop an container entry, do sort using HeapAccum
-  FOREACH (ancestor, depth) IN @@cc_depth_map DO
+  FOREACH (ancestor, depth) IN @@cc_depth DO
     @@top_k_cc += cc_stat(ancestor, depth);
   END;
 
