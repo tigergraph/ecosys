@@ -72,8 +72,12 @@ CREATE QUERY cc_rank_by_gini(int k=100, int cutoff=30) FOR GRAPH MyGraph {
 
   END;
 
+  PRINT @@top_k_cc;
+
+/*
   //output the heap entry
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.depth AS depth, c.size AS size, c.gini AS gini_index;
   END;
+  */
 }

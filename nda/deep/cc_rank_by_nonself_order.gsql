@@ -36,7 +36,10 @@ CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph
           ELSE 
               @@cc_order_summary += (src.@ancestor->1, 0)
           END;
- 
+
+  PRINT @@cc_order_summary.filter(order_cnt > cutoff).top(k, nonself_order_ratio DESC);
+
+/*
   //loop an container entry, do sort using HeapAccum
   FOREACH (cc, order_cnt, non_self_order_cnt ) IN @@cc_order_summary DO
     IF order_cnt >= cutoff THEN
@@ -48,5 +51,6 @@ CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.order_cnt AS cnt, c.nonself_order_ratio AS nonself_order_ratio;
   END;
+  */
 
 }

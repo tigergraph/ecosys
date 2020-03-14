@@ -38,6 +38,9 @@ CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyG
     @@cc_share_device_rate += (cc -> cnt, cnt);
   END;
 
+  PRINT @@cc_share_device_rate.top(k, share_device_rate DESC, tot DESC);
+
+ /*
   //loop an container entry, do sort using HeapAccum
   FOREACH (cc, avg_rate, tot) IN @@cc_share_device_rate DO
     IF tot >= cutoff THEN
@@ -49,4 +52,5 @@ CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyG
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.share_device_rate AS share_device_rate, c.tot_accounts AS num_accounts;
   END;
+  */
 }
