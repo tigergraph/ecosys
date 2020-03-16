@@ -1,16 +1,18 @@
-CREATE QUERY cc_rank_by_gini(int k=100, int cutoff=30) FOR GRAPH MyGraph {
+use graph MyGraph
+
+CREATE QUERY cc_rank_by_gini(int k=100, int cutoff=30) FOR GRAPH MyGraph Syntax V2 {
 
   TYPEDEF TUPLE<vertex ancestor,int depth, int size, double gini> cc_stat;
 
   MaxAccum<vertex> @ancestor;
   SumAccum<int> @invitee_cnt;
   GroupByAccum<vertex cc, MaxAccum<int> depth, SumAccum<int> size> @@cc_depth_size;
-  HeapAccum<cc_stat>(k, gini DESC, cc_size DESC, ccc_depth DESC) @@top_k_cc;
+  HeapAccum<cc_stat>(k, gini DESC, size DESC, depth DESC) @@top_k_cc;
   MapAccum<vertex, BagAccum<int>> @@cc_invitee_count_bag;
 
   int depth = 0;
   int sum_diffs;
-  int sum;
+  int tot;
   double gini;
 
 
@@ -50,34 +52,30 @@ CREATE QUERY cc_rank_by_gini(int k=100, int cutoff=30) FOR GRAPH MyGraph {
       
 
     //loop each cc and its bag of invitee count
-  FOREACH (cc, bag) IN @@cc_invitee_count_bag DO 
+  FOREACH (cc, countBag) IN @@cc_invitee_count_bag DO 
     sum_diffs = 0;
-    sum = 0;
+    tot = 0;
     gini = 0;
 
     //nested loop of bag count
-    FOREACH x1 IN bag DO 
-      sum = sum + x1;
-      FOREACH x2 IN bag DO 
+    FOREACH x1 IN countBag DO 
+      tot = tot + x1;
+      FOREACH x2 IN countBag DO 
         sum_diffs = sum_diffs + abs(x1-x2);
       END;
     END;
 
-    gini = 0.5 * sum_diffs / (bag.size()*sum);
+    gini = 0.5 * sum_diffs / (countBag.size()*tot);
 
     //push to top_k_cc heap
-    IF bag.size() >= cutoff THEN
+    IF countBag.size() >= cutoff THEN
       @@top_k_cc += cc_stat(cc, @@cc_depth_size.get(cc).depth, @@cc_depth_size.get(cc).size, gini);
     END;
 
   END;
 
-  PRINT @@top_k_cc;
-
-/*
   //output the heap entry
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.depth AS depth, c.size AS size, c.gini AS gini_index;
   END;
-  */
 }

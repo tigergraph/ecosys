@@ -1,7 +1,9 @@
 //for each CC, we calculate how many total bonous order this CC has.
 //then for each order, if the sender != receiver, we count it as non-self order.
 //calculate the ratio of  non-self-order/ total_order
-CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph {
+use graph MyGraph
+
+CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph Syntax V2{
 
   TYPEDEF TUPLE<vertex ancestor, int order_cnt, double nonself_order_ratio> cc_stats;
   MaxAccum<vertex> @ancestor;
@@ -21,13 +23,13 @@ CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph
     children =
       SELECT t
       FROM children:s - (invite>:e) - Account:t
-      ACCUM t.@ancestor = s.@ancestor
+      ACCUM t.@ancestor = s.@ancestor;
   END;
 
   
   #summarize order, add cc order count, and self-order count
   #using one pass group by accum
-  t = 
+  r = 
     SELECT tgt
     FROM Account:src -(send_bonus>:e)- Account:tgt
     ACCUM 
@@ -36,14 +38,11 @@ CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph
           ELSE 
               @@cc_order_summary += (src.@ancestor->1, 0)
           END;
-
-  PRINT @@cc_order_summary.filter(order_cnt > cutoff).top(k, nonself_order_ratio DESC);
-
-/*
+ 
   //loop an container entry, do sort using HeapAccum
   FOREACH (cc, order_cnt, non_self_order_cnt ) IN @@cc_order_summary DO
     IF order_cnt >= cutoff THEN
-      @@top_k_cc += cc_stats(ancestor, order_cnt, 1.0*non_self_order_cnt/order_cnt);
+      @@top_k_cc += cc_stats(cc, order_cnt, 1.0*non_self_order_cnt/order_cnt);
     END;
   END;
 
@@ -51,6 +50,5 @@ CREATE QUERY cc_rank_by_nonself_order_ratio(int cutoff, int k) FOR GRAPH MyGraph
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.order_cnt AS cnt, c.nonself_order_ratio AS nonself_order_ratio;
   END;
-  */
 
 }

@@ -1,7 +1,9 @@
 //we only count those populations that have corresponding imei. For those which does not have
 //account, we ignore them as they dont have enough info for us. 
 #using group by, foreach to find top-k. 
-CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyGraph {
+use graph MyGraph
+
+CREATE QUERY cc_rank_by_account_per_imei(int cutoff, int k) FOR GRAPH MyGraph Syntax V2 {
 
   TYPEDEF TUPLE<vertex ancestor, float share_device_rate, int tot_accounts> cc_stats;
   MaxAccum<vertex> @ancestor;
@@ -11,17 +13,17 @@ CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyG
 
  //find all cc's starting account.
   ancestors =
-    SELECT t
-    FROM Account:t
-    WHERE t.outdegree("invite") > 0 AND t.outdegree("reverse_invite") == 0
-    ACCUM t.@ancestor = t;
+    SELECT acct
+    FROM Account:acct
+    WHERE acct.outdegree("invite") > 0 AND acct.outdegree("reverse_invite") == 0
+    ACCUM acct.@ancestor = acct;
 
 
   children = ancestors;
   WHILE (children.size() > 0) DO
-    t =
+    r =
       SELECT tgt
-      FROM children:src -(use_imei>:e)- IMEI:tgt
+      FROM children:src -(use_imei:e)- IMEI:tgt
       //for each (cc, imei)-->account. 
       //normal cc, has #imei== #account
       ACCUM @@groupby_cc_imei += (src.@ancestor, tgt -> 1);
@@ -38,9 +40,6 @@ CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyG
     @@cc_share_device_rate += (cc -> cnt, cnt);
   END;
 
-  PRINT @@cc_share_device_rate.top(k, share_device_rate DESC, tot DESC);
-
- /*
   //loop an container entry, do sort using HeapAccum
   FOREACH (cc, avg_rate, tot) IN @@cc_share_device_rate DO
     IF tot >= cutoff THEN
@@ -52,5 +51,4 @@ CREATE QUERY cc_rank_by_account_per_imei(INT min_comp_size, INT k) FOR GRAPH MyG
   FOREACH c IN @@top_k_cc DO
     PRINT c.ancestor AS ancestor, c.share_device_rate AS share_device_rate, c.tot_accounts AS num_accounts;
   END;
-  */
 }

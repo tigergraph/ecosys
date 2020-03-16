@@ -1,16 +1,17 @@
 
 #groupByAccum work with collection aggregate
 #single pass multiple aggregate
-CREATE QUERY find_risky_imeis(int num_acct_per_imei=3) FOR GRAPH MyGraph {
+use graph MyGraph
+CREATE QUERY find_risky_imeis(int num_acct_per_imei=3) FOR GRAPH MyGraph Syntax V2{
 
 GroupByAccum<VERTEX<IMEI> i, SetAccum<Vertex<Account>> accts> @@risky_imei_accounts;
-SetAccum<EDGE> @@send_bonus_edges;
+SetAccum<EDGE> @@risky_orders;
 
  accounts =
     SELECT t
-    FROM IMEI:s - (use_imei>:e) - Account:t - (send_bonus>:e) - Account:t2
+    FROM IMEI:s - (use_imei:e) - Account:t - (send_bonus>:e2) - Account:t2
     WHERE s.outdegree("use_imei") >= num_acct_per_imei
-    ACCUM @@risky_imei_accounts += (s->t), @@risky_orders += e;
+    ACCUM @@risky_imei_accounts += (s->t), @@risky_orders += e2;
 
   PRINT @@risky_imei_accounts, @@risky_orders;
 }

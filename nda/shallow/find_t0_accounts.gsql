@@ -1,7 +1,9 @@
-#single pass agg
-CREATE QUERY find_t0_accounts() FOR GRAPH MyGraph {
 
-  SetAccum<VERTEX> @@risky_accounts, 
+#single pass agg
+use graph MyGraph
+CREATE QUERY find_t0_accounts() FOR GRAPH MyGraph Syntax _V2{
+
+  SetAccum<VERTEX> @@risky_accounts;
   SetAccum<Edge> @@risky_orders;
 
   t0 =

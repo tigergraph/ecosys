@@ -1,5 +1,6 @@
+use graph MyGraph
 #SetAccum dedup, print run-time attribute with object
-CREATE QUERY find_risky_order_receivers(int num_senders_per_receiver=3) FOR GRAPH MyGraph {
+CREATE QUERY find_risky_order_receivers(int num_senders_per_receiver=3) FOR GRAPH MyGraph Syntax v2{
 
   SetAccum<VERTEX> @order_senders;
 
