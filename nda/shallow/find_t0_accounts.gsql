@@ -1,10 +1,11 @@
 
 #single pass agg
 use graph MyGraph
-CREATE QUERY find_t0_accounts() FOR GRAPH MyGraph Syntax _V2{
+drop query FIND_T0_ACCOUNTS 
+CREATE QUERY FIND_T0_ACCOUNTS() Syntax V2{
 
-  SetAccum<VERTEX> @@risky_accounts;
-  SetAccum<Edge> @@risky_orders;
+  SetAccum<vertex> @@risky_accounts;
+  SetAccum<edge> @@risky_orders;
 
   t0 =
     SELECT s

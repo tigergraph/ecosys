@@ -6,8 +6,9 @@
 #find top-k cc that has the longest depth.
 
 use graph MyGraph
+drop query CC_RANK_BY_DEPTH
 
-CREATE QUERY cc_rank_by_depth (int cutoff, int k) FOR GRAPH MyGraph Syntax V2{
+CREATE QUERY CC_RANK_BY_DEPTH (int cutoff, int k) Syntax V2{
 
 
   TYPEDEF TUPLE<vertex ancestor, int depth> cc_stat;

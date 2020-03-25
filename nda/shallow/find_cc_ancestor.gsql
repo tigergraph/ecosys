@@ -1,0 +1,13 @@
+drop query FIND_ANCESTOR
+
+
+CREATE QUERY FIND_ANCESTOR()  RETURNS (SET<vertex>)  {
+
+  ancestors =
+     SELECT t
+     FROM Account:t
+     WHERE t.outdegree("invite") > 0 AND t.outdegree("reverse_invite") == 0
+     ACCUM t.@ancestor = t;
+
+   return ancestors;
+}
