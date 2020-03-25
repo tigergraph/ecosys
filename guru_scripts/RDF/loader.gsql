@@ -1,9 +1,0 @@
-drop job loadRDF
-
-create loading job loadRDF for graph RDF {
-  load "/home/ubuntu/dbpedia2016-04.rdf"
-  to edge HasObject values (subject($0), object($2), predicate($1)),
-  to edge SubHasPred values (subject($0), predicate($1)),
-  to edge ObjHasPred values (object($2), predicate($1))
-  using Separator=">", Header="false";
-}

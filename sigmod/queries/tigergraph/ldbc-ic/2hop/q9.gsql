@@ -1,3 +1,0 @@
-use graph ldbc_snb
-
-RUN QUERY ic_9(13194139542834, "2011-12-07 00:00:00") 

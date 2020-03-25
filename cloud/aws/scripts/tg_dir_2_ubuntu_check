@@ -1,2 +1,0 @@
-touch /tg/csv_data/aa; ls -la /tg/csv_data/aa
-rm -rf /tg/csv_data/aa

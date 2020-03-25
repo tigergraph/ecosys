@@ -1,3 +1,0 @@
-use graph ldbc_snb
-
-RUN QUERY ic_6(30786325583618,"Angola")
