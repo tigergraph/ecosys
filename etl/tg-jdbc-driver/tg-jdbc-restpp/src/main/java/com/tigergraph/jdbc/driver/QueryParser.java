@@ -103,13 +103,59 @@ public class QueryParser {
   }
 
   /**
-   * Remove empty string in an array.
+   * Tokenize a query string
    */
-  private String[] rmNullInArray(String[] strArray) {
+  private String[] tokenize(String query) {
+    char code = '$';
+    String codeStr = Character.toString(code);
+    char[] encoded = query.toCharArray();
+    boolean inStr = Boolean.FALSE;
+    int j = 0;
+    String[] values;
+    List<String> strList = new ArrayList<String>();
+    StringBuilder sb = new StringBuilder();
+    sb.append('\'');
+    /**
+     * Replace string with '$' first to prevent strings from
+     * being tokenized.
+     */
+    for (int i = 0; i < encoded.length; ++i) {
+      if (encoded[i] == '\'') {
+        inStr = !inStr;
+        if (!inStr) {
+          encoded[j++] = code;
+          sb.append('\'');
+          strList.add(sb.toString());
+          sb.setLength(0);
+          sb.append('\'');
+        }
+      } else if (inStr) {
+        sb.append(encoded[i]);
+      } else {
+        if (i > j) {
+          encoded[j] = encoded[i];
+        }
+        ++j;
+      }
+    }
+    query = String.valueOf(encoded).substring(0, j);
+    if (this.debug > 1) {
+      System.out.println(">>> encoded query: " + query);
+    }
+    String[] strArray = query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
     List<String> strListNew = new ArrayList<>();
+    j = 0;
+    /**
+     * Remove empty tokens and put the original strings back.
+     */
     for (int i = 0; i < strArray.length; i++) {
-      if (strArray[i] != null && !strArray[i].equals("")) {
-        strListNew.add(strArray[i]);
+      String str = strArray[i];
+      if (str != null && !str.equals("")) {
+        if (str.equals(codeStr)) {
+          strListNew.add(strList.get(j++));
+        } else {
+          strListNew.add(str);
+        }
       }
     }
     return strListNew.toArray(new String[strListNew.size()]);
@@ -321,8 +367,17 @@ public class QueryParser {
         // Parse attributes if any
         // the first attribute is primary id
         for (Integer i = param_offset + 1; i < values_index; ++i) {
-          attrObj.add(tokens[i],
-            Json.createObjectBuilder().add("value", tokens[values_index + i - 3]));
+          String value = tokens[values_index + i - 3];
+          if (value.indexOf('\'') >= 0) { // it's a string
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", value));
+          } else if (value.indexOf('.') >= 0) { // it's a double
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+          } else { // it's an integer
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Integer.parseInt(value)));
+          }
         }
         obj.add(tokens[3], // vertex type
           Json.createObjectBuilder().add(tokens[values_index + 1], // vertex id
@@ -374,8 +429,7 @@ public class QueryParser {
      * Tokenize the raw query and remove empty items
      */
     this.debug = debug;
-    String[] tokens = query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
-    tokens = rmNullInArray(tokens);
+    String[] tokens = tokenize(query);
     if (debug > 0) {
       System.out.println(">>> query: " + query);
     }
@@ -577,8 +631,7 @@ public class QueryParser {
         this.payload = new StringEntity(query_body, "UTF-8");
         // Re-parse the query without query body
         String new_query = query.substring(0, start) + query.substring(end + 1);
-        tokens = new_query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
-        tokens = rmNullInArray(tokens);
+        tokens = tokenize(new_query);
         if (debug > 1) {
           System.out.println(">>> new_query: " + new_query);
           System.out.println(">>> query_body: " + query_body);
