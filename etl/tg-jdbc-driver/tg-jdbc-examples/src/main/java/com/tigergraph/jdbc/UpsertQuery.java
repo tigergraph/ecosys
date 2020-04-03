@@ -63,11 +63,9 @@ public class UpsertQuery
         /**
          * Upsert vertices and edges with Statement.
          */
-        System.out.println("Running \"INSERT INTO vertex Page(id, page_id) VALUES('1000', '1000')");
+        System.out.println("Running Statement to insert page and edge.");
         try (java.sql.Statement stmt = con.createStatement()) {
-          String query = "INSERT INTO vertex Page(id, page_id) VALUES('1000', '1000')";
-          stmt.addBatch(query);
-          query = "INSERT INTO vertex Page(id, page_id) VALUES('1001', '1001')";
+          String query = "INSERT INTO vertex Page(id, page_id) VALUES('1000', 'new page')";
           stmt.addBatch(query);
           query = "INSERT INTO edge Linkto(Page, Page) VALUES('1000', '1001')";
           stmt.addBatch(query);
