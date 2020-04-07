@@ -41,13 +41,14 @@ EOT
 ########################################################################
 # 2. add each version. Make sure we can CD to the first GLE directory. #
 ########################################################################
-cd $GLE_DIR; git checkout tg_2.5.0_dev; cd -
-#                      client path,             branch,       version_string in combined client
-./new_gsql_version.sh $GLE_DIR/src/main/java/   tg_2.5.2_dev    v2_5_2
-./new_gsql_version.sh $GLE_DIR/src/main/java/   tg_2.5.0_dev    v2_5_0
-./new_gsql_version.sh $GLE_DIR                  tg_2.4.1_dev    v2_4_1
-./new_gsql_version.sh $GLE_DIR                  tg_2.4.0_dev    v2_4_0
-./new_gsql_version.sh $GLE_DIR                  tg_2.3.2_dev    v2_3_2
+cd $GLE_DIR; git pull && git checkout release_3.0.0_ttp_03-23-2020; cd -
+#                     client path branch/tag                      version_string is_tag?
+./new_gsql_version.sh $GLE_DIR    release_3.0.0_ttp_03-23-2020    v3_0_0_beta    true
+./new_gsql_version.sh $GLE_DIR    tg_2.5.2_dev                    v2_5_2
+./new_gsql_version.sh $GLE_DIR    tg_2.5.0_dev                    v2_5_0
+./new_gsql_version.sh $GLE_DIR    tg_2.4.1_dev                    v2_4_1
+./new_gsql_version.sh $GLE_DIR    tg_2.4.0_dev                    v2_4_0
+./new_gsql_version.sh $GLE_DIR    tg_2.3.2_dev                    v2_3_2
 ######################################
 # 3. finish Driver.java endi section #
 ######################################
