@@ -4,7 +4,7 @@
     <groupId>com.tigergraph.client</groupId>
     <name>gsql_client</name>
     <artifactId>gsql_client</artifactId>
-    <version>2.5.2</version>
+    <version>3.0.0-beta</version>
     <url>http://maven.apache.org</url>
     <build>
         <sourceDirectory>.</sourceDirectory>
@@ -129,6 +129,12 @@
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>2.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.5</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>

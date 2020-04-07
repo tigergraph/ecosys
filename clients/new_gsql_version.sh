@@ -2,9 +2,15 @@
 
 # called by make_aio_gsql_client.sh
 
-SRC=$1   # path of the gsql client code: com/tigergraph
+GLE=$1   # path to GLE
 BRN=$2   # source branch: should be sth like tg_2.4.0_dev
 VSTR=$3  # version_string: should be sth like v2_4_0
+# is_tag: true if $BRN is a tag
+if [ ! -z $4 ]; then
+  IS_TAG=$4
+else
+  IS_TAG=false
+fi
 
 #Step 0:  add this version in AIO driver
 cat <<EOT >> com/tigergraph/client/Driver.java
@@ -28,18 +34,41 @@ cd com/tigergraph
 rm -rf $VSTR;  mkdir $VSTR
 
 #Step 2: switch the source to correct branch (release). Get client commit
-cd $SRC; 
+cd $GLE;
 git fetch --all -p
-git checkout $BRN
+if [ $IS_TAG = true ]; then
+  # checkout from tags
+  git checkout tags/$BRN
+else
+  git checkout $BRN
+fi
 git clean -df
-git reset --hard origin/$BRN
-git pull
-client_commit="\"$(git log -1 --pretty="format:%H" -- com/tigergraph/client/ com/tigergraph/common/)\""
+git reset --hard $BRN
+if [ $IS_TAG = false ]; then
+  # clean and pull only if it's a branch  
+  git pull
+fi
+PKG_CLIENT=com/tigergraph/client
+PKG_COMMON=com/tigergraph/common
+if [ -d gsql-client ]; then
+  # for 3.x
+  SRC_CLIENT=gsql-client/src/main/java/$PKG_CLIENT
+  SRC_COMMON=gsql-common/src/main/java/$PKG_COMMON
+elif [ -d src/main/java ]; then
+  # for 2.5.x
+  SRC_CLIENT=src/main/java/$PKG_CLIENT
+  SRC_COMMON=src/main/java/$PKG_COMMON
+else
+  # for older versions
+  SRC_CLIENT=$PKG_CLIENT
+  SRC_COMMON=$PKG_COMMON
+fi
+client_commit="\"$(git log -1 --pretty="format:%H" -- $SRC_CLIENT $SRC_COMMON)\""
 cd -
 
 #Step 3: Copy source code to target
-cp -r $SRC/com/tigergraph/client $VSTR
-cp -r $SRC/com/tigergraph/common $VSTR
+cp -r $GLE/$SRC_CLIENT $VSTR
+cp -r $GLE/$SRC_COMMON $VSTR
 
 
 #Step 4: fix source code
