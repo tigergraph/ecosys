@@ -1,7 +1,6 @@
 ### Version Compatibilty
-| GSQL Client Version  | TigerGraph Server Version |
-|     :---:     |     :---:     |
-| 2.5.2  | 2.5.3<br>2.5.2<br>2.5.1<br>2.5.0<br>2.4.2<br>2.4.1<br>2.3.2|
-| 2.5.0  | 2.5.1<br>2.5.0<br>2.4.2<br>2.4.1<br>2.3.2|
-
-
+| GSQL Client  | TigerGraph Server |
+| :----------- | :---------------- |
+| `3.0.0-beta` | `3.0.0-beta`<br>`2.5.*`<br>`2.4.*`<br>`2.3.2` |
+| `2.5.2`      | `2.5.*`<br>`2.4.*`<br>`2.3.2` |
+| `2.5.0`      | `2.5.0`<br>`2.4.*`<br>`2.3.2` |
