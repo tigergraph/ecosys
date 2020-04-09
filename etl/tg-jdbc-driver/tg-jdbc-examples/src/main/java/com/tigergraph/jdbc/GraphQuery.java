@@ -32,6 +32,9 @@ public class GraphQuery
      */
     properties.put("graph", "gsql_demo");
 
+    /**
+     * Specify SSL certificate
+     */
     properties.put("trustStore", "/tmp/trust.jks");
     properties.put("trustStorePassword", "password");
     properties.put("trustStoreType", "JKS");

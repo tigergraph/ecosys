@@ -34,6 +34,14 @@ public abstract class Connection implements java.sql.Connection {
     return properties;
   }
 
+  @Override public boolean isReadOnly() throws SQLException {
+    return Boolean.FALSE;
+  }
+
+  @Override public void clearWarnings() throws SQLException {
+    return;
+  }
+
   /**
    * Abstract Methods.
    */
@@ -195,10 +203,6 @@ public abstract class Connection implements java.sql.Connection {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isReadOnly() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
   @Override public void setHoldability(int holdability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
@@ -233,10 +237,6 @@ public abstract class Connection implements java.sql.Connection {
   }
 
   @Override public SQLWarning getWarnings() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public void clearWarnings() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

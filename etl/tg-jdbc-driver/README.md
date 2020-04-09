@@ -80,7 +80,50 @@ try {
   }
 }
 ```
-Remember to use "jdbc:tg:https:" as its prefix instead of "jdbc:tg:http:". The certificate needs to be converted to JKS format.
+
+Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. The certificate needs to be converted to JKS format.
+
+Detailed example can be found at [GraphQuery.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/GraphQuery.java).
+
+## Connection Pool
+This JDBC driver could be used in together with third party connection pools. For instance, [HikariCP](https://github.com/brettwooldridge/HikariCP).
+To do so, first add the following lines to your `pom.xml`:
+```
+    <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>3.4.2</version>
+    </dependency>
+```
+
+And add the following packages to your Java source code:
+```
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+```
+
+Then create a HikariDataSource instance like this:
+```
+config.setJdbcUrl(sb.toString());
+HikariDataSource ds = new HikariDataSource(config);
+HikariConfig config = new HikariConfig();
+
+config.setDriverClassName("com.tigergraph.jdbc.Driver");
+config.setUsername("tigergraph");
+config.setPassword("tigergraph");
+config.addDataSourceProperty("graph", "gsql_demo");
+config.addDataSourceProperty("debug", "1");
+config.setJdbcUrl("jdbc:tg:http://127.0.0.1:14240");
+HikariDataSource ds = new HikariDataSource(config);
+Connection con = ds.getConnection();
+```
+
+Don't forget to close the HikariDataSource at the end:
+```
+ds.close();
+```
+
+Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/ConnectionPool.java).
 
 ## Supported Queries
 ```
