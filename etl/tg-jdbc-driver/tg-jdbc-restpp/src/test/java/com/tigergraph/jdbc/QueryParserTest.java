@@ -75,7 +75,7 @@ public class QueryParserTest extends TestCase {
     parser = new QueryParser(null, query, null, 0, 0);
     sb.append(parser.getVertexJson()).append("\n");
 
-    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id) VALUES('1000', 'new page', 0.8, 1000)";
+    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id) VALUES(?, ?, ?, ?)";
     parameters.clear();
     parameters.put(1, "1000");
     parameters.put(2, "new page");
@@ -88,7 +88,7 @@ public class QueryParserTest extends TestCase {
     parser = new QueryParser(null, query, null, 0, 0);
     sb.append(parser.getEdgeJson()).append("\n");
 
-    query = "INSERT INTO edge Linkto(Page, Page, weight) VALUES('1000', '1001', 10.7)";
+    query = "INSERT INTO edge Linkto(Page, Page, weight) VALUES(?, ?, ?)";
     parameters.clear();
     parameters.put(1, "1000");
     parameters.put(2, "1001");
