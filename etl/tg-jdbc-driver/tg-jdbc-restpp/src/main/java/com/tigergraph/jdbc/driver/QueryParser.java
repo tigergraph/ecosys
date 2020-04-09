@@ -327,8 +327,17 @@ public class QueryParser {
         // Parse edge attributes if any
         // the first 2 attributes are source vertex type and target vertex type
         for (Integer i = param_offset + 2; i < values_index; ++i) {
-          attrObj.add(tokens[i],
-            Json.createObjectBuilder().add("value", tokens[values_index + i - 3]));
+          String value = tokens[values_index + i - 3];
+          if (value.indexOf('\'') >= 0) { // it's a string
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", value));
+          } else if (value.indexOf('.') >= 0) { // it's a double
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+          } else { // it's an integer
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Integer.parseInt(value)));
+          }
         }
         obj.add(tokens[param_offset], // src vertex type
           Json.createObjectBuilder().add(tokens[values_index + 1], // src vertex id

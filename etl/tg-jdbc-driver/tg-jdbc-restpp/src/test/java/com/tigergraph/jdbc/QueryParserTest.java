@@ -71,6 +71,43 @@ public class QueryParserTest extends TestCase {
     parser = new QueryParser(null, query, parameters, 0, 0);
     sb.append(parser.getEndpoint()).append("\n");
 
+    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id) VALUES('1000', 'new page', 0.8, 1000)";
+    parser = new QueryParser(null, query, null, 0, 0);
+    sb.append(parser.getVertexJson()).append("\n");
+
+    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id) VALUES('1000', 'new page', 0.8, 1000)";
+    parameters.clear();
+    parameters.put(1, "1000");
+    parameters.put(2, "new page");
+    parameters.put(3, 0.8);
+    parameters.put(4, 1000);
+    parser = new QueryParser(null, query, parameters, 0, 0);
+    sb.append(parser.getVertexJson()).append("\n");
+
+    query = "INSERT INTO edge Linkto(Page, Page, weight) VALUES('1000', '1001', 10.7)";
+    parser = new QueryParser(null, query, null, 0, 0);
+    sb.append(parser.getEdgeJson()).append("\n");
+
+    query = "INSERT INTO edge Linkto(Page, Page, weight) VALUES('1000', '1001', 10.7)";
+    parameters.clear();
+    parameters.put(1, "1000");
+    parameters.put(2, "1001");
+    parameters.put(3, 10.7);
+    parser = new QueryParser(null, query, parameters, 0, 0);
+    sb.append(parser.getEdgeJson()).append("\n");
+
+    query = "builtins stat_vertex_number(type=?)";
+    parameters.clear();
+    parameters.put(1, "Page");
+    parser = new QueryParser(null, query, parameters, 0, 0);
+    sb.append(parser.getPayload()).append("\n");
+
+    query = "builtins stat_edge_number(type=?)";
+    parameters.clear();
+    parameters.put(1, "Linkto");
+    parser = new QueryParser(null, query, parameters, 0, 0);
+    sb.append(parser.getPayload()).append("\n");
+
     String formattedResult = sb.toString();
     InputStream expected =
       getClass().getClassLoader().getResourceAsStream("endpoint-expected.dat");

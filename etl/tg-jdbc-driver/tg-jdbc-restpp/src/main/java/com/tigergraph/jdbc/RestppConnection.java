@@ -112,6 +112,8 @@ public class RestppConnection extends Connection {
       // Get username
       if (properties.containsKey("username")) {
         this.username = properties.getProperty("username");
+      } else if (properties.containsKey("user")) {
+        this.username = properties.getProperty("user");
       }
 
       // Get password
@@ -466,6 +468,10 @@ public class RestppConnection extends Connection {
     return this.level;
   }
 
+  @Override public boolean isValid(int timeout) throws SQLException {
+    return Boolean.TRUE;
+  }
+
   /**
    * Methods not implemented yet.
    */
@@ -485,10 +491,6 @@ public class RestppConnection extends Connection {
 
   @Override public java.sql.Statement createStatement(int resultSetType,
     int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public boolean isValid(int timeout) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
