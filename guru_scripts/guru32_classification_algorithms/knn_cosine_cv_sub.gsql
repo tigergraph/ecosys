@@ -1,0 +1,44 @@
+CREATE QUERY knn_cosine_cv_sub (VERTEX source, INT max_k) FOR GRAPH MyGraph RETURNS (ListAccum<STRING>) {
+/* This subquery returns a list of predicted label for a source vertex with respect to different k within a given range. 
+*/ 
+        TYPEDEF TUPLE <label STRING, similarity FLOAT> Label_Score;
+        HeapAccum<Label_Score>(max_k, similarity DESC) @@top_labels_heap;  # heap stores the (label, similarity) tuple, order by similarity score
+        SumAccum<FLOAT> @numerator, @@norm1, @norm2, @similarity;
+        MapAccum<STRING, INT> @@count;
+        ListAccum<STRING> @@predicted_label_lists;  # list of predicted labels to return
+        INT max_count = 0;
+        STRING predicted_label;   # predicted label in each iteration
+        INT k;
+
+        # calculate similarity and find the top k nearest neighbors
+        start = {source};
+        subjects = SELECT t
+                   FROM start:s -((Likes):e)-> :t
+                   ACCUM t.@numerator = e.weight,
+                         @@norm1 += pow(e.weight, 2);
+
+        neighbours = SELECT t
+                     FROM subjects:s -(reverse_Likes:e)-> :t
+                     WHERE t != source AND t.known_label != ""    # only consider the neighbors with known label
+                     ACCUM t.@numerator += s.@numerator * e.weight;
+
+        kNN = SELECT s
+              FROM neighbours:s -((Likes):e)-> :t
+              ACCUM s.@norm2 += pow(e.weight, 2)
+              POST-ACCUM @@top_labels_heap += Label_Score(s.known_label, s.@numerator/sqrt(@@norm1 * s.@norm2)); # store the label and similarity score in a heap 
+
+	# iterate the heap and calculate label count for different k
+        k = 1;
+        FOREACH item IN @@top_labels_heap DO  
+                @@count += (item.label -> 1);   # count is a map, key is the label, value is the count of the label
+                IF @@count.get(item.label) > max_count THEN
+                         max_count = @@count.get(item.label);
+                         predicted_label = item.label;
+                END;
+		@@predicted_label_lists += predicted_label;  # list of predicted labels
+                k = k+1;
+        END;
+      
+        PRINT @@predicted_label_lists;
+        RETURN @@predicted_label_lists;
+}
