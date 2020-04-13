@@ -179,3 +179,13 @@ bash run_pg_wcc.sh twitter wcc
 
 # pagerank
 bash run_pg_wcc.sh twitter pagerank
+
+Recording CPU & Memory consumption during testing
+-------------
+To Record CPU and Memory usage during these benchmark tests, you must have TSAR installed on your system. Installatin here: https://github.com/alibaba/tsar
+Run these commands after data loadind and compile complete successfully.
+graph500:
+./profile-adb-graph500.sh
+
+twitter:
+./profile-adb-twitter.sh

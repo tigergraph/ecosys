@@ -222,3 +222,17 @@ nohup python wcc.py twitter-rv neo4j 3
 #page rank, 3 runs, each run 10 iterations.  
 #it will run very long
 python pg.py twitter neo4j 10 3
+
+Recording CPU & Memory Consumption during Testing
+-------------
+To record CPU and Memory usage during these benchmark tests, you must have TSAR installed on your system. Installation here : https://github.com/alibaba/tsar
+Edit the data file and seed file paths in the script files before running. Description is also included in the header of each file.
+E.g.
+  nohup python kn.py <path/to/seed/file>  300 neo4j  1 notes latency
+
+Run these commands after loading data
+graph500:
+./profile-neo4j-graph500.sh
+
+twitter:
+./profile-neo4j-twitter.sh
