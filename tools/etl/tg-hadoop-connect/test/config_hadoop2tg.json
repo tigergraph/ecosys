@@ -1,0 +1,10 @@
+{
+    "TG_URL": "http://10.0.0.91:9000",
+    "TG_GRAPH": "connectivity",
+    "TG_LOADJOB": "loadConn_bank_transfer_records_csv",
+    "TG_SEPARATOR_ASCII": 44,
+    "TG_SEPARATOR_URL": ",",
+    "TG_EOL_ASCII": 10,
+    "TG_EOL_URL": "%0A",
+    "TG_BATCH_SIZE": 100
+}

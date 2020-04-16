@@ -1,0 +1,19 @@
+//seed: messageId=5497586080298
+
+[
+{
+'vModerator':[
+{
+'v_id':'19791209344640',
+'v_type':'Person',
+'attributes':{
+'forumId':4947804502671,
+'forumTitle':'Wall of Fernando Montt',
+'moderatorId':19791209344640,
+'moderatorFirstName':'Fernando',
+'moderatorLastName':'Montt'
+}
+}
+]
+}
+]

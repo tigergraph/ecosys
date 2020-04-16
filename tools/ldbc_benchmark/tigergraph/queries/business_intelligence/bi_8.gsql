@@ -1,0 +1,41 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 8 query description is on page 66 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY bi_8(STRING tagName) FOR GRAPH ldbc_snb { 
+  SumAccum<INT> @count;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@invalidComment;
+	
+  vTag = { Tag.* };
+  vTag = 
+    SELECT s 
+    FROM vTag:s 
+    WHERE s.name == tagName;
+
+  vMessages = 
+    SELECT t 
+    FROM vTag:s-((Comment_HAS_TAG_Tag_REVERSE|Post_HAS_TAG_Tag_REVERSE):e)->:t;
+
+  vComments = 
+    SELECT t
+    FROM vMessages:s-((Comment_REPLY_OF_Post_REVERSE|Comment_REPLY_OF_Comment_REVERSE):e)->:t;
+
+  tmp =
+    SELECT t
+    FROM vComments:s-(Comment_HAS_TAG_Tag:e)->Tag:t
+    WHERE t.name == tagName
+    ACCUM s.@valid = true;
+    //ACCUM @@invalidComment += s.id;
+	
+  vRelatedTags = 
+    SELECT t 
+    FROM vComments:s-(Comment_HAS_TAG_Tag:e)->:t
+    WHERE NOT s.@valid
+    //WHERE NOT @@invalidComment.contains(s.id)
+    ACCUM t.@count += 1 # no duplicated names for tags
+    ORDER BY t.@count DESC, t.name ASC
+    LIMIT 100;
+
+  PRINT vRelatedTags[
+      vRelatedTags.name AS relatedTagName, 
+      vRelatedTags.@count AS replyCount];
+}

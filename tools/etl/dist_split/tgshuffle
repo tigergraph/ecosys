@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# Use this script to run commands on a cluster of nodes.
+
+usage()
+{
+  echo "Usage: `basename $0` <all> <src_path> <target_path>"
+  exit 1
+}
+
+[ $# -ne 3 ] && usage
+
+servers=$(echo $1| tr [:upper:] [:lower:] )
+supportedServers='all gpe gse gpp kafka rest zk'
+found='no'
+for key in $supportedServers
+do
+  if [ "G${key}" = G"$servers" ]
+  then
+    found='yes'
+    break
+  fi
+done
+
+[ $found = 'no' ] && usage
+
+src_path=$2
+tgt_path=$3
+
+gsqlCfgFile=~/.gsql/gsql.cfg
+[ ! -f $gsqlCfgFile ] && (echo "GSQL config file not found. Please run \"gsql_admin --configure\" first."; exit 2)
+
+if which ifconfig >/dev/null 2>&1
+then
+  getIpCommand=`which ifconfig`
+else
+  getIpCommand='/sbin/ip addr'
+fi
+
+sshPort=$(grep ssh.port $gsqlCfgFile | awk '{print $2}')
+gpe=$(grep 'gpe.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+gse=$(grep 'gse.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+gpp=$(grep 'gpp.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+kafka=$(grep 'kafka.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+rest=$(grep 'restpp.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+zk=$(grep 'zk.servers' $gsqlCfgFile|awk '{print $2}'| tr ',' ' ')
+
+declare -A nodes
+clusterNodes=$(grep cluster.nodes  ~/.gsql/gsql.cfg|awk '{print $2}' | tr ',' ' ')
+all=''
+for node in $clusterNodes
+do
+  name=${node%:*}
+  ip=${node#*:}
+  nodes[$name]=$ip
+  all="$all $name"
+done
+
+# list all the files in src path:
+i=0
+while read line
+do
+    src_array[ $i ]="$src_path/$line"        
+    (( i++ ))
+done < <(ls -A1 $src_path)
+
+eval hosts=\$$servers
+
+# testing ...
+#hosts="m1 m2"
+#nodes["m1"]="127.0.0.1"
+#nodes["m2"]="127.0.0.2"
+#printf 'n: %s\n' "${nodes[@]}"
+# end of testing
+
+# make sure each host has only one file to be sent
+if [ "${#src_array[@]}" -ne "${#nodes[@]}" ]; then
+    echo "Number of files are not the same as number of hosts"
+    echo "Number of files: ${#src_array[@]}"
+    echo "Number of hosts: ${#nodes[@]}"
+    exit -1
+fi
+
+
+# don't check host when use gscp, or grun
+o1="UserKnownHostsFile=/dev/null"
+o2="StrictHostKeyChecking=no"
+keyfile=~/.ssh/tigergraph_rsa
+
+
+
+# mkdir in all the target nodes
+for host in $hosts
+do
+  hostName=${host%%.*}  # remove trailing part of format "m1...4"
+  ip=${nodes["$hostName"]}
+  if [[ $(eval $getIpCommand | grep -w $ip) ]]
+  then
+    mkdir -p ${tgt_path} || :
+  else
+    ssh -i $keyfile -q -o $o1 -o $o2 -p $sshPort $ip "mkdir -p ${tgt_path} || :"
+  fi
+done
+
+
+# do the parallel sending
+server_index=0
+for host in $hosts
+do
+  hostName=${host%%.*}  # remove trailing part of format "m1...4"
+  ip=${nodes["$hostName"]}
+  if [[ $(eval $getIpCommand | grep -w $ip) ]]
+  then
+    echo -e "\n### Connecting to local  server $ip ..."
+    cp -r  ${src_array[$server_index]} ${tgt_path} & pids[${server_index}]=$!
+  else
+    echo -e "\n### Connecting to remote server $ip ..."
+    scp -i $keyfile -q -o $o1 -o $o2 -P $sshPort -r ${src_array[$server_index]} $ip:${tgt_path} & pids[${server_index}]=$!
+  fi
+  echo $(date +"[%Y-%m-%d %T] ") "Done the transfer: ${src_array[$server_index]} to $hostName"
+  (( server_index++ ))
+done
+
+# wait for all pids
+for pid in ${pids[*]}; do
+    wait $pid
+done
+

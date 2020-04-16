@@ -1,0 +1,34 @@
+CREATE QUERY tagEvolution(INT givenYear, INT givenMonth) FOR GRAPH ldbc_snb { 
+/* This query finds the Tags that were used in Messages during the given month of the given year and the Tags that were used during the next month. 
+For the Tags and for both months, compute the count of Messages.
+*/
+
+  TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT absDiff, INT diff> TAG_COUNT;
+  GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
+  HeapAccum<TAG_COUNT>(100, absDiff DESC, tagName ASC) @@result;
+
+  Messages = {post.*, comments.*};
+  Messages = SELECT s
+             FROM Messages:s
+             WHERE year(s.creationDate) == givenYear 
+                   AND month(s.creationDate) == givenMonth 
+                   OR year(s.creationDate) == givenYear + givenMonth/12 
+                   AND month(s.creationDate) == 1 + givenMonth%12;
+	
+  Messages = SELECT s
+             FROM Messages:s -(:e) -> tag:t
+             ACCUM IF year(s.creationDate) == givenYear AND month(s.creationDate) == givenMonth THEN 
+                     @@count += (t.name -> 1, 0)
+                   ELSE
+                     @@count += (t.name -> 0, 1)
+                   END;
+	
+  FOREACH c IN @@count DO
+    @@result += TAG_COUNT(c.tagName, 
+                          c.countMonth1, 
+                          c.countMonth2, 
+                          abs(c.countMonth1 - c.countMonth2), 
+                          c.countMonth2 - c.countMonth1);
+  END;
+  PRINT @@result;
+}

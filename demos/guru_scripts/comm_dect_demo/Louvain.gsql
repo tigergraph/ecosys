@@ -1,0 +1,76 @@
+use graph hrz_graph
+drop query LabelPropagation
+
+CREATE QUERY Louvain(/* Parameters here */) FOR GRAPH hrz_graph { 
+  MapAccum<int, int> @@edgeCntWithinCluster;     # edge count inside clusters
+  MapAccum<int, int> @@edgeCntIncidentCluster;   # edge count incident to clusters
+  MapAccum<int, int> @@compSizes;                # size of a cluster
+  MapAccum<int, int> @clusterEdgeCnt;  # edge count incident to that cluster
+
+  SumAccum<int> @@totalNumEdges;   # total number of edges
+  SumAccum<int> @edgeCnt;          # total edge count of vertex
+  SumAccum<int> @cluster;        # which cluster it belongs to
+  SumAccum<float> @deltaQ;         # contribution to the modularity
+
+  OrAccum @@changed;               # true if cluster membership changed in this iterator
+  
+  Start = {Prescriber.*};
+
+  # Initialize: count edges and set a unique cluster ID for each vertex
+  Start = SELECT s FROM Start:s -(referral:e)-> :t
+          ACCUM @@totalNumEdges += 1,
+                s.@edgeCnt += 1
+          POST-ACCUM
+                s.@cluster = getvid(s); # Label each vertex with its own internal ID
+  @@changed = true;
+
+  # For each vertex, calculate the change in modularity from adding it to each of the nearby clusters
+  # Add vertex to cluster with highest positive change in modularity
+  # Repeat the above until no vertices change cluster anymore
+  WHILE @@changed == true DO
+    @@changed = false;
+	Start = SELECT s FROM Start:s -(referral:e)-> :t
+			ACCUM s.@clusterEdgeCnt += (t.@cluster->1),
+				// if this is an incident edge
+				IF s.@cluster != t.@cluster THEN
+					@@edgeCntIncidentCluster += (s.@cluster->1)
+				ELSE
+					@@edgeCntWithinCluster += (s.@cluster->1)
+				END
+			POST-ACCUM
+				INT resultCluster = s.@cluster,
+            	INT m = @@totalNumEdges,
+				FLOAT maxDeltaQ = -999,
+				FLOAT deltaQ_new = 0,
+            	FOREACH (cluster, edgeCnt) IN s.@clusterEdgeCnt DO
+            		INT within = @@edgeCntWithinCluster.get(cluster),
+            		INT incident = @@edgeCntIncidentCluster.get(cluster),
+            		deltaQ_new = ((within + s.@clusterEdgeCnt.get(cluster)) / (2.0*m))
+                 	  - pow((incident + s.@edgeCnt)/(2.0*m),2)
+                 	  - (within / (2.0*m)
+                 	  - pow((incident/(2.0*m)),2)
+                 	  - pow((s.@edgeCnt/(2.0*m)),2)),
+            		IF deltaQ_new > maxDeltaQ AND deltaQ_new > s.@deltaQ AND deltaQ_new > 0 THEN
+                		maxDeltaQ = deltaQ_new,
+                		resultCluster = cluster
+            		END
+            	END,
+	        	IF s.@cluster != resultCluster THEN
+                	s.@cluster = resultCluster,
+	            	s.@deltaQ = maxDeltaQ,
+                	@@changed += true
+	             END,
+	             s.@clusterEdgeCnt.clear()
+	;
+    @@edgeCntWithinCluster.clear();
+    @@edgeCntIncidentCluster.clear();
+  END;
+
+  Start = {Prescriber.*};
+
+  Start = SELECT s FROM Start:s 
+          POST-ACCUM s.community = s.@cluster;
+  Start = SELECT s FROM Start:s
+          POST-ACCUM @@compSizes += (s.@cluster -> 1);
+  PRINT @@compSizes;
+}

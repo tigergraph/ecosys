@@ -1,0 +1,20 @@
+REATE QUERY orderSpecialty() FOR GRAPH MyGraph { 
+  
+	SumAccum<INT> @claimCount;
+	
+	start = {Claim.*};
+	
+	//submit, subspecialty_prescriber,  specialty_sub_specilaty
+	
+	pre = select pres from start-(submit)-:pres
+	      accum pres.@claimCount += 1;
+	
+	subs = select sub from pre-(subspecialty_prescriber)-:sub
+	       accum sub.@claimCount += pre.@claimCount;
+	
+	spt = select s from subs-(specialty_subspecialty)-:s
+	      accum s.@claimCount += subs.@claimCount
+	      order by s.@claimCount desc;
+	
+	print spt;
+}

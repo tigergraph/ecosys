@@ -1,8 +1,0 @@
-use graph poc_graph
-drop query batchCircleDetection
-drop query circleDetection
-@circleDetection.gsql
-@batchCircleDetection.gsql
-@oneStepTransSearch.gsql
-@twoStepTransSearch.gsql
-install query *

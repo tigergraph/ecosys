@@ -1,0 +1,26 @@
+CREATE QUERY getTheTopPublisher(vertex<Entity> birthPlace) FOR GRAPH RDF { 
+	
+	ListAccum<edge> @edgeSet;
+	SumAccum<int> @cnt;
+	
+	Start = {birthPlace};
+	
+	// get all the birth places.
+	Start = select t from Start-(HasSubject:e)->:t
+	        where e.Predicate == "birthPlace"
+	        accum t.@edgeSet += e
+	        having t.outdegree() < 100000;
+	
+	Start = select s from Start:s-(HasSubject:e)->:t
+	        where e.Predicate == "publisher"
+	        accum s.@cnt += 1
+	        order by s.@cnt desc
+	        limit 10;
+	
+	Start = select s from Start:s-(HasSubject:e)->:t
+	        sample 1000 edge when s.outdegree() > 1000
+	        where e.Predicate == "publisher"
+	        accum s.@edgeSet += e;
+	
+	print Start;
+}

@@ -1,0 +1,314 @@
+*ATTR*CREATE QUERY louvain_parallel*EXT*(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split = 10, INT outputLevel = 0) FOR GRAPH *graph* {
+*ACCM*CREATE QUERY louvain_parallel*EXT*(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split = 10, INT outputLevel = 0) FOR GRAPH *graph* {
+*FILE*CREATE QUERY louvain_parallel*EXT*(INT iter1 = 10, INT iter2 = 10, INT iter3 = 10, INT split = 10, INT outputLevel = 0, FILE fComm, FILE fDist) FOR GRAPH *graph* {
+ /*
+ * Louvain Method with Parallelism and Refinement
+ * https://arxiv.org/pdf/1304.4453
+ * The minimum label heuristics are implemented: https://doi.org/10.1016/j.parco.2015.03.003
+ 
+ * iter: There are three phases in the algorithm -- move, merge and refine. Their max number of iterations are set by iter1, iter2, iter3 respectively.
+ * split: To save memory, split number is 10 by default. When the split number is larger, the query is closer to sequential Louvain Method, which is slower. When the split number is 1, the query is parallel, but requires more memory. 
+ * outputLevel: 0, only list number; 1, also list members
+ * fComm, fDist: files to store community label and community distribution
+*/
+        
+        TYPEDEF TUPLE <INT csize, INT number> ClusterNum;
+        TYPEDEF TUPLE <VERTEX node, INT cid, FLOAT deltaQ> vDeltaQ;
+        HeapAccum<vDeltaQ>(1, deltaQ DESC, cid ASC) @largestDeltaQ;   # if deltaQ is the same, select the one with mininal vid 
+        MapAccum<INT, FLOAT> @@totIncidentCluster;   # sun of weight incident to clusters
+        MapAccum<INT, INT> @@clusterSizes;                # size of a cluster
+        MapAccum<INT, FLOAT> @weightToCluster;  # weight from one vertex incident to that cluster
+        SumAccum<FLOAT> @@totalWeight;   # total weight of all edges
+        SumAccum<FLOAT> @weight;          # total weight incident to this vertex
+        SumAccum<FLOAT> @cweight;       # total weight incident to this aggregate vertex
+        SumAccum<INT> @uid;        # which vertex it belongs to
+        SumAccum<INT> @cid;        # which cluster it belongs to
+        SumAccum<INT> @vid;        # internal id
+        SumAccum<FLOAT> @deltaQ;         # contribution to the modularity
+        SumAccum<FLOAT> @@modularity;
+        SumAccum<FLOAT> @@modularity2;
+        MapAccum<INT, MapAccum<INT, FLOAT>> @@weightToClusterMap;   # calculate edges between communities 
+        MapAccum<INT, SetAccum<INT>> @@moveComm; # map of communities that changed its community id
+        MapAccum<INT, MinAccum<VERTEX>> @@representMap;
+        SetAccum<VERTEX> @@representSet;
+        MapAccum<INT, FLOAT> @@vertexMap;
+        MapAccum<INT, MapAccum<INT, FLOAT>> @@edgeMap;
+        HeapAccum<ClusterNum>(100, csize ASC) @@clusterDist;
+        MapAccum<INT, INT> @@clusterMap;
+        MapAccum<INT, ListAccum<INT>> @@clusterMembers;
+        FLOAT last_modularity = 0;
+        FLOAT last_modularity2 = 0;
+        INT iteration;
+        INT Iter1; 
+        FLOAT epsilon = 0.0001;
+        INT iteration2;
+        INT partitions;
+        INT loop;
+        INT debug = 0;  # debug: 0, no modularity info; 1, show debug log; 2, modularity for each iteration
+
+        partitions = split;
+        CASE WHEN split < 1 THEN
+                partitions = 1;
+        END;
+        
+# Initialize: count edges and set a unique cluster ID for each vertex
+        Start = {*vertex-types*};
+        S = SELECT s 
+            FROM Start:s -(*edge-types*:e)-> :t
+            ACCUM @@totalWeight += e.*edge-weight*,
+                  s.@weight += e.*edge-weight*
+            POST-ACCUM s.@vid = getvid(s),
+                       s.@uid = s.@vid,
+                       s.@cid = s.@vid;  # Label each vertex with its own internal ID
+
+# Special first iteration of Phase 1
+        iteration = 1;
+        S = SELECT s 
+            FROM Start:s -(*edge-types*:e)-> :t
+            WHERE s.@cid > t.@cid
+            ACCUM s.@largestDeltaQ += vDeltaQ(t, t.@cid, e.*edge-weight* - 2 * s.@weight * s.@weight/ @@totalWeight) 
+                  # weightToCluster is just e.*edge-weight*
+            POST-ACCUM INT bestCluster = s.@largestDeltaQ.top().cid,
+                       IF s.@largestDeltaQ.size() > 0 and s.@largestDeltaQ.top().deltaQ > 0 and s.@cid != bestCluster THEN 
+                               s.@cid = bestCluster
+                       END,
+                       s.@largestDeltaQ.clear();
+        
+        S = SELECT s
+            FROM Start:s-(*edge-types*:e)-:t
+            WHERE s.@cid == t.@cid
+            ACCUM @@modularity += e.*edge-weight* - s.@weight * t.@weight / (@@totalWeight);
+
+        @@modularity = @@modularity / @@totalWeight;                      
+        PRINT iteration AS Phase1Iter, @@modularity;
+        log(debug > 0, "[redrain]#move", iteration, @@modularity);
+        
+# Phase 1 -- Move
+# For each vertex, calculate the change in modularity FROM adding it to each of the nearby clusters
+# Add vertex to cluster with highest positive change in modularity
+# Repeat the above until no vertices change cluster anymore
+        S = SELECT s 
+            FROM Start:s
+            ACCUM @@totIncidentCluster += (s.@cid -> s.@weight); 
+              
+        iteration = 1;
+        Iter1 = iter1 - 1;
+              
+        WHILE (iteration < 2 OR @@modularity - last_modularity > epsilon) LIMIT Iter1 DO
+                iteration += 1;
+                loop = 0;
+                WHILE (loop < partitions) DO 
+                        S = SELECT s 
+                            FROM Start:s -(*edge-types*:e)-> :t
+                            WHERE s.@uid % partitions == loop    # for different split
+                                  # At least one cluster not singlet(a cluster on its own). If both clusters are singlets, consider only when the label of target is smaller to avoid swap
+                                  AND (( abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon   # s is not a singlet 
+                                  OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon )     # or t is not a singlet
+                                  OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon      # s is a singlet 
+                                  AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon      # t is also a singlet
+                                  AND s.@cid > t.@cid) )                                               # consider only when target label is smaller
+                            ACCUM s.@weightToCluster += (t.@cid -> e.*edge-weight*)
+                            POST-ACCUM INT bestCluster = s.@cid,
+                                       FLOAT maxDeltaQ = 0.0,
+                                       FLOAT deltaQ_new = 0.0,
+                                       FOREACH (cluster, weightToC) IN s.@weightToCluster DO   #would be better if this can be distributed
+                                               FLOAT incident = @@totIncidentCluster.get(cluster),
+                                               deltaQ_new = weightToC - 2 * incident * s.@weight/ @@totalWeight,
+                                               IF deltaQ_new > maxDeltaQ OR (abs(deltaQ_new - maxDeltaQ) < epsilon AND cluster < bestCluster) THEN   # when deltaQ_new is equal to maxDeltaQ, and the cluster label is smaller, also change 
+                                                       maxDeltaQ = deltaQ_new,
+                                                       bestCluster = cluster
+                                               END
+                                       END,
+                                       IF s.@cid != bestCluster THEN 
+                                               @@totIncidentCluster += (s.@cid -> (-1 * s.@weight)),
+                                               @@totIncidentCluster += (bestCluster -> s.@weight),
+                                               s.@cid = bestCluster
+                                       END,
+                                       s.@weightToCluster.clear();
+                        loop = loop + 1;
+                END;
+                last_modularity = @@modularity;
+                @@modularity = 0;
+                T1 = SELECT s
+                     FROM Start:s-(*edge-types*:e)-:t
+                     WHERE s.@cid == t.@cid
+                     ACCUM @@modularity += e.*edge-weight* - s.@weight * t.@weight / (@@totalWeight);
+                @@modularity = @@modularity / @@totalWeight;                      
+                PRINT iteration AS Phase1Iter, @@modularity;
+                log(debug > 0, "[redrain]#move", iteration, @@modularity);
+        END;
+
+# Phase 2 --  Merge     
+        iteration2 = 0;
+        WHILE (iteration2 < 2 OR @@modularity2 - last_modularity2 > epsilon) LIMIT iter2 DO
+                iteration2 += 1;
+                Start = SELECT s
+                        FROM Start:s
+                        ACCUM s.@uid = s.@cid;      
+                # Select the vertices with minimal internal id to represent the coarsened graph
+                Start = SELECT s
+                        FROM Start:s 
+                        ACCUM @@representMap += (s.@cid -> s);
+        
+                FOREACH (key, value) IN @@representMap DO
+                        @@representSet += value;                       
+                END;      
+                represent = {@@representSet};
+                @@representMap.clear();
+                @@representSet.clear();
+                log(debug > 0, "[redrain]#2_merge", represent.size()); #@@clusterSizes.size());
+
+            # Get @cweight from totalIncident
+                represent = SELECT s
+                            FROM represent:s
+                            ACCUM s.@cweight = @@totIncidentCluster.get(s.@uid),
+                                  @@clusterSizes += (s.@cid -> 1);
+
+                log(debug > 1, "[redrain]#2_merge", @@weightToClusterMap.size());
+                iteration = 0;
+                last_modularity = 0;
+                @@modularity = 0;
+     
+                WHILE (iteration < 2 OR @@modularity - last_modularity > epsilon) limit iter1 DO
+                        iteration += 1;
+        
+                        # Calculate.*edge-weight* incident from vertex to cluster in coarsened graph; change every interation
+                        S = SELECT s
+                            FROM Start:s -(*edge-types*:e)-:t
+                            WHERE s.@cid != t.@cid AND @@totIncidentCluster.get(s.@uid) > 0 AND @@totIncidentCluster.get(t.@cid) > 0   #@@totIncidentCluster keeps changing, can be 0
+                            ACCUM @@weightToClusterMap += (s.@uid -> (t.@cid -> e.*edge-weight*));  # from s, incident to some clusters. Not consider the same cluster
+                        represent = SELECT s 
+                                    FROM represent:s
+                                    POST-ACCUM INT bestCluster = s.@cid,
+                                               FLOAT maxDeltaQ = 0.0,
+                                               FLOAT deltaQ_new = 0.0,
+                                               FOREACH (cluster, weightToC) IN @@weightToClusterMap.get(s.@uid) DO 
+                                                       FLOAT incident = @@totIncidentCluster.get(cluster),
+                                                       IF @@clusterSizes.get(s.@cid) == 1 AND @@clusterSizes.get(cluster) == 1 AND s.@cid < cluster THEN
+                                                               CONTINUE
+                                                       END,
+                                                       deltaQ_new = weightToC - 2 * incident * s.@cweight/ @@totalWeight, #total weight should be the same
+                                                       IF deltaQ_new > maxDeltaQ OR abs(deltaQ_new - maxDeltaQ) < epsilon AND cluster < bestCluster THEN      # new cluster is smaller then the current best cluster
+                                                               maxDeltaQ = deltaQ_new,
+                                                               bestCluster = cluster
+                                                       END
+                                               END,
+                                               IF s.@cid != bestCluster THEN
+                                                       @@totIncidentCluster += (s.@cid -> (-1 * s.@cweight)),
+                                                       @@totIncidentCluster += (bestCluster -> s.@cweight),
+                                                       @@moveComm += (s.@uid -> bestCluster),
+                                                       @@clusterSizes += (s.@cid -> -1),
+                                                       @@clusterSizes += (bestCluster -> 1),
+                                                       s.@cid = bestCluster
+                                               END;
+                        log(debug > 1, "[redrain]#2_merge", @@weightToClusterMap.size()); 
+                        @@weightToClusterMap.clear();
+                   
+                        log(debug > 1, "[redrain]#2_move:", @@moveComm.size());
+                        # move nodes
+                        S = SELECT s
+                            FROM Start:s
+                            WHERE @@moveComm.containsKey(s.@uid)
+                            POST-ACCUM FOREACH v IN @@moveComm.get(s.@uid) DO
+                                               s.@cid = v
+                                       END;
+                        @@moveComm.clear();
+    
+                        last_modularity = @@modularity;           
+                        @@modularity = 0;
+                
+                        S = SELECT s
+                            FROM Start:s-(*edge-types*:e)-:t
+                            WHERE s.@cid == t.@cid
+                            ACCUM @@modularity += e.*edge-weight* - s.@weight * t.@weight / (@@totalWeight);
+                            @@modularity = @@modularity / @@totalWeight;
+                            PRINT iteration AS Phase1Iter, @@modularity;
+                        log(debug > 0, "[redrain]#2_move", iteration, @@modularity);
+                END;
+        
+                S = SELECT s
+                    FROM represent:s
+                    ACCUM s.@cweight = 0;
+                @@clusterSizes.clear();
+        
+                last_modularity2 = @@modularity2;
+                @@modularity2 = @@modularity;
+                PRINT iteration2 AS Phase2Iter, @@modularity2;
+                log(debug > 0, "[redrain]#2_merge", iteration2, @@modularity2);
+                                      
+        END;
+        
+        
+# Phase 3 -- Refinement
+        iteration = 0;
+        @@modularity = 0;
+        WHILE (iteration < 2 OR @@modularity - last_modularity > epsilon) LIMIT iter3 DO
+                iteration += 1;
+                S = SELECT s 
+                    FROM Start:s -(*edge-types*:e)-> :t
+                    WHERE abs(s.@weight - @@totIncidentCluster.get(s.@cid)) > epsilon OR abs(t.@weight - @@totIncidentCluster.get(t.@cid)) > epsilon OR (abs(s.@weight - @@totIncidentCluster.get(s.@cid)) < epsilon AND abs(t.@weight - @@totIncidentCluster.get(t.@cid)) < epsilon AND s.@cid > t.@cid)   # at least one cluster not only itself, or use smaller label
+                    ACCUM s.@weightToCluster += (t.@cid -> e.*edge-weight*)
+                    POST-ACCUM
+                            INT bestCluster = s.@cid,
+                            FLOAT maxDeltaQ = 0.0,
+                            FLOAT deltaQ_new = 0.0,
+                            FOREACH (cluster, weightToC) IN s.@weightToCluster DO   #would be better if this can be distributed
+                                    FLOAT incident = @@totIncidentCluster.get(cluster),
+                                    deltaQ_new = weightToC - 2 * incident * s.@weight/ @@totalWeight,
+                                    IF deltaQ_new > maxDeltaQ OR (abs(deltaQ_new - maxDeltaQ) < epsilon AND cluster < bestCluster) THEN   # when deltaQ_new is equal to maxDeltaQ, and the cluster label is smaller, also change 
+                                            maxDeltaQ = deltaQ_new,
+                                            bestCluster = cluster
+                                    END
+                            END,
+                            IF s.@cid != bestCluster THEN 
+                                    @@totIncidentCluster += (s.@cid -> (-1 * s.@weight)),
+                                    @@totIncidentCluster += (bestCluster -> s.@weight),
+                                    s.@cid = bestCluster
+                            END,
+                            s.@weightToCluster.clear();
+
+                last_modularity = @@modularity;
+                @@modularity = 0;
+                T1 = SELECT s
+                     FROM Start:s-(*edge-types*:e)-:t
+                     WHERE s.@cid == t.@cid
+                     ACCUM @@modularity += e.*edge-weight* - s.@weight * t.@weight / (@@totalWeight);
+                @@modularity = @@modularity / @@totalWeight;                      
+                PRINT iteration AS Phase3Iter, @@modularity;
+                log(debug > 0, "[redrain]#refine", iteration, @@modularity);
+        END;
+        
+                
+*ACCM*  Print Start.@cid;
+*FILE*  fComm.println("Vertex_ID", "community_id");
+        Start = {ANY};
+        Start = SELECT s FROM Start:s
+                POST-ACCUM @@clusterSizes += (s.@cid -> 1)
+*ATTR*                     , s.*vIntAttr* = s.@cid
+*FILE*                     , fComm.println(s, s.@cid)
+                           ;
+        log(TRUE, @@clusterSizes.size());
+
+        IF outputLevel ==0 THEN
+                FOREACH (cluster, csize) IN @@clusterSizes DO
+                        @@clusterMap += (csize -> 1);
+                END;
+                FOREACH (csize, number) IN @@clusterMap DO
+                        @@clusterDist += ClusterNum(csize, number);
+                END;
+*ACCM*          PRINT @@clusterDist;
+*ATTR*          PRINT @@clusterDist;
+*FILE*          FOREACH item IN @@clusterDist DO
+*FILE*                  fDist.println(item.csize, item.number);
+*FILE*          END;
+        ELSE
+                FOREACH (cluster, csize) IN @@clusterSizes DO
+                        @@clusterMembers += (csize -> cluster);
+                END;
+*ACCM*          PRINT @@clusterMembers;
+*ATTR*          PRINT @@clusterMembers;
+*FILE*          FOREACH (key, value) IN @@clusterMembers DO
+*FILE*                  fDist.println(key, value);
+*FILE*          END;
+        END;
+}

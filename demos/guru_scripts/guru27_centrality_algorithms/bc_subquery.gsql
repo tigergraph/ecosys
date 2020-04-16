@@ -1,0 +1,48 @@
+CREATE QUERY bc_subquery (VERTEX source, INT maxHops) FOR GRAPH MyGraph RETURNS(MapAccum<vertex, float>) {
+/* The TigerGraph implementation is based on A Faster Algorithm for Betweenness Centrality by Ulrik Brandes, Journal of Mathematical Sociology 25(2):163-177, (2001). According to the algorithm, sigma is the number of shortest paths from source; delta is the pair dependency from source; and dist is the shortest distance from source. The subquery returns a map of (s.id->s.@delta)
+*/
+  SumAccum<float> @sigma;              
+	SumAccum<float> @delta;              
+	MaxAccum<int> @dist;                 
+	SumAccum<int> @@currDist = 0;
+	MapAccum<vertex, float> @@MapDelta;   
+	
+	All = {any};
+	Start = {source};
+	Start = SELECT s FROM Start:s 
+	        ACCUM s.@sigma = 1, s.@dist = 0;
+ 
+# traverse in the order of increasing distance and calculate @sigma and @dist
+	WHILE (Start.size()>0) LIMIT maxHops DO		# explore up to (maxHops) hops FROM s
+	  @@currDist += 1;
+	  Start = SELECT t FROM Start:s-(flight_to:e)->:t
+	          WHERE t.@dist < 0
+	          ACCUM t.@sigma += s.@sigma,
+	                t.@dist = @@currDist;  
+	END;
+  
+	@@currDist += -1;
+	Start = SELECT s FROM All:s
+	        WHERE s.@dist == @@currDist;
+	
+# traverse in the order of non-increasing distance and calculate @delta
+	WHILE (@@currDist>0) DO
+	  @@currDist += -1;
+	  Start = SELECT s FROM Start:s -(flight_to:e)->:t
+	          WHERE t.@dist == s.@dist-1
+	          ACCUM t.@delta += t.@sigma/s.@sigma*(1+s.@delta);
+	          
+	  Start = SELECT s FROM All:s
+	          WHERE s.@dist == @@currDist;	         
+	END;
+	
+	Start = SELECT s FROM All:s
+	        ACCUM
+	          CASE WHEN s!=source THEN
+	            @@MapDelta += (s->s.@delta/2)
+	          ELSE @@MapDelta += (s->0)
+	          END;
+
+	return @@MapDelta;
+
+ }

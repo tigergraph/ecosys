@@ -1,0 +1,14 @@
++-------------------------------+
+| tagName           | postCount |
++-------------------------------+
+| "Tom_Gehrels"     | 28        |
+| "Sammy_Sosa"      | 9         |
+| "Charles_Dickens" | 5         |
+| "Genghis_Khan"    | 5         |
+| "Ivan_Ljubičić"   | 5         |
+| "Marc_Gicquel"    | 5         |
+| "Freddie_Mercury" | 4         |
+| "Peter_Hain"      | 4         |
+| "Robert_Fripp"    | 4         |
+| "Boris_Yeltsin"   | 3         |
++-------------------------------+

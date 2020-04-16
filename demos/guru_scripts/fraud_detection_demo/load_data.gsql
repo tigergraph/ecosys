@@ -1,0 +1,6 @@
+use graph sdmGraph
+drop job load_data
+create loading job load_data for graph sdmGraph {
+  DEFINE FILENAME f = "./data.csv";
+  LOAD f to EDGE phone_phone VALUES ($0, $1, $2, $3, $4, $5, $6) USING HEADER="true";
+}

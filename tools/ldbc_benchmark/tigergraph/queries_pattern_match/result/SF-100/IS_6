@@ -1,0 +1,19 @@
+//seed: messageId=13194144951001
+
+[
+{
+'vModerator':[
+{
+'v_id':'352058',
+'v_type':'Person',
+'attributes':{
+'forumId':5245594,
+'forumTitle':'Wall of Yang Zhang',
+'moderatorId':352058,
+'moderatorFirstName':'Yang',
+'moderatorLastName':'Zhang'
+}
+}
+]
+}
+]

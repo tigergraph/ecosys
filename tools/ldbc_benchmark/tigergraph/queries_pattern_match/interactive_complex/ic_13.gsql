@@ -1,0 +1,70 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 13 query description is on page 44 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic_13
+
+CREATE QUERY ic_13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @@next;
+  OrAccum @@found = False;
+  MinAccum<INT> @@dist12;
+
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    vPerson = 
+      SELECT v
+      FROM vPerson:v
+      ACCUM 
+        CASE 
+          WHEN v == person1Id THEN 
+            v.@dist1 = 0
+          WHEN v == person2Id THEN
+            v.@dist2 = 0
+        END;
+
+    WHILE NOT @@found DO
+      @@next = 0;
+
+      vPerson = 
+        SELECT t
+        FROM vPerson:s-((Person_KNOWS_Person>|<Person_KNOWS_Person):e)-Person:t
+        WHERE (s.@dist1 > -1 AND t.@dist1 < 0) OR (s.@dist2 > -1 AND t.@dist2 < 0)
+        ACCUM
+          CASE
+            WHEN (s.@dist1 > -1 AND t.@dist2 > -1) OR (s.@dist2 > -1 AND t.@dist1 > -1) THEN
+              @@found += True,
+              IF s.@dist1 > -1 THEN
+                @@dist12 += s.@dist1 + t.@dist2 + 1
+              END
+            WHEN s.@dist1 > -1 THEN
+              @@next += 1,
+              t.@dist1 = s.@dist1 + 1
+            WHEN s.@dist2 > -1 THEN
+              @@next += 1,
+              t.@dist2 = s.@dist2 + 1
+          END
+        POST-ACCUM
+          IF @@found == False AND t.@dist1 > -1 AND t.@dist2 > -1 THEN
+            @@found += True,            
+            @@dist12 += t.@dist1 + t.@dist2
+          END;
+
+      IF @@next == 0 THEN
+        @@dist12 = -1;
+        BREAK;
+      END;
+
+    END;
+  ELSE
+    @@dist12 += 0;
+  END;
+
+  PRINT @@dist12 AS shortestPathLength;
+}
+
+// INSTALL QUERY ic_13
+// RUN QUERY ic_13(17592186055119, 8796093025131)
+SET query_timeout = 180000
+INTERPRET QUERY ic_13(17592186055119, 8796093025131)

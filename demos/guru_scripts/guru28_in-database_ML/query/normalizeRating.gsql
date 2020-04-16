@@ -1,0 +1,17 @@
+CREATE QUERY normalizeRating(/* Parameters here */) FOR GRAPH Recommender {
+	AvgAccum @avg_rating;
+  Start = {MOVIE.*};
+	Start = SELECT s FROM Start:s -(rate:e)-> USER:t
+	        ACCUM
+	          s.@avg_rating += e.rating
+	        POST-ACCUM
+	          s.avg_rating = s.@avg_rating;
+
+
+	Start = SELECT s FROM Start:s -(rate:e)-> USER:t
+	        ACCUM
+	          e.rating = e.rating - s.@avg_rating;
+
+
+}
+

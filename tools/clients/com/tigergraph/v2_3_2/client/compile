@@ -1,0 +1,110 @@
+#!/bin/bash
+
+# change jvm for developers
+source $(dirname $0)/../../../tools/change_jvm.sh
+source $(dirname $0)/../schema/script/util.sh
+
+# define a function to check compile result
+function check {
+  if [ $1 -ne 0 ]; then
+    echo -e "\033[31mCompile Fails!\033[0m"
+    exit $1
+  fi
+}
+
+#export PRODUCT env var
+cd ../../../../../
+export PRODUCT=$PWD
+export BUILDPATH=$PWD/build/debug/gle/
+
+#come back
+cd - >/dev/null
+
+#clean old builds
+rm -rf $BUILDPATH
+
+#compile java
+# mkdir build dir
+if [ ! -d "$BUILDPATH/com" ]; then
+  mkdir  -p "$BUILDPATH/com"
+fi
+
+
+cd $PRODUCT/src/gle_compile/
+echo -e "\ncompile integrated java files..."
+echo "Finding java files and dependent libraries under $PWD"
+
+# all dependency libs WITHOUT version number
+LIB_LIST="commons-cli jline json"
+
+# configure CLASSPATH
+for lib in $LIB_LIST
+do
+  CLASSPATH=`find ${PRODUCT}/src/gle_compile/libs/*/${lib}*.jar`:${CLASSPATH}
+done
+
+# build path
+CLASSPATH=${CLASSPATH}:$BUILDPATH/com/tigergraph/client/:$PRODUCT/src/gle_compile/com/tigergraph/common 
+
+# cpp preprocess
+path1=$PRODUCT/src/gle_compile/com/tigergraph/client
+path2=$PRODUCT/src/gle_compile/com/tigergraph/common
+src_files=$(find $path1 $path2 -name *.java -print)
+CPP_preprocess "$DEV_EDITION" $src_files
+
+# compile
+find $path1 $path2 -name *.java -print \
+| xargs javac -cp $CLASSPATH -d $BUILDPATH -source 1.7 -target 1.7 #-Xlint
+
+#if compile fails, exit
+check $?
+
+#create version file
+GSQL_VERSION=$(git rev-parse --abbrev-ref HEAD)
+GSQL_VERSION_COMMIT=$(git rev-parse HEAD)
+GSQL_VERSION_DATE=$(git show -s --format=%ci HEAD)
+JAVA_VERSION=$(get_jave_version)
+echo "version="$GSQL_VERSION > $BUILDPATH/Version.prop
+echo "commit="$GSQL_VERSION_COMMIT >> $BUILDPATH/Version.prop
+echo "time="$GSQL_VERSION_DATE >> $BUILDPATH/Version.prop
+echo "java_version="$JAVA_VERSION >> $BUILDPATH/Version.prop
+
+#copy necessary dependencies
+for lib in $LIB_LIST
+do
+  find ${PRODUCT}/src/gle_compile/libs/*/${lib}*.jar -exec cp {} ${BUILDPATH}/ \;
+done
+cp tools/eclipse-jdt.jar $BUILDPATH
+cp com/tigergraph/client/Manifest.txt     $BUILDPATH
+
+#go to build folder
+cd $BUILDPATH
+
+#extract jdt
+TOOLS=$PRODUCT/src/gle_compile/tools
+jar xf $TOOLS/eclipse-jdt.jar
+
+## add class path in Manifest.txt 
+JARS=$(ls *.jar)
+echo "Rsrc-Class-Path: ./ " >> Manifest.txt
+# this is to deal with the case when classpath is too long
+# we split the classpath into multiple lines
+echo $JARS | tr ' ' '\n' | sed 's/^/ /;s/$/ /' >> Manifest.txt
+
+#create jar file
+JARFILE=$PRODUCT/lib/gle/bin/gsql_client.jar
+echo -e "\nGenerating jar file $JARFILE"
+jar cfm gsql_client.jar Manifest.txt ./*
+
+#if jar file generation fails, exit
+check $?
+
+#obfuscation
+echo -e "\nObfuscating... jar file"
+java -jar $TOOLS/proguard.jar @$TOOLS/proguard.conf -injars \
+  gsql_client.jar -outjars $JARFILE -libraryjars $TOOLS/../libs/ > /dev/null
+
+#if jar file generation fails, exit
+check $?
+
+echo -e "\033[32mCompile finish successfully!\033[0m"

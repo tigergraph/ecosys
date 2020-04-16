@@ -1,0 +1,23 @@
+CREATE QUERY getTopKComPrescribers(vertex input_pre) FOR GRAPH MyGraph { 
+  
+	OrAccum<bool> @visited;
+	SetAccum<VERTEX> @patientSet;
+	
+  start = {input_pre};
+	
+	// Submit, associate, submit, associate
+  claims = select cl from start-(submit)-:cl
+	         post-accum cl.@visited = true;
+	
+	patients = select pt from claims-(associate)-:pt;
+	
+	claims = select cl from patients:pt-(associate)-:cl
+	         where cl.@visited == false
+	         accum cl.@patientSet += pt;
+	
+	prescribers = select pre from claims:cl-(submit)-:pre
+	              accum pre.@patientSet += cl.@patientSet
+	              order by pre.@patientSet.size();
+	
+	print prescribers;
+}

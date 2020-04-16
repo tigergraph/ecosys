@@ -1,5 +1,0 @@
-date:
-1311285600000
-
-likeThreshold:
-400

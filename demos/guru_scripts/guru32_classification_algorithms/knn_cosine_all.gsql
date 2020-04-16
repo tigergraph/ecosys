@@ -1,0 +1,13 @@
+CREATE QUERY knn_cosine_all (INT topK, BOOL includeLabeled=true) FOR GRAPH MyGraph {
+/* This query is k-nearest neighbors based on Cosine Similarity on all vertices.
+   The output is the predicted label for all the vertices depending on the majority label of their k-nearest neighbors.
+*/ 
+        SumAccum<STRING> @predicted_label;
+        
+        source = {Reviewer.*};        
+        source = SELECT s
+                 FROM source:s 
+                 WHERE includeLabeled OR s.known_label == ""
+                 ACCUM s.@predicted_label = knn_cosine_ss(s, topK);    
+        PRINT source[source.name, source.@predicted_label, source.known_label];
+}

@@ -1,0 +1,15 @@
+use graph MyGraph
+drop query CreateReferral
+
+CREATE BATCH QUERY CreateReferral() FOR GRAPH MyGraph { 
+  
+  Start = {Prescriber.*};
+
+  delete e from Start:s -(referral:e) -> :t; 
+
+  Start = select s from Start:s
+          accum CreateReferralEdge(s, 14);
+}
+
+install query CreateReferral
+run query CreateReferral()

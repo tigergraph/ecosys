@@ -1,0 +1,18 @@
+USE GRAPH purchase_fruit
+
+DROP JOB load_purchase
+
+CREATE LOADING JOB load_purchase FOR GRAPH purchase_fruit {
+
+  DEFINE FILENAME f;
+
+  LOAD f
+
+    TO VERTEX Customer VALUES ($0),
+    TO VERTEX Fruit VALUES ($2),
+
+    TO EDGE purchase VALUES ($0, $2, $1)
+
+  USING SEPARATOR = ",", EOL = "\n";
+}
+

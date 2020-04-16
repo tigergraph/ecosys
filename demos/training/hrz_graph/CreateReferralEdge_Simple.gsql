@@ -1,0 +1,35 @@
+use graph MyGraph
+drop query CreateReferralEdge_Simple
+
+CREATE QUERY CreateReferralEdge_Simple(VERTEX<Prescriber> input) FOR GRAPH MyGraph { 
+  /* for each prescriber find other prescribers who filed claim for common patients
+	*/
+
+  OrAccum<bool> @visited;
+
+  given_prescriber (ANY) = {input};
+
+	//Prescriber -> claim  (1 prescriber has lots of claims)
+  claims = select t 
+	         from given_prescriber:s-(rev_submitted_by:e)-:t
+           accum t.@visited += true;
+
+	//claim -> patient (1 claim only 1 patient and 1 prescriber)
+  patients = select t 
+	           from claims:s-(associated:e)-:t;
+
+	/* patient -> find other claims of this patient 
+	if there is a satisfiable claim, then collect this patient onto the claim 
+	only keep qualified claims */ 
+  other_claims = select t 
+	               from patients:s-(rev_associated:e)-:t
+                 where t.@visited == false;
+
+//claim -> prescriber
+  related_prescribers = select t 
+	                      from other_claims:s-(submitted_by:e)-Prescriber:t
+                        where t != input;
+	print related_prescribers;
+}
+
+install query CreateReferralEdge_Simple

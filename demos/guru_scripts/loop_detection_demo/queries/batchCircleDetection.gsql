@@ -1,0 +1,38 @@
+#drop query batchCircleDetection
+CREATE QUERY batchCircleDetection (int stepLowLimit = 3, int stepHighLimit = 10, datetime startTime, datetime endTime, double moneyLowLimit, double drainRatio, string output = "/tmp/foundCircles.log")  FOR GRAPH poc_graph {
+  //MapAccum<string, ListAccum<ListAccum<Edge>>> @@FoundCircle;
+  ListAccum<ListAccum<Edge>> @circlePaths;
+  int startDay =0;
+  int endDay = 0;
+  double amountLowLimit;
+  amountLowLimit = moneyLowLimit - 0.000001;
+  startDay = datetime_to_epoch(startTime) / 86400;
+  endDay = datetime_to_epoch(endTime) / 86400;
+  //filter out invalid oneDay vertices
+  DateSet = {oneDay.*};
+  DateSet = SELECT src
+            FROM DateSet:src
+            WHERE src.exid >= startDay and src.exid <= endDay
+            ;
+  PRINT startTime, startDay, endTime, endDay, DateSet.size();
+  //using valid Dates and amountLowLimt to filter out invalid transactions
+  TransSet = SELECT tgt
+             FROM DateSet:src - (oneDay_trans: e) -> transaction: tgt
+             WHERE tgt.amount > amountLowLimit
+             ;
+  PRINT TransSet.size();
+  X = SELECT tgt
+      FROM TransSet:src -(rev_send:e)-> account:tgt
+      POST-ACCUM
+        tgt.@circlePaths = circleDetection (tgt,
+                                          stepLowLimit,
+                                          stepHighLimit,
+                                          startTime,
+                                          endTime,
+                                          moneyLowLimit,
+                                          drainRatio,
+                                          false)
+      HAVING tgt.@circlePaths.size() > 0
+      ;
+  PRINT X;
+}

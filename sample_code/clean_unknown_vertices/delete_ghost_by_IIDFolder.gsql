@@ -1,8 +1,0 @@
-use graph _graphname_
-drop query DeleteGhostByIIDFolder
-create query DeleteGhostByIIDFolder(string filepath = "/tmp/iiDFolder/", bool dryrun = true) for Graph _graphname_ {
- string msg;
- RemoveVertexByIIDFolder(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, __ENGINE__CONTEXT, filepath, msg, dryrun);
- print msg;
-}
-install query DeleteGhostByIIDFolder

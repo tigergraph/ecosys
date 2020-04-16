@@ -1,0 +1,38 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 20 query description is on page 78 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_20
+
+CREATE QUERY bi_20(SET<STRING> tagClassNames) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<STRING tagClassName, INT messageCount> tagInfo;
+
+  SetAccum<STRING> @visited;
+  MapAccum<STRING, INT> @@tagInfoMap;
+  HeapAccum<tagInfo>(100, messageCount DESC, tagClassName ASC) @@tagInfoTop;
+
+  vTagClass = { TagClass.* };
+  aggAll =
+    SELECT t3
+    FROM vTagClass:s
+        -(<TagClass_IS_SUBCLASS_OF_TagClass*0..)-TagClass:t1
+        -(<Tag_HAS_TYPE_TagClass:e2)-Tag:t2
+        -((<Post_HAS_TAG_Tag|<Comment_HAS_TAG_Tag):e3)-(Post|Comment):t3
+    WHERE s.name IN tagClassNames
+    ACCUM t3.@visited += s.name
+    POST-ACCUM
+      FOREACH tcName IN t3.@visited DO
+        @@tagInfoMap += (tcName -> 1)
+      END;
+
+  FOREACH (key, value) IN @@tagInfoMap DO
+    @@tagInfoTop += tagInfo(key, value);
+  END;
+
+  PRINT @@tagInfoTop;
+}
+
+// INSTALL QUERY bi_20
+// RUN QUERY bi_20(["Writer","Single","Country"])
+SET query_timeout = 180000
+INTERPRET QUERY bi_20(["Writer","Single","Country"])

@@ -1,0 +1,64 @@
+CREATE QUERY ic_12(VERTEX<Person> personId, STRING tagClassName) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, JSONARRAY tagNames, INT replyCount> replyStats;
+
+  SumAccum<INT> @@numTagsFound, @authorId;
+  //SetAccum<VERTEX<Tag>> @@tagAll;
+  OrAccum @valid = false;
+  MapAccum<INT, SetAccum<STRING>> @@postAndTag;
+  HeapAccum<replyStats>(20, replyCount DESC, personId ASC) @@replyStatsTop;
+  GroupByAccum<INT authorId, SumAccum<INT> replyCount, SetAccum<STRING> tagNames> @@replyStatsAgg;
+
+  vTagClass(Tag|TagClass) = { TagClass.* };
+  vTagClass = 
+    SELECT v
+    FROM vTagClass:v
+    WHERE v.name == tagClassName;
+
+  WHILE True DO
+    vTagClass = 
+      SELECT t
+      FROM vTagClass:s-((TagClass_IS_SUBCLASS_OF_TagClass_REVERSE|Tag_HAS_TYPE_TagClass_REVERSE):e)->(TagClass|Tag):t
+      ACCUM 
+        CASE WHEN t.type == "Tag" THEN t.@valid = true END,
+        //CASE WHEN t.type == "Tag" THEN @@tagAll += t END,
+        @@numTagsFound += 1;
+
+    IF @@numTagsFound == 0 THEN BREAK; END;
+    @@numTagsFound = 0;
+  END;
+
+  vPerson = { personId };
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-((Person_KNOWS_Person|Person_KNOWS_Person_REVERSE):e)->Person:t;
+
+  vComment = 
+    SELECT t
+    FROM vFriend:s-(Comment_HAS_CREATOR_Person_REVERSE:e)->Comment:t
+    ACCUM t.@authorId = s.id;
+
+  vPost = 
+    SELECT t
+    FROM vComment:s-(Comment_REPLY_OF_Post:e)->Post:t;
+
+  aggPostTag = 
+    SELECT t
+    FROM vPost:s-(Post_HAS_TAG_Tag)->Tag:t
+    WHERE t.@valid == true
+    //WHERE @@tagAll.contains(t)
+    ACCUM @@postAndTag += (s.id -> t.name);
+
+  aggComment = 
+    SELECT t
+    FROM vComment:s-(Comment_REPLY_OF_Post:e)->Post:t
+    WHERE @@postAndTag.containsKey(t.id)
+    ACCUM @@replyStatsAgg += (s.@authorId -> 1, @@postAndTag.get(t.id));
+
+  aggFriend =
+    SELECT v
+    FROM vFriend:v
+    WHERE @@replyStatsAgg.containsKey(v.id)
+    ACCUM @@replyStatsTop += replyStats(v.id, v.firstName, v.lastName, to_jsonarray(@@replyStatsAgg.get(v.id).tagNames), @@replyStatsAgg.get(v.id).replyCount);
+
+  PRINT @@replyStatsTop;
+}

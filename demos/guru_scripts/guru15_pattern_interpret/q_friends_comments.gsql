@@ -1,0 +1,21 @@
+USE GRAPH ldbc_snb
+DROP QUERY friends_comments
+
+// Count the comments by each friend of the subject Person whose first and last names are given by the input parameters.
+// This is a modified version of friends_posts:
+//    In the FROM pattern, "Post" was changed to "Count"
+//    In the FROM pattern, a repeat range of 1..2 was added so that it looks for both direct friends and friends of friends.
+CREATE QUERY friends_comments (STRING fName, STRING lName) FOR GRAPH ldbc_snb SYNTAX("v2") { 
+  MapAccum<STRING, INT> @@friendPostMap;    // <friend's name, num of posts>
+  persons = {Person.*};
+  
+  posts = SELECT post
+      FROM persons:subj -(Person_KNOWS_Person>*1..1)- Person:friend -(<Comment_HAS_CREATOR_Person)- Comment:post
+      WHERE subj.firstName == fName AND subj.lastName == lName
+      ACCUM @@friendPostMap += (friend.firstName +" "+ friend.lastName -> 1)
+     ;
+  PRINT posts;
+  PRINT @@friendPostMap;
+  PRINT posts.size();
+}
+INTERPRET QUERY friends_comments("Antonio", "Chavez")

@@ -1,0 +1,40 @@
+#######################################################
+# Run deep-link queries on a Billion-edge scale graph
+# using flow-control WHILE loop
+#######################################################
+USE GRAPH Twitter
+
+# return the k-hop neighbors count.
+CREATE QUERY khop(VERTEX<MyNode> start_node, INT depth) for graph Twitter {
+
+    OrAccum          @visited = false;
+    SumAccum<int>    @@loop=0;
+
+    Start = {start_node};
+    Start = SELECT v
+            FROM Start:v
+            ACCUM v.@visited = true;
+
+    WHILE (@@loop < depth) DO
+        Start = SELECT v
+                FROM Start:u - (MyEdge:e)->:v
+                WHERE v.@visited == false
+                ACCUM v.@visited = true;
+
+        @@loop += 1;
+   END;
+
+   PRINT Start.size();
+}
+
+INSTALL QUERY khop
+
+# try the query below in gsql shell
+
+#run query khop ("618593",1)
+#run query khop ("618593",2)
+
+#set query_timeout=100000
+
+#run query khop ("618593",8)
+#run query khop ("618593",12)

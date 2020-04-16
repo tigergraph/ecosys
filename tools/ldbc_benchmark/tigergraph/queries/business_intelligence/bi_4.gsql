@@ -1,0 +1,56 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 4 query description is on page 62 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+# Popular topics in a Country
+CREATE QUERY bi_4(STRING tagClassName, STRING countryName) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
+  HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@result;
+	SumAccum<INT> @postCount;
+  OrAccum @visited;
+  SumAccum<INT> @personId;
+	SetAccum<VERTEX> @@forums;
+
+  vStart(ANY) = { Country.* };
+  vStart = SELECT s
+    FROM vStart:s
+    WHERE s.name == countryName;
+    
+  vStart = SELECT t
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->:t;
+
+  vStart = 
+    SELECT t
+    FROM vStart:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->:t;
+
+  vForum = 
+    SELECT t
+    FROM vStart:s-(Forum_HAS_MODERATOR_Person_REVERSE:e)->:t
+    ACCUM 
+      t.@personId = s.id, # one Forum can only have one moderator
+      t.@visited = TRUE;
+          
+  vStart = { TagClass.* };
+  vStart = 
+    SELECT s
+    FROM vStart:s
+    WHERE s.name == tagClassName;
+
+  vStart = 
+    SELECT t
+    FROM vStart:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->:t;
+
+  vStart = 
+    SELECT t 
+    FROM vStart:s-(Post_HAS_TAG_Tag_REVERSE:e)->:t; 
+
+  vForum = 
+    SELECT t 
+    FROM vStart:s-(Forum_CONTAINER_OF_Post_REVERSE:e)->:t 
+    WHERE t.@visited == TRUE
+    ACCUM t.@postCount += 1;
+	vForum = {Forum.*};
+	vForum = SELECT s
+	  FROM vForum:s
+	  POST-ACCUM @@result += forumInfo(s.id, s.title, s.creationDate, s.@personId, s.@postCount);
+	
+  PRINT @@result;
+}

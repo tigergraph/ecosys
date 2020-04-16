@@ -12,7 +12,7 @@
 
 ## I don't want to read this whole thing -- I just have a question!!!
 
-* [Ask Questions to TigerGraph](https://groups.google.com/a/opengsql.org/forum/#!forum/gsql-users)
+* [Ask Questions, Get Answers](https://community.tigergraph.com)
 * [TigerGraph FAQ](https://www.tigergraph.com/developerfaq/)
 
 If chat is more your speed, you can join the TigerGraph Community Chat:
@@ -46,11 +46,13 @@ Browse the section below & quickly navigate one that interests you!
     * Use the `userDefinedFunctions` user defined functions that the community has developed
     * Use the `tools/scripts` to find useful scripts that can help with certain tasks
 
+<!--- 
 * [media_kit](https://github.com/tigergraph/meetup)
     * Use the `images` to include in your slides, blogs, and other resources 
     * Use the `slides` for when presenting "What is TigerGraph?" and other relevant templates
     * Use the `handouts` if you need to give your audience takeaways
     * Use the `workshopStyles` if you want to host structured workshops
+--->
 
 ## Awesome Resource
 > [For the complete list of all TigerGraph's tools, patterns, guides, and much more!](awesome.md)

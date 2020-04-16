@@ -1,0 +1,19 @@
+USE GRAPH purchase_fruit
+
+DROP QUERY all_graph
+
+CREATE QUERY all_graph() FOR GRAPH purchase_fruit {
+/*
+根据所有客户可以关联到的所有类型的边来展示全图；
+*/
+
+    SetAccum<edge> @@edgeSet;
+
+    Customers = Customer.*;
+
+    Customer = SELECT src FROM Customers:src - (purchase:e) -> Fruit:tgt
+               ACCUM @@edgeSet += e;
+
+    PRINT @@edgeSet;
+}
+

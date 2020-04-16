@@ -1,0 +1,15 @@
+use graph ldbc_snb
+set syntax_version="v2"
+
+#3 hops
+#find 3-hop away grand parent class of "TennisPlayer"
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+
+  TagClass1 = {TagClass.*};
+
+  TagClass2 =  SELECT t
+               FROM TagClass1:s - (TagClass_IS_SUBCLASS_OF_TagClass>.TagClass_IS_SUBCLASS_OF_TagClass>.TagClass_IS_SUBCLASS_OF_TagClass>)-TagClass:t
+               WHERE s.name == "TennisPlayer";
+
+  PRINT  TagClass2;
+}

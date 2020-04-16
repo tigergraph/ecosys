@@ -1,0 +1,13 @@
+use graph _graphname_
+drop query DeleteUnknownByType
+create query DeleteUnknownByType(bool dryrun = true) for Graph _graphname_ {
+ ListAccum<vertex> @@vlist;
+ string msg;
+ Seed = {_VTYPE_.*};
+ X = SELECT src 
+     FROM Seed:src
+     ACCUM @@vlist += src;
+ RemoveUnknownID(__ENGINE__SERVICEAPI, __ENGINE__REQUEST, "_VTYPE_", @@vlist, msg, dryrun);
+ print msg;
+}
+install query DeleteUnknownByType

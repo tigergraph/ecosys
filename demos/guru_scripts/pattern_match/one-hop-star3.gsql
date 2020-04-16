@@ -1,0 +1,15 @@
+use graph ldbc_snb
+set syntax_version="v2"
+
+#bounded 1 to 2 repetitions.
+#find 1 to 2 hop super classes of "TennishPlayer"
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+
+  TagClass1 = {TagClass.*};
+
+  TagClass2 =  SELECT t
+               FROM TagClass1:s - (TagClass_IS_SUBCLASS_OF_TagClass>*1..2)-TagClass:t
+               WHERE s.name == "TennisPlayer";
+
+  PRINT  TagClass2;
+}

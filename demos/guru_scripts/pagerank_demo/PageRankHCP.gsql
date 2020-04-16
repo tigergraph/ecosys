@@ -1,0 +1,47 @@
+use graph hrz_graph
+drop query PageRankHCP
+
+CREATE BATCH QUERY PageRankHCP (float maxChange, int maxIteration, float dampingFactor) FOR GRAPH hrz_graph
+{
+  # In each iteration, compute a score for each vertex:
+  #   score = dampingFactor + (1-dampingFactor)* sum(received scores from its neighbors).
+  # The pageRank algorithm stops when either of the following is true:
+  #  a) it reaches maxIterations iterations;
+  #  b) the maximum score difference of any vertex compared to the last iteration <= maxChange.
+  #   @@ prefix means a global accumulator;
+  #   @ prefix means an individual accumulator associated with each vertex
+
+  MaxAccum<float> @@maxDifference = 9999; # max score change in an iteration
+  SumAccum<float> @received_score = 0; # sum of scores each vertex receives from neighbors
+  SumAccum<float> @score = 1;   # initial score for every vertex is 1.
+  SumAccum<float> @sumWeight;
+
+
+  int iterNum = 0;
+
+  AllV = {Prescriber.*};   #  Start with all vertices of type Page
+
+  AllV = select s from AllV:s-((referral):e)-:t
+         accum s.@sumWeight += 1;
+
+  WHILE @@maxDifference > maxChange LIMIT maxIteration DO
+    @@maxDifference = 0;
+    AllV = SELECT s
+         FROM AllV:s-((referral):e)->:t
+         ACCUM t.@received_score += s.@score * (1 / s.@sumWeight) // (s.outdegree("TigerGraphReferral") + s.outdegree("reverse_TigerGraphReferral"))
+         POST-ACCUM t.@score = dampingFactor + (1-dampingFactor) * t.@received_score,
+                    t.@received_score = 0,
+                    @@maxDifference +=   abs(t.@score - t.@score');
+    iterNum = iterNum + 1;
+    PRINT @@maxDifference, iterNum; # print to default json result
+  END; # end while loop
+
+
+  AllV = select s from AllV:s
+         post-accum
+           s.pageRank = s.@score;
+#           f.println(s, s.@score);
+
+}
+
+install query PageRankHCP

@@ -1,0 +1,81 @@
+CREATE QUERY training(DOUBLE alpha = 0.001, INT Iter=10) FOR GRAPH Recommender {
+  #ListAccum<DOUBLE> @theta;
+	ListAccum<DOUBLE> @tmp;
+	ArrayAccum<SumAccum<double>> @theta[10];
+	ArrayAccum<SumAccum<double>> @x[10];
+	ArrayAccum<SumAccum<double>> @Gradient[10];
+	SumAccum<DOUBLE> @@cost;
+
+	DOUBLE lambda = 10;
+	## pass x and theta to local accum
+
+
+	MOVIEs = {MOVIE.*};
+
+#	M1 = SELECT s FROM MOVIEs:s
+#	     WHERE s.movie_id == "1";
+
+	MOVIEs = SELECT s FROM MOVIEs:s
+	         ACCUM
+	           FOREACH i IN RANGE[0,9] DO
+	             s.@x[i] += s.x.get(i)
+	           END;
+
+	USERs = {USER.*};
+	USERs = SELECT s FROM USERs:s
+	        ACCUM
+	           FOREACH i IN RANGE[0,9] DO
+	             s.@theta[i] += s.theta.get(i)
+	           END;
+
+	## compute gradient
+	WHILE TRUE LIMIT Iter DO
+	@@cost = 0;
+	USERs = SELECT s FROM USERs:s -(rate:e)-> MOVIE:t
+	        ACCUM
+	          s.@Gradient.reallocate(10),
+	          t.@Gradient.reallocate(10);
+
+	USERs = SELECT s FROM USERs:s -(rate:e)-> MOVIE:t
+	        ACCUM
+	          DOUBLE delta = dotProduct_ArrayAccum_ArrayAccum(s.@theta,t.@x),
+	          delta = delta-e.rating,
+	          @@cost += 0.5*delta*delta,
+	          s.@Gradient += product_ArrayAccum_const(t.@x,delta),
+	          t.@Gradient += product_ArrayAccum_const(s.@theta,delta)
+	        POST-ACCUM
+	          @@cost += 0.5*dotProduct_ArrayAccum_ArrayAccum(s.@theta, s.@theta),
+	          s.@Gradient += product_ArrayAccum_const(s.@theta,lambda),
+	          s.@theta += product_ArrayAccum_const(s.@Gradient,-alpha),
+	          @@cost += 0.5*dotProduct_ArrayAccum_ArrayAccum(t.@x, t.@x),
+	          t.@Gradient += product_ArrayAccum_const(t.@x,lambda),
+	          t.@x += product_ArrayAccum_const(t.@Gradient,-alpha);
+
+	PRINT @@cost;
+#	PRINT M1;
+	END;
+
+
+	## pass local accum to x and theta
+	MOVIEs = SELECT s FROM MOVIEs:s
+	         POST-ACCUM
+	           s.@tmp.clear(),
+	           FOREACH i IN RANGE[0,9] DO
+#	             s.x.update(i,s.@x[i])
+	             s.@tmp += s.@x[i]
+	           END,
+	           s.x = s.@tmp;
+
+
+	USERs = SELECT s FROM USERs:s
+	        POST-ACCUM
+	           s.@tmp.clear(),
+	           FOREACH i IN RANGE[0,9] DO
+#	             s.x.update(i,s.@x[i])
+	             s.@tmp += s.@theta[i]
+	           END,
+	           s.theta = s.@tmp;
+
+#  PRINT M1;
+}
+

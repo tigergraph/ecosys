@@ -1,0 +1,35 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 23 query description is on page 81 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+# Holiday destinations
+CREATE QUERY bi_23(STRING countryName) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE <INT messageCount, STRING destinationName, INT mon> INFO;
+
+  HeapAccum<INFO>(100, messageCount DESC, destinationName ASC, mon ASC) @@result;
+  GroupByAccum<INT mon, STRING destinationName, SumAccum<INT> messageCount> @@count;
+
+  vStart(ANY) = {Country.*};
+  vCities = 
+    SELECT t
+    FROM vStart:s-(City_IS_PART_OF_Country_REVERSE:e)->City:t
+    WHERE s.name == countryName;
+
+  vPerson = 
+    SELECT t
+    FROM vCities:s-(Person_IS_LOCATED_IN_City_REVERSE:e)->Person:t;
+
+  vMessages = 
+    SELECT t
+    FROM vPerson:s-((Comment_HAS_CREATOR_Person_REVERSE|Post_HAS_CREATOR_Person_REVERSE):e)->:t;
+
+  vMessages = 
+    SELECT s 
+    FROM vMessages:s-((Post_IS_LOCATED_IN_Country|Comment_IS_LOCATED_IN_Country):e)->Country:t
+    WHERE t.name != countryName
+    ACCUM @@count += (month(s.creationDate), t.name -> 1);
+
+  FOREACH c IN @@count DO
+    @@result += INFO(c.messageCount, c.destinationName, c.mon);
+  END;
+
+  PRINT @@result;
+}

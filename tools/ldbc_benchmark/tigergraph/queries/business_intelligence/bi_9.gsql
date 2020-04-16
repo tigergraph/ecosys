@@ -1,0 +1,55 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 9 query description is on page 67 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE QUERY bi_9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb { 
+
+  TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
+  OrAccum @isType1, @isType2;
+  SumAccum<INT> @numMembers;
+  SumAccum<INT> @m1, @m2;
+  HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
+
+  vTagClass = { TagClass.* };
+  vTag =
+    SELECT t
+    FROM vTagClass:s-(Tag_HAS_TYPE_TagClass_REVERSE:e)->Tag:t
+    ACCUM 
+      t.@isType1 += (s.name == tagClass1Name),
+      t.@isType2 += (s.name == tagClass2Name);
+
+  vForum = { Forum.* };
+  vForum =
+    SELECT s
+    FROM vForum:s-(Forum_HAS_MEMBER_Person:e)->Person:t
+    ACCUM s.@numMembers += 1
+    HAVING s.@numMembers > threshold;
+
+  vPost =
+    SELECT t
+    FROM vForum:s-(Forum_CONTAINER_OF_Post:e)->Post:t;
+
+  tagPosts =
+    SELECT s
+    FROM vPost:s-(Post_HAS_TAG_Tag:e)->Tag:t
+    WHERE t.@isType1 OR t.@isType2
+    ACCUM 
+      s.@isType1 += t.@isType1,
+      s.@isType2 += t.@isType2;
+
+  aggPostTag = 
+    SELECT s
+    FROM tagPosts:s-(Forum_CONTAINER_OF_Post_REVERSE:e)->Forum:t
+    ACCUM  
+      If s.@isType1 THEN t.@m1 += 1 END,
+      IF s.@isType2 THEN t.@m2 += 1 END;
+
+  lastStep =
+    SELECT s
+    FROM vForum:s
+    WHERE s.@m1 > 0 AND s.@m2 > 0
+    POST-ACCUM
+      @@forumStatsTop += forumStats(s.id, s.@m1, s.@m2, abs(s.@m1 - s.@m2));  
+
+  FOREACH v IN @@forumStatsTop DO
+    PRINT v.forumId, v.count1, v.count2;
+  END;
+}

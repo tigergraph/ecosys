@@ -1,0 +1,9 @@
+﻿airport_id,name,city,country,IATA,ICAO,latitude,longitude,altitude,timezone,DST,timezone,type,source
+15000,A,A,Demo,A,AAAA,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15001,B,B,Demo,B,BBBB,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15002,C,C,Demo,C,CCCC,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15003,D,D,Demo,D,DDDD,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15004,E,E,Demo,E,EEEE,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15005,F,F,Demo,F,FFFF,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15006,G,G,Demo,G,GGGG,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports
+15007,H,H,Demo,H,HHHH,0,0,0,0,U,Pacific/Port_Moresby,airport,OurAirports

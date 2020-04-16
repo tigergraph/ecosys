@@ -1,0 +1,48 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 6 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi_6
+
+CREATE QUERY bi_6(STRING tagName) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> scoreInfo;
+
+  SetAccum<VERTEX> @@messageAll;
+  SumAccum<INT> @replyCount, @likeCount, @messageCount;
+  HeapAccum<scoreInfo>(100, score DESC, personId ASC) @@scoreInfoTop;
+
+  vTag = { Tag.* };
+  vMessage(ANY) =
+    SELECT t
+    FROM vTag:s-((<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag):e)-(Comment|Post):t
+    WHERE s.name == tagName
+    POST-ACCUM @@messageAll += t;
+
+  accCount =
+    SELECT s
+    FROM vMessage:s-((<Person_LIKES_Comment|<Person_LIKES_Post|<Comment_REPLY_OF_Comment|<Comment_REPLY_OF_Post):e)-(Person|Comment):t
+    ACCUM 
+      CASE
+        WHEN t.type == "Person" THEN
+          s.@likeCount += 1
+        WHEN t.type == "Comment" THEN
+          s.@replyCount += 1
+      END;
+  
+  vMessage = { @@messageAll };
+  accMsgPerson =
+    SELECT s
+    FROM vMessage:s-((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>):e)-Person:t
+    ACCUM
+      t.@replyCount += s.@replyCount,
+      t.@likeCount += s.@likeCount,
+      t.@messageCount += 1
+    POST-ACCUM @@scoreInfoTop += scoreInfo(t.id, t.@replyCount, t.@likeCount, t.@messageCount, (t.@messageCount+2*t.@replyCount+10*t.@likeCount));
+
+  PRINT @@scoreInfoTop;
+}
+
+//INSTALL QUERY bi_6
+//RUN QUERY bi_6("Abbas_I_of_Persia")
+SET query_timeout = 180000
+INTERPRET QUERY bi_6("Abbas_I_of_Persia")

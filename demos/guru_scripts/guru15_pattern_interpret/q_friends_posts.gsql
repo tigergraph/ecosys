@@ -1,0 +1,17 @@
+USE GRAPH ldbc_snb
+DROP QUERY friends_posts
+
+// Count the posts by each friend of the subject Person whose first and last names are given by the input parameters.
+CREATE QUERY friends_posts (STRING fName, STRING lName) FOR GRAPH ldbc_snb SYNTAX("v2") { 
+  MapAccum<STRING, INT> @@friendPostMap;    // <friend's name, num of posts>
+  persons = {Person.*};
+  
+  posts = SELECT post
+      FROM persons:subj -(Person_KNOWS_Person>)- Person:friend -(<Post_HAS_CREATOR_Person)- Post:post
+      WHERE subj.firstName == fName AND subj.lastName == lName
+      ACCUM @@friendPostMap += (friend.firstName +" "+ friend.lastName -> 1)
+     ;
+  PRINT posts;
+  PRINT @@friendPostMap;
+}
+INTERPRET QUERY friends_posts("Antonio", "Chavez")

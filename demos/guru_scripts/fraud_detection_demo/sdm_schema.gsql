@@ -1,0 +1,11 @@
+drop all
+
+#num_of_long_call is the number of calls with duration >= 120s,
+#num_of_short_call is the number of calls with duration 20s.
+CREATE VERTEX phone (PRIMARY_ID phone_id string, flag uint) with stats="OUTDEGREE_BY_EDGETYPE"
+#-------------------- define edges --------------------
+CREATE DIRECTED EDGE phone_phone (from phone, to phone, num_of_call uint, total_duration uint,
+    num_of_rejection uint, start_time uint, max_duration uint)  with reverse_edge = "phone_phone_reversed"
+#-------------------- creat graph --------------------
+create graph sdmGraph(*)
+export schema sdmGraph
