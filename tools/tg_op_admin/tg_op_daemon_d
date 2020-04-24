@@ -121,7 +121,10 @@ def run_gadmin_cmd(org_cmd):
                 cmd[0] = "gadmin"
                 process = subprocess.Popen(cmd, shell=False, close_fds=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
                 output = process.communicate()[0].strip()
-                return output
+		cmd1 = [ "bash", "-c", "source ~/.bash_tigergraph; $(grep kafka.dir ~/.gsql/gsql.cfg | cut -d' ' -f2)/bin/kafka-topics.sh --describe --zookeeper 127.0.0.1:19999 | grep ^Topic | wc -l"]
+                process1 = subprocess.Popen(cmd1, shell=False, close_fds=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+                output1 = process1.communicate()[0].strip()
+                return "\n".join([output,"Topics: " + output1])
     if validate_state == 0:
         return "Error: empty command"
     elif validate_state == 1:
@@ -142,7 +145,8 @@ def parse_argv():
     arguments = len(sys.argv) - 1
     if arguments != 1:
         time_print('No port specified, using default ' + str(TCP_PORT))
-    TCP_PORT = int(sys.argv[1])
+    else:
+        TCP_PORT = int(sys.argv[1])
 
 
 
