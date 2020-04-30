@@ -55,12 +55,12 @@ Browse the section below & quickly navigate one that interests you!
 --->
 
 ## Awesome Resource
-> [For the complete list of all TigerGraph's tools, patterns, guides, and much more!](awesome.md)
+> [For the complete list of all TigerGraph's tools, patterns, guides, and much more!](./docs/awesome.md)
 
 ### Getting Started
 * [What is graph](https://www.tigergraph.com/certification-graph-fundamentals/) - Certification 1
 * [Setting up your Environment](/) - Developer vs Enterprise vs Cloud
-* [Useful Development Tools and Patterns](./third-party/README.md) - Coming Soon
+* [Useful Development Tools and Patterns](./tools/third-party/README.md)
 * [Schema Development](/) - Coming Soon
 * [GSQL Basics](https://www.tigergraph.com/certification-gsql-101/) - Certification 2
 * [GSQL Algorithms](https://docs.tigergraph.com/graph-algorithm-library)
@@ -124,6 +124,6 @@ Copyright © 2020 TigerGraph
 
 The content of this repository is bound by the following licenses:
 
-- The computer software is licensed under the [Apache License 2.0](LICENSE.md) license.
+- The computer software is licensed under the [Apache License 2.0](./LICENSE) license.
 
 [![ForTheBadge built-with-love](http://ForTheBadge.com/images/badges/built-with-love.svg)](https://tigergraph.com)
