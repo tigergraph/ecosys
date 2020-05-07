@@ -5,9 +5,9 @@ edges/Page/2/Linkto
 edges/Page/2/Linkto/Page
 edges/Page/2/Linkto/Page/3
 pageRank?maxChange=0.001&maxIteration=10&dampingFactor=0.15
-"Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000}}}
-"Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000}}}
-"Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7}}}}}}
-"Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7}}}}}}
+"Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":true}}}
+"Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":false}}}
+"Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7},"is_active":{"value":false}}}}}}
+"Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7},"is_active":{"value":true}}}}}}
 {"function":"stat_vertex_number", "type":"Page"}
 {"function":"stat_edge_number", "type":"Linkto"}

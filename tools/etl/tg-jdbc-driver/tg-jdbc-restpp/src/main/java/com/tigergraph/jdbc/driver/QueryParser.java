@@ -334,6 +334,10 @@ public class QueryParser {
           } else if (value.indexOf('.') >= 0) { // it's a double
             attrObj.add(tokens[i],
               Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+          } else if (value.toLowerCase().equals("true") ||
+             value.toLowerCase().equals("false")) { // it's a boolean
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
           } else { // it's an integer
             attrObj.add(tokens[i],
               Json.createObjectBuilder().add("value", Integer.parseInt(value)));
@@ -383,6 +387,10 @@ public class QueryParser {
           } else if (value.indexOf('.') >= 0) { // it's a double
             attrObj.add(tokens[i],
               Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+          } else if (value.toLowerCase().equals("true") ||
+             value.toLowerCase().equals("false")) { // it's a boolean
+            attrObj.add(tokens[i],
+              Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
           } else { // it's an integer
             attrObj.add(tokens[i],
               Json.createObjectBuilder().add("value", Integer.parseInt(value)));
