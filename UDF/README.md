@@ -15,13 +15,17 @@ To Contribute to the UDF Library
   * [str_find](#str-find) - Given a string find a string in a string, and return where it was found (-1 if not found)
   * [regex_filter_set](#regex-filter-set) - Given a set and regular expression filter out strings and return the set
   * [regex_filter_list](#regex-filter-list) - Given a list and regular expression filter out strings and return the list
+  * [double_to_string](bigint-to-string) - Given a double output a string
  * [Integer/Float Based UDF](#Integer-float-based-udf)
    * [str_to_int](#str-to-int) - Given a string of numbers convert into an int
    * [float_to_int](#float-to-int) - Given a float convert it into an int
    * [echo_int](#echo-int) - Given an int echo an int
    * [rand_int](#rand-int) - Given a min and max int generate a random integer
+* [Geo Based UDF](#geo-based-udf)
+   * [getNearbyGridId](#getnearbygridid) - Given a distance in km and lat and lon return nearby
+   * [geoDistance](#geodistance) - Given a a starting & ending lat and long calculate the distance
 
-## String BASED UDF
+## String Based UDF
 ### substring
 Given a string of text, return a substring from index begin to index end
 
@@ -188,9 +192,23 @@ CREATE QUERY tryFilterBag(string regex) FOR GRAPH MyGraph {
   PRINT bv, cv; 
 }
 ```
-## Integer/Float BASED UDF
+### double_to_string
+Given a double output a string
+
+**UDF Code**
+```
+  inline string bigint_to_string (double val) {
+    char result[200];
+    sprintf(result, "%.0f", val);
+    return string(result);
+  }
+```
+**Example**
+*Need to add*
 
 -----------
+
+## Integer/Float Based UDF
 
 ### echo_int
 Given an int echo an int
@@ -245,6 +263,82 @@ Given a float convert it into an int
 ```
   inline int64_t float_to_int (float val) {
     return (int64_t) val;
+  }
+```
+**Example**
+*Need to add*
+
+-----------
+
+## Geo Based UDF
+
+### getNearbyGridId
+Given a distance in km and lat and lon return nearby
+
+**UDF Code**
+```
+inline SetAccum<string> getNearbyGridId (double distKm, double lat, double lon) {
+
+    string gridIdStr = map_lat_long_grid_id(lat, lon); 
+    uint64_t gridId = atoi(gridIdStr.c_str());
+
+    int dia_long = gridNumLong (distKm, lat);
+    int dia_lat = gridNumlat (distKm);
+
+    int minus_dia_long = -1*dia_long;
+    int minus_dia_lat  = -1*dia_lat;
+
+    SetAccum<string> result;
+
+    result += gridIdStr;
+
+    int origin_lat = gridId/NUM_OF_COLS;
+    int origin_lon = gridId%NUM_OF_COLS;
+
+    for(int i = minus_dia_lat; i <= dia_lat; i++) {
+      for(int j = minus_dia_long; j <= dia_long; j++) {
+        int new_lat = origin_lat + i;
+        int new_lon = origin_lon + j;
+
+        // wrap around
+        if (new_lat < 0) {
+          new_lat = NUM_OF_ROWS + new_lat;
+        } else if (new_lat > NUM_OF_ROWS) {
+          new_lat = new_lat - NUM_OF_ROWS;
+        }
+
+        if (new_lon < 0) {
+          new_lon = NUM_OF_COLS + new_lon;
+        } else if (new_lon > NUM_OF_COLS) {
+          new_lon = new_lon - NUM_OF_COLS;
+        }
+
+        int id = new_lon + NUM_OF_COLS * new_lat;
+
+        result += std::to_string(id);
+      }
+    }
+    return result;
+  }
+  ```
+**Example**
+*Need to add*
+
+-----------
+
+### geoDistance
+Given a a starting & ending lat and long calculate the distance
+
+**UDF Code**
+```
+  inline double geoDistance(double latitude_from, double longitude_from, double latitude_to, double longitude_to) {
+    double phi_1 = deg2rad(latitude_from);
+    double lambda_1 = deg2rad(longitude_from);
+    double phi_2 = deg2rad(latitude_to);
+    double lambda_2 = deg2rad(longitude_to);
+    double u = sin(phi_2 - phi_1)/2.0;
+    double v = sin(lambda_2 - lambda_1)/2.0;
+    return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(phi_1) * cos(phi_2) * v * v));
   }
 ```
 **Example**
