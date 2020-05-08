@@ -48,20 +48,20 @@ A curated list of AWESOME TigerGraph community resources.
 
 ## Connectors
 ### Kafka
-* [tg-kafka-connect](https://github.com/tigergraph/ecosys/tree/master/etl/tg-kafka-connect/com/tigergraph/connector) a Kafka connector
+* [tg-kafka-connect](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-kafka-connect/com/tigergraph/connector) a Kafka connector
 
 ### s3
-* [tg-s3-parquet-load](https://github.com/tigergraph/ecosys/tree/master/etl/tg-s3-parquet-load) a program that uses Spark SQL to load parquet from Amazon S3 and store as CSV locally or in S3
+* [tg-s3-parquet-load](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-s3-parquet-load) a program that uses Spark SQL to load parquet from Amazon S3 and store as CSV locally or in S3
 
 ### RDBMS
 * [tg-rdbms-import](https://github.com/tigergraph/ecosys/tree/master/etl/tg-rdbms-import) a utility to read records from a RDBMS and then POST to TigerGraph
 
 ### Hadoop/Spark
-* [tg-hadoop-connect](https://github.com/tigergraph/ecosys/tree/master/etl/tg-hadoop-connect) a utility to read csv files from Hadoop and then POST to TigerGraph
-* [tg-jdbc-driver](https://github.com/tigergraph/ecosys/tree/master/etl/tg-jdbc-driver) a JDBC Type 4 Driver for Spark, Python and Java
+* [tg-hadoop-connect](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-hadoop-connect) a utility to read csv files from Hadoop and then POST to TigerGraph
+* [tg-jdbc-driver](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver) a JDBC Type 4 Driver for Spark, Python and Java
 
 ### Python
-* [tg-python-wrapper](https://github.com/tigergraph/ecosys/tree/master/etl/tg-python-wrapper)
+* [tg-python-wrapper](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-python-wrapper)
 * [pyTigerGraph](https://pypi.org/project/pyTigerGraph/)
 * [gsql_client](https://github.com/dingmaotu/gsql_client)
 * [pyGraphistry](https://github.com/graphistry/pygraphistry/tree/master/demos/demos_databases_apis/tigergraph)
@@ -70,7 +70,7 @@ A curated list of AWESOME TigerGraph community resources.
 * [tiger_graph](https://pub.dev/packages/tiger_graph) a Dart wrapper that streamlines connection between a TigerGraph cloud instance and Flutter.
 
 ### Other
-* [dist_split](https://github.com/tigergraph/ecosys/tree/master/etl/dist_split) a utility to split large data files for loading onto a distributed system
+* [dist_split](https://github.com/tigergraph/ecosys/tree/master/tools/etl/dist_split) a utility to split large data files for loading onto a distributed system
 
 ## Visualization
 ### BI Tool
@@ -88,7 +88,7 @@ A curated list of AWESOME TigerGraph community resources.
 
 ## TigerGraph Enviornment
 ### Docker
-* [docker](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/docker)
+* [docker](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/docker)
 
 ### Cloud
 
@@ -97,19 +97,19 @@ A curated list of AWESOME TigerGraph community resources.
 * [GSQL 101](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution
 
 ## Pre-Built Demos
-* [pattern_match](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pattern_match)
-* [temporal_data](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/temporal_data)
-* [pagerank](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/pagerank_demo) Healthcare Demo
-* [label_propagation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/comm_dect_demo) Healthcare Demo that will find communities
-* [loop_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/loop_detection_demo)
-* [movie_reccomendation](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/movie_recommendation)
-* [network_IT](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/network_IT_resource)
-* [deep_learning](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru19_deep_learning)
-* [RDF](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/RDF)
-* [pattern_interpret](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/guru15_pattern_interpret)
-* [fraud_detection](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/fraud_detection_demo)
+* [pattern_match](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/pattern_match)
+* [temporal_data](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/temporal_data)
+* [pagerank](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/pagerank_demo) Healthcare Demo
+* [label_propagation](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/comm_dect_demo) Healthcare Demo that will find communities
+* [loop_detection](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/loop_detection_demo)
+* [movie_reccomendation](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/movie_recommendation)
+* [network_IT](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/network_IT_resource)
+* [deep_learning](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/guru19_deep_learning)
+* [RDF](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/RDF)
+* [pattern_interpret](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/guru15_pattern_interpret)
+* [fraud_detection](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/fraud_detection_demo)
 <!--- Is this an actual repo --->
-* [entity_resolution](https://github.com/tigergraph/ecosys/tree/master/guru_scripts/entity_resolution)
+* [entity_resolution](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/entity_resolution)
 
 ## User Defined Functions
 ## Benchmarking
