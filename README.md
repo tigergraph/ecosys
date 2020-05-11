@@ -6,9 +6,13 @@
 [![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat)](https://discordapp.com/channels/640707678297128980)
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=flat)](https://www.reddit.com/r/tigergraph/)
 
+[**Just Getting Started? Checkout TigerGraph Academy!**](https://tigergraph.github.io/ecosys/)
+
+
 ## TigerGraph's Ecosystem 
 
 [TigerGraph](https://www.tigergraph.com) is dedicated to building the world's fastest and most scalable graph platform. We also know that a product is nothing without its community. This repository is dedicated to providing TigerGraph's community with all the essential in-house and community-developed tools to get the most value out of your TigerGraph solutions. 
+
 
 ## I don't want to read this whole thing -- I just have a question!!!
 
