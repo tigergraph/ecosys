@@ -1,4 +1,4 @@
-package com.tigergraph.v3_0_0_beta.common.util.error;
+package com.tigergraph.v2_6_0.common.util.error;
 
 /**
  * The ReturnCode constants between client and server.
@@ -22,6 +22,7 @@ public class ReturnCode {
   public static final int CLIENT_ARGUMENT_ERROR = 201;
   public static final int CONNECTION_ERROR = 202;
   public static final int CLIENT_COMPATIBILITY_ERROR = 203;
+  public static final int SESSION_TIMEOUT = 204;
 
   // unknown
   public static final int UNKNOWN_ERROR = 255;

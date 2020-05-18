@@ -55,7 +55,7 @@ if [ -d gsql-client ]; then
   SRC_CLIENT=gsql-client/src/main/java/$PKG_CLIENT
   SRC_COMMON=gsql-common/src/main/java/$PKG_COMMON
 elif [ -d src/main/java ]; then
-  # for 2.5.x
+  # for 2.5.x and newer
   SRC_CLIENT=src/main/java/$PKG_CLIENT
   SRC_COMMON=src/main/java/$PKG_COMMON
 else

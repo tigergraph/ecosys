@@ -7,10 +7,10 @@
  * Proprietary and confidential
  * ****************************************************************************
  */
-package com.tigergraph.v3_0_0_beta.client;
+package com.tigergraph.v2_6_0.client;
 
-import com.tigergraph.v3_0_0_beta.common.GsqlLogger;
-
+import com.tigergraph.v2_6_0.common.Constant;
+import com.tigergraph.v2_6_0.common.GSQL_LOG;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,10 +20,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.Properties;
 
+import jline.console.ConsoleReader;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-
-import jline.console.ConsoleReader;
 
 /**
  * This class define several static utility methods.
@@ -31,10 +31,14 @@ import jline.console.ConsoleReader;
  * <p>This class is a final class and cannot be extended.
  */
 public final class Util {
-  public static final double LOG_ROTATE_SIZE = 5e8; // 500M
-
   public static String LOG_DIR;
   public static String SESSION;
+
+  /** Grep IUM config from gsql.cfg file. */
+  public static String getIUMConfig(String config) {
+    String cmd = "grep " + config + " ~/.gsql/gsql.cfg | cut -d ' ' -f 2";
+    return getStringFromBashCmd(cmd);
+  }
 
   /**
    * load the CA and use it in the https connection
@@ -71,41 +75,35 @@ public final class Util {
   }
 
   public static void LogText(String text) {
-    if (GsqlLogger.filePath == null) return;
+    if (GSQL_LOG.LOG_FILE == null) return;
     try {
-      GsqlLogger.info(text, SESSION, 1);
+      GSQL_LOG.LogInfo(text, SESSION, 1);
     } catch (Exception e) {
-      // exception while logging
     }
   }
 
   public static void LogExceptions(Throwable e) {
-    if (GsqlLogger.filePath == null) return;
+    if (GSQL_LOG.LOG_FILE == null) return;
     try {
-      GsqlLogger.exception(e, SESSION, 1);
+      GSQL_LOG.LogExceptions(e, SESSION, 1);
     } catch (Exception ioe) {
-      // exception while logging
     }
   }
 
   public static void setClientLogFile(String username, String serverip, boolean printerror) {
     try {
-      GsqlLogger.filePath = Util.getClientLogFile("log", username, serverip, true).getPath();
-      PrintWriter writer =
-          new PrintWriter(new BufferedWriter(new FileWriter(GsqlLogger.filePath, true)));
+      GSQL_LOG.LOG_FILE = Util.getClientLogFile("log", username, serverip, true).getPath();
+      PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(GSQL_LOG.LOG_FILE, true)));
       writer.print("");
-      writer.close();
     } catch (Exception e) {
-      GsqlLogger.filePath = null;
+      GSQL_LOG.LOG_FILE = null;
       if (printerror) System.out.println("Can't open log file, " + e.getMessage());
     }
     Util.LogText("Client commit: " + Util.getCommitClient());
   }
 
-  public static File getClientLogFile(String file,
-                                      String username,
-                                      String serverip,
-                                      boolean rotate) throws IOException {
+  public static File getClientLogFile(String file, String username, String serverip,
+      boolean rotate) throws IOException {
     if (Util.LOG_DIR == null) {
       throw new IOException("LogDir is null");
     }
@@ -118,9 +116,9 @@ public final class Util {
     }
 
     if (!f.exists()) {
-      // create file if it does not exist
+      //create file if it does not exist
       f.createNewFile();
-    } else if (rotate && f.length() > LOG_ROTATE_SIZE) {
+    } else if (rotate && f.length() > Constant.LogRotateSize) {
       // rotate log file when file is large than 500M
       long current = System.currentTimeMillis();
       // copy the log to a new file with timestamp
@@ -162,8 +160,8 @@ public final class Util {
 
   /**
    * function to generate a prompt for user to input username
-   * @param doubleCheck notes whether the password should be confirmed one more time.
-   * @param isNew indicates whether it is inputting a new password
+   * @param doubleCheck, notes whether the password should be confirmed one more time.
+   * @param isNew, indicates whether it is inputting a new password
    * @return SHA-1 hashed password on success, null on error
    */
   public static String Prompt4Password(boolean doubleCheck, boolean isNew, String username) {
@@ -229,7 +227,7 @@ public final class Util {
       BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
       p.waitFor();
 
-      // get output (only one line)
+      //get output (only one line)
       String result = output.readLine();
 
       return result;
@@ -240,7 +238,7 @@ public final class Util {
   }
 
   public static String getCommitClient() {
-  if (true) return "6adf4e2f7bb9064195a32c1fd993e7bf6dedac6d"; String clientCommitHash = null;
+  if (true) return "6fe2f50ab9dc8457c4405094080186208bd2edc4"; String clientCommitHash = null;
     try {
       Properties props = new Properties();
       InputStream in = Util.class.getClassLoader().getResourceAsStream("Version.prop");
@@ -254,4 +252,6 @@ public final class Util {
 
     return clientCommitHash;
   }
+
 }
+
