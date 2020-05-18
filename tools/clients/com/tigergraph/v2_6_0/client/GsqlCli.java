@@ -7,7 +7,7 @@
  * Proprietary and confidential
  * ****************************************************************************
  */
-package com.tigergraph.v3_0_0_beta.client;
+package com.tigergraph.v2_6_0.client;
 
 import org.apache.commons.cli.*;
 import java.io.File;
@@ -29,7 +29,6 @@ public class GsqlCli {
     options.addOption(Option.builder("version").longOpt("version").hasArg(false).build());
     options.addOption(Option.builder("h").longOpt("help").hasArg(false).build());
     options.addOption(Option.builder("reset").longOpt("reset").hasArg(false).build());
-    options.addOption(Option.builder("lock").longOpt("lock").hasArg(false).build());
     options.addOption(
         Option.builder("u").longOpt("user").hasArg(true).build());
     options.addOption(
@@ -41,8 +40,7 @@ public class GsqlCli {
         Option.builder("g").longOpt("graph").hasArg(true).build());
     // support unlimited arguments for -c option
     options.addOption(
-        Option.builder("c").longOpt("command").hasArgs().hasArg(true)
-              .numberOfArgs(Option.UNLIMITED_VALUES).build());
+        Option.builder("c").longOpt("command").hasArgs().hasArg(true).numberOfArgs(Option.UNLIMITED_VALUES).build());
     options.addOption(Option.builder("i").longOpt("ip").hasArg(true).build());
     options.addOption(Option.builder("cacert").longOpt("cacert").hasArg(true).build());
     options.addOption(Option.builder("graphstudio").longOpt("graphstudio").hasArg(false).build());
@@ -76,10 +74,6 @@ public class GsqlCli {
 
   public boolean hasReset() {
     return cli.hasOption("reset");
-  }
-
-  public boolean hasLock() {
-    return cli.hasOption("lock");
   }
 
   public boolean hasFile() {
@@ -143,9 +137,7 @@ public class GsqlCli {
     return cli.getOptionValue("cacert");
   }
 
-  public boolean isFromGraphStudio() {
-    return cli.hasOption("graphstudio");
-  }
+  public boolean isFromGraphStudio() { return cli.hasOption("graphstudio"); }
 
   public boolean hasLogdir() {
     return cli.hasOption("logdir");

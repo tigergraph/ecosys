@@ -9,7 +9,7 @@
  * ****************************************************************************
  */
 
-package com.tigergraph.v3_0_0_beta.common;
+package com.tigergraph.v2_6_0.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public enum SyntaxVersion {
 
   // Note: In  3.0, we should change below to V2.
   /** Default syntax version in 2.4 is V1 */
-  public static SyntaxVersion defaultVersion = V1;
+  static public SyntaxVersion defaultVersion = V1;
 
   private SyntaxVersion(String version) {
     this.version = version;
@@ -124,7 +124,7 @@ public enum SyntaxVersion {
   }
 
   /** Returns the syntax version string */
-  public String toString() {
+  public String toString(){
     return version;
   }
 }

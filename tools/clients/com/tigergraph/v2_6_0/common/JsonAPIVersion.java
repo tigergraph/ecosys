@@ -7,7 +7,7 @@
  * Proprietary and confidential
  * ****************************************************************************
  */
-package com.tigergraph.v3_0_0_beta.common;
+package com.tigergraph.v2_6_0.common;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -24,7 +24,7 @@ public enum JsonAPIVersion {
   UNKNOWN("unknown");
 
   private String version;
-  public static JsonAPIVersion defaultVersion = V2;
+  static public JsonAPIVersion defaultVersion = V2;
 
   private JsonAPIVersion(String version) {
     this.version = version;
