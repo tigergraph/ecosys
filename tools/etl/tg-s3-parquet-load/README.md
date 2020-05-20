@@ -63,8 +63,11 @@ bash compile_and_run.sh $master_url $target_host $target_path $times $log_path
    1. $master_url is the url for Spark cluster manager
    2. $target_host
       * local (local csv mode, save as csv in local)
-      * ip address of TG database (post mode, post to TG)
+      * url of TG database (post mode, post to TG). It can be any of the below format. Protocol is either http or https.
+        * protocol://host:9000 (host is ip address)  
+        * protocol://host (host is route53/dns or alb whose target group port is 9000)
       * schema (schema mode, print schema and row count)
    3. $target_path is the path to store in the local machine if it is local csv mode. It must be absolute path.
    4. $times, just use 1
    5. $log_path the path that outputs the log, default is /tmp/sparkLoading/
+   6. $properties_file the properties file, default is s3.properties file in current directory.

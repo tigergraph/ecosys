@@ -276,7 +276,7 @@ public class generateDataset implements Serializable {
 
   public void batchPost(String target_host, String rest_endpoint, StringBuilder payload) {
     // String requestUrl = "http://" + host + ":9000/dumpfile?filename=/tmp/data.csv";
-    String requestUrl = "http://" + target_host + ":9000/ddl?sep=,&tag=" + rest_endpoint + "&eol=%0A";
+    String requestUrl = target_host + "/ddl?sep=,&tag=" + rest_endpoint + "&eol=%0A";
     String response = sendPostRequest(requestUrl, payload.toString());
     JSONObject res_json;
     try {

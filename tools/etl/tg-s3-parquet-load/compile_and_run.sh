@@ -13,7 +13,7 @@ target_path="$cwd/uber_data"
 times=1
 log_path=""
 if [[ $# < 3 ]]; then
-  echo "Usage: ./compile_and_run.sh  master_url target_host target_path [times] [log_path]"
+  echo "Usage: ./compile_and_run.sh  master_url target_host target_path [times] [log_path] [properties_file]"
   exit 1
 fi
 
@@ -28,6 +28,11 @@ fi
 # specify log path, otherwise will use default: /tmp/sparkLoader
 if [[ $# > 4 ]]; then
   log_path=$5
+fi
+
+# specify properties file, otherwise will use default one
+if [[ $# > 5 ]]; then
+  properties_file=$6
 fi
 
 cd graphsql
