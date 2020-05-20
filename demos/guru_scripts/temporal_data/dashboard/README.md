@@ -16,5 +16,5 @@ Please follow the steps to deploy:
 
 Screenshot:
 
-![alt text](https://raw.githubusercontent.com/tigergraph/ecosys/master/guru_scripts/temporal_data/dashboard/dashboard.png)
+![alt text](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/temporal_data/dashboard/dashboard.png)
 
