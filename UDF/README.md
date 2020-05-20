@@ -9,18 +9,18 @@ To Contribute to the UDF Library
 ## Table of Contents
 * [String Based UDF](#string-based-udf)
   * [substring](#substring) - Given a string of text, return a substring from index begin to index end
-  * [str_regex_match](#string-regex-match) - Given a string determine if regex matches, return a boolean
-  * [string_to_string](#string-to-string) -  string_to_string
-  * [str_len](#str-len) - Given a string count char to get string size
-  * [str_find](#str-find) - Given a string find a string in a string, and return where it was found (-1 if not found)
-  * [regex_filter_set](#regex-filter-set) - Given a set and regular expression filter out strings and return the set
-  * [regex_filter_list](#regex-filter-list) - Given a list and regular expression filter out strings and return the list
-  * [double_to_string](bigint-to-string) - Given a double output a string
- * [Integer/Float Based UDF](#Integer-float-based-udf)
-   * [str_to_int](#str-to-int) - Given a string of numbers convert into an int
-   * [float_to_int](#float-to-int) - Given a float convert it into an int
-   * [echo_int](#echo-int) - Given an int echo an int
-   * [rand_int](#rand-int) - Given a min and max int generate a random integer
+  * [str_regex_match](#str_regex_match) - Given a string determine if regex matches, return a boolean
+  * [string_to_string](#string_to_string) -  string_to_string
+  * [str_len](#str_len) - Given a string count char to get string size
+  * [str_find](#str_find) - Given a string find a string in a string, and return where it was found (-1 if not found)
+  * [regex_filter_set](#regex_filter_set) - Given a set and regular expression filter out strings and return the set
+  * [regex_filter_list](#regex_filter_list) - Given a list and regular expression filter out strings and return the list
+  * [double_to_string](#double_to_string) - Given a double output a string
+ * [Integer/Float Based UDF](#integerfloat-based-udf)
+   * [str_to_int](#str_to_int) - Given a string of numbers convert into an int
+   * [float_to_int](#float_to_int) - Given a float convert it into an int
+   * [echo_int](#echo_int) - Given an int echo an int
+   * [rand_int](#rand_int) - Given a min and max int generate a random integer
 * [Geo Based UDF](#geo-based-udf)
    * [getNearbyGridId](#getnearbygridid) - Given a distance in km and lat and lon return nearby
    * [geoDistance](#geodistance) - Given a a starting & ending lat and long calculate the distance
