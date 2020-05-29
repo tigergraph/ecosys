@@ -52,10 +52,12 @@ import java.util.Random;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.KeyStoreException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.security.cert.CertificateException;
 import java.security.UnrecoverableKeyException;
 import java.security.KeyManagementException;
+import org.apache.spark.SparkFiles;
 
 public class RestppConnection extends Connection {
 
@@ -199,6 +201,13 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("trustStore")) {
           hasSSLContext = Boolean.TRUE;
           String trustFilename = properties.getProperty("trustStore");
+          File tempFile = new File(trustFilename);
+          if (!tempFile.exists()) {
+            trustFilename = org.apache.spark.SparkFiles.get(trustFilename);
+            if (this.debug > 0) {
+              System.out.println(">>> SparkFiles: " + trustFilename);
+            }
+          }
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
           try (final InputStream in = new FileInputStream(new File(trustFilename))) {
             truststore.load(in, trustStorePassword.toCharArray());
@@ -209,6 +218,13 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("keyStore")) {
           hasSSLContext = Boolean.TRUE;
           String keyFilename = properties.getProperty("keyStore");
+          File tempFile = new File(keyFilename);
+          if (!tempFile.exists()) {
+            keyFilename = org.apache.spark.SparkFiles.get(keyFilename);
+            if (this.debug > 0) {
+              System.out.println(">>> SparkFiles: " + keyFilename);
+            }
+          }
           final KeyStore keyStore = KeyStore.getInstance(keyStoreType);
           try (final InputStream in = new FileInputStream(new File(keyFilename))) {
             keyStore.load(in, keyStorePassword.toCharArray());

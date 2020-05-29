@@ -123,6 +123,13 @@ Don't forget to close the HikariDataSource at the end:
 ds.close();
 ```
 
+If SSL is enabled, please provide truststore like this:
+```
+config.addDataSourceProperty("trustStore", "/path/to/trust.jks");
+config.addDataSourceProperty("trustStorePassword", "password");
+config.addDataSourceProperty("trustStoreType", "JKS");
+```
+
 Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/ConnectionPool.java).
 
 ## Supported Queries
@@ -190,6 +197,8 @@ INSERT INTO edge Linkto(Page, Page) VALUES(?, ?)
 See [RESTPP API User Guide: Built-in Endpoints](https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints) for more details about the built-in endpoints.
 
 The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds)** of java.sql.Statement to change timeout for any specific query.
+
+**If any parameter or attribute name has spaces, tabs or other special characters, please enclose it in single quotation marks.**
 
 Detailed examples can be found at [tg-jdbc-examples](tg-jdbc-examples).
 
@@ -427,13 +436,25 @@ val dbtable2 = """interpreted INTERPRET QUERY (int lowerBound = 0, int upperBoun
 }"""
 ```
 
-Save any piece of the above script in a file, and run it like this:
+Save any piece of the above script in a file (e.g., test.scala), and run it like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar -i read.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar -i test.scala
 ```
 
 **Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your query if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
 
+### To enable SSL with Spark
+Please add the following options to your scala script:
+```
+    "trustStore" -> "trust.jks",
+    "trustStorePassword" -> "password",
+    "trustStoreType" -> "JKS",
+```
+
+And run it with **"--files"** option like this:
+```
+/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar --files /path/to/trust.jks -i test.scala
+```
 ### Load balancing
 For TigerGraph clusters, all the machines' ip addresses (separated by a comma) could be passed via option **"ip_list"** to the driver, and the driver will pick one ip randomly to issue the query.
 
