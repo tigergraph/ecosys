@@ -45,7 +45,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.3</version>
         <executions>
           <execution>
           <phase>package</phase>
@@ -53,6 +53,16 @@
             <goal>shade</goal>
           </goals>
           <configuration>
+            <relocations>
+              <relocation>
+                <pattern>org.apache.http</pattern>
+                <shadedPattern>org.shaded.apache.http</shadedPattern>
+              </relocation>
+              <relocation>
+                <pattern>org.apache.commons.http</pattern>
+                <shadedPattern>org.shaded.apache.commons.http</shadedPattern>
+              </relocation>
+            </relocations>
             <transformers>
               <transformer
                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
