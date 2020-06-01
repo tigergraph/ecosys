@@ -26,7 +26,7 @@ SEC_Count = 0
 ERROR_RETURN=None
 
 # now build the bricks
-def validiate_cmd(cmd):
+def validate_cmd(cmd):
     allowed_cmds=[
             "start", 
             "stop",
@@ -116,7 +116,7 @@ def run_gadmin_cmd(org_cmd):
         validate_state = 1
         if validate_secret(cmd[0]):
             validate_state = 2
-            if validiate_cmd(cmd[1:]):
+            if validate_cmd(cmd[1:]):
                 validate_state = 3
                 cmd[0] = "gadmin"
                 process = subprocess.Popen(cmd, shell=False, close_fds=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
@@ -142,7 +142,8 @@ def parse_argv():
     arguments = len(sys.argv) - 1
     if arguments != 1:
         time_print('No port specified, using default ' + str(TCP_PORT))
-    TCP_PORT = int(sys.argv[1])
+    else:
+        TCP_PORT = int(sys.argv[1])
 
 
 
