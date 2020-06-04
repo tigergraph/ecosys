@@ -1,0 +1,28 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_10(string tag, datetime date) FOR GRAPH ldbc_snb SYNTAX V2 {
+  SetAccum<vertex> @messageSet;
+  SetAccum<vertex<Person>> @@personSet;
+  SumAccum<int> @score, @friendsScore, @totalScore;
+
+  P =
+    SELECT p2
+    FROM Person:p1 -(HAS_INTEREST>)- Tag:t,
+         :t -(<HAS_TAG)- (Post|Comment):m -(HAS_CREATOR>)- Person:p2
+    WHERE t.name == tag AND m.creationDate > date
+    ACCUM
+      p1.@score = 100, p2.@messageSet += m,
+      @@personSet += p1, @@personSet += p2
+    POST-ACCUM p2.@score += p2.@messageSet.size(), p2.@messageSet.clear();
+
+  P = { @@personSet };
+  P =
+    SELECT s
+    FROM P:s -(KNOWS)- Person:t
+    ACCUM s.@friendsScore += t.@score
+    POST-ACCUM s.@totalScore = s.@friendsScore + s.@score
+    ORDER BY s.@totalScore DESC,  s.id ASC
+    LIMIT 100;
+
+  PRINT P[P.id, P.@score, P.@friendsScore];
+}

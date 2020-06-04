@@ -1,0 +1,55 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_11(string cName, set<string> blacklist) for graph ldbc_snb syntax v2 {
+  typedef tuple<int personId, string tagName, int likeCount, int replyCount> resTuple;
+  HeapAccum<resTuple>(100, likeCount DESC, personId ASC, tagName ASC) @@results;
+  GroupByAccum<int personId, string tagName, SumAccum<int> likeCount, SumAccum<int> replyCount> @@groups;
+  SetAccum<string> @@blacklistedPatterns;
+  AndAccum @legalContent;
+  SumAccum<uint> @personId;
+  SetAccum<vertex<Tag>> @replyTags, @msgTags, @sharedTags;
+  SetAccum<vertex<Person>> @likeSet;
+  SumAccum<int> @sharedTagCount, @replyCount, @likeCount;
+
+  FOREACH word IN blacklist DO
+    @@blacklistedPatterns += "%" + word + "%";
+  END;
+
+  R =
+    SELECT r
+    FROM Comment:r -(HAS_CREATOR>)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:c,
+         :r -(HAS_TAG>)- Tag:t1,
+         :r -(REPLY_OF>)- (Post|Comment):m -(HAS_TAG>)- Tag:t2,
+         Person:p2 -(LIKES>)- :r
+    WHERE c.name == cName
+    ACCUM
+      FOREACH wordPattern IN @@blacklistedPatterns DO
+        CASE WHEN r.content LIKE wordPattern THEN
+          r.@legalContent += false
+        END
+      END,
+      r.@personId = p.id,
+      r.@replyTags += t1,
+      r.@msgTags += t2,
+      r.@likeSet += p2
+    POST-ACCUM
+      r.@sharedTags = r.@replyTags INTERSECT r.@msgTags,
+      r.@sharedTagCount = r.@sharedTags.size(),
+      r.@sharedTags.clear(),
+      r.@replyTags.clear(),
+      r.@msgTags.clear(),
+      r.@likeCount = r.@likeSet.size(),
+      r.@likeSet.clear()
+    HAVING r.@legalContent == true AND r.@sharedTagCount == 0;
+
+  T =
+    SELECT t
+    FROM R:r -(HAS_TAG>)- Tag:t
+    ACCUM @@groups += (r.@personId, t.name -> r.@likeCount, 1);
+
+  FOREACH g IN @@groups DO
+    @@results += resTuple(g.personId, g.tagName, g.likeCount, g.replyCount);
+  END;
+
+  PRINT @@results;
+}

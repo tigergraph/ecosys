@@ -1,0 +1,37 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY ic_3(vertex<Person> pid, string x, string y,
+    datetime startDate, int duration) FOR GRAPH ldbc_snb SYNTAX _v2 {
+  datetime endDate;
+  SetAccum<vertex> @xSet, @ySet;
+  SumAccum<int> @xCount, @yCount, @totalCount;
+  endDate = datetime_add(startDate, INTERVAL duration DAY);
+  S = { pid };
+  S =
+    SELECT p
+    FROM S:s -(KNOWS*1..2)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:cp,
+         :p -(<HAS_CREATOR)- (Post|Comment):m -(IS_LOCATED_IN>)- Country:cm
+    WHERE p != s
+      and (cm.name == x or cm.name == y)
+      and (cp.name != x and cp.name != y)
+      and (m.creationDate >= startDate and m.creationDate < endDate)
+    ACCUM
+      CASE WHEN cm.name == x THEN p.@xSet += m
+           WHEN cm.name == y THEN p.@ySet += m
+      END
+    POST-ACCUM
+      p.@xCount = p.@xSet.size(), p.@xSet.clear(),
+      p.@yCount = p.@ySet.size(), p.@ySet.clear(),
+      p.@totalCount = p.@xCount + p.@yCount
+    ORDER BY p.@xCount DESC, p.id ASC
+    LIMIT 20;
+
+  PRINT S[
+    S.id AS personId,
+    S.firstName AS personFirstName,
+    S.lastName AS personLastName,
+    S.@xCount AS xCount,
+    S.@yCount AS yCount,
+    S.@totalCount AS totalCount
+  ];
+}

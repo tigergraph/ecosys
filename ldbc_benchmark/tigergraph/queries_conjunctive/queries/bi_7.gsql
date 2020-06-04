@@ -1,0 +1,28 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_7(string tag) FOR GRAPH ldbc_snb SYNTAX V2 {
+  SumAccum<int> @authorityScore;
+  SetAccum<edge> @likeSet;
+
+  PersonSet =
+    SELECT p
+    FROM Tag:t -(<HAS_TAG)- (Post|Comment):m -(HAS_CREATOR>)- Person:p
+    WHERE t.name == tag;
+
+  ReducedPersonSet =
+    SELECT p1
+    FROM Tag:t -(<HAS_TAG)- (Post|Comment):m1 -(HAS_CREATOR>)- Person:p1,
+         :m1 -(<LIKES)- Person:p2 -(<HAS_CREATOR)- (Post|Comment):m2,
+         Person -(LIKES>:e)- :m2
+    WHERE t.name == tag
+    ACCUM p1.@likeSet += e
+    POST-ACCUM p1.@authorityScore = p1.@likeSet.size(), p1.@likeSet.clear();
+
+  P =
+    SELECT p
+    FROM PersonSet:p
+    ORDER BY p.@authorityScore DESC, p.id ASC
+    LIMIT 100;
+
+  PRINT P[P.id, P.@authorityScore];
+}

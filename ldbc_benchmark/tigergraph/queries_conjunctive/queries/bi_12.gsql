@@ -1,0 +1,20 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_12(datetime date, int likeThreshold) FOR GRAPH ldbc_snb SYNTAX v2 {
+  SumAccum<string> @creatorFirstName, @creatorLastName;
+  SumAccum<int> @likeCount;
+
+  M =
+    SELECT m
+    FROM Person:p -(LIKES>)- (Post|Comment):m -(HAS_CREATOR>)- Person:c
+    WHERE m.creationDate > date
+    ACCUM
+      m.@creatorFirstName = c.firstName,
+      m.@creatorLastName = c.lastName,
+      m.@likeCount += 1
+    HAVING m.@likeCount > likeThreshold
+    ORDER BY m.@likeCount DESC, m.id ASC
+    LIMIT 100;
+
+  PRINT M[M.id, M.creationDate, M.@creatorFirstName, M.@creatorLastName, M.@likeCount];
+}

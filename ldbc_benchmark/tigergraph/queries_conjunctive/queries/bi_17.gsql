@@ -1,0 +1,20 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_17(string cName) FOR GRAPH ldbc_snb SYNTAX V2 {
+  TYPEDEF TUPLE <uint a, uint b, uint c> triplet;
+  SetAccum<triplet> @@tripletSet;
+  SumAccum<int> @@tripletCount;
+
+  C =
+    SELECT c
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p1,
+         :c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p2,
+         :c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p3,
+         :p1 -(KNOWS)- :p2 -(KNOWS)- :p3 -(KNOWS)- :p1
+    WHERE c.name == cName AND p1.id < p2.id AND p2.id < p3.id
+    ACCUM @@tripletSet += triplet(p1.id, p2.id, p3.id);
+
+  @@tripletCount = @@tripletSet.size();
+  @@tripletSet.clear();
+  PRINT @@tripletCount;
+}

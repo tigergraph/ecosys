@@ -1,0 +1,41 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY ic_10(vertex<Person> pid, int month) for graph ldbc_snb syntax v2 {
+  SumAccum<int> @common, @uncommon, @commonInterestScore;
+  SumAccum<string> @personCityName;
+  OrAccum @isFriend, @hasInterest;
+  int nextMonth;
+
+  nextMonth = month + 1;
+  IF nextMonth == 13 THEN
+    nextMonth = 1;
+  END;
+
+  S = { pid };
+  F = SELECT t FROM S:s -(KNOWS)- Person:t ACCUM t.@isFriend += true;
+  P = SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p ACCUM p.@hasInterest += true;
+
+  F =
+    SELECT p
+    FROM S:s -(KNOWS*2)- Person:p -(IS_LOCATED_IN>)- City:c
+    WHERE p != s AND p.@isFriend == false
+          AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
+               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
+    ACCUM p.@personCityName = c.name;
+
+  ReducedF =
+    SELECT f
+    FROM F:f -(<HAS_CREATOR)- Post:p
+    ACCUM
+      IF p.@hasInterest == true THEN
+        f.@common += 1
+      ELSE
+        f.@uncommon += 1
+      END
+    POST-ACCUM f.@commonInterestScore = f.@common - f.@uncommon;
+
+  F = SELECT v FROM F:v ORDER BY v.@commonInterestScore DESC, v.id ASC LIMIT 10;
+  PRINT F[F.id AS personId, F.firstName AS personFirstName,
+          F.lastName AS personLastName, F.@commonInterestScore,
+          F.gender AS personGender, F.@personCityName];
+}

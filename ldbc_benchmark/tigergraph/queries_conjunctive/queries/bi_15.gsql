@@ -1,0 +1,26 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_15(string cName) FOR GRAPH ldbc_snb SYNTAX V2 {
+  SumAccum<int> @friendCount;
+  AvgAccum @@socialNormal;
+
+  P =
+    SELECT p
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    WHERE c.name == cName;
+
+  ReducedP =
+    SELECT p
+    FROM P:p -(KNOWS)- P:f
+    ACCUM p.@friendCount += 1;
+
+  P =
+    SELECT p
+    FROM P:p
+    ACCUM @@socialNormal += p.@friendCount
+    HAVING p.@friendCount == floor(@@socialNormal)
+    ORDER BY p.id ASC
+    LIMIT 100;
+
+  PRINT P[P.id, P.@friendCount];
+}

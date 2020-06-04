@@ -1,0 +1,21 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb SYNTAX V2 {
+  SetAccum<vertex<Post>> @threadSet;
+  SetAccum<vertex> @messageSet;
+  SumAccum<int> @threadCount, @messageCount;
+
+  P =
+    SELECT p
+    FROM Person:p -(<HAS_CREATOR)- Post:t -(<REPLY_OF*)- :m
+    WHERE t.creationDate >= startDate AND t.creationDate <= endDate
+          AND m.creationDate >= startDate AND m.creationDate <= endDate
+    ACCUM p.@threadSet += t, p.@messageSet += m
+    POST-ACCUM
+      p.@threadCount = p.@threadSet.size(), p.@threadSet.clear(),
+      p.@messageCount = p.@messageSet.size(), p.@messageSet.clear()
+    ORDER BY p.@messageCount DESC, p.id ASC
+    LIMIT 100;
+
+  PRINT P[P.id, P.firstName, P.lastName, P.@threadCount, P.@messageCount];
+}

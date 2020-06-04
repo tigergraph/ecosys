@@ -1,0 +1,38 @@
+USE GRAPH ldbc_snb
+
+CREATE QUERY bi_19(datetime date, string name1, string name2) FOR GRAPH ldbc_snb SYNTAX _v2 {
+  SetAccum<vertex> @friendSet, @strangerSet;
+  SetAccum<vertex<Comment>> @commentSet;
+  SumAccum<int> @strangerCount, @interactionCount;
+
+  // all persons born after a certain date
+  PersonSet = SELECT p FROM Person:p WHERE p.birthday > date;
+  // find friends (including oneself) of each person in PersonSet
+  PersonWithFriends =
+    SELECT src
+    FROM PersonSet:src -(KNOWS)- Person:tgt
+    ACCUM src.@friendSet += tgt
+    POST-ACCUM src.@friendSet += src;
+
+  // all members of both class 1 and class 2 forums
+  MemberSet =
+    SELECT p
+    FROM Person:p -(<HAS_MEMBER.HAS_TAG>.HAS_TYPE>)- TagClass:tc1,
+         :p -(<HAS_MEMBER.HAS_TAG>.HAS_TYPE>)- TagClass:tc2
+    WHERE tc1.name == name1 AND tc2.name == name2;
+
+  PersonWithInteraction =
+    SELECT p
+    FROM PersonSet:p -(<HAS_CREATOR)- Comment:c -(REPLY_OF>*)- (Post|Comment):m -(HAS_CREATOR>)- MemberSet:au
+    WHERE au NOT IN p.@friendSet
+    ACCUM
+      p.@commentSet += c,
+      p.@strangerSet += au
+    POST-ACCUM
+      p.@friendSet.clear(),
+      p.@strangerCount = p.@strangerSet.size(), p.@strangerSet.clear(),
+      p.@interactionCount = p.@commentSet.size(), p.@commentSet.clear();
+
+  PersonSet = SELECT p FROM PersonSet:p ORDER BY p.@interactionCount DESC, p.id ASC LIMIT 100;
+  PRINT PersonSet[PersonSet.id, PersonSet.@strangerCount, PersonSet.@interactionCount];
+}
