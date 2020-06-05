@@ -35,6 +35,7 @@ public class GraphQuery
     /**
      * Specify SSL certificate
      */
+    /*
     properties.put("trustStore", "/tmp/trust.jks");
     properties.put("trustStorePassword", "password");
     properties.put("trustStoreType", "JKS");
@@ -42,6 +43,7 @@ public class GraphQuery
     properties.put("keyStore", "/tmp/identity.jks");
     properties.put("keyStorePassword", "password");
     properties.put("keyStoreType", "JKS");
+    */
 
     /**
      * Only accept 3 parameters: ip address, port and debug.
@@ -58,12 +60,12 @@ public class GraphQuery
      * Please use 'https' instead once ssl is enabled.
      */
     StringBuilder sb = new StringBuilder();
-    sb.append("jdbc:tg:https://").append(ipAddr).append(":").append(port);
+    sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
 
     try {
-      com.tigergraph.jdbc.Driver driver = new Driver();
+      Class.forName("com.tigergraph.jdbc.Driver");
 
-      try (Connection con = driver.connect(sb.toString(), properties)) {
+      try (Connection con = DriverManager.getConnection(sb.toString(), properties)) {
         /**
          * To get vertices of Page type whose 'account' is larger than 3.
          */
@@ -252,7 +254,7 @@ public class GraphQuery
       } catch (SQLException e) {
           System.out.println( "Failed to getConnection: " + e);
       }
-    } catch (SQLException e) {
+    } catch (java.lang.ClassNotFoundException e) {
         System.out.println( "Failed to init Driver: " + e);
     }
   }

@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class Driver extends BaseDriver {
+public class Driver extends BaseDriver implements java.sql.Driver {
 
   /**
    * Hash map of all available drivers.
@@ -17,6 +17,14 @@ public class Driver extends BaseDriver {
   private final Map<String, Class> DRIVERS = new HashMap<String, Class>() {{
     put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
   }};
+
+  static {
+    try {
+      java.sql.DriverManager.registerDriver(new Driver());
+    } catch (SQLException E) {
+      throw new RuntimeException("Can't register driver!");
+    }
+  }
 
   public Driver() throws SQLException {
     super(null);
@@ -63,4 +71,3 @@ public class Driver extends BaseDriver {
     return driver;
   }
 }
-
