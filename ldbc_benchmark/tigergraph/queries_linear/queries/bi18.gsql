@@ -1,0 +1,34 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 18 query description is on page 76 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi18
+
+CREATE QUERY bi18(datetime date, int lengthThreshold,
+    set<string> languages) FOR GRAPH ldbc_snb SYNTAX V2 {
+  typedef tuple<int messageCount, int personCount> ResTuple;
+  HeapAccum<ResTuple>(1, personCount DESC, messageCount ASC) @@result;
+  SumAccum<int> @messageCount;
+  MapAccum<int, SumAccum<int>> @@personCountMap;
+  SumAccum<int> @@pCount, @@personCount;
+  P =
+    SELECT c
+    FROM Post:p -(<REPLY_OF*)- :m -(HAS_CREATOR>)- Person:c 
+    WHERE p.lang IN languages AND m.content != "" 
+          AND m.length < lengthThreshold AND m.creationDate > date 
+    PER(m,c)
+    ACCUM c.@messageCount += 1
+    POST-ACCUM
+      @@personCountMap += (c.@messageCount -> 1),
+      @@pCount += 1;
+
+  P = SELECT p FROM Person:p ACCUM @@personCount+=1;
+  @@personCountMap += (0 -> @@personCount - @@pCount);
+
+  @@result.resize(@@personCountMap.size());
+  FOREACH (msgCount, personCount) IN @@personCountMap DO
+    @@result += ResTuple(msgCount, personCount);
+  END;
+
+  PRINT @@result;
+}

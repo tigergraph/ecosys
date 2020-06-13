@@ -1,0 +1,291 @@
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"vFriend": [
+    {
+      "v_id": "32985348909054",
+      "attributes": {
+        "firstName": "A.",
+        "lastName": "Singh",
+        "personId": 32985348909054,
+        "friendshipCreationDate": "2012-08-10 23:23:46"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "32985349168993",
+      "attributes": {
+        "firstName": "Antonio",
+        "lastName": "Cruz",
+        "personId": 32985349168993,
+        "friendshipCreationDate": "2012-08-06 10:04:11"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023497256",
+      "attributes": {
+        "firstName": "Đinh Diễm Liên",
+        "lastName": "Loan",
+        "personId": 2199023497256,
+        "friendshipCreationDate": "2012-06-19 13:42:04"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "6597070114340",
+      "attributes": {
+        "firstName": "Joe",
+        "lastName": "Smith",
+        "personId": 6597070114340,
+        "friendshipCreationDate": "2012-06-15 17:38:23"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "24189255913113",
+      "attributes": {
+        "firstName": "Esti Mamo",
+        "lastName": "Tessema",
+        "personId": 24189255913113,
+        "friendshipCreationDate": "2012-06-15 03:20:28"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023480625",
+      "attributes": {
+        "firstName": "Cesar",
+        "lastName": "Pham",
+        "personId": 2199023480625,
+        "friendshipCreationDate": "2012-06-14 22:31:01"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "8796093389378",
+      "attributes": {
+        "firstName": "Janet",
+        "lastName": "Ho",
+        "personId": 8796093389378,
+        "friendshipCreationDate": "2012-06-13 23:39:12"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "4398046551341",
+      "attributes": {
+        "firstName": "Cam",
+        "lastName": "Ha",
+        "personId": 4398046551341,
+        "friendshipCreationDate": "2012-06-13 22:53:51"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "6597069995606",
+      "attributes": {
+        "firstName": "Vassilis",
+        "lastName": "Angello",
+        "personId": 6597069995606,
+        "friendshipCreationDate": "2012-06-13 02:23:40"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "10995116417664",
+      "attributes": {
+        "firstName": "Meera",
+        "lastName": "Singh",
+        "personId": 10995116417664,
+        "friendshipCreationDate": "2012-06-11 01:19:15"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "13194139850260",
+      "attributes": {
+        "firstName": "Cam",
+        "lastName": "Nguyen",
+        "personId": 13194139850260,
+        "friendshipCreationDate": "2012-06-11 01:05:46"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "19791209714367",
+      "attributes": {
+        "firstName": "Emperor of Brazil",
+        "lastName": "Costa",
+        "personId": 19791209714367,
+        "friendshipCreationDate": "2012-06-10 20:54:59"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "309652",
+      "attributes": {
+        "firstName": "Chris",
+        "lastName": "Michie",
+        "personId": 309652,
+        "friendshipCreationDate": "2012-06-10 06:32:57"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "26388279072730",
+      "attributes": {
+        "firstName": "John",
+        "lastName": "Manalo",
+        "personId": 26388279072730,
+        "friendshipCreationDate": "2012-06-07 21:05:15"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "396240",
+      "attributes": {
+        "firstName": "Ahsan",
+        "lastName": "Khan",
+        "personId": 396240,
+        "friendshipCreationDate": "2012-06-07 16:10:27"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "10995116372767",
+      "attributes": {
+        "firstName": "Carlos",
+        "lastName": "Fernandez",
+        "personId": 10995116372767,
+        "friendshipCreationDate": "2012-06-05 07:20:49"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023422968",
+      "attributes": {
+        "firstName": "Atta",
+        "lastName": "Kim",
+        "personId": 2199023422968,
+        "friendshipCreationDate": "2012-06-04 05:39:34"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023286924",
+      "attributes": {
+        "firstName": "Jim",
+        "lastName": "Wilson",
+        "personId": 2199023286924,
+        "friendshipCreationDate": "2012-05-31 13:28:25"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023538263",
+      "attributes": {
+        "firstName": "Batong",
+        "lastName": "Nguyen",
+        "personId": 2199023538263,
+        "friendshipCreationDate": "2012-05-31 01:16:06"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "190447",
+      "attributes": {
+        "firstName": "Pisith",
+        "lastName": "Chau",
+        "personId": 190447,
+        "friendshipCreationDate": "2012-05-30 16:49:32"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "10995116457057",
+      "attributes": {
+        "firstName": "Djembo",
+        "lastName": "Kazadi",
+        "personId": 10995116457057,
+        "friendshipCreationDate": "2012-05-30 03:24:13"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "28587302621992",
+      "attributes": {
+        "firstName": "Hao",
+        "lastName": "Chen",
+        "personId": 28587302621992,
+        "friendshipCreationDate": "2012-05-28 13:39:13"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "10995116583956",
+      "attributes": {
+        "firstName": "Hồ Mạnh Dũng",
+        "lastName": "Thanh",
+        "personId": 10995116583956,
+        "friendshipCreationDate": "2012-05-28 06:51:57"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023262021",
+      "attributes": {
+        "firstName": "Huong",
+        "lastName": "Le",
+        "personId": 2199023262021,
+        "friendshipCreationDate": "2012-05-26 08:40:10"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "26388279310060",
+      "attributes": {
+        "firstName": "Juan",
+        "lastName": "Rodriguez",
+        "personId": 26388279310060,
+        "friendshipCreationDate": "2012-05-25 14:04:39"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "6597070172352",
+      "attributes": {
+        "firstName": "Albert Camille",
+        "lastName": "Simon",
+        "personId": 6597070172352,
+        "friendshipCreationDate": "2012-05-25 02:11:43"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "13194139596304",
+      "attributes": {
+        "firstName": "Bich Phuong",
+        "lastName": "Pham",
+        "personId": 13194139596304,
+        "friendshipCreationDate": "2012-05-24 10:21:11"
+      },
+      "v_type": "Person"
+    },
+    {
+      "v_id": "2199023377995",
+      "attributes": {
+        "firstName": "Batong",
+        "lastName": "Bach",
+        "personId": 2199023377995,
+        "friendshipCreationDate": "2012-05-23 12:09:22"
+      },
+      "v_type": "Person"
+    }
+  ]}]
+}

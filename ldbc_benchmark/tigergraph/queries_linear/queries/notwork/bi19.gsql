@@ -1,0 +1,46 @@
+  
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 19 query description is on page 77 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi19
+
+CREATE QUERY bi19(datetime date, string name1, string name2) FOR GRAPH ldbc_snb{
+  SetAccum<vertex> @friendSet, @strangerSet;
+  SetAccum<vertex<Comment>> @commentSet;
+  SumAccum<int> @strangerCount, @interactionCount;
+
+  // all members of both class 1 and class 2 forums
+  MemberSet =
+    SELECT p
+    FROM Person:p -(<HAS_MEMBER.HAS_TAG>.HAS_TYPE>)- TagClass:tc1,
+         :p -(<HAS_MEMBER.HAS_TAG>.HAS_TYPE>)- TagClass:tc2
+    WHERE tc1.name == name1 AND tc2.name == name2;
+  
+  // all persons born after a certain date
+  PersonSet = SELECT p FROM Person:p WHERE p.birthday > date ACCUM p.@friendSet += p;
+
+  // find friends (including oneself) of each person in PersonSet
+  PersonWithFriends =
+    SELECT src
+    FROM PersonSet:src -(KNOWS)- MemberSet:tgt
+    ACCUM src.@friendSet += tgt;
+
+  PersonWithInteraction =
+    SELECT p
+    FROM PersonSet:p -(<HAS_CREATOR)- Comment:c -(REPLY_OF>*)- (Post|Comment) -(HAS_CREATOR>)- MemberSet:au
+    WHERE au NOT IN p.@friendSet
+    PER(p,c,au)
+    ACCUM
+      p.@interactionCount += 1,
+      p.@strangerSet += au
+    POST-ACCUM
+      p.@friendSet.clear(),
+      p.@strangerCount = p.@strangerSet.size(), p.@strangerSet.clear();
+
+  PersonSet = SELECT p FROM PersonSet:p ORDER BY p.@interactionCount DESC, p.id ASC LIMIT 100;
+  PRINT PersonSet[
+    PersonSet.id AS personId, 
+    PersonSet.@strangerCount AS strangerCount, 
+    PersonSet.@interactionCount AS interactionCount];
+}

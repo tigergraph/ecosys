@@ -1,0 +1,37 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi5
+
+
+CREATE QUERY bi5(string countryName) for graph ldbc_snb {
+  SetAccum<vertex<Person>> @memberSet;
+  SumAccum<int> @memberCount, @postCount;
+
+  // find the top 100 most popular forums
+  ForumSet =
+    SELECT f
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f    
+    WHERE c.name == countryName
+    PER(f)
+    ACCUM f.@memberCount += 1
+    ORDER BY f.@memberCount DESC, f.id ASC
+    LIMIT 100;
+
+  // find members who created posts in these forums
+  P = 
+    SELECT p
+    FROM ForumSet:f -(HAS_MEMBER>)- Person:p -(<HAS_CREATOR)- Post:m -(<CONTAINER_OF)-  ForumSet:f
+    PER(p)
+    ACCUM p.@postCount += 1
+    ORDER BY p.@postCount DESC, p.id ASC
+    LIMIT 100;
+
+  PRINT P[
+      P.id AS id, 
+      P.firstName AS firstName, 
+      P.lastName AS lastName,
+      P.creationDate AS creationDate, 
+      P.@postCount AS postCount];
+}

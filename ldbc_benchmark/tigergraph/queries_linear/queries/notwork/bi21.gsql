@@ -1,0 +1,44 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 21 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi21
+
+CREATE QUERY bi21(string cName, datetime endDate) FOR GRAPH ldbc_snb {
+  int secondsInMonth;
+  SumAccum<int> @messageCount, @totalLikeCount, @zombieLikeCount;
+  SumAccum<float> @zombieScore;
+  SetAccum<INT> @@zombieSet;
+
+  P =
+    SELECT p
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- (Post|Comment):m
+    WHERE c.name == cName AND p.creationDate < endDate AND m.creationDate < endDate
+    PER(p,m)
+    ACCUM p.@messageCount += 1
+    HAVING p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1;
+
+  P = SELECT p FROM P:p ACCUM @@zombieSet+= p.id;
+  P =
+    SELECT z
+    FROM P:z -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p,
+    WHERE p.creationDate < endDate
+    PER(z,m,p)
+    ACCUM 
+      z.@totalLikeCount += 1, 
+      IF p.id in @@zombieSet THEN 
+        z.@zombieLikeCount += 1
+      END
+    POST-ACCUM
+      z.@zombieScore = 1.0 * z.@zombieLikeCount / z.@totalLikeCount
+    ORDER BY z.@zombieScore DESC, z.id ASC LIMIT 100;
+
+  PRINT P[
+    P.id AS zombieId, 
+    P.@zombieLikeCount AS zombieLikeCount, 
+    P.@totalLikeCount AS totalLikeCount,
+    P.@zombieScore AS zombieScore];
+}
+
+//INSTALL QUERY bi21
+//RUN QUERY bi21("Ethiopia","2013-01-01 00:00:00")

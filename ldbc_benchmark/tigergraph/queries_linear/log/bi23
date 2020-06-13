@@ -1,0 +1,511 @@
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"@@result": [
+    {
+      "messageCount": 248,
+      "month": 6,
+      "destinationName": "Pakistan"
+    },
+    {
+      "messageCount": 237,
+      "month": 6,
+      "destinationName": "France"
+    },
+    {
+      "messageCount": 225,
+      "month": 6,
+      "destinationName": "Mauritius"
+    },
+    {
+      "messageCount": 223,
+      "month": 6,
+      "destinationName": "Denmark"
+    },
+    {
+      "messageCount": 222,
+      "month": 6,
+      "destinationName": "Singapore"
+    },
+    {
+      "messageCount": 220,
+      "month": 6,
+      "destinationName": "Tunisia"
+    },
+    {
+      "messageCount": 218,
+      "month": 6,
+      "destinationName": "Malaysia"
+    },
+    {
+      "messageCount": 215,
+      "month": 6,
+      "destinationName": "South_Korea"
+    },
+    {
+      "messageCount": 214,
+      "month": 6,
+      "destinationName": "Latvia"
+    },
+    {
+      "messageCount": 211,
+      "month": 6,
+      "destinationName": "Laos"
+    },
+    {
+      "messageCount": 211,
+      "month": 6,
+      "destinationName": "Scotland"
+    },
+    {
+      "messageCount": 210,
+      "month": 6,
+      "destinationName": "Argentina"
+    },
+    {
+      "messageCount": 210,
+      "month": 6,
+      "destinationName": "Cambodia"
+    },
+    {
+      "messageCount": 210,
+      "month": 6,
+      "destinationName": "Republic_of_Macedonia"
+    },
+    {
+      "messageCount": 209,
+      "month": 6,
+      "destinationName": "Senegal"
+    },
+    {
+      "messageCount": 208,
+      "month": 6,
+      "destinationName": "Cameroon"
+    },
+    {
+      "messageCount": 207,
+      "month": 6,
+      "destinationName": "Uruguay"
+    },
+    {
+      "messageCount": 206,
+      "month": 6,
+      "destinationName": "Malta"
+    },
+    {
+      "messageCount": 206,
+      "month": 6,
+      "destinationName": "Zambia"
+    },
+    {
+      "messageCount": 205,
+      "month": 6,
+      "destinationName": "Australia"
+    },
+    {
+      "messageCount": 205,
+      "month": 6,
+      "destinationName": "Bolivia"
+    },
+    {
+      "messageCount": 205,
+      "month": 6,
+      "destinationName": "India"
+    },
+    {
+      "messageCount": 205,
+      "month": 6,
+      "destinationName": "Moldova"
+    },
+    {
+      "messageCount": 204,
+      "month": 6,
+      "destinationName": "Kazakhstan"
+    },
+    {
+      "messageCount": 204,
+      "month": 6,
+      "destinationName": "Romania"
+    },
+    {
+      "messageCount": 203,
+      "month": 6,
+      "destinationName": "Bulgaria"
+    },
+    {
+      "messageCount": 203,
+      "month": 6,
+      "destinationName": "Indonesia"
+    },
+    {
+      "messageCount": 203,
+      "month": 6,
+      "destinationName": "Japan"
+    },
+    {
+      "messageCount": 203,
+      "month": 6,
+      "destinationName": "Thailand"
+    },
+    {
+      "messageCount": 202,
+      "month": 6,
+      "destinationName": "Estonia"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Algeria"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Austria"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Egypt"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Libya"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Russia"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "South_Africa"
+    },
+    {
+      "messageCount": 201,
+      "month": 6,
+      "destinationName": "Tanzania"
+    },
+    {
+      "messageCount": 200,
+      "month": 6,
+      "destinationName": "Azerbaijan"
+    },
+    {
+      "messageCount": 200,
+      "month": 6,
+      "destinationName": "Greece"
+    },
+    {
+      "messageCount": 200,
+      "month": 6,
+      "destinationName": "Namibia"
+    },
+    {
+      "messageCount": 200,
+      "month": 6,
+      "destinationName": "Slovenia"
+    },
+    {
+      "messageCount": 199,
+      "month": 6,
+      "destinationName": "Belarus"
+    },
+    {
+      "messageCount": 199,
+      "month": 6,
+      "destinationName": "Puerto_Rico"
+    },
+    {
+      "messageCount": 199,
+      "month": 6,
+      "destinationName": "United_States"
+    },
+    {
+      "messageCount": 199,
+      "month": 6,
+      "destinationName": "Vietnam"
+    },
+    {
+      "messageCount": 198,
+      "month": 6,
+      "destinationName": "Democratic_Republic_of_the_Congo"
+    },
+    {
+      "messageCount": 198,
+      "month": 6,
+      "destinationName": "Kenya"
+    },
+    {
+      "messageCount": 198,
+      "month": 6,
+      "destinationName": "Mauritania"
+    },
+    {
+      "messageCount": 198,
+      "month": 6,
+      "destinationName": "New_Zealand"
+    },
+    {
+      "messageCount": 198,
+      "month": 6,
+      "destinationName": "Niger"
+    },
+    {
+      "messageCount": 197,
+      "month": 6,
+      "destinationName": "Chile"
+    },
+    {
+      "messageCount": 197,
+      "month": 6,
+      "destinationName": "Czech_Republic"
+    },
+    {
+      "messageCount": 197,
+      "month": 6,
+      "destinationName": "Nepal"
+    },
+    {
+      "messageCount": 197,
+      "month": 6,
+      "destinationName": "Norway"
+    },
+    {
+      "messageCount": 197,
+      "month": 6,
+      "destinationName": "Swaziland"
+    },
+    {
+      "messageCount": 196,
+      "month": 6,
+      "destinationName": "Colombia"
+    },
+    {
+      "messageCount": 196,
+      "month": 6,
+      "destinationName": "Portugal"
+    },
+    {
+      "messageCount": 196,
+      "month": 6,
+      "destinationName": "Spain"
+    },
+    {
+      "messageCount": 196,
+      "month": 6,
+      "destinationName": "United_Kingdom"
+    },
+    {
+      "messageCount": 196,
+      "month": 6,
+      "destinationName": "Venezuela"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Afghanistan"
+    },
+    {
+      "messageCount": 195,
+      "month": 5,
+      "destinationName": "Egypt"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Germany"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Mexico"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Northern_Ireland"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Slovakia"
+    },
+    {
+      "messageCount": 195,
+      "month": 6,
+      "destinationName": "Wales"
+    },
+    {
+      "messageCount": 194,
+      "month": 6,
+      "destinationName": "Chad"
+    },
+    {
+      "messageCount": 194,
+      "month": 6,
+      "destinationName": "Croatia"
+    },
+    {
+      "messageCount": 193,
+      "month": 6,
+      "destinationName": "Brazil"
+    },
+    {
+      "messageCount": 193,
+      "month": 6,
+      "destinationName": "Philippines"
+    },
+    {
+      "messageCount": 193,
+      "month": 6,
+      "destinationName": "Switzerland"
+    },
+    {
+      "messageCount": 193,
+      "month": 6,
+      "destinationName": "Tajikistan"
+    },
+    {
+      "messageCount": 192,
+      "month": 5,
+      "destinationName": "Burma"
+    },
+    {
+      "messageCount": 192,
+      "month": 6,
+      "destinationName": "Papua_New_Guinea"
+    },
+    {
+      "messageCount": 191,
+      "month": 6,
+      "destinationName": "Belgium"
+    },
+    {
+      "messageCount": 191,
+      "month": 6,
+      "destinationName": "El_Salvador"
+    },
+    {
+      "messageCount": 191,
+      "month": 6,
+      "destinationName": "Honduras"
+    },
+    {
+      "messageCount": 191,
+      "month": 6,
+      "destinationName": "Republic_of_Ireland"
+    },
+    {
+      "messageCount": 190,
+      "month": 6,
+      "destinationName": "Italy"
+    },
+    {
+      "messageCount": 190,
+      "month": 6,
+      "destinationName": "Madagascar"
+    },
+    {
+      "messageCount": 190,
+      "month": 6,
+      "destinationName": "Mongolia"
+    },
+    {
+      "messageCount": 190,
+      "month": 5,
+      "destinationName": "Morocco"
+    },
+    {
+      "messageCount": 190,
+      "month": 6,
+      "destinationName": "Oman"
+    },
+    {
+      "messageCount": 188,
+      "month": 6,
+      "destinationName": "Burma"
+    },
+    {
+      "messageCount": 188,
+      "month": 6,
+      "destinationName": "Iran"
+    },
+    {
+      "messageCount": 187,
+      "month": 5,
+      "destinationName": "Democratic_Republic_of_the_Congo"
+    },
+    {
+      "messageCount": 187,
+      "month": 5,
+      "destinationName": "Greece"
+    },
+    {
+      "messageCount": 187,
+      "month": 6,
+      "destinationName": "Sweden"
+    },
+    {
+      "messageCount": 187,
+      "month": 5,
+      "destinationName": "Tanzania"
+    },
+    {
+      "messageCount": 186,
+      "month": 6,
+      "destinationName": "Finland"
+    },
+    {
+      "messageCount": 184,
+      "month": 6,
+      "destinationName": "Angola"
+    },
+    {
+      "messageCount": 184,
+      "month": 6,
+      "destinationName": "England"
+    },
+    {
+      "messageCount": 184,
+      "month": 6,
+      "destinationName": "Israel"
+    },
+    {
+      "messageCount": 184,
+      "month": 5,
+      "destinationName": "Namibia"
+    },
+    {
+      "messageCount": 183,
+      "month": 6,
+      "destinationName": "Hong_Kong"
+    },
+    {
+      "messageCount": 183,
+      "month": 6,
+      "destinationName": "Liberia"
+    },
+    {
+      "messageCount": 182,
+      "month": 5,
+      "destinationName": "Hungary"
+    },
+    {
+      "messageCount": 181,
+      "month": 5,
+      "destinationName": "Chad"
+    },
+    {
+      "messageCount": 181,
+      "month": 6,
+      "destinationName": "Cuba"
+    }
+  ]}]
+}

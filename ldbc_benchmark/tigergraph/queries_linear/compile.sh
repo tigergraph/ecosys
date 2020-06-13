@@ -1,7 +1,8 @@
 #!/bin/bash
 query_list=""
+all=$(ls | sort --version-sort)
 cd queries
-for f in ic_[0-9].gsql ic_[0-9][0-9].gsql bi_[0-9].gsql bi_[0-9][0-9].gsql
+for f in $all
 do
   q=$(echo $f | cut -d. -f1)
   if [ -z "$query_list" ]
@@ -24,10 +25,21 @@ install(){
 }
 
 run(){
+mkdir log err
 for q in $(echo $query_list | tr ',' ' ')
 do
   command=$(grep $q seed.txt | awk -F"$q:" '{print $2}')  
   echo $command
-  #time -p (gsql -g ldbc_snb $command) >$q.out 2>$q.err
+  time -p (gsql -g ldbc_snb $command) > log/$q 2> err/$q
+  sleep 5
+  time -p (gsql -g ldbc_snb $command) > /dev/null 2>> err/$q
+  sleep 5
+  time -p (gsql -g ldbc_snb $command) > /dev/null 2>> err/$q
+  sleep 5
 done
 }
+
+install
+run
+#echo "run queries in background"
+#( trap "true" HUP ; run ) > nohup.out 2>/dev/null </dev/null & disown

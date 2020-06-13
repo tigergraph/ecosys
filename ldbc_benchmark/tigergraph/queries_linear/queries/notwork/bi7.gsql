@@ -1,0 +1,36 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 7 query description is on page 65 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi7
+
+CREATE QUERY bi7(string tagName) FOR GRAPH ldbc_snb {
+  SumAccum<int> @authorityScore;
+  SumAccum<int> @popularityScore;
+  M =
+    SELECT m
+    FROM Tag:t -(<HAS_TAG)- (Post|Comment):m 
+    WHERE t.name == tagName;
+  PRINT M;
+  P2 =
+    SELECT p2
+    FROM M:m -(<LIKES)- Person:p2 -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p
+    PER(p2,m,p)
+    ACCUM p2.@popularityScore += 1;
+  PRINT P2;
+  P =
+    SELECT p
+    FROM P2:p2 -(LIKES>)- M:m -(HAS_CREATOR>)- Person:p
+    PER(p2,p)
+    ACCUM p.@authorityScore += p2.@popularityScore
+    ORDER BY p.@authorityScore DESC, p.id ASC
+    LIMIT 100;
+
+
+  PRINT P[P.id AS personId, P.@authorityScore AS authorityScore];
+}
+
+//INSTALL QUERY bi_7
+//RUN QUERY bi_7("Arnold_Schwarzenegger")
+SET query_timeout = 600000
+INTERPRET QUERY bi7("Arnold_Schwarzenegger")

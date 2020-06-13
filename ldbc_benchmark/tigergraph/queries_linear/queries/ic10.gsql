@@ -1,0 +1,49 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 10 query description is on page 41 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic10
+
+CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
+  SumAccum<int> @common, @uncommon, @commonInterestScore;
+  SumAccum<string> @personCityName;
+  OrAccum @isFriend, @hasInterest;
+  int nextMonth;
+  nextMonth = 1 + month % 12;
+
+  S = { personId };
+  F = SELECT p FROM S:s -(KNOWS)- Person:p ACCUM p.@isFriend += true;
+  P = 
+    SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p 
+    PER(p)
+    ACCUM p.@hasInterest += true;
+  
+  F =
+    SELECT p
+    FROM F:f -(KNOWS)- Person:p -(IS_LOCATED_IN>)- City:c
+    WHERE p != personId AND p.@isFriend == false
+          AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
+               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
+    PER(p)
+    ACCUM p.@personCityName = c.name;
+
+  F =
+    SELECT f
+    FROM F:f -(<HAS_CREATOR)- Post:p
+    ACCUM
+      IF p.@hasInterest == true THEN
+        f.@common += 1
+      ELSE
+        f.@uncommon += 1
+      END
+    POST-ACCUM f.@commonInterestScore = f.@common - f.@uncommon
+    ORDER BY f.@commonInterestScore DESC, f.id ASC 
+    LIMIT 10;
+
+  PRINT F[F.id AS personId, 
+          F.firstName AS personFirstName,
+          F.lastName AS personLastName, 
+          F.@commonInterestScore AS commonInterestScore,
+          F.gender AS personGender, 
+          F.@personCityName AS personCityName];
+}

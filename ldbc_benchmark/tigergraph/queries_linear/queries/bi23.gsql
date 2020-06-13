@@ -1,0 +1,28 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 23 query description is on page 81 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi23
+CREATE QUERY bi23(string cName) FOR GRAPH ldbc_snb {
+  typedef tuple<int messageCount, string destinationName, int month> ResTuple;
+  HeapAccum<ResTuple>(100, messageCount DESC, destinationName ASC, month ASC) @@result;
+  GroupByAccum<string destinationName, int month, SumAccum<int> messageCount> @@group;
+  SumAccum<string> @destination;
+
+  M =
+    SELECT m
+    FROM Country:home -(<IS_PART_OF.<IS_LOCATED_IN.<HAS_CREATOR)- 
+          (Post|Comment):m -(IS_LOCATED_IN>)- Country:dest
+    WHERE home.name == cName AND dest.name != cName
+    PER(m, dest)
+    ACCUM @@group += (dest.name, month(m.creationDate) -> 1);
+
+  FOREACH (d,m,c) in @@group DO
+    @@result += ResTuple(c, d, m);
+  END;
+  @@group.clear();
+  PRINT @@result;
+}
+
+//INSTALL QUERY bi23
+//RUN QUERY bi23("Ethiopia")

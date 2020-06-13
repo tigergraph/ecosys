@@ -1,0 +1,66 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 11 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi11
+
+CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
+  TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
+
+  SetAccum<string> @@blacklistedPatterns;
+  AndAccum @isValid;
+  SumAccum<INT> @personId,@likeCount;
+  SetAccum<STRING> @tagNames;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
+  
+  FOREACH word IN blacklist DO
+    @@blacklistedPatterns += ("%" + word + "%");
+  END;
+
+  R =
+    SELECT r
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- Comment:r 
+    WHERE c.name == countryName
+    PER(p,r)
+    ACCUM 
+      r.@personId = p.id,
+      FOREACH wordPattern IN @@blacklistedPatterns DO
+        CASE WHEN r.content LIKE wordPattern THEN
+          r.@isValid += false,
+          BREAK
+        END
+      END;
+
+  R = 
+    SELECT r 
+    FROM R:r-(HAS_TAG>)-Tag:t
+    WHERE r.@isValid
+    ACCUM r.@tagNames += t.name;
+
+  R =
+    SELECT r
+    FROM R:r -(REPLY_OF>)- (Post|Comment):m -(HAS_TAG>)- Tag:t
+    WHERE r.@isValid
+    PER(r,t)
+    ACCUM r.@isValid += NOT (t.name IN r.@tagNames);
+
+  R =
+    SELECT r
+    FROM  R:r -(<LIKES)- Person:p
+    WHERE r.@isValid 
+    ACCUM r.@likeCount += 1
+    POST-ACCUM 
+      FOREACH tn IN r.@tagNames DO
+        @@replyGroup += (r.@personId, tn -> r.@likeCount, 1)
+      END;
+
+  FOREACH (p,t,l,r) IN @@replyGroup DO
+    @@replyTop += reply(p,t,l,r);
+  END;
+
+  PRINT @@replyTop;
+}
+
+//INSTALL QUERY bi11
+//RUN QUERY bi11("Germany", ["one","has","David"])

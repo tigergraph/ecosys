@@ -1,0 +1,22 @@
+//seed: personId=30786325583618
+
+[
+{
+'vPerson':[
+{
+'v_id':'30786325583618',
+'v_type':'Person',
+'attributes':{
+'firstName':'Cam',
+'lastName':'Loan',
+'birthday':'1982-10-21 00:00:00',
+'locationIP':'182.236.113.58',
+'browserUsed':'Firefox',
+'cityId':925,
+'gender':'female',
+'creationDate':'2012-05-21 07:30:42'
+}
+}
+]
+}
+]

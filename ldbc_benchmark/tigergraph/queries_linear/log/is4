@@ -1,0 +1,10 @@
+{
+  "error": false,
+  "message": "Runtime Warning: 1 ids are invalid Post vertex ids.",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"vPost": []}]
+}

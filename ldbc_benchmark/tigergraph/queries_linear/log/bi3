@@ -1,0 +1,611 @@
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"@@result": [
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "A._P._J._Abdul_Kalam"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Aaliyah"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Aamir_Khan"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Adolphe_Thiers"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Agnieszka_Radwańska"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Alan_Shearer"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Alessandro_Del_Piero"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Alex_Salmond"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Alexander_Borodin"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Alexander_Peya"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Alexandra_Fusai"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Alicia_Molik"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Allen_Iverson"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Ambrose"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Anders_Järryd"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Andrew_Lang"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "André_Masséna"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "André_the_Giant"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Andy_Murray"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Angela_Merkel"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Anselm_of_Canterbury"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Antoni_Gaudí"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Antonio_Gramsci"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Arsène_Wenger"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Ashok_Kumar"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Axl_Rose"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Beanie_Sigel"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Ben_Bernanke"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Benedict_of_Nursia"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bernard_Cornwell"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bernard_Montgomery,_1st_Viscount_Montgomery_of_Alamein"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bernard_of_Clairvaux"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bernardo_Bertolucci"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bert_Kaempfert"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Betty_Comden"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Billy_Idol"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Black_Francis"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Blake_Shelton"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bob_Hoskins"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bobby_Charlton"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bobby_Hull"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bobby_Robson"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bon_Scott"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Boris_Becker"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Brahmanandam"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bram_Stoker"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Brian_Blessed"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Brian_Michael_Bendis"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bruce_Campbell"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bruce_Cockburn"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Bruno_Walter"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Bryan_Robson"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Buddy_Guy"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Caravaggio"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Cardinal_Mazarin"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Carl_Edwards"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Carl_Philipp_Emanuel_Bach"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Carl_Sigman"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Carlo_Goldoni"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Carolyn_S._Shoemaker"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Carrie_Fisher"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Casimir_III_the_Great"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Cesar_Romero"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Charles_Cornwallis,_1st_Marquess_Cornwallis"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Charles_George_Gordon"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Charles_I_of_Hungary"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Charles_Tate_Regan"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Charles_VI_of_France"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Charles_Wesley"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Charlotte_Brontë"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Chester_W._Nimitz"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Chevy_Chase"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Chris_Claremont"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Chris_Cornell"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Christian_V_of_Denmark"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Chuck_Norris"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Clara_Schumann"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Claudia_Kohde-Kilsch"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Colette"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Conrad_II,_Holy_Roman_Emperor"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Constantine_I_of_Greece"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Cool_Vibes"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Coolio"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Corinne_Bailey_Rae"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Cynthia_McKinney"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Dalton_McGuinty"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Daniel_Dennett"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Danny_DeVito"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Dave_Chappelle"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "David_Coulthard"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "David_Crosby"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "David_Mamet"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "David_Niven"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Debbie_Reynolds"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Della_Reese"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Derek_Jacobi"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Dick_Wolf"
+    },
+    {
+      "countMonth2": 1,
+      "countMonth1": 0,
+      "diff": 1,
+      "tagName": "Dietrich_Bonhoeffer"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Dimebag_Darrell"
+    },
+    {
+      "countMonth2": 0,
+      "countMonth1": 1,
+      "diff": 1,
+      "tagName": "Dimitri_Tiomkin"
+    }
+  ]}]
+}

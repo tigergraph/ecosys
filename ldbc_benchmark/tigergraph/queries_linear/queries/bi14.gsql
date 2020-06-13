@@ -1,0 +1,26 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 14 query description is on page 72 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi14
+
+CREATE QUERY bi14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
+  SumAccum<INT> @messageCount;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
+
+  vPost =
+    SELECT p
+    FROM Post:p -(<REPLY_OF*)- :m
+    WHERE p.creationDate >= startDate AND p.creationDate <= endDate
+          AND m.creationDate >= startDate AND m.creationDate <= endDate
+    PER(p,m)
+    ACCUM p.@messageCount += 1;
+
+  P =
+    SELECT p
+    FROM  vPost:t -(HAS_CREATOR>)- Person:p 
+    ACCUM @@initiatorTop += initiator(p.id, p.firstName, p.lastName, 1, t.@messageCount);
+
+  PRINT @@initiatorTop;
+}

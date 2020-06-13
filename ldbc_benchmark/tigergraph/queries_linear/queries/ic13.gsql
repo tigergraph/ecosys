@@ -1,0 +1,56 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 13 query description is on page 44 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic13
+
+CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  SumAccum<INT> @@next;
+  OrAccum @@found = False;
+  MinAccum<INT> @@dist12=-1;
+
+  IF person1Id != person2Id THEN
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM S1:s ACCUM s.@dist1 = 0;
+    S2 = SELECT s FROM S2:s ACCUM s.@dist2 = 0;
+      
+    WHILE NOT @@found DO
+      @@next = 0;
+      S1 = 
+        SELECT t
+        FROM S1:s-(KNOWS)-Person:t
+        WHERE t.@dist1 < 0
+        ACCUM CASE WHEN t.@dist2 > -1 THEN
+          @@found += True,
+          @@dist12 += s.@dist1 + t.@dist2 + 1
+        ELSE
+            @@next += 1,
+            t.@dist1 = s.@dist1 + 1
+        END;
+
+      IF @@found OR @@next == 0 THEN
+        BREAK;
+      END;
+
+      S2 = 
+        SELECT t
+        FROM S2:s-(KNOWS)-Person:t
+        WHERE t.@dist2 < 0
+        ACCUM CASE WHEN t.@dist1 > -1 THEN
+            @@found += True,
+            @@dist12 += s.@dist1 + t.@dist2 + 1
+        ELSE
+            @@next += 1,
+            t.@dist2 = s.@dist2 + 1
+        END;
+    END;
+
+  ELSE //IF person1Id != person2Id THEN
+    @@dist12 += 0;
+  END;
+
+  PRINT @@dist12 AS shortestPathLength;
+}

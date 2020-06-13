@@ -1,0 +1,37 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 9 query description is on page 67 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi9
+
+
+CREATE QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb {
+  SumAccum<int> @count1, @count2, @memberCount, @countDiff;
+  F =
+    SELECT f
+    FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f 
+    WHERE tc.name == tagClass1Name 
+    PER(p,f)
+    ACCUM f.@count1 += 1;
+
+  F =
+    SELECT f
+    FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f 
+    WHERE tc.name == tagClass2Name AND f.@count1 > 0
+    PER(p,f)
+    ACCUM f.@count2 += 1;  
+
+  F =
+    SELECT f
+    FROM F:f -(HAS_MEMBER>)- Person:p
+    ACCUM f.@memberCount += 1
+    POST-ACCUM f.@countDiff = abs(f.@count1 - f.@count2)
+    HAVING f.@memberCount > threshold
+    ORDER BY f.@countDiff DESC, f.id ASC
+    LIMIT 100;
+
+  PRINT F[F.id AS forumId, F.@count1 AS count1, F.@count2 AS count2];
+}
+
+//INSTALL QUERY bi9
+//RUN QUERY bi9("BaseballPlayer", "ChristianBishop", 200)
