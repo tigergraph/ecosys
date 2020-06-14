@@ -21,11 +21,9 @@ Steps to get TigerGraph Developer + notebook
 
    `/home/tigergraph/anaconda3/bin/jupyter notebook`
    
-6. At this point the Jupyter notebook will give you a link of the form:
+6. At this point the Jupyter notebook will give you a link like the one below. Copy-paste that link into your browser window:
 
-   `http://127.0.0.1:8888/?token=e0bea4e3210e728c8c0f824309feeab8d0eff97f35dc1fad`
-   
-Copy paste that link into your browser window
+   `http://127.0.0.1:8888/?token=...`
 
 7. Then open a new notebook and test it by pasting the follwing into a cell and running it:
 
