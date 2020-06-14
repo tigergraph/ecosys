@@ -1,4 +1,4 @@
-Steps to get TigerGraph Developer + notebook 
+Steps to get TigerGraph Developer + Jupyter notebook 
 =================
 
 1. To build the container, download this folder and in it run (assuming you already installed Docker):
