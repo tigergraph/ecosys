@@ -1,0 +1,15 @@
+USE GRAPH ldbc_snb
+#pattern match syntax version is v2
+SET syntax_version="v2"
+
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+   SumAccum<int> @@cnt = 0;
+   Seed = {Person.*};
+
+   friends = SELECT t
+             FROM Seed:s-((<Comment_HAS_CREATOR_Person|<Post_HAS_CREATOR_Person):e1)-(Comment|Post):t
+             WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+             ACCUM  @@cnt += 1 ;
+
+  PRINT @@cnt;
+}

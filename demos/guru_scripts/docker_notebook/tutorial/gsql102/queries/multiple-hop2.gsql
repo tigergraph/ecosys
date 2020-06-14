@@ -1,0 +1,19 @@
+USE GRAPH ldbc_snb
+SET syntax_version="v2"
+
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+
+  SumAccum<String> @continentName;
+
+  msg = {Comment.*, Post.*};
+
+  accMsgContinent =
+    SELECT s
+    FROM msg:s-((Post_IS_LOCATED_IN_Country>|Comment_IS_LOCATED_IN_Country>).Country_IS_PART_OF_Continent>)-Continent:t
+    WHERE  year(s.creationDate) == 2011 AND month(s.creationDate) == 1
+    ACCUM s.@continentName = t.name
+    ORDER BY s.creationDate DESC
+    LIMIT 3;
+
+  PRINT  accMsgContinent;
+}

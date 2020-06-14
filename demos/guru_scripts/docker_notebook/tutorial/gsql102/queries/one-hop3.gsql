@@ -1,0 +1,24 @@
+USE GRAPH ldbc_snb
+SET syntax_version="v2"
+
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+   SumAccum<int> @commentCnt= 0;
+   SumAccum<int> @postCnt= 0;
+   SumAccum<int> @personCnt= 0;
+
+   #start with all persons.
+   Seed = {Person.*};
+   #1-hop pattern.
+   Result = SELECT s
+            FROM Seed:s - (_>:e) - :tgt
+            WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+            ACCUM CASE WHEN tgt.type == "Comment" THEN
+                           s.@commentCnt += 1
+                       WHEN tgt.type == "Post" THEN
+                           s.@postCnt += 1
+                       WHEN tgt.type == "Person" THEN
+                           s.@personCnt += 1
+                   END;
+
+    PRINT  Result[Result.@commentCnt, Result.@postCnt, Result.@personCnt];
+}
