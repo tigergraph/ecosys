@@ -1,7 +1,7 @@
 Steps to get TigerGraph Developer + notebook 
 =================
 
-1. To build the docker:
+1. To build the docker download this folder and in it run:
 
    `docker build --tag tigergraph-notebook:0.1 .`
    
