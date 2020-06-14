@@ -25,7 +25,7 @@ Steps to get TigerGraph Developer + notebook
 
    `http://127.0.0.1:8888/?token=...`
 
-7. Then open a new notebook and test it by pasting the follwing into a cell and running it:
+7. Then open a new notebook and test gsql by pasting the follwing into a cell and running the cell (shift-enter):
 
    `!gsql tutorial/gsql101/gsql101.gsql`
    
