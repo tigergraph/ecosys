@@ -13,7 +13,7 @@ Steps to get TigerGraph Developer + notebook
 
    `ssh -p 10000  -L 8888:localhost:8888 tigergraph@localhost`
    
-4. To run the gsql server (inside the docker):
+4. To run the gsql server (inside the container):
 
    `gadmin start`
    
