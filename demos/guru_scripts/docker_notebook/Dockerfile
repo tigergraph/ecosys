@@ -32,8 +32,6 @@ RUN echo "export VISIBLE=now" >> /etc/profile && \
 USER tigergraph
 WORKDIR /home/tigergraph
 
-COPY tutorial tutorial
-
 RUN wget --quiet --no-check-certificate https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
 RUN /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -f -b -p 
 RUN rm Anaconda3-2020.02-Linux-x86_64.sh

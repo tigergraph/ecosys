@@ -25,7 +25,5 @@ Steps to get TigerGraph Developer + Jupyter notebook
 
    `http://127.0.0.1:8888/?token=...`
 
-7. Then open a new notebook and test gsql by pasting the follwing into a cell and running the cell (shift-enter):
-
-   `!gsql tutorial/gsql101/gsql101.gsql`
+7. To test that everything works you can upload `gsql101.ipynb` from this folder and click Cell -> Run All from the menu (or shift-enter to run one cell at a time).  
    
