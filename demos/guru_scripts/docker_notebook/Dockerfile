@@ -36,8 +36,7 @@ RUN wget --quiet --no-check-certificate https://repo.anaconda.com/archive/Anacon
 RUN /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -f -b -p 
 RUN rm Anaconda3-2020.02-Linux-x86_64.sh
 
-# Copy local files as late as possible to avoid cache busting
-COPY jupyter_notebook_config.py /home/tigergraph
+COPY --chown=tigergraph gsql101.ipynb gsql102.ipynb jupyter_notebook_config.py /home/tigergraph/
 
 USER root
 
