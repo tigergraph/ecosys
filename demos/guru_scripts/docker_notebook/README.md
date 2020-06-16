@@ -25,5 +25,5 @@ Steps to get TigerGraph Developer + Jupyter notebook
 
    `http://127.0.0.1:8888/?token=...`
 
-7. To test that everything works you can upload `gsql101.ipynb` from this folder and click Cell -> Run All from the menu (or shift-enter to run one cell at a time).  
+7. To test that everything works open `gsql101.ipynb` and click Cell -> Run All from the menu (or shift-enter to run one cell at a time).  
    
