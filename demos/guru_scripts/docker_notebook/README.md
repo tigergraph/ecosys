@@ -7,7 +7,7 @@ Steps to get TigerGraph Developer + Jupyter notebook
    
 2. To run it:
 
-   `docker run -dp --ulimit nofile=1000000:1000000 tigergraph-notebook:0.1docker run -d -p 9000:9000 -p 14240:14240 -p 8888:8888 --ulimit nofile=1000000:1000000 --name tigergraph-notebook tigergraph-notebook:0.1`
+   `docker run -d -p 9000:9000 -p 14240:14240 -p 8888:8888 --ulimit nofile=1000000:1000000 --name tigergraph-notebook tigergraph-notebook:0.1`
    
 3. To log in:
 
