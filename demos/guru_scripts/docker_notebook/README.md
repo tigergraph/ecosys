@@ -7,11 +7,11 @@ Steps to get TigerGraph Developer + Jupyter notebook
    
 2. To run it:
 
-   `docker run -dp 10000:22 --ulimit nofile=1000000:1000000 tigergraph-notebook:0.1`
+   `docker run -dp --ulimit nofile=1000000:1000000 tigergraph-notebook:0.1docker run -d -p 9000:9000 -p 14240:14240 -p 8888:8888 --ulimit nofile=1000000:1000000 --name tigergraph-notebook tigergraph-notebook:0.1`
    
-3. To log in (with password tigergraph):
+3. To log in:
 
-   `ssh -p 10000  -L 8888:localhost:8888 tigergraph@localhost`
+   `docker exec -it --user tigergraph tigergraph-notebook /bin/bash`
    
 4. To run the gsql server (inside the container):
 
