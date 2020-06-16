@@ -1,0 +1,1174 @@
+{
+	"info": {
+		"_postman_id": "2fd1fc8d-3b40-4157-949d-0d64f69e8e08",
+		"name": "TigerGraph REST API ++",
+		"description": "A collection of TigerGraph REST API calls that you can start using in Postman:\n\nIn order to use the collection, you will need to create your own environment (or get the shared one) with following variables:\n- protocol -> http OR https\n- url -> yourdomain_or_ip_address\n- port -> 9000\n- token_secret -> [howto get secret](https://docs.tigergraph.com/admin/admin-guide/user-access-management/user-privileges-and-authentication#rest-authentication) \n- token -> paste here the value that you get when running GET_reqesttoken method\n- port_gui -> 14240\n\nDefault protocol is https and port 9000.\n\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET_requesttoken",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/requesttoken?secret={{token_secret}}",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"requesttoken"
+					],
+					"query": [
+						{
+							"key": "secret",
+							"value": "{{token_secret}}"
+						},
+						{
+							"key": "lifetime",
+							"value": "26000000",
+							"description": "Optional: if not used token is valid for aprox. a month",
+							"disabled": true
+						}
+					]
+				},
+				"description": "A simple diagnostic utility"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_echo",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/echo",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"echo"
+					]
+				},
+				"description": "A simple diagnostic utility"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_endpoints",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/endpoints?builtin=true&dynamic=true&static=true",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"endpoints"
+					],
+					"query": [
+						{
+							"key": "builtin",
+							"value": "true"
+						},
+						{
+							"key": "dynamic",
+							"value": "true"
+						},
+						{
+							"key": "static",
+							"value": "true"
+						}
+					]
+				},
+				"description": "This endpoint returns a list of the installed endpoints and their parameters. There are three types of endpoints, described in the table below.\n* builtin - preinstalled in the TigerGraph system\n* dynamic - generated when compiling GSQL queries\n* static - user-installed endpoints"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_endpoints Copy",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/endpoints?builtin=true&dynamic=true&static=true",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"endpoints"
+					],
+					"query": [
+						{
+							"key": "builtin",
+							"value": "true"
+						},
+						{
+							"key": "dynamic",
+							"value": "true"
+						},
+						{
+							"key": "static",
+							"value": "true"
+						}
+					]
+				},
+				"description": "This endpoint returns a list of the installed endpoints and their parameters. There are three types of endpoints, described in the table below.\n* builtin - preinstalled in the TigerGraph system\n* dynamic - generated when compiling GSQL queries\n* static - user-installed endpoints"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_statistics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/statistics?seconds=60",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"statistics"
+					],
+					"query": [
+						{
+							"key": "seconds",
+							"value": "60"
+						}
+					]
+				},
+				"description": "This endpoint returns real-time query performance statistics over the given time period, as specified by the seconds parameter. The seconds parameter must be a positive integer less than or equal to 60. The REST++ server maintains a truncated log of requests from the current time and backward for a system-configured log_interval . Only those endpoints which have completed or timed out during the requested number of seconds and are within the log_interval will be included in the statistics report."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_version",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/version",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"version"
+					]
+				},
+				"description": "This endpoint returns the git versions of all components of the system."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_schema",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"followOriginalHttpMethod": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "tigergraph",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "string"
+						},
+						{
+							"key": "showPassword",
+							"value": false,
+							"type": "boolean"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "file",
+					"file": {}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port_gui}}/gsqlserver/gsql/schema?graph=MyGraph",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port_gui}}",
+					"path": [
+						"gsqlserver",
+						"gsql",
+						"schema"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "VERTEX_or_EDGE_NAME_GOES_HERE",
+							"disabled": true
+						},
+						{
+							"key": "graph",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "In addition, there are required and optional parameters:\n* graph: (REQUIRED) the name of the graph\n* type: (OPTIONAL) the name of either a vertex type or an edge type"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_vertices",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graph/vertices/:vertex/:id",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graph",
+						"vertices",
+						":vertex",
+						":id"
+					],
+					"query": [
+						{
+							"key": "select=",
+							"value": "attr1,attr2 | -attr1,-attr2 | -_",
+							"description": "select=attr1,attr2 returns only attributes attr1 and attr2\nselect=-attr1,-attr2 returns all attributes except attributes attr1 andattr2\nselect=-_ returns no attribute at all",
+							"disabled": true
+						},
+						{
+							"key": "filter=",
+							"value": "attr=x | attr!=x | attr>x | attr>= x | attr<x | attr>=x ",
+							"disabled": true
+						},
+						{
+							"key": "limit=",
+							"value": "x",
+							"disabled": true
+						},
+						{
+							"key": "sort=",
+							"value": "attr1 | -attr1 | attr1, -attr2",
+							"disabled": true
+						}
+					],
+					"variable": [
+						{
+							"key": "graph",
+							"value": "MyGraph"
+						},
+						{
+							"key": "vertex",
+							"value": "Device"
+						},
+						{
+							"key": "id",
+							"value": "564"
+						}
+					]
+				},
+				"description": "This endpoint returns all vertices having the type vertex_type in the graph called graph_name . graph_name is optional if the database has only one graph but required for a database with multiple graphs. Optionally, the user can instead chose a particular vertex by including its primary_id at the vertex_id field ."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_running_queries",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/showprocesslist",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"showprocesslist"
+					]
+				},
+				"description": "This endpoint reports statistics of running queries: the query's request ID, start time, expiration time, and the REST endpoint's url."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_abort_query",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/abortquery/:graph?requestid=xxx&url=xxx",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"abortquery",
+						":graph"
+					],
+					"query": [
+						{
+							"key": "requestid",
+							"value": "xxx"
+						},
+						{
+							"key": "url",
+							"value": "xxx"
+						}
+					],
+					"variable": [
+						{
+							"key": "graph",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "The /abortquery endpoint safely aborts the selected query or queries. Either the GET or POST method may be used.\n\n**Abort Query with Given RequestID**\nTo abort one query request, use the requestid parameter to specify its request (obtained from /showprocesslist), e.g., ?requestid=16842763.RESTPP_1_1.1561401340785.N\n\n**Abort All Queries**\nTo abort all queries, instead of using specific requestids, use requestid=all.\n\n**Abort Queries by Endpoint**\nTo abort all queries of a given endpoint or endpoints, there is an option to input a string for the query's REST endpoint url. You must specify the base of the endpoint's url, but then use a wildcard to allow for different parameters. For example, to abort all running queries for the endpoint /sleepgpe, use url=/sleepgpe.*"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_edges",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graph/edges/:source_vertex_type/:source_vertex_id/:edge_type/:target_vertext_type/:target_vertex_id",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graph",
+						"edges",
+						":source_vertex_type",
+						":source_vertex_id",
+						":edge_type",
+						":target_vertext_type",
+						":target_vertex_id"
+					],
+					"query": [
+						{
+							"key": "select=",
+							"value": "attr1,attr2 | -attr1,-attr2 | -_",
+							"disabled": true
+						},
+						{
+							"key": "filter=",
+							"value": "attr=x | attr!=x | attr>x | attr>= x | attr<x | attr>=x ",
+							"disabled": true
+						},
+						{
+							"key": "limit=",
+							"value": "x",
+							"disabled": true
+						},
+						{
+							"key": "sort=",
+							"value": "attr1 | -attr1 | attr1, -attr2",
+							"disabled": true
+						}
+					],
+					"variable": [
+						{
+							"key": "graph",
+							"value": "MyGraph"
+						},
+						{
+							"key": "source_vertex_type",
+							"value": "User"
+						},
+						{
+							"key": "source_vertex_id",
+							"value": "41"
+						},
+						{
+							"key": "edge_type",
+							"value": "INFECTED_BY"
+						},
+						{
+							"key": "target_vertext_type",
+							"value": "Patient"
+						},
+						{
+							"key": "target_vertex_id",
+							"value": ""
+						}
+					]
+				},
+				"description": "This endpoint returns all edges which connect to a given vertex ID in the graph called graph_name . graph_name is optional if the database has only one graph but required for a database with multiple graphs.A source vertex ID must be given. The user may optionally specify the edge type, the target vertex type, and the target vertex ID. The URL format is as follows:\n\n* edge_type - type name of the edges. Use \"_\" to permit any edge type. Omitting the edge_type field from the URL also permits any edge type. However, skipping edge_type also means that target_vertex_type and target_vertex_id must be skipped.\n* target_vertex_type - type name of the target vertices.\n* target_vertex_id - ID of the target vertex."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_GSQL_query",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/query/:graph/:query_name?userid=0",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"query",
+						":graph",
+						":query_name"
+					],
+					"query": [
+						{
+							"key": "userid",
+							"value": "0"
+						},
+						{
+							"key": "dateTo",
+							"value": "20200401",
+							"disabled": true
+						},
+						{
+							"key": "k",
+							"value": "2",
+							"disabled": true
+						}
+					],
+					"variable": [
+						{
+							"key": "graph",
+							"value": "MyGraph"
+						},
+						{
+							"key": "query_name",
+							"value": "C_User_All_Transactions"
+						}
+					]
+				},
+				"description": "Use REST to get query result"
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_vertices",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graphName/vertices/:vertex_type/:vertex_id",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graphName",
+						"vertices",
+						":vertex_type",
+						":vertex_id"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						},
+						{
+							"key": "vertex_type",
+							"value": "Patient"
+						},
+						{
+							"key": "vertex_id",
+							"value": "008"
+						}
+					]
+				},
+				"description": "This endpoint returns all edges which connect to a given vertex ID in the graph called graph_name . graph_name is optional if the database has only one graph but required for a database with multiple graphs.A source vertex ID must be given. The user may optionally specify the edge type, the target vertex type, and the target vertex ID. The URL format is as follows:\n\n* edge_type - type name of the edges. Use \"_\" to permit any edge type. Omitting the edge_type field from the URL also permits any edge type. However, skipping edge_type also means that target_vertex_type and target_vertex_id must be skipped.\n* target_vertex_type - type name of the target vertices.\n* target_vertex_id - ID of the target vertex."
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_edges",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graphName/edges/:source_vertex_type/:source_vertex_id/:edge_type/:target_vertex_type/:target_vertex_id",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graphName",
+						"edges",
+						":source_vertex_type",
+						":source_vertex_id",
+						":edge_type",
+						":target_vertex_type",
+						":target_vertex_id"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": ""
+						},
+						{
+							"key": "source_vertex_type",
+							"value": "Patient"
+						},
+						{
+							"key": "source_vertex_id",
+							"value": "008"
+						},
+						{
+							"key": "edge_type",
+							"value": "INFECTED_BY"
+						},
+						{
+							"key": "target_vertex_type",
+							"value": "Patient"
+						},
+						{
+							"key": "target_vertex_id",
+							"value": ""
+						}
+					]
+				},
+				"description": "This endpoint deletes the given edge(s). graph_name is optional if the database has only one graph but required for a database with multiple graphs. The URL structure and semantics are analogous to thos in GET /graph/{graph_name}/edges."
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_vertices",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graphName/delete_by_type/vertices/:vertex_type",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graphName",
+						"delete_by_type",
+						"vertices",
+						":vertex_type"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": ""
+						},
+						{
+							"key": "vertex_type",
+							"value": ""
+						}
+					]
+				},
+				"description": "This endpoint deletes all vertices of the given vertex type in the graph called graph_name . graph_name is optional if the database has only one graph but required for a database with multiple graphs. This endpoint has two additional parameters \"permanent\" and \"ack\". The \"permanent\" parameter is the same as the \"permanent\" parameter for endpoint DELETE /graph/{graph_name}/vertices. \"ack\" specifies whether RESTPP needs to get acknowledgement from GPEs. If \"ack\" is set to \"none\", it doesn't need to get acknowledgement from any GPE. If \"ack\" is set to \"all\" (default), it needs to get acknowledgement from all GPEs."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_echo",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/echo",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"echo"
+					]
+				},
+				"description": "A simple diagnostic utility"
+			},
+			"response": []
+		},
+		{
+			"name": "POST_builtins_stat_vertex_attr",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"function\":\"stat_vertex_attr\",\n\t\"type\":\"Travel_Event\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/builtins/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"builtins",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": ""
+						}
+					]
+				},
+				"description": "This function returns the minimum, maximum, and average values of the given edge type's int, uint, float and double attributes, and the count of true and false of a bool attribute. There is one parameter:\n* type: The vertex type name, or \"*\", which indicates all vertex types."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_builtins_stat_edge_attr",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"function\":\"stat_edge_attr\",\n\t\"type\":\"Refer\", \n\t\"from_type\":\"*\", \n\t\"to_type\":\"*\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/builtins/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"builtins",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "Similar to stat_vertex_attr, this function returns the statistics of the minimum, maximum, and average of the given edge type's int, uint, float and double attributes, and the count of true and false of a bool attribute. Note each undirected edge is counted twice. \n\nThere are three parameters:\n* type: The edge type name, or \"*\", which indicates all edge types.\n* from_type: Given a vertex type, the function only includes edges whose source vertex type is the given type. \"*\" indicates all types. Default is all types. If a specific edge type is given, giving a correct from_type can speed up the process.\n* to_type: Given a vertex type, the function only includes edges whose destination vertex type is the given type. \"*\" indicates all types. Default is all types."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_builtins_stat_edge_number",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"function\":\"stat_edge_number\",\n\t\"type\":\"*\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/builtins/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"builtins",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": ""
+						}
+					]
+				},
+				"description": "This function returns the number of edges of the given type. There are three parameters.\n* type: The edge type name, or \"*\", which indicates all edge types.\n* from_type: Given a vertex type, the function only those edges whose source vertex type is the given type. \"*\" indicates all types. Default is all types. If a specific edge type is given, giving a correct from_type can speed up the process.\n* to_type: Given a vertex type, the function counts only those edges whose destination vertex type is the given type. \"*\" indicates all types. Default is all types. "
+			},
+			"response": []
+		},
+		{
+			"name": "POST_builtins_stat_vertex_number",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"function\":\"stat_vertex_number\",\n\t\"type\":\"*\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/builtins/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"builtins",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "This function returns the number of vertices of the given vertex type. There is one parameter."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_shortestpath_maxlength",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"sources\":[{\"type\":\"Patient\",\"id\":\"1000000013\"}],\n  \"targets\":[{\"type\":\"Patient\",\"id\":\"4100000005\"}], //{\"type\":\"InfectionCase\",\"id\":\"gym facility in Cheonan\"}],\n//  \"edgeFilters\":[{\"type\":\"\",\"condition\":\"rating > 5 and date_time > 1000}],\n  \"maxLength\":8\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/shortestpath/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shortestpath",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "The /shortestpath endpoint has the following additional parameters.\n\n**maxLength** \nType: integer\nDesciption: (OPTIONAL) Maximum length of a shortest path. Default is 6."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_shortestpath_all",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"sources\":[{\"type\":\"User\",\"id\":\"41\"}],\n  \"targets\":[{\"type\":\"User\",\"id\":\"876\"}\n  //, {\"type\":\"User\",\"id\":\"891\"}\n  ], \n  //  \"edgeFilters\":[{\"type\":\"Payment\",\"condition\": \"rating > 5 and date_time > 1000\"}],\n  \"maxLength\":8,\n  \"allShortestPaths\": true\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/shortestpath/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shortestpath",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "The /shortestpath endpoint has the following additional parameters.\n\n**allShortestPaths**\nType: boolean\nDescription: (OPTIONAL) If true, the endpoint will return all shortest paths between the source and target. Default is false, meaning that the endpoint will return only one path."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_allpaths",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"sources\":[{\"type\":\"User\",\"id\":\"41\"}],\n  \"targets\":[{\"type\":\"User\",\"id\":\"871\"}], \n  //\"vertexFilters\":[{\"type\":\"Patient\", \"condition\":\"xxx > xxx\"}],\n  \"maxLength\":8\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/allpaths/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"allpaths",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": "MyGraph"
+						}
+					]
+				},
+				"description": "The /allpaths endpoint has the following additional required parameter.\n\n**maxLength**\nType: integer\nDescription: (REQUIRED) Maximum path length.\n\n"
+			},
+			"response": []
+		},
+		{
+			"name": "POST_json_upsert",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"vertices\": {\n    \"Patient\": {\n      \"007\": {\n      }\n    }\n  },\n  \"edges\": {\n    \"Patient\":{\n      \"007\": {\n        \"INFECTED_BY\": {\n          \"Patient\": {\n            \"008\" : {\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{protocol}}://{{url}}:{{port}}/graph/:graphName",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"graph",
+						":graphName"
+					],
+					"variable": [
+						{
+							"key": "graphName",
+							"value": ""
+						}
+					]
+				},
+				"description": "This endpoint can upsert vertices and/or edges into the graph called graph_name . graph_name is optional if the database has only one graph but required for a database with multiple graphs. Due to the cost of checking for the existence of an edge or a vertex, the standard API does not support separate update and create (insert) operations. Instead, an upsert operation, a combination of update and insert, is provided. If the target vertex or edge already exists, it is updated with the values specified in the request. If the vertex or edge does not yet exist, the action depends on the operator chosen by the user. Some operators will direct the endpoint to create a new vertex or edge using the attribute values in the request.\nThe response is the number of vertices and edges that were accepted. The API uses JSON format to describe the vertices and edges to be upserted. The JSON code can be stored in a text file or specified directly in a command line. There is a maximum size for a POST data payload (see the Size Limits section).\n\n[POST /graph/{graph_name} - Upsert the given data](https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints#post-graph-graph_name-upsert-the-given-data)"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "o4ib762mnvh26ih9ua2lb23ojvsb7toi",
+				"type": "string"
+			}
+		]
+	},
+	"protocolProfileBehavior": {}
+}
