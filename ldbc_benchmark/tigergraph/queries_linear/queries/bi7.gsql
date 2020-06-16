@@ -11,16 +11,28 @@ CREATE QUERY bi7(string tagName) FOR GRAPH ldbc_snb {
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Post|Comment):m 
     WHERE t.name == tagName;
-  PRINT M;
+
+  M2 = 
+    SELECT m
+    FROM  Person:p -(LIKES>)- (Post|Comment):m 
+    ACCUM m.@popularityScore += 1;
+
+  P2 = 
+    SELECT p
+    FROM  M2:m -(HAS_CREATOR>)- Person:p
+    ACCUM p.@popularityScore += m.@popularityScore;
+
+  /* too slow
   P2 =
     SELECT p2
-    FROM M:m -(<LIKES)- Person:p2 -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p
-    PER(p2,m,p)
+    FROM Person:p2 -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p
+    PER(m,p)
     ACCUM p2.@popularityScore += 1;
-  PRINT P2;
+  */
+
   P =
     SELECT p
-    FROM P2:p2 -(LIKES>)- M:m -(HAS_CREATOR>)- Person:p
+    FROM P2:p2 -(LIKES>.HAS_CREATOR>)- Person:p
     PER(p2,p)
     ACCUM p.@authorityScore += p2.@popularityScore
     ORDER BY p.@authorityScore DESC, p.id ASC
@@ -30,7 +42,5 @@ CREATE QUERY bi7(string tagName) FOR GRAPH ldbc_snb {
   PRINT P[P.id AS personId, P.@authorityScore AS authorityScore];
 }
 
-//INSTALL QUERY bi_7
-//RUN QUERY bi_7("Arnold_Schwarzenegger")
-SET query_timeout = 600000
-INTERPRET QUERY bi7("Arnold_Schwarzenegger")
+//INSTALL QUERY bi7
+//RUN QUERY bi7("Arnold_Schwarzenegger")

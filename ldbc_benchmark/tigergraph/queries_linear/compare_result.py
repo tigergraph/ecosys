@@ -38,18 +38,19 @@ variable_list={
 'bi4': ['forumId','forumTitle','forumCreationDate','personId','postCount'],
 'bi5': ['id','firstName','lastName','creationDate','postCount'],
 'bi6': ['personId','replyCount','likeCount','messageCount','score'],
-#bi_7
+'bi7': ['personId','authorityScore'],
 'bi8': ['relatedTagName','replyCount'],
 'bi9': ['forumId','count1','count2'],
-'bi10':['it.personId','it.score','it.friendScore'],
+'bi10':['personId','score','friendsScore'],
 'bi11':['personId', 'tagName', 'likeCount', 'replyCount'],
 'bi12':['messageId', 'messageCreationDate','creatorFirstName','creatorLastName','likeCount'],
+'bi13':['year', 'month','popularTags'],
 'bi14':['personId','personFirstName','personLastName','threadCount','messageCount'],
 'bi15':['personId','count_'], 
 'bi16':['personId','tagName','messageCount'],
-#bi_17
+'bi17':[],
 'bi18':['messageCount','personCount'], 
-#bi_19
+'bi19':['personId', 'strangerCount', 'interactionCount'],
 'bi20':['tagClassName','messageCount'],
 'bi21':['zombieId','zombieLikeCount','totalLikeCount','zombieScore'], 
 'bi22':['person1Id','person2Id','city1Name','score'], 
@@ -62,7 +63,7 @@ parser.add_argument('--result', default='SF100/')
 parser.add_argument('--log', default='log/')
 parser.add_argument('--err', default='err/')
 parser.add_argument('--queries', 
-  default='ic1,ic2,ic3,ic4,ic5,ic6,ic7,ic8,ic9,ic10,ic11,ic12,ic13,bi1,bi2,bi3,bi4,bi5,bi8,bi9,bi10,bi11,bi12,bi14,bi15,bi16,bi17,bi18,bi20,bi22,bi23,is1,is2,is3,is4,is5,is6')
+  default='ic1,ic2,ic3,ic4,ic5,ic6,ic7,ic8,ic9,ic10,ic11,ic12,ic13,bi1,bi2,bi3,bi4,bi5,bi6,bi7,bi8,bi9,bi10,bi11,bi12,bi13,bi14,bi15,bi16,bi17,bi18,bi20,bi21,bi22,bi23,bi24,is1,is2,is3,is4,is5,is6')
 
 args = parser.parse_args()
 
@@ -129,7 +130,6 @@ def read_table(filename):
         return table
 
 def compare_table(table1, table2, nprint=1):
-    if table1 is None or table2 is None: return
     if isinstance(table1,int) and isinstance(table2,int):
         if table1 == table2: 
             print("PASS")
@@ -177,7 +177,7 @@ def parse_table_ic1(table):
         row[12].sort()
 
 
-
+output0 = 'result0'
 output = 'result'
 if not os.path.exists(output):
     os.mkdir(output)
@@ -190,7 +190,11 @@ for q in qs:
         parse_table_ic1(table1)
         parse_table_ic1(table2)
         
-    compare_table(table1,table2)
+    if table1 is not None:
+        compare_table(table1,table2)
+        result_file = os.path.join(output0, q)
+        write_table(table1, result_file)
+    
     err_file = os.path.join(args.err, q)
     time = err2time(err_file)
     print('time:{}s'.format(time))

@@ -6,7 +6,7 @@ DROP QUERY bi14
 
 CREATE QUERY bi14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
-  SumAccum<INT> @messageCount;
+  SumAccum<INT> @messageCount, @threadCount;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
 
   vPost =
@@ -20,7 +20,19 @@ CREATE QUERY bi14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
   P =
     SELECT p
     FROM  vPost:t -(HAS_CREATOR>)- Person:p 
-    ACCUM @@initiatorTop += initiator(p.id, p.firstName, p.lastName, 1, t.@messageCount);
-
-  PRINT @@initiatorTop;
+    ACCUM 
+      p.@threadCount += 1,
+      p.@messageCount += t.@messageCount
+    ORDER BY p.@messageCount DESC, p.id ASC
+    LIMIT 100;
+  
+  PRINT P[
+    P.id AS personId, 
+    P.firstName AS personFirstName, 
+    P.lastName AS personLastName, 
+    P.@threadCount AS threadCount, 
+    P.@messageCount AS messageCount];
 }
+
+//INSTALL QUERY bi14
+//RUN QUERY bi14("2012-05-31 22:00:00", "2012-06-30 22:00:00")

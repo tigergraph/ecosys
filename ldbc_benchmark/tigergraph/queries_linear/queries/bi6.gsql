@@ -11,8 +11,8 @@ CREATE QUERY bi6(STRING tagName) FOR GRAPH ldbc_snb {
     FROM Tag:t-(<HAS_TAG)-(Comment|Post):m
     WHERE t.name == tagName;
     
-  M = SELECT m FROM M:m-(<LIKES)-Person:p ACCUM m.@likeCount += 1;
-  M = SELECT m FROM M:m-(<REPLY_OF)-Comment:c ACCUM m.@replyCount += 1;
+  M1 = SELECT m FROM M:m-(<LIKES)-Person:p ACCUM m.@likeCount += 1;
+  M2 = SELECT m FROM M:m-(<REPLY_OF)-Comment:c ACCUM m.@replyCount += 1;
   P =
     SELECT p
     FROM M:m-(HAS_CREATOR>)-Person:p
@@ -30,3 +30,6 @@ CREATE QUERY bi6(STRING tagName) FOR GRAPH ldbc_snb {
     P.@messageCount AS messageCount,
     P.@score AS score];
 }
+
+//INSTALL QUERY bi6
+//RUN QUERY bi6("Abbas_I_of_Persia")

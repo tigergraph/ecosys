@@ -11,6 +11,7 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
   AndAccum @isValid;
   SumAccum<INT> @personId,@likeCount;
   SetAccum<STRING> @tagNames;
+  SetAccum<INT> @tagSet;
   GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
   HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
   
@@ -36,14 +37,14 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
     SELECT r 
     FROM R:r-(HAS_TAG>)-Tag:t
     WHERE r.@isValid
-    ACCUM r.@tagNames += t.name;
+    ACCUM r.@tagNames += t.name, r.@tagSet += t.id;
 
-  R =
+  invalidR =
     SELECT r
-    FROM R:r -(REPLY_OF>)- (Post|Comment):m -(HAS_TAG>)- Tag:t
-    WHERE r.@isValid
+    FROM R:r -(REPLY_OF>.HAS_TAG>)- Tag:t
     PER(r,t)
-    ACCUM r.@isValid += NOT (t.name IN r.@tagNames);
+    ACCUM 
+      IF t.id IN r.@tagSet THEN r.@isValid += false END;
 
   R =
     SELECT r
@@ -63,4 +64,4 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
 }
 
 //INSTALL QUERY bi11
-//RUN QUERY bi11("Germany", ["one","has","David"])
+//RUN QUERY bi11("Mexico", ["has","Green"])

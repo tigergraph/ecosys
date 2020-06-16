@@ -9,11 +9,6 @@ CREATE QUERY ic7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
                 INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
   HeapAccum<liker>(20, likeCreationDate DESC, commentOrPostId ASC) @@likerTop;
   AndAccum<BOOL> @isNew;
-  SumAccum<INT> @MessageId;
-  SumAccum<STRING> @MessageContent;
-  SumAccum<INT> @minutesLatency;
-  MaxAccum<DATETIME> @creationDate;
-
   S = { personId };
   P =
     SELECT p
@@ -23,21 +18,18 @@ CREATE QUERY ic7(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   P = 
     SELECT p
     FROM S:s-(<HAS_CREATOR)- (Comment|Post):m -(<LIKES:e)-Person:p
-    WHERE e.creationDate > p.@creationDate 
-          OR (e.creationDate == p.@creationDate AND m.id < p.@MessageId)
-    PER(m,p)
+    PER(m,e,p)
     ACCUM
-      p.@creationDate += e.creationDate,
-      p.@MessageId = m.id,
-      p.@minutesLatency = datetime_diff(e.creationDate, m.creationDate) / 60,
-      CASE WHEN m.type == "Comment" THEN
-        p.@MessageContent = m.content
+      IF m.type == "Comment" OR m.content != "" THEN
+        @@likerTop += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id, 
+                            m.content, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
       ELSE
-        p.@MessageContent = m.imageFile
-      END
-    POST-ACCUM @@likerTop += liker(p.id, p.firstName, p.lastName, p.@creationDate, p.@MessageId, 
-                                     p.@MessageContent, p.@minutesLatency, p.@isNew);
+        @@likerTop += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id, 
+                            m.imageFile, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
+      END;
   PRINT @@likerTop;
 }
 
 
+//INSTALL QUERY ic7
+//RUN QUERY ic7(17592186053137)

@@ -7,7 +7,6 @@ DROP QUERY bi8
 CREATE QUERY bi8(STRING tagName) FOR GRAPH ldbc_snb {
   AndAccum @isValid;
   SumAccum<INT> @count;
-  SetAccum<VERTEX<Comment>> @@replyValid;
   vReply  =
     SELECT m
     FROM Tag:t
@@ -16,14 +15,12 @@ CREATE QUERY bi8(STRING tagName) FOR GRAPH ldbc_snb {
         -(HAS_TAG>)-Tag:t2
     WHERE t.name == tagName 
     PER(m)
-    ACCUM CASE WHEN t2.name == tagName THEN m.@isValid += False END
-    POST-ACCUM CASE WHEN m.@isValid THEN @@replyValid += m END;
+    ACCUM CASE WHEN t2.name == tagName THEN m.@isValid += False END;
 
-  vReply  = { @@replyValid };
   T =
     SELECT t
     FROM vReply:s-(HAS_TAG>)-Tag:t
-    WHERE t.name != tagName
+    WHERE s.@isValid==True AND t.name != tagName
     ACCUM t.@count += 1
     ORDER BY t.@count DESC, t.name ASC
     LIMIT 100;
@@ -31,7 +28,5 @@ CREATE QUERY bi8(STRING tagName) FOR GRAPH ldbc_snb {
   PRINT T[T.name AS relatedTagName, T.@count AS replyCount];
 }
 
-// INSTALL QUERY bi8
-// RUN QUERY bi8("Genghis_Khan")
-//SET query_timeout = 180000
-//INTERPRET QUERY bi8("Genghis_Khan")
+//INSTALL QUERY bi8
+//RUN QUERY bi8("Genghis_Khan")

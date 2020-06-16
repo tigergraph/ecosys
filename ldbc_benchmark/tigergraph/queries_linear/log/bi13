@@ -1,2 +1,869 @@
-Welcome to TigerGraph.
-[1;34mGSQL > [0m
+{
+  "error": false,
+  "message": "",
+  "version": {
+    "schema": 0,
+    "edition": "enterprise",
+    "api": "v2"
+  },
+  "results": [{"@@tagStatsTop": [
+    {
+      "month": 1,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Sanath_Jayasuriya",
+          3698
+        ],
+        [
+          "Alexander_Downer",
+          3017
+        ],
+        [
+          "Genghis_Khan",
+          2862
+        ],
+        [
+          "Andrey_Kolmogorov",
+          750
+        ],
+        [
+          "Adolf_Hitler",
+          677
+        ]
+      ]
+    },
+    {
+      "month": 2,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Paradorn_Srichaphan",
+          4103
+        ],
+        [
+          "Karol_Kučera",
+          649
+        ],
+        [
+          "Adolf_Hitler",
+          630
+        ],
+        [
+          "Augustine_of_Hippo",
+          441
+        ],
+        [
+          "Sukarno",
+          389
+        ]
+      ]
+    },
+    {
+      "month": 3,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Ivan_Ljubičić",
+          1642
+        ],
+        [
+          "Adolf_Hitler",
+          705
+        ],
+        [
+          "Augustine_of_Hippo",
+          447
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          432
+        ],
+        [
+          "Gloria_Estefan",
+          268
+        ]
+      ]
+    },
+    {
+      "month": 4,
+      "year": 2012,
+      "popularTags": [
+        [
+          "John_Rhys-Davies",
+          4479
+        ],
+        [
+          "Enrique_Iglesias",
+          3776
+        ],
+        [
+          "Eugène_Ionesco",
+          1098
+        ],
+        [
+          "Adolf_Hitler",
+          750
+        ],
+        [
+          "Augustine_of_Hippo",
+          525
+        ]
+      ]
+    },
+    {
+      "month": 5,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Imelda_Marcos",
+          7782
+        ],
+        [
+          "Hassan_II_of_Morocco",
+          2299
+        ],
+        [
+          "Alejandro_Falla",
+          1816
+        ],
+        [
+          "Vinicius_de_Moraes",
+          1116
+        ],
+        [
+          "Adolf_Hitler",
+          803
+        ]
+      ]
+    },
+    {
+      "month": 6,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Manuel_Noriega",
+          4559
+        ],
+        [
+          "Slavoj_Žižek",
+          2398
+        ],
+        [
+          "Bobby_Hull",
+          2362
+        ],
+        [
+          "Sammy_Sosa",
+          1724
+        ],
+        [
+          "Adolf_Hitler",
+          844
+        ]
+      ]
+    },
+    {
+      "month": 7,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Marc_Gicquel",
+          1265
+        ],
+        [
+          "Ivan_Ljubičić",
+          878
+        ],
+        [
+          "Adolf_Hitler",
+          789
+        ],
+        [
+          "Augustine_of_Hippo",
+          524
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          468
+        ]
+      ]
+    },
+    {
+      "month": 8,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Ehud_Olmert",
+          2413
+        ],
+        [
+          "Adolf_Hitler",
+          835
+        ],
+        [
+          "Chen_Shui-bian",
+          577
+        ],
+        [
+          "Augustine_of_Hippo",
+          513
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          509
+        ]
+      ]
+    },
+    {
+      "month": 9,
+      "year": 2012,
+      "popularTags": [
+        [
+          "Adolf_Hitler",
+          369
+        ],
+        [
+          "Augustine_of_Hippo",
+          234
+        ],
+        [
+          "Shaka",
+          211
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          198
+        ],
+        [
+          "Jorge_Luis_Borges",
+          121
+        ]
+      ]
+    },
+    {
+      "month": 1,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Freddie_Mercury",
+          3532
+        ],
+        [
+          "Slavoj_Žižek",
+          1388
+        ],
+        [
+          "Mobutu_Sese_Seko",
+          392
+        ],
+        [
+          "Adolf_Hitler",
+          334
+        ],
+        [
+          "Augustine_of_Hippo",
+          222
+        ]
+      ]
+    },
+    {
+      "month": 2,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Robert_Fripp",
+          4200
+        ],
+        [
+          "Tom_Gehrels",
+          1856
+        ],
+        [
+          "Augustine_of_Hippo",
+          443
+        ],
+        [
+          "Adolf_Hitler",
+          358
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          161
+        ]
+      ]
+    },
+    {
+      "month": 3,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Genghis_Khan",
+          2302
+        ],
+        [
+          "Sanath_Jayasuriya",
+          1057
+        ],
+        [
+          "Haile_Gebrselassie",
+          1015
+        ],
+        [
+          "Julia_Gillard",
+          926
+        ],
+        [
+          "Adolf_Hitler",
+          421
+        ]
+      ]
+    },
+    {
+      "month": 4,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Gil_Kane",
+          2917
+        ],
+        [
+          "Jawaharlal_Nehru",
+          1090
+        ],
+        [
+          "Adolf_Hitler",
+          404
+        ],
+        [
+          "Augustine_of_Hippo",
+          291
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          195
+        ]
+      ]
+    },
+    {
+      "month": 5,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Muammar_Gaddafi",
+          785
+        ],
+        [
+          "Adolf_Hitler",
+          398
+        ],
+        [
+          "Shigeru_Miyamoto",
+          363
+        ],
+        [
+          "Augustine_of_Hippo",
+          357
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          213
+        ]
+      ]
+    },
+    {
+      "month": 6,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Jan_Hus",
+          2828
+        ],
+        [
+          "David_Hockney",
+          2595
+        ],
+        [
+          "Benicio_del_Toro",
+          949
+        ],
+        [
+          "Adolf_Hitler",
+          503
+        ],
+        [
+          "Juan_Pablo_Montoya",
+          457
+        ]
+      ]
+    },
+    {
+      "month": 7,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Ban_Ki-moon",
+          524
+        ],
+        [
+          "Adolf_Hitler",
+          491
+        ],
+        [
+          "Augustine_of_Hippo",
+          335
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          264
+        ],
+        [
+          "Jorge_Luis_Borges",
+          190
+        ]
+      ]
+    },
+    {
+      "month": 8,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Adolf_Hitler",
+          465
+        ],
+        [
+          "Augustine_of_Hippo",
+          370
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          256
+        ],
+        [
+          "Jorge_Luis_Borges",
+          208
+        ],
+        [
+          "Charles_V,_Holy_Roman_Emperor",
+          138
+        ]
+      ]
+    },
+    {
+      "month": 9,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Fernando_González",
+          2825
+        ],
+        [
+          "Kateryna_Bondarenko",
+          2189
+        ],
+        [
+          "Yoko_Ono",
+          1126
+        ],
+        [
+          "Adolf_Hitler",
+          497
+        ],
+        [
+          "Augustine_of_Hippo",
+          408
+        ]
+      ]
+    },
+    {
+      "month": 10,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Muammar_Gaddafi",
+          6911
+        ],
+        [
+          "Mariano_Rivera",
+          5480
+        ],
+        [
+          "Joe_Strummer",
+          5462
+        ],
+        [
+          "Sammy_Sosa",
+          4829
+        ],
+        [
+          "Peter_Hain",
+          4372
+        ]
+      ]
+    },
+    {
+      "month": 11,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Adolf_Hitler",
+          562
+        ],
+        [
+          "Tunku_Abdul_Rahman",
+          501
+        ],
+        [
+          "Augustine_of_Hippo",
+          431
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          277
+        ],
+        [
+          "Jorge_Luis_Borges",
+          196
+        ]
+      ]
+    },
+    {
+      "month": 12,
+      "year": 2011,
+      "popularTags": [
+        [
+          "Edgar_Prado",
+          2472
+        ],
+        [
+          "Carl_Gustaf_Emil_Mannerheim",
+          1287
+        ],
+        [
+          "Marcelo_Melo",
+          954
+        ],
+        [
+          "Adolf_Hitler",
+          630
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          435
+        ]
+      ]
+    },
+    {
+      "month": 1,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Jarmila_Gajdošová",
+          100
+        ],
+        [
+          "Nicolás_Almagro",
+          56
+        ],
+        [
+          "Daniel_Barenboim",
+          15
+        ],
+        [
+          "Augustine_of_Hippo",
+          13
+        ],
+        [
+          "Adolf_Hitler",
+          10
+        ]
+      ]
+    },
+    {
+      "month": 2,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Paradorn_Srichaphan",
+          670
+        ],
+        [
+          "Katarina_Srebotnik",
+          597
+        ],
+        [
+          "Aung_San_Suu_Kyi",
+          405
+        ],
+        [
+          "Denny_Hulme",
+          161
+        ],
+        [
+          "Augustine_of_Hippo",
+          64
+        ]
+      ]
+    },
+    {
+      "month": 3,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Pedro_I_of_Brazil",
+          562
+        ],
+        [
+          "Augustine_of_Hippo",
+          73
+        ],
+        [
+          "Adolf_Hitler",
+          38
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          34
+        ],
+        [
+          "Jorge_Luis_Borges",
+          32
+        ]
+      ]
+    },
+    {
+      "month": 4,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Edvard_Munch",
+          688
+        ],
+        [
+          "Luiz_Inácio_Lula_da_Silva",
+          607
+        ],
+        [
+          "Maria_Sharapova",
+          134
+        ],
+        [
+          "Aisam-ul-Haq_Qureshi",
+          103
+        ],
+        [
+          "Adolf_Hitler",
+          79
+        ]
+      ]
+    },
+    {
+      "month": 5,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Paula_Abdul",
+          1556
+        ],
+        [
+          "Ernests_Gulbis",
+          276
+        ],
+        [
+          "Augustine_of_Hippo",
+          131
+        ],
+        [
+          "Adolf_Hitler",
+          99
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          62
+        ]
+      ]
+    },
+    {
+      "month": 6,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Siad_Barre",
+          1708
+        ],
+        [
+          "Rubén_Blades",
+          1684
+        ],
+        [
+          "Mobutu_Sese_Seko",
+          463
+        ],
+        [
+          "Sergei_Eisenstein",
+          408
+        ],
+        [
+          "Genghis_Khan",
+          152
+        ]
+      ]
+    },
+    {
+      "month": 7,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Ho_Chi_Minh",
+          1576
+        ],
+        [
+          "Rory_Gallagher",
+          1387
+        ],
+        [
+          "Sammy_Sosa",
+          1080
+        ],
+        [
+          "Genghis_Khan",
+          400
+        ],
+        [
+          "Adolf_Hitler",
+          230
+        ]
+      ]
+    },
+    {
+      "month": 8,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Haile_Selassie_I",
+          2464
+        ],
+        [
+          "Garry_Kasparov",
+          1815
+        ],
+        [
+          "Rogier_Wassen",
+          1033
+        ],
+        [
+          "Ivan_Ljubičić",
+          685
+        ],
+        [
+          "Mohammed_Zahir_Shah",
+          401
+        ]
+      ]
+    },
+    {
+      "month": 9,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Sonia_Gandhi",
+          2185
+        ],
+        [
+          "Luís_Figo",
+          728
+        ],
+        [
+          "Adolf_Hitler",
+          263
+        ],
+        [
+          "Augustine_of_Hippo",
+          158
+        ],
+        [
+          "Wolfgang_Amadeus_Mozart",
+          120
+        ]
+      ]
+    },
+    {
+      "month": 10,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Shapur_II",
+          3778
+        ],
+        [
+          "Léopold_Sédar_Senghor",
+          1593
+        ],
+        [
+          "Tommy_Lee",
+          1371
+        ],
+        [
+          "Ho_Chi_Minh",
+          1268
+        ],
+        [
+          "Ástor_Piazzolla",
+          815
+        ]
+      ]
+    },
+    {
+      "month": 11,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Yuvan_Shankar_Raja",
+          2086
+        ],
+        [
+          "Paul_Capdeville",
+          1890
+        ],
+        [
+          "Adolf_Hitler",
+          287
+        ],
+        [
+          "Ho_Chi_Minh",
+          256
+        ],
+        [
+          "Augustine_of_Hippo",
+          208
+        ]
+      ]
+    },
+    {
+      "month": 12,
+      "year": 2010,
+      "popularTags": [
+        [
+          "Marc_Gicquel",
+          2407
+        ],
+        [
+          "Chulalongkorn",
+          1402
+        ],
+        [
+          "M._G._Ramachandran",
+          775
+        ],
+        [
+          "Alejandro_Falla",
+          531
+        ],
+        [
+          "Adolf_Hitler",
+          284
+        ]
+      ]
+    }
+  ]}]
+}

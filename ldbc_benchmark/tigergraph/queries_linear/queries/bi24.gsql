@@ -10,15 +10,12 @@ CREATE QUERY bi24(string tcName) FOR GRAPH ldbc_snb {
   GroupByAccum<int year, int month, string continentName, SumAccum<int> messageCount, SumAccum<int> likeCount> @@group;
   SumAccum<string> @continentName;
   SumAccum<int> @likeCount;
-
+  
   Messages =
     SELECT m
     FROM TagClass:tc-(<HAS_TYPE.<HAS_TAG)-(Post|Comment):m
-         -(IS_LOCATED_IN>.IS_PART_OF>)- Continent:c
-    WHERE tc.name == tcName
-    PER(m)
-    ACCUM m.@continentName = c.name;
-
+    WHERE tc.name == tcName;
+  
   MessagesWithLike =
     SELECT m
     FROM Messages:m -(<LIKES)- Person:p
@@ -26,8 +23,10 @@ CREATE QUERY bi24(string tcName) FOR GRAPH ldbc_snb {
 
   Messages =
     SELECT m
-    FROM Messages:m
+    FROM Messages:m -(IS_LOCATED_IN>.IS_PART_OF>)- Continent:c
+    ACCUM m.@continentName = c.name
     POST-ACCUM @@group += (year(m.creationDate), month(m.creationDate), m.@continentName -> 1, m.@likeCount);
+
 
   FOREACH (y,m,c,mc,lc) in @@group DO
     @@result += ResTuple(mc, lc, y, m, c);
@@ -35,5 +34,5 @@ CREATE QUERY bi24(string tcName) FOR GRAPH ldbc_snb {
   PRINT @@result;
 }
 
-INSTALL QUERY bi24
-RUN QUERY bi24("Single")
+//INSTALL QUERY bi24
+//RUN QUERY bi24("Single")

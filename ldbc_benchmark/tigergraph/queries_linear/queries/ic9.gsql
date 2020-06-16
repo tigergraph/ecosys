@@ -23,12 +23,14 @@ CREATE QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
       m.@personFirstName = p.firstName,
       m.@personLastName = p.lastName
     POST-ACCUM
-      CASE 
-        WHEN m.type == "Comment" THEN 
-          @@msgInfoTop += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.content, m.creationDate)
-        ELSE 
-          @@msgInfoTop += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.imageFile, m.creationDate)
+      IF m.type == "Comment" OR m.content != "" THEN 
+        @@msgInfoTop += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.content, m.creationDate)
+      ELSE 
+        @@msgInfoTop += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.imageFile, m.creationDate)
       END;
 
   PRINT @@msgInfoTop;
 }
+
+// INSTALL QUERY ic_9
+// RUN QUERY ic_9(13194139542834, "2011-12-17T00:00:00")

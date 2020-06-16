@@ -51,3 +51,5 @@ CREATE QUERY bi13(STRING countryName) FOR GRAPH ldbc_snb {
   PRINT @@tagStatsTop;
 }
 
+//INSTALL QUERY bi13
+//RUN QUERY bi13("Burma")

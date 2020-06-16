@@ -13,7 +13,7 @@ CREATE QUERY bi4(string tagClassName, string countryName) for graph ldbc_snb {
     FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:m -(<CONTAINER_OF)-
          Forum:f -(HAS_MODERATOR>)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:c,
     WHERE tc.name == tagClassName AND c.name == countryName
-    PER(p,f)
+    PER(m,f,p)
     ACCUM f.@personId = p.id, f.@postCount += 1
     ORDER BY f.@postCount DESC, f.id ASC
     LIMIT 20;
@@ -25,3 +25,5 @@ CREATE QUERY bi4(string tagClassName, string countryName) for graph ldbc_snb {
     ForumSet.@personId AS personId, 
     ForumSet.@postCount AS postCount];
 }
+//INSTALL QUERY bi4
+//RUN QUERY bi4("MusicalArtist","Burma")

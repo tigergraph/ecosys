@@ -5,12 +5,15 @@ USE GRAPH ldbc_snb
 DROP QUERY ic10
 
 CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
-  SumAccum<int> @common, @uncommon, @commonInterestScore;
+  SumAccum<int> @commonInterestScore;
   SumAccum<string> @personCityName;
   OrAccum @isFriend, @hasInterest;
   int nextMonth;
-  nextMonth = 1 + month % 12;
+  int pid1 = 10995116761880;
+  int pid2 = 15393162855453;
 
+  nextMonth = 1 + month % 12;
+  
   S = { personId };
   F = SELECT p FROM S:s -(KNOWS)- Person:p ACCUM p.@isFriend += true;
   P = 
@@ -27,19 +30,17 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
     PER(p)
     ACCUM p.@personCityName = c.name;
 
-  F =
+  FriendHasPost  =
     SELECT f
     FROM F:f -(<HAS_CREATOR)- Post:p
     ACCUM
       IF p.@hasInterest == true THEN
-        f.@common += 1
+        f.@commonInterestScore += 1
       ELSE
-        f.@uncommon += 1
-      END
-    POST-ACCUM f.@commonInterestScore = f.@common - f.@uncommon
-    ORDER BY f.@commonInterestScore DESC, f.id ASC 
-    LIMIT 10;
-
+        f.@commonInterestScore += (-1)
+      END;
+    
+  F = SELECT v FROM F:v ORDER BY v.@commonInterestScore DESC, v.id ASC LIMIT 10;
   PRINT F[F.id AS personId, 
           F.firstName AS personFirstName,
           F.lastName AS personLastName, 
@@ -47,3 +48,5 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
           F.gender AS personGender, 
           F.@personCityName AS personCityName];
 }
+//INSTALL QUERY ic10
+//RUN QUERY ic10(30786325583618, 11)

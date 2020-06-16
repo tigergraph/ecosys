@@ -6,5 +6,806 @@
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"T": []}]
+  "results": [{"T": [
+    {
+      "v_id": "138",
+      "attributes": {
+        "replyCount": 2750,
+        "relatedTagName": "Adolf_Hitler"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6",
+      "attributes": {
+        "replyCount": 2296,
+        "relatedTagName": "Augustine_of_Hippo"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1410",
+      "attributes": {
+        "replyCount": 2063,
+        "relatedTagName": "Muammar_Gaddafi"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "139",
+      "attributes": {
+        "replyCount": 1980,
+        "relatedTagName": "Wolfgang_Amadeus_Mozart"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "565",
+      "attributes": {
+        "replyCount": 1785,
+        "relatedTagName": "Napoleon"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6930",
+      "attributes": {
+        "replyCount": 1756,
+        "relatedTagName": "Argentina"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7017",
+      "attributes": {
+        "replyCount": 1733,
+        "relatedTagName": "South_Africa"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7510",
+      "attributes": {
+        "replyCount": 1732,
+        "relatedTagName": "Netherlands"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6411",
+      "attributes": {
+        "replyCount": 1725,
+        "relatedTagName": "Italy"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1985",
+      "attributes": {
+        "replyCount": 1713,
+        "relatedTagName": "Elizabeth_II"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5101",
+      "attributes": {
+        "replyCount": 1706,
+        "relatedTagName": "England"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7543",
+      "attributes": {
+        "replyCount": 1704,
+        "relatedTagName": "United_States"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7578",
+      "attributes": {
+        "replyCount": 1687,
+        "relatedTagName": "Sweden"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7549",
+      "attributes": {
+        "replyCount": 1684,
+        "relatedTagName": "Brazil"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5094",
+      "attributes": {
+        "replyCount": 1683,
+        "relatedTagName": "Belgium"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6403",
+      "attributes": {
+        "replyCount": 1683,
+        "relatedTagName": "China"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6433",
+      "attributes": {
+        "replyCount": 1681,
+        "relatedTagName": "Philippines"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1545",
+      "attributes": {
+        "replyCount": 1681,
+        "relatedTagName": "Pope_John_Paul_II"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5105",
+      "attributes": {
+        "replyCount": 1674,
+        "relatedTagName": "Hungary"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7573",
+      "attributes": {
+        "replyCount": 1673,
+        "relatedTagName": "Russia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6971",
+      "attributes": {
+        "replyCount": 1671,
+        "relatedTagName": "United_Kingdom"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "9",
+      "attributes": {
+        "replyCount": 1665,
+        "relatedTagName": "Che_Guevara"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6950",
+      "attributes": {
+        "replyCount": 1665,
+        "relatedTagName": "Indonesia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5071",
+      "attributes": {
+        "replyCount": 1665,
+        "relatedTagName": "Portugal"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5091",
+      "attributes": {
+        "replyCount": 1663,
+        "relatedTagName": "Austria"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7567",
+      "attributes": {
+        "replyCount": 1663,
+        "relatedTagName": "Norway"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7020",
+      "attributes": {
+        "replyCount": 1662,
+        "relatedTagName": "Switzerland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6402",
+      "attributes": {
+        "replyCount": 1660,
+        "relatedTagName": "Chile"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7511",
+      "attributes": {
+        "replyCount": 1656,
+        "relatedTagName": "New_Zealand"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6946",
+      "attributes": {
+        "replyCount": 1654,
+        "relatedTagName": "Australia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7019",
+      "attributes": {
+        "replyCount": 1653,
+        "relatedTagName": "Soviet_Union"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6424",
+      "attributes": {
+        "replyCount": 1650,
+        "relatedTagName": "Spain"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7575",
+      "attributes": {
+        "replyCount": 1644,
+        "relatedTagName": "Serbia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5120",
+      "attributes": {
+        "replyCount": 1643,
+        "relatedTagName": "Romania"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6949",
+      "attributes": {
+        "replyCount": 1642,
+        "relatedTagName": "Hong_Kong"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7579",
+      "attributes": {
+        "replyCount": 1642,
+        "relatedTagName": "Taiwan"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1984",
+      "attributes": {
+        "replyCount": 1641,
+        "relatedTagName": "William_Shakespeare"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6378",
+      "attributes": {
+        "replyCount": 1637,
+        "relatedTagName": "Peru"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6393",
+      "attributes": {
+        "replyCount": 1636,
+        "relatedTagName": "Czechoslovakia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6963",
+      "attributes": {
+        "replyCount": 1634,
+        "relatedTagName": "Singapore"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1021",
+      "attributes": {
+        "replyCount": 1630,
+        "relatedTagName": "Mohandas_Karamchand_Gandhi"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5074",
+      "attributes": {
+        "replyCount": 1629,
+        "relatedTagName": "Scotland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7018",
+      "attributes": {
+        "replyCount": 1628,
+        "relatedTagName": "South_Korea"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7556",
+      "attributes": {
+        "replyCount": 1627,
+        "relatedTagName": "Greece"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "458",
+      "attributes": {
+        "replyCount": 1626,
+        "relatedTagName": "Fidel_Castro"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7555",
+      "attributes": {
+        "replyCount": 1618,
+        "relatedTagName": "France"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5104",
+      "attributes": {
+        "replyCount": 1618,
+        "relatedTagName": "Germany"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7562",
+      "attributes": {
+        "replyCount": 1616,
+        "relatedTagName": "Latvia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7550",
+      "attributes": {
+        "replyCount": 1615,
+        "relatedTagName": "Canada"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7559",
+      "attributes": {
+        "replyCount": 1615,
+        "relatedTagName": "Israel"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6355",
+      "attributes": {
+        "replyCount": 1615,
+        "relatedTagName": "Nazi_Germany"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7589",
+      "attributes": {
+        "replyCount": 1615,
+        "relatedTagName": "Roman_Empire"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5080",
+      "attributes": {
+        "replyCount": 1615,
+        "relatedTagName": "Thailand"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7569",
+      "attributes": {
+        "replyCount": 1613,
+        "relatedTagName": "Poland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2780",
+      "attributes": {
+        "replyCount": 1613,
+        "relatedTagName": "Ronald_Reagan"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "561",
+      "attributes": {
+        "replyCount": 1610,
+        "relatedTagName": "Haile_Selassie_I"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5067",
+      "attributes": {
+        "replyCount": 1609,
+        "relatedTagName": "Pakistan"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5057",
+      "attributes": {
+        "replyCount": 1608,
+        "relatedTagName": "Colombia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7565",
+      "attributes": {
+        "replyCount": 1608,
+        "relatedTagName": "Mexico"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7553",
+      "attributes": {
+        "replyCount": 1607,
+        "relatedTagName": "Cyprus"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6413",
+      "attributes": {
+        "replyCount": 1604,
+        "relatedTagName": "Jesus"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6410",
+      "attributes": {
+        "replyCount": 1601,
+        "relatedTagName": "India"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6972",
+      "attributes": {
+        "replyCount": 1601,
+        "relatedTagName": "United_Nations"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2778",
+      "attributes": {
+        "replyCount": 1599,
+        "relatedTagName": "Barack_Obama"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2786",
+      "attributes": {
+        "replyCount": 1598,
+        "relatedTagName": "Abraham_Lincoln"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5090",
+      "attributes": {
+        "replyCount": 1597,
+        "relatedTagName": "Algeria"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2777",
+      "attributes": {
+        "replyCount": 1596,
+        "relatedTagName": "George_W._Bush"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6412",
+      "attributes": {
+        "replyCount": 1596,
+        "relatedTagName": "Japan"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5075",
+      "attributes": {
+        "replyCount": 1596,
+        "relatedTagName": "Slovakia"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6392",
+      "attributes": {
+        "replyCount": 1592,
+        "relatedTagName": "Czech_Republic"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5100",
+      "attributes": {
+        "replyCount": 1590,
+        "relatedTagName": "Ecuador"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "206",
+      "attributes": {
+        "replyCount": 1588,
+        "relatedTagName": "Charlemagne"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6969",
+      "attributes": {
+        "replyCount": 1585,
+        "relatedTagName": "Venezuela"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5055",
+      "attributes": {
+        "replyCount": 1584,
+        "relatedTagName": "Bulgaria"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6370",
+      "attributes": {
+        "replyCount": 1583,
+        "relatedTagName": "Cuba"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5103",
+      "attributes": {
+        "replyCount": 1582,
+        "relatedTagName": "Finland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5191",
+      "attributes": {
+        "replyCount": 1582,
+        "relatedTagName": "Julius_Caesar"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2789",
+      "attributes": {
+        "replyCount": 1581,
+        "relatedTagName": "George_H._W._Bush"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2784",
+      "attributes": {
+        "replyCount": 1581,
+        "relatedTagName": "Richard_Nixon"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5108",
+      "attributes": {
+        "replyCount": 1579,
+        "relatedTagName": "Lebanon"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6435",
+      "attributes": {
+        "replyCount": 1579,
+        "relatedTagName": "Puerto_Rico"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "140",
+      "attributes": {
+        "replyCount": 1578,
+        "relatedTagName": "Arnold_Schwarzenegger"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5127",
+      "attributes": {
+        "replyCount": 1577,
+        "relatedTagName": "Vietnam"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1995",
+      "attributes": {
+        "replyCount": 1576,
+        "relatedTagName": "Charles_Darwin"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "468",
+      "attributes": {
+        "replyCount": 1576,
+        "relatedTagName": "Sigmund_Freud"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6375",
+      "attributes": {
+        "replyCount": 1575,
+        "relatedTagName": "Iraq"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7513",
+      "attributes": {
+        "replyCount": 1574,
+        "relatedTagName": "North_Korea"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5125",
+      "attributes": {
+        "replyCount": 1574,
+        "relatedTagName": "Ukraine"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5107",
+      "attributes": {
+        "replyCount": 1573,
+        "relatedTagName": "Jamaica"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6953",
+      "attributes": {
+        "replyCount": 1572,
+        "relatedTagName": "Lithuania"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5099",
+      "attributes": {
+        "replyCount": 1571,
+        "relatedTagName": "Denmark"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6359",
+      "attributes": {
+        "replyCount": 1570,
+        "relatedTagName": "Confederate_States_of_America"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "777",
+      "attributes": {
+        "replyCount": 1567,
+        "relatedTagName": "Albert_Einstein"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "2788",
+      "attributes": {
+        "replyCount": 1566,
+        "relatedTagName": "George_Washington"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5145",
+      "attributes": {
+        "replyCount": 1566,
+        "relatedTagName": "Northern_Ireland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "6962",
+      "attributes": {
+        "replyCount": 1565,
+        "relatedTagName": "Saddam_Hussein"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1171",
+      "attributes": {
+        "replyCount": 1564,
+        "relatedTagName": "Benito_Mussolini"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "5106",
+      "attributes": {
+        "replyCount": 1564,
+        "relatedTagName": "Iceland"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "7581",
+      "attributes": {
+        "replyCount": 1563,
+        "relatedTagName": "Turkey"
+      },
+      "v_type": "Tag"
+    },
+    {
+      "v_id": "1989",
+      "attributes": {
+        "replyCount": 1562,
+        "relatedTagName": "Henry_VIII_of_England"
+      },
+      "v_type": "Tag"
+    }
+  ]}]
 }

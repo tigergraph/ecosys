@@ -18,16 +18,14 @@ CREATE QUERY bi3(INT year1, INT month1) FOR GRAPH ldbc_snb {
 
   T = 
     SELECT t
-    FROM (Post|Comment):m -(HAS_TAG>)- Tag:t
+    FROM (Post|Comment):m -(HAS_TAG>)-Tag:t 
     WHERE year(m.creationDate) == year1 AND month(m.creationDate) == month1
-    PER(t)
     ACCUM @@count += (t.name -> 1, 0);
 
   T = 
     SELECT t
-    FROM (Post|Comment):m -(HAS_TAG>)- Tag:t
+    FROM (Post|Comment):m -(HAS_TAG>)-Tag:t 
     WHERE year(m.creationDate) == year2 AND month(m.creationDate) == month2
-    PER(t)
     ACCUM @@count += (t.name -> 0, 1);
     
   FOREACH c IN @@count DO
@@ -36,3 +34,6 @@ CREATE QUERY bi3(INT year1, INT month1) FOR GRAPH ldbc_snb {
 
   PRINT @@result;
 }
+
+//INSTALL QUERY bi3
+//RUN QUERY bi3(2010,10)

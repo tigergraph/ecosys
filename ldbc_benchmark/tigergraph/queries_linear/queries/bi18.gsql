@@ -4,8 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi18
 
-CREATE QUERY bi18(datetime date, int lengthThreshold,
-    set<string> languages) FOR GRAPH ldbc_snb SYNTAX V2 {
+CREATE QUERY bi18(datetime date, int lengthThreshold, set<string> languages) FOR GRAPH ldbc_snb{
   typedef tuple<int messageCount, int personCount> ResTuple;
   HeapAccum<ResTuple>(1, personCount DESC, messageCount ASC) @@result;
   SumAccum<int> @messageCount;
@@ -32,3 +31,6 @@ CREATE QUERY bi18(datetime date, int lengthThreshold,
 
   PRINT @@result;
 }
+
+//INSTALL QUERY bi18
+//RUN QUERY bi18("2011-08-15 00:00:00",97,["tk"])
