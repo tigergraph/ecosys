@@ -6,36 +6,51 @@ USE GRAPH ldbc_snb
 DROP QUERY bi19
 
 CREATE QUERY bi19(datetime date, string name1, string name2) FOR GRAPH ldbc_snb{
-  SetAccum<vertex> @friendSet, @strangerSet;
+  MapAccum<INT, SetAccum<vertex<Person>>> @@friendMap;
+
+  SetAccum<vertex<Person>> @strangerSet;
   SetAccum<vertex<Comment>> @commentSet;
-  SumAccum<int> @strangerCount, @interactionCount;
+  SumAccum<INT> @creator, @strangerCount, @interactionCount;
 
   // all members of both class 1 and class 2 forums
-  MemberSet = 
-    SELECT p FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG.HAS_MEMBER>)- Person:p -(<HAS_MEMBER.HAS_TAG>.HAS_TYPE>)-TagClass:tc
-    WHERE tc.name == name1 AND tc.name == name2;
-
-  // all persons born after a certain date
-  PersonSet = SELECT p FROM Person:p WHERE p.birthday > date;
+  P1 = 
+    SELECT p FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG.HAS_MEMBER>)- Person:p 
+    WHERE tc.name == name1;
+  P2 = 
+    SELECT p FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG.HAS_MEMBER>)- Person:p 
+    WHERE tc.name == name2;
+  Strangers = P1 INTERSECT P2;
 
   // find friends (including oneself) of each person in PersonSet
+  PersonSet = SELECT p FROM Person:p WHERE p.birthday > date;
   PersonWithFriends =
-    SELECT s
-    FROM PersonSet:s -(KNOWS)- MemberSet:t
-    ACCUM s.@friendSet += t;
-
-  // Person with interaction, the order here matters for speed
-  PersonWithInteraction =
     SELECT p
-    FROM PersonSet:p -(<HAS_CREATOR)- Comment:c -(REPLY_OF>*)- (Post|Comment) -(HAS_CREATOR>)- MemberSet:au
-    WHERE au != p AND au NOT IN p.@friendSet
-    PER(p,c,au)
+    FROM Strangers:s -(KNOWS)- Person:p
+    WHERE p.birthday > date
+    ACCUM @@friendMap += (p.id -> s);
+
+  C1 =
+    SELECT c
+    FROM Person:p -(<HAS_CREATOR)- Comment:c
+    WHERE p.birthday > date
+    ACCUM c.@creator += p.id;
+
+  C = 
+    SELECT c
+    FROM Strangers:s -(<HAS_CREATOR.<REPLY_OF)- C1:c
     ACCUM 
-      p.@interactionCount += 1,
-      p.@strangerSet += au
-    POST-ACCUM
-      p.@friendSet.clear(),
-      p.@strangerCount = p.@strangerSet.size(), p.@strangerSet.clear();
+      IF s NOT IN @@friendMap.get(c.@creator) THEN
+        c.@strangerSet += s
+      END;
+  @@friendMap.clear();
+
+  PersonWithInteraction = 
+    SELECT p
+    FROM C:c -(HAS_CREATOR>)- Person:p
+    ACCUM 
+      p.@strangerSet += c.@strangerSet,
+      p.@interactionCount += 1
+    POST-ACCUM p.@strangerCount = p.@strangerSet.size(), p.@strangerSet.clear();
 
   PersonSet = SELECT p FROM PersonSet:p ORDER BY p.@interactionCount DESC, p.id ASC LIMIT 100;
   PRINT PersonSet[

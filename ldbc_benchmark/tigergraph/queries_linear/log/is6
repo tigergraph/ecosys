@@ -1,10 +1,20 @@
 {
   "error": false,
-  "message": "Runtime Warning: 1 ids are invalid Post vertex ids.",
+  "message": "",
   "version": {
     "schema": 0,
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"vModerator": []}]
+  "results": [{"vModerator": [{
+    "v_id": "352058",
+    "attributes": {
+      "moderatorFirstName": "Yang",
+      "forumTitle": "Wall of Yang Zhang",
+      "moderatorLastName": "Zhang",
+      "moderatorId": 352058,
+      "forumId": 5245594
+    },
+    "v_type": "Person"
+  }]}]
 }

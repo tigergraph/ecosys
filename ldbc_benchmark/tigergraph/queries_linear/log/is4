@@ -1,10 +1,17 @@
 {
   "error": false,
-  "message": "Runtime Warning: 1 ids are invalid Post vertex ids.",
+  "message": "",
   "version": {
     "schema": 0,
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"vPost": []}]
+  "results": [{"vComments": [{
+    "v_id": "13194144951001",
+    "attributes": {
+      "messageCreationDate": "2010-07-13 11:53:23",
+      "messageContent": "About Freddie Mercury, s a songwriter, Mercury composed many About Get Back"
+    },
+    "v_type": "Comment"
+  }]}]
 }

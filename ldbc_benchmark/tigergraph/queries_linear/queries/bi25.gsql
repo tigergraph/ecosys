@@ -1,0 +1,124 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 25 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+/* 
+  require user defined function, add the following function in file /home/tigergraph/tigergraph/app/3.0.0/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+  inline string bigint_to_string (int64_t val) {
+    char result[200];
+    sprintf(result, "%Ld", val);
+    return string(result);
+  }
+*/
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi25
+
+
+CREATE QUERY bi25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
+  TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
+
+  OrAccum @visited1, @visited2;
+  OrAccum @@found=false, @@next=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @path;
+  ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  HeapAccum<pathInfo>(0, pathWeight DESC) @@pathInfoTop;
+  STRING jsonStr;
+
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM S1:s ACCUM s.@visited1 += true;
+    S2 = SELECT s FROM S2:s ACCUM s.@visited2 += true;
+
+    WHILE (NOT @@found) AND @@next DO
+      @@next = false;
+      S1 = 
+        SELECT t
+        FROM S1:s-(KNOWS)-Person:t
+        WHERE NOT t.@visited1
+        ACCUM 
+          IF t.@visited2 THEN
+            @@found += True,
+            FOREACH p1 IN s.@path DO
+              FOREACH p2 IN t.@path DO
+                @@pathAll += p1 + [s] + [t] + p2
+              END
+            END
+          ELSE
+            @@next += true,
+            t.@visited1 += true,
+            IF s.@path.size() > 0 THEN
+              FOREACH p IN s.@path DO
+                t.@path += p + [s]
+              END
+            ELSE
+              t.@path += [s]
+            END
+          END;
+
+      IF @@found OR NOT @@next THEN
+        BREAK;
+      END;
+
+      S2 = 
+        SELECT t
+        FROM S2:s-(KNOWS)-Person:t
+        WHERE NOT t.@visited2
+        ACCUM 
+          IF t.@visited1 THEN
+            @@found += True,
+            FOREACH p1 IN s.@path DO
+              FOREACH p2 IN t.@path DO
+                @@pathAll += p2 + [t] + [s] + p1
+              END
+            END
+          ELSE
+            @@next += true,
+            t.@visited2 += true,
+            IF s.@path.size() > 0 THEN
+              FOREACH p IN s.@path DO
+                t.@path += [s] + p
+              END
+            ELSE
+              t.@path += [s]
+            END
+          END;
+    END; //WHILE NOT @@found AND @@next DO
+  END; //IF person1Id != person2Id THEN
+  
+  vPost = 
+    SELECT p 
+    FROM Forum:f -(CONTAINER_OF>)- Post:p 
+    WHERE f.creationDate BETWEEN startDate AND endDate;
+  vComment = SELECT c FROM vPost:p -(<REPLY_OF*)- Comment:c;
+
+  @@pathInfoTop.resize(@@pathAll.size());
+  FOREACH path IN @@pathAll DO
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i IN range[0, path.size()-2] DO
+      jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+      P1 = SELECT p FROM Person:p WHERE p.id == path.get(i).id;
+      P2 = SELECT p FROM Person:p WHERE p.id == path.get(i+1).id;
+      C1 = SELECT c FROM P1:p1 -(<HAS_CREATOR)- Comment:c;
+      c2p =
+        SELECT c
+        FROM P2:p2 -(<HAS_CREATOR)- vPost:p -(<REPLY_OF)- C1:c
+        PER(c)
+        ACCUM @@weight += 1;
+
+      c2c =
+        SELECT c1
+        FROM P2:p2 -(<HAS_CREATOR)- vComment:c2 -(<REPLY_OF)- C1:c1
+        PER(c1)
+        ACCUM @@weight += 0.5;
+    END; //FOREACH i IN range[0, path.size()-2] DO
+    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
+  END; //FOREACH path IN @@pathAll DO
+  PRINT @@pathInfoTop;
+}
+
+//INSTALL QUERY bi25
+//RUN QUERY bi25(19791209303405,19791209308983,1304208000000,1306886400000)

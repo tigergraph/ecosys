@@ -9,7 +9,7 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
   SumAccum<INT> @dist1 = -1, @dist2 = -1;
   SumAccum<INT> @@next;
   OrAccum @@found = False;
-  MinAccum<INT> @@dist12=-1;
+  MaxAccum<INT> @@dist12=-1;
 
   IF person1Id != person2Id THEN
     S1 = { person1Id };
@@ -23,13 +23,14 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
         SELECT t
         FROM S1:s-(KNOWS)-Person:t
         WHERE t.@dist1 < 0
-        ACCUM CASE WHEN t.@dist2 > -1 THEN
-          @@found += True,
-          @@dist12 += s.@dist1 + t.@dist2 + 1
-        ELSE
+        ACCUM 
+          IF t.@dist2 > -1 THEN
+            @@found += True,
+            @@dist12 += s.@dist1 + t.@dist2 + 1
+          ELSE
             @@next += 1,
             t.@dist1 = s.@dist1 + 1
-        END;
+          END;
 
       IF @@found OR @@next == 0 THEN
         BREAK;
@@ -39,13 +40,18 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
         SELECT t
         FROM S2:s-(KNOWS)-Person:t
         WHERE t.@dist2 < 0
-        ACCUM CASE WHEN t.@dist1 > -1 THEN
-            @@found += True,
-            @@dist12 += s.@dist1 + t.@dist2 + 1
-        ELSE
-            @@next += 1,
-            t.@dist2 = s.@dist2 + 1
-        END;
+        ACCUM 
+          IF t.@dist1 > -1 THEN
+              @@found += True,
+              @@dist12 += s.@dist1 + t.@dist2 + 1
+          ELSE
+              @@next += 1,
+              t.@dist2 = s.@dist2 + 1
+          END;
+
+      IF @@found OR @@next == 0 THEN
+        BREAK;
+      END;
     END;
 
   ELSE //IF person1Id != person2Id THEN
@@ -54,3 +60,6 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
 
   PRINT @@dist12 AS shortestPathLength;
 }
+
+//INSTALL QUERY ic13 
+//RUN QUERY ic13(17592186055119, 8796093025131)

@@ -16,10 +16,10 @@ CREATE QUERY is6(STRING messageId) FOR GRAPH ldbc_snb {
   END;
 
   vModerator =
-    SELECT t3
-    FROM vMessage:s -(REPLY_OF>*)- Post:t1 -(<CONTAINER_OF)- Forum:t2 -(HAS_MODERATOR>)-Person:t3
-    PER(t3)
-    ACCUM t3.@forumId = t2.id, t3.@forumTitle = t2.title;
+    SELECT p
+    FROM vMessage:s -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f -(HAS_MODERATOR>)-Person:p
+    PER(p)
+    ACCUM p.@forumId = f.id, p.@forumTitle = f.title;
 
   PRINT vModerator[
       vModerator.@forumId AS forumId,
@@ -30,4 +30,4 @@ CREATE QUERY is6(STRING messageId) FOR GRAPH ldbc_snb {
 }
 
 // INSTALL QUERY is6
-// RUN QUERY is6(1236950581248)
+// RUN QUERY is6(65970697666575)

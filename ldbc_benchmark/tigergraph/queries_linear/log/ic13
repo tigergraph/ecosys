@@ -6,5 +6,5 @@
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"shortestPathLength": -1}]
+  "results": [{"shortestPathLength": 3}]
 }

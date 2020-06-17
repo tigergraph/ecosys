@@ -20,7 +20,7 @@ variable_list={
 'ic11':['personId','personFirstName','personLastName','organizationName','organizationWorkFromYear'],
 'ic12':['personId','personFirstName','personLastName','tagNames','replyCount'],
 'ic13':['shortestPathLength'],
-#ic_14
+'ic14':['personIdsInPath', 'pathWeight'],
 'is1': ['firstName','lastName','birthday','locationIP','browserUsed','cityId','gender','creationDate'],
 'is2': ['messageId','messageContent','messageCreationDate','originalPostId',
          'originalPostAuthorId','originalPostAuthorFirstName','originalPostAuthorLastName'],
@@ -56,6 +56,7 @@ variable_list={
 'bi22':['person1Id','person2Id','city1Name','score'], 
 'bi23':['messageCount','destinationName','month'], 
 'bi24':['messageCount','likeCount','year','month','continentName'], 
+'bi25':['personIdsInPath', 'pathWeight'],
 }
 
 parser = argparse.ArgumentParser(description='Process the results and compare')
@@ -63,13 +64,13 @@ parser.add_argument('--result', default='SF100/')
 parser.add_argument('--log', default='log/')
 parser.add_argument('--err', default='err/')
 parser.add_argument('--queries', 
-  default='ic1,ic2,ic3,ic4,ic5,ic6,ic7,ic8,ic9,ic10,ic11,ic12,ic13,bi1,bi2,bi3,bi4,bi5,bi6,bi7,bi8,bi9,bi10,bi11,bi12,bi13,bi14,bi15,bi16,bi17,bi18,bi20,bi21,bi22,bi23,bi24,is1,is2,is3,is4,is5,is6')
+  default='all')
 
 args = parser.parse_args()
 
-q_ic = ['ic'+str(i+1) for i in range(13)]
+q_ic = ['ic'+str(i+1) for i in range(14)]
 q_is = ['is'+str(i+1) for i in range(7)]
-q_bi = ['ic'+str(i+1) for i in range(25)]
+q_bi = ['bi'+str(i+1) for i in range(25)]
 if args.queries == 'all':
     qs = q_ic+q_is+q_bi
 elif  args.queries == 'ic':
@@ -93,7 +94,7 @@ def node2table(rows, variable):
 def txt2table(q):
     filename = os.path.join(args.result, q)
     if not os.path.isfile(filename): 
-        print ('No results for {}'.format(q)) 
+        print ('No benchmark for {}'.format(q)) 
         return None
     with open(filename,'r',encoding='utf-8') as f:
         lines = f.readlines()[2:]
@@ -106,6 +107,9 @@ def txt2table(q):
 
 def log2table(q):
     filename = os.path.join(args.log, q)
+    if not os.path.isfile(filename): 
+        print ('No result for {}'.format(q)) 
+        return None
     with open(filename,'r',encoding='utf-8') as f:
         try:
             res = json.load(f)['results'][0]
@@ -195,9 +199,10 @@ for q in qs:
         result_file = os.path.join(output0, q)
         write_table(table1, result_file)
     
-    err_file = os.path.join(args.err, q)
-    time = err2time(err_file)
-    print('time:{}s'.format(time))
-    result_file = os.path.join(output, q)
-    write_table(table2, result_file)
-    #table3=read_table(result_file)
+    if table2 is not None:
+        err_file = os.path.join(args.err, q)
+        time = err2time(err_file)
+        print('time:{}s'.format(time))
+        result_file = os.path.join(output, q)
+        write_table(table2, result_file)
+        #table3=read_table(result_file)

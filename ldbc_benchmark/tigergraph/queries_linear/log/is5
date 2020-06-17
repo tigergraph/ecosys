@@ -1,10 +1,18 @@
 {
   "error": false,
-  "message": "Runtime Warning: 1 ids are invalid Post vertex ids.",
+  "message": "",
   "version": {
     "schema": 0,
     "edition": "enterprise",
     "api": "v2"
   },
-  "results": [{"vPerson": []}]
+  "results": [{"vPerson": [{
+    "v_id": "2199023313551",
+    "attributes": {
+      "firstName": "Peng",
+      "lastName": "Zhu",
+      "personId": 2199023313551
+    },
+    "v_type": "Person"
+  }]}]
 }
