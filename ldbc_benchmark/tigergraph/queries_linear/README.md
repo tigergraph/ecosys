@@ -1,15 +1,27 @@
 # Linear query benchmark on ldbc_snb
+## Prerequisites
+Please make sure that you already installed TigerGraph, loaded all LDBC SNB data into it, and logged in as the user can run TigerGraph. Then you type the following commands to install a helper function and all GSQL queries:
+```bash
+git clone git@github.com:tigergraph/ecosys.git
+cd ecosys
+git checkout ldbc
+cd ldbc_benchmark/tigergraph/queries_linear
+```
+
 ## Run queries
 To parse, install and run the queries. 
 ```bash
 source main.sh
-The log of queries are stored in folder log/ and error message containing time information is in err/ 
+```
 
+The log of queries are stored in folder log/ and error message containing time information is in err/ 
 main.sh is a simply bash script and can be edited. For example, if you want to run query ic4 and ic5, modify line 4 to 
+
 ```bash
 for q in ic4 ic5 ic6 ic7
 ```
-Right now, bi19 cannot work.
+
+Right now, bi19 cannot work. bi25 and ic14 requires user defined function, which is included in bi25.gsql and ic14.gsql.
 
 ## Compare results
 The old results for SF100 is in SF100/. To compare results with the old one
