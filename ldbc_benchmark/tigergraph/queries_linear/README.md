@@ -18,7 +18,7 @@ The log of queries are stored in folder log/ and error message containing time i
 main.sh is a simply bash script and can be edited. For example, if you want to run query ic4 and ic5, modify line 4 to 
 
 ```bash
-for q in ic4 ic5 ic6 ic7
+for q in ic4 ic5
 ```
 
 Right now, bi19 cannot work. bi25 and ic14 requires user defined function, which is included in bi25.gsql and ic14.gsql.
