@@ -24,7 +24,7 @@ CREATE QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
     ACCUM @@knows += p;
   P = 
     SELECT p
-    FROM vMessage:s -(REPLY_OF>)- Comment:c -(HAS_CREATOR>)- Person:p
+    FROM vMessage:s -(<REPLY_OF)- Comment:c -(HAS_CREATOR>)- Person:p
     ACCUM @@replyTop += reply(c.id, c.content, c.creationDate, p.id, p.firstName, p.lastName, p IN @@knows);
   PRINT @@replyTop;
 }

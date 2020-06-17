@@ -31,6 +31,7 @@ python3 compare_result.py
 It also dumps python ast of old results in result0/ and current results in result/. The two text files should be exactly the same. 
 Output is as follows
 ```
+
 ic1:Fail: number of rows 7 != 5
 time:5.53s
 ic2:PASS
@@ -71,8 +72,8 @@ is5:PASS
 time:0.72s
 is6:PASS
 time:0.72s
-is7:Fail: number of rows 3 != 1
-time:2.98s
+is7:PASS
+time:0.72s
 bi1:PASS
 time:19.16s
 bi2:PASS
@@ -113,8 +114,8 @@ bi19:No benchmark for bi19
 No result for bi19
 bi20:No benchmark for bi20
 time:43.55s
-bi21:Fail: number of rows 100 != 31
-time:8.75s
+bi21:Fail: (0,0) 105512 != 24189256211383
+time:9.05s
 bi22:PASS
 time:111.59s
 bi23:PASS
@@ -124,4 +125,4 @@ time:107.94s
 bi25:No benchmark for bi25
 time:1.68s
 ```
-Old results of ic1, is7 and bi21 are wrong.  bi19 exceeds memroy limit and cannot be tested.
+Old results of ic1 and bi21 are wrong.  bi19 exceeds memroy limit and cannot be tested.

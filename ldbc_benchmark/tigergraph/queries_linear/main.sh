@@ -1,7 +1,7 @@
 #!/bin/bash
 query_list=""
 cd queries
-for q in is4 is5 is6 is7 #$(ls | sort --version-sort| cut -d. -f1)
+for q in bi21 #$(ls | sort --version-sort| cut -d. -f1)
 do
   if [ -z "$query_list" ]
     then query_list=$q
