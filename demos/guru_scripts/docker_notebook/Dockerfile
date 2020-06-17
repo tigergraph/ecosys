@@ -41,6 +41,5 @@ COPY --chown=tigergraph gsql101.ipynb gsql102.ipynb jupyter_notebook_config.py /
 USER root
 
 EXPOSE 22
-#ENTRYPOINT su - tigergraph bash -c "script -q /dev/null"
 
 ENTRYPOINT  su - tigergraph bash -c "export PATH='$PATH:/home/tigergraph/.gium/:/home/tigergraph/anaconda3/bin/' && gadmin start && jupyter notebook --NotebookApp.token='' && script -q /dev/null "
