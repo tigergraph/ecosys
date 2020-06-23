@@ -1,0 +1,22 @@
+use graph ldbc_snb
+drop query q104_
+
+CREATE QUERY q104_ () SYNTAX v1 {
+  MaxAccum<Datetime> @@oldest;
+
+VS_t = {Person.*};
+VS__1 =
+	select s
+	from   VS_t:t -(LIKES:x)-> Comment:s;
+
+V =
+	select	t
+	from   VS__1:t
+	accum       @@oldest += t.creationDate
+		;
+
+  Print @@oldest;
+
+}
+
+//install query q104_

@@ -1,0 +1,18 @@
+use graph ldbc_snb
+
+drop query q10
+CREATE QUERY q10 () SYNTAX _v2 {
+
+  MaxAccum<Datetime> @oldest;
+
+  V = SELECT tgt
+      FROM Person:s- (LIKES>)-Comment:tgt
+      PER (tgt)
+      ACCUM tgt.@oldest += tgt.creationDate;
+
+  Print  V.size();
+
+}
+
+install query q10
+#run query q10()

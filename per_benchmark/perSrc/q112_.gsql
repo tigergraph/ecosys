@@ -1,0 +1,38 @@
+use graph ldbc_snb
+
+drop query q112_
+CREATE QUERY q112_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @tag_ids;
+
+  /* __TF_HOP_BEGIN:8 */
+VS_t1 = { Tag.* };
+
+VS__1 =
+        select f
+        from   VS_t1:t -(HAS_TAG_REVERSE:x)-> _:f;
+
+VS__2 =
+        select p
+        from   VS__1:f -(CONTAINER_OF:x_2)-> Post:p;
+
+VS__3 =
+        select s
+        from   VS__2:p -(LIKES_REVERSE:x_4)-> Person:s;
+
+V =
+        select  s
+        from   VS__3:s
+        accum       s.@tag_ids += s.id
+                ;
+/* __TF_HOP_END:11 */
+
+  Print V.size();
+}
+

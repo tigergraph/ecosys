@@ -1,0 +1,25 @@
+use graph ldbc_snb
+drop query q102_
+
+CREATE QUERY q102_ () SYNTAX v1 {
+
+SumAccum<int> @@person_cnt;
+
+VS_s = {Forum.*};
+VS__1 =
+	select p
+	from   VS_s:s -(CONTAINER_OF:x)-> Post:p;
+
+XXX1 =
+	select t
+	from   VS__1:p -(LIKES_REVERSE:x_2)-> Person:t;
+V = 
+  select s
+  from  XXX1:s
+  ACCUM @@person_cnt += 1;
+
+ Print @@person_cnt;
+
+}
+
+//install query q102_

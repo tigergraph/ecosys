@@ -1,0 +1,32 @@
+use graph ldbc_snb
+
+drop query q103_
+
+CREATE QUERY q103_ () SYNTAX v1 {
+  SumAccum<int> @@person_cnt;
+
+
+VS_s = {Tag.*};
+VS__1 =
+	select f
+	from   VS_s:s -(HAS_TAG_REVERSE:x)-> _:f;
+
+VS__2 =
+	select p
+	from   VS__1:f -(CONTAINER_OF:x_2)-> Post:p;
+ 
+XXX1 =
+	select t
+	from   VS__2:p -(LIKES_REVERSE:x_4)-> _:t;
+ 
+ 
+V = 
+  select s
+  from  XXX1:s
+  ACCUM @@person_cnt += 1;
+
+  Print @@person_cnt;
+
+}
+
+//install query q103_

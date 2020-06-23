@@ -1,0 +1,20 @@
+use graph ldbc_snb
+
+drop query q108
+CREATE QUERY q108 () SYNTAX _v2 {
+
+  SumAccum<int> @forum_cnt;
+
+  //per tgt local accum
+  V = SELECT f
+      FROM Forum:f- (CONTAINER_OF>)-Post:p - (<LIKES) - Person:s
+      WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+      PER (f)
+      ACCUM f.@forum_cnt += 1;
+
+  Print V.size();
+
+}
+
+//install query q108
+//run query q2()

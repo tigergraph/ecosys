@@ -1,0 +1,17 @@
+use graph ldbc_snb
+
+drop query q112_2
+CREATE QUERY q112_2 () SYNTAX _v2 {
+
+  SumAccum<int> @tag_ids;
+
+  V = SELECT s
+      FROM Tag:t -(<HAS_TAG)- Forum:f -(CONTAINER_OF>)-Post:p -(<LIKES)- Person:s 
+      PER (s)
+      ACCUM s.@tag_ids += s.id;
+
+  Print V.size();
+}
+
+//install query q112
+//run query q2()

@@ -1,0 +1,18 @@
+use graph ldbc_snb
+
+drop query q107_2
+CREATE QUERY q107_2 () SYNTAX _v2 {
+
+  SumAccum<int> @comment_cnt;
+
+  V = SELECT s 
+      FROM Comment:t- (<LIKES)-Person:s
+      WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer" 
+      PER (s)
+      ACCUM s.@comment_cnt += 1;
+
+  Print V.size();
+
+}
+
+//install query q107

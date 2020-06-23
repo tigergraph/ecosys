@@ -1,0 +1,18 @@
+use graph ldbc_snb
+
+drop query q101
+CREATE QUERY q101 () SYNTAX _v2 {
+
+  SumAccum<int> @@comment_cnt;
+
+  V = SELECT s
+      FROM Person:s- (LIKES>)-Comment:tgt
+      PER (s)
+      ACCUM @@comment_cnt += 1;
+
+  Print @@comment_cnt;
+
+}
+
+//install query q101
+//run query q101()
