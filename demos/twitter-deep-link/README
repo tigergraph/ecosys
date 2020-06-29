@@ -2,7 +2,7 @@ This document details how to reproduce the deep-link traversal on a 1.48-billion
 
 Data Sets
 ===========
-- twitter edge file: http://service.tigergraph.com/download/benchmark/twitter/twitter_rv.tar.gz
+- twitter edge file:  http://service.tigergraph.com/download/benchmark/dataset/twitter/twitter_rv.tar.gz
 After you download it to a data folder, untar it
 
 tar xvf twitter_rv.tar.gz
