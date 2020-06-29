@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-ENV DEV_VERSION 2.4.1
+ENV DEV_VERSION 2.6.1
 RUN useradd -ms /bin/bash tigergraph
 
 RUN apt-get -qq update && apt-get install -y --no-install-recommends curl iproute2 net-tools cron ntp locales vim emacs wget git tar unzip jq uuid-runtime openssh-client openssh-server > /dev/null && \
