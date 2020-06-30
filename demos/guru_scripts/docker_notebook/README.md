@@ -3,7 +3,7 @@ Steps to get TigerGraph Developer + Jupyter notebook
 
 1. To build the Docker container download this folder, open a terminal, and in this folder run (assuming you already installed Docker):
 
-   `docker build --tag tigergraph-notebook:0.1 .`
+   `docker build --tag tigergraph-notebook:0.2 .`
 
 2. To run the Docker container for the first time:
 
