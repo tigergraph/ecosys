@@ -4,10 +4,9 @@
     <groupId>com.tigergraph.client</groupId>
     <name>gsql_client</name>
     <artifactId>gsql_client</artifactId>
-    <version>2.6.0</version>
+    <version>3.0.0</version>
     <url>http://maven.apache.org</url>
     <build>
-        <sourceDirectory>.</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -21,11 +20,6 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <includes>
-                        <include>com/tigergraph/client/*.java</include>
-                        <include>com/tigergraph/*/client/*.java</include>
-                        <include>com/tigergraph/*/common/**</include>
-                    </includes>
                 </configuration>
             </plugin>
             <plugin>
@@ -35,14 +29,7 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <includes>
-                                <include>com/tigergraph/client/*.java</include>
-                                <include>com/tigergraph/*/client/*.java</include>
-                                <include>com/tigergraph/*/common/**</include>
-                            </includes>
-                        </configuration>
+                        <phase>verify</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -65,13 +52,6 @@
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
-                        <configuration>
-                            <sourceFileIncludes>
-                                <include>com/tigergraph/client/*.java</include>
-                                <include>com/tigergraph/*/client/*.java</include>
-                                <include>com/tigergraph/*/common/**</include>
-                            </sourceFileIncludes>
-                        </configuration>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -94,6 +74,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.1.1</version>
+                <!-- TO-DO: This needs to be changed once we modify log4j2.xml in next release. -->
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>**/Log4j2Plugins.dat</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -129,6 +121,18 @@
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>2.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.13.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>

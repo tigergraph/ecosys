@@ -1,0 +1,25 @@
+<Configuration status="INFO" packages="com.tigergraph.client">
+  <Appenders>
+    <RollingFile
+        name="GsqlClientLog"
+        fileName="${sys:LOG_DIR}/${sys:LOG_FILE_NAME}"
+        filePattern="${sys:LOG_DIR}/${sys:LOG_FILE_NAME}.%d{yyyyMMdd-HHmmss.SSS}">
+			<PatternLayout>
+				<Pattern>%.-1p@%d{yyyyMMdd HH:mm:ss.SSS} %us(%C{1}:%L) %m%n %ex{suffix()}</Pattern>
+			</PatternLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="500 MB"/>
+			</Policies>
+      <DefaultRolloverStrategy max="20"/>
+		</RollingFile>
+  </Appenders>
+	
+  <Loggers>
+    <Root level="ERROR">
+      <AppenderRef ref="GsqlClientLog"/>
+    </Root>
+    <Logger name="com.tigergraph" level="INFO" additivity="false">
+      <AppenderRef ref="GsqlClientLog"/>
+    </Logger>
+  </Loggers>
+</Configuration>

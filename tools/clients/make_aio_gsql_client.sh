@@ -14,9 +14,9 @@ fi
 #######################################
 # 1. create Driver.java begin section #
 #######################################
-rm -rf com/tigergraph/*
-mkdir -p com/tigergraph/client
-cat <<EOT >> com/tigergraph/client/Driver.java
+rm -rf src/main/java/com/tigergraph/*
+mkdir -p src/main/java/com/tigergraph/client
+cat <<EOT >> src/main/java/com/tigergraph/client/Driver.java
 package com.tigergraph.client;
 import java.io.OutputStream;
 
@@ -41,8 +41,9 @@ EOT
 ########################################################################
 # 2. add each version. Make sure we can CD to the first GLE directory. #
 ########################################################################
-cd $GLE_DIR; git pull && git checkout tg_2.6.0_dev; cd -
+cd $GLE_DIR; git pull && git checkout tg_3.0.0_dev; cd -
 #                     client path branch/tag                      version_string is_tag?
+./new_gsql_version.sh $GLE_DIR    tg_3.0.0_dev                    v3_0_0
 ./new_gsql_version.sh $GLE_DIR    tg_2.6.0_dev                    v2_6_0
 ./new_gsql_version.sh $GLE_DIR    tg_2.5.2_dev                    v2_5_2
 ./new_gsql_version.sh $GLE_DIR    tg_2.5.0_dev                    v2_5_0
@@ -52,7 +53,7 @@ cd $GLE_DIR; git pull && git checkout tg_2.6.0_dev; cd -
 ######################################
 # 3. finish Driver.java endi section #
 ######################################
-cat <<EOT >> com/tigergraph/client/Driver.java
+cat <<EOT >> src/main/java/com/tigergraph/client/Driver.java
         }
      } // end main
 }
