@@ -8,12 +8,7 @@ If you simply want to access TigerGraph remotely, please refer to our official d
 ## Version Compatibility
 | GSQL Client  | Server |
 | :----------- | :---------------- |
+| `3.0.0`      | `3.0.0`<br>`2.6.*`<br>`2.5.*`<br>`2.4.*`<br>`2.3.2` |
 | `2.6.0`      | `2.6.*`<br>`2.5.*`<br>`2.4.*`<br>`2.3.2` |
 | `2.5.2`      | `2.5.*`<br>`2.4.*`<br>`2.3.2` |
 | `2.5.0`      | `2.5.0`<br>`2.4.*`<br>`2.3.2` |
-
-**Note**: `3.0.0-beta` is not compatible with `2.6.*`
-
-| GSQL Client  | Server |
-| :----------- | :---------------- |
-| `3.0.0-beta` | `3.0.0-beta`<br>`2.5.*`<br>`2.4.*`<br>`2.3.2` |

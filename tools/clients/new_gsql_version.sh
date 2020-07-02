@@ -13,7 +13,7 @@ else
 fi
 
 #Step 0:  add this version in AIO driver
-cat <<EOT >> com/tigergraph/client/Driver.java
+cat <<EOT >> src/main/java/com/tigergraph/client/Driver.java
             if ( i==1 ) {
                 Supported_Versions = Supported_Versions + "$VSTR ";
             }
@@ -30,7 +30,7 @@ cat <<EOT >> com/tigergraph/client/Driver.java
 EOT
 
 #Step 1: clean up and then create the target dir
-cd com/tigergraph
+cd src/main/java/com/tigergraph
 rm -rf $VSTR;  mkdir $VSTR
 
 #Step 2: switch the source to correct branch (release). Get client commit
@@ -68,35 +68,47 @@ cd -
 
 #Step 3: Copy source code to target
 cp -r $GLE/$SRC_CLIENT $VSTR
-cp -r $GLE/$SRC_COMMON $VSTR
+# Note: 3.0.0 requires src/main/resources, but doesn't have $SRC_COMMON
+if [[ $VSTR = v3* ]]; then
+  cp -r $GLE/gsql-client/src/main/resources ../../../
+else
+  cp -r $GLE/$SRC_COMMON $VSTR
+fi
 
 
 #Step 4: fix source code
 cd $VSTR
 if [ "$(uname)" == "Darwin" ]; then
-    # On Mac, sed need to have empty string '' after -i 
-    #4.1: fix package name with VSTR
-    LC_ALL=C find . -type f -name '*.java'      -exec sed -i '' "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} + 
-    LC_ALL=C find . -type f -name '*.java'      -exec sed -i '' "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} +
-    #4.2: embed client_commit gotten from Step 2
-    LC_ALL=C find . -type f -name 'Util.java'   -exec sed -i '' "s/.*clientCommitHash.*=.*null.*/  if (true) return $client_commit; String clientCommitHash = null;/" {} +
-    #4.3: replace System.exit() to SecurityException()  -- so we will try the next client version
-    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i '' "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
-    #4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
-    LC_ALL=C find . -type f -name 'Driver.java' -exec sed -i '' "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
-    #4.5: exit if license expires
-    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i '' "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }/" {} +
+  # On Mac, sed need to have empty string '' after -i 
+  SED_OPT= "-i ''"
 else
-    #4.1: fix package name with VSTR
-    LC_ALL=C find . -type f -name '*.java'      -exec sed -i    "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} + 
-    LC_ALL=C find . -type f -name '*.java'      -exec sed -i    "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} +
-    #4.2: embed client_commit gotten from Step 2
-    LC_ALL=C find . -type f -name 'Util.java'   -exec sed -i    "s/.*clientCommitHash.*=.*null.*/  if (true) return $client_commit; String clientCommitHash = null;/" {} +
-    #4.3: replace System.exit() to SecurityException()  -- so we will try the next client version
-    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i    "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
-    #4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
-    LC_ALL=C find . -type f -name 'Driver.java' -exec sed -i    "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
-    #4.5: exit if license expires
-    LC_ALL=C find . -type f -name 'Client.java' -exec sed -i    "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }/" {} +
+  SED_OPT="-i"
 fi
 
+#4.1: fix package name with VSTR
+LC_ALL=C find . -type f -name '*.java' -exec sed $SED_OPT "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} + 
+LC_ALL=C find . -type f -name '*.java' -exec sed $SED_OPT "s/com.tigergraph.c/com.tigergraph.$VSTR.c/" {} +
+#4.2: embed client_commit gotten from Step 2
+if [[ $VSTR = v3* ]]; then
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*clientCommitHash.*=.*null.*/  if (true) return $client_commit; String clientCommitHash = null;/" {} +
+else
+  LC_ALL=C find . -type f -name 'Util.java' -exec sed $SED_OPT "s/.*clientCommitHash.*=.*null.*/  if (true) return $client_commit; String clientCommitHash = null;/" {} +
+fi
+#4.3: replace System.exit() to SecurityException()  -- so we will try the next client version
+if [[ $VSTR = v3* ]]; then
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);.*/      throw new SecurityException();/" {} +
+else
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
+fi
+#4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
+if [[ $VSTR = v3* ]]; then
+  LC_ALL=C find . -type f -name 'Driver.java' -exec sed $SED_OPT "s/.*SystemUtils.exit(ExitStatus.UNKNOWN_ERROR, e);.*//" {} +
+else
+  LC_ALL=C find . -type f -name 'Driver.java' -exec sed $SED_OPT "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
+fi
+#4.5: exit if license expires
+if [[ $VSTR = v3* ]]; then
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);} }/" {} +
+else
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }/" {} +
+fi
