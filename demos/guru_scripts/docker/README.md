@@ -99,9 +99,10 @@ After pulling the image and launch the container in the background, you can try 
 1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password. Note that we have mapped the host 14022 port to the container's 22 port (the ssh default port). So, on host we ssh to 14022. 
          
          ssh -p 14022 tigergraph@localhost
+         Enter password tigergraph when prompted.
 1. after ssh to the container, start the TigerGraph service under bash shell (may take up to 1 minute). 
 
-         gadmin start
+         gadmin start all
 
 1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/intro/gsql-101
 
@@ -120,8 +121,8 @@ Operation Commands Cheat Sheet
         
 - start/stop tigergraph service within container
 
-        gadmin start 
-        gadmin stop 
+        gadmin start all
+        gadmin stop  all
         
 - Start/Stop Docker Desktop
   - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph_dev container.
