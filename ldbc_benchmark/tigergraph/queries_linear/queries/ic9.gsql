@@ -17,7 +17,7 @@ CREATE QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
     SELECT s
     FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_CREATOR)- (Comment|Post):m 
     WHERE s != p AND m.creationDate < maxDate
-    PER(m)
+    PER(s,p,m)
     ACCUM 
       m.@personId = p.id,
       m.@personFirstName = p.firstName,

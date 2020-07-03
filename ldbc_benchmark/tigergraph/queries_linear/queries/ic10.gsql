@@ -27,7 +27,7 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
     WHERE p != personId AND p.@isFriend == false
           AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
                (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
-    PER(p)
+    PER(p,c)
     ACCUM p.@personCityName = c.name;
 
   FriendHasPost  =

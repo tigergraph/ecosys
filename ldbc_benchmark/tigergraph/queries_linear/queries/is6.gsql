@@ -18,7 +18,7 @@ CREATE QUERY is6(STRING messageId) FOR GRAPH ldbc_snb {
   vModerator =
     SELECT p
     FROM vMessage:s -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f -(HAS_MODERATOR>)-Person:p
-    PER(p)
+    PER(p,f)
     ACCUM p.@forumId = f.id, p.@forumTitle = f.title;
 
   PRINT vModerator[

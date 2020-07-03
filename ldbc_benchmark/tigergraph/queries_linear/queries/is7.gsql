@@ -17,7 +17,7 @@ CREATE QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
   IF vMessage.size() == 0 THEN
     vMessage = to_vertex_set(@@seed, "Post");
   END;
-  accFriend = 
+  S = 
     SELECT s
     FROM vMessage:s -(HAS_CREATOR>)- Person -(KNOWS)- Person:p
     PER(p)

@@ -12,7 +12,7 @@ CREATE QUERY ic11(vertex<Person> personId, string countryName, int workFromYear)
     SELECT p
     FROM S:s -(KNOWS*1..2)- Person:p -(WORK_AT>:e)- Company:org -(IS_LOCATED_IN>)- Country:c
     WHERE p != s AND c.name == countryName AND e.workFrom < workFromYear 
-    PER(p)
+    PER(p,e,org)
     ACCUM p.@organizationName = org.name,
           p.@organizationWorkFromYear = e.workFrom
     ORDER BY p.@organizationWorkFromYear ASC, p.id ASC, p.@organizationName DESC

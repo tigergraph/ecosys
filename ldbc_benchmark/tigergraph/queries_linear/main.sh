@@ -39,7 +39,7 @@ do
 done
 }
 
-install
-run
+#install
+#run
 #echo "run queries in background"
 #( trap "true" HUP ; run ) > nohup.out 2>/dev/null </dev/null & disown

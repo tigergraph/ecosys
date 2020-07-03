@@ -21,12 +21,12 @@ CREATE QUERY is2(VERTEX<Person> personId) FOR GRAPH ldbc_snb {
   accMessage = 
     SELECT s
     FROM vMessage:s -(REPLY_OF>*)-Post:t1 -(HAS_CREATOR>)-Person:t2
-    PER(s)
+    PER(s,t1,t2)
     ACCUM 
       IF s.type == "Comment" OR s.content != "" THEN
         s.@messageContent = s.content
       ELSE
-          s.@messageContent = t1.imageFile
+        s.@messageContent = t1.imageFile
       END,
       s.@postId = t1.id,
       s.@authorOgId = t2.id,

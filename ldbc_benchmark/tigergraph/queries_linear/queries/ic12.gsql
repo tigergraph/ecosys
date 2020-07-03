@@ -16,7 +16,7 @@ CREATE QUERY ic12(vertex<Person> personId, string tagClassName) FOR GRAPH ldbc_s
           -(REPLY_OF>)- Post -(HAS_TAG>)- Tag:t
           -(HAS_TYPE>)- TagClass -(IS_SUBCLASS_OF>*)- TagClass:tc
     WHERE tc.name == tagClassName
-    PER(p)
+    PER(p,c,t)
     ACCUM p.@replySet += c, p.@tagNames += t.name
     POST-ACCUM p.@replyCount = p.@replySet.size(), p.@replySet.clear()
     ORDER BY p.@replyCount DESC, p.id ASC

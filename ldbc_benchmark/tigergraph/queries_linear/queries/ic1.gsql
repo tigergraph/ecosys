@@ -14,7 +14,7 @@ CREATE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
   P = SELECT p
     FROM S:s -(KNOWS)- Person:p -(IS_LOCATED_IN>)- City:ct
     WHERE p != personId AND p.firstName == firstName
-    PER(p)
+    PER(p,ct)
     ACCUM p.@distanceFromPerson = 1,
           p.@friendCityName = ct.name
     POST-ACCUM @@friendSet += p;
@@ -23,7 +23,7 @@ CREATE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
     SELECT p
     FROM S:s -(KNOWS*2)- Person:p -(IS_LOCATED_IN>)- City:ct
     WHERE p != personId AND p.firstName == firstName
-    PER(p)
+    PER(p,ct)
     ACCUM p.@distanceFromPerson = 2,
           p.@friendCityName = ct.name
     POST-ACCUM @@friendSet += p;
@@ -32,7 +32,7 @@ CREATE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
     SELECT p
     FROM S:s -(KNOWS*3)- Person:p -(IS_LOCATED_IN>)- City:ct
     WHERE p != personId AND p.firstName == firstName
-    PER(p)
+    PER(p,ct)
     ACCUM p.@distanceFromPerson = 3,
           p.@friendCityName = ct.name
     POST-ACCUM @@friendSet += p;
@@ -42,7 +42,7 @@ CREATE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
     SELECT p
     FROM Country:cn -(<IS_LOCATED_IN) - Company:co -(<WORK_AT:ew) - P:p 
          -(STUDY_AT>:es)- University:u -(IS_LOCATED_IN>)- City:ct     
-    PER(p)
+    PER MATCH
     ACCUM p.@friendCompanies += comTuple(co.name, ew.workFrom, cn.name),
           p.@friendUniversities += univTuple(u.name, es.classYear, ct.name);
 

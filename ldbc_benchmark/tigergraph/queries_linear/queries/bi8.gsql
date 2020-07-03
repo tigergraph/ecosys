@@ -14,7 +14,7 @@ CREATE QUERY bi8(STRING tagName) FOR GRAPH ldbc_snb {
         -(<REPLY_OF)-Comment:m
         -(HAS_TAG>)-Tag:t2
     WHERE t.name == tagName 
-    PER(m)
+    PER(m,t2)
     ACCUM CASE WHEN t2.name == tagName THEN m.@isValid += False END;
 
   T =
