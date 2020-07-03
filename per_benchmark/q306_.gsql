@@ -1,0 +1,32 @@
+use graph ldbc_snb
+
+drop query q306_
+CREATE QUERY q306_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+// while loop iteration counter
+int i;
+/* __TF_HOP_END:0 */
+  MaxAccum<String> @@tagname;
+  /* __TF_HOP_BEGIN:6 */
+VS_s1 = { Person.* };
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p;
+VS__2 =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f;
+VS__3 =
+        select t
+        from   VS__2:f -(HAS_TAG:x_4)-> _:t;
+V =
+        select  t
+        from   VS__3:t
+        accum       @@tagname += t.name
+                ;
+/* __TF_HOP_END:9 */
+  Print @@tagname;
+}
+
+
+//install query q306a
+//run query q2()

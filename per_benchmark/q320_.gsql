@@ -1,0 +1,55 @@
+use graph ldbc_snb
+drop query q320_
+
+CREATE QUERY q320_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// for source attribute installation
+typedef tuple <datetime creationDate> gsqlpe_src_attrib_install_tup__1;
+
+// for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_1;
+
+// for installing source attributes
+MapAccum<vertex, gsqlpe_src_attrib_install_tup__1> @@gsqlpe_src_attrib_install_map__1;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+  MaxAccum<INT> @@oldest;
+  //find how many post/comment liked by a person
+  /* __TF_HOP_BEGIN:7 */
+VS_s1 = { Person.* };
+
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p
+        accum  p.@srcIdOnlyPropagAcc_1 += s
+        post-accum
+                      // install attributes needed in last hop
+ if s.type == "Person" then @@gsqlpe_src_attrib_install_map__1 += (s -> gsqlpe_src_attrib_install_tup__1(s.creationDate)) end;
+
+V =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  foreach s in p.@srcIdOnlyPropagAcc_1 do
+
+
+                      // retrieve source attributes
+                      datetime s__creationDate__gsqlpe__1 =  @@gsqlpe_src_attrib_install_map__1.get(s).creationDate,
+     @@oldest += datetime_to_epoch(s__creationDate__gsqlpe__1),
+      @@oldest += datetime_to_epoch(f.creationDate)
+
+                end
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+@@gsqlpe_src_attrib_install_map__1.clear();
+/* __TF_HOP_END:11 */
+
+  Print @@oldest;
+
+
+}
+
+//install query q314_

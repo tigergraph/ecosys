@@ -1,0 +1,17 @@
+use graph ldbc_snb
+
+drop query qk2
+CREATE QUERY qk2 () SYNTAX _v2 {
+  MaxAccum<DATETIME> @mb;
+  V = SELECT s
+      FROM Person:s- (KNOWS*1..3)-Person:t
+      PER (s)
+      ACCUM s.@mb += s.birthday
+      ORDER BY s.@mb
+      LIMIT 3;
+  Print V;
+
+}
+
+//install query q101
+//run query q101()

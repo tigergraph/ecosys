@@ -1,0 +1,36 @@
+use graph ldbc_snb
+
+drop query q305_
+CREATE QUERY q305_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// while loop iteration counter
+int i;
+/* __TF_HOP_END:0 */
+  MaxAccum<Datetime> @@oldest;
+
+  //find how many post/comment liked by a person
+  /* __TF_HOP_BEGIN:10 */
+VS_s1 = { Person.* };
+
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p;
+
+VS__2 =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> Forum:f;
+
+V =
+        select  f
+        from   VS__2:f
+        accum       @@oldest += f.creationDate
+                ;
+/* __TF_HOP_END:13 */
+
+  Print @@oldest;
+}
+
+
+//install query q305
+//run query q305()

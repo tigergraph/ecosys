@@ -1,0 +1,102 @@
+use graph ldbc_snb
+
+drop query q403_
+CREATE QUERY q403_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+typedef tuple<vertex p__, datetime p__creationDate> matches_at_0__TupTy;
+/* __TF_HOP_BEGIN:0 */
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+        SetAccum<vertex> @propagAcc_0_to_1;
+        SetAccum<vertex> @propagAcc_1_to_2;
+        SetAccum<matches_at_0__TupTy> @matches_at_0;
+        OrAccum @matches_at_1;
+        SetAccum<vertex> @@VSAcc_p;
+        SetAccum<vertex> @@VSAcc_s;
+        SetAccum<vertex> @@VSAcc_f;
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @@forum_cnt;
+
+  /* __TF_HOP_BEGIN:8 */
+
+
+VS_s = {Person.*};
+
+
+// traverse s --> p
+VS_p =
+        select p
+        from   VS_s:s -(LIKES:x)-> Post:p
+        accum        p.@propagAcc_0_to_1 += s
+                ;
+
+
+// traverse p --> f
+VS_f =
+select f
+        from   VS_p:p -(CONTAINER_OF_REVERSE:x)-> _:f
+        accum        f.@propagAcc_1_to_2 += p
+                ;
+
+
+// jump back f --> p
+VS_f =
+        SELECT f
+        FROM   VS_f:f
+        ACCUM  foreach p in f.@propagAcc_1_to_2 do
+                 p.@matches_at_1 += true,
+                 @@VSAcc_p += p
+               end
+        POST-ACCUM f.@propagAcc_1_to_2.clear();
+// clear accums of vertices to be filtered away from VS_p:
+VS_XXX (Post) = {@@VSAcc_p};
+VS_p = VS_p minus VS_XXX;
+VS_p = SELECT p FROM VS_p:p POST-ACCUM p.@propagAcc_0_to_1.clear();
+// filter VS_p:
+VS_p(Post) = {@@VSAcc_p}; @@VSAcc_p.clear();
+
+
+// jump back p --> s
+VS_p =
+        SELECT p
+        FROM   VS_p:p
+        ACCUM  foreach s in p.@propagAcc_0_to_1 do
+                   if p.@matches_at_1 then
+                      s.@matches_at_0 += matches_at_0__TupTy(p, p.creationDate)
+                   end,
+                 @@VSAcc_s += s
+               end
+POST-ACCUM p.@propagAcc_0_to_1.clear();
+// filter VS_s:
+VS_s(Person) = {@@VSAcc_s}; @@VSAcc_s.clear();
+
+
+
+// USER ACCUM CLAUSE
+VS_s =
+        SELECT s
+        FROM   VS_s:s
+        ACCUM  foreach t in s.@matches_at_0 do
+                   vertex p__ = t.p__,
+                   datetime p__creationDate = t.p__creationDate,
+
+                      @@VSAcc_p += p__,
+                       @@forum_cnt += datetime_to_epoch(p__creationDate)
+               end
+        POST-ACCUM s.@matches_at_0.clear();
+VS_p(Post) = {@@VSAcc_p}; @@VSAcc_p.clear();
+
+V  = VS_p;
+/* __TF_HOP_END:11 */
+
+  Print @@forum_cnt;
+
+
+}
+
+//install query q302
+//run query q302()

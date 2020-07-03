@@ -1,0 +1,19 @@
+use graph ldbc_snb
+
+drop query qk4
+CREATE QUERY qk4 () SYNTAX _v2 {
+
+  MaxAccum<int> @cnt;
+
+  V = SELECT s
+      FROM :s- (REPLY_OF>*)-Comment:t
+      WHERE t.id == 13194144951001
+      PER (s)
+      ACCUM s.@cnt += s.length;
+
+  Print V;
+
+}
+
+//install query q101
+//run query q101()

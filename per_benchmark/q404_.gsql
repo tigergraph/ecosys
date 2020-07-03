@@ -1,0 +1,111 @@
+use graph ldbc_snb
+
+drop query q404_
+CREATE QUERY q404_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+typedef tuple<vertex f__, datetime f__creationDate> matches_at_0__TupTy;
+/* __TF_HOP_BEGIN:0 */
+
+// for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_1;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+        SetAccum<vertex> @propagAcc_0_to_1;
+        SetAccum<vertex> @propagAcc_1_to_2;
+        SetAccum<matches_at_0__TupTy> @matches_at_0;
+        OrAccum @matches_at_1;
+        SetAccum<vertex> @@VSAcc_s;
+        SetAccum<vertex> @@VSAcc_t;
+        SetAccum<vertex> @@VSAcc_f;
+/* __TF_HOP_END:0 */
+  SumAccum<int> @@tag_cnt;
+  /* __TF_HOP_BEGIN:6 */
+
+
+VS_s = {Person.*};
+
+
+// traverse s --> f
+VS__1 =
+        select p
+        from   VS_s:s -(LIKES:x)-> Post:p
+        accum  p.@srcIdOnlyPropagAcc_1 += s;
+
+VS_f =
+       select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  foreach s in p.@srcIdOnlyPropagAcc_1 do
+
+
+                   case when s.type == "Person" then
+                           f.@propagAcc_0_to_1 += s
+
+                   end
+                end
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+
+// traverse f --> t
+VS_t =
+        select t
+        from   VS_f:f -(HAS_TAG:x)-> _:t
+        accum        t.@propagAcc_1_to_2 += f
+                ;
+
+
+// jump back t --> f
+VS_t =
+        SELECT t
+        FROM   VS_t:t
+        ACCUM  foreach f in t.@propagAcc_1_to_2 do
+                 f.@matches_at_1 += true,
+                 @@VSAcc_f += f
+               end
+        POST-ACCUM t.@propagAcc_1_to_2.clear();
+// clear accums of vertices to be filtered away from VS_f:
+VS_XXX (Forum) = {@@VSAcc_f};
+VS_f = VS_f minus VS_XXX;
+VS_f = SELECT f FROM VS_f:f POST-ACCUM f.@propagAcc_0_to_1.clear();
+// filter VS_f:
+VS_f(Forum) = {@@VSAcc_f}; @@VSAcc_f.clear();
+// jump back f --> s
+VS_f =
+        SELECT f
+        FROM   VS_f:f
+        ACCUM  foreach s in f.@propagAcc_0_to_1 do
+                   if f.@matches_at_1 then
+                      s.@matches_at_0 += matches_at_0__TupTy(f, f.creationDate)
+                   end,
+                 @@VSAcc_s += s
+               end
+        POST-ACCUM f.@propagAcc_0_to_1.clear();
+// filter VS_s:
+VS_s(Person) = {@@VSAcc_s}; @@VSAcc_s.clear();
+
+
+
+// USER ACCUM CLAUSE
+VS_s =
+        SELECT s
+        FROM   VS_s:s
+        ACCUM  foreach t_1 in s.@matches_at_0 do
+                   vertex f__ = t_1.f__,
+                   datetime f__creationDate = t_1.f__creationDate,
+
+                      @@VSAcc_f += f__,
+                       @@tag_cnt += datetime_to_epoch(f__creationDate)
+               end
+        POST-ACCUM s.@matches_at_0.clear();
+VS_f(Forum) = {@@VSAcc_f}; @@VSAcc_f.clear();
+
+V  = VS_f;
+/* __TF_HOP_END:9 */
+  Print @@tag_cnt;
+
+}
+
+//install query q303
+//run query q2()

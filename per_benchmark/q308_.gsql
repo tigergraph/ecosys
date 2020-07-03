@@ -1,0 +1,44 @@
+use graph ldbc_snb
+drop query q308_
+
+CREATE QUERY q308_ () SYNTAX v1 {
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_2, @srcIdOnlyPropagAcc_1;
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @forum_cnt;
+
+  /* __TF_HOP_BEGIN:8 */
+VS_s1 = { Person.* };
+
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p
+        where  s.firstName == "Viktor" and s.lastName == "Akhiezer"
+        accum  p.@srcIdOnlyPropagAcc_1 += s;
+
+VS__2 =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  f.@srcIdOnlyPropagAcc_2 += p.@srcIdOnlyPropagAcc_1
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+V =
+        select  f
+        from   VS__2:f
+        accum  foreach s in f.@srcIdOnlyPropagAcc_2 do
+
+                     s.@forum_cnt += 1, f.@forum_cnt += 1
+
+                end
+        post-accum f.@srcIdOnlyPropagAcc_2.clear();
+/* __TF_HOP_END:12 */
+
+  Print V.size();
+
+
+}
+
+//install query q308_

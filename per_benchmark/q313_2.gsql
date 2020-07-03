@@ -1,0 +1,14 @@
+use graph ldbc_snb
+drop query q313_2
+CREATE QUERY q313_2 () SYNTAX _v2 {
+  MaxAccum<INT> @oldest;
+  V = SELECT t 
+      FROM Comment:t-(<LIKES)-Person:s 
+      PER (s,t)
+      ACCUM t.@oldest += datetime_to_epoch(s.creationDate)
+      ORDER BY t.@oldest
+      LIMIT 2;
+  Print  V;
+
+}
+

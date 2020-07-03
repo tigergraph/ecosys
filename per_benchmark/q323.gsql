@@ -1,0 +1,20 @@
+use graph ldbc_snb
+
+drop query q323
+CREATE QUERY q323 () SYNTAX _v2 {
+  MaxAccum<INT> @oldest;
+  //find how many post/comment liked by a person
+  V = SELECT f
+      FROM Person:s- (LIKES>)-Post:p - (<CONTAINER_OF)-:f
+      PER (s,f)
+      ACCUM f.@oldest += datetime_to_epoch(s.creationDate)
+      POST_ACCUM f.@oldest+= datetime_to_epoch(f.creationDate)
+      ORDER BY f.@oldest
+      LIMIT 2;
+
+  Print V;
+
+}
+
+//install query q311
+//run query q5()

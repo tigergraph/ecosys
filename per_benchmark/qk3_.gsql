@@ -1,0 +1,77 @@
+use graph ldbc_snb
+
+drop query qk3_
+CREATE QUERY qk3_ () SYNTAX v1 {
+
+/* __TF_HOP_BEGIN:0 */
+
+// for VSet global accums
+SetAccum<VERTEX> @@GVS;
+
+// for while loop control
+bool foundNewVertices;
+int foundSoFarCount;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @@comment_cnt;
+
+  /* __TF_HOP_BEGIN:8 */
+VS_p1 = { Comment.* };
+///////////////////////////
+// LOWER BOUND LOOP [1..0]
+///////////////////////////
+TmpVS (ANY) = VS_p1;
+
+///////////////////////////
+// UPPER BOUND LOOP [0..oo]
+///////////////////////////
+
+i = 0;
+
+// initialize
+
+
+TmpVS =
+        select  p
+        from   VS_p1:p
+        where  p.id == 13194144951001;
+
+i = 1;
+
+
+VS__1 = TmpVS;
+
+VisitedByLoopSoFar = TmpVS;
+foundNewVertices = true;
+WHILE foundNewVertices DO
+
+TmpVS =
+        select s
+        from   TmpVS:x_2 -(REPLY_OF_REVERSE:x)-> _:s;
+
+foundSoFarCount = VisitedByLoopSoFar.size();
+VisitedByLoopSoFar = VisitedByLoopSoFar union TmpVS;
+foundNewVertices = foundSoFarCount < VisitedByLoopSoFar.size();
+i = i + 1;
+END; // WHILE
+
+VS__1 = VisitedByLoopSoFar;
+
+V =
+        select  s
+        from   VS__1:s
+        accum       @@comment_cnt += 1
+                ;
+/* __TF_HOP_END:12 */
+
+  Print @@comment_cnt;
+
+
+}
+
+//install query q101
+//run query q101()

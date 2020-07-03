@@ -1,0 +1,15 @@
+use graph ldbc_snb
+
+drop query q304
+CREATE QUERY q304 () SYNTAX _v2 {
+  MaxAccum<Datetime> @@oldest;
+  //find how many post/comment liked by a person
+  V = SELECT tgt
+      FROM Person:s- (LIKES>)-Comment:tgt
+      PER (s, tgt)
+      ACCUM @@oldest += tgt.creationDate;
+  Print @@oldest;
+}
+
+//install query q304
+//run query q304()

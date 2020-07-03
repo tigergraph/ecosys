@@ -1,0 +1,46 @@
+use graph ldbc_snb
+drop query q303_
+
+CREATE QUERY q303_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_2, @srcIdOnlyPropagAcc_3, @srcIdOnlyPropagAcc_1;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+  SumAccum<int> @@tag_cnt;
+  /* __TF_HOP_BEGIN:6 */
+VS_s1 = { Person.* };
+
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p
+        accum  p.@srcIdOnlyPropagAcc_1 += s;
+
+VS__2 =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  f.@srcIdOnlyPropagAcc_2 += p.@srcIdOnlyPropagAcc_1
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+VS__3 =
+        select t
+        from   VS__2:f -(HAS_TAG:x_4)-> _:t
+        accum  t.@srcIdOnlyPropagAcc_3 += f.@srcIdOnlyPropagAcc_2
+        post-accum f.@srcIdOnlyPropagAcc_2.clear();
+
+V =
+        select  t
+        from   VS__3:t
+        accum  foreach s in t.@srcIdOnlyPropagAcc_3 do
+                     @@tag_cnt += 1
+
+                end
+        post-accum t.@srcIdOnlyPropagAcc_3.clear();
+/* __TF_HOP_END:9 */
+  Print @@tag_cnt;
+}
+

@@ -1,0 +1,20 @@
+use graph ldbc_snb
+
+drop query q301_
+
+CREATE QUERY q301_ () SYNTAX v1 {
+
+SumAccum<int> @@comment_cnt;
+
+VS_s = {Person.*};
+V =
+	select tgt
+	from   VS_s:s -(LIKES:x)-> Comment:tgt
+	accum       @@comment_cnt += 1
+		;
+
+  Print @@comment_cnt;
+
+}
+
+//install query q301_

@@ -1,0 +1,25 @@
+use graph ldbc_snb
+drop query q313_
+CREATE QUERY q313_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+  MaxAccum<INT> @oldest;
+  /* __TF_HOP_BEGIN:5 */
+VS_s1 = { Person.* };
+
+V =
+        select t
+        from   VS_s1:s -(LIKES:x)-> Comment:t
+        accum       t.@oldest += datetime_to_epoch(s.creationDate)
+
+        ORDER BY t.@oldest
+        LIMIT 2;
+/* __TF_HOP_END:10 */
+  Print  V;
+
+}
+

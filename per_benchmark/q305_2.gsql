@@ -1,0 +1,20 @@
+use graph ldbc_snb
+
+drop query q305_2
+CREATE QUERY q305_2 () SYNTAX _v2 {
+
+
+  MaxAccum<Datetime> @@oldest;
+
+  //find how many post/comment liked by a person
+  V = SELECT f
+      FROM  Forum:f -(CONTAINER_OF>)- Post:p-(<LIKES)- Person:s
+      PER (s,f)
+      ACCUM @@oldest += f.creationDate;
+
+  Print @@oldest;
+
+}
+
+//install query q305
+//run query q305()

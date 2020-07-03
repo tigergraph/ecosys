@@ -1,0 +1,14 @@
+use graph ldbc_snb
+
+drop query q404_2
+CREATE QUERY q404_2 () SYNTAX _v2 {
+  SumAccum<int> @@tag_cnt;
+  V = SELECT f
+      FROM Tag:t-(<HAS_TAG)-Forum:f-(CONTAINER_OF>)-Post:p-(<LIKES)-Person:s
+      PER (f)
+      ACCUM @@tag_cnt += datetime_to_epoch(f.creationDate);
+  Print @@tag_cnt;
+}
+
+//install query q303
+//run query q2()

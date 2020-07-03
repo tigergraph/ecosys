@@ -1,0 +1,59 @@
+use graph ldbc_snb
+
+drop query q312_
+CREATE QUERY q312_ () SYNTAX v1 {
+ // for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_2, @srcIdOnlyPropagAcc_1;
+
+// for VSet global accums
+SetAccum<VERTEX> @@GVS;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+  MaxAccum<INT> @oldest;
+  //find how many post/comment liked by a person
+  /* __TF_HOP_BEGIN:7 */
+VS_s1 = { Person.* };
+
+VS__1 =
+        select p
+        from   VS_s1:s -(LIKES:x)-> Post:p
+        accum  p.@srcIdOnlyPropagAcc_1 += s;
+
+VS__2 =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  f.@srcIdOnlyPropagAcc_2 += p.@srcIdOnlyPropagAcc_1
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+XXX3 =
+        select t
+        from   VS__2:f -(HAS_TAG:x_4)-> _:t
+        accum  foreach s in f.@srcIdOnlyPropagAcc_2 do
+s.@oldest += t.id
+                ,
+
+                      @@GVS += s
+                end
+        post-accum f.@srcIdOnlyPropagAcc_2.clear();
+
+VS__3(Person) = {@@GVS};
+@@GVS.clear();
+
+
+V =
+        select  s
+        from   VS__3:s
+        ORDER BY s.@oldest
+        LIMIT 2;
+/* __TF_HOP_END:12 */
+
+  Print V;
+
+
+}
+
+//install query q311
+//run query q5()

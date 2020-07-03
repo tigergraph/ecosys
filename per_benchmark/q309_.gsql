@@ -1,0 +1,114 @@
+use graph ldbc_snb
+
+drop query q309_
+CREATE QUERY q309_ () SYNTAX v1 {
+/* __TF_HOP_BEGIN:0 */
+
+// for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_1;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+/* __TF_HOP_BEGIN:0 */
+SetAccum<vertex> @propagAcc_0_to_1;
+        SetAccum<vertex> @propagAcc_1_to_2;
+        SetAccum<vertex> @matches_at_0;
+        OrAccum @matches_at_1;
+        SetAccum<vertex> @@VSAcc_s;
+        SetAccum<vertex> @@VSAcc_t;
+        SetAccum<vertex> @@VSAcc_f;
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @forum_cnt;
+
+  /* __TF_HOP_BEGIN:8 */
+
+
+VS_s = {Person.*};
+
+
+// traverse s --> f
+VS__1 =
+        select p
+        from   VS_s:s -(LIKES:x)-> Post:p
+        where  s.firstName == "Viktor" and s.lastName == "Akhiezer"
+        accum  p.@srcIdOnlyPropagAcc_1 += s;
+
+VS_f =
+        select f
+        from   VS__1:p -(CONTAINER_OF_REVERSE:x_2)-> _:f
+        accum  foreach s in p.@srcIdOnlyPropagAcc_1 do
+
+
+                   case when s.type == "Person" then
+                           f.@propagAcc_0_to_1 += s
+
+                   end
+                end
+        post-accum p.@srcIdOnlyPropagAcc_1.clear();
+
+
+// traverse f --> t
+VS_t =
+        select t
+        from   VS_f:f -(HAS_TAG:x)-> _:t
+        accum        t.@propagAcc_1_to_2 += f
+                ;
+
+
+// jump back t --> f
+VS_t =
+        SELECT t
+       FROM   VS_t:t
+        ACCUM  foreach f in t.@propagAcc_1_to_2 do
+                 f.@matches_at_1 += true,
+                 @@VSAcc_f += f
+               end
+        POST-ACCUM t.@propagAcc_1_to_2.clear();
+// clear accums of vertices to be filtered away from VS_f:
+VS_XXX (Forum) = {@@VSAcc_f};
+VS_f = VS_f minus VS_XXX;
+VS_f = SELECT f FROM VS_f:f POST-ACCUM f.@propagAcc_0_to_1.clear();
+// filter VS_f:
+VS_f(Forum) = {@@VSAcc_f}; @@VSAcc_f.clear();
+
+
+// jump back f --> s
+VS_f =
+        SELECT f
+        FROM   VS_f:f
+        ACCUM  foreach s in f.@propagAcc_0_to_1 do
+                   if f.@matches_at_1 then
+                      s.@matches_at_0 += (f)
+                   end,
+                 @@VSAcc_s += s
+               end
+        POST-ACCUM f.@propagAcc_0_to_1.clear();
+// filter VS_s:
+VS_s(Person) = {@@VSAcc_s}; @@VSAcc_s.clear();
+
+
+
+// USER ACCUM CLAUSE
+VS_s =
+       SELECT s
+        FROM   VS_s:s
+        ACCUM  foreach f__ in s.@matches_at_0 do
+
+                      @@VSAcc_f += f__,
+                       s.@forum_cnt += 1, f__.@forum_cnt += 1
+               end
+        POST-ACCUM s.@matches_at_0.clear();
+VS_f(Forum) = {@@VSAcc_f}; @@VSAcc_f.clear();
+
+V  = VS_f;
+/* __TF_HOP_END:12 */
+
+  Print V.size();
+
+}
+
+//install query q308a
+//run query q308a()

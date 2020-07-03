@@ -1,0 +1,14 @@
+use graph ldbc_snb
+
+drop query q303
+CREATE QUERY q303 () SYNTAX _v2 {
+  SumAccum<int> @@tag_cnt;
+  V = SELECT t
+      FROM Person:s- (LIKES>)-Post:p - (<CONTAINER_OF)-:f - (HAS_TAG>) - :t
+      PER (s, t)
+      ACCUM @@tag_cnt += 1;
+  Print @@tag_cnt;
+}
+
+//install query q303
+//run query q2()

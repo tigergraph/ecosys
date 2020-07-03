@@ -1,0 +1,17 @@
+use graph ldbc_snb
+
+drop query qk1_2
+CREATE QUERY qk1_2 () SYNTAX _v2 {
+
+  SumAccum<int> @@comment_cnt;
+  V = SELECT t
+      FROM Person:s- (KNOWS*1..3)-Person:t
+      PER (t)
+      ACCUM @@comment_cnt += 1;
+
+  Print @@comment_cnt;
+
+}
+
+//install query q101
+//run query q101()

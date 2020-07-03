@@ -1,0 +1,90 @@
+use graph ldbc_snb
+
+drop query qk33_
+CREATE QUERY qk33_ () SYNTAX v1 {
+// for src id propagation
+SetAccum<VERTEX> @srcIdOnlyPropagAcc_1;
+
+// for VSet global accums
+SetAccum<VERTEX> @@GVS;
+
+// for active marking accums
+OrAccum @activeNext, @activeNextCopy;
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+
+  SumAccum<int> @@comment_cnt;
+
+  /* __TF_HOP_BEGIN:8 */
+VS_t1 = { Comment.* };
+
+
+///////////////////////////
+// LOWER BOUND LOOP [1..0]
+///////////////////////////
+TmpVS (ANY) = VS_t1;
+
+///////////////////////////
+// UPPER BOUND LOOP [0..oo]
+///////////////////////////
+
+VS__1 = {};
+i = 0;
+
+// initialize srcIdOnlyPropagAcc_1
+
+
+TmpVS =
+        select  t
+        from   VS_t1:t
+        where  t.id == 13194144951001
+        accum  t.@srcIdOnlyPropagAcc_1 += t;
+
+i = 1;
+
+
+VS__1 = TmpVS;
+
+WHILE TmpVS.size() > 0 DO
+
+TmpVS =
+        select s
+        from   TmpVS:x_2 -(REPLY_OF_REVERSE:x)-> _:s
+        accum  foreach t in x_2.@srcIdOnlyPropagAcc_1 do
+// check that this is the shortest path to s
+                   //(we didn't already reach it from t)
+                   if not(s.@srcIdOnlyPropagAcc_1.contains(t)) then
+                      s.@activeNext += true,
+                      s.@srcIdOnlyPropagAcc_1 += t
+                   end
+                end
+        post-accum s.@activeNextCopy = s.@activeNext,
+                s.@activeNext = false
+        having  s.@activeNextCopy;
+
+VS__1 = VS__1 union TmpVS;
+i = i + 1;
+END; // WHILE
+
+V =
+        select  s
+        from   VS__1:s
+        accum  foreach t in s.@srcIdOnlyPropagAcc_1 do
+
+                     @@comment_cnt += 1
+
+                end
+        post-accum s.@srcIdOnlyPropagAcc_1.clear();
+/* __TF_HOP_END:12 */
+
+  Print @@comment_cnt;
+
+
+
+}
+
+//install query q101
+//run query q101()

@@ -1,0 +1,15 @@
+use graph ldbc_snb
+
+drop query q306_2
+CREATE QUERY q306_2 () SYNTAX _v2 {
+  MaxAccum<String> @@tagname;
+  //find how many post/comment liked by a person
+  V = SELECT t
+      FROM Tag:t -(<HAS_TAG)-:f -(CONTAINER_OF>)-Post:p -(<LIKES)-Person:s 
+      PER (s,t)
+      ACCUM @@tagname += t.name;
+  Print @@tagname;
+}
+
+//install query q306a
+//run query q2()
