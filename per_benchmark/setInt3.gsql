@@ -1,0 +1,20 @@
+use graph ldbc_snb
+
+drop query setInt3
+
+CREATE QUERY setInt3 () SYNTAX v1 {
+
+  SetAccum<int> @personSet;
+
+  Start = {Person.*};
+
+  //find how many post/comment liked by a person
+  V = SELECT s 
+      FROM Start:s- (LIKES)->Comment:tgt
+      ACCUM s.@personSet+=tgt.id
+      ORDER BY s.@personSet.size()
+      LIMIT 2;
+
+  Print V;
+
+}

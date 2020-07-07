@@ -1,0 +1,16 @@
+use graph ldbc_snb
+drop query setUint1
+CREATE QUERY setUint1 () SYNTAX v1 {
+
+  SetAccum<uint> @@personSet;
+
+  Start = {Person.*};
+
+  //find how many post/comment liked by a person
+  V = SELECT s 
+      FROM Start:s- (LIKES)->Comment:tgt
+      ACCUM @@personSet+=s.id;
+
+  Print @@personSet.size();
+
+}
