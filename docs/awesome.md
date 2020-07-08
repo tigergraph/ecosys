@@ -68,7 +68,7 @@ A curated list of AWESOME TigerGraph community resources.
 * [**pyGraphistry**](https://github.com/graphistry/pygraphistry/tree/master/demos/demos_databases_apis/tigergraph)
 
 ### C#
-[**TigerGraphConnector_CSharp**](https://github.com/gpadvorac/TigerGraphConnector_CSharp) - C# Wrapper for the TigerGraph REST++ API
+* [**TigerGraphConnector_CSharp**](https://github.com/gpadvorac/TigerGraphConnector_CSharp) - C# Wrapper for the TigerGraph REST++ API
 
 ### Javacript
 * [**tigroid**](https://github.com/szb-tg/Tigroid.js) - This connector is intended to work both in browsers and on server side, to be Node.JS friendly (in the long term).
