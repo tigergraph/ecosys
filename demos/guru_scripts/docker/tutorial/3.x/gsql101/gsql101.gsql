@@ -1,4 +1,4 @@
-#reset the catalog
+# reset the catalog
 DROP ALL
 
 #create the schema
