@@ -1,0 +1,47 @@
+use graph ldbc_snb
+set syntax_version="v2"
+set query_timeout=60000
+
+DROP QUERY RecommendMessage
+
+CREATE QUERY RecommendMessage (String fn, String ln) FOR GRAPH ldbc_snb {
+
+  SumAccum<int> @TagInCommon;
+  SumAccum<float> @SimilarityScore;
+  SumAccum<float> @Rank;
+  OrAccum @Liked = false;
+
+  Seed = {Person.*};
+
+  #mark messages liked by Viktor
+    MessageLiked =
+       SELECT msg
+       FROM Seed:s-((Person_LIKES_Comment>|Person_LIKES_Post>))-:msg
+       WHERE s.firstName == fn AND s.lastName == ln
+       ACCUM msg.@Liked = true;
+
+   #calculate log similarity score for each persons share the same interests at Tag level.
+    Others   =
+       SELECT p
+       FROM Seed:s-((Person_LIKES_Comment>|Person_LIKES_Post>).(Comment_HAS_TAG_Tag>|Post_HAS_TAG_Tag>))- Tag:tg
+        - ((<Comment_HAS_TAG_Tag|<Post_HAS_TAG_Tag).(<Person_LIKES_Comment|<Person_LIKES_Post))- :p
+       WHERE s.firstName == fn AND s.lastName == ln
+       ACCUM p.@TagInCommon +=1
+       POST-ACCUM p.@SimilarityScore = log (1 + p.@TagInCommon);
+
+   #recommend new messages to Viktor that have not liked by him.
+    RecommendedMessage =
+             SELECT msg
+             FROM Others:o-((Person_LIKES_Comment>|Person_LIKES_Post>)) - :msg
+             WHERE  msg.@Liked == false
+             ACCUM msg.@Rank +=o.@SimilarityScore
+             ORDER BY msg.@Rank DESC
+             LIMIT 10;
+
+  PRINT   RecommendedMessage[RecommendedMessage.content, RecommendedMessage.@Rank];
+}
+
+
+INTERPRET QUERY RecommendMessage ("Viktor", "Akhiezer")
+#try the second person with just parameter change.
+INTERPRET QUERY RecommendMessage ("Adriaan", "Jong")

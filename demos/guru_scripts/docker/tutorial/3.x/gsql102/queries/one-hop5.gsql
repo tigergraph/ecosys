@@ -1,0 +1,15 @@
+USE GRAPH ldbc_snb
+SET syntax_version="v2"
+
+INTERPRET QUERY () FOR GRAPH ldbc_snb {
+   #start with all persons.
+   Seed = {Person.*};
+   #1-hop pattern.
+   friends = SELECT p
+             FROM Seed:s - ((<Person_KNOWS_Person|Person_KNOWS_Person>):e) - Person:p
+             WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+             ORDER BY p.birthday ASC
+             LIMIT 2;
+
+   PRINT friends;
+}
