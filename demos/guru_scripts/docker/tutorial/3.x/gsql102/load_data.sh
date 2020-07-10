@@ -5,7 +5,7 @@
 
 
 #start all TigerGraph services
-gadmin start
+gadmin start all
 
 gsql -g ldbc_snb "run loading job load_ldbc_snb using 
 v_person_file=\"${LDBC_SNB_DATA_DIR}/person_0_0.csv\",
