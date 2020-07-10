@@ -4,24 +4,32 @@ This GSQL 101 tutorial contains
 
 - friendship.csv: the edge data
 - person.csv: the vertex data
-- gsql101.gsql: the gsql script to setup the schema, load the data, and stored procedures. 
+- gsql101-step1.gsql: the gsql script to setup the schema and load the data
+- gsql101-step2.sh: the bash script to run built-in queries
+- gsql101-step3.gsql: the gsql script to develop parameterized queries
 
 
 How To Run
 ===============
-gsql gsql101.gsql
+We recommend you install jq and redirect the REST call result to jq before it is output. 
+# define scheme & load data
+gsql gsql101-step1.gsql
+# run built-in queries
+sh gsql101-step2.sh
+# develop parameterized queries
+gsql gsql101-step3.gsql
 
 
 Documents
 ==============
-https://docs.tigergraph.com/intro/gsql-101
+https://docs.tigergraph.com/start/gsql-101
 
 
 Support
 ===============
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
-https://groups.google.com/a/opengsql.org/forum/?hl=en#!forum/gsql-users
+https://community.tigergraph.com/
 
 
 - 
