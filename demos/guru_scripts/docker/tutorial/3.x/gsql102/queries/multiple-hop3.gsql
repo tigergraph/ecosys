@@ -1,14 +1,13 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 
-INTERPRET QUERY () FOR GRAPH ldbc_snb {
+INTERPRET QUERY () SYNTAX v2 {
   SumAccum<int> @likesCnt;
-  PersonAll = {Person.*};
 
   FavoriteAuthors =  SELECT t
-               FROM PersonAll:s-((Person_LIKES_Comment>|Person_LIKES_Post>)) -:msg - ((Comment_HAS_CREATOR_Person>|Post_HAS_CREATOR_Person>))-Person:t
-               WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer" AND t.lastName LIKE "S%" AND year(msg.creationDate) == 2012
-               ACCUM t.@likesCnt +=1;
+      FROM Person:s -(LIKES>)- :msg -(HAS_CREATOR>)- Person:t
+      WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+            AND t.lastName LIKE "S%" AND year(msg.creationDate) == 2012
+      ACCUM t.@likesCnt +=1;
 
-  PRINT  FavoriteAuthors[FavoriteAuthors.firstName, FavoriteAuthors.lastName, FavoriteAuthors.@likesCnt];
+  PRINT FavoriteAuthors[FavoriteAuthors.firstName, FavoriteAuthors.lastName, FavoriteAuthors.@likesCnt];
 }
