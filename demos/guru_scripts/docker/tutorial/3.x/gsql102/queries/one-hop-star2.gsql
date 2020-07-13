@@ -1,13 +1,10 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 
-INTERPRET QUERY () FOR GRAPH ldbc_snb {
+INTERPRET QUERY () SYNTAX v2 {
 
-  TagClass1 = {TagClass.*};
+  TagClass1 = SELECT t
+              FROM TagClass:s -(IS_SUBCLASS_OF>*1)- TagClass:t
+              WHERE s.name == "TennisPlayer";
 
-  TagClass2 =  SELECT t
-               FROM TagClass1:s - (TagClass_IS_SUBCLASS_OF_TagClass>*1)-TagClass:t
-               WHERE s.name == "TennisPlayer";
-
-    PRINT  TagClass2;
+  PRINT TagClass1;
 }
