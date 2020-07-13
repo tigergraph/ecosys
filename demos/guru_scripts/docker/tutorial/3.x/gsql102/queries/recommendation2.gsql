@@ -1,13 +1,11 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 SET query_timeout=60000
-
 DROP QUERY RecommendMessage
 
-CREATE QUERY RecommendMessage (String fn, String ln) FOR GRAPH ldbc_snb {
+CREATE QUERY RecommendMessage (String fn, String ln) SYNTAX v2 {
 
   SumAccum<int> @MsgInCommon = 0;
-  SumAccum<int> @MsgCnt = 0 ;
+  SumAccum<int> @MsgCnt = 0;
   SumAccum<int> @@InputPersonMsgCnt = 0;
   SumAccum<float> @SimilarityScore;
   SumAccum<float> @Rank;
@@ -15,42 +13,35 @@ CREATE QUERY RecommendMessage (String fn, String ln) FOR GRAPH ldbc_snb {
   OrAccum @Liked = false;
   float sqrtOfInputPersonMsgCnt;
 
-  Seed = {Person.*};
+  #1. mark messages liked by input user
+  #2. find common msg between input user and other persons
+  Others =
+    SELECT p
+    FROM Person:s -(LIKES>)- :msg -(<LIKES)- :p
+    WHERE s.firstName == fn AND s.lastName == ln
+    ACCUM msg.@Liked = true, @@InputPersonMsgCnt += 1,
+          p.@MsgInCommon += 1;
 
-   #mark messages liked by input user
-    InputPerson =
-       SELECT s
-       FROM Seed:s-((Person_LIKES_Comment>|Person_LIKES_Post>))-:msg
-       WHERE s.firstName == fn AND s.lastName == ln
-       ACCUM msg.@Liked = true, @@InputPersonMsgCnt += 1;
+  sqrtOfInputPersonMsgCnt = sqrt(@@InputPersonMsgCnt);
 
-    sqrtOfInputPersonMsgCnt = sqrt(@@InputPersonMsgCnt);
+  # calculate cosine similarity score.
+  # |AxB|/(sqrt(Sum(A_i^2) * sqrt(Sum(B_i^2)))
+  Others =
+    SELECT o
+    FROM Others:o -(LIKES>)- :msg
+    ACCUM o.@MsgCnt += 1
+    POST-ACCUM o.@SimilarityScore = o.@MsgInCommon / (sqrtOfInputPersonMsgCnt * sqrt(o.@MsgCnt));
 
-   #find common msg between input user and other persons
-    Others   =
-       SELECT p
-       FROM InputPerson:s-((Person_LIKES_Comment>|Person_LIKES_Post>))-:msg
-                        -((<Person_LIKES_Comment|<Person_LIKES_Post))-:p
-       ACCUM p.@MsgInCommon += 1;
+  # recommend new messages to input user that have not liked by him.
+  RecommendedMessage =
+    SELECT msg
+    FROM Others:o-(LIKES>)- :msg
+    WHERE  msg.@Liked == false
+    ACCUM msg.@Rank += o.@SimilarityScore
+    ORDER BY msg.@Rank DESC
+    LIMIT 3;
 
-    #calculate cosine similarity score.
-    #|AxB|/(sqrt(Sum(A_i^2)) * sqrt(Sum(B_i^2)))
-    Others  =
-        SELECT o
-        FROM Others:o-((Person_LIKES_Comment>|Person_LIKES_Post>))-:msg
-        ACCUM o.@MsgCnt += 1
-        POST-ACCUM o.@SimilarityScore = o.@MsgInCommon/(sqrtOfInputPersonMsgCnt * sqrt(o.@MsgCnt));
-
-   #recommend new messages to input user that have not liked by him.
-    RecommendedMessage =
-             SELECT msg
-             FROM Others:o-((Person_LIKES_Comment>|Person_LIKES_Post>)) - :msg
-             WHERE  msg.@Liked == false
-             ACCUM msg.@Rank +=o.@SimilarityScore
-             ORDER BY msg.@Rank DESC
-             LIMIT 10;
-
-  PRINT   RecommendedMessage[RecommendedMessage.content, RecommendedMessage.@Rank];
+  PRINT RecommendedMessage[RecommendedMessage.content, RecommendedMessage.@Rank];
 }
 
 INTERPRET query RecommendMessage("Viktor", "Akhiezer")
