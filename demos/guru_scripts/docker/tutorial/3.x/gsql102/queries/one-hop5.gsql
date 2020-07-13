@@ -1,15 +1,12 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 
-INTERPRET QUERY () FOR GRAPH ldbc_snb {
-   #start with all persons.
-   Seed = {Person.*};
-   #1-hop pattern.
-   friends = SELECT p
-             FROM Seed:s - ((<Person_KNOWS_Person|Person_KNOWS_Person>):e) - Person:p
-             WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
-             ORDER BY p.birthday ASC
-             LIMIT 2;
+INTERPRET QUERY () SYNTAX v2 {
+  SumAccum<int> @@cnt = 0;
 
-   PRINT friends;
+  Result = SELECT tgt
+           FROM Person:tgt -(<_)- (Comment|Post):src
+           WHERE tgt.firstName == "Viktor" AND tgt.lastName == "Akhiezer"
+           ACCUM @@cnt += 1;
+
+  PRINT @@cnt;
 }

@@ -1,12 +1,9 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 
-INTERPRET QUERY () FOR GRAPH ldbc_snb {
-   #start with all persons.
-   Seed = {Person.*};
-   #1-hop pattern. 
+# Example 1. Undirected Edge Pattern
+INTERPRET QUERY () SYNTAX v2 {
    friends = SELECT p
-             FROM Seed:s - (<Person_KNOWS_Person:e) - Person:p
+             FROM Person:s - (KNOWS:e)- Person:p
              WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
              ORDER BY p.birthday ASC
              LIMIT 3;

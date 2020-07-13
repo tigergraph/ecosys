@@ -1,15 +1,19 @@
 USE GRAPH ldbc_snb
-SET syntax_version="v2"
 
-INTERPRET QUERY () FOR GRAPH ldbc_snb {
-   #start with all persons.
-   Seed = {Person.*};
-   #1-hop pattern.
-   friends = SELECT s
-             FROM Seed:s - (Person_KNOWS_Person>:e) - Person:p
-             WHERE p.firstName == "Viktor" AND p.lastName == "Akhiezer"
-             ORDER BY s.birthday ASC
-             LIMIT 3;
+# Example 2. Right Directed Edge Pattern
+INTERPRET QUERY () SYNTAX v2 {
+  SumAccum<int> @commentCnt = 0;
+  SumAccum<int> @postCnt = 0;
 
-    PRINT  friends[friends.firstName, friends.lastName, friends.birthday];
+  #1-hop pattern.
+  Result = SELECT s
+           FROM Person:s - (LIKES>:e) - :tgt
+           WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+           ACCUM CASE WHEN tgt.type == "Comment" THEN
+                          s.@commentCnt += 1
+                      WHEN tgt.type == "Post" THEN
+                          s.@postCnt += 1
+                 END;
+
+  PRINT Result[Result.@commentCnt, Result.@postCnt];
 }
