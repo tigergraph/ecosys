@@ -1,508 +1,100 @@
-//seed: countryName=Ethiopia
-
-[
-{
-'@@destTop':[
-{
-'messageCount':248,
-'destinationName':'Pakistan',
-'month':6
-},
-{
-'messageCount':237,
-'destinationName':'France',
-'month':6
-},
-{
-'messageCount':225,
-'destinationName':'Mauritius',
-'month':6
-},
-{
-'messageCount':223,
-'destinationName':'Denmark',
-'month':6
-},
-{
-'messageCount':222,
-'destinationName':'Singapore',
-'month':6
-},
-{
-'messageCount':220,
-'destinationName':'Tunisia',
-'month':6
-},
-{
-'messageCount':218,
-'destinationName':'Malaysia',
-'month':6
-},
-{
-'messageCount':215,
-'destinationName':'South_Korea',
-'month':6
-},
-{
-'messageCount':214,
-'destinationName':'Latvia',
-'month':6
-},
-{
-'messageCount':211,
-'destinationName':'Laos',
-'month':6
-},
-{
-'messageCount':211,
-'destinationName':'Scotland',
-'month':6
-},
-{
-'messageCount':210,
-'destinationName':'Argentina',
-'month':6
-},
-{
-'messageCount':210,
-'destinationName':'Cambodia',
-'month':6
-},
-{
-'messageCount':210,
-'destinationName':'Republic_of_Macedonia',
-'month':6
-},
-{
-'messageCount':209,
-'destinationName':'Senegal',
-'month':6
-},
-{
-'messageCount':208,
-'destinationName':'Cameroon',
-'month':6
-},
-{
-'messageCount':207,
-'destinationName':'Uruguay',
-'month':6
-},
-{
-'messageCount':206,
-'destinationName':'Malta',
-'month':6
-},
-{
-'messageCount':206,
-'destinationName':'Zambia',
-'month':6
-},
-{
-'messageCount':205,
-'destinationName':'Australia',
-'month':6
-},
-{
-'messageCount':205,
-'destinationName':'Bolivia',
-'month':6
-},
-{
-'messageCount':205,
-'destinationName':'India',
-'month':6
-},
-{
-'messageCount':205,
-'destinationName':'Moldova',
-'month':6
-},
-{
-'messageCount':204,
-'destinationName':'Kazakhstan',
-'month':6
-},
-{
-'messageCount':204,
-'destinationName':'Romania',
-'month':6
-},
-{
-'messageCount':203,
-'destinationName':'Bulgaria',
-'month':6
-},
-{
-'messageCount':203,
-'destinationName':'Indonesia',
-'month':6
-},
-{
-'messageCount':203,
-'destinationName':'Japan',
-'month':6
-},
-{
-'messageCount':203,
-'destinationName':'Thailand',
-'month':6
-},
-{
-'messageCount':202,
-'destinationName':'Estonia',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Algeria',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Austria',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Egypt',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Libya',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Russia',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'South_Africa',
-'month':6
-},
-{
-'messageCount':201,
-'destinationName':'Tanzania',
-'month':6
-},
-{
-'messageCount':200,
-'destinationName':'Azerbaijan',
-'month':6
-},
-{
-'messageCount':200,
-'destinationName':'Greece',
-'month':6
-},
-{
-'messageCount':200,
-'destinationName':'Namibia',
-'month':6
-},
-{
-'messageCount':200,
-'destinationName':'Slovenia',
-'month':6
-},
-{
-'messageCount':199,
-'destinationName':'Belarus',
-'month':6
-},
-{
-'messageCount':199,
-'destinationName':'Puerto_Rico',
-'month':6
-},
-{
-'messageCount':199,
-'destinationName':'United_States',
-'month':6
-},
-{
-'messageCount':199,
-'destinationName':'Vietnam',
-'month':6
-},
-{
-'messageCount':198,
-'destinationName':'Democratic_Republic_of_the_Congo',
-'month':6
-},
-{
-'messageCount':198,
-'destinationName':'Kenya',
-'month':6
-},
-{
-'messageCount':198,
-'destinationName':'Mauritania',
-'month':6
-},
-{
-'messageCount':198,
-'destinationName':'New_Zealand',
-'month':6
-},
-{
-'messageCount':198,
-'destinationName':'Niger',
-'month':6
-},
-{
-'messageCount':197,
-'destinationName':'Chile',
-'month':6
-},
-{
-'messageCount':197,
-'destinationName':'Czech_Republic',
-'month':6
-},
-{
-'messageCount':197,
-'destinationName':'Nepal',
-'month':6
-},
-{
-'messageCount':197,
-'destinationName':'Norway',
-'month':6
-},
-{
-'messageCount':197,
-'destinationName':'Swaziland',
-'month':6
-},
-{
-'messageCount':196,
-'destinationName':'Colombia',
-'month':6
-},
-{
-'messageCount':196,
-'destinationName':'Portugal',
-'month':6
-},
-{
-'messageCount':196,
-'destinationName':'Spain',
-'month':6
-},
-{
-'messageCount':196,
-'destinationName':'United_Kingdom',
-'month':6
-},
-{
-'messageCount':196,
-'destinationName':'Venezuela',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Afghanistan',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Egypt',
-'month':5
-},
-{
-'messageCount':195,
-'destinationName':'Germany',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Mexico',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Northern_Ireland',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Slovakia',
-'month':6
-},
-{
-'messageCount':195,
-'destinationName':'Wales',
-'month':6
-},
-{
-'messageCount':194,
-'destinationName':'Chad',
-'month':6
-},
-{
-'messageCount':194,
-'destinationName':'Croatia',
-'month':6
-},
-{
-'messageCount':193,
-'destinationName':'Brazil',
-'month':6
-},
-{
-'messageCount':193,
-'destinationName':'Philippines',
-'month':6
-},
-{
-'messageCount':193,
-'destinationName':'Switzerland',
-'month':6
-},
-{
-'messageCount':193,
-'destinationName':'Tajikistan',
-'month':6
-},
-{
-'messageCount':192,
-'destinationName':'Burma',
-'month':5
-},
-{
-'messageCount':192,
-'destinationName':'Papua_New_Guinea',
-'month':6
-},
-{
-'messageCount':191,
-'destinationName':'Belgium',
-'month':6
-},
-{
-'messageCount':191,
-'destinationName':'El_Salvador',
-'month':6
-},
-{
-'messageCount':191,
-'destinationName':'Honduras',
-'month':6
-},
-{
-'messageCount':191,
-'destinationName':'Republic_of_Ireland',
-'month':6
-},
-{
-'messageCount':190,
-'destinationName':'Italy',
-'month':6
-},
-{
-'messageCount':190,
-'destinationName':'Madagascar',
-'month':6
-},
-{
-'messageCount':190,
-'destinationName':'Mongolia',
-'month':6
-},
-{
-'messageCount':190,
-'destinationName':'Morocco',
-'month':5
-},
-{
-'messageCount':190,
-'destinationName':'Oman',
-'month':6
-},
-{
-'messageCount':188,
-'destinationName':'Burma',
-'month':6
-},
-{
-'messageCount':188,
-'destinationName':'Iran',
-'month':6
-},
-{
-'messageCount':187,
-'destinationName':'Democratic_Republic_of_the_Congo',
-'month':5
-},
-{
-'messageCount':187,
-'destinationName':'Greece',
-'month':5
-},
-{
-'messageCount':187,
-'destinationName':'Sweden',
-'month':6
-},
-{
-'messageCount':187,
-'destinationName':'Tanzania',
-'month':5
-},
-{
-'messageCount':186,
-'destinationName':'Finland',
-'month':6
-},
-{
-'messageCount':184,
-'destinationName':'Angola',
-'month':6
-},
-{
-'messageCount':184,
-'destinationName':'England',
-'month':6
-},
-{
-'messageCount':184,
-'destinationName':'Israel',
-'month':6
-},
-{
-'messageCount':184,
-'destinationName':'Namibia',
-'month':5
-},
-{
-'messageCount':183,
-'destinationName':'Hong_Kong',
-'month':6
-},
-{
-'messageCount':183,
-'destinationName':'Liberia',
-'month':6
-},
-{
-'messageCount':182,
-'destinationName':'Hungary',
-'month':5
-},
-{
-'messageCount':181,
-'destinationName':'Chad',
-'month':5
-},
-{
-'messageCount':181,
-'destinationName':'Cuba',
-'month':6
-}
-]
-}
-]
+[248, 'Pakistan', 6]
+[237, 'France', 6]
+[225, 'Mauritius', 6]
+[223, 'Denmark', 6]
+[222, 'Singapore', 6]
+[220, 'Tunisia', 6]
+[218, 'Malaysia', 6]
+[215, 'South_Korea', 6]
+[214, 'Latvia', 6]
+[211, 'Laos', 6]
+[211, 'Scotland', 6]
+[210, 'Argentina', 6]
+[210, 'Cambodia', 6]
+[210, 'Republic_of_Macedonia', 6]
+[209, 'Senegal', 6]
+[208, 'Cameroon', 6]
+[207, 'Uruguay', 6]
+[206, 'Malta', 6]
+[206, 'Zambia', 6]
+[205, 'Australia', 6]
+[205, 'Bolivia', 6]
+[205, 'India', 6]
+[205, 'Moldova', 6]
+[204, 'Kazakhstan', 6]
+[204, 'Romania', 6]
+[203, 'Bulgaria', 6]
+[203, 'Indonesia', 6]
+[203, 'Japan', 6]
+[203, 'Thailand', 6]
+[202, 'Estonia', 6]
+[201, 'Algeria', 6]
+[201, 'Austria', 6]
+[201, 'Egypt', 6]
+[201, 'Libya', 6]
+[201, 'Russia', 6]
+[201, 'South_Africa', 6]
+[201, 'Tanzania', 6]
+[200, 'Azerbaijan', 6]
+[200, 'Greece', 6]
+[200, 'Namibia', 6]
+[200, 'Slovenia', 6]
+[199, 'Belarus', 6]
+[199, 'Puerto_Rico', 6]
+[199, 'United_States', 6]
+[199, 'Vietnam', 6]
+[198, 'Democratic_Republic_of_the_Congo', 6]
+[198, 'Kenya', 6]
+[198, 'Mauritania', 6]
+[198, 'New_Zealand', 6]
+[198, 'Niger', 6]
+[197, 'Chile', 6]
+[197, 'Czech_Republic', 6]
+[197, 'Nepal', 6]
+[197, 'Norway', 6]
+[197, 'Swaziland', 6]
+[196, 'Colombia', 6]
+[196, 'Portugal', 6]
+[196, 'Spain', 6]
+[196, 'United_Kingdom', 6]
+[196, 'Venezuela', 6]
+[195, 'Afghanistan', 6]
+[195, 'Egypt', 5]
+[195, 'Germany', 6]
+[195, 'Mexico', 6]
+[195, 'Northern_Ireland', 6]
+[195, 'Slovakia', 6]
+[195, 'Wales', 6]
+[194, 'Chad', 6]
+[194, 'Croatia', 6]
+[193, 'Brazil', 6]
+[193, 'Philippines', 6]
+[193, 'Switzerland', 6]
+[193, 'Tajikistan', 6]
+[192, 'Burma', 5]
+[192, 'Papua_New_Guinea', 6]
+[191, 'Belgium', 6]
+[191, 'El_Salvador', 6]
+[191, 'Honduras', 6]
+[191, 'Republic_of_Ireland', 6]
+[190, 'Italy', 6]
+[190, 'Madagascar', 6]
+[190, 'Mongolia', 6]
+[190, 'Morocco', 5]
+[190, 'Oman', 6]
+[188, 'Burma', 6]
+[188, 'Iran', 6]
+[187, 'Democratic_Republic_of_the_Congo', 5]
+[187, 'Greece', 5]
+[187, 'Sweden', 6]
+[187, 'Tanzania', 5]
+[186, 'Finland', 6]
+[184, 'Angola', 6]
+[184, 'England', 6]
+[184, 'Israel', 6]
+[184, 'Namibia', 5]
+[183, 'Hong_Kong', 6]
+[183, 'Liberia', 6]
+[182, 'Hungary', 5]
+[181, 'Chad', 5]
+[181, 'Cuba', 6]

@@ -1,7 +1,13 @@
 #!/bin/bash
 query_list=""
 cd queries
-for q in $(ls | sort --version-sort| cut -d. -f1)
+if test -z "$1" ; then
+  input="*.gsql"
+else
+  input=$1
+fi
+
+for q in $(ls $input | sort --version-sort| cut -d. -f1)
 do
   if [ -z "$query_list" ]
     then query_list=$q
@@ -10,16 +16,16 @@ do
   gsql $q.gsql
 done
 echo $query_list
-drop_command="drop query $query_list"
-install_command="install query $query_list"
 cd ..
 
 drop(){
+  drop_command="drop query $query_list"
   echo $drop_command
   gsql -g ldbc_snb $drop_command
 }
 
 install(){
+  install_command="install query $query_list"
   echo $install_command
   gsql -g ldbc_snb $install_command
 }

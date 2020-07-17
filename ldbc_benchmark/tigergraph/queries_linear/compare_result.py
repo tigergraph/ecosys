@@ -60,11 +60,11 @@ variable_list={
 }
 
 parser = argparse.ArgumentParser(description='Process the results and compare')
-parser.add_argument('--result', default='SF100/')
+parser.add_argument('-r','--result', default='SF100/')
+parser.add_argument('-q','--queries', default='all')
 parser.add_argument('--log', default='log/')
 parser.add_argument('--err', default='err/')
-parser.add_argument('--queries', 
-  default='all')
+parser.add_argument('--old', action='store_true')
 
 args = parser.parse_args()
 
@@ -127,7 +127,8 @@ def write_table(table, filename):
             return
         f.write('\n'.join([str(row) for row in table]))
 
-def read_table(filename):    
+def read_table(q):    
+    filename = os.path.join(args.result, q)
     with open(filename,'r',encoding='utf-8') as f:
         lines = f.readlines()
         table = [ast.literal_eval(l) for l in lines]
@@ -183,12 +184,14 @@ def parse_table_ic1(table):
 
 output0 = 'result0'
 output = 'result'
+if not os.path.exists(output0):
+    os.mkdir(output0)   
 if not os.path.exists(output):
     os.mkdir(output)
-        
+     
 for q in qs:
     print(q, end=':')
-    table1 = txt2table(q)
+    table1 = read_table(q) if not args.old else txt2table(q) 
     table2 = log2table(q)
     if q == 'ic_1':
         parse_table_ic1(table1)

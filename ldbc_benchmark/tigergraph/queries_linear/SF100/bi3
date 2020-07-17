@@ -1,608 +1,100 @@
-//seed: year1=2010&month1=10
-
-[
-{
-'@@result':[
-{
-'tagName':'Shapur_II',
-'countMonth1':419528,
-'countMonth2':73,
-'diff':419455
-},
-{
-'tagName':'Yuvan_Shankar_Raja',
-'countMonth1':18,
-'countMonth2':263273,
-'diff':263255
-},
-{
-'tagName':'Paul_Capdeville',
-'countMonth1':171,
-'countMonth2':218899,
-'diff':218728
-},
-{
-'tagName':'Ho_Chi_Minh',
-'countMonth1':260121,
-'countMonth2':45472,
-'diff':214649
-},
-{
-'tagName':'Léopold_Sédar_Senghor',
-'countMonth1':178538,
-'countMonth2':0,
-'diff':178538
-},
-{
-'tagName':'Tommy_Lee',
-'countMonth1':110774,
-'countMonth2':11,
-'diff':110763
-},
-{
-'tagName':'Ástor_Piazzolla',
-'countMonth1':58466,
-'countMonth2':3211,
-'diff':55255
-},
-{
-'tagName':'Luís_Figo',
-'countMonth1':54484,
-'countMonth2':68,
-'diff':54416
-},
-{
-'tagName':'Coolio',
-'countMonth1':46030,
-'countMonth2':0,
-'diff':46030
-},
-{
-'tagName':'Dolores_del_Río',
-'countMonth1':57,
-'countMonth2':23878,
-'diff':23821
-},
-{
-'tagName':'Freddie_Mercury',
-'countMonth1':8049,
-'countMonth2':24934,
-'diff':16885
-},
-{
-'tagName':'Edmund_Burke',
-'countMonth1':7020,
-'countMonth2':44,
-'diff':6976
-},
-{
-'tagName':'Abdullah_Ahmad_Badawi',
-'countMonth1':701,
-'countMonth2':7135,
-'diff':6434
-},
-{
-'tagName':'Garry_Kasparov',
-'countMonth1':2326,
-'countMonth2':6836,
-'diff':4510
-},
-{
-'tagName':'South_Africa',
-'countMonth1':9696,
-'countMonth2':5412,
-'diff':4284
-},
-{
-'tagName':'Poland',
-'countMonth1':9643,
-'countMonth2':5472,
-'diff':4171
-},
-{
-'tagName':'Brazil',
-'countMonth1':9581,
-'countMonth2':5497,
-'diff':4084
-},
-{
-'tagName':'Turkey',
-'countMonth1':9528,
-'countMonth2':5448,
-'diff':4080
-},
-{
-'tagName':'United_Kingdom',
-'countMonth1':9604,
-'countMonth2':5562,
-'diff':4042
-},
-{
-'tagName':'France',
-'countMonth1':9536,
-'countMonth2':5517,
-'diff':4019
-},
-{
-'tagName':'Belgium',
-'countMonth1':9491,
-'countMonth2':5475,
-'diff':4016
-},
-{
-'tagName':'India',
-'countMonth1':9596,
-'countMonth2':5580,
-'diff':4016
-},
-{
-'tagName':'Switzerland',
-'countMonth1':9389,
-'countMonth2':5436,
-'diff':3953
-},
-{
-'tagName':'Portugal',
-'countMonth1':9290,
-'countMonth2':5362,
-'diff':3928
-},
-{
-'tagName':'Czech_Republic',
-'countMonth1':9282,
-'countMonth2':5380,
-'diff':3902
-},
-{
-'tagName':'Peru',
-'countMonth1':9035,
-'countMonth2':5145,
-'diff':3890
-},
-{
-'tagName':'Thailand',
-'countMonth1':9141,
-'countMonth2':5284,
-'diff':3857
-},
-{
-'tagName':'Japan',
-'countMonth1':9360,
-'countMonth2':5506,
-'diff':3854
-},
-{
-'tagName':'Sri_Lanka',
-'countMonth1':8721,
-'countMonth2':4873,
-'diff':3848
-},
-{
-'tagName':'Latvia',
-'countMonth1':8597,
-'countMonth2':4750,
-'diff':3847
-},
-{
-'tagName':'Iraq',
-'countMonth1':9018,
-'countMonth2':5191,
-'diff':3827
-},
-{
-'tagName':'Scotland',
-'countMonth1':9498,
-'countMonth2':5684,
-'diff':3814
-},
-{
-'tagName':'Sweden',
-'countMonth1':9495,
-'countMonth2':5681,
-'diff':3814
-},
-{
-'tagName':'Indonesia',
-'countMonth1':9194,
-'countMonth2':5383,
-'diff':3811
-},
-{
-'tagName':'Greece',
-'countMonth1':9380,
-'countMonth2':5570,
-'diff':3810
-},
-{
-'tagName':'Hungary',
-'countMonth1':9172,
-'countMonth2':5362,
-'diff':3810
-},
-{
-'tagName':'United_States',
-'countMonth1':9508,
-'countMonth2':5714,
-'diff':3794
-},
-{
-'tagName':'Russia',
-'countMonth1':9505,
-'countMonth2':5722,
-'diff':3783
-},
-{
-'tagName':'Romania',
-'countMonth1':9277,
-'countMonth2':5497,
-'diff':3780
-},
-{
-'tagName':'Soviet_Union',
-'countMonth1':9234,
-'countMonth2':5461,
-'diff':3773
-},
-{
-'tagName':'Argentina',
-'countMonth1':9248,
-'countMonth2':5506,
-'diff':3742
-},
-{
-'tagName':'Australia',
-'countMonth1':9344,
-'countMonth2':5602,
-'diff':3742
-},
-{
-'tagName':'China',
-'countMonth1':9445,
-'countMonth2':5703,
-'diff':3742
-},
-{
-'tagName':'Lebanon',
-'countMonth1':9003,
-'countMonth2':5277,
-'diff':3726
-},
-{
-'tagName':'Lithuania',
-'countMonth1':8818,
-'countMonth2':5098,
-'diff':3720
-},
-{
-'tagName':'Austria',
-'countMonth1':9037,
-'countMonth2':5320,
-'diff':3717
-},
-{
-'tagName':'Germany',
-'countMonth1':9288,
-'countMonth2':5579,
-'diff':3709
-},
-{
-'tagName':'Morocco',
-'countMonth1':9129,
-'countMonth2':5428,
-'diff':3701
-},
-{
-'tagName':'Norway',
-'countMonth1':9103,
-'countMonth2':5403,
-'diff':3700
-},
-{
-'tagName':'Taiwan',
-'countMonth1':8941,
-'countMonth2':5247,
-'diff':3694
-},
-{
-'tagName':'North_Korea',
-'countMonth1':8590,
-'countMonth2':4928,
-'diff':3662
-},
-{
-'tagName':'South_Korea',
-'countMonth1':9031,
-'countMonth2':5376,
-'diff':3655
-},
-{
-'tagName':'New_Zealand',
-'countMonth1':9254,
-'countMonth2':5603,
-'diff':3651
-},
-{
-'tagName':'Denmark',
-'countMonth1':9119,
-'countMonth2':5470,
-'diff':3649
-},
-{
-'tagName':'Colombia',
-'countMonth1':9096,
-'countMonth2':5464,
-'diff':3632
-},
-{
-'tagName':'Pakistan',
-'countMonth1':8902,
-'countMonth2':5275,
-'diff':3627
-},
-{
-'tagName':'Ukraine',
-'countMonth1':8914,
-'countMonth2':5291,
-'diff':3623
-},
-{
-'tagName':'Wales',
-'countMonth1':8787,
-'countMonth2':5167,
-'diff':3620
-},
-{
-'tagName':'Philippines',
-'countMonth1':9081,
-'countMonth2':5462,
-'diff':3619
-},
-{
-'tagName':'Finland',
-'countMonth1':9250,
-'countMonth2':5639,
-'diff':3611
-},
-{
-'tagName':'Cuba',
-'countMonth1':8882,
-'countMonth2':5289,
-'diff':3593
-},
-{
-'tagName':'Malta',
-'countMonth1':8402,
-'countMonth2':4821,
-'diff':3581
-},
-{
-'tagName':'Mexico',
-'countMonth1':9049,
-'countMonth2':5468,
-'diff':3581
-},
-{
-'tagName':'Spain',
-'countMonth1':9134,
-'countMonth2':5560,
-'diff':3574
-},
-{
-'tagName':'Afghanistan',
-'countMonth1':8939,
-'countMonth2':5370,
-'diff':3569
-},
-{
-'tagName':'Korea',
-'countMonth1':8429,
-'countMonth2':4888,
-'diff':3541
-},
-{
-'tagName':'Singapore',
-'countMonth1':8989,
-'countMonth2':5462,
-'diff':3527
-},
-{
-'tagName':'Vietnam',
-'countMonth1':8766,
-'countMonth2':5244,
-'diff':3522
-},
-{
-'tagName':'Bulgaria',
-'countMonth1':8825,
-'countMonth2':5304,
-'diff':3521
-},
-{
-'tagName':'Israel',
-'countMonth1':9097,
-'countMonth2':5579,
-'diff':3518
-},
-{
-'tagName':'England',
-'countMonth1':9235,
-'countMonth2':5725,
-'diff':3510
-},
-{
-'tagName':'Iceland',
-'countMonth1':8585,
-'countMonth2':5081,
-'diff':3504
-},
-{
-'tagName':'Italy',
-'countMonth1':9304,
-'countMonth2':5804,
-'diff':3500
-},
-{
-'tagName':'Algeria',
-'countMonth1':8624,
-'countMonth2':5126,
-'diff':3498
-},
-{
-'tagName':'Estonia',
-'countMonth1':8630,
-'countMonth2':5145,
-'diff':3485
-},
-{
-'tagName':'Egypt',
-'countMonth1':9072,
-'countMonth2':5594,
-'diff':3478
-},
-{
-'tagName':'Canada',
-'countMonth1':9212,
-'countMonth2':5744,
-'diff':3468
-},
-{
-'tagName':'Venezuela',
-'countMonth1':8724,
-'countMonth2':5259,
-'diff':3465
-},
-{
-'tagName':'Abraham_Lincoln',
-'countMonth1':9432,
-'countMonth2':5969,
-'diff':3463
-},
-{
-'tagName':'Iran',
-'countMonth1':8967,
-'countMonth2':5504,
-'diff':3463
-},
-{
-'tagName':'Syria',
-'countMonth1':8630,
-'countMonth2':5177,
-'diff':3453
-},
-{
-'tagName':'Bosnia_and_Herzegovina',
-'countMonth1':8314,
-'countMonth2':4863,
-'diff':3451
-},
-{
-'tagName':'Slovakia',
-'countMonth1':8482,
-'countMonth2':5036,
-'diff':3446
-},
-{
-'tagName':'Czechoslovakia',
-'countMonth1':8452,
-'countMonth2':5010,
-'diff':3442
-},
-{
-'tagName':'Hong_Kong',
-'countMonth1':8876,
-'countMonth2':5437,
-'diff':3439
-},
-{
-'tagName':'Jamaica',
-'countMonth1':8791,
-'countMonth2':5352,
-'diff':3439
-},
-{
-'tagName':'Panama',
-'countMonth1':8170,
-'countMonth2':4731,
-'diff':3439
-},
-{
-'tagName':'Netherlands',
-'countMonth1':9236,
-'countMonth2':5805,
-'diff':3431
-},
-{
-'tagName':'Nigeria',
-'countMonth1':8552,
-'countMonth2':5135,
-'diff':3417
-},
-{
-'tagName':'Croatia',
-'countMonth1':8699,
-'countMonth2':5301,
-'diff':3398
-},
-{
-'tagName':'Ethiopia',
-'countMonth1':8196,
-'countMonth2':4814,
-'diff':3382
-},
-{
-'tagName':'Cyprus',
-'countMonth1':8323,
-'countMonth2':4951,
-'diff':3372
-},
-{
-'tagName':'Albert_Einstein',
-'countMonth1':10094,
-'countMonth2':6723,
-'diff':3371
-},
-{
-'tagName':'Serbia',
-'countMonth1':8713,
-'countMonth2':5346,
-'diff':3367
-},
-{
-'tagName':'United_Nations',
-'countMonth1':8611,
-'countMonth2':5254,
-'diff':3357
-},
-{
-'tagName':'George_W._Bush',
-'countMonth1':10736,
-'countMonth2':7384,
-'diff':3352
-},
-{
-'tagName':'Chile',
-'countMonth1':8911,
-'countMonth2':5563,
-'diff':3348
-},
-{
-'tagName':'West_Germany',
-'countMonth1':8040,
-'countMonth2':4693,
-'diff':3347
-},
-{
-'tagName':'Benjamin_Franklin',
-'countMonth1':8517,
-'countMonth2':5173,
-'diff':3344
-},
-{
-'tagName':'Elizabeth_II',
-'countMonth1':11048,
-'countMonth2':7704,
-'diff':3344
-}
-]
-}
-]
+['Shapur_II', 419528, 73, 419455]
+['Yuvan_Shankar_Raja', 18, 263273, 263255]
+['Paul_Capdeville', 171, 218899, 218728]
+['Ho_Chi_Minh', 260121, 45472, 214649]
+['Léopold_Sédar_Senghor', 178538, 0, 178538]
+['Tommy_Lee', 110774, 11, 110763]
+['Ástor_Piazzolla', 58466, 3211, 55255]
+['Luís_Figo', 54484, 68, 54416]
+['Coolio', 46030, 0, 46030]
+['Dolores_del_Río', 57, 23878, 23821]
+['Freddie_Mercury', 8049, 24934, 16885]
+['Edmund_Burke', 7020, 44, 6976]
+['Abdullah_Ahmad_Badawi', 701, 7135, 6434]
+['Garry_Kasparov', 2326, 6836, 4510]
+['South_Africa', 9696, 5412, 4284]
+['Poland', 9643, 5472, 4171]
+['Brazil', 9581, 5497, 4084]
+['Turkey', 9528, 5448, 4080]
+['United_Kingdom', 9604, 5562, 4042]
+['France', 9536, 5517, 4019]
+['Belgium', 9491, 5475, 4016]
+['India', 9596, 5580, 4016]
+['Switzerland', 9389, 5436, 3953]
+['Portugal', 9290, 5362, 3928]
+['Czech_Republic', 9282, 5380, 3902]
+['Peru', 9035, 5145, 3890]
+['Thailand', 9141, 5284, 3857]
+['Japan', 9360, 5506, 3854]
+['Sri_Lanka', 8721, 4873, 3848]
+['Latvia', 8597, 4750, 3847]
+['Iraq', 9018, 5191, 3827]
+['Scotland', 9498, 5684, 3814]
+['Sweden', 9495, 5681, 3814]
+['Indonesia', 9194, 5383, 3811]
+['Greece', 9380, 5570, 3810]
+['Hungary', 9172, 5362, 3810]
+['United_States', 9508, 5714, 3794]
+['Russia', 9505, 5722, 3783]
+['Romania', 9277, 5497, 3780]
+['Soviet_Union', 9234, 5461, 3773]
+['Argentina', 9248, 5506, 3742]
+['Australia', 9344, 5602, 3742]
+['China', 9445, 5703, 3742]
+['Lebanon', 9003, 5277, 3726]
+['Lithuania', 8818, 5098, 3720]
+['Austria', 9037, 5320, 3717]
+['Germany', 9288, 5579, 3709]
+['Morocco', 9129, 5428, 3701]
+['Norway', 9103, 5403, 3700]
+['Taiwan', 8941, 5247, 3694]
+['North_Korea', 8590, 4928, 3662]
+['South_Korea', 9031, 5376, 3655]
+['New_Zealand', 9254, 5603, 3651]
+['Denmark', 9119, 5470, 3649]
+['Colombia', 9096, 5464, 3632]
+['Pakistan', 8902, 5275, 3627]
+['Ukraine', 8914, 5291, 3623]
+['Wales', 8787, 5167, 3620]
+['Philippines', 9081, 5462, 3619]
+['Finland', 9250, 5639, 3611]
+['Cuba', 8882, 5289, 3593]
+['Malta', 8402, 4821, 3581]
+['Mexico', 9049, 5468, 3581]
+['Spain', 9134, 5560, 3574]
+['Afghanistan', 8939, 5370, 3569]
+['Korea', 8429, 4888, 3541]
+['Singapore', 8989, 5462, 3527]
+['Vietnam', 8766, 5244, 3522]
+['Bulgaria', 8825, 5304, 3521]
+['Israel', 9097, 5579, 3518]
+['England', 9235, 5725, 3510]
+['Iceland', 8585, 5081, 3504]
+['Italy', 9304, 5804, 3500]
+['Algeria', 8624, 5126, 3498]
+['Estonia', 8630, 5145, 3485]
+['Egypt', 9072, 5594, 3478]
+['Canada', 9212, 5744, 3468]
+['Venezuela', 8724, 5259, 3465]
+['Abraham_Lincoln', 9432, 5969, 3463]
+['Iran', 8967, 5504, 3463]
+['Syria', 8630, 5177, 3453]
+['Bosnia_and_Herzegovina', 8314, 4863, 3451]
+['Slovakia', 8482, 5036, 3446]
+['Czechoslovakia', 8452, 5010, 3442]
+['Hong_Kong', 8876, 5437, 3439]
+['Jamaica', 8791, 5352, 3439]
+['Panama', 8170, 4731, 3439]
+['Netherlands', 9236, 5805, 3431]
+['Nigeria', 8552, 5135, 3417]
+['Croatia', 8699, 5301, 3398]
+['Ethiopia', 8196, 4814, 3382]
+['Cyprus', 8323, 4951, 3372]
+['Albert_Einstein', 10094, 6723, 3371]
+['Serbia', 8713, 5346, 3367]
+['United_Nations', 8611, 5254, 3357]
+['George_W._Bush', 10736, 7384, 3352]
+['Chile', 8911, 5563, 3348]
+['West_Germany', 8040, 4693, 3347]
+['Benjamin_Franklin', 8517, 5173, 3344]
+['Elizabeth_II', 11048, 7704, 3344]

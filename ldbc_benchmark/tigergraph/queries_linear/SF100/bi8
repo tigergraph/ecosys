@@ -1,408 +1,100 @@
-//seed: tagName=Genghis_Khan
-
-[
-{
-'@@topicTop':[
-{
-'relatedTagName':'Adolf_Hitler',
-'replyCount':2750
-},
-{
-'relatedTagName':'Augustine_of_Hippo',
-'replyCount':2296
-},
-{
-'relatedTagName':'Muammar_Gaddafi',
-'replyCount':2063
-},
-{
-'relatedTagName':'Wolfgang_Amadeus_Mozart',
-'replyCount':1980
-},
-{
-'relatedTagName':'Napoleon',
-'replyCount':1785
-},
-{
-'relatedTagName':'Argentina',
-'replyCount':1756
-},
-{
-'relatedTagName':'South_Africa',
-'replyCount':1733
-},
-{
-'relatedTagName':'Netherlands',
-'replyCount':1732
-},
-{
-'relatedTagName':'Italy',
-'replyCount':1725
-},
-{
-'relatedTagName':'Elizabeth_II',
-'replyCount':1713
-},
-{
-'relatedTagName':'England',
-'replyCount':1706
-},
-{
-'relatedTagName':'United_States',
-'replyCount':1704
-},
-{
-'relatedTagName':'Sweden',
-'replyCount':1687
-},
-{
-'relatedTagName':'Brazil',
-'replyCount':1684
-},
-{
-'relatedTagName':'Belgium',
-'replyCount':1683
-},
-{
-'relatedTagName':'China',
-'replyCount':1683
-},
-{
-'relatedTagName':'Philippines',
-'replyCount':1681
-},
-{
-'relatedTagName':'Pope_John_Paul_II',
-'replyCount':1681
-},
-{
-'relatedTagName':'Hungary',
-'replyCount':1674
-},
-{
-'relatedTagName':'Russia',
-'replyCount':1673
-},
-{
-'relatedTagName':'United_Kingdom',
-'replyCount':1671
-},
-{
-'relatedTagName':'Che_Guevara',
-'replyCount':1665
-},
-{
-'relatedTagName':'Indonesia',
-'replyCount':1665
-},
-{
-'relatedTagName':'Portugal',
-'replyCount':1665
-},
-{
-'relatedTagName':'Austria',
-'replyCount':1663
-},
-{
-'relatedTagName':'Norway',
-'replyCount':1663
-},
-{
-'relatedTagName':'Switzerland',
-'replyCount':1662
-},
-{
-'relatedTagName':'Chile',
-'replyCount':1660
-},
-{
-'relatedTagName':'New_Zealand',
-'replyCount':1656
-},
-{
-'relatedTagName':'Australia',
-'replyCount':1654
-},
-{
-'relatedTagName':'Soviet_Union',
-'replyCount':1653
-},
-{
-'relatedTagName':'Spain',
-'replyCount':1650
-},
-{
-'relatedTagName':'Serbia',
-'replyCount':1644
-},
-{
-'relatedTagName':'Romania',
-'replyCount':1643
-},
-{
-'relatedTagName':'Hong_Kong',
-'replyCount':1642
-},
-{
-'relatedTagName':'Taiwan',
-'replyCount':1642
-},
-{
-'relatedTagName':'William_Shakespeare',
-'replyCount':1641
-},
-{
-'relatedTagName':'Peru',
-'replyCount':1637
-},
-{
-'relatedTagName':'Czechoslovakia',
-'replyCount':1636
-},
-{
-'relatedTagName':'Singapore',
-'replyCount':1634
-},
-{
-'relatedTagName':'Mohandas_Karamchand_Gandhi',
-'replyCount':1630
-},
-{
-'relatedTagName':'Scotland',
-'replyCount':1629
-},
-{
-'relatedTagName':'South_Korea',
-'replyCount':1628
-},
-{
-'relatedTagName':'Greece',
-'replyCount':1627
-},
-{
-'relatedTagName':'Fidel_Castro',
-'replyCount':1626
-},
-{
-'relatedTagName':'France',
-'replyCount':1618
-},
-{
-'relatedTagName':'Germany',
-'replyCount':1618
-},
-{
-'relatedTagName':'Latvia',
-'replyCount':1616
-},
-{
-'relatedTagName':'Canada',
-'replyCount':1615
-},
-{
-'relatedTagName':'Israel',
-'replyCount':1615
-},
-{
-'relatedTagName':'Nazi_Germany',
-'replyCount':1615
-},
-{
-'relatedTagName':'Roman_Empire',
-'replyCount':1615
-},
-{
-'relatedTagName':'Thailand',
-'replyCount':1615
-},
-{
-'relatedTagName':'Poland',
-'replyCount':1613
-},
-{
-'relatedTagName':'Ronald_Reagan',
-'replyCount':1613
-},
-{
-'relatedTagName':'Haile_Selassie_I',
-'replyCount':1610
-},
-{
-'relatedTagName':'Pakistan',
-'replyCount':1609
-},
-{
-'relatedTagName':'Colombia',
-'replyCount':1608
-},
-{
-'relatedTagName':'Mexico',
-'replyCount':1608
-},
-{
-'relatedTagName':'Cyprus',
-'replyCount':1607
-},
-{
-'relatedTagName':'Jesus',
-'replyCount':1604
-},
-{
-'relatedTagName':'India',
-'replyCount':1601
-},
-{
-'relatedTagName':'United_Nations',
-'replyCount':1601
-},
-{
-'relatedTagName':'Barack_Obama',
-'replyCount':1599
-},
-{
-'relatedTagName':'Abraham_Lincoln',
-'replyCount':1598
-},
-{
-'relatedTagName':'Algeria',
-'replyCount':1597
-},
-{
-'relatedTagName':'George_W._Bush',
-'replyCount':1596
-},
-{
-'relatedTagName':'Japan',
-'replyCount':1596
-},
-{
-'relatedTagName':'Slovakia',
-'replyCount':1596
-},
-{
-'relatedTagName':'Czech_Republic',
-'replyCount':1592
-},
-{
-'relatedTagName':'Ecuador',
-'replyCount':1590
-},
-{
-'relatedTagName':'Charlemagne',
-'replyCount':1588
-},
-{
-'relatedTagName':'Venezuela',
-'replyCount':1585
-},
-{
-'relatedTagName':'Bulgaria',
-'replyCount':1584
-},
-{
-'relatedTagName':'Cuba',
-'replyCount':1583
-},
-{
-'relatedTagName':'Finland',
-'replyCount':1582
-},
-{
-'relatedTagName':'Julius_Caesar',
-'replyCount':1582
-},
-{
-'relatedTagName':'George_H._W._Bush',
-'replyCount':1581
-},
-{
-'relatedTagName':'Richard_Nixon',
-'replyCount':1581
-},
-{
-'relatedTagName':'Lebanon',
-'replyCount':1579
-},
-{
-'relatedTagName':'Puerto_Rico',
-'replyCount':1579
-},
-{
-'relatedTagName':'Arnold_Schwarzenegger',
-'replyCount':1578
-},
-{
-'relatedTagName':'Vietnam',
-'replyCount':1577
-},
-{
-'relatedTagName':'Charles_Darwin',
-'replyCount':1576
-},
-{
-'relatedTagName':'Sigmund_Freud',
-'replyCount':1576
-},
-{
-'relatedTagName':'Iraq',
-'replyCount':1575
-},
-{
-'relatedTagName':'North_Korea',
-'replyCount':1574
-},
-{
-'relatedTagName':'Ukraine',
-'replyCount':1574
-},
-{
-'relatedTagName':'Jamaica',
-'replyCount':1573
-},
-{
-'relatedTagName':'Lithuania',
-'replyCount':1572
-},
-{
-'relatedTagName':'Denmark',
-'replyCount':1571
-},
-{
-'relatedTagName':'Confederate_States_of_America',
-'replyCount':1570
-},
-{
-'relatedTagName':'Albert_Einstein',
-'replyCount':1567
-},
-{
-'relatedTagName':'George_Washington',
-'replyCount':1566
-},
-{
-'relatedTagName':'Northern_Ireland',
-'replyCount':1566
-},
-{
-'relatedTagName':'Saddam_Hussein',
-'replyCount':1565
-},
-{
-'relatedTagName':'Benito_Mussolini',
-'replyCount':1564
-},
-{
-'relatedTagName':'Iceland',
-'replyCount':1564
-},
-{
-'relatedTagName':'Turkey',
-'replyCount':1563
-},
-{
-'relatedTagName':'Henry_VIII_of_England',
-'replyCount':1562
-}
-]
-}
-]
+['Adolf_Hitler', 2750]
+['Augustine_of_Hippo', 2296]
+['Muammar_Gaddafi', 2063]
+['Wolfgang_Amadeus_Mozart', 1980]
+['Napoleon', 1785]
+['Argentina', 1756]
+['South_Africa', 1733]
+['Netherlands', 1732]
+['Italy', 1725]
+['Elizabeth_II', 1713]
+['England', 1706]
+['United_States', 1704]
+['Sweden', 1687]
+['Brazil', 1684]
+['Belgium', 1683]
+['China', 1683]
+['Philippines', 1681]
+['Pope_John_Paul_II', 1681]
+['Hungary', 1674]
+['Russia', 1673]
+['United_Kingdom', 1671]
+['Che_Guevara', 1665]
+['Indonesia', 1665]
+['Portugal', 1665]
+['Austria', 1663]
+['Norway', 1663]
+['Switzerland', 1662]
+['Chile', 1660]
+['New_Zealand', 1656]
+['Australia', 1654]
+['Soviet_Union', 1653]
+['Spain', 1650]
+['Serbia', 1644]
+['Romania', 1643]
+['Hong_Kong', 1642]
+['Taiwan', 1642]
+['William_Shakespeare', 1641]
+['Peru', 1637]
+['Czechoslovakia', 1636]
+['Singapore', 1634]
+['Mohandas_Karamchand_Gandhi', 1630]
+['Scotland', 1629]
+['South_Korea', 1628]
+['Greece', 1627]
+['Fidel_Castro', 1626]
+['France', 1618]
+['Germany', 1618]
+['Latvia', 1616]
+['Canada', 1615]
+['Israel', 1615]
+['Nazi_Germany', 1615]
+['Roman_Empire', 1615]
+['Thailand', 1615]
+['Poland', 1613]
+['Ronald_Reagan', 1613]
+['Haile_Selassie_I', 1610]
+['Pakistan', 1609]
+['Colombia', 1608]
+['Mexico', 1608]
+['Cyprus', 1607]
+['Jesus', 1604]
+['India', 1601]
+['United_Nations', 1601]
+['Barack_Obama', 1599]
+['Abraham_Lincoln', 1598]
+['Algeria', 1597]
+['George_W._Bush', 1596]
+['Japan', 1596]
+['Slovakia', 1596]
+['Czech_Republic', 1592]
+['Ecuador', 1590]
+['Charlemagne', 1588]
+['Venezuela', 1585]
+['Bulgaria', 1584]
+['Cuba', 1583]
+['Finland', 1582]
+['Julius_Caesar', 1582]
+['George_H._W._Bush', 1581]
+['Richard_Nixon', 1581]
+['Lebanon', 1579]
+['Puerto_Rico', 1579]
+['Arnold_Schwarzenegger', 1578]
+['Vietnam', 1577]
+['Charles_Darwin', 1576]
+['Sigmund_Freud', 1576]
+['Iraq', 1575]
+['North_Korea', 1574]
+['Ukraine', 1574]
+['Jamaica', 1573]
+['Lithuania', 1572]
+['Denmark', 1571]
+['Confederate_States_of_America', 1570]
+['Albert_Einstein', 1567]
+['George_Washington', 1566]
+['Northern_Ireland', 1566]
+['Saddam_Hussein', 1565]
+['Benito_Mussolini', 1564]
+['Iceland', 1564]
+['Turkey', 1563]
+['Henry_VIII_of_England', 1562]

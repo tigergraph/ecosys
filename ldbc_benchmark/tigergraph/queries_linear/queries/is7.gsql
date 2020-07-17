@@ -18,7 +18,7 @@ CREATE QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
     vMessage = to_vertex_set(@@seed, "Post");
   END;
   S = 
-    SELECT s
+    SELECT p
     FROM vMessage:s -(HAS_CREATOR>)- Person -(KNOWS)- Person:p
     PER(p)
     ACCUM @@knows += p;

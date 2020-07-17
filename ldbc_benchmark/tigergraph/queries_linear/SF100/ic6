@@ -1,48 +1,10 @@
-//seed: personId=30786325583618&tagName=Angola
-
-[
-{
-'@@tagStatsTop':[
-{
-'tagName':'Tom_Gehrels',
-'postCount':221
-},
-{
-'tagName':'Muammar_Gaddafi',
-'postCount':89
-},
-{
-'tagName':'Sammy_Sosa',
-'postCount':82
-},
-{
-'tagName':'Imelda_Marcos',
-'postCount':80
-},
-{
-'tagName':'Genghis_Khan',
-'postCount':67
-},
-{
-'tagName':'Joe_Strummer',
-'postCount':60
-},
-{
-'tagName':'Paradorn_Srichaphan',
-'postCount':53
-},
-{
-'tagName':'Peter_Hain',
-'postCount':53
-},
-{
-'tagName':'Manuel_Noriega',
-'postCount':52
-},
-{
-'tagName':'Robert_Fripp',
-'postCount':51
-}
-]
-}
-]
+['Tom_Gehrels', 221]
+['Muammar_Gaddafi', 89]
+['Sammy_Sosa', 82]
+['Imelda_Marcos', 80]
+['Genghis_Khan', 67]
+['Joe_Strummer', 60]
+['Paradorn_Srichaphan', 53]
+['Peter_Hain', 53]
+['Manuel_Noriega', 52]
+['Robert_Fripp', 51]

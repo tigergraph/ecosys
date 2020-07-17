@@ -1,48 +1,10 @@
-//seed: personId=21990232559429&startDate=2012-05-01 00:00:00&durationDays=37
-
-[
-{
-'@@topicTop':[
-{
-'tagName':'Vinicius_de_Moraes',
-'postCount':29
-},
-{
-'tagName':'Manuel_Noriega',
-'postCount':6
-},
-{
-'tagName':'Imelda_Marcos',
-'postCount':2
-},
-{
-'tagName':'Against_the_Law',
-'postCount':1
-},
-{
-'tagName':'Baby_Love',
-'postCount':1
-},
-{
-'tagName':'Basutoland',
-'postCount':1
-},
-{
-'tagName':'Bathhouse_Betty',
-'postCount':1
-},
-{
-'tagName':'Get_Down_on_It',
-'postCount':1
-},
-{
-'tagName':'Hassan_II_of_Morocco',
-'postCount':1
-},
-{
-'tagName':'I_Want_to_Know_What_Love_Is',
-'postCount':1
-}
-]
-}
-]
+['Vinicius_de_Moraes', 29]
+['Manuel_Noriega', 6]
+['Imelda_Marcos', 2]
+['Against_the_Law', 1]
+['Baby_Love', 1]
+['Basutoland', 1]
+['Bathhouse_Betty', 1]
+['Get_Down_on_It', 1]
+['Hassan_II_of_Morocco', 1]
+['I_Want_to_Know_What_Love_Is', 1]

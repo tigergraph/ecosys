@@ -1,134 +1,14 @@
-//seed: maxDate=2011-07-22 00:00:00
-
-[
-{
-'@@result':[
-{
-'theYear':2011,
-'isComment':False,
-'lengthCategory':'0',
-'messageCount':6968838,
-'averageMessageLength':0,
-'sumMessageLength':0,
-'percentageOfMessages':0.06779
-},
-{
-'theYear':2011,
-'isComment':False,
-'lengthCategory':'2',
-'messageCount':3748193,
-'averageMessageLength':105,
-'sumMessageLength':394905176,
-'percentageOfMessages':0.03646
-},
-{
-'theYear':2011,
-'isComment':False,
-'lengthCategory':'3',
-'messageCount':454412,
-'averageMessageLength':204,
-'sumMessageLength':93089011,
-'percentageOfMessages':0.00442
-},
-{
-'theYear':2011,
-'isComment':True,
-'lengthCategory':'0',
-'messageCount':28025765,
-'averageMessageLength':4,
-'sumMessageLength':117359218,
-'percentageOfMessages':0.27263
-},
-{
-'theYear':2011,
-'isComment':True,
-'lengthCategory':'1',
-'messageCount':4108651,
-'averageMessageLength':76,
-'sumMessageLength':314316463,
-'percentageOfMessages':0.03997
-},
-{
-'theYear':2011,
-'isComment':True,
-'lengthCategory':'2',
-'messageCount':9290493,
-'averageMessageLength':92,
-'sumMessageLength':859975541,
-'percentageOfMessages':0.09038
-},
-{
-'theYear':2011,
-'isComment':True,
-'lengthCategory':'3',
-'messageCount':612456,
-'averageMessageLength':173,
-'sumMessageLength':106464884,
-'percentageOfMessages':0.00596
-},
-{
-'theYear':2010,
-'isComment':False,
-'lengthCategory':'0',
-'messageCount':4938418,
-'averageMessageLength':0,
-'sumMessageLength':0,
-'percentageOfMessages':0.04804
-},
-{
-'theYear':2010,
-'isComment':False,
-'lengthCategory':'2',
-'messageCount':3672109,
-'averageMessageLength':105,
-'sumMessageLength':386894653,
-'percentageOfMessages':0.03572
-},
-{
-'theYear':2010,
-'isComment':False,
-'lengthCategory':'3',
-'messageCount':444317,
-'averageMessageLength':204,
-'sumMessageLength':91063252,
-'percentageOfMessages':0.00432
-},
-{
-'theYear':2010,
-'isComment':True,
-'lengthCategory':'0',
-'messageCount':27018925,
-'averageMessageLength':4,
-'sumMessageLength':113150593,
-'percentageOfMessages':0.26284
-},
-{
-'theYear':2010,
-'isComment':True,
-'lengthCategory':'1',
-'messageCount':3964231,
-'averageMessageLength':76,
-'sumMessageLength':303265697,
-'percentageOfMessages':0.03856
-},
-{
-'theYear':2010,
-'isComment':True,
-'lengthCategory':'2',
-'messageCount':8958563,
-'averageMessageLength':92,
-'sumMessageLength':829392760,
-'percentageOfMessages':0.08715
-},
-{
-'theYear':2010,
-'isComment':True,
-'lengthCategory':'3',
-'messageCount':590990,
-'averageMessageLength':173,
-'sumMessageLength':102625196,
-'percentageOfMessages':0.00575
-}
-]
-}
-]
+[2011, False, '0', 6968838, 0, 0, 0.06779]
+[2011, False, '2', 3748193, 105, 394905176, 0.03646]
+[2011, False, '3', 454412, 204, 93089011, 0.00442]
+[2011, True, '0', 28025765, 4, 117359218, 0.27263]
+[2011, True, '1', 4108651, 76, 314316463, 0.03997]
+[2011, True, '2', 9290493, 92, 859975541, 0.09038]
+[2011, True, '3', 612456, 173, 106464884, 0.00596]
+[2010, False, '0', 4938418, 0, 0, 0.04804]
+[2010, False, '2', 3672109, 105, 386894653, 0.03572]
+[2010, False, '3', 444317, 204, 91063252, 0.00432]
+[2010, True, '0', 27018925, 4, 113150593, 0.26284]
+[2010, True, '1', 3964231, 76, 303265697, 0.03856]
+[2010, True, '2', 8958563, 92, 829392760, 0.08715]
+[2010, True, '3', 590990, 173, 102625196, 0.00575]

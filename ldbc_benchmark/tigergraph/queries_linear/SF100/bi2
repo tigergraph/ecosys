@@ -1,808 +1,100 @@
-//seed: startDate=2010-01-01 00:00:00&endDate=2010-11-08 00:00:00&country1Name=Ethiopia&country2Name=Spain
-
-[
-{
-'@@result':[
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Haile_Selassie_I',
-'messageCount':2129
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Siad_Barre',
-'messageCount':1090
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Shapur_II',
-'messageCount':1087
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Haile_Selassie_I',
-'messageCount':1084
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Haile_Selassie_I',
-'messageCount':930
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':890
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Sonia_Gandhi',
-'messageCount':851
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Shapur_II',
-'messageCount':807
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Haile_Selassie_I',
-'messageCount':761
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Haile_Selassie_I',
-'messageCount':671
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Haile_Selassie_I',
-'messageCount':658
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Rubén_Blades',
-'messageCount':653
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Rubén_Blades',
-'messageCount':633
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':5,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Paula_Abdul',
-'messageCount':627
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Siad_Barre',
-'messageCount':626
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Shapur_II',
-'messageCount':615
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Shapur_II',
-'messageCount':613
-},
-{
-'countryName':'Spain',
-'messageMonth':5,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Paula_Abdul',
-'messageCount':581
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Siad_Barre',
-'messageCount':574
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Siad_Barre',
-'messageCount':573
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Shapur_II',
-'messageCount':568
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Shapur_II',
-'messageCount':559
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Garry_Kasparov',
-'messageCount':554
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':7,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Sammy_Sosa',
-'messageCount':542
-},
-{
-'countryName':'Spain',
-'messageMonth':5,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Paula_Abdul',
-'messageCount':536
-},
-{
-'countryName':'Spain',
-'messageMonth':7,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':534
-},
-{
-'countryName':'Spain',
-'messageMonth':9,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Sonia_Gandhi',
-'messageCount':529
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Luís_Figo',
-'messageCount':514
-},
-{
-'countryName':'Spain',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Sonia_Gandhi',
-'messageCount':509
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Haile_Selassie_I',
-'messageCount':502
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Tommy_Lee',
-'messageCount':498
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Sonia_Gandhi',
-'messageCount':480
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':7,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Rory_Gallagher',
-'messageCount':477
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Siad_Barre',
-'messageCount':471
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':456
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':451
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Shapur_II',
-'messageCount':443
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':431
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':423
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':7,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Ho_Chi_Minh',
-'messageCount':421
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':407
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Haile_Selassie_I',
-'messageCount':404
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':387
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Shapur_II',
-'messageCount':382
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':379
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Ho_Chi_Minh',
-'messageCount':376
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':376
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Rubén_Blades',
-'messageCount':374
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':371
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Ho_Chi_Minh',
-'messageCount':356
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Rubén_Blades',
-'messageCount':349
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':4,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Luiz_Inácio_Lula_da_Silva',
-'messageCount':343
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Mobutu_Sese_Seko',
-'messageCount':342
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Haile_Selassie_I',
-'messageCount':332
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Rubén_Blades',
-'messageCount':331
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':321
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Rogier_Wassen',
-'messageCount':321
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':7,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':320
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Shapur_II',
-'messageCount':320
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Léopold_Sédar_Senghor',
-'messageCount':315
-},
-{
-'countryName':'Spain',
-'messageMonth':7,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Sammy_Sosa',
-'messageCount':314
-},
-{
-'countryName':'Spain',
-'messageMonth':7,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Sammy_Sosa',
-'messageCount':310
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Shapur_II',
-'messageCount':309
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Sonia_Gandhi',
-'messageCount':307
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Siad_Barre',
-'messageCount':306
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':7,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':303
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Garry_Kasparov',
-'messageCount':301
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Haile_Selassie_I',
-'messageCount':295
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Sonia_Gandhi',
-'messageCount':293
-},
-{
-'countryName':'Spain',
-'messageMonth':7,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Sammy_Sosa',
-'messageCount':292
-},
-{
-'countryName':'Spain',
-'messageMonth':7,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ho_Chi_Minh',
-'messageCount':291
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ivan_Ljubičić',
-'messageCount':287
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Siad_Barre',
-'messageCount':284
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Ástor_Piazzolla',
-'messageCount':283
-},
-{
-'countryName':'Spain',
-'messageMonth':2,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Aung_San_Suu_Kyi',
-'messageCount':282
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':5,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Paula_Abdul',
-'messageCount':281
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Ho_Chi_Minh',
-'messageCount':274
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Rubén_Blades',
-'messageCount':272
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Siad_Barre',
-'messageCount':272
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Garry_Kasparov',
-'messageCount':271
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Shapur_II',
-'messageCount':268
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Garry_Kasparov',
-'messageCount':262
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':3,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Pedro_I_of_Brazil',
-'messageCount':253
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Garry_Kasparov',
-'messageCount':247
-},
-{
-'countryName':'Spain',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Sonia_Gandhi',
-'messageCount':246
-},
-{
-'countryName':'Spain',
-'messageMonth':8,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Haile_Selassie_I',
-'messageCount':245
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Ho_Chi_Minh',
-'messageCount':243
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Mobutu_Sese_Seko',
-'messageCount':242
-},
-{
-'countryName':'Spain',
-'messageMonth':9,
-'personGender':'male',
-'ageGroup':5,
-'tagName':'Luís_Figo',
-'messageCount':241
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Rubén_Blades',
-'messageCount':240
-},
-{
-'countryName':'Spain',
-'messageMonth':6,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Siad_Barre',
-'messageCount':239
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':5,
-'personGender':'male',
-'ageGroup':6,
-'tagName':'Paula_Abdul',
-'messageCount':235
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':8,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Garry_Kasparov',
-'messageCount':230
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Edmund_Burke',
-'messageCount':229
-},
-{
-'countryName':'Spain',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Luís_Figo',
-'messageCount':229
-},
-{
-'countryName':'Spain',
-'messageMonth':10,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Ástor_Piazzolla',
-'messageCount':228
-},
-{
-'countryName':'Spain',
-'messageMonth':5,
-'personGender':'female',
-'ageGroup':4,
-'tagName':'Paula_Abdul',
-'messageCount':225
-},
-{
-'countryName':'Spain',
-'messageMonth':5,
-'personGender':'female',
-'ageGroup':6,
-'tagName':'Paula_Abdul',
-'messageCount':218
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':10,
-'personGender':'male',
-'ageGroup':4,
-'tagName':'Shapur_II',
-'messageCount':216
-},
-{
-'countryName':'Ethiopia',
-'messageMonth':9,
-'personGender':'female',
-'ageGroup':5,
-'tagName':'Luís_Figo',
-'messageCount':212
-}
-]
-}
-]
+['Ethiopia', 8, 'male', 6, 'Haile_Selassie_I', 2129]
+['Spain', 6, 'male', 5, 'Siad_Barre', 1090]
+['Spain', 10, 'male', 5, 'Shapur_II', 1087]
+['Ethiopia', 8, 'female', 5, 'Haile_Selassie_I', 1084]
+['Ethiopia', 8, 'male', 5, 'Haile_Selassie_I', 930]
+['Spain', 10, 'female', 5, 'Léopold_Sédar_Senghor', 890]
+['Ethiopia', 9, 'male', 5, 'Sonia_Gandhi', 851]
+['Spain', 10, 'female', 5, 'Shapur_II', 807]
+['Spain', 8, 'male', 5, 'Haile_Selassie_I', 761]
+['Spain', 8, 'female', 5, 'Haile_Selassie_I', 671]
+['Ethiopia', 8, 'male', 4, 'Haile_Selassie_I', 658]
+['Ethiopia', 6, 'female', 5, 'Rubén_Blades', 653]
+['Spain', 6, 'female', 5, 'Rubén_Blades', 633]
+['Ethiopia', 5, 'female', 5, 'Paula_Abdul', 627]
+['Spain', 6, 'female', 5, 'Siad_Barre', 626]
+['Ethiopia', 10, 'female', 5, 'Shapur_II', 615]
+['Spain', 10, 'female', 6, 'Shapur_II', 613]
+['Spain', 5, 'male', 5, 'Paula_Abdul', 581]
+['Spain', 6, 'female', 6, 'Siad_Barre', 574]
+['Ethiopia', 6, 'female', 5, 'Siad_Barre', 573]
+['Ethiopia', 10, 'male', 6, 'Shapur_II', 568]
+['Ethiopia', 10, 'male', 5, 'Shapur_II', 559]
+['Ethiopia', 8, 'male', 5, 'Garry_Kasparov', 554]
+['Ethiopia', 7, 'female', 5, 'Sammy_Sosa', 542]
+['Spain', 5, 'female', 5, 'Paula_Abdul', 536]
+['Spain', 7, 'female', 5, 'Ho_Chi_Minh', 534]
+['Spain', 9, 'male', 5, 'Sonia_Gandhi', 529]
+['Ethiopia', 9, 'male', 5, 'Luís_Figo', 514]
+['Spain', 9, 'female', 5, 'Sonia_Gandhi', 509]
+['Ethiopia', 8, 'female', 6, 'Haile_Selassie_I', 502]
+['Spain', 10, 'female', 5, 'Tommy_Lee', 498]
+['Ethiopia', 9, 'female', 5, 'Sonia_Gandhi', 480]
+['Ethiopia', 7, 'male', 5, 'Rory_Gallagher', 477]
+['Spain', 6, 'male', 6, 'Siad_Barre', 471]
+['Ethiopia', 10, 'female', 4, 'Léopold_Sédar_Senghor', 456]
+['Spain', 10, 'female', 5, 'Ho_Chi_Minh', 451]
+['Ethiopia', 10, 'female', 6, 'Shapur_II', 443]
+['Ethiopia', 10, 'female', 6, 'Léopold_Sédar_Senghor', 431]
+['Ethiopia', 10, 'female', 5, 'Ho_Chi_Minh', 423]
+['Ethiopia', 7, 'male', 6, 'Ho_Chi_Minh', 421]
+['Spain', 10, 'male', 5, 'Ho_Chi_Minh', 407]
+['Ethiopia', 8, 'female', 4, 'Haile_Selassie_I', 404]
+['Spain', 10, 'male', 5, 'Léopold_Sédar_Senghor', 387]
+['Spain', 10, 'female', 4, 'Shapur_II', 382]
+['Ethiopia', 10, 'male', 4, 'Léopold_Sédar_Senghor', 379]
+['Ethiopia', 10, 'female', 6, 'Ho_Chi_Minh', 376]
+['Ethiopia', 10, 'male', 5, 'Léopold_Sédar_Senghor', 376]
+['Spain', 6, 'male', 5, 'Rubén_Blades', 374]
+['Ethiopia', 10, 'male', 5, 'Ho_Chi_Minh', 371]
+['Ethiopia', 10, 'female', 4, 'Ho_Chi_Minh', 356]
+['Ethiopia', 6, 'male', 5, 'Rubén_Blades', 349]
+['Ethiopia', 4, 'female', 5, 'Luiz_Inácio_Lula_da_Silva', 343]
+['Spain', 6, 'female', 5, 'Mobutu_Sese_Seko', 342]
+['Spain', 8, 'female', 6, 'Haile_Selassie_I', 332]
+['Ethiopia', 6, 'female', 6, 'Rubén_Blades', 331]
+['Ethiopia', 10, 'female', 5, 'Léopold_Sédar_Senghor', 321]
+['Ethiopia', 8, 'male', 5, 'Rogier_Wassen', 321]
+['Ethiopia', 7, 'male', 5, 'Ho_Chi_Minh', 320]
+['Spain', 10, 'male', 6, 'Shapur_II', 320]
+['Ethiopia', 10, 'male', 6, 'Léopold_Sédar_Senghor', 315]
+['Spain', 7, 'male', 5, 'Sammy_Sosa', 314]
+['Spain', 7, 'female', 6, 'Sammy_Sosa', 310]
+['Spain', 10, 'male', 4, 'Shapur_II', 309]
+['Ethiopia', 9, 'male', 4, 'Sonia_Gandhi', 307]
+['Spain', 6, 'male', 4, 'Siad_Barre', 306]
+['Ethiopia', 7, 'female', 5, 'Ho_Chi_Minh', 303]
+['Spain', 8, 'female', 5, 'Garry_Kasparov', 301]
+['Spain', 8, 'male', 4, 'Haile_Selassie_I', 295]
+['Ethiopia', 9, 'female', 6, 'Sonia_Gandhi', 293]
+['Spain', 7, 'female', 5, 'Sammy_Sosa', 292]
+['Spain', 7, 'male', 5, 'Ho_Chi_Minh', 291]
+['Ethiopia', 8, 'male', 5, 'Ivan_Ljubičić', 287]
+['Ethiopia', 6, 'male', 5, 'Siad_Barre', 284]
+['Ethiopia', 10, 'male', 5, 'Ástor_Piazzolla', 283]
+['Spain', 2, 'female', 6, 'Aung_San_Suu_Kyi', 282]
+['Ethiopia', 5, 'male', 5, 'Paula_Abdul', 281]
+['Spain', 10, 'male', 6, 'Ho_Chi_Minh', 274]
+['Ethiopia', 6, 'male', 4, 'Rubén_Blades', 272]
+['Ethiopia', 6, 'male', 4, 'Siad_Barre', 272]
+['Spain', 8, 'male', 5, 'Garry_Kasparov', 271]
+['Ethiopia', 10, 'female', 4, 'Shapur_II', 268]
+['Spain', 8, 'male', 6, 'Garry_Kasparov', 262]
+['Ethiopia', 3, 'female', 5, 'Pedro_I_of_Brazil', 253]
+['Ethiopia', 8, 'female', 6, 'Garry_Kasparov', 247]
+['Spain', 9, 'female', 6, 'Sonia_Gandhi', 246]
+['Spain', 8, 'male', 6, 'Haile_Selassie_I', 245]
+['Ethiopia', 10, 'male', 4, 'Ho_Chi_Minh', 243]
+['Spain', 6, 'male', 5, 'Mobutu_Sese_Seko', 242]
+['Spain', 9, 'male', 5, 'Luís_Figo', 241]
+['Spain', 6, 'female', 6, 'Rubén_Blades', 240]
+['Spain', 6, 'female', 4, 'Siad_Barre', 239]
+['Ethiopia', 5, 'male', 6, 'Paula_Abdul', 235]
+['Ethiopia', 8, 'female', 5, 'Garry_Kasparov', 230]
+['Ethiopia', 10, 'male', 4, 'Edmund_Burke', 229]
+['Spain', 9, 'female', 5, 'Luís_Figo', 229]
+['Spain', 10, 'female', 5, 'Ástor_Piazzolla', 228]
+['Spain', 5, 'female', 4, 'Paula_Abdul', 225]
+['Spain', 5, 'female', 6, 'Paula_Abdul', 218]
+['Ethiopia', 10, 'male', 4, 'Shapur_II', 216]
+['Ethiopia', 9, 'female', 5, 'Luís_Figo', 212]

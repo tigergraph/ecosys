@@ -1,161 +1,20 @@
-//seed: personId=17592186052613&maxDate=2012-11-27 16:00:00
-
-[
-{
-'@@msgTop':[
-{
-'personId':6597070213870,
-'personFirstName':'Albert',
-'personLastName':'Vandenbroucke',
-'messageId':70368976156231,
-'messageContent':'ok',
-'messageCreationDate':'2012-09-13 09:24:43'
-},
-{
-'personId':17592186068695,
-'personFirstName':'Cesar',
-'personLastName':'Garcia',
-'messageId':70369157543334,
-'messageContent':'no',
-'messageCreationDate':'2012-09-13 09:05:12'
-},
-{
-'personId':17592186478358,
-'personFirstName':'Vitor',
-'personLastName':'Nascimento',
-'messageId':70369116010240,
-'messageContent':'About Wolfgang Amadeus Mozart, me of hisAbout Pope Paul VI, and LatinAbout Fre', 'messageCreationDate':'2012-09-13 07:29:19'
-},
-{
-'personId':17592186068695,
-'personFirstName':'Cesar',
-'personLastName':'Garcia',
-'messageId':70368882270764,
-'messageContent':'About Kingdom of Castile, t emerged as a political autonomous entity in the 9th ce', 'messageCreationDate':'2012-09-13 07:18:38'
-},
-{
-'personId':17592186068695,
-'personFirstName':'Cesar',
-'personLastName':'Garcia',
-'messageId':70369091060851,
-'messageContent':'thanks',
-'messageCreationDate':'2012-09-13 05:54:29'
-},
-{
-'personId':15393163232691,
-'personFirstName':'Aurora',
-'personLastName':'Alcala',
-'messageId':70369038748948,
-'messageContent':'fine',
-'messageCreationDate':'2012-09-13 05:50:54'
-},
-{
-'personId':13194139576835,
-'personFirstName':'Taufik',
-'personLastName':'Barton',
-'messageId':70369121097771,
-'messageContent':'About Robert Bourassa, mber 12, 1985About Leonard Bernstein, the New York Ab', 'messageCreationDate':'2012-09-13 04:54:51'
-},
-{
-'personId':13194139614060,
-'personFirstName':'Friedrich',
-'personLastName':'Muller',
-'messageId':70368921615690,
-'messageContent':'thanks',
-'messageCreationDate':'2012-09-13 04:46:42'
-},
-{
-'personId':10995116526134,
-'personFirstName':'Rene',
-'personLastName':'Bettens',
-'messageId':70369102116673,
-'messageContent':'good',
-'messageCreationDate':'2012-09-13 04:39:09'
-},
-{
-'personId':13194139996756,
-'personFirstName':'Eddie',
-'personLastName':'Reyes',
-'messageId':70369167892103,
-'messageContent':'About Billion Dollar Babies, arts in both the United States and the United Kingdom, a', 'messageCreationDate':'2012-09-13 03:50:50'
-},
-{
-'personId':17592186478358,
-'personFirstName':'Vitor',
-'personLastName':'Nascimento',
-'messageId':70369110142276,
-'messageContent':'About Australia,  competes against the Liberal/National Coalition for political off', 'messageCreationDate':'2012-09-13 02:52:38'
-},
-{
-'personId':10995116303446,
-'personFirstName':'Albert',
-'personLastName':'Buysse',
-'messageId':70368850393797,
-'messageContent':'right',
-'messageCreationDate':'2012-09-13 01:26:38'
-},
-{
-'personId':10995116526134,
-'personFirstName':'Rene',
-'personLastName':'Bettens',
-'messageId':70369083876755,
-'messageContent':'I see',
-'messageCreationDate':'2012-09-13 01:14:41'
-},
-{
-'personId':15393163232691,
-'personFirstName':'Aurora',
-'personLastName':'Alcala',
-'messageId':70368752062631,
-'messageContent':'no',
-'messageCreationDate':'2012-09-13 00:05:08'
-},
-{
-'personId':15393163121499,
-'personFirstName':'John',
-'personLastName':'Aquino',
-'messageId':70368887080577,
-'messageContent':'About Moonlight Shadow, e same year. The vocals were performedAbout Tommy R', 'messageCreationDate':'2012-09-12 23:25:07'
-},
-{
-'personId':10995116526134,
-'personFirstName':'Rene',
-'personLastName':'Bettens',
-'messageId':70369048239481,
-'messageContent':'About Matt Damon, cially successful films such as Saving PriAbout She Said She Said', 'messageCreationDate':'2012-09-12 22:50:42'
-},
-{
-'personId':10995116604953,
-'personFirstName':'Jan',
-'personLastName':'Aa',
-'messageId':70368791126865,
-'messageContent':'photo70368791126865.jpg',
-'messageCreationDate':'2012-09-12 22:16:42'
-},
-{
-'personId':10995116604953,
-'personFirstName':'Jan',
-'personLastName':'Aa',
-'messageId':70368791126864,
-'messageContent':'photo70368791126864.jpg',
-'messageCreationDate':'2012-09-12 22:16:41'
-},
-{
-'personId':10995116604953,
-'personFirstName':'Jan',
-'personLastName':'Aa',
-'messageId':70368791126863,
-'messageContent':'photo70368791126863.jpg',
-'messageCreationDate':'2012-09-12 22:16:40'
-},
-{
-'personId':10995116604953,
-'personFirstName':'Jan',
-'personLastName':'Aa',
-'messageId':70368791126862,
-'messageContent':'photo70368791126862.jpg',
-'messageCreationDate':'2012-09-12 22:16:39'
-}
-]
-}
-]
+[6597070213870, 'Albert', 'Vandenbroucke', 70368976156231, 'ok', '2012-09-13 09:24:43']
+[17592186068695, 'Cesar', 'Garcia', 70369157543334, 'no', '2012-09-13 09:05:12']
+[17592186478358, 'Vitor', 'Nascimento', 70369116010240, 'About Wolfgang Amadeus Mozart, me of hisAbout Pope Paul VI, and LatinAbout Fre', '2012-09-13 07:29:19']
+[17592186068695, 'Cesar', 'Garcia', 70368882270764, 'About Kingdom of Castile, t emerged as a political autonomous entity in the 9th ce', '2012-09-13 07:18:38']
+[17592186068695, 'Cesar', 'Garcia', 70369091060851, 'thanks', '2012-09-13 05:54:29']
+[15393163232691, 'Aurora', 'Alcala', 70369038748948, 'fine', '2012-09-13 05:50:54']
+[13194139576835, 'Taufik', 'Barton', 70369121097771, 'About Robert Bourassa, mber 12, 1985About Leonard Bernstein, the New York Ab', '2012-09-13 04:54:51']
+[13194139614060, 'Friedrich', 'Muller', 70368921615690, 'thanks', '2012-09-13 04:46:42']
+[10995116526134, 'Rene', 'Bettens', 70369102116673, 'good', '2012-09-13 04:39:09']
+[13194139996756, 'Eddie', 'Reyes', 70369167892103, 'About Billion Dollar Babies, arts in both the United States and the United Kingdom, a', '2012-09-13 03:50:50']
+[17592186478358, 'Vitor', 'Nascimento', 70369110142276, 'About Australia,  competes against the Liberal/National Coalition for political off', '2012-09-13 02:52:38']
+[10995116303446, 'Albert', 'Buysse', 70368850393797, 'right', '2012-09-13 01:26:38']
+[10995116526134, 'Rene', 'Bettens', 70369083876755, 'I see', '2012-09-13 01:14:41']
+[15393163232691, 'Aurora', 'Alcala', 70368752062631, 'no', '2012-09-13 00:05:08']
+[15393163121499, 'John', 'Aquino', 70368887080577, 'About Moonlight Shadow, e same year. The vocals were performedAbout Tommy R', '2012-09-12 23:25:07']
+[10995116526134, 'Rene', 'Bettens', 70369048239481, 'About Matt Damon, cially successful films such as Saving PriAbout She Said She Said', '2012-09-12 22:50:42']
+[10995116604953, 'Jan', 'Aa', 70368791126865, 'photo70368791126865.jpg', '2012-09-12 22:16:42']
+[10995116604953, 'Jan', 'Aa', 70368791126864, 'photo70368791126864.jpg', '2012-09-12 22:16:41']
+[10995116604953, 'Jan', 'Aa', 70368791126863, 'photo70368791126863.jpg', '2012-09-12 22:16:40']
+[10995116604953, 'Jan', 'Aa', 70368791126862, 'photo70368791126862.jpg', '2012-09-12 22:16:39']

@@ -1,17 +1,1 @@
-//seed: messageId=13194144951001
-
-[
-{
-'vPerson':[
-{
-'v_id':'2199023313551',
-'v_type':'Person',
-'attributes':{
-'personId':2199023313551,
-'firstName':'Peng',
-'lastName':'Zhu'
-}
-}
-]
-}
-]
+[4398047433193, 'Wendy', 'Nariman']

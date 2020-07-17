@@ -1,288 +1,85 @@
-//seed: personId=30786325583618
-
-[
-{
-'vFriend':[
-{
-'v_id':'32985348909054',
-'v_type':'Person',
-'attributes':{
-'personId':32985348909054,
-'firstName':'A.',
-'lastName':'Singh',
-'friendshipCreationDate':'2012-08-10 23:23:46'
-}
-},
-{
-'v_id':'32985349168993',
-'v_type':'Person',
-'attributes':{
-'personId':32985349168993,
-'firstName':'Antonio',
-'lastName':'Cruz',
-'friendshipCreationDate':'2012-08-06 10:04:11'
-}
-},
-{
-'v_id':'2199023497256',
-'v_type':'Person',
-'attributes':{
-'personId':2199023497256,
-'firstName':'Đinh Diễm Liên',
-'lastName':'Loan',
-'friendshipCreationDate':'2012-06-19 13:42:04'
-}
-},
-{
-'v_id':'6597070114340',
-'v_type':'Person',
-'attributes':{
-'personId':6597070114340,
-'firstName':'Joe',
-'lastName':'Smith',
-'friendshipCreationDate':'2012-06-15 17:38:23'
-}
-},
-{
-'v_id':'24189255913113',
-'v_type':'Person',
-'attributes':{
-'personId':24189255913113,
-'firstName':'Esti Mamo',
-'lastName':'Tessema',
-'friendshipCreationDate':'2012-06-15 03:20:28'
-}
-},
-{
-'v_id':'2199023480625',
-'v_type':'Person',
-'attributes':{
-'personId':2199023480625,
-'firstName':'Cesar',
-'lastName':'Pham',
-'friendshipCreationDate':'2012-06-14 22:31:01'
-}
-},
-{
-'v_id':'8796093389378',
-'v_type':'Person',
-'attributes':{
-'personId':8796093389378,
-'firstName':'Janet',
-'lastName':'Ho',
-'friendshipCreationDate':'2012-06-13 23:39:12'
-}
-},
-{
-'v_id':'4398046551341',
-'v_type':'Person',
-'attributes':{
-'personId':4398046551341,
-'firstName':'Cam',
-'lastName':'Ha',
-'friendshipCreationDate':'2012-06-13 22:53:51'
-}
-},
-{
-'v_id':'6597069995606',
-'v_type':'Person',
-'attributes':{
-'personId':6597069995606,
-'firstName':'Vassilis',
-'lastName':'Angello',
-'friendshipCreationDate':'2012-06-13 02:23:40'
-}
-},
-{
-'v_id':'10995116417664',
-'v_type':'Person',
-'attributes':{
-'personId':10995116417664,
-'firstName':'Meera',
-'lastName':'Singh',
-'friendshipCreationDate':'2012-06-11 01:19:15'
-}
-},
-{
-'v_id':'13194139850260',
-'v_type':'Person',
-'attributes':{
-'personId':13194139850260,
-'firstName':'Cam',
-'lastName':'Nguyen',
-'friendshipCreationDate':'2012-06-11 01:05:46'
-}
-},
-{
-'v_id':'19791209714367',
-'v_type':'Person',
-'attributes':{
-'personId':19791209714367,
-'firstName':'Emperor of Brazil',
-'lastName':'Costa',
-'friendshipCreationDate':'2012-06-10 20:54:59'
-}
-},
-{
-'v_id':'309652',
-'v_type':'Person',
-'attributes':{
-'personId':309652,
-'firstName':'Chris',
-'lastName':'Michie',
-'friendshipCreationDate':'2012-06-10 06:32:57'
-}
-},
-{
-'v_id':'26388279072730',
-'v_type':'Person',
-'attributes':{
-'personId':26388279072730,
-'firstName':'John',
-'lastName':'Manalo',
-'friendshipCreationDate':'2012-06-07 21:05:15'
-}
-},
-{
-'v_id':'396240',
-'v_type':'Person',
-'attributes':{
-'personId':396240,
-'firstName':'Ahsan',
-'lastName':'Khan',
-'friendshipCreationDate':'2012-06-07 16:10:27'
-}
-},
-{
-'v_id':'10995116372767',
-'v_type':'Person',
-'attributes':{
-'personId':10995116372767,
-'firstName':'Carlos',
-'lastName':'Fernandez',
-'friendshipCreationDate':'2012-06-05 07:20:49'
-}
-},
-{
-'v_id':'2199023422968',
-'v_type':'Person',
-'attributes':{
-'personId':2199023422968,
-'firstName':'Atta',
-'lastName':'Kim',
-'friendshipCreationDate':'2012-06-04 05:39:34'
-}
-},
-{
-'v_id':'2199023286924',
-'v_type':'Person',
-'attributes':{
-'personId':2199023286924,
-'firstName':'Jim',
-'lastName':'Wilson',
-'friendshipCreationDate':'2012-05-31 13:28:25'
-}
-},
-{
-'v_id':'2199023538263',
-'v_type':'Person',
-'attributes':{
-'personId':2199023538263,
-'firstName':'Batong',
-'lastName':'Nguyen',
-'friendshipCreationDate':'2012-05-31 01:16:06'
-}
-},
-{
-'v_id':'190447',
-'v_type':'Person',
-'attributes':{
-'personId':190447,
-'firstName':'Pisith',
-'lastName':'Chau',
-'friendshipCreationDate':'2012-05-30 16:49:32'
-}
-},
-{
-'v_id':'10995116457057',
-'v_type':'Person',
-'attributes':{
-'personId':10995116457057,
-'firstName':'Djembo',
-'lastName':'Kazadi',
-'friendshipCreationDate':'2012-05-30 03:24:13'
-}
-},
-{
-'v_id':'28587302621992',
-'v_type':'Person',
-'attributes':{
-'personId':28587302621992,
-'firstName':'Hao',
-'lastName':'Chen',
-'friendshipCreationDate':'2012-05-28 13:39:13'
-}
-},
-{
-'v_id':'10995116583956',
-'v_type':'Person',
-'attributes':{
-'personId':10995116583956,
-'firstName':'Hồ Mạnh Dũng',
-'lastName':'Thanh',
-'friendshipCreationDate':'2012-05-28 06:51:57'
-}
-},
-{
-'v_id':'2199023262021',
-'v_type':'Person',
-'attributes':{
-'personId':2199023262021,
-'firstName':'Huong',
-'lastName':'Le',
-'friendshipCreationDate':'2012-05-26 08:40:10'
-}
-},
-{
-'v_id':'26388279310060',
-'v_type':'Person',
-'attributes':{
-'personId':26388279310060,
-'firstName':'Juan',
-'lastName':'Rodriguez',
-'friendshipCreationDate':'2012-05-25 14:04:39'
-}
-},
-{
-'v_id':'6597070172352',
-'v_type':'Person',
-'attributes':{
-'personId':6597070172352,
-'firstName':'Albert Camille',
-'lastName':'Simon',
-'friendshipCreationDate':'2012-05-25 02:11:43'
-}
-},
-{
-'v_id':'13194139596304',
-'v_type':'Person',
-'attributes':{
-'personId':13194139596304,
-'firstName':'Bich Phuong',
-'lastName':'Pham',
-'friendshipCreationDate':'2012-05-24 10:21:11'
-}
-},
-{
-'v_id':'2199023377995',
-'v_type':'Person',
-'attributes':{
-'personId':2199023377995,
-'firstName':'Batong',
-'lastName':'Bach',
-'friendshipCreationDate':'2012-05-23 12:09:22'
-}
-}
-]
-}
-]
+[13194151571505, 'Cristian', 'Cejas', '2012-09-01 08:59:35']
+[15393163868096, 'Carlos', 'Alonso', '2012-08-27 16:45:15']
+[15393163673485, 'Juan Carlos', 'Alvarez', '2012-08-23 17:39:00']
+[15393169037373, 'Antonio', 'Garcia', '2012-08-21 04:46:06']
+[15393163775469, 'Ricardo', 'Alonso', '2012-08-18 09:42:31']
+[13194151921728, 'Enrique', 'Alonso', '2012-08-06 23:54:18']
+[15393172812564, 'John', 'Sharma', '2012-07-25 03:56:38']
+[10995126203188, 'Roberto', 'Lopez', '2012-07-18 06:07:23']
+[15393172305777, 'Karan', 'Chopra', '2012-07-16 00:20:02']
+[15393166818067, 'Binh', 'Ho', '2012-07-11 01:32:31']
+[15393173495098, 'Anna', 'Petrov', '2012-07-07 14:39:23']
+[15393167111698, 'Nikki', 'Diaz', '2012-07-03 10:49:34']
+[15393169072744, 'Dominic', 'Tembo', '2012-06-30 12:01:51']
+[10995126433363, 'Juan Carlos', 'Cejas', '2012-06-25 13:06:24']
+[15393163727762, 'Roberto', 'Belforti', '2012-06-15 09:59:09']
+[15393170675276, 'Mostafa', 'Forouhar', '2012-06-12 05:32:41']
+[15393169338516, 'David', 'Smith', '2012-06-07 22:08:29']
+[15393167133228, 'Ernesto', 'Alonso', '2012-06-02 02:48:02']
+[15393168572739, 'Carlos', 'Cardenas', '2012-06-01 08:20:26']
+[13194154435736, 'Carlos', 'Alvarez', '2012-05-27 01:01:13']
+[15393171362804, 'Diego', 'Gonzalez', '2012-05-25 16:41:18']
+[15393168850608, 'Alejandro', 'Belforti', '2012-05-25 09:21:04']
+[13194156021538, 'Roberto', 'Bernal', '2012-05-24 00:38:23']
+[15393169039600, 'Asim', 'Hussain', '2012-05-16 05:57:51']
+[15393165758544, 'Edi Mue', 'Asoyo', '2012-05-13 06:46:41']
+[15393167766270, 'Hector', 'Alvarez', '2012-04-22 04:41:54']
+[15393167532358, 'Angel', 'Cejas', '2012-04-20 03:44:39']
+[15393163842888, 'Ramon', 'Magalona', '2012-04-17 19:31:43']
+[15393164999564, 'Zheng', 'Zhang', '2012-04-16 07:18:15']
+[15393168843949, 'A.', 'Sharma', '2012-04-04 06:15:54']
+[15393170167804, 'Chuon', 'Dara', '2012-04-04 03:02:31']
+[15393172832726, 'John', 'Kapoor', '2012-03-19 11:48:37']
+[15393167767215, 'Antonio', 'Diaz', '2012-03-19 09:57:53']
+[15393168337079, 'The', 'Dogg', '2012-03-17 17:59:19']
+[15393165818950, 'Michael', 'Zhou', '2012-03-09 00:52:43']
+[13194158808995, 'Pablo', 'Diaz', '2012-03-04 13:31:06']
+[15393169181662, 'Eric', 'Raghu', '2012-02-24 02:47:21']
+[15393169168629, 'Paul', 'Johnson', '2012-02-18 15:40:37']
+[10995134040071, 'Leonardo', 'Alvarez', '2012-02-10 08:51:52']
+[10995133879811, 'Carlos', 'Cejas', '2012-02-04 11:24:56']
+[10995130173855, 'Juan', 'Irigoyen', '2012-01-31 08:39:46']
+[13194157099901, 'Juan', 'Diaz', '2012-01-28 16:28:52']
+[15393173847311, 'Jorge', 'Agudelo', '2012-01-23 11:21:00']
+[13194148285391, 'Sebastian', 'Alonso', '2012-01-09 06:35:45']
+[10995134645770, 'Roberto', 'Bernal', '2012-01-05 13:57:34']
+[15393163570288, 'Jie', 'Li', '2012-01-03 06:22:49']
+[15393165361667, 'Anson', 'Xu', '2011-12-27 02:16:02']
+[15393172229846, 'Kenji', 'Hayashi', '2011-12-22 12:18:07']
+[15393166873357, 'Batong', 'Ho', '2011-12-08 15:11:04']
+[13194146926150, 'Alberto', 'Diaz', '2011-12-07 14:16:21']
+[15393173498247, 'Cam', 'Hoang', '2011-11-25 00:39:32']
+[15393169175417, 'Cam', 'Ha', '2011-11-18 10:04:10']
+[13194152029059, 'Roberto', 'Diaz', '2011-11-05 16:09:21']
+[15393168683797, 'Roberto', 'Diaz', '2011-10-22 01:00:02']
+[15393166716816, 'Tomasz', 'Zabłocki', '2011-09-30 18:41:10']
+[13194150206522, 'Carlos', 'Lopez', '2011-09-15 13:09:19']
+[13194141240677, 'Roberto', 'Diaz', '2011-09-14 21:24:35']
+[13194153550483, 'Enrique', 'Cejas', '2011-09-12 12:50:59']
+[15393169184036, 'Sergio', 'Santos', '2011-09-01 02:57:23']
+[15393164873695, 'Roberto', 'Alvarez', '2011-08-18 01:46:02']
+[15393173188828, 'Arjun', 'Khan', '2011-08-17 07:19:45']
+[15393168451882, 'Erol', 'Simsek', '2011-08-08 13:07:47']
+[15393167095102, 'Aisam-Ul-Haq', 'Qureshi', '2011-08-08 04:50:43']
+[15393164967056, 'Carlos', 'Bernal', '2011-08-03 18:41:46']
+[15393169166126, 'Zbigniew', 'Kaminski', '2011-08-02 10:53:39']
+[15393173415330, 'K.', 'Khan', '2011-07-30 17:58:21']
+[15393172679987, 'Albert', 'Popov', '2011-07-21 18:38:46']
+[15393169029928, 'Arap', 'Obuya', '2011-07-18 09:25:33']
+[13194154672888, 'Alejandro', 'Cejas', '2011-07-18 07:32:23']
+[13194146713585, 'Juan', 'Alvarez', '2011-07-11 16:54:45']
+[15393164105904, 'K.', 'Irani', '2011-07-07 14:32:10']
+[15393168941782, 'Ricardo', 'Diaz', '2011-06-30 07:33:24']
+[15393164950738, 'Teresa', 'Li', '2011-06-29 19:25:37']
+[13194155298304, 'Pablo', 'Calamaro', '2011-06-28 10:10:18']
+[15393169150976, 'Ludwig', 'Wagner', '2011-06-25 18:01:52']
+[15393167828274, 'Jose', 'Diaz', '2011-06-25 12:06:00']
+[8796105046509, 'Pablo', 'Cejas', '2011-06-12 06:29:56']
+[15393169261245, 'Huynh Quang', 'Loan', '2011-06-11 17:20:12']
+[15393165174780, 'Jimmy', 'Dogg', '2011-06-03 15:48:53']
+[15393170690507, 'Baby', 'Zhang', '2011-05-27 14:10:20']
+[15393163618904, 'Carlos', 'Garcia', '2011-04-30 10:55:34']
+[15393169147285, 'Aleksandr', 'Berman', '2011-04-20 08:20:53']
+[15393169127786, 'A.', 'Reddy', '2011-04-15 10:52:33']
+[15393163670532, 'Bill', 'Wilson', '2011-04-13 19:56:17']
+[13194151746292, 'Pablo', 'Haedo', '2011-04-07 14:18:20']

@@ -1,78 +1,10 @@
-//seed: personId=30786325583618&countryName=Laos&workFromYear=2010
-
-[
-{
-'@@friendInfoTop':[
-{
-'personId':17592186507482,
-'personFirstName':'Peter',
-'personLastName':'Goenka',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2001
-},
-{
-'personId':28587302398267,
-'personFirstName':'Don',
-'personLastName':'Hai',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2001
-},
-{
-'personId':8796093147000,
-'personFirstName':'John',
-'personLastName':'Michie',
-'organizationName':'Lao_Air',
-'organizationWorkFromYear':2002
-},
-{
-'personId':26388279208174,
-'personFirstName':'Billinjer C',
-'personLastName':'Ho',
-'organizationName':'Lao_Air',
-'organizationWorkFromYear':2002
-},
-{
-'personId':15393163252159,
-'personFirstName':'Bich Phuong',
-'personLastName':'Loan',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2003
-},
-{
-'personId':10995116445445,
-'personFirstName':'Ashin',
-'personLastName':'Mettacara',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2004
-},
-{
-'personId':17592186470346,
-'personFirstName':'Geir',
-'personLastName':'Lie',
-'organizationName':'Lao_Air',
-'organizationWorkFromYear':2004
-},
-{
-'personId':19791209782207,
-'personFirstName':'Ernest B',
-'personLastName':'Goenka',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2004
-},
-{
-'personId':24189256092039,
-'personFirstName':'Blanca',
-'personLastName':'Gonzalez',
-'organizationName':'Lao_Airlines',
-'organizationWorkFromYear':2004
-},
-{
-'personId':19791209562751,
-'personFirstName':'Louis',
-'personLastName':'Bedingfield',
-'organizationName':'Lao_Air',
-'organizationWorkFromYear':2005
-}
-]
-}
-]
+[17592186507482, 'Peter', 'Goenka', 'Lao_Airlines', 2001]
+[28587302398267, 'Don', 'Hai', 'Lao_Airlines', 2001]
+[8796093147000, 'John', 'Michie', 'Lao_Air', 2002]
+[26388279208174, 'Billinjer C', 'Ho', 'Lao_Air', 2002]
+[15393163252159, 'Bich Phuong', 'Loan', 'Lao_Airlines', 2003]
+[10995116445445, 'Ashin', 'Mettacara', 'Lao_Airlines', 2004]
+[17592186470346, 'Geir', 'Lie', 'Lao_Air', 2004]
+[19791209782207, 'Ernest B', 'Goenka', 'Lao_Airlines', 2004]
+[24189256092039, 'Blanca', 'Gonzalez', 'Lao_Airlines', 2004]
+[19791209562751, 'Louis', 'Bedingfield', 'Lao_Air', 2005]
