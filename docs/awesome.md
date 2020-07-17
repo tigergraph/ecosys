@@ -47,6 +47,9 @@ A curated list of AWESOME TigerGraph community resources.
 * [**atom-language-gsql**](https://github.com/alejandropoveda/atom-language-gsql) - Adds syntax highlighting and snippets to GSQL® files in Atom.
 * [**gsql-sublime**](https://github.com/fjblau/gsql-sublime) - syntax formatter for GSQL in Sublime v3
 
+### Python
+* [**GSQL Schema Extractor**](https://colab.research.google.com/drive/1Cm-rFTSUJPFFtPx0R_Wqj9MilTCLFE3_?usp=sharing) A python script to extract graph schema and modify extraction into a GSQL schema.
+
 ## Connectors
 ### Kafka
 * [**tg-kafka-connect**](https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-kafka-connect/com/tigergraph/connector) a Kafka connector
@@ -91,7 +94,7 @@ A curated list of AWESOME TigerGraph community resources.
 ## TigerGraph Enviornment
 ### Docker
 * [**Docker Demo**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/docker)
-* [**TG Docker Lite**](https://github.com/DavidBakerEffendi/tigergraph) - The purpose of this repository is to create less bloated TigerGraph containers for resource sensitive environments e.g. CI/CD. The Docker image starts gadmin when the container spins up.
+* [**TG Docker Lite**](https://github.com/DavidBakerEffendi/tigergraph) - The purpose of this repository is to remove un-needed demo files from TigerGraph containers for resource sensitive environments e.g. CI/CD. The Docker image starts gadmin when the container spins up.
 
 ### Cloud
 * [**Deploy TigerGraph Cloud**](https://community.tigergraph.com/t/howto-deploy-a-cloud-instance/363)
@@ -100,8 +103,10 @@ A curated list of AWESOME TigerGraph community resources.
 * [**Graph Fundementals**](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics
 * [**GSQL 101**](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution
 
-## Pre-Built Demos
+## Demos
 * [**TigerGraph Yelp Dataset Solution**](https://github.com/DavidBakerEffendi/tigergraph-yelp) - Contains the GSQL scripts and TigerGraph solution tarball to import and model the Yelp challenge dataset using TigerGraph.
+* [**GSQL 101 Python Google Colab**](https://colab.research.google.com/drive/1E8tTIvg-DI8zpmyQjtxVXpP8KqtjXxY8?usp=sharing)- Getting started guide for interacting with TigerGraph from python environment.
+* [**pyGraphistry Vis Demo Notebook**](https://github.com/graphistry/pygraphistry/blob/master/demos/demos_databases_apis/tigergraph/tigergraph_pygraphistry_bindings.ipynb) - sample of how to add graph based visualizations in your notebook.
 * [**pattern_match**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/pattern_match)
 * [**temporal_data**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/temporal_data)
 * [**pagerank**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/pagerank_demo) Healthcare Demo
@@ -114,6 +119,10 @@ A curated list of AWESOME TigerGraph community resources.
 * [**pattern_interpret**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/guru15_pattern_interpret)
 * [**fraud_detection**](https://github.com/tigergraph/ecosys/tree/master/demos/guru_scripts/fraud_detection_demo)
 <!--- Is this an actual repo --->
+
+## How To
+* [**Python Schema & Load**](https://github.com/parkererickson/yelpGraph/blob/master/schemaAndLoad.ipynb) - Simple walkthrough of creating a schmea and upserting data (loading)
+* [**GSQL101 - on a Jupyter Notebook**](https://github.com/yaniv256/ecosys/blob/master/demos/guru_scripts/docker_notebook/gsql101.ipynb) - guide to using GSQL with a Jupyter Notebook
 
 ## Benchmarking
 * [**Suitability of Graph Database Technology for the Analysis of Spatio-Temporal Data**](https://www.mdpi.com/1999-5903/12/5/78)
