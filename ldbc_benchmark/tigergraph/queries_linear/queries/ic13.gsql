@@ -6,9 +6,8 @@ USE GRAPH ldbc_snb
 DROP QUERY ic13
 
 CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
-  SumAccum<INT> @dist1 = -1, @dist2 = -1;
-  SumAccum<INT> @@next;
-  OrAccum @@found = False;
+  MaxAccum<INT> @dist1 = -1, @dist2 = -1;
+  OrAccum @@found, @@next1=True, @@next2=True;
   MaxAccum<INT> @@dist12=-1;
 
   IF person1Id != person2Id THEN
@@ -17,41 +16,38 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
     S1 = SELECT s FROM S1:s ACCUM s.@dist1 = 0;
     S2 = SELECT s FROM S2:s ACCUM s.@dist2 = 0;
       
-    WHILE NOT @@found DO
-      @@next = 0;
-      S1 = 
-        SELECT t
-        FROM S1:s-(KNOWS)-Person:t
-        WHERE t.@dist1 < 0
-        ACCUM 
-          IF t.@dist2 > -1 THEN
-            @@found += True,
-            @@dist12 += s.@dist1 + t.@dist2 + 1
-          ELSE
-            @@next += 1,
-            t.@dist1 = s.@dist1 + 1
-          END;
-
-      IF @@found OR @@next == 0 THEN
-        BREAK;
-      END;
-
-      S2 = 
-        SELECT t
-        FROM S2:s-(KNOWS)-Person:t
-        WHERE t.@dist2 < 0
-        ACCUM 
-          IF t.@dist1 > -1 THEN
+    WHILE NOT @@found AND (@@next1 OR @@next2) DO
+      IF NOT @@found AND @@next1 THEN 
+        @@next1 = False;
+        S1 = 
+          SELECT t
+          FROM S1:s-(KNOWS)-Person:t
+          WHERE t.@dist1 < 0
+          ACCUM 
+            IF t.@dist2 > -1 THEN
               @@found += True,
               @@dist12 += s.@dist1 + t.@dist2 + 1
-          ELSE
-              @@next += 1,
-              t.@dist2 = s.@dist2 + 1
-          END;
-
-      IF @@found OR @@next == 0 THEN
-        BREAK;
+            ELSE
+              @@next1 += True,
+              t.@dist1 = s.@dist1 + 1
+            END;
       END;
+
+      IF NOT @@found AND @@next2 THEN 
+        @@next2 = False;      
+        S2 = 
+          SELECT t
+          FROM S2:s-(KNOWS)-Person:t
+          WHERE t.@dist2 < 0
+          ACCUM 
+            IF t.@dist1 > -1 THEN
+                @@found += True,
+                @@dist12 += s.@dist2 + t.@dist1 + 1
+            ELSE
+                @@next2 += True,
+                t.@dist2 = s.@dist2 + 1
+            END;
+        END;
     END;
 
   ELSE //IF person1Id != person2Id THEN

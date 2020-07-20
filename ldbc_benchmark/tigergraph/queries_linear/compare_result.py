@@ -132,6 +132,7 @@ def read_table(q):
     with open(filename,'r',encoding='utf-8') as f:
         lines = f.readlines()
         table = [ast.literal_eval(l) for l in lines]
+        if len(table)==1: return table[0]
         return table
 
 def compare_table(table1, table2, nprint=1):
