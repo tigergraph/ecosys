@@ -9,29 +9,56 @@ cd ldbc_benchmark/tigergraph/queries_linear
 ```
 
 ## Run queries
+bi25 and ic14 requires user defined function, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
+```bash
+ROOTDIR=$(gadmin config get System.AppRoot)
+cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+```
+
 To parse, install and run the queries. 
 ```bash
+# parse all queries. If you only want to parse ic queries, run 'source main.sh ic*'
+# This script also load function 'install, drop, run' 
 source main.sh
+
+# Neglect this step if no query fails.
+# The query list is printed out in the log. 
+# If any query fails, remove the failed query from the query_list 
+export query_list=ic1,ic2,ic3,...
+
+#install the queries in query_list
+install
+
+#run each query in query_list for 3 times
+run
 ```
 
-The log of queries are stored in folder log/ and error message containing time information is in err/ 
-main.sh is a simply bash script and can be edited. For example, if you want to run query ic4 and ic5, modify line 4 to 
 
-```bash
-for q in ic4 ic5
-```
-
-Right now, bi19 cannot work. bi25 and ic14 requires user defined function, which is included in bi25.gsql and ic14.gsql.
+The log of queries are stored in folder log/ and time information is in err/ 
+For example, if you want to run query ic4-10, you can parse all ic queries using 'source main.sh ic*', then 'export query_list=ic4,ic5,ic6,ic7,ic8,ic9,ic10; install; run'. 
+Right now for SF100, bi19 cannot work. 
 
 ## Compare results
-The old results for SF100 is in SF100/. To compare results with the old one
+To compare results with the old one
 ```bash
-python3 compare_result.py
-```
-It also dumps python ast of old results in result0/ and current results in result/. The two text files should be exactly the same. 
-Output is as follows
-```
+python3 compare_result.py [-q/--query query] [-r/--result result] [--old] [--log log] [--err err]
 
+# default is set for SF100.
+python3 compare_result.py 
+```
+* options
+  * -q query (default all): which query to run, candidates are
+    * 'all' all queries
+    * 'ic' all ic queries
+    * 'ic1,ic2' ic1 and ic2
+  * -r result (default SF100): directory containing the target results.
+  * --old: include this if the target results is in old format. old  result are in ecosys/ldbc_benchmark/tigergraph/queries_pattern_match/result/SF-100/. To compare with old results 'python3 compare_result.py -r ../queries_pattern_match/result/SF-100/ --old'. Some queries may not pass 
+  * --log log (defaul log) log of queries
+  * --err err (defaul err) time information of queries
+
+
+* Output shows the difference of the results, and the smallest time of three runs. The script also dumps current results (parsed from --log) to result/ and the target results (parsed from -r) to result0/. The text files in the two folders should be exactly the same. You can use 'diff' command or text compare tools to see how the results are different between new and old runs.
+```
 ic1:Fail: number of rows 7 != 5
 time:5.53s
 ic2:PASS
