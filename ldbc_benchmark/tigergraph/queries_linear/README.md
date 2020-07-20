@@ -22,7 +22,7 @@ To parse, install and run the queries.
 source main.sh
 
 # Neglect this step if no query fails.
-# The query list is printed out in the log. 
+# The query list is printed out in the end of terminal. 
 # If any query fails, remove the failed query from the query_list 
 export query_list=ic1,ic2,ic3,...
 
