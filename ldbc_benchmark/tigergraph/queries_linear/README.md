@@ -1,10 +1,13 @@
-# Linear query benchmark on ldbc_snb SF100 and SF1000
+# Linear Query Benchmark For LDBC SNB - scale factor (SF) 100 and 1000
 ## Overview
-Benchmark results: https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0
-Install tigergraph and load data for SF1000 on 24 machines: https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
+Benchmark results: 
+https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
-## Prerequisites
-Please make sure that you already installed TigerGraph, loaded all LDBC SNB data into it, and logged in as the user can run TigerGraph. Then you type the following commands to install a helper function and all GSQL queries:
+## Setup
+Tigergraph Installation and Loading for SF1000 on 24 machines: 
+https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
+
+After you installed TigerGraph, loaded all LDBC SNB data, and logged in as the user that can ran Tigergraph. Then you can checkout this repository:
 ```bash
 git clone git@github.com:tigergraph/ecosys.git
 cd ecosys
@@ -15,7 +18,10 @@ cd ldbc_benchmark/tigergraph/queries_linear
 ## Run queries
 bi25 and ic14 requires user defined function, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
 ```bash
+#get the root directory of tigergraph
 ROOTDIR=$(gadmin config get System.AppRoot)
+
+#Copy paste the user defined function to the tigergraph directory
 cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 ```
 
@@ -39,8 +45,6 @@ install
 #run each query in query_list for 3 times
 run
 ```
-
-
 The log of queries are stored in folder log/ and time information is in err/ 
 For example, if you want to run query ic4-10, you can parse all ic queries using 'source main.sh ic*', then 'export query_list=ic4,ic5,ic6,ic7,ic8,ic9,ic10; install; run'. 
 Right now for SF100, bi19 cannot work. 
