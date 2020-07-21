@@ -9,26 +9,26 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
   SumAccum<string> @personCityName;
   OrAccum @isFriend, @hasInterest;
   int nextMonth;
-  int pid1 = 10995116761880;
-  int pid2 = 15393162855453;
 
   nextMonth = 1 + month % 12;
   
   S = { personId };
   F = SELECT p FROM S:s -(KNOWS)- Person:p ACCUM p.@isFriend += true;
   P = 
-    SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p 
-    PER(p)
+    SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p;
+   /* PER(p)
     ACCUM p.@hasInterest += true;
   
-  F =
+  F2 =
     SELECT p
-    FROM F:f -(KNOWS)- Person:p -(IS_LOCATED_IN>)- City:c
+    FROM F:f -(KNOWS)- Person:p 
     WHERE p != personId AND p.@isFriend == false
           AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
-               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
-    PER(p,c)
-    ACCUM p.@personCityName = c.name;
+               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth));
+  F2 = 
+    SELECT f
+    FROM F2:f -(IS_LOCATED_IN>)- City:c
+    ACCUM f.@personCityName = c.name;
 
   FriendHasPost  =
     SELECT f
@@ -38,15 +38,16 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
         f.@commonInterestScore += 1
       ELSE
         f.@commonInterestScore += (-1)
-      END;
-    
-  F = SELECT v FROM F:v ORDER BY v.@commonInterestScore DESC, v.id ASC LIMIT 10;
+      END
+    ORDER BY f.@commonInterestScore DESC, f.id ASC LIMIT 10;
+     
+  //F = SELECT v FROM F:v;
   PRINT F[F.id AS personId, 
           F.firstName AS personFirstName,
           F.lastName AS personLastName, 
           F.@commonInterestScore AS commonInterestScore,
           F.gender AS personGender, 
-          F.@personCityName AS personCityName];
+          F.@personCityName AS personCityName];*/
 }
 //INSTALL QUERY ic10
 //RUN QUERY ic10(30786325583618, 11)

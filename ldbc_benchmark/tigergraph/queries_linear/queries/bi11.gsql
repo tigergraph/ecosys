@@ -10,8 +10,8 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
   SetAccum<string> @@blacklistedPatterns;
   AndAccum @isValid;
   SumAccum<INT> @personId,@likeCount;
-  SetAccum<STRING> @tagNames;
-  SetAccum<INT> @tagSet;
+  SetAccum<INT> @tagNames;
+  SetAccum<VERTEX<Tag>> @tagSet;
   GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
   HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
   
@@ -19,11 +19,14 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
     @@blacklistedPatterns += ("%" + word + "%");
   END;
 
-  R =
+  P =
+    SELECT p
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
+    WHERE c.name == countryName;
+
+  R = 
     SELECT r
-    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- Comment:r 
-    WHERE c.name == countryName
-    PER(p,r)
+    FROM P:p-(<HAS_CREATOR)- Comment:r 
     ACCUM 
       r.@personId = p.id,
       FOREACH wordPattern IN @@blacklistedPatterns DO
@@ -31,29 +34,29 @@ CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb 
           r.@isValid += false,
           BREAK
         END
-      END;
+      END
+    HAVING r.@isValid;
 
   R = 
     SELECT r 
     FROM R:r-(HAS_TAG>)-Tag:t
-    WHERE r.@isValid
-    ACCUM r.@tagNames += t.name, r.@tagSet += t.id;
+    ACCUM r.@tagSet += t;
 
   invalidR =
     SELECT r
     FROM R:r -(REPLY_OF>.HAS_TAG>)- Tag:t
     PER(r,t)
     ACCUM 
-      IF t.id IN r.@tagSet THEN r.@isValid += false END;
+      IF t IN r.@tagSet THEN r.@isValid += false END
+    HAVING r.@isValid;
 
   R =
     SELECT r
     FROM  R:r -(<LIKES)- Person:p
-    WHERE r.@isValid 
     ACCUM r.@likeCount += 1
     POST-ACCUM 
-      FOREACH tn IN r.@tagNames DO
-        @@replyGroup += (r.@personId, tn -> r.@likeCount, 1)
+      FOREACH t IN r.@tagSet DO
+        @@replyGroup += (r.@personId, t.name -> r.@likeCount, 1)
       END;
 
   FOREACH (p,t,l,r) IN @@replyGroup DO

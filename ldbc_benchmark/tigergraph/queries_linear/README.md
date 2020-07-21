@@ -1,4 +1,8 @@
-# Linear query benchmark on ldbc_snb
+# Linear query benchmark on ldbc_snb SF100 and SF1000
+## Overview
+Benchmark results: https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0
+Install tigergraph and load data for SF1000 on 24 machines: https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
+
 ## Prerequisites
 Please make sure that you already installed TigerGraph, loaded all LDBC SNB data into it, and logged in as the user can run TigerGraph. Then you type the following commands to install a helper function and all GSQL queries:
 ```bash
@@ -24,7 +28,10 @@ source main.sh
 # Neglect this step if no query fails.
 # The query list is printed out in the end of terminal. 
 # If any query fails, remove the failed query from the query_list 
-export query_list=ic1,ic2,ic3,...
+query_list=ic1,ic2,ic3,...
+
+#set seed, default seed/seed_SF10000.txt
+seed=seed/seed_SF10000.txt
 
 #install the queries in query_list
 install

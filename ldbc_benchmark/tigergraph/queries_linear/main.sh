@@ -1,5 +1,6 @@
 #!/bin/bash
 query_list=""
+seed=seed/seed_SF10000.txt
 cd queries
 if test -z "$1" ; then
   input="*.gsql"
@@ -34,7 +35,7 @@ run(){
 mkdir log err
 for q in $(echo $query_list | tr ',' ' ')
 do
-  command=$(grep $q seed.txt | awk -F"$q:" '{print $2}')  
+  command=$(grep $q $seed | awk -F"$q:" '{print $2}')  
   echo $command
   time -p (gsql -g ldbc_snb $command) > log/$q 2> err/$q
   sleep 5
