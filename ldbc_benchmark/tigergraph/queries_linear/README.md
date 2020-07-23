@@ -37,23 +37,26 @@ sed -i 's/creationDate/joinDate/g' ic5.gsql
 To parse, install and run the queries. 
 ```bash
 # parse all queries. 
-# If you only want to parse ic queries, run 'source main.sh ic*'
-# If you only want to parse all queries for SF 100, run 'source main.sh * 100'
-# This script also load function 'install, drop, run' 
+# Usage: 
+#  main.sh -h for help message. 
+#  main.sh <queries> <scale_factor>
+#    to parse ic queries: source main.sh ic*
+#    to parse all queries for SF 100: source main.sh * 100
+# This script parse the queries and load functions: install, drop, run 
 source main.sh
 
 # Neglect this step if no query fails.
-# The query list is printed out in the end of terminal. 
+# The query list is printed out in the end of main.sh output. 
 # If any query fails, remove the failed query from the query_list 
 query_list=ic1,ic2,ic3,...
-
-#You can change seed here, default value set by main.sh is seed/seed_SF10000.txt
-seed=seed/seed_SF10000.txt
 
 #install the queries in query_list
 install
 
-#run each query in query_list for 3 times
+#You can change seed, which is the input for 'run commmand'. default value set by main.sh is seed/seed_SF10000.txt
+seed=seed/seed_SF10000.txt
+
+#run each query in query_list for 3 times. results in log/ and time info is in err/
 run
 ```
 The log of queries are stored in folder log/ and time information is in err/ 
@@ -67,7 +70,7 @@ To compare results with the old one
 python3 compare_result.py 
 
 # If you also want to compare the results with the benchmark results of SF10000
-python3 compare_result.py -c ./SF100000 
+python3 compare_result.py -c SF10000
 ```
 Usage for compare_result.py:
 
@@ -78,11 +81,12 @@ python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old
   * 'ic1,ic2': ic1 and ic2
 * -c --compare result to compare (default None): directory containing the target results.
   * to compare against previous SF10000 results for BI queries: python3 compare_result.py -q bi -c SF10000/  
-* --old: include this if the target results is in old format. old  result are in ecosys/ldbc_benchmark/tigergraph/queries_pattern_match/result/SF-100/. To compare with old results 'python3 compare_result.py -c ../queries_pattern_match/result/SF-100/ --old'. Some queries may not pass 
-* --log log (defaul log) log of queries
-* --err err (defaul err) time information of queries
+* --old: include this if the target results is in old format. old  results are ../queries_pattern_match/result/SF-100/. 
+  * to compare with old results: 'python3 compare_result.py -c ../queries_pattern_match/result/SF-100/ --old'. Old results misinterprete some spaces into new lines, and may not be the same as the current runs. 
+* --log log (defaul ./log) log of queries
+* --err err (defaul ./err) time information of queries
 
-* Output shows the difference of the results, and the smallest time of three runs. The script also dumps current results (parsed from --log) to result/ and the target results (parsed from -c) to result0/. If the text files in these two folders are exactly the same, this means you got the same results from the current run. You can use 'diff' command or text compare tools to see how the results are different between new and old runs.
+Output shows the difference of the results, and the smallest time of three runs. The script also dumps current results (parsed from --log) to result/ and the target results (parsed from -c) to result0/. If the text files in these two folders are exactly the same, this means you got the same results from the current run. You can use 'diff' command or text compare tools to see how the results are different between new and old runs. Example output of 'python3 compare_result.py -c SF100':
 ```
 ic1:Fail: number of rows 7 != 5
 time:5.53s
