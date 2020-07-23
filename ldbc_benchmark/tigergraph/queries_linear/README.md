@@ -70,8 +70,8 @@ python3 compare_result.py
 python3 compare_result.py -c ./SF100000 
 ```
 Usage for compare_result.py:
-  python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old] [--log log] [--err err]
-  options:
+
+python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old] [--log log] [--err err]
 * -q --query (default all): which query to run, candidates are
   * 'all': all queries
   * 'ic': all ic queries
