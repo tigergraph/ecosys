@@ -30,15 +30,15 @@ cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 
 Schema for SF 100 and 10000 are a little different. Compared to SF100, SF10000 removes email and language in Person vertex, thus SF10000 does not have query bi1. SF10000 replaces joinDate in WorkAt with creationDate, so ic5 is different for SF 100 and 10000. 
 
-Use main.sh to parse the queries. The script also loads functions: install, drop and run 
-Usage for main.sh: 
+Use main.sh to parse the queries. The script also loads three functions: install, drop and run 
 
-* main.sh -h for help message. 
-* main.sh <queries> <scale_factor>
-  * queries, queries to parse, default is *.gsql
-  * scale factor, default is 10000
-  * to parse ic queries for SF 10000: source main.sh ic*
-  * to parse all queries for SF 100: source main.sh * 100
+Usage for main.sh: 
+**main.sh -h** for help message. 
+**main.sh [queries] [scale_factor]**
+* queries, queries to parse, default is *.gsql
+* scale factor, default is 10000
+to parse ic queries for SF 10000: source main.sh ic*
+to parse all queries for SF 100: source main.sh * 100
 
 ```bash
 # to parse all queries for SF 10000. 
@@ -73,7 +73,7 @@ python3 compare_result.py -c SF10000
 ```
 Usage for compare_result.py:
 
-python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old] [--log log] [--err err]
+**python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old] [--log log] [--err err]**
 * -q --query (default all): which query to run, candidates are
   * 'all': all queries
   * 'ic': all ic queries
