@@ -63,23 +63,26 @@ Right now, bi19 is too expensive and is out of memory error.
 ## Compare results
 To compare results with the old one
 ```bash
-python3 compare_result.py [-q/--query query] [-r/--result result] [--old] [--log log] [--err err]
-
-# default is set for SF100.
+# Show the running time of my queries and parse the results.
 python3 compare_result.py 
+
+# If you also want to compare the results with the benchmark results of SF10000
+python3 compare_result.py -c ./SF100000 
 ```
+Usage for compare_result.py
+python3 compare_result.py [-q/--query query] [-c/--compare result_folder] [--old] [--log log] [--err err]
 * options
-  * -q query (default all): which query to run, candidates are
-    * 'all' all queries
-    * 'ic' all ic queries
-    * 'ic1,ic2' ic1 and ic2
-  * -r result (default SF100): directory containing the target results.
-  * --old: include this if the target results is in old format. old  result are in ecosys/ldbc_benchmark/tigergraph/queries_pattern_match/result/SF-100/. To compare with old results 'python3 compare_result.py -r ../queries_pattern_match/result/SF-100/ --old'. Some queries may not pass 
+  * -q --query (default all): which query to run, candidates are
+    * 'all': all queries
+    * 'ic': all ic queries
+    * 'ic1,ic2': ic1 and ic2
+  * -c --compare result to compare (default None): directory containing the target results.
+    * to compare against previous SF10000 results for BI queries: python3 compare_result.py -q bi -c SF10000/  
+  * --old: include this if the target results is in old format. old  result are in ecosys/ldbc_benchmark/tigergraph/queries_pattern_match/result/SF-100/. To compare with old results 'python3 compare_result.py -c ../queries_pattern_match/result/SF-100/ --old'. Some queries may not pass 
   * --log log (defaul log) log of queries
   * --err err (defaul err) time information of queries
 
-
-* Output shows the difference of the results, and the smallest time of three runs. The script also dumps current results (parsed from --log) to result/ and the target results (parsed from -r) to result0/. The text files in the two folders should be exactly the same. You can use 'diff' command or text compare tools to see how the results are different between new and old runs.
+* Output shows the difference of the results, and the smallest time of three runs. The script also dumps current results (parsed from --log) to result/ and the target results (parsed from -c) to result0/. If the text files in these two folders are exactly the same, this means you got the same results from the current run. You can use 'diff' command or text compare tools to see how the results are different between new and old runs.
 ```
 ic1:Fail: number of rows 7 != 5
 time:5.53s
