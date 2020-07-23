@@ -24,25 +24,24 @@ bi25 and ic14 requires user defined function, which is included in ExprFunctions
 #get the root directory of tigergraph
 ROOTDIR=$(gadmin config get System.AppRoot)
 
-#Copy paste the user defined function to the tigergraph directory
+# Copy paste the user defined function to the tigergraph directory
 cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 ```
 
-Schema for SF 100 and 10000 are a little different. SF 10000 removes email and language in 
-```bash
-#If you benchmark on SF100, you need to change creationDate to joinDate in ic5.gsql
-sed -i 's/creationDate/joinDate/g' ic5.gsql
-```
+Schema for SF 100 and 10000 are a little different. Compared to SF100, SF10000 removes email and language in Person vertex, thus SF10000 does not have query bi1. SF10000 replaces joinDate in WorkAt with creationDate, so ic5 is different for SF 100 and 10000. 
 
-To parse, install and run the queries. 
+Use main.sh to parse the queries. The script also loads functions: install, drop and run 
+Usage for main.sh: 
+
+* main.sh -h for help message. 
+* main.sh <queries> <scale_factor>
+  * queries, queries to parse, default is *.gsql
+  * scale factor, default is 10000
+  * to parse ic queries for SF 10000: source main.sh ic*
+  * to parse all queries for SF 100: source main.sh * 100
+
 ```bash
-# parse all queries. 
-# Usage: 
-#  main.sh -h for help message. 
-#  main.sh <queries> <scale_factor>
-#    to parse ic queries: source main.sh ic*
-#    to parse all queries for SF 100: source main.sh * 100
-# This script parse the queries and load functions: install, drop, run 
+# to parse all queries for SF 10000. 
 source main.sh
 
 # Neglect this step if no query fails.
