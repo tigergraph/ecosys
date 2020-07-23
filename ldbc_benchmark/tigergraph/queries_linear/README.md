@@ -33,11 +33,15 @@ Schema for SF 100 and 10000 are a little different. Compared to SF100, SF10000 r
 Use main.sh to parse the queries. The script also loads three functions: install, drop and run 
 
 Usage for main.sh: 
+
 **main.sh -h** for help message. 
+
 **main.sh [queries] [scale_factor]**
 * queries, queries to parse, default is *.gsql
 * scale factor, default is 10000
+
 to parse ic queries for SF 10000: source main.sh ic*
+
 to parse all queries for SF 100: source main.sh * 100
 
 ```bash
