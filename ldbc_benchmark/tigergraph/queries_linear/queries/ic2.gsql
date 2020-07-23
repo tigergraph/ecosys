@@ -1,22 +1,20 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic2
-CREATE QUERY ic2(VERTEX<Person> pid, DATETIME maxDate) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic2(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
   HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
-
-  S = { pid };
+  S = { personId };
   S = 
     SELECT s
     FROM S:s -(KNOWS) -Person:p - (<HAS_CREATOR) - (Comment|Post):t
     WHERE t.creationDate < maxDate
+    PER MATCH
     ACCUM 
-      CASE
-        WHEN t.type == "Comment" THEN
-          @@msgTop += msg(p.id, p.firstName, p.lastName, t.id, t.content, t.creationDate)
-        ELSE
-          @@msgTop += msg(p.id, p.firstName, p.lastName, t.id, t.imageFile, t.creationDate)
+      IF t.type == "Comment" OR t.content != "" THEN
+        @@msgTop += msg(p.id, p.firstName, p.lastName, t.id, t.content, t.creationDate)
+      ELSE
+        @@msgTop += msg(p.id, p.firstName, p.lastName, t.id, t.imageFile, t.creationDate)
       END;
-
   PRINT @@msgTop;
 }

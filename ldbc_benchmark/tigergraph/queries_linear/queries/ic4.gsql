@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic4
 
-CREATE QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT durationDays) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
   SumAccum<int> @postCount;
   SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;

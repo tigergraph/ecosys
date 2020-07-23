@@ -5,7 +5,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi1
 
-CREATE QUERY bi1(DATETIME maxDate) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi1(DATETIME maxDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
 
   HeapAccum<MessageInfo>(1, theYear DESC, isComment ASC, lengthCategory ASC) @@result;
@@ -41,3 +41,9 @@ CREATE QUERY bi1(DATETIME maxDate) FOR GRAPH ldbc_snb {
 
   PRINT @@result;
 }
+
+
+// INSTALL QUERY bi_1
+// RUN QUERY bi_1("2011-07-22 00:00:00")
+// SET query_timeout = 180000
+// INTERPRET QUERY bi_1("2011-07-22 00:00:00")

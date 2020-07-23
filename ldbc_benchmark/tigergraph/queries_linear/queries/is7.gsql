@@ -5,7 +5,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY is7
 
-CREATE QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
 
   SetAccum<STRING> @@seed;
@@ -17,7 +17,7 @@ CREATE QUERY is7(STRING messageId) FOR GRAPH ldbc_snb {
   IF vMessage.size() == 0 THEN
     vMessage = to_vertex_set(@@seed, "Post");
   END;
-  S = 
+  P = 
     SELECT p
     FROM vMessage:s -(HAS_CREATOR>)- Person -(KNOWS)- Person:p
     PER(p)

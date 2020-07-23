@@ -3,7 +3,7 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi23
-CREATE QUERY bi23(string cName) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi23(string cName) FOR GRAPH ldbc_snb {
   typedef tuple<int messageCount, string destinationName, int month> ResTuple;
   HeapAccum<ResTuple>(100, messageCount DESC, destinationName ASC, month ASC) @@result;
   GroupByAccum<string destinationName, int month, SumAccum<int> messageCount> @@group;

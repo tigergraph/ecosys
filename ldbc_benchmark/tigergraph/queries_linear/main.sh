@@ -1,20 +1,33 @@
 #!/bin/bash
-query_list=""
-seed=seed/seed_SF10000.txt
-cd queries
-if test -z "$1" ; then
-  input="*.gsql"
-else
-  input=$1
-fi
+display_usage() { 
+echo "Usage: source main.sh <query> <scale_factor>."
+echo "   query: queries to run (support regular expression, default '*.gsql'), Use ic* to run IC queries." 
+echo "   scale_factor: 100 or 10000, default 10000." 
+echo ""
+} 
+if [[ ( $1 == "--help") ||  $1 == "-h" ]] 
+then 
+	display_usage
+	exit 0
+fi 
 
-for q in $(ls $input | sort --version-sort| cut -d. -f1)
+query=${1:-*.gsql}    
+SF=${2:-10000}  
+seed=seed/seed_SF$SF.txt
+
+#Parse the query in queries/*.gsql and queries/SF10000/*.gsql  
+#Append query name to query_list
+query_list=""
+cd queries
+for f in $(ls $query SF$SF/$query | sort --version-sort)
 do
+  q=${f%.gsql}
+  q=${q##*/}
   if [ -z "$query_list" ]
     then query_list=$q
     else query_list="$query_list,$q"
   fi
-  gsql $q.gsql
+  gsql $f
 done
 echo $query_list
 cd ..

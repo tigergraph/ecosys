@@ -1,13 +1,16 @@
-# Linear Query Benchmark For LDBC SNB - scale factor (SF) 100 and 1000
+# Linear Query Benchmark For LDBC SNB - scale factor (SF) 100 and 10000
 ## Overview
 Benchmark results: 
 https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
 ## Setup
-Tigergraph Installation and Loading for SF1000 on 24 machines: 
+Tigergraph Installation and Loading for SF10000 on 24 CentOS machines: 
 https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
 
-After you installed TigerGraph, loaded all LDBC SNB data, and logged in as the user that can ran Tigergraph. Then you can checkout this repository:
+Tigergraph Installation and Loading for SF100 on AWS r4.8xlarge: 
+https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/802619473/LDBC+Social+Network+Benchmark
+
+### clone the repository 
 ```bash
 git clone git@github.com:tigergraph/ecosys.git
 cd ecosys
@@ -25,9 +28,17 @@ ROOTDIR=$(gadmin config get System.AppRoot)
 cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 ```
 
+Schema for SF 100 and 10000 are a little different. SF 10000 removes email and language in 
+```bash
+#If you benchmark on SF100, you need to change creationDate to joinDate in ic5.gsql
+sed -i 's/creationDate/joinDate/g' ic5.gsql
+```
+
 To parse, install and run the queries. 
 ```bash
-# parse all queries. If you only want to parse ic queries, run 'source main.sh ic*'
+# parse all queries. 
+# If you only want to parse ic queries, run 'source main.sh ic*'
+# If you only want to parse all queries for SF 100, run 'source main.sh * 100'
 # This script also load function 'install, drop, run' 
 source main.sh
 
@@ -36,7 +47,7 @@ source main.sh
 # If any query fails, remove the failed query from the query_list 
 query_list=ic1,ic2,ic3,...
 
-#set seed, default seed/seed_SF10000.txt
+#You can change seed here, default value set by main.sh is seed/seed_SF10000.txt
 seed=seed/seed_SF10000.txt
 
 #install the queries in query_list
@@ -47,7 +58,7 @@ run
 ```
 The log of queries are stored in folder log/ and time information is in err/ 
 For example, if you want to run query ic4-10, you can parse all ic queries using 'source main.sh ic*', then 'export query_list=ic4,ic5,ic6,ic7,ic8,ic9,ic10; install; run'. 
-Right now for SF100, bi19 cannot work. 
+Right now, bi19 is too expensive and is out of memory error. 
 
 ## Compare results
 To compare results with the old one

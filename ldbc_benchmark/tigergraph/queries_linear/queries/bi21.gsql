@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi21
 
-CREATE QUERY bi21(string cName, datetime endDate) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) FOR GRAPH ldbc_snb {
   int secondsInMonth;
   SumAccum<int> @messageCount, @totalLikeCount, @zombieLikeCount;
   SumAccum<float> @zombieScore;

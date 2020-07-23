@@ -5,8 +5,8 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic13
 
-CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
-  MaxAccum<INT> @dist1 = -1, @dist2 = -1;
+CREATE DISTRIBUTED QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
   OrAccum @@found, @@next1=True, @@next2=True;
   MaxAccum<INT> @@dist12=-1;
 
@@ -16,7 +16,7 @@ CREATE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
     S1 = SELECT s FROM S1:s ACCUM s.@dist1 = 0;
     S2 = SELECT s FROM S2:s ACCUM s.@dist2 = 0;
       
-    WHILE NOT @@found AND (@@next1 OR @@next2) DO
+    WHILE (NOT @@found) AND (@@next1 OR @@next2) DO
       IF NOT @@found AND @@next1 THEN 
         @@next1 = False;
         S1 = 

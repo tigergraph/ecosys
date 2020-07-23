@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic9
 
-CREATE QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
                 INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
   

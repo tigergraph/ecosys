@@ -3,7 +3,7 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic11
-CREATE QUERY ic11(vertex<Person> personId, string countryName, int workFromYear) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic11(vertex<Person> personId, string countryName, int workFromYear) FOR GRAPH ldbc_snb {
   SumAccum<string> @organizationName;
   SumAccum<int> @organizationWorkFromYear;
   S = { personId };

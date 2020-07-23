@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic10
 
-CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
+CREATE DISTRIBUTED QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
   SumAccum<int> @commonInterestScore;
   SumAccum<string> @personCityName;
   OrAccum @isFriend, @hasInterest;
@@ -15,8 +15,8 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
   S = { personId };
   F = SELECT p FROM S:s -(KNOWS)- Person:p ACCUM p.@isFriend += true;
   P = 
-    SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p;
-   /* PER(p)
+    SELECT p FROM S:s -(HAS_INTEREST>)- Tag:t -(<HAS_TAG)- Post:p
+    PER(p)
     ACCUM p.@hasInterest += true;
   
   F2 =
@@ -47,7 +47,7 @@ CREATE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
           F.lastName AS personLastName, 
           F.@commonInterestScore AS commonInterestScore,
           F.gender AS personGender, 
-          F.@personCityName AS personCityName];*/
+          F.@personCityName AS personCityName];
 }
 //INSTALL QUERY ic10
 //RUN QUERY ic10(30786325583618, 11)

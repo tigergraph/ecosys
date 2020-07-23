@@ -84,8 +84,8 @@ CREATE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) FOR GRAPH 
     @@weight = 0.0;
     FOREACH i IN range[0, path.size()-2] DO
       jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
-      @@p1.clear(); @@p1 += path.get(i); 
-      @@p2.clear(); @@p2 += path.get(i+1); 
+      @@p1.clear(); @@p1 += path.get(i);
+      @@p2.clear(); @@p2 += path.get(i+1);
       P1 = @@p1;
       P2 = @@p2;
       C1 = SELECT c FROM P1:p1 -(<HAS_CREATOR)- Comment:c;

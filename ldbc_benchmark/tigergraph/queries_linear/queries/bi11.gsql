@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi11
 
-CREATE QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
+CREATE DISTRIBUTED QUERY bi11(STRING countryName, set<STRING> blacklist) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
 
   SetAccum<string> @@blacklistedPatterns;

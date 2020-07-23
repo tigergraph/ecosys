@@ -1,7 +1,7 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic3
-CREATE QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) FOR GRAPH ldbc_snb syntax v2 {
+CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) FOR GRAPH ldbc_snb syntax v2 {
   SumAccum<int> @xCount, @yCount, @count;
   datetime endDate;
   endDate = datetime_add(startDate, INTERVAL duration DAY);

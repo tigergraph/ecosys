@@ -60,7 +60,7 @@ variable_list={
 }
 
 parser = argparse.ArgumentParser(description='Process the results and compare')
-parser.add_argument('-r','--result', default='SF100/')
+parser.add_argument('-c','--compare', default=None)
 parser.add_argument('-q','--queries', default='all')
 parser.add_argument('--log', default='log/')
 parser.add_argument('--err', default='err/')
@@ -92,7 +92,7 @@ def node2table(rows, variable):
 
         
 def txt2table(q):
-    filename = os.path.join(args.result, q)
+    filename = os.path.join(args.compare, q)
     if not os.path.isfile(filename): 
         print ('No benchmark for {}'.format(q)) 
         return None
@@ -128,7 +128,7 @@ def write_table(table, filename):
         f.write('\n'.join([str(row) for row in table]))
 
 def read_table(q):    
-    filename = os.path.join(args.result, q)
+    filename = os.path.join(args.compare, q)
     with open(filename,'r',encoding='utf-8') as f:
         lines = f.readlines()
         table = [ast.literal_eval(l) for l in lines]
@@ -192,7 +192,9 @@ if not os.path.exists(output):
      
 for q in qs:
     print(q, end=':')
-    table1 = read_table(q) if not args.old else txt2table(q) 
+    table1 = None; 
+    table2 = None;
+    if args.compare: table1 = read_table(q) if not args.old else txt2table(q) 
     table2 = log2table(q)
     if q == 'ic_1':
         parse_table_ic1(table1)

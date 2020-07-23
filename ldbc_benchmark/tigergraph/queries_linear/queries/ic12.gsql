@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic12
 
-CREATE QUERY ic12(vertex<Person> personId, string tagClassName) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic12(vertex<Person> personId, string tagClassName) FOR GRAPH ldbc_snb {
   SetAccum<vertex<Comment>> @replySet;
   SetAccum<string> @tagNames;
   SumAccum<int> @replyCount;

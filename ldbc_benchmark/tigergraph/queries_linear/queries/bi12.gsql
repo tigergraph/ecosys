@@ -4,7 +4,7 @@ SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi12
 
-CREATE QUERY bi12(datetime date, int likeThreshold) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi12(datetime date, int likeThreshold) FOR GRAPH ldbc_snb {
   SumAccum<string> @creatorFirstName, @creatorLastName;
   SumAccum<int> @likeCount;
 

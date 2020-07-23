@@ -4,40 +4,44 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi7
 
-CREATE QUERY bi7(string tagName) FOR GRAPH ldbc_snb {
-  SumAccum<int> @authorityScore;
-  SumAccum<int> @popularityScore;
-  M =
+CREATE DISTRIBUTED QUERY bi7(string tagName) FOR GRAPH ldbc_snb {
+  SumAccum<INT> @authorityScore;
+  MapAccum<VERTEX<Person>, SumAccum<INT>> @@popularityScoreMap;
+  OrAccum @valid;
+  SetAccum<VERTEX<Person>> @likedby;
+
+  M1 =
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Post|Comment):m 
-    WHERE t.name == tagName;
+    WHERE t.name == tagName
+    ACCUM m.@valid += True;
 
-  M2 = 
-    SELECT m
-    FROM  Person:p -(LIKES>)- (Post|Comment):m 
-    ACCUM m.@popularityScore += 1;
-
-  P2 = 
+  P1 = 
     SELECT p
-    FROM  M2:m -(HAS_CREATOR>)- Person:p
-    ACCUM p.@popularityScore += m.@popularityScore;
+    FROM  M1:m -(HAS_CREATOR>)- Person:p;
 
-  /* too slow
   P2 =
     SELECT p2
-    FROM Person:p2 -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p
-    PER(m,p)
-    ACCUM p2.@popularityScore += 1;
-  */
+    FROM P1:p1 -(<HAS_CREATOR)- :m2 -(<LIKES)- :p2
+    WHERE m2.@valid
+    PER(p1,p2)
+    ACCUM p1.@likedby += p2;
+
+  P3 =
+    SELECT p3
+    FROM P2:p2 -(<HAS_CREATOR)- :m3 -(<LIKES)- :p3
+    PER(p2,p3)
+    ACCUM @@popularityScoreMap += (p2 -> 1);
 
   P =
-    SELECT p
-    FROM P2:p2 -(LIKES>.HAS_CREATOR>)- Person:p
-    PER(p2,p)
-    ACCUM p.@authorityScore += p2.@popularityScore
-    ORDER BY p.@authorityScore DESC, p.id ASC
+    SELECT p1
+    FROM P1:p1
+    ACCUM 
+      FOREACH p2 in p1.@likedby DO
+        p1.@authorityScore += @@popularityScoreMap.get(p2)
+      END 
+    ORDER BY p1.@authorityScore DESC, p1.id ASC
     LIMIT 100;
-
 
   PRINT P[P.id AS personId, P.@authorityScore AS authorityScore];
 }

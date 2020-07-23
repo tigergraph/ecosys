@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi22
 
-CREATE QUERY bi22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb { 
+CREATE DISTRIBUTED QUERY bi22(STRING country1Name, STRING country2Name) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
   MapAccum<STRING, 
       GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 

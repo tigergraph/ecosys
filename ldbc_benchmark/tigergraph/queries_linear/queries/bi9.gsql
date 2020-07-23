@@ -5,7 +5,7 @@ USE GRAPH ldbc_snb
 DROP QUERY bi9
 
 
-CREATE QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb {
   SumAccum<int> @count1, @count2, @memberCount, @countDiff;
   F =
     SELECT f

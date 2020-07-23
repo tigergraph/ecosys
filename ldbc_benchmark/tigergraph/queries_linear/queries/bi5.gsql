@@ -1,11 +1,11 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi5
 
 
-CREATE QUERY bi5(string countryName) for graph ldbc_snb {
+CREATE DISTRIBUTED QUERY bi5(string countryName) for graph ldbc_snb {
   SumAccum<int> @memberCount, @postCount;
   OrAccum<bool> @valid;
   // find the top 100 most popular forums

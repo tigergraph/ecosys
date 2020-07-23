@@ -5,8 +5,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi3
 
-
-CREATE QUERY bi3(INT year1, INT month1) FOR GRAPH ldbc_snb { 
+CREATE DISTRIBUTED QUERY bi3(INT year1, INT month1) FOR GRAPH ldbc_snb { 
   TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
 
   GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;

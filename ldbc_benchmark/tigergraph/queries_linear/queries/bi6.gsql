@@ -4,7 +4,7 @@ SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi6
 
-CREATE QUERY bi6(STRING tagName) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi6(STRING tagName) FOR GRAPH ldbc_snb {
   SumAccum<INT> @replyCount, @likeCount, @messageCount, @score;
   M =
     SELECT m

@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi17
 
-CREATE QUERY bi17(string cName) FOR GRAPH ldbc_snb SYNTAX V2 {
+CREATE DISTRIBUTED QUERY bi17(string cName) FOR GRAPH ldbc_snb SYNTAX V2 {
   TYPEDEF TUPLE <uint a, uint b, uint c> triplet;
   SetAccum<triplet> @@tripletSet;
   SumAccum<int> @@tripletCount;

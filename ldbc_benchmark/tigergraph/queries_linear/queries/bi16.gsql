@@ -4,14 +4,13 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi16
 
-CREATE QUERY bi16(VERTEX<Person> personId, STRING countryName, STRING tagClassName, INT minPathDistance, INT maxPathDistance) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRING tagClassName, INT minPathDistance, INT maxPathDistance) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<INT personId, STRING tagName, INT messageCount> social;
   SumAccum<INT> @@counter = 1;
   OrAccum @valid;
   SetAccum<INT> @visited;
   SetAccum<VERTEX<Person>> @@personRange;
   SumAccum<INT> @creatorId;
-  SetAccum<STRING> @tagNames;
   SetAccum<VERTEX<Tag>> @@tagSel;
   GroupByAccum<INT person_id, STRING tag_name, SumAccum<INT> messageCount> @@socialGroup;
   HeapAccum<social>(100, messageCount DESC, tagName ASC, personId ASC) @@socialTop;
@@ -43,19 +42,11 @@ CREATE QUERY bi16(VERTEX<Person> personId, STRING countryName, STRING tagClassNa
     FROM vPerson:s-(<HAS_CREATOR)-(Comment|Post):t
     ACCUM t.@creatorId = s.id;
 
+  vTag = SELECT t FROM TagClass:s-(<HAS_TYPE)-Tag:t WHERE s.name == tagClassName;
   vMessage =
-    SELECT m
-    FROM TagClass:s-(<HAS_TYPE)-Tag:t -(<HAS_TAG)- vMessage:m
-    WHERE s.name == tagClassName
-    PER(t,m)
-    ACCUM 
-      m.@tagNames += t.name
-    POST-ACCUM
-      CASE WHEN m.@tagNames.size()>0 THEN
-        FOREACH tn IN m.@tagNames DO
-          @@socialGroup += (m.@creatorId, tn -> 1)
-        END
-      END;
+    SELECT m 
+    FROM vMessage:m -(HAS_TAG>)- vTag:t
+    ACCUM @@socialGroup += (m.@creatorId, t.name -> 1);
       
   FOREACH (p,t,m) IN @@socialGroup DO
     @@socialTop += social(p, t, m);

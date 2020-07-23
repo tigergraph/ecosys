@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic6
 
-CREATE QUERY ic6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY ic6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
   SumAccum<INT> @postCount;
   S = { personId };
   vPost =
@@ -16,7 +16,6 @@ CREATE QUERY ic6(VERTEX<Person> personId, STRING tagName) FOR GRAPH ldbc_snb {
     SELECT t
     FROM vPost-(HAS_TAG>)-Tag:t
     WHERE t.name != tagName
-    PER(t)
     ACCUM t.@postCount += 1
     ORDER BY t.@postCount DESC, t.name ASC
     LIMIT 10;

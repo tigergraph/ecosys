@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi15
 
-CREATE QUERY bi15(string cName) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi15(string cName) FOR GRAPH ldbc_snb {
   SumAccum<int> @friendCount;
   AvgAccum @@socialNormal;
 

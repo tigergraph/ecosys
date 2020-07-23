@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi14
 
-CREATE QUERY bi14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
+CREATE DISTRIBUTED QUERY bi14(datetime startDate, datetime endDate) FOR GRAPH ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
   SumAccum<INT> @messageCount, @threadCount;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;

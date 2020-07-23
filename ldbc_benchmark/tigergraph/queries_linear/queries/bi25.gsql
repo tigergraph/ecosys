@@ -12,7 +12,6 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi25
 
-
 CREATE QUERY bi25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 
