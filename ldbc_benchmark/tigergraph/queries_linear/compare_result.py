@@ -132,7 +132,7 @@ def read_table(q):
     with open(filename,'r',encoding='utf-8') as f:
         lines = f.readlines()
         table = [ast.literal_eval(l) for l in lines]
-        if len(table)==1: return table[0]
+        if len(table)==1 and isinstance(table[0],int): return table[0]
         return table
 
 def compare_table(table1, table2, nprint=1):
@@ -183,8 +183,8 @@ def parse_table_ic1(table):
         row[12].sort()
 
 
-output0 = 'result0'
-output = 'result'
+output0 = 'parsed_result0'
+output = 'parsed_result'
 if not os.path.exists(output0):
     os.mkdir(output0)   
 if not os.path.exists(output):
