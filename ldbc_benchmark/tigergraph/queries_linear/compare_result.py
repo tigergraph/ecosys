@@ -6,8 +6,8 @@ import argparse
 variable_list={
 'ic1': ['friendId','friendLastName','distanceFromPerson',
         'friendBirthday', 'friendCreationDate', 'friendGender',
-        'friendBrowserUsed','friendLocationIp', 'friendEmails'
-        ,'friendLanguages','friendCityName','friendUniversities','friendCompanies'],
+        'friendBrowserUsed','friendLocationIp', #'friendEmails', ,'friendLanguages',
+        'friendCityName','friendUniversities','friendCompanies'],
 'ic2': ['personId','personFirstName','personLastName','messageId','messageContent','messageCreationDate'],
 'ic3': ['personId','personFirstName','personLastName','xCount','yCount','xyCount'],
 'ic4': ['tagName','postCount'],

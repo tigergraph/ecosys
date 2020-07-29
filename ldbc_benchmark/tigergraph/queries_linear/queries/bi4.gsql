@@ -5,25 +5,30 @@ USE GRAPH ldbc_snb
 DROP QUERY bi4
 
 CREATE DISTRIBUTED QUERY bi4(string tagClassName, string countryName) for graph ldbc_snb {
-  SetAccum<vertex<Post>> @postSet;
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
+  HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@result;
   SumAccum<int> @personId, @postCount;
+  OrAccum @valid;
+
+  TC = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
+  C = SELECT c FROM Country:c WHERE c.name == countryName;
+  ForumSet =
+    SELECT f
+    FROM C-(<IS_PART_OF.<IS_LOCATED_IN)-Person:p-(<HAS_MODERATOR)-Forum:f
+    PER(p,f)
+    ACCUM f.@personId = p.id, f.@valid += True;
 
   ForumSet =
     SELECT f
-    FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:m -(<CONTAINER_OF)-
-         Forum:f -(HAS_MODERATOR>)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:c,
-    WHERE tc.name == tagClassName AND c.name == countryName
-    PER(m,f,p)
-    ACCUM f.@personId = p.id, f.@postCount += 1
-    ORDER BY f.@postCount DESC, f.id ASC
-    LIMIT 20;
-
-  PRINT ForumSet[
-    ForumSet.id AS forumId, 
-    ForumSet.title AS forumTitle, 
-    ForumSet.creationDate AS forumCreationDate,
-    ForumSet.@personId AS personId, 
-    ForumSet.@postCount AS postCount];
+    FROM TC-(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f
+    WHERE f.@valid
+    PER(p,f)
+    ACCUM f.@postCount += 1
+    POST-ACCUM @@result += forumInfo(f.id, f.title, f.creationDate, f.@personId, f.@postCount);
+  PRINT @@result;
 }
+
 //INSTALL QUERY bi4
 //RUN QUERY bi4("MusicalArtist","Burma")
+
+

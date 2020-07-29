@@ -1,27 +1,28 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 8 query description is on page 66 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi8
 
 CREATE DISTRIBUTED QUERY bi8(STRING tagName) FOR GRAPH ldbc_snb {
   AndAccum @isValid;
   SumAccum<INT> @count;
-  vReply  =
+  vTag = SELECT t FROM Tag:t WHERE t.name == tagName;
+  vReply =
     SELECT m
-    FROM Tag:t -(<HAS_TAG)-(Comment|Post)-(<REPLY_OF)-Comment:m
-    WHERE t.name == tagName;
-
-  vReplyHasTag  =
+    FROM vTag -(<HAS_TAG)-(Comment|Post)-(<REPLY_OF)-Comment:m;
+    
+  vReplyHasTag =
     SELECT r
-    FROM vReply:r-(HAS_TAG>)-Tag:t2
-    WHERE t2.name == tagName 
-    ACCUM r.@isValid += False;
+    FROM vReply:r -(HAS_TAG>)- Tag:t
+    WHERE t.name == tagName
+    ACCUM r.@isValid += False
+    HAVING r.@isValid;
 
   T =
     SELECT t
     FROM vReply:r-(HAS_TAG>)-Tag:t
-    WHERE r.@isValid==True AND t.name != tagName
+    WHERE t.name != tagName
     ACCUM t.@count += 1
     ORDER BY t.@count DESC, t.name ASC
     LIMIT 100;

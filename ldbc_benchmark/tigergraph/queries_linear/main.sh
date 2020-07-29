@@ -45,7 +45,7 @@ install(){
 }
 
 run(){
-mkdir log err
+mkdir -p log err
 for q in $(echo $query_list | tr ',' ' ')
 do
   command=$(grep $q $seed | awk -F"$q:" '{print $2}')  

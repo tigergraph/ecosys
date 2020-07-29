@@ -15,21 +15,18 @@ CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRIN
   GroupByAccum<INT person_id, STRING tag_name, SumAccum<INT> messageCount> @@socialGroup;
   HeapAccum<social>(100, messageCount DESC, tagName ASC, personId ASC) @@socialTop;
   
-  P = 
-    SELECT p
-    FROM Country:s-(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
-    WHERE s.name == countryName
-    ACCUM p.@valid = true;
+
+  vCountry = SELECT c FROM Country:c WHERE c.name == countryName;
+  P = SELECT p FROM vCountry-(<IS_PART_OF.<IS_LOCATED_IN)-Person:p POST-ACCUM p.@valid = true;
 
   S = { personId };
   WHILE @@counter <= maxPathDistance DO
     S =
       SELECT t
-      FROM S:s-(KNOWS)-P:t
-      WHERE t.@valid == true AND (NOT s.id IN t.@visited)
+      FROM S:s-(KNOWS)-Person:t
+      WHERE t.@valid == true AND (NOT s.id IN t.@visited) AND (NOT t.id IN s.@visited)
       ACCUM 
         t.@visited += s.id,
-        s.@visited += t.id,
         CASE WHEN @@counter >= minPathDistance THEN
           @@personRange += t
         END;
@@ -39,7 +36,7 @@ CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRIN
   vPerson = { @@personRange };
   vMessage =
     SELECT t
-    FROM vPerson:s-(<HAS_CREATOR)-(Comment|Post):t
+    FROM vPerson:s-(<HAS_CREATOR)-:t
     ACCUM t.@creatorId = s.id;
 
   vTag = SELECT t FROM TagClass:s-(<HAS_TYPE)-Tag:t WHERE s.name == tagClassName;

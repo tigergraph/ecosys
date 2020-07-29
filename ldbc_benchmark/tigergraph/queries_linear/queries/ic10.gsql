@@ -21,14 +21,12 @@ CREATE DISTRIBUTED QUERY ic10(vertex<Person> personId, int month) for graph ldbc
   
   F2 =
     SELECT p
-    FROM F:f -(KNOWS)- Person:p 
+    FROM F:f -(KNOWS)- Person:p  -(IS_LOCATED_IN>)- City:c
     WHERE p != personId AND p.@isFriend == false
           AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
-               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth));
-  F2 = 
-    SELECT f
-    FROM F2:f -(IS_LOCATED_IN>)- City:c
-    ACCUM f.@personCityName = c.name;
+               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
+    PER(p,c)
+    ACCUM p.@personCityName = c.name;
 
   FriendHasPost  =
     SELECT f

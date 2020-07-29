@@ -15,7 +15,7 @@ DROP QUERY bi25
 CREATE QUERY bi25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb {
   TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 
-  OrAccum @visited1, @visited2;
+  OrAccum @visited1, @visited2, @valid1, @valid2;
   OrAccum @@found=false, @@next1=true, @@next2=true;
   ListAccum<ListAccum<VERTEX<Person>>> @path;
   ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
@@ -79,10 +79,9 @@ CREATE QUERY bi25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME s
     END; //WHILE NOT @@found AND @@next DO
   END; //IF person1Id != person2Id THEN
   
-  vPost = 
-    SELECT p 
-    FROM Forum:f -(CONTAINER_OF>)- Post:p 
-    WHERE f.creationDate BETWEEN startDate AND endDate;
+
+  vForum = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
+  vPost = SELECT p FROM vForum-(CONTAINER_OF>)-Post:p;
   vComment = SELECT c FROM vPost:p -(<REPLY_OF*)- Comment:c;
 
   @@pathInfoTop.resize(@@pathAll.size());
@@ -99,14 +98,12 @@ CREATE QUERY bi25(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME s
       c2p =
         SELECT c
         FROM P2:p2 -(<HAS_CREATOR)- vPost:p -(<REPLY_OF)- C1:c
-        PER(c)
-        ACCUM @@weight += 1;
+        POST-ACCUM @@weight += 1;
 
       c2c =
         SELECT c1
         FROM P2:p2 -(<HAS_CREATOR)- vComment:c2 -(<REPLY_OF)- C1:c1
-        PER(c1)
-        ACCUM @@weight += 0.5;
+        POST-ACCUM @@weight += 0.5;
     END; //FOREACH i IN range[0, path.size()-2] DO
     jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
     @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);

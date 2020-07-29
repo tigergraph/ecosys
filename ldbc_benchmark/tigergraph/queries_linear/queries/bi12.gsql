@@ -1,33 +1,28 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 12 query description is on page 70 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi12
 
 CREATE DISTRIBUTED QUERY bi12(datetime date, int likeThreshold) FOR GRAPH ldbc_snb {
-  SumAccum<string> @creatorFirstName, @creatorLastName;
+  TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
+  HeapAccum<msg>(100, likeCount DESC, messageId ASC) @@trendingMsg;
   SumAccum<int> @likeCount;
 
+  M = SELECT m FROM (Post|Comment):m WHERE m.creationDate > date;
   M =
     SELECT m
-    FROM Person:p -(LIKES>)- (Post|Comment):m -(HAS_CREATOR>)- Person:c
-    WHERE m.creationDate > date
-    PER MATCH
-    ACCUM
-      m.@creatorFirstName = c.firstName,
-      m.@creatorLastName = c.lastName,
-      m.@likeCount += 1
+    FROM M:m -(<LIKES)- Person:p 
+    ACCUM m.@likeCount += 1
     HAVING m.@likeCount > likeThreshold
     ORDER BY m.@likeCount DESC, m.id ASC
     LIMIT 100;
 
-  PRINT M[
-    M.id AS messageId, 
-    M.creationDate AS messageCreationDate, 
-    M.@creatorFirstName AS creatorFirstName, 
-    M.@creatorLastName AS creatorLastName, 
-    M.@likeCount AS likeCount];
+  M =
+  SELECT m
+  FROM M:m -(HAS_CREATOR>)- Person:c
+  ACCUM @@trendingMsg += msg(m.id, m.creationDate, c.firstName, c.lastName, m.@likeCount);
+  
+  PRINT @@trendingMsg;
 }
 
-//INSTALL QUERY bi12
-//RUN QUERY bi12("2011-07-21 22:00:00", 400)

@@ -6,7 +6,10 @@ DROP QUERY bi9
 
 
 CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT threshold) FOR GRAPH ldbc_snb {
-  SumAccum<int> @count1, @count2, @memberCount, @countDiff;
+  TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
+  SumAccum<int> @count1, @count2, @memberCount;
+  HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
+
   F =
     SELECT f
     FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f 
@@ -25,12 +28,9 @@ CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT thr
     SELECT f
     FROM F:f -(HAS_MEMBER>)- Person:p
     ACCUM f.@memberCount += 1
-    POST-ACCUM f.@countDiff = abs(f.@count1 - f.@count2)
-    HAVING f.@memberCount > threshold
-    ORDER BY f.@countDiff DESC, f.id ASC
-    LIMIT 100;
-
-  PRINT F[F.id AS forumId, F.@count1 AS count1, F.@count2 AS count2];
+    POST-ACCUM 
+      @@forumStatsTop += forumStats(f.id, f.@count1, f.@count2, abs(f.@count1 - f.@count2));
+  PRINT @@forumStatsTop;
 }
 
 //INSTALL QUERY bi9

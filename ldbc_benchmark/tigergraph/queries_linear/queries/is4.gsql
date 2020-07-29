@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY is4
 
-CREATE DISTRIBUTED QUERY is4(STRING messageId) FOR GRAPH ldbc_snb {
+CREATE QUERY is4(STRING messageId) FOR GRAPH ldbc_snb {
   SetAccum<STRING> @@seed;
   SumAccum<STRING> @messageContent;
 

@@ -1,6 +1,6 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 5 query description is on page 63 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi5
 
