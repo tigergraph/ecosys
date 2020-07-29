@@ -144,3 +144,4 @@ bi23:time:71.22s
 bi24:time:78.09s
 bi25:time:61.76s
 ```
+Because SF10000 does not have email and language for person. We removed comprison of these results for ic1.
