@@ -65,26 +65,11 @@ ROOTDIR=$(gadmin config get System.AppRoot)
 cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 ```
 
-gsql_batch.sh is the script to parse gsql files in batch. The script stores query names in environment variable $query_list and also loads three functions: install, drop and run to install, drop and run those queries. Usage for run is: run <seed_file>. default seed_file is result/seed_SF10000.txt. To run seed for SF100, "run seed/seed_SF10000.txt".
-
-Usage for gsql_batch.sh: 
-**gsql_batch.sh -h** for help message. 
-
-**gsql_batch.sh [queries]**
-* queries - queries to parse, default is *.gsql, 
-* examples
-* to parse v2 queries for SF 10000. 
-  * source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
-* to parse v1 queries for SF 10000.  
-  * source gsql_batch.sh queries_v1/*.gsql queries_v1/SF10000/*.gsql
-* to parse v2 ic queries for SF 10000. 
-  * source gsql_batch.sh queries/ic*.gsql queries/SF10000/ic*.gsql
-
+gsql_batch.sh is the script to parse gsql files in batch. The script stores query names in environment variable $query_list and loads three functions: install, drop and run to install, drop and run those queries. For help info: run "gsql_batch.sh -h"
 ```bash
 #parse v2 queries for SF 10000
 source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
-# The query list is printed out in the end 
-# If any query fails, you can remove the failed queries and reassign value to $query_list, for example, query_list=ic1,ic2,ic3
+# The query list is printed out in the end. If any query fails, you can remove the failed queries and reassign value to $query_list, for example, query_list=ic1,ic2,ic3
 
 #install the queries in $query_list
 install
@@ -97,7 +82,7 @@ run
 ```
 
 ### Compare Results
-To compare results with the old one
+To compare results with results in results/SF10000. Use 'python3 compare_result.py -h' for help mesage 
 ```bash
 #If you don't have python3, For CentOS 
 yum install -y python3-devel
@@ -109,33 +94,9 @@ python3 compare_result.py
 python3 compare_result.py -c result/SF10000
 ```
 
-Usage for compare_result.py: 
-```
-usage: compare_result.py [-h] [-q QUERIES] [-c COMPARE] [-l LOG] [-e ERR]
-                         [-s SAVE] [-sc SAVE_COMPARE] [--old]
+Output shows the difference of the results, and the smallest time of three runs. The script reads results in log/, takes the fields of interest, sorts them and dumps parsed results to parsed_result/. You can use 'diff' command or text compare tools on the parsed results and see how the results are different between your runs and gold answer in result/SF10000. The script can read old json format ('../queries_pattern_match/result/') when option '--old' is turned on.
 
-Parse the results to python str and compare to target result
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -q QUERIES, --queries QUERIES
-                        queries to parse and compare (default: all). example:
-                        -q ic1, -q ic
-  -c COMPARE, --compare COMPARE
-                        folder of target results to compare (default: None).
-                        example: -c result/SF10000
-  -l LOG, --log LOG     folder of the current results (default: log)
-  -e ERR, --err ERR     folder of the running time (default: err)
-  -s SAVE, --save SAVE  folder to save the parsed format of current results
-                        (default: parsed_result)
-  -sc SAVE_COMPARE, --save_compare SAVE_COMPARE
-                        folder to save the parsed target results (default:
-                        None)
-  --old                 True if the target results to compare is in the old
-                        JSON format
-```
-
-Output shows the difference of the results, and the smallest time of three runs. The script takes the field of interest, order them and dumps current results (parsed from --log) to parsed_result/. You can use 'diff' command or text compare tools on the parsed results and see how the results are different between your runs and gold answer in result/SF10000. Example output of 'python3 compare_result.py -c result/SF10000'. The script also support reading old json format ('../queries_pattern_match/result/') when option '--old' is turned on:
+Example output of 'python3 compare_result.py -c result/SF10000':
 ```
 ic1:PASS
 time:1.88s

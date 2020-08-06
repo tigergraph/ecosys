@@ -1,11 +1,18 @@
 #!/bin/bash
 display_usage() { 
-echo "Usage: source gsql_batch.sh <files>"
-echo "   Pass multiple files to gsql and store the query value in query_list, need quotation mark for regular expression" 
-echo "   Run SF10000 queries: source gsql_batch.sh 'queries/*.gsql queries/SF10000/*.gsql'"
-echo "   Run SF10000 v1 queries: Run SF10000 queries: source gsql_batch.sh 'queries_v1/*.gsql queries_v1/SF10000/*.gsql'" 
+echo "Usage: gsql_batch.sh -h   show help message. "
+echo "       gsql_batch.sh <queries>"
+echo "parse gsql files in batch and store query names in environmental variable $query_list." 
+echo "The script also load functions: load, install and run"
+echo "   Run SF10000 V2 queries: source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql"
+echo "   Run SF10000 V2 IC queries: source gsql_batch.sh queries/ic*.gsql queries/SF10000/ic*.gsql" 
+echo "   Run SF10000 V1 queries: source gsql_batch.sh queries_v1/*.gsql queries_v1/SF10000/*.gsql"
+echo ""
+echo "Usage for run: run <seed_file>"
+echo "default seed_file is seed/seed_SF10000.txt"
 echo ""
 } 
+
 if [[ ( $1 == "--help") ||  $1 == "-h" ]] 
 then 
 	display_usage
