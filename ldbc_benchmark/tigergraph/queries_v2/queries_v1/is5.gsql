@@ -1,0 +1,27 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 5 query description is on page 49 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is5
+CREATE QUERY is5(STRING messageId) {
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    vPerson = 
+      SELECT t
+      FROM vComments:s-(HAS_CREATOR>)-Person:t;
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+    vPerson = 
+      SELECT t
+      FROM vPost:s-(HAS_CREATOR>)-Person:t;
+  END;
+
+  PRINT vPerson[
+      vPerson.id AS personId,
+      vPerson.firstName AS firstName,
+      vPerson.lastName AS lastName];
+}

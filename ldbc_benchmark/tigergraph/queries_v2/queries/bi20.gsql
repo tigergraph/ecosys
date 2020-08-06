@@ -1,0 +1,28 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 20 query description is on page 78 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "_v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi20
+
+CREATE DISTRIBUTED QUERY bi20(SET<STRING> tagClassNames) {
+  TYPEDEF TUPLE<STRING tagClassName, INT messageCount> tagInfo;
+
+  MapAccum<STRING, SumAccum<INT>> @@tagInfoMap;
+  HeapAccum<tagInfo>(100, messageCount DESC, tagClassName ASC) @@result;
+
+  aggAll =
+    SELECT m
+    FROM TagClass:s -(<IS_SUBCLASS_OF*)- TagClass -(<HAS_TYPE)- Tag -(<HAS_TAG)- (Comment|Post):m
+    WHERE s.name IN tagClassNames
+    PER(s,m)
+    ACCUM @@tagInfoMap += (s.name -> 1);
+
+  FOREACH (key, value) IN @@tagInfoMap DO
+    @@result += tagInfo(key, value);
+  END;
+
+  PRINT @@result;
+}
+
+//INSTALL QUERY bi20
+//RUN QUERY bi20(["Writer","Single","Country"])

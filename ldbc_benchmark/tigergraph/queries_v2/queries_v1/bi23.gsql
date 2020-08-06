@@ -1,0 +1,36 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 23 query description is on page 81 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi23
+
+CREATE DISTRIBUTED QUERY bi23(STRING countryName) { 
+  TYPEDEF TUPLE <INT messageCount, STRING destinationName, INT month> INFO;
+  HeapAccum<INFO>(100, messageCount DESC, destinationName ASC, mon ASC) @@result;
+  GroupByAccum<INT mon, STRING destinationName, SumAccum<INT> messageCount> @@count;
+
+  vCities = 
+    SELECT t
+    FROM Country:s-(<IS_PART_OF)-City:t
+    WHERE s.name == countryName;
+
+  vPerson = 
+    SELECT t
+    FROM vCities:s-(<IS_LOCATED_IN)-Person:t;
+
+  vMessages = 
+    SELECT t
+    FROM vPerson:s-(<HAS_CREATOR)-(Comment|Post):t;
+
+  vMessages = 
+    SELECT s 
+    FROM vMessages:s-(IS_LOCATED_IN>)-Country:t
+    WHERE t.name != countryName
+    ACCUM @@count += (month(s.creationDate), t.name -> 1);
+
+  FOREACH c IN @@count DO
+    @@result += INFO(c.messageCount, c.destinationName, c.mon);
+  END;
+
+  PRINT @@result;
+}

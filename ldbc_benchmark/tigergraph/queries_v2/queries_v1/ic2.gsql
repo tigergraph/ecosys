@@ -1,0 +1,29 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 2 query description is on page 33 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic2
+
+CREATE DISTRIBUTED QUERY ic2(VERTEX<Person> personId, DATETIME maxDate) {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
+
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@msgTop;
+
+  vPerson = { personId };
+  vFriend = 
+    SELECT t
+    FROM vPerson:s-(KNOWS)-Person:t;
+
+  vMessage = 
+    SELECT t
+    FROM vFriend:s-(<HAS_CREATOR)-(Comment|Post):t
+    WHERE t.creationDate < maxDate
+    ACCUM 
+      IF t.type == "Comment" OR t.content != "" THEN
+        @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.content, t.creationDate)
+      ELSE
+        @@msgTop += msg(s.id, s.firstName, s.lastName, t.id, t.imageFile, t.creationDate)
+      END;
+
+  PRINT @@msgTop;
+}

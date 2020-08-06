@@ -1,0 +1,38 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 2 query description is on page 60 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi2
+
+CREATE DISTRIBUTED QUERY bi2(DATETIME startDate, DATETIME endDate, STRING country1Name, STRING country2Name) { 
+  TYPEDEF TUPLE<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, INT messageCount> INFO;
+
+  HeapAccum<INFO>(100, messageCount DESC, tagName ASC, ageGroup ASC, personGender ASC, messageMonth ASC, countryName ASC) @@result;
+  GroupByAccum<STRING countryName, INT messageMonth, STRING personGender, INT ageGroup, STRING tagName, SumAccum<INT> messageCount> @@count;
+
+  DATETIME simulationEnd = to_datetime("2013-01-01");
+
+  vMessage =
+    SELECT m
+    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p -(<HAS_CREATOR)- 
+         (Comment|Post):m -(HAS_TAG>)-Tag:t
+    WHERE (s.name == country1Name OR s.name == country2Name)
+      AND m.creationDate >= startDate AND m.creationDate <= endDate
+    PER MATCH
+    ACCUM
+      @@count += (s.name, month(m.creationDate), p.gender, (datetime_diff(simulationEnd, p.birthday) / 31536000 / 5), t.name -> 1);
+
+  FOREACH c IN @@count DO
+    IF c.messageCount > 100 THEN
+      @@result += INFO(c.countryName, c.messageMonth, c.personGender, c.ageGroup, c.tagName, c.messageCount);
+    END;
+  END;
+
+  PRINT @@result;
+}
+
+
+// INSTALL QUERY bi2
+// RUN QUERY bi2("2010-01-01 00:00:00","2010-11-08 00:00:00","Ethiopia","Spain")
+// SET query_timeout = 180000
+// INTERPRET QUERY bi2("2010-01-01 00:00:00","2010-11-08 00:00:00","Ethiopia","Spain")

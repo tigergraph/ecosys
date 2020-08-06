@@ -1,0 +1,42 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 8 query description is on page 66 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi8
+CREATE DISTRIBUTED QUERY bi8(STRING tagName) { 
+  TYPEDEF TUPLE <STRING relatedTagName, INT replyCount> tagInfo;
+	HeapAccum<tagInfo>(100, replyCount DESC, relatedTagName ASC) @@result;
+  SumAccum<INT> @count;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@invalidComment;
+	
+  vTag = 
+    SELECT s 
+    FROM Tag:s 
+    WHERE s.name == tagName;
+
+  vMessages = 
+    SELECT t 
+    FROM vTag:s-(<HAS_TAG)-(Comment|Post):t;
+
+  vComments = 
+    SELECT t
+    FROM vMessages:s-(<REPLY_OF)-Comment:t;
+
+  tmp =
+    SELECT t
+    FROM vComments:s-(HAS_TAG>)-Tag:t
+    WHERE t.name == tagName
+    ACCUM s.@valid = true;
+    //ACCUM @@invalidComment += s.id;
+	
+  vRelatedTags = 
+    SELECT t 
+    FROM vComments:s-(HAS_TAG>)-Tag:t
+    WHERE NOT s.@valid
+    //WHERE NOT @@invalidComment.contains(s.id)
+    ACCUM t.@count += 1 # no duplicated names for tags
+    POST-ACCUM @@result += tagInfo(t.name, t.@count);
+
+  PRINT @@result;
+}

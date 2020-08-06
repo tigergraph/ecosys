@@ -1,0 +1,83 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 6 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi6
+
+CREATE QUERY bi6(STRING tagName) { 	
+  TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> personInfo;
+	HeapAccum<personInfo>(100, score DESC, personId ASC) @@result;
+	SetAccum<VERTEX<Person>> @@personSet;
+	SetAccum<VERTEX<Post>> @postSet;
+	SetAccum<VERTEX<Comment>> @commentSet;
+	SetAccum<INT> @likedPerson;
+	MapAccum<INT, SetAccum<INT>> @@postLikedSet;
+	MapAccum<INT, SetAccum<INT>> @@commentLikedSet;
+	SetAccum<VERTEX<Comment>> @replied;
+	SumAccum<INT> @likeCount;
+	SumAccum<INT> @score;
+	SumAccum<INT> @messageCount;
+	
+	vTag = 
+       	 SELECT s 
+         FROM Tag:s 
+         WHERE s.name == tagName;
+	
+	vPost =
+	  SELECT t 
+          FROM vTag:s-(<HAS_TAG)-Post:t;
+	
+	vComment =
+	  SELECT t 
+          FROM vTag:s-(<HAS_TAG)-Comment:t;
+	
+	vMessages = 
+          SELECT t 
+          FROM vTag:s-(<HAS_TAG)-(Comment|Post):t;
+	
+	tmpPost = 
+	  SELECT t
+          FROM vPost:s-(<LIKES)-Person:t
+          ACCUM 
+	      @@postLikedSet += (s.id -> t.id);
+	
+	tmpComment = 
+	  SELECT t
+          FROM vComment:s-(<LIKES)-Person:t
+	  ACCUM 
+	      @@commentLikedSet += (s.id -> t.id);
+	
+	tmp1 =
+	  SELECT t
+	  FROM vMessages:s-(<REPLY_OF)-Comment:t
+          ACCUM s.@replied += t;
+	
+	vPerson1 =
+	  SELECT t 
+          FROM vPost:s-(HAS_CREATOR>)-Person:t
+	  ACCUM t.@likeCount += @@postLikedSet.get(s.id).size(),
+	        t.@replied += s.@replied,
+	        t.@postSet += s,
+	        @@personSet += t;  
+	
+	vPerson2 =
+	  SELECT t 
+          FROM vComment:s-(HAS_CREATOR>)-:t
+	  ACCUM 
+	        t.@likeCount += @@commentLikedSet.get(s.id).size(),
+	        t.@replied += s.@replied,
+	        t.@commentSet += s,
+	        @@personSet += t;
+	        
+	vPersons = { @@personSet };
+	vPersons = 
+	SELECT s
+	FROM vPersons:s
+	ACCUM 
+	    s.@messageCount = s.@postSet.size() + s.@commentSet.size(),
+	    s.@score =  s.@postSet.size() + s.@commentSet.size() + 2*s.@replied.size() + 10 * s.@likeCount
+  POST-ACCUM
+    @@result += personInfo(s.id, s.@replied.size(), s.@likeCount, s.@messageCount, s.@score);
+	
+	PRINT @@result; 
+}

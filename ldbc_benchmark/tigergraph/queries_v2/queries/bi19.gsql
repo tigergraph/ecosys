@@ -1,0 +1,52 @@
+  
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 19 query description is on page 77 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi19_2
+
+CREATE DISTRIBUTED QUERY bi19_2(datetime date, string name1, string name2) FOR GRAPH ldbc_snb{
+  TYPEDEF TUPLE<INT personId, INT strangerCount, INT interactionCount> pInfo;
+  HeapAccum<pInfo>(100, interactionCount DESC,personId ASC) @@result;
+  SetAccum<INT> @friends, @interactedStrangers;
+  OrAccum @hasTag;
+  SumAccum<INT> @pid, @interactionCount;
+
+  // all members of both class 1 and class 2 forums
+  TC1 = SELECT tc FROM TagClass:tc WHERE tc.name == name1;
+  P1 = SELECT p FROM TC1 -(<HAS_TYPE.<HAS_TAG.HAS_MEMBER>)- Person:p ACCUM p.@hasTag += True;
+  TC2 = SELECT tc FROM TagClass:tc WHERE tc.name == name2;
+  Strangers = SELECT p FROM TC2 -(<HAS_TYPE.<HAS_TAG.HAS_MEMBER>)- Person:p WHERE p.@hasTag;
+  
+  M =
+    SELECT m
+    FROM Strangers:p -(< HAS_CREATOR)- (Comment|Post):m
+    ACCUM m.@pid = p.id;
+
+  WHILE M.size() > 0 DO
+    M =
+      SELECT t
+      FROM M:s-(<REPLY_OF)-Comment:t
+      ACCUM t.@pid = s.@pid;
+  END;
+  
+  vPerson = SELECT p FROM Person:p WHERE p.birthday > date;
+  PersonKnowStrangers =
+    SELECT t
+    FROM Strangers:s -(KNOWS)- Person:t
+    WHERE t.birthday > date
+    ACCUM t.@friends += s.id;
+
+  C =
+    SELECT c
+    FROM vPerson:p -(<HAS_CREATOR)- Comment:c
+    WHERE c.@pid != 0 AND c.@pid != p.id AND (c.@pid NOT IN p.@friends)   
+    ACCUM p.@interactionCount += 1,
+          p.@interactedStrangers += c.@pid;
+
+  vPerson = SELECT p FROM vPerson:p ACCUM @@result += pInfo(p.id, p.@interactedStrangers.size(), p.@interactionCount);
+  PRINT @@result;
+}
+
+#INSTALL QUERY bi19
+#RUN QUERY bi19("1989-01-01 00:00:00","MusicalArtist","OfficeHolder")

@@ -1,0 +1,33 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 7 query description is on page 50 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is7
+
+CREATE QUERY is7(STRING messageId) {
+  TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
+
+  SetAccum<STRING> @@seed;
+  SetAccum<vertex<Person>> @@knows;
+  HeapAccum<reply>(100, commentCreationDate DESC, replyAuthorId ASC) @@replyTop;
+
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
+  P = 
+    SELECT p
+    FROM vMessage:s -(HAS_CREATOR>)- Person -(KNOWS)- Person:p
+    PER(p)
+    ACCUM @@knows += p;
+  P = 
+    SELECT p
+    FROM vMessage:s -(<REPLY_OF)- Comment:c -(HAS_CREATOR>)- Person:p
+    ACCUM @@replyTop += reply(c.id, c.content, c.creationDate, p.id, p.firstName, p.lastName, p IN @@knows);
+  PRINT @@replyTop;
+}
+
+//INSTALL QUERY is7
+//RUN QUERY is7(65970697666575)

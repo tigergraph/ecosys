@@ -1,0 +1,59 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 5 query description is on page 36 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic5
+
+CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb { 
+	TYPEDEF TUPLE<STRING title, INT postCount, INT id> forumInfo;
+	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@forumHeap;
+  OrAccum @visited;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<INT> @member;
+  SumAccum<INT> @creator;
+  SetAccum<INT> @post;
+  
+  INT i = 0;
+  vPerson = { personId };
+  WHILE i < 2 DO
+    vPerson = 
+      SELECT t
+      FROM vPerson:s-(KNOWS)-Person:t
+      WHERE t.@visited == False
+      ACCUM 
+        s.@visited += True,
+        t.@visited += True,
+        @@friendAll += t;
+    i = i + 1;
+  END;
+  
+  vFriends = { @@friendAll };
+  vForum =
+  SELECT t
+  FROM vFriends:s-(<HAS_MEMBER)-Forum:t
+  WHERE e.joinDate > minDate
+  ACCUM t.@member += s.id;
+  
+  vPost = 
+  SELECT t
+  FROM vForum:s-(CONTAINER_OF>)-Post:t;
+  
+  vPost =
+  SELECT s
+  FROM vPost:s-(HAS_CREATOR>)-Person:t
+  ACCUM s.@creator = t.id;
+  
+  vPost = 
+  SELECT t
+  FROM vForum:s-(CONTAINER_OF>)-Post:t
+  WHERE t.@creator IN s.@member
+  ACCUM s.@post += t.id;
+	
+	vForum = SELECT s
+	         FROM vForum:s
+	         POST-ACCUM @@forumHeap += forumInfo(s.title, s.@post.size(), s.id);
+  
+  FOREACH item IN @@forumHeap DO
+	    PRINT item.title, item.postCount;
+	END;
+}

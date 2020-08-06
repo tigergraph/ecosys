@@ -1,0 +1,66 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 21 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi21
+
+CREATE DISTRIBUTED QUERY bi21(STRING countryName, DATETIME endDate) {
+  TYPEDEF TUPLE<INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> zombie;
+
+  SumAccum<INT> @messageCount;
+  OrAccum @isZombie;
+  SetAccum<INT> @likeSet, @zombieLikeSet;
+  SumAccum<INT> @totalLikeCount, @zombieLikeCount;
+  HeapAccum<zombie>(100, zombieScore DESC, zombieId ASC) @@zombieTop;
+	
+  vCity = 
+    SELECT t
+    FROM Country:s-(<IS_PART_OF)-City:t
+    WHERE s.name == countryName;
+
+  vPerson =
+    SELECT t
+    FROM vCity:s-(<IS_LOCATED_IN)-Person:t
+    WHERE t.creationDate < endDate;
+
+  vPerson =
+    SELECT s
+    FROM vPerson:s-(<HAS_CREATOR)-(Comment|Post):t
+    WHERE t.creationDate < endDate
+    ACCUM s.@messageCount += 1;
+
+  vZombie =
+    SELECT s
+    FROM vPerson:s
+    WHERE s.@messageCount < (year(endDate) - year(s.creationDate)) * 12 + (month(endDate) - month(s.creationDate)) + 1
+    ACCUM s.@isZombie = true;
+
+  vMessage = 
+    SELECT t
+    FROM vZombie:s-(<HAS_CREATOR)-(Post|Comment):t;
+
+ vMessage =
+    SELECT s
+    FROM vMessage:s-(<LIKES)-Person:t
+    WHERE t.creationDate < endDate
+    ACCUM
+      s.@likeSet += t.id, // there is bug if I use s.@zombieLikeCount += 1, the results are wrong
+      CASE WHEN t.@isZombie == true THEN
+        s.@zombieLikeSet += t.id
+      END;
+
+  vZombie =
+    SELECT s
+    FROM vZombie:s-(<HAS_CREATOR)-(Post|Comment):t
+    ACCUM
+      s.@totalLikeCount += t.@likeSet.size(),
+      s.@zombieLikeCount += t.@zombieLikeSet.size()
+    POST-ACCUM 
+      IF s.@totalLikeCount > 0.000001 THEN // avoid division by zero
+        @@zombieTop += zombie(s.id, s.@zombieLikeCount, s.@totalLikeCount, 1.0 * s.@zombieLikeCount / s.@totalLikeCount)
+      ELSE
+        @@zombieTop += zombie(s.id, 0, 0, 0)
+      END;
+
+  PRINT @@zombieTop;
+}

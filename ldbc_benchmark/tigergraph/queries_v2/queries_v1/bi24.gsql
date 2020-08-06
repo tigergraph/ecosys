@@ -1,0 +1,52 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 24 query description is on page 82 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+# Messages by Topic and Continent
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi24
+
+CREATE DISTRIBUTED QUERY bi24(STRING tagClassName) { 
+  TYPEDEF TUPLE <INT messageCount, INT likeCount, INT year, INT month, STRING continentName> info;
+
+  HeapAccum<info>(100, year ASC, month ASC, continentName DESC) @@result;
+  GroupByAccum<INT year, INT month, STRING continentName, SumAccum<INT> messageCount, SumAccum<INT> likeCount> @@count; 
+  SumAccum<STRING> @continentName;
+  SumAccum<INT> @likeCount;
+  vTags = 
+    SELECT t 
+    FROM TagClass:s-(<HAS_TYPE)-Tag:t
+    WHERE s.name == tagClassName;
+
+  vMessages = 
+    SELECT t
+    FROM vTags:s-(<HAS_TAG)-(Comment|Post):t;
+
+  # count likes
+  calcLikeCount = 
+    SELECT s
+    FROM vMessages:s-(<LIKES)-Person:t
+    ACCUM s.@likeCount += 1;
+
+  # get Continent name
+  vCountries = 
+    SELECT t
+    FROM vMessages:s-(IS_LOCATED_IN>)-Country:t;
+
+  vCountries = 
+    SELECT s 
+    FROM vCountries:s-(IS_PART_OF>)-:t
+    ACCUM s.@continentName = t.name;
+
+  # get name and count
+  vMessages = 
+    SELECT s
+    FROM vMessages:s-(IS_LOCATED_IN>)-Country:t
+    ACCUM s.@continentName = t.@continentName
+    POST-ACCUM @@count += (year(s.creationDate), month(s.creationDate), s.@continentName -> 1, s.@likeCount);
+
+  FOREACH c IN @@count DO
+    @@result += info(c.messageCount, c.likeCount, c.year, c.month, c.continentName);
+  END;
+
+  PRINT @@result;
+}

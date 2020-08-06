@@ -1,0 +1,61 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 7 query description is on page 50 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is7
+CREATE QUERY is7(STRING messageId) {
+  SetAccum<STRING> @@seed;
+  //SetAccum<INT> @@friendIds;
+  OrAccum @valid = false;
+  SumAccum<INT> @replierId;
+  SumAccum<STRING> @replierFirstName, @replierLastName;
+  OrAccum @knows;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    vCreator = 
+      SELECT t
+      FROM vComments:s-(HAS_CREATOR>)-Person:t;
+
+    vReply = 
+      SELECT t
+      FROM vComments:s-(<REPLY_OF)-Comment:t;
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+    vCreator = 
+      SELECT t
+      FROM vPost:s-(HAS_CREATOR>)-Person:t;
+
+    vReply = 
+      SELECT t
+      FROM vPost:s-(<REPLY_OF)-Comment:t;
+  END;
+
+  vFriend =
+    SELECT t
+    FROM vCreator:s-(KNOWS)-Person:t
+    //POST-ACCUM @@friendIds += t.id;
+    POST-ACCUM t.@valid = true;	       
+
+  vReply =
+    SELECT s
+    FROM vReply:s-(HAS_CREATOR>)-Person:t
+    ACCUM
+      s.@replierId = t.id,
+      s.@replierFirstName = t.firstName,
+      s.@replierLastName = t.lastName,
+      //CASE WHEN @@friendIds.contains(t.id) THEN s.@knows += True END
+      CASE WHEN t.@valid THEN s.@knows += True END
+    ORDER BY s.creationDate DESC, s.@replierId ASC;
+
+  PRINT vReply[
+      vReply.id AS commentId,
+      vReply.content AS commentContent,
+      vReply.creationDate AS commentCreationDate,
+      vReply.@replierId AS replyAuthorId,
+      vReply.@replierFirstName AS replyAuthorFirstName,
+      vReply.@replierLastName AS replyAuthorLastName,
+      vReply.@knows AS replyAuthorKnowsOriginalMessageAuthor];
+}

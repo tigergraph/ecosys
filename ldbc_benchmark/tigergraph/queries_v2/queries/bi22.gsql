@@ -1,0 +1,165 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 22 query description is on page 80 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "_v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi22_2
+
+CREATE DISTRIBUTED QUERY bi22_2(STRING country1Name, STRING country2Name) { 
+  TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
+  MapAccum<STRING, 
+      GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
+          OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
+  SumAccum<INT> @@score;
+  SumAccum<STRING> @city;
+  OrAccum @valid;
+  SumAccum<INT> @pid1, @pid2;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreTop;
+  
+  // identify person1 and person2
+  P1 = 
+    SELECT p
+    FROM Country:s -(<IS_PART_OF)- City:c -(<IS_LOCATED_IN)-Person:p
+    WHERE s.name == country1Name
+    PER(c,p)
+    ACCUM p.@city = c.name;
+  
+  P2 = 
+    SELECT p
+    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
+    WHERE s.name == country2Name
+    ACCUM p.@valid+=True;
+  C1 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
+  C2 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
+  M1 = 
+    SELECT m FROM P1:p -(<HAS_CREATOR)- (Comment|Post):m
+    ACCUM m.@pid1 = p.id, m.@city = p.@city;
+  M2 = 
+    SELECT m FROM P2:p -(<HAS_CREATOR)- (Comment|Post):m
+    ACCUM m.@pid2 = p.id;
+  
+  acc1 =
+    SELECT m2
+    FROM C1:c1 -(REPLY_OF>)- (Comment|Post):m2
+    WHERE m2.@pid2>0
+    ACCUM @@pairScoreMap += (c1.@city -> (c1.@pid1, m2.@pid2 -> True, False, False, False, False));
+  
+  acc2 =
+    SELECT c2
+    FROM M1:m1 -(<REPLY_OF)- Comment:c2
+    WHERE c2.@pid2>0
+    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, c2.@pid2 -> False, True, False, False, False));
+
+  acc3 =
+    SELECT p2
+    FROM P1:p1 -(KNOWS)- Person:p2
+    WHERE p2.@valid
+    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, p2.id -> False, False, True, False, False));
+
+  acc4 =
+    SELECT m2
+    FROM P1:p1 -(LIKES>)- (Comment|Post):m2
+    WHERE m2.@pid2>0
+    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, m2.@pid2 -> False, False, False, True, False));
+
+  acc5 =
+    SELECT p2
+    FROM M1:m1 -(<LIKES)- Person:p2
+    WHERE p2.@valid
+    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, p2.id -> False, False, False, False, True));
+
+
+  @@pairScoreTop.resize(@@pairScoreMap.size());
+  FOREACH (k,gba) IN @@pairScoreMap DO
+    @@pairScoreGroupTop.clear();
+    FOREACH (p1,p2,b1,b2,b3,b4,b5) IN gba DO
+      @@score = 0;
+      IF b1 THEN @@score += 4; END;
+      IF b2 THEN @@score += 1; END;
+      IF b3 THEN @@score += 15; END;
+      IF b4 THEN @@score += 10; END;
+      IF b5 THEN @@score += 1; END;
+      @@pairScoreGroupTop += pairScore(p1, p2, k, @@score);
+    END;
+    @@pairScoreTop += @@pairScoreGroupTop.top();
+  END;
+
+  PRINT @@pairScoreTop;
+}
+
+/*
+This version got consistent results on single node benchmark but not consistent results on distributed query.
+The query is also slow and takes about 5 min. 
+
+CREATE DISTRIBUTED QUERY bi22(STRING country1Name, STRING country2Name) { 
+  TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
+  MapAccum<STRING, 
+      GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
+          OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
+  SumAccum<INT> @@score;
+  SumAccum<STRING> @city1Name;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreTop;
+  
+  // identify person1 and person2
+  P1 = 
+    SELECT p
+    FROM Country:s -(<IS_PART_OF)- City:c -(<IS_LOCATED_IN)-Person:p
+    WHERE s.name == country1Name
+    PER(c,p)
+    ACCUM p.@city1Name = c.name;
+  
+  P2 = 
+    SELECT p
+    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
+    WHERE s.name == country2Name;
+  PRINT P1.size(),P2.size();
+  
+  acc1 =
+    SELECT p1
+    FROM P1:p1 -(<HAS_CREATOR)- Comment -(REPLY_OF>.HAS_CREATOR>)- P2:p2
+    PER(p1,p2)
+    ACCUM @@pairScoreMap += (p1.@city1Name -> (p1.id, p2.id -> True, False, False, False, False));
+  
+  acc2 =
+    SELECT p1
+    FROM P1:p1 -(<HAS_CREATOR.<REPLY_OF)- Comment -(HAS_CREATOR>)- P2:p2
+    PER(p1,p2)
+    ACCUM @@pairScoreMap += (p1.@city1Name -> (p1.id, p2.id -> False, True, False, False, False));
+
+  acc3 =
+    SELECT p1
+    FROM P1:p1 -(KNOWS)- P2:p2
+    ACCUM @@pairScoreMap += (p1.@city1Name -> (p1.id, p2.id -> False, False, True, False, False));
+
+  acc4 =
+    SELECT p1
+    FROM P1:p1 -(LIKES>.HAS_CREATOR>)- P2:p2
+    PER(p1,p2)
+    ACCUM @@pairScoreMap += (p1.@city1Name -> (p1.id, p2.id -> False, False, False, True, False));
+
+  acc5 =
+    SELECT p1
+    FROM P1:p1 -(<HAS_CREATOR.<LIKES)- P2:p2
+    PER(p1,p2)
+    ACCUM @@pairScoreMap += (p1.@city1Name -> (p1.id, p2.id -> False, False, False, False, True));
+
+
+  @@pairScoreTop.resize(@@pairScoreMap.size());
+  FOREACH (k,gba) IN @@pairScoreMap DO
+    @@pairScoreGroupTop.clear();
+    FOREACH (p1,p2,b1,b2,b3,b4,b5) IN gba DO
+      @@score = 0;
+      IF b1 THEN @@score += 4; END;
+      IF b2 THEN @@score += 1; END;
+      IF b3 THEN @@score += 15; END;
+      IF b4 THEN @@score += 10; END;
+      IF b5 THEN @@score += 1; END;
+      @@pairScoreGroupTop += pairScore(p1, p2, k, @@score);
+    END;
+    @@pairScoreTop += @@pairScoreGroupTop.top();
+  END;
+
+  PRINT @@pairScoreTop;
+}
+*/

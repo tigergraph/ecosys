@@ -1,0 +1,57 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 4 query description is on page 62 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+# Popular topics in a Country
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi4
+
+CREATE DISTRIBUTED QUERY bi4(STRING tagClassName, STRING countryName) { 
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
+  HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@result;
+	SumAccum<INT> @postCount;
+  OrAccum @visited;
+  SumAccum<INT> @personId;
+	SetAccum<VERTEX> @@forums;
+
+  vStart = SELECT s
+    FROM Country:s
+    WHERE s.name == countryName;
+    
+  vCity = SELECT t
+    FROM vStart:s-(<IS_PART_OF)-City:t;
+
+  vPerson = 
+    SELECT t
+    FROM vCity:s-(<IS_LOCATED_IN)-Person:t;
+
+  vForum = 
+    SELECT t
+    FROM vPerson:s-(<HAS_MODERATOR)-Forum:t
+    ACCUM 
+      t.@personId = s.id, # one Forum can only have one moderator
+      t.@visited = TRUE;
+          
+  vTagClass = 
+    SELECT s
+    FROM TagClass:s
+    WHERE s.name == tagClassName;
+
+  vTag = 
+    SELECT t
+    FROM vTagClass:s-(<HAS_TYPE)-Tag:t;
+
+  vPost = 
+    SELECT t 
+    FROM vTag:s-(<HAS_TAG)-Post:t; 
+
+  vForum = 
+    SELECT t 
+    FROM vPost:s-(<CONTAINER_OF)-Forum:t 
+    WHERE t.@visited == TRUE
+    ACCUM t.@postCount += 1;
+	vForum = SELECT s
+	  FROM Forum:s
+	  POST-ACCUM @@result += forumInfo(s.id, s.title, s.creationDate, s.@personId, s.@postCount);
+	
+  PRINT @@result;
+}

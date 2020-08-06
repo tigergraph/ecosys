@@ -1,0 +1,63 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 7 query description is on page 65 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi7
+
+CREATE DISTRIBUTED QUERY bi7(STRING tagName) { 
+  TYPEDEF TUPLE <INT personId, INT authorityScore> personInfo;
+	HeapAccum<personInfo>(100, authorityScore DESC, personId ASC) @@result;
+  OrAccum @hasGivenTag;
+  SumAccum<INT> @authorityScore,@popularityScore;
+	SetAccum<INT> @personIdSet;
+	MapAccum<INT, SumAccum<INT>> @@personPopScore;
+
+  vTag = SELECT s FROM Tag:s WHERE s.name == tagName;
+	
+  vMessage1 = 
+    SELECT t 
+    FROM vTag:s-(<HAS_TAG)-(Comment|Post):t
+    ACCUM t.@hasGivenTag = TRUE; 
+	
+  vPerson1 =
+    SELECT t
+    FROM vMessage1:s-(HAS_CREATOR>)-Person:t;
+    
+  vMessage2 =
+    SELECT t
+    FROM vPerson1:s-(<HAS_CREATOR)-(Comment|Post):t     
+    WHERE t.@hasGivenTag;
+
+  vPerson2 =
+    SELECT t
+    FROM vMessage2:s-(<LIKES)-Person:t
+    ACCUM s.@personIdSet += t.id;
+	
+  vMessage3 =
+    SELECT t
+    FROM vPerson2:s-(<HAS_CREATOR)-(Comment|Post):t;
+
+  vMessage3 =
+    SELECT s
+    FROM vMessage3:s-(<LIKES)-Person:t
+    ACCUM s.@popularityScore += 1;	
+	
+  vPerson2 =
+    SELECT s
+    FROM vPerson2:s-(<HAS_CREATOR)-(Comment|Post):t
+    ACCUM @@personPopScore += (s.id -> t.@popularityScore);
+
+  vPerson1 =
+    SELECT s
+    FROM vPerson1:s-(<HAS_CREATOR)-(Comment|Post):t     
+    WHERE t.@hasGivenTag
+    ACCUM s.@personIdSet += t.@personIdSet
+    POST-ACCUM 
+      FOREACH person IN s.@personIdSet DO
+        s.@authorityScore += @@personPopScore.get(person)
+      END,
+      @@result += personInfo(s.id, s.@authorityScore);
+    
+	
+  PRINT @@result;
+}

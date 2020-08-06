@@ -1,0 +1,120 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 11 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi11
+
+CREATE DISTRIBUTED QUERY bi11(STRING countryName, set<STRING> blacklist) { 
+  TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
+
+  SetAccum<STRING> @@blacklistP;
+  AndAccum @isValid;
+  SumAccum<INT> @creatorId;
+  SetAccum<VERTEX<Comment>> @@validComments;
+  SetAccum<VERTEX<Comment>> @@replyAll;
+  SetAccum<STRING> @tagNames;
+  SumAccum<INT> @likeCount;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> likeCount, SumAccum<INT> replyCount> @@replyGroup;
+  HeapAccum<reply>(100, likeCount DESC, personId ASC, tagName ASC) @@replyTop;
+
+  SetAccum<INT> @postTagSet2;
+  SetAccum<INT> @commentTagSet2;
+  SetAccum<INT> @replyTagSet2;
+  OrAccum @valid = false;
+  //SetAccum<INT> @@invalidReplySet;
+	
+  FOREACH word IN blacklist DO
+    @@blacklistP += ("%" + word + "%");
+  END;
+
+  vCity = 
+    SELECT t
+    FROM Country:s-(<IS_PART_OF)-City:t
+    WHERE s.name == countryName;
+
+  vPerson =
+    SELECT t
+    FROM vCity:s-(<IS_LOCATED_IN)-Person:t;
+
+  vComments = 
+    SELECT t
+    FROM vPerson:s-(<HAS_CREATOR)-Comment:t
+    ACCUM 
+      t.@creatorId = s.id,
+      FOREACH word IN @@blacklistP DO
+        CASE WHEN t.content LIKE word THEN
+          t.@isValid += False,
+          BREAK
+        END
+      END
+    POST-ACCUM CASE WHEN t.@isValid THEN @@validComments += t END;
+    
+  vComments = { @@validComments };
+  vMessage =
+    SELECT t
+    FROM vComments:s-(REPLY_OF>)-(Comment|Post):t
+    POST-ACCUM @@replyAll += s;
+
+  vReply = { @@replyAll };
+
+  vComment =
+    SELECT t
+    FROM vReply:s-(REPLY_OF>)-Comment:t;
+	
+  vPost = 
+    SELECT t
+    FROM vReply:s-(REPLY_OF>)-Post:t;
+	
+  vCommentTag =
+    SELECT t
+    FROM vComment:s-(HAS_TAG>)-Tag:t
+    ACCUM s.@commentTagSet2 += t.id;
+	
+  vPostTag =
+    SELECT t
+    FROM vPost:s-(HAS_TAG>)-Tag:t
+    ACCUM s.@postTagSet2 += t.id;
+	
+  vComment =
+    SELECT t
+    FROM vReply:s-(REPLY_OF>)-Comment:t
+    ACCUM s.@replyTagSet2 += t.@commentTagSet2;
+  	
+  vPost = 
+    SELECT t
+    FROM vReply:s-(REPLY_OF>)-Post:t
+    ACCUM s.@replyTagSet2 += t.@postTagSet2;
+	
+  vReply2 =
+    SELECT s
+    FROM vReply:s-(HAS_TAG>)-Tag:t
+    WHERE s.@replyTagSet2.contains(t.id)
+    ACCUM s.@valid = true;
+    //ACCUM @@invalidReplySet += s.id;
+	
+  vReply =
+    SELECT s
+    FROM vReply:s
+    WHERE NOT s.@valid;
+    //WHERE NOT @@invalidReplySet.contains(s.id);
+
+  vComments =
+    SELECT s
+    FROM vReply:s-(HAS_TAG>)-Tag:t
+    ACCUM s.@tagNames += t.name;
+
+  vReply =
+    SELECT s
+    FROM vReply:s-(<LIKES)-Person:t
+    ACCUM s.@likeCount += 1
+    POST-ACCUM 
+      FOREACH tn IN s.@tagNames DO
+        @@replyGroup += (s.@creatorId, tn -> s.@likeCount, 1)
+      END;
+
+  FOREACH (p,t,l,r) IN @@replyGroup DO
+    @@replyTop += reply(p,t,l,r);
+  END;
+
+  PRINT @@replyTop;
+}

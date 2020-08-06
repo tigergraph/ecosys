@@ -1,0 +1,29 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 1 query description is on page 46 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is1
+
+CREATE QUERY is1(VERTEX<Person> personId) {
+  SumAccum<INT> @cityId;
+
+  vPerson = { personId };
+  vPerson = 
+    SELECT s
+    FROM vPerson:s-(IS_LOCATED_IN>)-City:t
+    ACCUM s.@cityId = t.id;
+
+  PRINT vPerson[
+      vPerson.firstName AS firstName,
+      vPerson.lastName AS lastName, 
+      vPerson.birthday AS birthday, 
+      vPerson.locationIP AS locationIP, 
+      vPerson.browserUsed AS browserUsed, 
+      vPerson.@cityId AS cityId, 
+      vPerson.gender AS gender, 
+      vPerson.creationDate AS creationDate
+  ];
+}
+
+//INSTALL QUERY is1
+//RUN QUERY is1(30786325583618)

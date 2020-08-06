@@ -1,0 +1,53 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 16 query description is on page 74 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi16
+
+CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRING tagClassName, INT minPathDistance, INT maxPathDistance) {
+  TYPEDEF tuple<INT personId, STRING tagName, INT messageCount> social;
+  SumAccum<INT> @@counter = 1;
+  OrAccum @valid;
+  SetAccum<INT> @visited;
+  SetAccum<VERTEX<Person>> @@personRange;
+  SumAccum<INT> @creatorId;
+  SetAccum<VERTEX<Tag>> @@tagSel;
+  GroupByAccum<INT person_id, STRING tag_name, SumAccum<INT> messageCount> @@socialGroup;
+  HeapAccum<social>(100, messageCount DESC, tagName ASC, personId ASC) @@socialTop;
+  
+
+  vCountry = SELECT c FROM Country:c WHERE c.name == countryName;
+  P = SELECT p FROM vCountry-(<IS_PART_OF.<IS_LOCATED_IN)-Person:p POST-ACCUM p.@valid = true;
+
+  S = { personId };
+  WHILE @@counter <= maxPathDistance DO
+    S =
+      SELECT t
+      FROM S:s-(KNOWS)-Person:t
+      WHERE(NOT s.id IN t.@visited) AND (NOT t.id IN s.@visited)
+      ACCUM 
+        t.@visited += s.id,
+        CASE WHEN t.@valid == true AND @@counter >= minPathDistance THEN
+          @@personRange += t
+        END;
+    @@counter += 1;
+  END;
+
+  vPerson = { @@personRange };
+  vMessage =
+    SELECT t
+    FROM vPerson:s-(<HAS_CREATOR)-:t
+    ACCUM t.@creatorId = s.id;
+
+  vTag = SELECT t FROM TagClass:s-(<HAS_TYPE)-Tag:t WHERE s.name == tagClassName;
+  vMessage =
+    SELECT m 
+    FROM vMessage:m -(HAS_TAG>)- vTag:t
+    ACCUM @@socialGroup += (m.@creatorId, t.name -> 1);
+      
+  FOREACH (p,t,m) IN @@socialGroup DO
+    @@socialTop += social(p, t, m);
+  END;
+
+  PRINT @@socialTop;
+}

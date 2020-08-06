@@ -1,0 +1,31 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 8 query description is on page 39 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic8
+CREATE DISTRIBUTED QUERY ic8(VERTEX<Person> personId) {
+
+	TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@replierTop;
+  SumAccum<STRING> @personFirstName, @personLastName;
+	SumAccum<INT> @personId;
+	
+
+  vPerson = {personId};
+  vMessage = SELECT t
+    FROM vPerson:s-(<HAS_CREATOR)-(Comment|Post):t;
+
+  vReply = 
+    SELECT t
+    FROM vMessage:s-(<REPLY_OF)-Comment:t
+    ORDER BY t.creationDate DESC, t.id ASC
+	  LIMIT 20;    
+	
+  vReply = 
+    SELECT s
+    FROM vReply:s-(HAS_CREATOR>)-Person:t
+	  ACCUM @@replierTop += replier(t.id, t.firstName, t.lastName, s.creationDate, s.id, s.content);
+
+  PRINT @@replierTop;
+
+}
