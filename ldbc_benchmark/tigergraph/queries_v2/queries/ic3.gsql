@@ -1,4 +1,4 @@
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic3
 CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) syntax v2 {
@@ -24,8 +24,11 @@ CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETI
       CASE 
         WHEN cm.name == x THEN p.@xCount += 1
         WHEN cm.name == y THEN p.@yCount += 1
-      END
-    POST-ACCUM
-      @@msgStatsTop += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
+      END;
+      
+    P =
+      SELECT p FROM P:p
+      WHERE p.@xCount>0 AND p.@yCount>0
+      ACCUM @@msgStatsTop += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
   PRINT @@msgStatsTop;
 }

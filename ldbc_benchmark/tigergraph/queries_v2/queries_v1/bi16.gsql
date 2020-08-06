@@ -16,8 +16,8 @@ CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRIN
   SetAccum<VERTEX<Tag>> @@tagSel;
   OrAccum @isValid;
   SetAccum<STRING> @tagNames;
-  GroupByAccum<INT person_id, STRING tag_name, SumAccum<INT> messageCount> @@socialGroup;
-  HeapAccum<social>(100, messageCount DESC, tag_name ASC, person_id ASC) @@socialTop;
+  GroupByAccum<INT personId, STRING tagName, SumAccum<INT> messageCount> @@socialGroup;
+  HeapAccum<social>(100, messageCount DESC, tagName ASC, personId ASC) @@socialTop;
 
   vCity = 
     SELECT t

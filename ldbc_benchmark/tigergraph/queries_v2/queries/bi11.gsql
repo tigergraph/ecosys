@@ -2,9 +2,9 @@
 //BI 11 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi11_2
+DROP QUERY bi11
 
-CREATE DISTRIBUTED QUERY bi11_2(STRING countryName, set<STRING> blacklist) { 
+CREATE DISTRIBUTED QUERY bi11(STRING countryName, set<STRING> blacklist) { 
   TYPEDEF TUPLE<INT personId, STRING tagName, INT likeCount, INT replyCount> reply;
 
   SetAccum<string> @@blacklistedPatterns;

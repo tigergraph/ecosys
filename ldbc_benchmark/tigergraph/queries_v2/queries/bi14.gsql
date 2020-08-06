@@ -73,7 +73,7 @@ CREATE DISTRIBUTED QUERY bi14_1(datetime startDate, datetime endDate) {
 }
 
 
-CREATE DISTRIBUTED QUERY bi14_2(datetime startDate, datetime endDate) {
+CREATE DISTRIBUTED QUERY bi14(datetime startDate, datetime endDate) {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
   SumAccum<INT> @messageCount, @threadCount;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;

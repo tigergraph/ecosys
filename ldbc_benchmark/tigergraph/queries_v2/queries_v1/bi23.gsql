@@ -7,7 +7,7 @@ DROP QUERY bi23
 CREATE DISTRIBUTED QUERY bi23(STRING countryName) { 
   TYPEDEF TUPLE <INT messageCount, STRING destinationName, INT month> INFO;
   HeapAccum<INFO>(100, messageCount DESC, destinationName ASC, mon ASC) @@result;
-  GroupByAccum<INT mon, STRING destinationName, SumAccum<INT> messageCount> @@count;
+  GroupByAccum<INT month, STRING destinationName, SumAccum<INT> messageCount> @@count;
 
   vCities = 
     SELECT t

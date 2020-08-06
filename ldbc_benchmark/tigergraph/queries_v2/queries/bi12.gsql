@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi12
 
-CREATE DISTRIBUTED QUERY bi12_2(datetime date, int likeThreshold) {
+CREATE DISTRIBUTED QUERY bi12(datetime date, int likeThreshold) {
   TYPEDEF TUPLE<INT messageId, DATETIME messageCreationDate, STRING creatorFirstName, STRING creatorLastName, INT likeCount> msg;
   HeapAccum<msg>(100, likeCount DESC, messageId ASC) @@trendingMsg;
   SumAccum<int> @likeCount;

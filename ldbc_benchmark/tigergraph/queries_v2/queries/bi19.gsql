@@ -3,9 +3,9 @@
 //BI 19 query description is on page 77 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi19_2
+DROP QUERY bi19
 
-CREATE DISTRIBUTED QUERY bi19_2(datetime date, string name1, string name2) FOR GRAPH ldbc_snb{
+CREATE DISTRIBUTED QUERY bi19(datetime date, string name1, string name2) FOR GRAPH ldbc_snb{
   TYPEDEF TUPLE<INT personId, INT strangerCount, INT interactionCount> pInfo;
   HeapAccum<pInfo>(100, interactionCount DESC,personId ASC) @@result;
   SetAccum<INT> @friends, @interactedStrangers;
