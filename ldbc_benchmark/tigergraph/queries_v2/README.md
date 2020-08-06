@@ -1,5 +1,5 @@
 # LDBC SNB Benchmark v2 syntax - scale factor (SF) 100 and 10000
-# Table of Contents
+# Table of Content
 1. [Overview](#Overview)
 2. [Directory structure](#Directory structure)
 3. [How to run Benchmarks](#How to run Benchmarks)
@@ -11,7 +11,7 @@ http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 Benchmark results: 
 https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
-##Directory structure
+## Directory structure
 ```
 queries_v2
 ¦   gsql_batch.sh    # for running gsql files in batch
@@ -25,11 +25,12 @@ queries_v2
 ¦   +---SF100/SF10000  # Schema for SF 100 and 10000 are a little different.
 ¦       ¦   ic1.gsql   # Compared to SF100, SF10000 removes email and language in Person vertex
 ¦       ¦   ic5.gsql   # Compared to SF100, SF10000 changes joinDate to creationDate in WORK_AT edge 
-+---result
+¦
++---result             # Gold answer from previous run
 ¦       SF10000
 ¦       SF100
-+---seed
-    ¦   seed_SF10000.txt
++---seed               # seed for queries
+    ¦   seed_SF10000.txt 
     ¦   seed_SF100.txt
 
 Comment on queries: 
