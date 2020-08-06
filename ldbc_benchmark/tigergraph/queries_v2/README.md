@@ -1,4 +1,9 @@
 # LDBC SNB Benchmark v2 syntax - scale factor (SF) 100 and 10000
+# Table of Contents
+1. [Overview](#Overview)
+2. [Directory structure](#Directory structure)
+3. [How to run Benchmarks](#How to run Benchmarks)
+
 ## Overview
 LDBC specification:
 http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
@@ -6,7 +11,7 @@ http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 Benchmark results: 
 https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
-There is the diretory structure
+##Directory structure
 ```
 queries_v2
 ¦   gsql_batch.sh    # for running gsql files in batch
@@ -28,14 +33,10 @@ queries_v2
     ¦   seed_SF100.txt
 
 Comment on queries: 
-ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. So some IC queries are not written in distributed query. 
-
-IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. 
-BI queries usually start from a goup of vertices and are expensive. Long path queries are sometimes divided into short-path queries to reduce the running time. 
-
-Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed. Other queries are written in distributed query. 
-
-query_v1/bi22 didn't use the v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
+1. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Some queries are not written in distributed query due to bugs. 
+2. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
+3. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. 
+4. query_v1/bi22 didn't use v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
 ```
 
 ## How to run Benchmarks
@@ -68,7 +69,8 @@ gsql_batch.sh is the script to parse gsql files in batch. The script stores quer
 
 Usage for gsql_batch.sh: 
 **gsql_batch.sh -h** for help message. 
-  *gsql_batch.sh [queries]**
+
+**gsql_batch.sh [queries]**
 * queries - queries to parse, default is *.gsql, 
 * examples
 * to parse v2 queries for SF 10000. 
