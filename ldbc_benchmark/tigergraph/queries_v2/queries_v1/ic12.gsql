@@ -1,7 +1,7 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //IC 12 query description is on page 43 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 USE GRAPH ldbc_snb
-DROP QUERY to_jsonarray,ic12
+DROP QUERY ic12,to_jsonarray
 
 CREATE QUERY to_jsonarray(SET<STRING> src) RETURNS(JSONARRAY) {
   BOOL needComma = False;

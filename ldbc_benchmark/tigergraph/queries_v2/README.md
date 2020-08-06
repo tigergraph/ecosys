@@ -1,32 +1,11 @@
 # LDBC SNB Benchmark v2 syntax - scale factor (SF) 100 and 10000
 ## Overview
+LDBC specification:
+http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
 Benchmark results: 
 https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
-## Setup
-Tigergraph Installation and Loading for SF10000 on 24 CentOS machines: 
-https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
-
-Tigergraph Installation and Loading for SF100 on AWS r4.8xlarge: 
-https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/802619473/LDBC+Social+Network+Benchmark
-
-### clone the repository 
-```bash
-git clone git@github.com:tigergraph/ecosys.git
-cd ecosys
-git checkout ldbc
-cd ldbc_benchmark/tigergraph/queries_linear
-```
-
-## Run queries
-bi25 and ic14 requires user defined function, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
-```bash
-#get the root directory of tigergraph
-ROOTDIR=$(gadmin config get System.AppRoot)
-
-# Copy paste the user defined function to the tigergraph directory
-cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
-```
 There is the diretory structure
 ```
 queries_v2
@@ -47,50 +26,75 @@ queries_v2
 +---seed
     ¦   seed_SF10000.txt
     ¦   seed_SF100.txt
+
+Comment on queries: 
+ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. So some IC queries are not written in distributed query. 
+
+IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. 
+BI queries usually start from a goup of vertices and are expensive. Long path queries are sometimes divided into short-path queries to reduce the running time. 
+
+Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed. Other queries are written in distributed query. 
+
+query_v1/bi22 didn't use the v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
 ```
 
-Comment on queries: ORDER BY cannot be used for distributed query and there some bugs for distribtued query. So some fast IC queries are not written in distributed query. 
+## How to run Benchmarks
+### install tigergraph
+Tigergraph Installation and Loading for SF10000 on 24 CentOS machines: 
+https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
 
-gsql_batch.sh is the script to parse gsql files in batch. The script stores query names in environment variable $query_list and also loads three functions: install, drop and run to install, drop and run those queries.
+Tigergraph Installation and Loading for SF100 on AWS r4.8xlarge: 
+https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/802619473/LDBC+Social+Network+Benchmark
+
+### Clone the repository 
+```bash
+git clone git@github.com:tigergraph/ecosys.git
+cd ecosys
+git checkout ldbc
+cd ldbc_benchmark/tigergraph/queries_v2
+```
+
+### Run queries
+bi25 and ic14 requires user defined function, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
+```bash
+#get the root directory of tigergraph
+ROOTDIR=$(gadmin config get System.AppRoot)
+
+# Copy paste the user defined function to the tigergraph directory
+cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+```
+
+gsql_batch.sh is the script to parse gsql files in batch. The script stores query names in environment variable $query_list and also loads three functions: install, drop and run to install, drop and run those queries. Usage for run is: run <seed_file>. default seed_file is result/seed_SF10000.txt. To run seed for SF100, "run seed/seed_SF10000.txt".
 
 Usage for gsql_batch.sh: 
 **gsql_batch.sh -h** for help message. 
-**gsql_batch.sh [queries]**
+  *gsql_batch.sh [queries]**
 * queries - queries to parse, default is *.gsql, 
 * examples
 * to parse v2 queries for SF 10000. 
-** source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
+  * source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
 * to parse v1 queries for SF 10000.  
-** source gsql_batch.sh queries_v1/*.gsql queries_v1/SF10000/*.gsql
+  * source gsql_batch.sh queries_v1/*.gsql queries_v1/SF10000/*.gsql
 * to parse v2 ic queries for SF 10000. 
-** source gsql_batch.sh queries/ic*.gsql queries/SF10000/ic*.gsql
+  * source gsql_batch.sh queries/ic*.gsql queries/SF10000/ic*.gsql
 
 ```bash
 #parse v2 queries for SF 10000
 source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
 # The query list is printed out in the end 
-# If any query fails, remove the failed query from the $query_list 
-query_list=ic1,ic2,ic3
+# If any query fails, you can remove the failed queries and reassign value to $query_list, for example, query_list=ic1,ic2,ic3
 
 #install the queries in $query_list
 install
 
-#run each query in query_list for 3 times. results in log/ and time info is in err/
-run
-#you can specify other seed file, if you want to run seed for SF100
-# run seed/seed_SF10000.txt
+#run each query in query_list for 3 times. Output results in log/ and time info in err/
+run 
 
+#if you want to run in background 
+( trap "true" HUP ; run ) > nohup.out 2>/dev/null </dev/null & disown
 ```
-The log of queries are stored in folder log/ and running time is in err/ 
 
-##Comment on the queries
-is and ic queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. 
-bi queries usually start from a goup of vertices and are expensive. Long path queries are sometimes divided into short-path queries to reduce the running time. I have submitted tickets for improving the performance of long-path queries. Hopefully some long-path query can be used in the future. 
-
-Some query cannot be written in distributed query due to some bugs. Due to bugs on to_vertex_set, is4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed. Other queries are written in distributed query. 
-
-
-## Compare results
+### Compare Results
 To compare results with the old one
 ```bash
 #If you don't have python3, For CentOS 
@@ -103,6 +107,7 @@ python3 compare_result.py
 python3 compare_result.py -c result/SF10000
 ```
 
+Usage for compare_result.py: 
 ```
 usage: compare_result.py [-h] [-q QUERIES] [-c COMPARE] [-l LOG] [-e ERR]
                          [-s SAVE] [-sc SAVE_COMPARE] [--old]
@@ -127,7 +132,6 @@ optional arguments:
   --old                 True if the target results to compare is in the old
                         JSON format
 ```
-
 
 Output shows the difference of the results, and the smallest time of three runs. The script takes the field of interest, order them and dumps current results (parsed from --log) to parsed_result/. You can use 'diff' command or text compare tools on the parsed results and see how the results are different between your runs and gold answer in result/SF10000. Example output of 'python3 compare_result.py -c result/SF10000'. The script also support reading old json format ('../queries_pattern_match/result/') when option '--old' is turned on:
 ```
@@ -225,5 +229,5 @@ bi25:PASS
 time:60.39s
 ```
 
-PASS indicate the results are the same as the target gold answer. For query bi22, I didn't use the v1 version because it takes too long (~40min). I also got different results compared to v1 version. The result for bi22 may be wrong here.
+PASS indicate the results are the same as the target gold answer. 
 
