@@ -88,22 +88,26 @@ else:
     qs = args.queries.split(',')
 
 '''
-for ic_1 friendEmails and friendLanguages are sets, 
+for ic1 friendEmails and friendLanguages are sets, 
 friendUniversities and friendCompanies are sets of dict 
 and are stored as storted list of list
 '''
-def modify_ic1(table):
-    vlist = variable_list['ic1']
-    for row in table:
-        for v in ['friendEmails','friendLanguages']:
-            if v in vlist:
-                i=vlist.index(v)
-                row[i]=set(row[i])
-        for v in ['friendUniversities','friendCompanies']:
-            if v in vlist:
-                i=vlist.index(v)
-                row[i] = [[u['orgName'],u['orgYear'],u['orgPlace']] for u in row[i]]
-                row[i].sort()
+def modify_ic1(table,q):
+    if q == 'ic1':
+        vlist = variable_list['ic1']
+        for row in table:
+            for v in ['friendEmails','friendLanguages']:
+                if v in vlist:
+                    i=vlist.index(v)
+                    row[i]=set(row[i])
+            for v in ['friendUniversities','friendCompanies']:
+                if v in vlist:
+                    i=vlist.index(v)
+                    row[i] = [[u['orgName'],u['orgYear'],u['orgPlace']] for u in row[i]]
+                    row[i].sort()
+    if q == 'ic12':
+        for row in table:
+            row[3]=set(row[3])
 
 def node2table(rows, variable):
     table = []
@@ -126,7 +130,7 @@ def txt2table(q):
             (_, res), = res[0].items()
             if isinstance(res,int): return res
         table = node2table(res,variable_list[q])
-        if q=='ic1': modify_ic1(table) #ic1 has a dictionary to parse and order
+        modify_ic1(table,q) #ic1 has a dictionary to parse and order
         return table
         
 def log2table(q):
@@ -143,7 +147,7 @@ def log2table(q):
         (_, res), = res.items()
         if isinstance(res,int): return res
         table = node2table(res,variable_list[q])
-        if q=='ic1': modify_ic1(table) #ic1 has a dictionary to parse and order
+        modify_ic1(table,q) #ic1 has a dictionary to parse and order
         return table
  
 def write_table(table, filename):    
