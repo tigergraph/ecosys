@@ -1,6 +1,12 @@
 # LDBC SNB Benchmark v2 syntax - scale factor (SF) 100 and 10000
 # Table of Content
-[TOC]
+- [Overview](#overview)
+- [Directory structure](#directory-structure)
+- [How to run Benchmarks](#how-to-run-benchmarks)
+  * [install tigergraph](#install-tigergraph)
+  * [Clone the repository](#clone-the-repository)
+  * [Run queries](#run-queries)
+  * [Compare Results](#compare-results)
 
 ## Overview
 LDBC specification:
@@ -9,7 +15,7 @@ http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 Benchmark results: 
 https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
-## Directory structure <a name="Directory structure"></a>
+## Directory structure 
 ```
 queries_v2
 ¦   gsql_batch.sh    # for running gsql files in batch
@@ -38,7 +44,7 @@ Comment on queries:
 4. query_v1/bi22 didn't use v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
 ```
 
-## How to run Benchmarks <a name="How to run Benchmarks"></a>
+## How to run Benchmarks
 ### install tigergraph
 Tigergraph Installation and Loading for SF10000 on 24 CentOS machines: 
 https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
