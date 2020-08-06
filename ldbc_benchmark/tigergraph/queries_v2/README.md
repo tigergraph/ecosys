@@ -178,7 +178,7 @@ time:412.11s
 bi15:PASS
 time:5.03s
 bi16:PASS
-time:995.26s
+time:194.13s
 bi17:PASS
 time:39.38s
 bi18:PASS
