@@ -1,8 +1,6 @@
 # LDBC SNB Benchmark v2 syntax - scale factor (SF) 100 and 10000
 # Table of Content
-1. [Overview](#Overview)
-2. [Directory structure](#Directory structure)
-3. [How to run Benchmarks](#How to run Benchmarks)
+[TOC]
 
 ## Overview
 LDBC specification:
