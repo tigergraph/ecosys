@@ -27,7 +27,7 @@ CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRIN
       WHERE(NOT s.id IN t.@visited) AND (NOT t.id IN s.@visited)
       ACCUM 
         t.@visited += s.id,
-        CASE WHEN t.@valid == true AND @@counter >= minPathDistance THEN
+        IF @@counter >= minPathDistance AND t.@valid == true THEN
           @@personRange += t
         END;
     @@counter += 1;
@@ -39,10 +39,13 @@ CREATE DISTRIBUTED QUERY bi16(VERTEX<Person> personId, STRING countryName, STRIN
     FROM vPerson:s-(<HAS_CREATOR)-:t
     ACCUM t.@creatorId = s.id;
 
-  vTag = SELECT t FROM TagClass:s-(<HAS_TYPE)-Tag:t WHERE s.name == tagClassName;
+  vTag = 
+    SELECT t FROM TagClass:s-(<HAS_TYPE)-Tag:t 
+    WHERE s.name == tagClassName ACCUM @@tagSel += t;
   vMessage =
     SELECT m 
-    FROM vMessage:m -(HAS_TAG>)- vTag:t
+    FROM vMessage:m -(HAS_TAG>)- Tag:t
+    WHERE t IN @@tagSel  //using t.@valid has bug
     ACCUM @@socialGroup += (m.@creatorId, t.name -> 1);
       
   FOREACH (p,t,m) IN @@socialGroup DO

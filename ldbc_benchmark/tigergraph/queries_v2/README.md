@@ -18,21 +18,23 @@ https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxp
 ## Directory structure 
 ```
 queries_v2
-¦   gsql_batch.sh    # for running gsql files in batch
-¦   compare_result.py # for parsing and compare results
+¦   gsql_batch.sh          # for running gsql files in batch
+¦   compare_result.py      # for parsing and compare results
 ¦
-+---queries_v1/queries
-¦   ¦   is[1-7].gsql         # all IS queries are non-distributed query
-¦   ¦   ic[2-4,6-14].gsql    # some IC queries are distributed
-¦   ¦   bi[1-25].gsql        # all BI queries are distributed query, otherwise too slow
++---queries                # queries with linear per pattern
++---queries_v1             # queries based on old version
+¦   ¦   is[1-7].gsql       # all IS queries are non-distributed query
+¦   ¦   ic[2-4,6-14].gsql  # some IC queries are distributed
+¦   ¦   bi[1-25].gsql      # all BI queries except BI25,BI17 are distributed query
 ¦   ¦
-¦   +---SF100/SF10000  # Schema for SF 100 and 10000 are a little different.
+¦   +---SF100
+¦   +---SF10000        # Schema for SF 100 and 10000 are a little different.
 ¦       ¦   ic1.gsql   # Compared to SF100, SF10000 removes email and language in Person vertex
 ¦       ¦   ic5.gsql   # Compared to SF100, SF10000 changes joinDate to creationDate in WORK_AT edge 
 ¦
-+---result             # Gold answer from previous run
-¦       SF10000
-¦       SF100
++---result             # Parsed results from previous runs (validated)
+¦       SF10000        
+¦       SF100          
 +---seed               # seed for queries
     ¦   seed_SF10000.txt 
     ¦   seed_SF100.txt
@@ -45,7 +47,7 @@ Comment on queries:
 ```
 
 ## How to run Benchmarks
-### install tigergraph
+### install tigergraph 3.0 released version 
 Tigergraph Installation and Loading for SF10000 on 24 CentOS machines: 
 https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/1347289765/LDBC+Social+Network+Benchmark+6T+local+machine
 
@@ -104,97 +106,97 @@ Output shows the difference of the results, and the smallest time of three runs.
 Example output of 'python3 compare_result.py -c result/SF10000':
 ```
 ic1:PASS
-time:1.88s
+time:2.78s
 ic2:PASS
-time:2.51s
+time:2.61s
 ic3:PASS
-time:8.35s
+time:10.78s
 ic4:PASS
-time:2.48s
+time:2.72s
 ic5:PASS
-time:12.6s
+time:6.47s
 ic6:PASS
-time:4.48s
+time:9.35s
 ic7:PASS
-time:2.56s
+time:2.63s
 ic8:PASS
-time:2.47s
+time:4.37s
 ic9:PASS
-time:5.92s
+time:7.22s
 ic10:PASS
-time:3.24s
+time:3.18s
 ic11:PASS
-time:4.91s
+time:6.66s
 ic12:PASS
-time:5.69s
+time:3.05s
 ic13:PASS
-time:1.7s
+time:2.37s
 ic14:PASS
-time:1.29s
+time:1.27s
 is1:PASS
-time:1.12s
+time:1.03s
 is2:PASS
-time:1.06s
+time:1.52s
 is3:PASS
-time:1.13s
+time:0.96s
 is4:PASS
-time:1.05s
+time:1.12s
 is5:PASS
-time:1.1s
+time:1.03s
 is6:PASS
-time:0.87s
+time:1.76s
 is7:PASS
-time:0.94s
+time:1.15s
 bi1:PASS
-time:7.13s
+time:7.99s
 bi2:PASS
-time:18.89s
+time:88.05s
 bi3:PASS
-time:7.9s
+time:13.11s
 bi4:PASS
-time:16.26s
+time:12.94s
 bi5:PASS
-time:22.66s
+time:5.44s
 bi6:PASS
-time:172.71s
+time:5.8s
 bi7:PASS
-time:582.86s
+time:506.5s
 bi8:PASS
-time:21.58s
+time:21.91s
 bi9:PASS
-time:29.91s
+time:12.67s
 bi10:PASS
-time:112.27s
+time:38.49s
 bi11:PASS
-time:1178.61s
+time:39.76s
 bi12:PASS
-time:4.93s
+time:6.4s
 bi13:PASS
-time:23.18s
+time:31.73s
 bi14:PASS
-time:121.55s
+time:412.11s
 bi15:PASS
-time:3.75s
+time:5.03s
 bi16:PASS
-time:469.56s
+time:995.26s
 bi17:PASS
-time:21.83s
+time:39.38s
 bi18:PASS
-time:232.44s
+time:34.67s
 bi19:PASS
-time:311.85s
+time:324.16s
 bi20:PASS
-time:377.36s
+time:454.12s
 bi21:PASS
-time:10.01s
+time:159.85s
 bi22:PASS
-time:2283.67s
+time:37.64s
 bi23:PASS
-time:14.46s
+time:61.04s
 bi24:PASS
-time:123.85s
+time:75.94s
 bi25:PASS
-time:60.39s
+time:66.83s
 ```
 
 PASS indicate the results are the same as the target gold answer. 
