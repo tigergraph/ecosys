@@ -40,7 +40,6 @@ gender_data = data['attributes.Sex']
 age = data['attributes.Age']
 s = age.value_counts()
 age = pd.DataFrame({'Age':s.index, 'Count':s.values})
-st.write(age)
 
 st.write(data)
 st.write('Bar chart of Male and Females')
