@@ -40,11 +40,11 @@ queries_v2
     ¦   seed_SF100.txt
 
 Comment on queries: 
-1. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Some queries are not written in distributed query due to bugs. 
-2. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
-3. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. 
-4. query_v1/bi22 didn't use v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
-5. tigergraph 3.0.0 generates wrong results for bi22. While tigergraph 3.1 generates correct resutls.
+1. The queries work for tigergraph 3.1.0 and 3.0.0. 3.0.0 has bugs and generate wrong results for bi8 and bi22.
+2. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Some queries are not written in distributed query due to bugs. 
+3. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
+4. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. 
+5. query_v1/bi22 didn't use v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
 ```
 
 ## How to run Benchmarks
