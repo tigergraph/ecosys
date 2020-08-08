@@ -1,5 +1,7 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 22 query description is on page 80 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+
+/* IMPORTANT !!!! This query generate correct results only after version 3.1*/
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi22
@@ -88,8 +90,7 @@ CREATE DISTRIBUTED QUERY bi22(STRING country1Name, STRING country2Name) {
 }
 
 /*
-This version got consistent results on single node benchmark but not consistent results on distributed query.
-The query is also slow and takes about 5 min. 
+The following query also works but is slow (about 5 min). 
 
 CREATE DISTRIBUTED QUERY bi22(STRING country1Name, STRING country2Name) { 
   TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;

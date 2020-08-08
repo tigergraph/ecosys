@@ -44,6 +44,7 @@ Comment on queries:
 2. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
 3. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. 
 4. query_v1/bi22 didn't use v1 version because it takes too long (~40min). Due to bugs in distributed query, my validation on bi22 does not go through. The result for bi22 may be wrong.
+5. tigergraph 3.0.0 generates wrong results for bi22. While tigergraph 3.1 generates correct resutls.
 ```
 
 ## How to run Benchmarks
@@ -81,10 +82,10 @@ source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
 #install the queries in $query_list
 install
 
-#run each query in query_list for 3 times. Output results in log/ and time info in err/
+#run each query in query_list for 3 times. Output results in log/ and time and error info in err/
 run 
 
-#if you want to run in background 
+#to run in background and direct output to nohup.out 
 ( trap "true" HUP ; run ) > nohup.out 2>/dev/null </dev/null & disown
 ```
 
@@ -190,7 +191,7 @@ time:454.12s
 bi21:PASS
 time:159.85s
 bi22:PASS
-time:37.64s
+time:108s
 bi23:PASS
 time:61.04s
 bi24:PASS
