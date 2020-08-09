@@ -9,11 +9,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-graph = tg.TigerGraphConnection(
-    host="https://f82f2c67cbfc46aa8e43a89d705a0b0e.i.tgcloud.io", 
-    graphname="MyGraph",
-    apiToken="d1lbcf9ib4uocd7q6im769o01jv9ed4l") # make a connection to TigerGraph Box
-
 st.title('Dynamically Visualize South Korea COVID-19 data using TigerGraph and Streamlit')
 
 min_age, max_age = st.slider("Select Age Range", 0, 104, [10, 20])
