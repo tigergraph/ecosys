@@ -62,7 +62,7 @@ variable_list={
 }
 
 parser = argparse.ArgumentParser(description='Parse the results to python str and compare to target result')
-parser.add_argument('-q','--queries', default='all', help='queries to parse and compare (default: all). example: -q ic1,ic2 -q ic')
+parser.add_argument('-q','--queries', default='all', help='queries to parse and compare (default: all). example: -q ic1,ic2 for query ic1 and ic2. -q ic for all ic query')
 parser.add_argument('-c','--compare', default=None,help='folder of target results to compare (default: None). example: -c result/SF10000')
 parser.add_argument('-l','--log', default='log/', help='folder of the current results (default: log)')
 parser.add_argument('-e','--err', default='err/', help='folder of the running time (default: err)')

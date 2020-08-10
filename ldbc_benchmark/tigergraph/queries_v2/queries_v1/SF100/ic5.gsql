@@ -4,8 +4,8 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic5
 
-CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb { 
-	TYPEDEF TUPLE<STRING title, INT postCount, INT id> forumInfo;
+CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) { 
+	TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
 	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@forumHeap;
   OrAccum @visited;
   SetAccum<VERTEX<Person>> @@friendAll;
@@ -30,7 +30,7 @@ CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
   vFriends = { @@friendAll };
   vForum =
   SELECT t
-  FROM vFriends:s-(<HAS_MEMBER)-Forum:t
+  FROM vFriends:s-(<HAS_MEMBER:e)-Forum:t
   WHERE e.joinDate > minDate
   ACCUM t.@member += s.id;
   
@@ -53,7 +53,5 @@ CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
 	         FROM vForum:s
 	         POST-ACCUM @@forumHeap += forumInfo(s.title, s.@post.size(), s.id);
   
-  FOREACH item IN @@forumHeap DO
-	    PRINT item.title, item.postCount;
-	END;
+  PRINT @@forumHeap;
 }

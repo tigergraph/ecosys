@@ -1,10 +1,12 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //IC 5 query description is on page 36 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic5
 
-CREATE DISTRIBUTED QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAPH ldbc_snb {
+CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) {
+  TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
+	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@forumHeap;
   SetAccum<VERTEX<Person>> @@friendAll;
   SetAccum<INT> @memberIds;
   SumAccum<INT> @postCount;
@@ -14,17 +16,15 @@ CREATE DISTRIBUTED QUERY ic5(VERTEX<Person> personId, DATETIME minDate) FOR GRAP
     SELECT t
     FROM S:s-(KNOWS*1..2)-Person:p-(<HAS_MEMBER:e)-Forum:t
     WHERE p != s AND e.joinDate > minDate
-    ACCUM t.@memberIds += p.id
-    POST-ACCUM @@friendAll += p;
+    PER(p,t)
+    ACCUM t.@memberIds += p.id, @@friendAll += p;
 
   vFriend = { @@friendAll };
   vForum = 
     SELECT t
     FROM vFriend:s-(<HAS_CREATOR)-Post-(<CONTAINER_OF)-vForum:t
-    PER(s,t)
     ACCUM CASE WHEN s.id IN t.@memberIds THEN t.@postCount += 1 END
-    ORDER BY t.@postCount DESC, t.id ASC
-    LIMIT 20;
+    POST-ACCUM @@forumHeap += forumInfo(t.title, t.@postCount, t.id);
     
-  PRINT vForum[vForum.title AS forumTitle, vForum.@postCount AS postCount];
+  PRINT @@forumHeap;
 }

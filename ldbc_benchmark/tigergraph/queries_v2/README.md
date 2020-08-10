@@ -28,7 +28,7 @@ queries_v2
 ¦   ¦   bi[1-25].gsql      # all BI queries except BI25,BI17 are distributed query
 ¦   ¦
 ¦   +---SF100
-¦   +---SF10000        # Schema for SF 100 and 10000 are a little different.
+¦   +---SF10000        # Schema for SF <100 and 10000 are a little different.
 ¦       ¦   ic1.gsql   # Compared to SF100, SF10000 removes email and language in Person vertex
 ¦       ¦   ic5.gsql   # Compared to SF100, SF10000 changes joinDate to creationDate in WORK_AT edge 
 ¦
@@ -43,7 +43,7 @@ Comment on queries:
 1. The queries work for tigergraph 3.1.0 and 3.0.0. 3.0.0 has bugs and generate wrong results for bi8 and bi22.
 2. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Some queries are not written in distributed query due to bugs. 
 3. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
-4. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. 
+4. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used but is1-3 can be changed to distributed query. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. Some IC queries are not written in distributed mode because some V2 IC queries with per clause are slower in distributed mode (because global MapAccum is expensive) and some V1 IC queries do not support distributed query.
 ```
 
 ## How to run Benchmarks
@@ -76,6 +76,7 @@ gsql_batch.sh is the script to parse gsql files in batch. The script stores quer
 ```bash
 #parse v2 queries for SF 10000
 source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
+# to parse queries for SF<100, source gsql_batch.sh queries/*.gsql queries/SF100/*.gsql
 # The query list is printed out in the end. If any query fails, you can remove the failed queries and reassign value to $query_list, for example, query_list=ic1,ic2,ic3
 
 #install the queries in $query_list

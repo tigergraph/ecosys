@@ -51,7 +51,7 @@ CREATE QUERY ic1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb {
 
   vUniv =
     SELECT t
-    FROM vFriend:s-(STUDY_AT:e>)-University:t
+    FROM vFriend:s-(STUDY_AT>:e)-University:t
     ACCUM t.@personInfo += (s.id -> e.classYear);
 
   vUniv =
@@ -64,12 +64,12 @@ CREATE QUERY ic1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb {
 
   vComp =
     SELECT t
-    FROM vFriend:s-(WORK_AT:e>)-Company:t
+    FROM vFriend:s-(WORK_AT>:e)-Company:t
     ACCUM t.@personInfo += (s.id -> e.workFrom);
 
   vComp =
     SELECT s
-    FROM vComp:s-(IS_LOCATED_IN>)->Country:t
+    FROM vComp:s-(IS_LOCATED_IN>)-Country:t
     ACCUM
       FOREACH (pId, orgYear) in s.@personInfo DO
         @@compInfo += (pId -> org(s.name, orgYear, t.name))
@@ -81,7 +81,8 @@ CREATE QUERY ic1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb {
     ACCUM
       v.@univ += @@univInfo.get(v.id),
       v.@comp += @@compInfo.get(v.id)
-    ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC;
+    ORDER BY v.@distance ASC, v.lastName ASC, v.id ASC
+    LIMIT 20;
 
   PRINT vFriend[
       vFriend.id AS friendId,
