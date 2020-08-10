@@ -101,7 +101,7 @@ python3 compare_result.py
 python3 compare_result.py -c result/SF10000
 ```
 
-Output shows the difference of the results, and the smallest time of three runs. The script reads results in log/, takes the fields of interest, sorts them and dumps parsed results to parsed_result/. You can use 'diff' command or text compare tools on the parsed results and see how the results are different between your runs and gold answer in result/SF10000. The script can read old json format ('../queries_pattern_match/result/') when option '--old' is turned on.
+Output shows the difference of the results, and the median time of three runs. The script reads results in log/, takes the fields of interest, sorts them and dumps parsed results to parsed_result/. You can use 'diff' command or text compare tools on the parsed results and see how the results are different between your runs and gold answer in result/SF10000. The script can read old json format ('../queries_pattern_match/result/') when option '--old' is turned on.
 
 Example output of 'python3 compare_result.py -c result/SF10000':
 ```
@@ -199,5 +199,5 @@ bi25:PASS
 time:66.83s
 ```
 
-PASS indicate the results are the same as the target gold answer. 
+PASS indicate the results are the same as the target gold answer. Use "python3 compare_result.py | awk -F":" '{print $3}' | tr -d 's'" to get time information to copy paste into google sheet.
 

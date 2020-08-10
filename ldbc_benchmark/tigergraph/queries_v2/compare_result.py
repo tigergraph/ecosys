@@ -4,6 +4,16 @@ import os
 import argparse
 
 variable_list={
+'is1': ['firstName','lastName','birthday','locationIP','browserUsed','cityId','gender','creationDate'],
+'is2': ['messageId','messageContent','messageCreationDate','originalPostId',
+         'originalPostAuthorId','originalPostAuthorFirstName','originalPostAuthorLastName'],
+'is3': ['personId','firstName','lastName','friendshipCreationDate'],
+'is4': ['messageCreationDate','messageContent'],
+'is5': ['personId','firstName','lastName'],
+'is6': ['forumId','forumTitle','moderatorId','moderatorFirstName','moderatorLastName'],
+'is7': ['commentId','commentContent','commentCreationDate','replyAuthorId',
+         'replyAuthorFirstName','replyAuthorLastName','replyAuthorKnowsOriginalMessageAuthor'],
+
 'ic1': ['friendId','friendLastName','distanceFromPerson',
         'friendBirthday', 'friendCreationDate', 'friendGender',
         'friendBrowserUsed','friendLocationIp', #'friendEmails', ,'friendLanguages',
@@ -21,15 +31,7 @@ variable_list={
 'ic12':['personId','personFirstName','personLastName','tagNames','replyCount'],
 'ic13':['shortestPathLength'],
 'ic14':['personIdsInPath', 'pathWeight'],
-'is1': ['firstName','lastName','birthday','locationIP','browserUsed','cityId','gender','creationDate'],
-'is2': ['messageId','messageContent','messageCreationDate','originalPostId',
-         'originalPostAuthorId','originalPostAuthorFirstName','originalPostAuthorLastName'],
-'is3': ['personId','firstName','lastName','friendshipCreationDate'],
-'is4': ['messageCreationDate','messageContent'],
-'is5': ['personId','firstName','lastName'],
-'is6': ['forumId','forumTitle','moderatorId','moderatorFirstName','moderatorLastName'],
-'is7': ['commentId','commentContent','commentCreationDate','replyAuthorId',
-         'replyAuthorFirstName','replyAuthorLastName','replyAuthorKnowsOriginalMessageAuthor'],
+
 
 'bi1': ['theYear','isComment','lengthCategory','messageCount',
          'averageMessageLength','sumMessageLength','percentageOfMessages'],
@@ -60,7 +62,7 @@ variable_list={
 }
 
 parser = argparse.ArgumentParser(description='Parse the results to python str and compare to target result')
-parser.add_argument('-q','--queries', default='all', help='queries to parse and compare (default: all). example: -q ic1, -q ic')
+parser.add_argument('-q','--queries', default='all', help='queries to parse and compare (default: all). example: -q ic1,ic2 -q ic')
 parser.add_argument('-c','--compare', default=None,help='folder of target results to compare (default: None). example: -c result/SF10000')
 parser.add_argument('-l','--log', default='log/', help='folder of the current results (default: log)')
 parser.add_argument('-e','--err', default='err/', help='folder of the running time (default: err)')
@@ -73,17 +75,13 @@ parse the -q/--query option
 ic,is,bi for one category of queries
 queries are separated by comma, i.e., "ic1,ic2"
 '''
-q_ic = ['ic'+str(i+1) for i in range(14)]
-q_is = ['is'+str(i+1) for i in range(7)]
-q_bi = ['bi'+str(i+1) for i in range(25)]
+q_list = {"is":['is'+str(i+1) for i in range(7)],
+"ic": ['ic'+str(i+1) for i in range(14)],
+"bi": ['bi'+str(i+1) for i in range(25)]}
 if args.queries == 'all':
-    qs = q_ic+q_is+q_bi
-elif  args.queries == 'ic':
-    qs = q_ic
-elif  args.queries == 'is':
-    qs = q_is
-elif  args.queries == 'bi':
-    qs = q_bi
+    qs = q_list["is"] + q_list["ic"] + q_list["bi"]
+elif  args.queries in ["ic","is","bi"]:
+    qs = q_list[args.queries]
 else:
     qs = args.queries.split(',')
 
@@ -92,7 +90,7 @@ for ic1 friendEmails and friendLanguages are sets,
 friendUniversities and friendCompanies are sets of dict 
 and are stored as storted list of list
 '''
-def modify_ic1(table,q):
+def modify_table(table,q):
     if q == 'ic1':
         vlist = variable_list['ic1']
         for row in table:
@@ -130,7 +128,7 @@ def txt2table(q):
             (_, res), = res[0].items()
             if isinstance(res,int): return res
         table = node2table(res,variable_list[q])
-        modify_ic1(table,q) #ic1 has a dictionary to parse and order
+        modify_table(table,q) #ic1 has a dictionary to parse and order
         return table
         
 def log2table(q):
@@ -147,7 +145,7 @@ def log2table(q):
         (_, res), = res.items()
         if isinstance(res,int): return res
         table = node2table(res,variable_list[q])
-        modify_ic1(table,q) #ic1 has a dictionary to parse and order
+        modify_table(table,q) #ic1 has a dictionary to parse and order
         return table
  
 def write_table(table, filename):    
@@ -189,10 +187,12 @@ def compare_table(table1, table2, nprint=1):
 def err2time(err_file):
     with open(err_file,'r') as f:
         mintime = 10000.0
+        time_list = []
         for l in f:
             if l.startswith('real'):
-                mintime = min(mintime, float(l.split(' ')[1].replace('\n','')))
-        return mintime
+                time = float(l.split(' ')[1].replace('\n',''))
+                time_list.append(time)
+        return sorted(time_list)[len(time_list)//2+1]
     
 
 if args.save_compare and not os.path.exists(args.save_compare):
