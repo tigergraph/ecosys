@@ -1,0 +1,18 @@
+USE GRAPH ldbc_snb
+
+# a computerd vertex set F is used to constrain the second pattern.
+INTERPRET QUERY () SYNTAX v2 {
+  SumAccum<int> @@cnt;
+
+  F = SELECT t
+      FROM :s -(LIKES>:e1)- :msg -(HAS_CREATOR>)- :t
+      WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer" AND t.lastName LIKE "S%";
+
+  Alumni = SELECT p
+           FROM Person:p -(STUDY_AT>)- :u -(<STUDY_AT)- F:s
+           WHERE s != p
+           PER (p)
+           POST-ACCUM @@cnt += 1;
+
+  PRINT @@cnt;
+}

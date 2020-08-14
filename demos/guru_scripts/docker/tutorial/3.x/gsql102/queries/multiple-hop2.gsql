@@ -1,0 +1,16 @@
+USE GRAPH ldbc_snb
+
+INTERPRET QUERY () SYNTAX v2 {
+
+  SumAccum<String> @continentName;
+
+  accMsgContinent =
+    SELECT s
+    FROM (Comment|Post):s -(IS_LOCATED_IN>.IS_PART_OF>)-Continent:t
+    WHERE year(s.creationDate) == 2011 AND month(s.creationDate) == 1
+    ACCUM s.@continentName = t.name
+    ORDER BY s.creationDate DESC
+    LIMIT 3;
+
+  PRINT accMsgContinent;
+}

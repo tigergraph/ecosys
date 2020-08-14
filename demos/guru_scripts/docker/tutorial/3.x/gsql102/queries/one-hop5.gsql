@@ -1,0 +1,12 @@
+USE GRAPH ldbc_snb
+
+INTERPRET QUERY () SYNTAX v2 {
+  SumAccum<int> @@cnt = 0;
+
+  Result = SELECT tgt
+           FROM Person:tgt -(<_)- (Comment|Post):src
+           WHERE tgt.firstName == "Viktor" AND tgt.lastName == "Akhiezer"
+           ACCUM @@cnt += 1;
+
+  PRINT @@cnt;
+}

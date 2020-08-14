@@ -1,0 +1,12 @@
+USE GRAPH ldbc_snb
+
+# Example 1. Undirected Edge Pattern
+INTERPRET QUERY () SYNTAX v2 {
+   friends = SELECT p
+             FROM Person:s - (KNOWS:e)- Person:p
+             WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
+             ORDER BY p.birthday ASC
+             LIMIT 3;
+             
+    PRINT  friends[friends.firstName, friends.lastName, friends.birthday];
+}

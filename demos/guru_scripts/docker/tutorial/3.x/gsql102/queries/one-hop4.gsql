@@ -1,0 +1,18 @@
+USE GRAPH ldbc_snb
+set query_timeout=60000
+
+INTERPRET QUERY () SYNTAX v2 {
+  SumAccum<int> @commentCnt = 0;
+  SumAccum<int> @postCnt = 0;
+
+  Result = SELECT tgt
+           FROM Person:tgt -(<HAS_CREATOR|LIKES>)- (Comment|Post):src
+           WHERE tgt.firstName == "Viktor" AND tgt.lastName == "Akhiezer"
+           ACCUM CASE WHEN src.type == "Comment" THEN
+                          tgt.@commentCnt += 1
+                      WHEN src.type == "Post" THEN
+                          tgt.@postCnt += 1
+                      END;
+
+  PRINT Result[Result.@commentCnt, Result.@postCnt];
+}

@@ -1,0 +1,22 @@
+## ------- Define Scheme & Load Data -------
+
+# Reset the catalog
+DROP ALL
+
+# Define a Schema
+CREATE VERTEX person (PRIMARY_ID name STRING, name STRING, age INT, gender STRING, state STRING)
+CREATE UNDIRECTED EDGE friendship (FROM person, TO person, connect_day DATETIME)
+
+CREATE GRAPH social (person, friendship)
+
+# Load Data: Create a loading job
+CREATE LOADING JOB load_social FOR GRAPH social {
+   DEFINE FILENAME file1="./person.csv";
+   DEFINE FILENAME file2="./friendship.csv";
+
+   LOAD file1 TO VERTEX person VALUES ($"name", $"name", $"age", $"gender", $"state") USING header="true", separator=",";
+   LOAD file2 TO EDGE friendship VALUES ($0, $1, $2) USING header="true", separator=",";
+}
+
+# Load Data: Run the loading job
+RUN LOADING JOB load_social
