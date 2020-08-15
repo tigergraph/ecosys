@@ -19,14 +19,14 @@ public class Driver {
                 System.out.println( "You may use 'GSQL_CLIENT_VERSION=v? java ...' or \n    'java -DGSQL_CLIENT_VERSION=v? ...' to specify the version");
             }
             if ( i==1 ) {
-                Supported_Versions = Supported_Versions + "v3_0_0 ";
+                Supported_Versions = Supported_Versions + "v2_6_2 ";
             }
-            if ( ( i==1 && Gsql_Client_Version.equalsIgnoreCase("v3_0_0") ) ||
-                 ( i==2 && (!Gsql_Client_Version.equalsIgnoreCase("v3_0_0")) )){
+            if ( ( i==1 && Gsql_Client_Version.equalsIgnoreCase("v2_6_2") ) ||
+                 ( i==2 && (!Gsql_Client_Version.equalsIgnoreCase("v2_6_2")) )){
                 try {
                     System.out.println("========================");
-                    System.out.println("Trying version: v3_0_0");
-                    com.tigergraph.v3_0_0.client.Driver.main(args);
+                    System.out.println("Trying version: v2_6_2");
+                    com.tigergraph.v2_6_2.client.Driver.main(args);
                 } catch (SecurityException e) {
                     ;
                 }
