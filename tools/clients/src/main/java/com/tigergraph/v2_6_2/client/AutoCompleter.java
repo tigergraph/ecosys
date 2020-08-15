@@ -1,4 +1,4 @@
-package com.tigergraph.v3_0_0.client;
+package com.tigergraph.v2_6_2.client;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ class AutoCompleter implements Completer {
   public int complete(String buffer, int cursor, List<CharSequence> candidates) {
     int identifierStart = findIdentifierStart(buffer, cursor);
     String identifierPrefix =
-        identifierStart != -1 ? buffer.substring(identifierStart, cursor) : "";
+      identifierStart != -1 ? buffer.substring(identifierStart, cursor) : "";
 
     if (identifierStart != -1) {
       List<CharSequence> myCandidates = findMatchingVariables(identifierPrefix);
