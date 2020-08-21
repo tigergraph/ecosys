@@ -1,4 +1,6 @@
 #!/bin/bash
+
+#offline loading script. 
 set -e
 
 RED='\033[0;31m'
