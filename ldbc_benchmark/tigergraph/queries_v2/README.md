@@ -43,7 +43,7 @@ Comment on queries:
 1. The queries work for tigergraph 3.1.0 and 3.0.0. 3.0.0 has bugs and generate wrong results for bi8 and bi22.
 2. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Some queries are not written in distributed query due to bugs. 
 3. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and usually divided into short-path queries. 
-4. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used but is1-3 can be changed to distributed query. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. Some IC queries are not written in distributed mode because some V2 IC queries with per clause are slower in distributed mode (because global MapAccum is expensive) and some V1 IC queries do not support distributed query.
+4. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. Some IC queries are not written in distributed mode because some V2 IC queries with per clause are slower in distributed mode (because global MapAccum is expensive) and some V1 IC queries do not support distributed query.
 ```
 
 ## How to run Benchmarks

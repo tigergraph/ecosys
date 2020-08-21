@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic5
 
-CREATE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) { 
+CREATE DISTRIBUTED QUERY ic5(VERTEX<Person> personId, DATETIME minDate) { 
 	TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
 	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@forumHeap;
   OrAccum @visited;

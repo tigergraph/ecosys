@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY is3
 
-CREATE QUERY is3(VERTEX<Person> personId) {
+CREATE DISTRIBUTED QUERY is3(VERTEX<Person> personId) {
   SumAccum<INT> @creationDate;
 
   vPerson = { personId };
