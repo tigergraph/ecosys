@@ -1,9 +1,10 @@
+#!/bin/bash
 ###############################################
 # Copyright (c)  2015-now, TigerGraph Inc.
 # All rights reserved
 # Author: yuchen.zhang@tigergraph.com
 ################################################
-#!/bin/bash
+
 # machine number i, i is from [0, 1, ...23]
 # nohup ./download_ldbc.sh i > foo.out 2>&1 < /dev/null &
 
