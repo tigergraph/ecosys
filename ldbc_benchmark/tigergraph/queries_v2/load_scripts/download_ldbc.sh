@@ -1,10 +1,12 @@
-#!/bin/bash
-#nohup ./download_ldbc.sh 0 > foo.out 2>&1 < /dev/null &
 ###############################################
 # Copyright (c)  2015-now, TigerGraph Inc.
 # All rights reserved
 # Author: yuchen.zhang@tigergraph.com
 ################################################
+#!/bin/bash
+# machine number i, i is from [0, 1, ...23]
+# nohup ./download_ldbc.sh i > foo.out 2>&1 < /dev/null &
+
 #8 types, 4 types/line
 static_types="organisation place tag tagclass 
 organisation_isLocatedIn_place tagclass_isSubclassOf_tagclass tag_hasType_tagclass  place_isPartOf_place"
