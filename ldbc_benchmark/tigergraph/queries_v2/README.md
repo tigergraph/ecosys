@@ -18,29 +18,29 @@ https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxp
 ## Directory structure 
 ```
 queries_v2
-¦   gsql_batch.sh          # for running gsql files in batch
-¦   compare_result.py      # for parsing and compare results
-¦
+Â¦   gsql_batch.sh          # for running gsql files in batch
+Â¦   compare_result.py      # for parsing and compare results
+Â¦
 +---queries                # queries with linear per pattern
 +---queries_v1             # queries based on old version
-¦   ¦   is[1-7].gsql       # all IS queries are non-distributed query
-¦   ¦   ic[2-4,6-14].gsql  # some IC queries are distributed
-¦   ¦   bi[1-25].gsql      # all BI queries except BI25,BI17 are distributed query
-¦   ¦
-¦   +---SF100
-¦   +---SF10000        # Schema for SF <100 and 10000 are a little different.
-¦       ¦   ic1.gsql   # Compared to SF100, SF10000 removes email and language in Person vertex
-¦       ¦   ic5.gsql   # Compared to SF100, SF10000 changes joinDate to creationDate in WORK_AT edge 
-¦
+Â¦   Â¦   is[1-7].gsql       # all IS queries are non-distributed query
+Â¦   Â¦   ic[2-4,6-14].gsql  # some IC queries are distributed
+Â¦   Â¦   bi[1-25].gsql      # all BI queries except BI25,BI17 are distributed query
+Â¦   Â¦
+Â¦   +---SF100
+Â¦   +---SF10000        # Schema for SF <100 and 10000 are a little different.
+Â¦       Â¦   ic1.gsql   # Compared to SF100, SF10000 removes email and language in Person vertex
+Â¦       Â¦   ic5.gsql   # Compared to SF100, SF10000 changes joinDate to creationDate in WORK_AT edge 
+Â¦
 +---result             # Parsed results from previous runs (validated)
-¦       SF10000        
-¦       SF100          
+Â¦       SF10000        
+Â¦       SF100          
 +---seed               # seed for queries
-    ¦   seed_SF10000.txt 
-    ¦   seed_SF100.txt
+    Â¦   seed_SF10000.txt 
+    Â¦   seed_SF100.txt
 
 Comment on queries: 
-1. The queries work for tigergraph 3.0 (8-14). Older 3.0 package may have bugs and generate wrong results for bi8 and bi22.
+1. The queries work for tigergraph 3.0 (build on 8/4/2020). Older 3.0 package may have bugs and generate wrong results for bi8 and bi22.
 2. IS and IC queries usually start from a single vertex. Long linear queries are used here, but some queries are not very efficient. BI are expensive and written in a way that minimize the running time. 
 3. ORDER BY cannot be used for distributed query and there are some bugs for distribtued query. Due to bugs on to_vertex_set, IS4-7 give empty results if distributed query is used. Due to bug on listAccum<VERTEX>, ic14 and bi25 cannot be installed in distributed query. We did not wirte is1-3 and ic1 into distributed query because there is no speed improvement. There are bugs when converting V1 is2,bi6,bi17 into distributed queries.
 ```
