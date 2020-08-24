@@ -62,7 +62,7 @@ cd ldbc_benchmark/tigergraph/queries_v2
 ```
 
 ### Run queries
-bi25 and ic14 requires user defined function, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
+bi25 and ic14 requires user defined function bigint_to_string, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
 ```bash
 #get the root directory of tigergraph
 ROOTDIR=$(gadmin config get System.AppRoot)
@@ -82,6 +82,7 @@ source gsql_batch.sh queries/*.gsql queries/SF10000/*.gsql
 install
 
 #run each query in query_list for 3 times. Output results in log/ and time and error info in err/
+#  Usage: run <seed_file>. default seed_file is seed/seed_SF10000.txt
 run 
 
 #to run in background and direct output to nohup.out 
