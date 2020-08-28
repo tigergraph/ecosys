@@ -192,7 +192,7 @@ def err2time(err_file):
             if l.startswith('real'):
                 time = float(l.split(' ')[1].replace('\n',''))
                 time_list.append(time)
-        return sorted(time_list)[len(time_list)//2+1]
+        return sorted(time_list)[len(time_list)//2]
     
 
 if args.save_compare and not os.path.exists(args.save_compare):
