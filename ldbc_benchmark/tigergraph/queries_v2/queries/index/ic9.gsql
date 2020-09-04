@@ -18,7 +18,7 @@ CREATE DISTRIBUTED QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) {
     FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_CREATOR)- (Comment|Post):m 
     // WHERE s != p AND m.creationDate < maxDate
     //index(m.creationDate)
-    WHERE s != p AND m.creationDate == maxDate OR FALSE
+    WHERE s != p AND ( m.creationDate == maxDate OR FALSE)
     PER(s,p,m)
     ACCUM 
       m.@personId = p.id,

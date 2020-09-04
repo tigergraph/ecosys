@@ -21,7 +21,7 @@ CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETI
     // and (m.creationDate >= startDate and m.creationDate < endDate)
     //index(Country.name), index(Post.creationDate), index(Comment.creationDate) 
     WHERE (cm.name == x or cm.name == y)
-         and m.creationDate == startDate  AND FALSE
+         and (m.creationDate == startDate  OR FALSE)
     PER(p,cm)
     ACCUM
       CASE 

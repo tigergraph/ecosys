@@ -25,8 +25,10 @@ CREATE DISTRIBUTED QUERY bi18(datetime date, int lengthThreshold, string languag
     FROM M:m 
     //WHERE m.content != "" AND m.length < lengthThreshold 
      // AND m.creationDate > date;
-    //index(Comment.creationDate), change WHERE
-    WHERE m.content != "" AND m.length < lengthThreshold 
+    //index(Comment.creationDate), 
+    //index(m.length)
+    //change WHERE
+    WHERE m.content != "" AND m.length == lengthThreshold 
          AND m.creationDate == date;
 
   P = 

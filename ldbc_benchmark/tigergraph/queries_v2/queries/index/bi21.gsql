@@ -16,7 +16,7 @@ CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
     FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- (Post|Comment):m
     //WHERE c.name == cName AND p.creationDate < endDate AND m.creationDate < endDate
     //index(Post.creationDate), index(Comment.creationDate), index(person.creationDate)
-    WHERE c.name == cName AND p.creationDate == endDate AND m.creationDate == endDate OR FALSE
+    WHERE c.name == cName AND (p.creationDate == endDate OR FALSE) AND (m.creationDate == endDate OR FALSE)
     PER(p,m)
     ACCUM p.@messageCount += 1
     HAVING p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1;

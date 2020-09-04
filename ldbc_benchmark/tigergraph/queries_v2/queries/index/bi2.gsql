@@ -20,7 +20,7 @@ CREATE DISTRIBUTED QUERY bi2(DATETIME startDate, DATETIME endDate, STRING countr
      // AND m.creationDate >= startDate AND m.creationDate <= endDate
      //index(Comment.creationDate), index(Post.creationDate), remote
     WHERE (s.name == country1Name OR s.name == country2Name)
-      AND m.creationDate == startDate OR FALSE
+      AND (m.creationDate == startDate OR FALSE)
     PER MATCH
     ACCUM
       @@count += (s.name, month(m.creationDate), p.gender, (datetime_diff(simulationEnd, p.birthday) / 31536000 / 5), t.name -> 1);
