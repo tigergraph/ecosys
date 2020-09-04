@@ -1,0 +1,52 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 18 query description is on page 76 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi18
+
+CREATE DISTRIBUTED QUERY bi18(datetime date, int lengthThreshold, string language) FOR GRAPH ldbc_snb{
+  typedef tuple<int messageCount, int personCount> ResTuple;
+  HeapAccum<ResTuple>(1, personCount DESC, messageCount DESC) @@result;
+  SumAccum<int> @messageCount;
+  MapAccum<int, SumAccum<int>> @@personCountMap;
+  INT num_0;
+
+  vPost = SELECT p FROM Post:p 
+          //WHERE p.lang IN languages; 
+          //index(post.language), change WHERE
+          WHERE p.lang == language;
+
+  M =
+    SELECT m
+    FROM vPost:p -(<REPLY_OF*)- Comment:m;
+
+  M = 
+    SELECT m
+    FROM M:m 
+    //WHERE m.content != "" AND m.length < lengthThreshold 
+     // AND m.creationDate > date;
+    //index(Comment.creationDate), change WHERE
+    WHERE m.content != "" AND m.length < lengthThreshold 
+         AND m.creationDate == date;
+
+  P = 
+    SELECT c 
+    FROM M-(HAS_CREATOR>)- Person:c
+    ACCUM c.@messageCount += 1
+    POST-ACCUM @@personCountMap += (c.@messageCount -> 1);
+
+  allPerson = { Person.* };
+  num_0 = allPerson.size() - P.size();
+  if num_0 != 0 THEN
+    @@personCountMap += (0 -> num_0);
+  END;
+  @@result.resize(@@personCountMap.size());
+  FOREACH (msgCount, personCount) IN @@personCountMap DO
+    @@result += ResTuple(msgCount, personCount);
+  END;
+
+  PRINT @@result;
+}
+
+//INSTALL QUERY bi18
+//RUN QUERY bi18("2011-08-15 00:00:00",97,["tk"])

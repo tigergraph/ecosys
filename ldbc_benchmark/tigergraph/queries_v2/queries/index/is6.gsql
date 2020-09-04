@@ -1,0 +1,33 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 6 query description is on page 49 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY is6
+
+CREATE QUERY is6(STRING messageId) {
+  SumAccum<INT> @forumId;
+  SumAccum<STRING> @forumTitle;
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
+
+  vModerator =
+    SELECT p
+    FROM vMessage:s -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f -(HAS_MODERATOR>)-Person:p
+    PER(p,f)
+    ACCUM p.@forumId = f.id, p.@forumTitle = f.title;
+
+  PRINT vModerator[
+      vModerator.@forumId AS forumId,
+      vModerator.@forumTitle AS forumTitle,
+      vModerator.id AS moderatorId,
+      vModerator.firstName AS moderatorFirstName,
+      vModerator.lastName AS moderatorLastName];
+}
+
+// INSTALL QUERY is6
+// RUN QUERY is6(65970697666575)

@@ -1,0 +1,28 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 6 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi6
+
+CREATE DISTRIBUTED QUERY bi6(STRING tagName) {
+  TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> personInfo;
+	HeapAccum<personInfo>(100, score DESC, personId ASC) @@result;
+  SumAccum<INT> @replyCount, @likeCount, @messageCount;
+  S = SELECT t FROM Tag:t WHERE t.name == tagName;
+  M = SELECT m FROM S-(<HAS_TAG)-(Comment|Post):m;
+  M1 = SELECT m FROM M:m-(<LIKES)-Person:p ACCUM m.@likeCount += 1;
+  M2 = SELECT m FROM M:m-(<REPLY_OF)-Comment:c ACCUM m.@replyCount += 1;
+  P =
+    SELECT p
+    FROM M:m-(HAS_CREATOR>)-Person:p
+    ACCUM
+      p.@replyCount += m.@replyCount,
+      p.@likeCount += m.@likeCount,
+      p.@messageCount += 1
+    POST-ACCUM 
+      @@result += personInfo(p.id, p.@replyCount, p.@likeCount, p.@messageCount, p.@messageCount + 2*p.@replyCount + 10*p.@likeCount);
+  PRINT @@result; 
+}
+
+//INSTALL QUERY bi6
+//RUN QUERY bi6("Abbas_I_of_Persia")

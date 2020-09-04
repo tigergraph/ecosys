@@ -1,0 +1,37 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY ic3
+CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) syntax v2 {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
+  HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@msgStatsTop;
+  SumAccum<int> @xCount, @yCount;
+  datetime endDate;
+  endDate = datetime_add(startDate, INTERVAL duration DAY);
+
+  S = { personId };
+  P =
+    SELECT p
+    FROM S:s -(KNOWS*1..2)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:cp
+    WHERE p != s and cp.name != x and cp.name != y;
+  
+   P =
+    SELECT p
+    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m -(IS_LOCATED_IN>)- Country:cm
+    //WHERE (cm.name == x or cm.name == y)
+    // and (m.creationDate >= startDate and m.creationDate < endDate)
+    //index(Country.name), index(Post.creationDate), index(Comment.creationDate) 
+    WHERE (cm.name == x or cm.name == y)
+         and m.creationDate == startDate  AND FALSE
+    PER(p,cm)
+    ACCUM
+      CASE 
+        WHEN cm.name == x THEN p.@xCount += 1
+        WHEN cm.name == y THEN p.@yCount += 1
+      END;
+      
+    P =
+      SELECT p FROM P:p
+      WHERE p.@xCount>0 AND p.@yCount>0
+      ACCUM @@msgStatsTop += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
+  PRINT @@msgStatsTop;
+}

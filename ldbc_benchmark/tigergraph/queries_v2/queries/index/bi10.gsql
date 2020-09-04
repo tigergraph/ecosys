@@ -1,0 +1,40 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 10 query description is on page 68 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi10
+
+CREATE DISTRIBUTED QUERY bi10(string tag, datetime date) {
+  TYPEDEF TUPLE <INT personId, INT score, INT friendsScore, INT totalScore> personInfo;
+	HeapAccum<personInfo>(100, totalScore DESC, personId ASC) @@result;
+  SumAccum<int> @score, @friendsScore;
+  OrAccum @selected;
+  
+  vTag = SELECT v FROM Tag:v WHERE v.name == tag;
+  P1 = 
+    SELECT p 
+    FROM vTag:t-(<HAS_INTEREST)-Person:p 
+    ACCUM p.@score += 100, p.@selected += true;
+
+  M = 
+    SELECT m
+    FROM vTag:t -(<HAS_TAG)- (Post|Comment):m 
+    WHERE m.creationDate > date;
+  
+  P2 = 
+    SELECT p
+    FROM M:m-(HAS_CREATOR>)- Person:p
+    ACCUM p.@score += 1, p.@selected += true; 
+
+  P = P1 UNION P2;
+  tmp = 
+    SELECT t 
+    FROM P:s-(KNOWS)-Person:t
+    ACCUM s.@friendsScore += t.@score;
+    
+  P = SELECT p FROM P:p ACCUM @@result += personInfo(p.id, p.@score, p.@friendsScore, p.@score+p.@friendsScore);
+  PRINT @@result;
+}
+
+//INSTALL QUERY bi10
+//RUN QUERY bi10("John_Rhys-Davies", "2012-01-22 00:00:00")

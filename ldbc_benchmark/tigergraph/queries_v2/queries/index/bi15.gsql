@@ -1,0 +1,30 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 15 query description is on page 73 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi15
+
+CREATE DISTRIBUTED QUERY bi15(string cName) {
+  TYPEDEF TUPLE<INT personId, INT count_> pInfo;
+  HeapAccum<pInfo>(100, personId ASC) @@result;
+  SumAccum<int> @friendCount;
+  AvgAccum @@socialNormal;
+
+  P =
+    SELECT p
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    WHERE c.name == cName;
+
+  tmp =
+    SELECT p
+    FROM P:p -(KNOWS)- P:f
+    ACCUM p.@friendCount += 1;
+
+  P =
+    SELECT p FROM P:p
+    ACCUM @@socialNormal += p.@friendCount
+    HAVING p.@friendCount == floor(@@socialNormal);
+
+  P = SELECT p FROM P:p ACCUM @@result += pInfo(p.id, p.@friendCount);
+  PRINT @@result;
+}
