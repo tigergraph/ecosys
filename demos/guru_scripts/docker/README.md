@@ -61,40 +61,40 @@ Pull Pre-built TigerGraph Docker Image And Run It As A Server
 One command pull docker image and bind all ports for first time user from the TigerGraph docker registry. 
 This image will start as a daemon, so user can ssh to it. 
 
-1. remove old version, only do this step in shell if you upgrade your docker image
+1. pull the latesst version, only do this step in shell if you upgrade your docker image
 
-        docker rmi -f docker.tigergraph.com/tigergraph-dev:latest > /dev/null 2>&1
-        docker pull docker.tigergraph.com/tigergraph-dev:latest
-    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 2.4.1 version, the following would be the URL. 
-     docker pull docker.tigergraph.com/tigergraph-dev:2.4.1
+        docker pull docker.tigergraph.com/tigergraph:latest
+    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 3.0.5 version, the following would be the URL. 
+     docker pull docker.tigergraph.com/tigergraph:3.0.5
+    > Note: to use the legacy developer editions, use docker.tigergraph.com/tigergraph-dev:latest or docker.tigergraph.com/tigergraph-dev:<version> instead
 
 1. stop and remove existing container in shell only if an old version is being used
 
-        docker ps -a | grep tigergraph_dev
-        docker stop tigergraph_dev
-        docker rm tigergraph_dev
+        docker ps -a | grep tigergraph
+        docker stop tigergraph
+        docker rm tigergraph
 
-1. pull the tigergraph docker image and run it as a daemon, change the ports accordingly if there is a conflict. 
+1. run the tigergraph docker image as a daemon, change the ports accordingly if there is a conflict. 
    - the command is very long, user need to drag the horizontal scroll bar to the right to see the full command. 
    - The command does the following
      - "-d" make the container run in the background. 
      - "-p" map docker 22 port to host OS 14022 port, 9000 port to host OS 9000 port, 14240 port to host OS 14240 port.
-     - "--name" name the container  tigergraph_dev. 
+     - "--name" name the container  tigergraph. 
      - "--ulimit" set the ulimit (the number of open file descriptors per process) to 1 million.
      - "-v" mount the host OS ~/data folder to the docker /home/tigergraph/mydata folder using the -v option. Note that if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
-     - download the "latest" docker image from the TigerGraph docker registry url docker.tigergraph.com/tigergraph-dev. 
+     - download the "latest" docker image from the TigerGraph docker registry url docker.tigergraph.com/tigergraph. 
 ```bash
-   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph-dev:latest
+   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph:latest
 ```      
 Note that if you use Windows, and have disk drive permission issue with the above command, please try the following
 ```bash
-   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph_dev --ulimit nofile=1000000:1000000 -t docker.tigergraph.com/tigergraph-dev:latest
+   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t docker.tigergraph.com/tigergraph:latest
 ```   
 
 After pulling the image and launch the container in the background, you can try the following to verify it's running. 
 1. verify that container is running, you should see a row to describe the running container.
 
-        docker ps | grep tigergraph_dev
+        docker ps | grep tigergraph
         
 1. open a shell on your host OS to ssh to the container. At prompt, enter "tigergraph" without quotes as password. Note that we have mapped the host 14022 port to the container's 22 port (the ssh default port). So, on host we ssh to 14022. 
          
@@ -116,8 +116,8 @@ Operation Commands Cheat Sheet
 
 - After you start Docker Desktop, use the below command to start/stop the container created 
     
-        docker container stop tigergraph_dev
-        docker container start tigergraph_dev
+        docker container stop tigergraph
+        docker container start tigergraph
         
 - start/stop tigergraph service within container
 
@@ -125,7 +125,7 @@ Operation Commands Cheat Sheet
         gadmin stop  all
         
 - Start/Stop Docker Desktop
-  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph_dev container.
+  - To shut down it, click you docker desktop, click "Quick Docker Desktop" will shutdown it. Before you stop Docker Desktop, be sure to execute the above two steps in reverse order. (1) stop tigergraph service within container. (2) stop tigergraph container.
   - To start it, find the Docker Desktop icon, double click it. 
 
 - ssh to the container, if localhost is not recognized, remove localhost entry from ~/.ssh/known_hosts
@@ -134,7 +134,7 @@ Operation Commands Cheat Sheet
         ssh -p 14022 tigergraph@localhost
     > Linux users can access the container through its ip address directly
 
-        docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph_dev
+        docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tigergraph
         ssh tigergraph@<container_ip_address>
 
 - enter password for tigergraph user
