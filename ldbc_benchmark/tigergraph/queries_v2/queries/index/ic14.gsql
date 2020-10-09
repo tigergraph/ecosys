@@ -12,7 +12,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY ic14
 
-CREATE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) {
+CREATE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id, datetime ts) {
   TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 
   OrAccum @visited1, @visited2;
@@ -83,15 +83,15 @@ CREATE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) {
     jsonStr = "[";
     @@weight = 0.0;
     FOREACH i IN range[0, path.size()-2] DO
-      jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+      jsonStr = jsonStr + to_string(path.get(i).id) + ",";//bigint_to_string(path.get(i).id) + ",";
       @@p1.clear(); @@p1 += path.get(i);
       @@p2.clear(); @@p2 += path.get(i+1);
       S1 = @@p1;
       S2 = @@p2;
-      P1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Post:c;
-      P2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Post:c;
-      C1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Comment:c;
-      C2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Comment:c;
+      P1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Post:c where c.creationDate == ts or c.id<0;
+      P2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Post:c  where c.creationDate == ts or c.id<0 ;
+      C1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Comment:c where c.creationDate == ts or c.id<0;
+      C2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Comment:c where c.creationDate == ts or c.id<0;
       
       c1p =
         SELECT c1
@@ -113,7 +113,7 @@ CREATE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) {
         FROM C1:c1 -(<REPLY_OF)- C2:c2
         ACCUM @@weight += 0.5;
     END; //FOREACH i IN range[0, path.size()-2] DO
-    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";//bigint_to_string(path.get(path.size()-1).id) + "]";
     @@pathInfoTop += pathInfo(parse_json_array(jsonStr), @@weight);
   END; //FOREACH path IN @@pathAll DO
   PRINT @@pathInfoTop;

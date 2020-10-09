@@ -2,9 +2,9 @@
 //IC 9 query description is on page 40 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY ic9
+DROP QUERY ic9_index
 
-CREATE DISTRIBUTED QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) {
+CREATE DISTRIBUTED QUERY ic9_index(VERTEX<Person> personId, DATETIME maxDate) {
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
                 INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
   

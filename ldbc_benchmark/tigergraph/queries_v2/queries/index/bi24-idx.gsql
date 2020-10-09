@@ -2,9 +2,9 @@
 //BI 24 query description is on page 82 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi24
+DROP QUERY bi24_index
 
-CREATE DISTRIBUTED QUERY bi24(string tcName, datetime ts) {
+CREATE DISTRIBUTED QUERY bi24_index(string tcName, datetime ts) {
   typedef tuple<int messageCount, int likeCount, int year, int month, string continentName> ResTuple;
   HeapAccum<ResTuple>(100, year ASC, month ASC, continentName DESC) @@result;
   GroupByAccum<int year, int month, string continentName, SumAccum<int> messageCount, SumAccum<int> likeCount> @@group;
@@ -15,7 +15,7 @@ CREATE DISTRIBUTED QUERY bi24(string tcName, datetime ts) {
   vMessages =
     SELECT m
     FROM TagClass:tc-(<HAS_TYPE.<HAS_TAG)-(Post|Comment):m//TC -(<HAS_TYPE.<HAS_TAG)-(Post|Comment):m
-    WHERE m.creationDate == ts or m.id<0;
+    WHERE m.creationDate == ts ;
   
   vMessagesWithLike =
     SELECT m

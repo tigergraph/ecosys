@@ -1,7 +1,7 @@
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY ic3
-CREATE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) syntax _v2 {
+DROP QUERY ic3_index
+CREATE DISTRIBUTED QUERY ic3_index(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) syntax _v2 {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
   HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@msgStatsTop;
   SumAccum<int> @xCount, @yCount;

@@ -18,7 +18,7 @@ CREATE DISTRIBUTED QUERY bi5(string countryName, datetime Date1) for graph ldbc_
     SELECT f
     FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f    
     //WHERE c.name == countryName
-    WHERE f.creationDate == Date1 OR f.id < 0//FALSE
+    WHERE f.creationDate == Date1
     PER(p,f)
     ACCUM f.@memberCount += 1
     POST-ACCUM @@forumHeap += forumInfo(f, f.@memberCount, f.id);

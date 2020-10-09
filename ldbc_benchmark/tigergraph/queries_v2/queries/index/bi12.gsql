@@ -12,8 +12,8 @@ CREATE DISTRIBUTED QUERY bi12(datetime date, int likeThreshold) {
   //index(Post.creationDate), index(Comment.creationDate)
   //change WHERE clause
   M = SELECT m FROM (Post|Comment):m 
-      //WHERE m.creationDate > date;
-      WHERE m.creationDate == date OR FALSE;
+      WHERE m.creationDate > date or m.id<0;
+      //WHERE m.creationDate == date or m.id < 0;
   M =
     SELECT m
     FROM M:m -(<LIKES)- Person:p 

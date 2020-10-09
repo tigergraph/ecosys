@@ -1,10 +1,10 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //IC 4 query description is on page 35 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY ic4
+DROP QUERY ic4_index
 
-CREATE DISTRIBUTED QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT durationDays) {
+CREATE DISTRIBUTED QUERY ic4_index(VERTEX<Person> personId, DATETIME startDate, INT durationDays) {
   TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
   SumAccum<int> @postCount;
   SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;

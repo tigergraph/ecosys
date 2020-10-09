@@ -4,7 +4,7 @@ SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 DROP QUERY is5
 
-CREATE QUERY is5(STRING messageId) {
+CREATE QUERY is5(STRING messageId, datetime ts) {
   SetAccum<STRING> @@seed;
 
   @@seed += messageId;
@@ -13,12 +13,14 @@ CREATE QUERY is5(STRING messageId) {
   IF vComments.size() > 0 THEN
     vPerson = 
       SELECT t
-      FROM vComments:s-(HAS_CREATOR>)-Person:t;
+      FROM Comment:s-(HAS_CREATOR>)-Person:t//vComments:s-(HAS_CREATOR>)-Person:t;
+      WHERE s.creationDate == ts OR FALSE;
   ELSE
     vPost = to_vertex_set(@@seed, "Post");
     vPerson = 
       SELECT t
-      FROM vPost:s-(HAS_CREATOR>)-Person:t;
+      FROM Post:s-(HAS_CREATOR>)-Person:t//vPost:s-(HAS_CREATOR>)-Person:t;
+      WHERE s.creationDate == ts OR FALSE;
   END;
 
   PRINT vPerson[

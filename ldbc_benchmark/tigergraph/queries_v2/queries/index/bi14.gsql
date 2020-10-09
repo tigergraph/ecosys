@@ -9,7 +9,7 @@ CREATE DISTRIBUTED QUERY bi14(datetime startDate, datetime endDate) {
   MapAccum<INT, INT> @@initiatorGroup;
   HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
 
-  vPost = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startDate AND endDate;
+  vPost = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startDate AND endDate or p.id==0;
   vPerson = 
     SELECT t
     FROM vPost:s-(HAS_CREATOR>)-Person:t

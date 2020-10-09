@@ -2,8 +2,8 @@
 //BI 23 query description is on page 81 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi23
-CREATE DISTRIBUTED QUERY bi23(string cName, datetime ts) {
+DROP QUERY bi23_index
+CREATE DISTRIBUTED QUERY bi23_index(string cName, datetime ts) {
   typedef tuple<int messageCount, string destinationName, int month> ResTuple;
   HeapAccum<ResTuple>(100, messageCount DESC, destinationName ASC, month ASC) @@result;
   GroupByAccum<string destinationName, int month, SumAccum<int> messageCount> @@group;
@@ -14,7 +14,7 @@ CREATE DISTRIBUTED QUERY bi23(string cName, datetime ts) {
     FROM Country:home -(<IS_PART_OF.<IS_LOCATED_IN.<HAS_CREATOR)- 
           (Post|Comment):m -(IS_LOCATED_IN>)- Country:dest
     //WHERE home.name == cName AND dest.name != cName
-    WHERE m.creationDate == ts OR m.id<0 
+    WHERE m.creationDate == ts 
     PER(m, dest)
     ACCUM @@group += (dest.name, month(m.creationDate) -> 1);
 

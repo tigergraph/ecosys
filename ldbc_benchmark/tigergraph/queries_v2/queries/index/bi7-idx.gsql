@@ -2,8 +2,8 @@
 //BI 7 query description is on page 65 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi7
-CREATE DISTRIBUTED QUERY bi7(string tagName, datetime ts, datetime ts2) {
+DROP QUERY bi7_index
+CREATE DISTRIBUTED QUERY bi7_index(string tagName, datetime ts, datetime ts2) {
   TYPEDEF TUPLE <INT personId, INT authorityScore> personInfo;
 	HeapAccum<personInfo>(100, authorityScore DESC, personId ASC) @@result;
   SumAccum<INT> @authorityScore, @popularityScore, @CreatorId;
@@ -13,8 +13,8 @@ CREATE DISTRIBUTED QUERY bi7(string tagName, datetime ts, datetime ts2) {
   //vTag = SELECT t FROM Tag:t WHERE t.name == tagName;  
   M1 =
     SELECT m
-    FROM Tag :s-(<HAS_TAG)- (Post|Comment):m
-    WHERE m.creationDate == ts  OR m.id < 0; //OR FALSE;
+    FROM Tag:s -(<HAS_TAG)- (Post|Comment):m
+    WHERE m.creationDate == ts ;
 
   P1 = 
     SELECT p
@@ -28,7 +28,7 @@ CREATE DISTRIBUTED QUERY bi7(string tagName, datetime ts, datetime ts2) {
   M3 =
     SELECT m3
     FROM P2:p2 -(<HAS_CREATOR)- (Comment|Post):m3
-    WHERE m3.creationDate == ts2 OR m3.id<0;//OR False;
+    WHERE m3.creationDate == ts2;
 
   P3 =
     SELECT p3

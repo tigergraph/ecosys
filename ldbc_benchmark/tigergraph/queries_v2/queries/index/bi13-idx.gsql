@@ -3,9 +3,9 @@
 //BI 13 query description is on page 71 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi13
+DROP QUERY bi13_index
 
-CREATE DISTRIBUTED QUERY bi13(STRING countryName, datetime ts) {
+CREATE DISTRIBUTED QUERY bi13_index(STRING countryName, datetime ts) {
   TYPEDEF TUPLE<STRING tag_name, INT popularity> tagInfo;
   TYPEDEF TUPLE<INT year, INT month, JSONARRAY popularTags> tagStats;
 
@@ -20,7 +20,7 @@ CREATE DISTRIBUTED QUERY bi13(STRING countryName, datetime ts) {
     SELECT t
     FROM Country:s-(<IS_LOCATED_IN)-(Comment|Post):t
     //WHERE s.name == countryName;
-    WHERE t.creationDate == ts OR t.id < 0;
+    WHERE t.creationDate == ts;
     
   vMessage = 
     SELECT s

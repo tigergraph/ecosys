@@ -1,10 +1,10 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //BI 21 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 DROP QUERY bi21
 
-CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
+CREATE DISTRIBUTED QUERY bi21(string cName, datetime Date1,datetime endDate) {
   TYPEDEF TUPLE<INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> zombie;
   HeapAccum<zombie>(100, zombieScore DESC, zombieId ASC) @@zombieTop;
   int secondsInMonth;
@@ -16,7 +16,8 @@ CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
     FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- (Post|Comment):m
     //WHERE c.name == cName AND p.creationDate < endDate AND m.creationDate < endDate
     //index(Post.creationDate), index(Comment.creationDate), index(person.creationDate)
-    WHERE c.name == cName AND (p.creationDate == endDate OR FALSE) AND (m.creationDate == endDate OR FALSE)
+    //WHERE c.name == cName AND p.creationDate == Date1  AND m.creationDate == endDate 
+    WHERE p.creationDate == Date1  AND m.creationDate == endDate OR m.id <0 
     PER(p,m)
     ACCUM p.@messageCount += 1
     HAVING p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1;
@@ -28,7 +29,7 @@ CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
     FROM Zombie:z -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p,
     //WHERE p.creationDate < endDate
     //index(Person.creationDate)
-    WHERE p.creationDate == endDate OR FALSE
+    WHERE p.creationDate == Date1 or p.id < 0
     PER(z,m,p)
     ACCUM 
       z.@totalLikeCount += 1, 

@@ -3,9 +3,9 @@
 
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi1
+DROP QUERY bi1_index
 
-CREATE DISTRIBUTED QUERY bi1(DATETIME maxDate) {
+CREATE DISTRIBUTED QUERY bi1_index(DATETIME maxDate) {
   TYPEDEF TUPLE <INT theYear, BOOL isComment, STRING lengthCategory, INT messageCount, INT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> MessageInfo;
 
   HeapAccum<MessageInfo>(1, theYear DESC, isComment ASC, lengthCategory ASC) @@result;

@@ -2,9 +2,9 @@
 //BI 18 query description is on page 76 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi18
+DROP QUERY bi18_index
 
-CREATE DISTRIBUTED QUERY bi18(datetime date, int lengthThreshold, string language) FOR GRAPH ldbc_snb{
+CREATE DISTRIBUTED QUERY bi18_index(datetime date, int lengthThreshold, string language) FOR GRAPH ldbc_snb{
   typedef tuple<int messageCount, int personCount> ResTuple;
   HeapAccum<ResTuple>(1, personCount DESC, messageCount DESC) @@result;
   SumAccum<int> @messageCount;

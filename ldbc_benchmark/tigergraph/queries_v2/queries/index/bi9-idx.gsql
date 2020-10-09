@@ -2,10 +2,10 @@
 //BI 9 query description is on page 67 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi9
+DROP QUERY bi9_index
 
 
-CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT threshold, datetime ts) {
+CREATE DISTRIBUTED QUERY bi9_index(STRING tagClass1Name, STRING tagClass2Name, INT threshold, datetime ts) {
   TYPEDEF TUPLE<INT forumId, INT count1, INT count2, INT count21> forumStats;
   SumAccum<int> @count1, @count2, @memberCount;
   HeapAccum<forumStats>(100, count21 DESC, forumId ASC) @@forumStatsTop;
@@ -14,7 +14,7 @@ CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT thr
     SELECT f
     FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f 
     //WHERE tc.name == tagClass1Name 
-    WHERE p.creationDate == ts OR p.id < 0//FALSE
+    WHERE p.creationDate == ts 
     PER(p,f)
     ACCUM f.@count1 += 1;
 
@@ -22,7 +22,7 @@ CREATE DISTRIBUTED QUERY bi9(STRING tagClass1Name, STRING tagClass2Name, INT thr
     SELECT f
     FROM TagClass:tc -(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f 
     //WHERE t c.name == tagClass2Name AND f.@count1 > 0
-    WHERE (p.creationDate == ts OR p.id <0) AND f.@count1 > 0 //OR FALSE
+    WHERE p.creationDate == ts AND f.@count1 > 0
     PER(p,f)
     ACCUM f.@count2 += 1;  
 

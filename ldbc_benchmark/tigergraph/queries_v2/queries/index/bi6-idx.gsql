@@ -2,14 +2,14 @@
 //BI 6 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi6
+DROP QUERY bi6_index
 
-CREATE DISTRIBUTED QUERY bi6(STRING tagName, datetime ts) {
+CREATE DISTRIBUTED QUERY bi6_index(STRING tagName, datetime ts) {
   TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> personInfo;
 	HeapAccum<personInfo>(100, score DESC, personId ASC) @@result;
   SumAccum<INT> @replyCount, @likeCount, @messageCount;
   //S = SELECT t FROM Tag:t WHERE t.name == tagName;
-  M = SELECT m FROM (Comment|Post):m WHERE m.creationDate == ts OR FALSE;//S-(<HAS_TAG)-(Comment|Post):m;
+  M = SELECT m FROM (Comment|Post):m WHERE m.creationDate == ts ;//S-(<HAS_TAG)-(Comment|Post):m;
   M1 = SELECT m FROM M:m-(<LIKES)-Person:p ACCUM m.@likeCount += 1;
   M2 = SELECT m FROM M:m-(<REPLY_OF)-Comment:c ACCUM m.@replyCount += 1;
   P =

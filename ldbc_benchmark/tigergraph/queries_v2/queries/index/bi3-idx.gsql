@@ -3,17 +3,17 @@
 
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi3
+DROP QUERY bi3_index
 
-CREATE DISTRIBUTED QUERY bi3(DATETIME ts1, DATETIME ts2) { 
+CREATE DISTRIBUTED QUERY bi3_index(DATETIME ts1, DATETIME ts2) { 
   TYPEDEF TUPLE <STRING tagName, INT countMonth1, INT countMonth2, INT diff> TAG_COUNT;
 
   GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
   HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
 
-  INT year2, month2;
-  year2 = year1 + (month1 / 12);
-  month2 = 1 + month1 % 12;
+  //INT year2, month2;
+  //year2 = year1 + (month1 / 12);
+  //month2 = 1 + month1 % 12;
 
   T = 
     SELECT t

@@ -2,16 +2,16 @@
 //BI 4 query description is on page 62 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi4
+DROP QUERY bi4_index
 
-CREATE DISTRIBUTED QUERY bi4(string tagClassName, string countryName, datetime ts) for graph ldbc_snb {
+CREATE DISTRIBUTED QUERY bi4_index(string tagClassName, string countryName, datetime ts) for graph ldbc_snb {
   TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT postCount> forumInfo;
   HeapAccum<forumInfo>(20, postCount DESC, forumId ASC) @@result;
   SumAccum<int> @personId, @postCount;
   OrAccum @valid;
 
-  TC = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName OR tc.id<0;
-  C = SELECT c FROM Country:c WHERE c.name == countryName OR c.id<0;
+  TC = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
+  C = SELECT c FROM Country:c WHERE c.name == countryName;
   ForumSet =
     SELECT f
     FROM C-(<IS_PART_OF.<IS_LOCATED_IN)-Person:p-(<HAS_MODERATOR)-Forum:f
@@ -21,7 +21,7 @@ CREATE DISTRIBUTED QUERY bi4(string tagClassName, string countryName, datetime t
   ForumSet =
     SELECT f
     FROM TC-(<HAS_TYPE.<HAS_TAG)- Post:p -(<CONTAINER_OF)- Forum:f
-    WHERE f.@valid == True AND p.creationDate == ts OR p.id<0
+    WHERE f.@valid == True AND p.creationDate == ts 
     PER(p,f)
     ACCUM f.@postCount += 1
     POST-ACCUM @@result += forumInfo(f.id, f.title, f.creationDate, f.@personId, f.@postCount);

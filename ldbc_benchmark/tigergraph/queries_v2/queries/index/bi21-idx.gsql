@@ -2,9 +2,9 @@
 //BI 21 query description is on page 79 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi21
+DROP QUERY bi21_index
 
-CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
+CREATE DISTRIBUTED QUERY bi21_index(string cName, datetime Date1,datetime endDate) {
   TYPEDEF TUPLE<INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> zombie;
   HeapAccum<zombie>(100, zombieScore DESC, zombieId ASC) @@zombieTop;
   int secondsInMonth;
@@ -16,12 +16,12 @@ CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
     FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- (Post|Comment):m
     //WHERE c.name == cName AND p.creationDate < endDate AND m.creationDate < endDate
     //index(Post.creationDate), index(Comment.creationDate), index(person.creationDate)
-    //optimized for remote fetching prunning.
-    WHERE c.name == cName AND p.creationDate == endDate AND m.creationDate == endDate 
+    //WHERE c.name == cName AND p.creationDate == Date1  AND m.creationDate == endDate
+    WHERE m.creationDate == endDate AND p.creationDate == Date1
     PER(p,m)
     ACCUM p.@messageCount += 1
     HAVING p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1;
-  
+
   Zombie = SELECT z FROM Zombie:z ACCUM @@ZombieSet += z;
   //if one person likes two comments by the zombie, it is counted as two.
   tmp =
@@ -29,11 +29,11 @@ CREATE DISTRIBUTED QUERY bi21(string cName, datetime endDate) {
     FROM Zombie:z -(<HAS_CREATOR)- (Post|Comment):m -(<LIKES)- Person:p,
     //WHERE p.creationDate < endDate
     //index(Person.creationDate)
-    WHERE p.creationDate == endDate 
+    WHERE p.creationDate == Date1
     PER(z,m,p)
-    ACCUM 
-      z.@totalLikeCount += 1, 
-      IF p in @@ZombieSet THEN 
+    ACCUM
+      z.@totalLikeCount += 1,
+      IF p in @@ZombieSet THEN
         z.@zombieLikeCount += 1
       END
     POST-ACCUM

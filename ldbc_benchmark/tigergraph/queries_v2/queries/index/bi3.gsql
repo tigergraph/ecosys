@@ -11,16 +11,16 @@ CREATE DISTRIBUTED QUERY bi3(DATETIME ts1, DATETIME ts2) {
   GroupByAccum<STRING tagName, SumAccum<INT> countMonth1, SumAccum<INT> countMonth2> @@count;
   HeapAccum<TAG_COUNT>(100, diff DESC, tagName ASC) @@result;
 
-  INT year2, month2;
-  year2 = year1 + (month1 / 12);
-  month2 = 1 + month1 % 12;
+  //INT year2, month2;
+  //year2 = year1 + (month1 / 12);
+  //month2 = 1 + month1 % 12;
 
   T = 
     SELECT t
     FROM (Post|Comment):m -(HAS_TAG>)-Tag:t 
     //WHERE year(m.creationDate) == year1 AND month(m.creationDate) == month1
     //index(Post.creationDate), index(Comment.creationDate), change WHERE clause
-    WHERE m.creationDate == ts1  OR FALSE
+    WHERE m.creationDate == ts1 
     ACCUM @@count += (t.name -> 1, 0);
 
   T = 
@@ -28,7 +28,7 @@ CREATE DISTRIBUTED QUERY bi3(DATETIME ts1, DATETIME ts2) {
     FROM (Post|Comment):m -(HAS_TAG>)-Tag:t 
     //WHERE year(m.creationDate) == year2 AND month(m.creationDate) == month2
     //index(Post.creationDate), index(Comment.creationDate), change WHERE clause
-    WHERE m.creationDate == ts2  OR FALSE
+    WHERE m.creationDate == ts2 
     ACCUM @@count += (t.name -> 0, 1);
     
   FOREACH c IN @@count DO

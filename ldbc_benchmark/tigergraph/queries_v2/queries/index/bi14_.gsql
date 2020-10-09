@@ -1,0 +1,34 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi14_
+CREATE DISTRIBUTED QUERY bi14_(datetime startDate, datetime endDate) {
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT threadCount, INT messageCount> initiator;
+  SumAccum<INT> @messageCount, @threadCount, @personId;
+  MapAccum<INT, INT> @@initiatorGroup;
+  HeapAccum<initiator>(100, messageCount DESC, personId ASC) @@initiatorTop;
+
+  vPost = SELECT p FROM Post:p WHERE p.creationDate == startDate OR FALSE;//BETWEEN startDate AND endDate;
+  vPerson =
+    SELECT t
+    FROM vPost:s-(HAS_CREATOR>)-Person:t
+    ACCUM
+      t.@threadCount += 1,
+      s.@personId = t.id;
+
+  vPost =
+    SELECT t
+    FROM vPost:s-(<REPLY_OF*)-Comment:t
+    PER(s,t)
+    ACCUM
+      t.@personId = s.@personId,
+      CASE WHEN t.creationDate BETWEEN startDate AND endDate THEN
+          @@initiatorGroup += (t.@personId -> 1)
+      END;
+
+  vPerson =
+    SELECT v
+    FROM vPerson:v
+    ACCUM @@initiatorTop += initiator(v.id, v.firstName, v.lastName, v.@threadCount, @@initiatorGroup.get(v.id));
+
+  PRINT @@initiatorTop;
+}

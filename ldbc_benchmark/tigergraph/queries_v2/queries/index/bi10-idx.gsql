@@ -2,9 +2,9 @@
 //BI 10 query description is on page 68 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi10
+DROP QUERY bi10_index
 
-CREATE DISTRIBUTED QUERY bi10(string tag, datetime date) {
+CREATE DISTRIBUTED QUERY bi10_index(string tag, datetime date) {
   TYPEDEF TUPLE <INT personId, INT score, INT friendsScore, INT totalScore> personInfo;
 	HeapAccum<personInfo>(100, totalScore DESC, personId ASC) @@result;
   SumAccum<int> @score, @friendsScore;
@@ -20,7 +20,7 @@ CREATE DISTRIBUTED QUERY bi10(string tag, datetime date) {
     SELECT m
     FROM vTag:t -(<HAS_TAG)- (Post|Comment):m 
     //WHERE m.creationDate > date;
-    WHERE m.creationDate == date OR m.id<0;
+    WHERE m.creationDate == date;
 
   P2 = 
     SELECT p

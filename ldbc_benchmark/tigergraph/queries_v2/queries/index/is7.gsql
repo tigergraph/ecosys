@@ -20,6 +20,7 @@ CREATE QUERY is7(STRING messageId) {
   P = 
     SELECT p
     FROM vMessage:s -(HAS_CREATOR>)- Person -(KNOWS)- Person:p
+    WHERE p.id ==messageId 
     PER(p)
     ACCUM @@knows += p;
   P = 

@@ -10,9 +10,9 @@
 */
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-DROP QUERY bi25
+DROP QUERY bi25_index_dist
 
-CREATE QUERY bi25(UINT person1Id, UINT person2Id,DATETIME forumDate, DATETIME startDate, DATETIME endDate) {
+CREATE DISTRIBUTED QUERY bi25_index_dist(UINT person1Id, UINT person2Id, DATETIME forumDate, DATETIME startDate, DATETIME endDate) {
   TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 
   OrAccum @visited1, @visited2, @valid1, @valid2;
@@ -32,11 +32,11 @@ CREATE QUERY bi25(UINT person1Id, UINT person2Id,DATETIME forumDate, DATETIME st
     vPerson = {Person.*};
     S1 = SELECT s 
          FROM vPerson:s 
-         WHERE s.id == person1Id or s.id<0 
+         WHERE s.id == person1Id
          ACCUM s.@visited1 += true, s.@path += [s];
     S2 = SELECT s 
          FROM vPerson:s 
-         WHERE s.id == person2Id or s.id<0
+         WHERE s.id == person2Id
          ACCUM s.@visited2 += true, s.@path += [s];
 
     WHILE NOT @@found AND (@@next1 OR @@next2) DO
@@ -89,9 +89,9 @@ CREATE QUERY bi25(UINT person1Id, UINT person2Id,DATETIME forumDate, DATETIME st
   END; //IF person1Id != person2Id THEN
   
 
-  vForum = SELECT f FROM Forum:f WHERE f.creationDate == forumDate or f.id<0;// BETWEEN startDate AND endDate;
-  vPost = SELECT p FROM vForum-(CONTAINER_OF>)-Post:p WHERE p.creationDate BETWEEN startDate AND endDate or p.id<0;
-  vComment = SELECT c FROM vPost:p -(<REPLY_OF*)- Comment:c WHERE c.creationDate BETWEEN startDate AND endDate or c.id<0;
+  vForum = SELECT f FROM Forum:f WHERE f.creationDate == forumDate;//BETWEEN startDate AND endDate;
+  vPost = SELECT p FROM vForum:s -(CONTAINER_OF>)-Post:p WHERE p.creationDate BETWEEN startDate AND endDate ;
+  vComment = SELECT c FROM vPost:p -(<REPLY_OF*)- Comment:c WHERE c.creationDate BETWEEN startDate AND endDate ;
 
   @@pathInfoTop.resize(@@pathAll.size());
   FOREACH path IN @@pathAll DO
