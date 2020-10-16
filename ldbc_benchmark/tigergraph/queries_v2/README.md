@@ -12,8 +12,6 @@
 LDBC specification:
 http://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 
-Benchmark results: 
-https://docs.google.com/spreadsheets/d/1TiFh4q_7W2g0392w5V-0hNxb0gQlXqP6k6wxiaxpCsw/edit#gid=0 
 
 ## Directory structure 
 ```
