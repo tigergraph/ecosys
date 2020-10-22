@@ -67,7 +67,17 @@ namespace UDIMPL {
   inline int64_t getFive() {
     return 5l;
   }
+
+  /****************************************/
+
+  // sample function for testing
+  inline double sampleGetAvgScore(ListAccum<double> scores) {
+    SampleScores tot;
+    for (int i = 0; i < scores.size(); i++) {
+      tot = tot + scores.data_[i];
+    }
+    return tot.sum / tot.count;
+  }
 }
-/****************************************/
 
 #endif /* EXPRFUNCTIONS_HPP_ */

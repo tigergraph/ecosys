@@ -40,6 +40,20 @@ typedef std::string string; //XXX DON'T REMOVE
  *
  */
 
+// a sample struct for testing
+struct SampleScores {
+  double sum;
+  long count;
 
+  SampleScores() : sum(0.0), count(0) {
+  }
+
+  SampleScores operator+(double score) {
+    SampleScores ret;
+    ret.sum = score + this->sum;
+    ret.count = 1 + this->count;
+    return ret;
+  }
+};
 
 #endif /* EXPRUTIL_HPP_ */
