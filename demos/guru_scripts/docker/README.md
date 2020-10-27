@@ -104,7 +104,7 @@ After pulling the image and launch the container in the background, you can try 
 
          gadmin start all
 
-1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/intro/gsql-101
+1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/start/gsql-101
 
          gsql 
 1. start GraphStudio, TigerGraph's visual IDE,  by opening a browser on your laptop (host OS) and access:
