@@ -76,7 +76,7 @@ namespace UDIMPL {
     for (int i = 0; i < scores.size(); i++) {
       tot = tot + scores.data_[i];
     }
-    return tot.sum / tot.count;
+    return tot.sum / (tot.count == 0 ? 1 : tot.count);
   }
 }
 
