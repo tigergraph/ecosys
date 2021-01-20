@@ -1,0 +1,124 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi19, bi19CalculateWeight
+
+CREATE QUERY bi19CalculateWeight(VERTEX<Person> person1, VERTEX<Person> person2) RETURNS (DOUBLE) {
+  SumAccum<UINT> @@interactions;
+  MinAccum<DOUBLE> @@max_double;
+
+  s1 = {person1};
+  s2 = {person2};
+
+  tmp =
+    SELECT p1
+    FROM s1:p1 -(<HAS_CREATOR)- (Comment|Post):m1 -(REPLY_OF>|<REPLY_OF)- (Comment|Post):m2 -(HAS_CREATOR>)- s2:p2
+    ACCUM @@interactions += 1;
+
+  IF @@interactions == 0 THEN
+    # The spec doesn't say anything of zero interactions.
+    RETURN @@max_double;
+  ELSE
+    RETURN 1.0 / @@interactions;
+  END;
+}
+
+CREATE QUERY bi19(UINT city1Id, UINT city2Id) {
+  TYPEDEF TUPLE<UINT person1Id, UINT person2Id, DOUBLE totalWeight> PAIR_WEIGHT;
+  TYPEDEF TUPLE<VERTEX<Person> p1, VERTEX<Person> p2> PAIR_PERSON;
+
+  HeapAccum<PAIR_WEIGHT>(20, totalWeight DESC, person1Id ASC, person2Id ASC) @@totalWeights;
+
+  MinAccum<DOUBLE> @@max_double;
+  ListAccum<VERTEX<Person>> @@sources;
+  MapAccum<PAIR_PERSON, DOUBLE> @@weights;
+
+  MinAccum<DOUBLE> @pathWeight;
+  OrAccum @visited;
+
+  # I guess I can't declare this in FOREACH block.
+  INT maxIter = 0;
+
+  city1 = SELECT c FROM City:c WHERE c.id == city1Id;
+  city2 = SELECT c FROM City:c WHERE c.id == city2Id;
+
+  sources =
+    SELECT p
+    FROM city1:c -(<IS_LOCATED_IN)- Person:p
+    POST-ACCUM @@sources += p;
+  targets = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p;
+
+  FOREACH source IN @@sources DO
+
+    # The algorithm is Bellman-Ford algorithm, shamelessly copied from
+    # shortest path algorithm in GSQL graph algorithms library.
+    # https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/schema-free/shortest_ss_pos_wt.gsql
+
+    # Initialize.
+    start = {source};
+    component = start;
+    start =
+      SELECT s
+      FROM start:s
+      POST-ACCUM
+        s.@pathWeight = 0.0,
+        s.@visited = TRUE;
+
+    # Get the connected component.
+    WHILE start.size() > 0 DO
+      start =
+        SELECT t
+        FROM start:s -(KNOWS)- Person:t
+        WHERE NOT t.@visited
+        ACCUM t.@visited = TRUE;
+      component = component UNION start;
+    END;
+    # PRINT component.size();
+
+    # Calculate weights for all edges in the connected component.
+    tmp =
+      SELECT t
+      FROM component:s -(KNOWS)- Person:t
+      WHERE NOT @@weights.containsKey(PAIR_PERSON(s, t))
+      ACCUM
+        DOUBLE weight = bi19CalculateWeight(s, t),
+        @@weights += (PAIR_PERSON(s, t) -> weight),
+        @@weights += (PAIR_PERSON(t, s) -> weight);
+    # PRINT @@weights.size();
+
+    # Do N-1 iterations updating the best-known distance.
+    tmp =
+      SELECT s
+      FROM component:s
+      WHERE s != source
+      POST-ACCUM s.@visited = FALSE;
+    maxIter = component.size() - 1;
+    WHILE TRUE LIMIT maxIter DO
+      tmp =
+        SELECT t
+        FROM component:s -(KNOWS)- Person:t
+        ACCUM
+          IF s.@visited THEN
+            t.@visited = TRUE,
+            t.@pathWeight += s.@pathWeight + @@weights.get(PAIR_PERSON(s, t))
+          END;
+    END;
+
+    # Accumulate the output.
+    tmp =
+      SELECT t
+      FROM targets:t
+      POST-ACCUM @@totalWeights += PAIR_WEIGHT(source.id, t.id, t.@pathWeight);
+
+    # Reset vertex accumulators.
+    tmp =
+      SELECT s
+      FROM component:s
+      POST-ACCUM
+        s.@pathWeight = @@max_double,
+        s.@visited = FALSE;
+  END;
+
+  PRINT @@totalWeights;
+}
+
+# INSTALL QUERY bi19

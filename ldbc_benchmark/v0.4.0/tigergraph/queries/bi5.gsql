@@ -1,0 +1,29 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi5
+CREATE DISTRIBUTED QUERY bi5(STRING tagName) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> RESULT;
+
+  HeapAccum<RESULT>(100, score DESC, personId ASC) @@result;
+
+  SumAccum<INT> @likeCount, @messageCount, @replyCount;
+
+  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+
+  messages = SELECT m FROM tag -(<HAS_TAG)- (Comment|Post):m;
+  messages = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
+  messages = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;
+
+  messages =
+    SELECT p
+    FROM messages:m -(HAS_CREATOR>)- Person:p
+    ACCUM
+      p.@replyCount += m.@replyCount,
+      p.@likeCount += m.@likeCount,
+      p.@messageCount += 1
+    POST-ACCUM
+      @@result += RESULT(p.id, p.@replyCount, p.@likeCount, p.@messageCount,
+        p.@messageCount + 2*p.@replyCount + 10*p.@likeCount);
+
+  PRINT @@result;
+}

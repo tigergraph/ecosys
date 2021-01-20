@@ -1,0 +1,33 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi8
+CREATE DISTRIBUTED QUERY bi8(STRING tagName, DATETIME date) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT personId, INT score, INT friendsScore, INT totalScore> RESULT;
+
+  HeapAccum<RESULT>(100, totalScore DESC, personId ASC) @@result;
+
+  SumAccum<int> @score, @friendsScore;
+
+  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+
+  personsWithInterest =
+    SELECT p
+    FROM tag -(<HAS_INTEREST)- Person:p
+    ACCUM p.@score += 100;
+
+  personsWithMessages =
+    SELECT p
+    FROM tag -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    WHERE m.creationDate > date
+    ACCUM p.@score += 1;
+
+  personsWithScore = personsWithInterest UNION personsWithMessages;
+
+  personsWithScore =
+    SELECT p
+    FROM personsWithScore:p -(KNOWS)- Person:f
+    ACCUM p.@friendsScore += f.@score
+    POST-ACCUM @@result += RESULT(p.id, p.@score, p.@friendsScore, p.@score + p.@friendsScore);
+
+  PRINT @@result;
+}

@@ -1,0 +1,26 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi3
+CREATE DISTRIBUTED QUERY bi3(STRING tagClassName, STRING countryName) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT forumId, STRING forumTitle, DATETIME forumCreationDate, INT personId, INT messageCount> RESULT;
+
+  HeapAccum<RESULT>(20, messageCount DESC, forumId ASC) @@result;
+
+  SumAccum<int> @personId, @messageCount;
+
+  tagClass = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
+  country = SELECT c FROM Country:c WHERE c.name == countryName;
+
+  forums =
+    SELECT f
+    FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MODERATOR)- Forum:f
+    ACCUM f.@personId = p.id;
+
+  forums =
+    SELECT f
+    FROM tagClass -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m -(<CONTAINER_OF)- forums:f
+    ACCUM f.@messageCount += 1
+    POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
+
+  PRINT @@result;
+}

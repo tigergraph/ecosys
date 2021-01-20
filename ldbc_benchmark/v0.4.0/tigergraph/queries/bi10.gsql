@@ -1,0 +1,51 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi10
+CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRING tagClassName,
+  INT minPathDistance, INT maxPathDistance) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT expertCandidatePersonId, STRING tagName, INT messageCount> RESULT;
+
+  GroupByAccum<INT expertCandidatePersonId, STRING tagName, SumAccum<INT> messageCount> @@midResult;
+  HeapAccum<RESULT>(100, messageCount DESC, tagName ASC, expertCandidatePersonId ASC) @@result;
+
+  SumAccum<INT> @@pathLength;
+
+  OrAccum @visited;
+
+  country = SELECT c FROM Country:c WHERE c.name == countryName;
+  candidates = SELECT p FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+
+  sources = {personId};
+  targets (Person) = {};
+  WHILE @@pathLength < minPathDistance DO
+    sources =
+      SELECT t
+      FROM sources:s -(KNOWS)- Person:t
+      WHERE NOT t.@visited
+      POST-ACCUM s.@visited = TRUE;
+    @@pathLength += 1;
+  END;
+  WHILE @@pathLength < maxPathDistance DO
+    sources =
+      SELECT t
+      FROM sources:s -(KNOWS)- Person:t
+      WHERE NOT t.@visited
+      POST-ACCUM s.@visited = TRUE;
+    @@pathLength += 1;
+
+    targets = targets UNION sources;
+  END;
+
+  expertCandidatePersons = targets INTERSECT candidates;
+  tagClass = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
+  tmp =
+    SELECT m
+    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>)- Tag:t -(HAS_TYPE>)- tagClass
+    ACCUM @@midResult += (p.id, t.name -> 1);
+
+  FOREACH (p, t, m) IN @@midResult DO
+    @@result += RESULT(p, t, m);
+  END;
+
+  PRINT @@result;
+}

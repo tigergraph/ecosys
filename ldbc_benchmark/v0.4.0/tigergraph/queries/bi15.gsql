@@ -1,0 +1,112 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi15
+CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+
+  TYPEDEF tuple<JSONARRAY personId, DOUBLE weight> RESULT;
+
+  HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
+
+  ListAccum<ListAccum<VERTEX<Person>>> @@allPaths;
+  OrAccum @@found;
+
+  SumAccum<DOUBLE> @@weight;
+
+  # Why is there no easy way to convert a returned value from .get to vertex set?
+  SetAccum<VERTEX<Person>> @@conv;
+
+  OrAccum @visited1, @visited2;
+  ListAccum<ListAccum<VERTEX<Person>>> @paths;
+
+  STRING jsonStr;
+
+  IF person1Id != person2Id THEN
+    sources1 = {person1Id};
+    sources2 = {person2Id};
+    sources1 = SELECT s FROM sources1:s ACCUM s.@visited1 = TRUE, s.@paths += [s];
+    sources2 = SELECT s FROM sources2:s ACCUM s.@visited2 = TRUE, s.@paths += [s];
+
+    WHILE sources1.size() > 0 OR sources2.size() > 0 DO
+      IF sources1.size() > 0 THEN
+        sources1 =
+          SELECT t
+          FROM sources1:s -(KNOWS)- Person:t
+          WHERE NOT t.@visited1
+          ACCUM
+            IF t.@visited2 THEN
+              @@found += TRUE,
+              FOREACH p1 IN s.@paths DO
+                FOREACH p2 IN t.@paths DO
+                  @@allPaths += p1 + p2
+                END
+              END
+            ELSE
+              t.@visited1 = TRUE,
+              FOREACH p IN s.@paths DO
+                t.@paths += p + [t]
+              END
+            END;
+      END;
+      IF @@found THEN BREAK; END;
+
+      IF sources2.size() > 0 THEN
+        sources2 =
+          SELECT t
+          FROM sources2:s -(KNOWS)- Person:t
+          WHERE NOT t.@visited2
+          ACCUM
+            IF t.@visited1 THEN
+              @@found += TRUE,
+              FOREACH p1 IN s.@paths DO
+                FOREACH p2 IN t.@paths DO
+                  @@allPaths += p2 + p1
+                END
+              END
+            ELSE
+              t.@visited2 = TRUE,
+              FOREACH p IN s.@paths DO
+                t.@paths += [t] + p
+              END
+            END;
+      END;
+      IF @@found THEN BREAK; END;
+    END;
+  END;
+
+  forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
+  posts = SELECT p FROM forums -(CONTAINER_OF>)- Post:p;
+  comments = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
+
+  @@result.resize(@@allPaths.size());
+  FOREACH path in @@allPaths DO
+    jsonStr = "[";
+    @@weight = 0.0;
+
+    FOREACH i IN range[0, path.size()-2] DO
+      jsonStr = jsonStr + to_string(path.get(i).id) + ",";
+
+      @@conv = (path.get(i));
+      personA = {@@conv};
+      @@conv = (path.get(i+1));
+      personB = {@@conv};
+
+      commentsOfA = SELECT c FROM personA -(<HAS_CREATOR)- Comment:c;
+
+      # case 1
+      tmp =
+        SELECT c
+        FROM personB -(<HAS_CREATOR)- posts:p -(<REPLY_OF)- commentsOfA:c
+        ACCUM @@weight += 1.0;
+
+      # case 2
+      tmp =
+        SELECT c1
+        FROM personB -(<HAS_CREATOR)- comments:c2 -(<REPLY_OF)- commentsOfA:c1
+        ACCUM @@weight += 0.5;
+    END;
+    jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";
+
+    @@result += RESULT(parse_json_array(jsonStr), @@weight);
+  END;
+
+  PRINT @@result;
+}

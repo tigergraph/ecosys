@@ -1,0 +1,31 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi9
+CREATE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT personId, STRING personFirstName, STRING personLastName,
+    INT threadCount, INT messageCount> RESULT;
+
+  HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
+
+  SumAccum<INT> @messageCount, @threadCount, @personId;
+  MapAccum<INT, INT> @@initiatorGroup;
+
+  threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startDate AND endDate;
+  replies = SELECT r FROM Comment:r WHERE r.creationDate BETWEEN startDate AND endDate;
+
+  replies =
+    SELECT r
+    FROM threads:t -(<REPLY_OF*)- replies:r
+    ACCUM t.@messageCount += 1;
+
+  tmp =
+    SELECT p
+    FROM threads:t -(HAS_CREATOR>)- Person:p
+    ACCUM
+      p.@messageCount += t.@messageCount,
+      p.@threadCount += 1
+    POST-ACCUM
+      @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
+
+  PRINT @@result;
+}

@@ -1,0 +1,51 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi16
+CREATE DISTRIBUTED QUERY bi16(STRING tagNameA, DATETIME dateA, STRING tagNameB, DATETIME dateB, INT maxKnowsLimit) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT personId, INT messageCountA, INT messageCountB, INT totalMessageCount> RESULT;
+
+  HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
+
+  SumAccum<INT> @messageCountA, @messageCountB;
+
+  DATETIME dateStartA, dateEndA, dateStartB, dateEndB;
+
+  tagA = SELECT t FROM Tag:t WHERE t.name == tagNameA;
+  tagB = SELECT t FROM Tag:t WHERE t.name == tagNameB;
+
+  dateStartA = dateA;
+  dateStartA = datetime_sub(dateStartA, INTERVAL hour(dateStartA) HOUR);
+  dateStartA = datetime_sub(dateStartA, INTERVAL minute(dateStartA) MINUTE);
+  dateStartA = datetime_sub(dateStartA, INTERVAL second(dateStartA) SECOND);
+  dateEndA = datetime_add(dateStartA, INTERVAL 1 DAY);
+
+  dateStartB = dateB;
+  dateStartB = datetime_sub(dateStartB, INTERVAL hour(dateStartB) HOUR);
+  dateStartB = datetime_sub(dateStartB, INTERVAL minute(dateStartB) MINUTE);
+  dateStartB = datetime_sub(dateStartB, INTERVAL second(dateStartB) SECOND);
+  dateEndB = datetime_add(dateStartB, INTERVAL 1 DAY);
+
+  personA =
+    SELECT p
+    FROM tagA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    WHERE
+      m.creationDate >= dateStartA AND m.creationDate < dateEndA AND
+      p.outdegree("KNOWS") <= maxKnowsLimit
+    ACCUM p.@messageCountA += 1;
+
+  personB =
+    SELECT p
+    FROM tagB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    WHERE
+      m.creationDate >= dateStartA AND m.creationDate < dateEndB AND
+      p.outdegree("KNOWS") <= maxKnowsLimit
+    ACCUM p.@messageCountB += 1;
+
+  persons = personA INTERSECT personB;
+  persons =
+    SELECT p
+    FROM persons:p
+    POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
+
+  PRINT @@result;
+}

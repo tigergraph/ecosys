@@ -1,0 +1,78 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+DROP QUERY bi20
+
+CREATE QUERY bi20(STRING company, UINT person2Id) {
+  TYPEDEF TUPLE<UINT person1Id, INT totalWeight> RESULT;
+
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
+  OrAccum @@visited;
+  MinAccum<INT> @@minWeight;
+  MinAccum<INT> @@maxInt;
+
+  OrAccum @visited;
+  MinAccum<INT> @weight;
+
+  person1s =
+    SELECT p
+    FROM Company:c -(<WORK_AT)- Person:p
+    WHERE c.name == company;
+
+  person2 =
+    SELECT p
+    FROM Person:p
+    WHERE p.id == person2Id
+    POST-ACCUM
+      p.@visited = TRUE,
+      p.@weight = 0;
+
+  toVisit = person2;
+  targets = person1s;
+
+  WHILE targets.size() > 0 AND toVisit.size() > 0 DO
+    visiting =
+      SELECT p
+      FROM toVisit:p
+      ORDER BY p.@weight ASC
+      LIMIT 1;
+
+    nextVisiting =
+      SELECT t
+      FROM
+        visiting:s -(KNOWS)- Person:t,
+        :s -(STUDY_AT>:e1)- University:u,
+        :t -(STUDY_AT>:e2)- :u
+      #WHERE NOT t.@visited
+      # Above doesn't work when conjunctive pattern matching is used.
+      # It works fine without conjunctive pattern matching.
+      # But, below works.
+      WHERE t.@visited == FALSE
+      ACCUM t.@weight += s.@weight + abs(e1.classYear - e2.classYear) + 1
+      POST-ACCUM s.@visited = TRUE;
+
+    toVisit = (toVisit MINUS visiting) UNION nextVisiting;
+    targets = targets MINUS visiting;
+  END;
+
+  result =
+    SELECT p
+    FROM person1s:p
+    POST-ACCUM @@minWeight += p.@weight;
+    #HAVING p.@weight == @@minWeight AND p.@weight < @@maxInt;
+    # This doesn't work either.
+    # I assumed it would filter p based on the result of POST-ACCUM clause.
+    # I put it at the WHERE clause of the next SELECT statement.
+
+  result =
+    SELECT p
+    FROM result:p
+    WHERE p.@weight == @@minWeight AND p.@weight < @@maxInt
+    POST-ACCUM @@result += RESULT(p.id, p.@weight);
+
+  PRINT @@result;
+}
+
+# INSTALL QUERY bi20
+# RUN QUERY bi20("Sichuan_Airlines", 24189255813941)
+# RUN QUERY bi20("West_Air_(People's_Republic_of_China)", 24189255813941)
+# RUN QUERY bi20("VietJet_AirAsia", 30786325587255)

@@ -1,0 +1,37 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi2
+CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
+  TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow22, INT diff> RESULT;
+
+  GroupByAccum<STRING tagName, SumAccum<INT> countWindow1, SumAccum<INT> countWindow2> @@counts;
+  HeapAccum<RESULT>(100, diff DESC, tagName ASC) @@result;
+
+  DATETIME dateEnd1, dateEnd2;
+
+  dateEnd1 = datetime_add(date, INTERVAL 100 DAY);
+  dateEnd2 = datetime_add(date, INTERVAL 200 DAY);
+
+  tagsUnderTagClass =
+    SELECT t
+    FROM TagClass:tc -(<HAS_TYPE)- Tag:t
+    WHERE tc.name == tagClassName;
+
+  tmp =
+    SELECT m
+    FROM tagsUnderTagClass:t -(<HAS_TAG)- (Comment|Post):m
+    WHERE m.creationDate BETWEEN date AND dateEnd2
+    ACCUM
+      # What is the cut-off? Is it exclusive or inclusive?
+      # What about a message with creationDate of exactly date + 100 days?
+      IF m.creationDate < dateEnd1 THEN
+        @@counts += (t.name -> 1, 0)
+      ELSE
+        @@counts += (t.name -> 0, 1)
+      END;
+
+  FOREACH c in @@counts DO
+    @@result += RESULT(c.tagName, c.countWindow1, c.countWindow2, abs(c.countWindow1 - c.countWindow2));
+  END;
+
+  PRINT @@result;
+}

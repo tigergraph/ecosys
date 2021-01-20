@@ -1,0 +1,63 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi14
+CREATE DISTRIBUTED QUERY bi14(STRING country1Name, STRING country2Name) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT person1Id, INT person2Id, STRING city1Name, INT score> RESULT;
+
+  HeapAccum<RESULT>(0, score DESC, person1Id ASC, person2Id ASC) @@result;
+  MapAccum<STRING, GroupByAccum<INT person1Id, INT person2Id, SumAccum<INT> score>> @@pairScores;
+  HeapAccum<RESULT>(1, score DESC, person1Id ASC, person2Id ASC) @@topPairScores;
+
+  SumAccum<STRING> @city;
+
+  country1 = SELECT c FROM Country:c WHERE c.name == country1Name;
+  country2 = SELECT c FROM Country:c WHERE c.name == country2Name;
+
+  person1s =
+    SELECT p
+    FROM country1 -(<IS_PART_OF)- City:c -(<IS_LOCATED_IN)- Person:p
+    ACCUM p.@city = c.name;
+
+  person2s = SELECT p FROM country2 -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+
+  # case 1
+  tmp =
+    SELECT p2
+    FROM person1s:p1 -(<HAS_CREATOR.REPLY_OF>.HAS_CREATOR>)- person2s:p2
+    ACCUM @@pairScores += (p1.@city -> (p1.id, p2.id -> 4));
+
+  # case 2
+  tmp =
+    SELECT p2
+    FROM person1s:p1 -(<HAS_CREATOR.<REPLY_OF.HAS_CREATOR>)- person2s:p2
+    ACCUM @@pairScores += (p1.@city -> (p1.id, p2.id -> 1));
+
+  # case 3
+  tmp =
+    SELECT p2
+    FROM person1s:p1 -(KNOWS)- person2s:p2
+    ACCUM @@pairScores += (p1.@city -> (p1.id, p2.id -> 15));
+
+  # case 4
+  tmp =
+    SELECT p2
+    FROM person1s:p1 -(LIKES>.HAS_CREATOR>)- person2s:p2
+    ACCUM @@pairScores += (p1.@city -> (p1.id, p2.id -> 10));
+
+  # case 5
+  tmp =
+    SELECT p2
+    FROM person1s:p1 -(<HAS_CREATOR.<LIKES)- person2s:p2
+    ACCUM @@pairScores += (p1.@city -> (p1.id, p2.id -> 1));
+
+  @@result.resize(@@pairScores.size());
+  FOREACH (city, gba) IN @@pairScores DO
+    @@topPairScores.clear();
+    FOREACH (p1Id, p2Id, score) IN gba DO
+      @@topPairScores += RESULT(p1Id, p2Id, city, score);
+    END;
+    @@result += @@topPairScores.top();
+  END;
+
+  PRINT @@result;
+}

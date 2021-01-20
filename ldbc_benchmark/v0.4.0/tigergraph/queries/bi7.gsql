@@ -1,0 +1,30 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi7
+CREATE DISTRIBUTED QUERY bi7(STRING tagName) SYNTAX v2 {
+
+  # count is reserved keyword (?).
+  TYPEDEF TUPLE <STRING relatedTagName, INT replyCount> RESULT;
+
+  HeapAccum<RESULT>(100, replyCount DESC, relatedTagName ASC) @@result;
+
+  SumAccum<INT> @count;
+
+  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+
+  replies = SELECT c FROM tag -(<HAS_TAG.<REPLY_OF)- Comment:c;
+
+  repliesWithTag =
+    SELECT r
+    FROM replies:r -(HAS_TAG>)- Tag:t
+    WHERE t.name == tagName;
+
+  repliesWithoutTag = replies MINUS repliesWithTag;
+
+  tmp =
+    SELECT t
+    FROM repliesWithoutTag:r -(HAS_TAG>)- Tag:t
+    ACCUM t.@count += 1
+    POST-ACCUM @@result += RESULT(t.name, t.@count);
+
+  PRINT @@result;
+}

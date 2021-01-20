@@ -1,0 +1,30 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi6
+CREATE DISTRIBUTED QUERY bi6(STRING tagName) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT personId, INT authorityScore> RESULT;
+
+  HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
+
+  SumAccum<INT> @authorityScore, @popularityScore;
+  SetAccum<VERTEX<Person>> @likedby;
+  MapAccum<VERTEX<Person>, SumAccum<INT>> @@personPopScore;
+
+  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+
+  m1 = SELECT m FROM tag -(<HAS_TAG)- (Comment|Post):m;
+  person2 = SELECT p FROM m1 -(<LIKES)- Person:p;
+
+  person2 =
+    SELECT p2
+    FROM person2:p2 -(<HAS_CREATOR.<LIKES)- Person:p3
+    ACCUM p2.@popularityScore += 1;
+
+  person1 =
+    SELECT p1
+    FROM person2:p2 -(LIKES>)- m1 -(HAS_CREATOR>)- Person:p1
+    ACCUM p1.@authorityScore += p2.@popularityScore
+    POST-ACCUM @@result += RESULT(p1.id, p1.@authorityScore);
+
+  PRINT @@result;
+}
