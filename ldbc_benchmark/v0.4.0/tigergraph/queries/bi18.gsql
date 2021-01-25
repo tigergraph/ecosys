@@ -1,0 +1,25 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi18
+CREATE DISTRIBUTED QUERY bi18(INT person1Id, STRING tagName) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT person2Id, INT mutualFriendCount> RESULT;
+
+  HeapAccum<RESULT>(20, mutualFriendCount DESC, person2Id ASC) @@result;
+
+  SumAccum<INT> @mutualFriendCount;
+
+  person1 = SELECT p FROM Person:p WHERE p.id == person1Id;
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tagName;
+  person2s =
+    SELECT p
+    FROM tagWithName -(<HAS_INTEREST)- Person:p
+    WHERE p.id != person1Id;
+
+  person2s =
+    SELECT p
+    FROM person1 -(KNOWS)- Person:f -(KNOWS)- person2s:p
+    ACCUM p.@mutualFriendCount += 1
+    POST-ACCUM @@result += RESULT(p.id, p.@mutualFriendCount);
+
+  PRINT @@result;
+}

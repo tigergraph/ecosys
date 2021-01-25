@@ -1,0 +1,44 @@
+USE GRAPH ldbc_snb
+DROP QUERY bi17
+CREATE DISTRIBUTED QUERY bi17(STRING tagName, INT delta) SYNTAX v2 {
+
+  TYPEDEF TUPLE <INT person1Id, INT messageCount> RESULT;
+
+  HeapAccum<RESULT>(0, person1Id ASC) @@result;
+
+  SetAccum<VERTEX<Forum>> @forum;
+  SetAccum<VERTEX<Forum>> @creatorForum;
+  SumAccum<INT> @messageCount;
+
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tagName;
+  messagesWithTag = SELECT m FROM tagWithName:t -(<HAS_TAG)- (Comment|Post):m;
+
+  forums =
+    SELECT m
+    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
+    ACCUM m.@forum += f;
+
+  m2Candidates =
+    SELECT m2
+    FROM
+      messagesWithTag:c -(REPLY_OF>)- messagesWithTag:m2,
+      :c -(HAS_CREATOR>.<HAS_MEMBER)- Forum:f,
+      :m2 -(HAS_CREATOR>.<HAS_MEMBER)- :f
+    PER (m2, f)
+    ACCUM m2.@creatorForum += f;
+
+  person1s =
+    SELECT p1
+    FROM
+      m2Candidates:m2 -(HAS_TAG>)- tagWithName -(<HAS_TAG)-
+      messagesWithTag:m1 -(HAS_CREATOR>)- Person:p1 -(<HAS_MEMBER)- Forum:forumWithP1
+    WHERE
+      datetime_add(m1.creationDate, INTERVAL delta HOUR) < m2.creationDate AND
+      forumWithP1 NOT IN m2.@forum AND
+      m2.@creatorForum == m1.@forum
+    PER (p1, m1, m2)
+    ACCUM p1.@messageCount += 1
+    POST-ACCUM @@result += RESULT(p1.id, p1.@messageCount);
+
+  PRINT @@result;
+}
