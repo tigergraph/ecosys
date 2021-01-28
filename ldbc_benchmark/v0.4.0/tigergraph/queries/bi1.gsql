@@ -12,7 +12,7 @@ CREATE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
   OrAccum @isComment;
   SumAccum<INT> @lengthCategory;
 
-  INT total;
+  UINT total;
 
   messages =
     SELECT m
@@ -32,11 +32,46 @@ CREATE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
     POST-ACCUM @@midResult += (year(m.creationDate), m.@isComment, m.@lengthCategory -> 1, m.length);
 
   total = messages.size();
-  @@result.resize(total);
+  @@result.resize(@@midResult.size());
   FOREACH m IN @@midResult DO
     @@result += RESULT(m.year, m.isComment, m.lengthCategory, m.messageCount,
       (m.sumMessageLength / m.messageCount), m.sumMessageLength, (m.messageCount * 1.0 / total));
   END;
 
   PRINT @@result;
+
+  /*
+  # This doesn't work for following reasons.
+  # The case expression is not supported.
+  # SEM-523: undefined variable year.
+  # SEM-1621: 'COUNT(m) / totalMessageCount' is counted as non-aggregation term.
+  # SEM-2416: ORDER BY and LIMIT must be used together.
+
+  UINT totalMessageCount;
+
+  # SEM-1621: COUNT(m) by itself doesn't work because a non-aggregation term is required.
+  messages = SELECT m FROM (Comment|Post):m WHERE m.creationDate < date;
+  totalMessageCount = messages.size();
+
+  SELECT
+    year(m.creationDate) AS year,
+    m.type == "Comment" AS isComment,
+    CASE
+      WHEN m.length < 40 THEN 0
+      WHEN m.length < 80 THEN 1
+      WHEN m.length < 160 THEN 2
+      ELSE 3
+    END AS lengthCategory,
+    COUNT(m) AS messageCount,
+    AVG(m.length) AS averageMessageLength,
+    SUM(m.length) AS sumMessageLength,
+    COUNT(m) / totalMessageCount AS percentageOfMessages
+  INTO T
+  FROM (Comment|Post):m
+  WHERE m.creationDate < date
+  GROUP BY year, isComment, lengthCategory
+  ORDER BY year DESC, isComment ASC, lengthCategory ASC;
+
+  PRINT T;
+  */
 }
