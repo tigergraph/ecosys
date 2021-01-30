@@ -1,10 +1,10 @@
 USE GRAPH ldbc_snb
 DROP QUERY bi2
 CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
-  TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow22, INT diff> RESULT;
 
-  GroupByAccum<STRING tagName, SumAccum<INT> countWindow1, SumAccum<INT> countWindow2> @@counts;
-  HeapAccum<RESULT>(100, diff DESC, tagName ASC) @@result;
+  SumAccum<INT> @countWindow1;
+  SumAccum<INT> @countWindow2;
+  #SumAccum<INT> @diff;
 
   DATETIME dateEnd1, dateEnd2;
 
@@ -16,22 +16,26 @@ CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
     FROM TagClass:tc -(<HAS_TYPE)- Tag:t
     WHERE tc.name == tagClassName;
 
-  tmp =
-    SELECT m
+  tagsUnderTagClass =
+    SELECT t
     FROM tagsUnderTagClass:t -(<HAS_TAG)- (Comment|Post):m
-    WHERE m.creationDate BETWEEN date AND dateEnd2
+    WHERE date <= m.creationDate AND m.creationDate < dateEnd2
     ACCUM
-      # What is the cut-off? Is it exclusive or inclusive?
-      # What about a message with creationDate of exactly date + 100 days?
       IF m.creationDate < dateEnd1 THEN
-        @@counts += (t.name -> 1, 0)
+        t.@countWindow1 += 1
       ELSE
-        @@counts += (t.name -> 0, 1)
-      END;
+        t.@countWindow2 += 1
+      END
+    #POST-ACCUM t.@diff = abs(t.@countWindow1 - t.@countWindow2)
+    #ORDER BY t.@diff DESC, t.name ASC
+    ORDER BY abs(t.@countWindow1 - t.@countWindow2) DESC, t.name ASC
+    LIMIT 100;
 
-  FOREACH c in @@counts DO
-    @@result += RESULT(c.tagName, c.countWindow1, c.countWindow2, abs(c.countWindow1 - c.countWindow2));
-  END;
-
-  PRINT @@result;
+  PRINT tagsUnderTagClass[
+    tagsUnderTagClass.name AS tagName,
+    tagsUnderTagClass.@countWindow1 AS countWindow1,
+    tagsUnderTagClass.@countWindow2 AS countWindow2,
+    #tagsUnderTagClass.@diff AS diff
+    abs(tagsUnderTagClass.@countWindow1 - tagsUnderTagClass.@countWindow2) AS diff
+  ];
 }
