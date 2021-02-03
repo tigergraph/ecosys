@@ -2,11 +2,15 @@ USE GRAPH ldbc_snb
 DROP QUERY bi2
 CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
 
+  TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow2, INT diff> RESULT;
+
+  HeapAccum<RESULT>(100, diff DESC, tagName ASC) @@result;
+
   SumAccum<INT> @countWindow1;
   SumAccum<INT> @countWindow2;
-  #SumAccum<INT> @diff;
 
-  DATETIME dateEnd1, dateEnd2;
+  DATETIME dateEnd1;
+  DATETIME dateEnd2;
 
   dateEnd1 = datetime_add(date, INTERVAL 100 DAY);
   dateEnd2 = datetime_add(date, INTERVAL 200 DAY);
@@ -16,8 +20,8 @@ CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
     FROM TagClass:tc -(<HAS_TYPE)- Tag:t
     WHERE tc.name == tagClassName;
 
-  tagsUnderTagClass =
-    SELECT t
+  tmp =
+    SELECT m
     FROM tagsUnderTagClass:t -(<HAS_TAG)- (Comment|Post):m
     WHERE date <= m.creationDate AND m.creationDate < dateEnd2
     ACCUM
@@ -26,16 +30,8 @@ CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) SYNTAX v2 {
       ELSE
         t.@countWindow2 += 1
       END
-    #POST-ACCUM t.@diff = abs(t.@countWindow1 - t.@countWindow2)
-    #ORDER BY t.@diff DESC, t.name ASC
-    ORDER BY abs(t.@countWindow1 - t.@countWindow2) DESC, t.name ASC
-    LIMIT 100;
+    POST-ACCUM
+      @@result += RESULT(t.name, t.@countWindow1, t.@countWindow2, abs(t.@countWindow1 - t.@countWindow2));
 
-  PRINT tagsUnderTagClass[
-    tagsUnderTagClass.name AS tagName,
-    tagsUnderTagClass.@countWindow1 AS countWindow1,
-    tagsUnderTagClass.@countWindow2 AS countWindow2,
-    #tagsUnderTagClass.@diff AS diff
-    abs(tagsUnderTagClass.@countWindow1 - tagsUnderTagClass.@countWindow2) AS diff
-  ];
+  PRINT @@result;
 }
