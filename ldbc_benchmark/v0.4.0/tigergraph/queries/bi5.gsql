@@ -11,10 +11,10 @@ CREATE DISTRIBUTED QUERY bi5(STRING tagName) SYNTAX v2 {
   tag = SELECT t FROM Tag:t WHERE t.name == tagName;
 
   messages = SELECT m FROM tag -(<HAS_TAG)- (Comment|Post):m;
-  messages = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
-  messages = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;
 
-  messages =
+  tmp = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
+  tmp = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;
+  tmp =
     SELECT p
     FROM messages:m -(HAS_CREATOR>)- Person:p
     ACCUM

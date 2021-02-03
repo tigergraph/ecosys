@@ -3,11 +3,6 @@ DROP QUERY bi10
 CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRING tagClassName,
   INT minPathDistance, INT maxPathDistance) SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT expertCandidatePersonId, STRING tagName, INT messageCount> RESULT;
-
-  GroupByAccum<INT expertCandidatePersonId, STRING tagName, SumAccum<INT> messageCount> @@midResult;
-  HeapAccum<RESULT>(100, messageCount DESC, tagName ASC, expertCandidatePersonId ASC) @@result;
-
   SumAccum<INT> @@pathLength;
 
   OrAccum @visited;
@@ -38,14 +33,20 @@ CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRIN
 
   expertCandidatePersons = targets INTERSECT candidates;
   tagClass = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
-  tmp =
+  messages =
     SELECT m
-    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>)- Tag:t -(HAS_TYPE>)- tagClass
-    ACCUM @@midResult += (p.id, t.name -> 1);
+    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClass;
 
-  FOREACH (p, t, m) IN @@midResult DO
-    @@result += RESULT(p, t, m);
-  END;
+  SELECT
+    p.id AS expertCandidatePersonId,
+    t.name AS tagName,
+    COUNT(m) AS messageCount
+  INTO result
+  FROM
+    messages:m -(HAS_TAG>)- Tag:t,
+    :m -(HAS_CREATOR>)- expertCandidatePersons:p
+  ORDER BY messageCount DESC, tagName ASC, expertCandidatePersonId ASC
+  LIMIT 100;
 
-  PRINT @@result;
+  PRINT result;
 }
