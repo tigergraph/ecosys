@@ -1,8 +1,4 @@
-SET syntax_version = "v2"
-USE GRAPH ldbc_snb
-DROP QUERY bi20
-
-CREATE QUERY bi20(STRING company, UINT person2Id) {
+CREATE QUERY bi20(STRING company, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   TYPEDEF TUPLE<UINT person1Id, INT totalWeight> RESULT;
 
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;

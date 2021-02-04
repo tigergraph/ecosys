@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi5
-CREATE DISTRIBUTED QUERY bi5(STRING tagName) SYNTAX v2 {
+CREATE DISTRIBUTED QUERY bi5(STRING tagName) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> RESULT;
 

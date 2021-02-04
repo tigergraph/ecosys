@@ -1,7 +1,5 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi10
 CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRING tagClassName,
-  INT minPathDistance, INT maxPathDistance) SYNTAX v2 {
+  INT minPathDistance, INT maxPathDistance) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   SumAccum<INT> @@pathLength;
 

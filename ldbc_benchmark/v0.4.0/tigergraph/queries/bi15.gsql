@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi15
-CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF tuple<JSONARRAY personId, DOUBLE weight> RESULT;
 

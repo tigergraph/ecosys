@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi7
-CREATE DISTRIBUTED QUERY bi7(STRING tagName) SYNTAX v2 {
+CREATE DISTRIBUTED QUERY bi7(STRING tagName) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   # count is reserved keyword (?).
   TYPEDEF TUPLE <STRING relatedTagName, INT replyCount> RESULT;

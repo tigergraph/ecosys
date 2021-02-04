@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-DROP QUERY bi13
-
-CREATE DISTRIBUTED QUERY bi13(STRING countryName, DATETIME endDate) SYNTAX v2 {
+CREATE DISTRIBUTED QUERY bi13(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> RESULT;
 
