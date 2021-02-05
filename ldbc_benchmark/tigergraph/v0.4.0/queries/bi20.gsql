@@ -1,4 +1,4 @@
-CREATE QUERY bi20(STRING company, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE QUERY bi20(STRING companyName, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   TYPEDEF TUPLE<UINT person1Id, INT totalWeight> RESULT;
 
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
@@ -12,7 +12,7 @@ CREATE QUERY bi20(STRING company, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   person1s =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
-    WHERE c.name == company;
+    WHERE c.name == companyName;
 
   person2 =
     SELECT p
@@ -67,8 +67,3 @@ CREATE QUERY bi20(STRING company, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   PRINT @@result;
 }
-
-# INSTALL QUERY bi20
-# RUN QUERY bi20("Sichuan_Airlines", 24189255813941)
-# RUN QUERY bi20("West_Air_(People's_Republic_of_China)", 24189255813941)
-# RUN QUERY bi20("VietJet_AirAsia", 30786325587255)
