@@ -11,7 +11,7 @@ CREATE DISTRIBUTED QUERY bi12(DATETIME date, INT lengthThreshold, SET<STRING> la
 
   INT diff;
 
-  posts = SELECT p FROM Post:p WHERE p.lang IN languages;
+  posts = SELECT p FROM Post:p WHERE p.language IN languages;
   messages =
     SELECT m
     FROM posts:p -(<REPLY_OF*)- Comment:m
