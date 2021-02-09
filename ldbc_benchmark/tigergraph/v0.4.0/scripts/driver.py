@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import json
 import os
 import sys
 from pathlib import Path
@@ -9,7 +10,6 @@ from pathlib import Path
 import requests
 
 
-# TODO: Figure out why the print result is a list.
 # TODO: Merge load-query.py file.
 # TODO: Parse the result.
 # TODO: Keep running other queries when one query fails.
@@ -209,4 +209,4 @@ if __name__ == '__main__':
         for params in parameters:
             result = run_query(query_name, params)
             result = process_result(result, CONVERSION[query_name]['result'])
-            print(result)
+            print(json.dumps(result, indent=4))
