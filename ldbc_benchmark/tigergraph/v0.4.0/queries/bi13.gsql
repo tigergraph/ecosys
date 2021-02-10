@@ -1,24 +1,34 @@
 CREATE DISTRIBUTED QUERY bi13(STRING countryName, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT zombieId, INT zombieLikeCount, INT totalLikeCount, DOUBLE zombieScore> RESULT;
+  TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;
 
   HeapAccum<RESULT>(100, zombieScore DESC, zombieId ASC) @@result;
   SetAccum<VERTEX<Person>> @@zombies;
 
-  SumAccum<INT> @messageCount, @totalLikeCount, @zombieLikeCount;
+  SumAccum<UINT> @messageCount;
+  SumAccum<UINT> @totalLikeCount;
+  SumAccum<UINT> @zombieLikeCount;
 
   country = SELECT c FROM Country:c WHERE c.name == countryName;
 
+  zombieCandidates =
+    SELECT p
+    FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    WHERE p.creationDate < endDate;
+
+  zombieMessages =
+    SELECT m
+    FROM zombieCandidates:p -(<HAS_CREATOR)- (Comment|Post):m
+    WHERE m.creationDate < endDate
+    ACCUM p.@messageCount += 1;
+
   zombies =
     SELECT p
-    FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_CREATOR)- (Comment|Post):m
-    WHERE p.creationDate < endDate AND m.creationDate < endDate
-    ACCUM p.@messageCount += 1
-    HAVING p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1;
+    FROM zombieCandidates:p
+    WHERE p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1
+    POST-ACCUM @@zombies += p;
 
-  zombies = SELECT z FROM zombies:z POST-ACCUM @@zombies += z;
-
-  zombies =
+  liker =
     SELECT z
     FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p
     WHERE p.creationDate < endDate
@@ -26,7 +36,11 @@ CREATE DISTRIBUTED QUERY bi13(STRING countryName, DATETIME endDate) FOR GRAPH ld
       z.@totalLikeCount += 1,
       IF p IN @@zombies THEN
         z.@zombieLikeCount += 1
-      END
+      END;
+
+  zombies =
+    SELECT z
+    FROM zombies:z
     POST-ACCUM
       IF z.@totalLikeCount > 0 THEN
         @@result += RESULT(z.id, z.@zombieLikeCount, z.@totalLikeCount, 1.0 * z.@zombieLikeCount / z.@totalLikeCount)

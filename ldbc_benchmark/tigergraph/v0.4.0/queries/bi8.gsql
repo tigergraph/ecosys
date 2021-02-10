@@ -1,10 +1,11 @@
 CREATE DISTRIBUTED QUERY bi8(STRING tagName, DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT personId, INT score, INT friendsScore, INT totalScore> RESULT;
+  TYPEDEF TUPLE <UINT personId, UINT score, UINT friendsScore, UINT totalScore> RESULT;
 
   HeapAccum<RESULT>(100, totalScore DESC, personId ASC) @@result;
 
-  SumAccum<int> @score, @friendsScore;
+  SumAccum<UINT> @score;
+  SumAccum<UINT> @friendsScore;
 
   tag = SELECT t FROM Tag:t WHERE t.name == tagName;
 

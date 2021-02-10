@@ -1,78 +1,78 @@
 CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF tuple<JSONARRAY personId, DOUBLE weight> RESULT;
+  TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
 
-  HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
-
-  ListAccum<ListAccum<VERTEX<Person>>> @@allPaths;
-  OrAccum @@found;
-
-  SumAccum<DOUBLE> @@weight;
-
-  # Why is there no easy way to convert a returned value from .get to vertex set?
+  # These variables are needed out of limitation.
+  ListAccum<VERTEX<Person>> @@EMPTY_LIST;
   SetAccum<VERTEX<Person>> @@conv;
 
-  OrAccum @visited1, @visited2;
-  ListAccum<ListAccum<VERTEX<Person>>> @paths;
+  HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
+  ListAccum<ListAccum<VERTEX<Person>>> @@allPaths;
+  OrAccum @@stop;
+  SumAccum<DOUBLE> @@weight;
+
+  ListAccum<ListAccum<VERTEX<Person>>> @path1;
+  OrAccum @visited1;
+  ListAccum<ListAccum<VERTEX<Person>>> @path2;
+  OrAccum @visited2;
 
   STRING jsonStr;
 
-  IF person1Id != person2Id THEN
-    sources1 = {person1Id};
-    sources2 = {person2Id};
-    sources1 = SELECT s FROM sources1:s ACCUM s.@visited1 = TRUE, s.@paths += [s];
-    sources2 = SELECT s FROM sources2:s ACCUM s.@visited2 = TRUE, s.@paths += [s];
+  start = {person1Id, person2Id};
 
-    WHILE sources1.size() > 0 OR sources2.size() > 0 DO
-      IF sources1.size() > 0 THEN
-        sources1 =
-          SELECT t
-          FROM sources1:s -(KNOWS)- Person:t
-          WHERE NOT t.@visited1
-          ACCUM
-            IF t.@visited2 THEN
-              @@found += TRUE,
-              FOREACH p1 IN s.@paths DO
-                FOREACH p2 IN t.@paths DO
-                  @@allPaths += p1 + p2
-                END
-              END
-            ELSE
-              t.@visited1 = TRUE,
-              FOREACH p IN s.@paths DO
-                t.@paths += p + [t]
-              END
-            END;
-      END;
-      IF @@found THEN BREAK; END;
+  current =
+    SELECT p
+    FROM start:p
+    ACCUM
+      IF p == person1Id THEN p.@visited1 = TRUE, p.@path1 += @@EMPTY_LIST END,
+      IF p == person2Id THEN p.@visited2 = TRUE, p.@path2 += @@EMPTY_LIST END;
 
-      IF sources2.size() > 0 THEN
-        sources2 =
-          SELECT t
-          FROM sources2:s -(KNOWS)- Person:t
-          WHERE NOT t.@visited2
-          ACCUM
-            IF t.@visited1 THEN
-              @@found += TRUE,
-              FOREACH p1 IN s.@paths DO
-                FOREACH p2 IN t.@paths DO
-                  @@allPaths += p2 + p1
-                END
+  WHILE NOT @@stop AND current.size() > 0 DO
+    current =
+      SELECT t
+      FROM current:s -(KNOWS)- Person:t
+      WHERE (s.@visited1 AND NOT t.@visited1) OR (s.@visited2 AND NOT t.@visited2)
+      ACCUM
+        IF (s.@visited1 AND t.@visited2) OR (s.@visited2 AND t.@visited1) THEN
+          # Meet on the edge.
+          @@stop += TRUE,
+          # We don't want to store the result twice.
+          # Store once only for one direction.
+          IF s.@visited1 AND t.@visited2 THEN
+            FOREACH p1 IN s.@path1 DO
+              FOREACH p2 IN t.@path2 DO
+                @@allPaths += p1 + [s, t] + p2
               END
-            ELSE
-              t.@visited2 = TRUE,
-              FOREACH p IN s.@paths DO
-                t.@paths += [t] + p
-              END
-            END;
-      END;
-      IF @@found THEN BREAK; END;
-    END;
+            END
+          END
+        END,
+        IF s.@visited1 THEN
+          t.@visited1 = TRUE,
+          FOREACH p IN s.@path1 DO
+            t.@path1 += p + [s]
+          END
+        ELSE IF s.@visited2 THEN
+          t.@visited2 = TRUE,
+          FOREACH p IN s.@path2 DO
+            t.@path2 += [s] + p
+          END
+        END
+      POST-ACCUM
+        IF NOT @@stop AND t.@visited1 AND t.@visited2 THEN
+          # Meet on the vertex.
+          @@stop += TRUE,
+          FOREACH p1 IN t.@path1 DO
+            FOREACH p2 IN t.@path2 DO
+              @@allPaths += p1 + [t] + p2
+            END
+          END
+        END;
   END;
 
   forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
-  posts = SELECT p FROM forums -(CONTAINER_OF>)- Post:p;
-  comments = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
+  messages =
+    SELECT m
+    FROM forums -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m;
 
   @@result.resize(@@allPaths.size());
   FOREACH path in @@allPaths DO
@@ -83,23 +83,32 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
       jsonStr = jsonStr + to_string(path.get(i).id) + ",";
 
       @@conv = (path.get(i));
-      personA = {@@conv};
+      personA = @@conv;
       @@conv = (path.get(i+1));
-      personB = {@@conv};
+      personB = @@conv;
 
-      commentsOfA = SELECT c FROM personA -(<HAS_CREATOR)- Comment:c;
+      messagesA = SELECT m FROM personA -(<HAS_CREATOR)- messages:m;
+      messagesB = SELECT m FROM personB -(<HAS_CREATOR)- messages:m;
 
-      # case 1
-      tmp =
-        SELECT c
-        FROM personB -(<HAS_CREATOR)- posts:p -(<REPLY_OF)- commentsOfA:c
-        ACCUM @@weight += 1.0;
+      a2b =
+        SELECT mB
+        FROM messagesA:mA -(REPLY_OF>)- messagesB:mB
+        ACCUM
+          IF mB.type == "Post" THEN
+            @@weight += 1.0
+          ELSE
+            @@weight += 0.5
+          END;
 
-      # case 2
-      tmp =
-        SELECT c1
-        FROM personB -(<HAS_CREATOR)- comments:c2 -(<REPLY_OF)- commentsOfA:c1
-        ACCUM @@weight += 0.5;
+      b2a =
+        SELECT mA
+        FROM messagesB:mB -(REPLY_OF>)- messagesA:mA
+        ACCUM
+          IF mA.type == "Post" THEN
+            @@weight += 1.0
+          ELSE
+            @@weight += 0.5
+          END;
     END;
     jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";
 

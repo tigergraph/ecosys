@@ -34,7 +34,7 @@ CONVERSION = {
     },
     'bi3': {
         'parameters': {'tagClass': 'tagClassName', 'country': 'countryName'},
-        'result': '@@result',
+        'result': 'result',
     },
     'bi4': {
         'parameters': {'country': 'countryName'},
@@ -58,7 +58,7 @@ CONVERSION = {
     },
     'bi9': {
         'parameters': {'startDate': 'startDate', 'endDate': 'endDate'},
-        'result': '@@result',
+        'result': 'result',
     },
     'bi10': {
         'parameters': {
@@ -101,9 +101,9 @@ CONVERSION = {
     },
     'bi16': {
         'parameters': {
-            'tagA': 'tagNameA',
+            'tagA': 'tagAName',
             'dateA': 'dateA',
-            'tagB': 'tagNameB',
+            'tagB': 'tagBName',
             'dateB': 'dateB',
             'maxKnowsLimit': 'maxKnowsLimit',
         },

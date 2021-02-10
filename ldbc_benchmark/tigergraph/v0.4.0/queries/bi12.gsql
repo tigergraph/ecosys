@@ -1,27 +1,24 @@
 CREATE DISTRIBUTED QUERY bi12(DATETIME date, INT lengthThreshold, SET<STRING> languages) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT messageCount, INT personCount> RESULT;
+  TYPEDEF TUPLE <UINT messageCount, UINT personCount> RESULT;
 
-  #MapAccum<INT, SumAccum<INT>> @@personCount;
-  # From the description of MapAccum, += would accumulate the values anyway.
-  MapAccum<INT, INT> @@personCount;
+  MapAccum<UINT, UINT> @@personCount;
   HeapAccum<RESULT>(0, personCount DESC, messageCount DESC) @@result;
 
-  SumAccum<INT> @messageCount;
+  SumAccum<UINT> @messageCount;
 
   INT diff;
 
-  posts = SELECT p FROM Post:p WHERE p.language IN languages;
-  messages =
-    SELECT m
-    FROM posts:p -(<REPLY_OF*)- Comment:m
-    WHERE m.content != "" AND m.length < lengthThreshold AND m.creationDate > date;
-
   persons =
-    SELECT p
-    FROM messages:m -(HAS_CREATOR>)- Person:p
-    ACCUM p.@messageCount += 1
-    POST-ACCUM @@personCount += (p.@messageCount -> 1);
+    SELECT person
+    FROM Person:person -(<HAS_CREATOR)- (Comment|Post):m -(REPLY_OF>*)- Post:p
+    WHERE
+      m.content != "" AND
+      m.length < lengthThreshold AND
+      m.creationDate > date AND
+      p.language IN languages
+    ACCUM person.@messageCount += 1
+    POST-ACCUM @@personCount += (person.@messageCount -> 1);
 
   allPersons = {Person.*};
   diff = allPersons.size() - persons.size();
