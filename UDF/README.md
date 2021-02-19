@@ -204,6 +204,9 @@ Given a double output a string
     return string(result);
   }
 ```
+**Example**
+*Need to add*
+
 ### levenshtein_distance
 Levenshtein Distance for calculating string distance using Optimal string alignment distance- https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
 
@@ -261,7 +264,16 @@ return dist[len_s1][len_s2];
 }
 ```
 **Example**
-*Need to add*
+```
+CREATE QUERY levenshtein_distance(/* Parameters here */) FOR GRAPH *GRAPH_NAME* {
+    String s1 = "jason";
+    String s2 = "jasno";
+    int dist;
+    dist = levenshtein_distance(s1,s2);
+    print dist;
+}
+```
+
 
 -----------
 
