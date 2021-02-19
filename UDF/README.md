@@ -1,6 +1,6 @@
 # User Defined Functions (UDF) Library
 
-To Contribute to the UDF Library 
+To Contribute to the UDF Library
 1. Grab UDF template located here [udf_template.md](udf_template.md)
 2. Add your UDF to (this document) ~/UDF/README.md
 3. Add your UDF to the [Table of Contents](#table-of-contents)
@@ -16,6 +16,7 @@ To Contribute to the UDF Library
   * [regex_filter_set](#regex_filter_set) - Given a set and regular expression filter out strings and return the set
   * [regex_filter_list](#regex_filter_list) - Given a list and regular expression filter out strings and return the list
   * [double_to_string](#double_to_string) - Given a double output a string
+  * [levenshtein_distance](#levenshtein_distance) - Levenshtein Distance for calculating string distance using Optimal string alignment distance.
  * [Integer/Float Based UDF](#integerfloat-based-udf)
    * [str_to_int](#str_to_int) - Given a string of numbers convert into an int
    * [float_to_int](#float_to_int) - Given a float convert it into an int
@@ -31,7 +32,7 @@ Given a string of text, return a substring from index begin to index end
 
 | Variable | Description| Example |
 | -------- | -------- | -------- |
-| str    | input string of text     | The Apple is Red   | 
+| str    | input string of text     | The Apple is Red   |
 | b    | index of string you would like to begin with     | index 4 = A     |
 | e    |index of string you would like to end with    | index 8 = e|
 
@@ -135,28 +136,28 @@ return outSet;
 **Example**
 
 ```
-CREATE QUERY tryFilterBag(string regex) FOR GRAPH MyGraph { 
-  /* Write query logic here */ 
+CREATE QUERY tryFilterBag(string regex) FOR GRAPH MyGraph {
+  /* Write query logic here */
 	ListAccum <STRING> @outList ;
 	SetAccum <STRING> @outSet;
-	
-	bv = {BagVertex.*}; 
-	
+
+	bv = {BagVertex.*};
+
 	bv = select bvv from bv:bvv
-	POST-ACCUM 
+	POST-ACCUM
 	  bvv.@outList = regex_filter_list(bvv.myList, regex),
 	  bvv.@outSet = regex_filter_set(bvv.mySet, regex);
       //HAVING bvv.@outList.size() > 0; // uncomment for direct filtration
-	  
+
 	cv = select cvv from bv:cvv
 	WHERE cvv.@outList.size() > 0 AND cvv.@outSet.size() > 0;
 
-  PRINT bv, cv; 
+  PRINT bv, cv;
 }
 ```
 
 ### regex_filter_list
-Given a list and regular expression filter out strings and return the list 
+Given a list and regular expression filter out strings and return the list
 
 **UDF Code**
 ```
@@ -173,23 +174,23 @@ return outBag;
 ```
 **Example**
 ```
-CREATE QUERY tryFilterBag(string regex) FOR GRAPH MyGraph { 
-  /* Write query logic here */ 
+CREATE QUERY tryFilterBag(string regex) FOR GRAPH MyGraph {
+  /* Write query logic here */
 	ListAccum <STRING> @outList ;
 	SetAccum <STRING> @outSet;
-	
-	bv = {BagVertex.*}; 
-	
+
+	bv = {BagVertex.*};
+
 	bv = select bvv from bv:bvv
-	POST-ACCUM 
+	POST-ACCUM
 	  bvv.@outList = regex_filter_list(bvv.myList, regex),
 	  bvv.@outSet = regex_filter_set(bvv.mySet, regex);
       //HAVING bvv.@outList.size() > 0; // uncomment for direct filtration
-	  
+
 	cv = select cvv from bv:cvv
 	WHERE cvv.@outList.size() > 0 AND cvv.@outSet.size() > 0;
 
-  PRINT bv, cv; 
+  PRINT bv, cv;
 }
 ```
 ### double_to_string
@@ -202,6 +203,62 @@ Given a double output a string
     sprintf(result, "%.0f", val);
     return string(result);
   }
+```
+### levenshtein_distance
+Levenshtein Distance for calculating string distance using Optimal string alignment distance- https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+
+**UDF Code**
+```
+inline  int levenshtein_distance(string s1, string s2)
+{
+  int len_s1 = s1.length();
+  int len_s2 = s2.length();
+  int dist[len_s1+1][len_s2+1];
+
+  int i;
+  int j;
+  int len_cost;
+
+  for (i = 0;i <= len_s1;i++)
+  {
+      dist[i][0] = i;
+  }
+  for(j = 0; j<= len_s2; j++)
+  {
+      dist[0][j] = j;
+  }
+  for (i = 1;i <= len_s1;i++)
+  {
+      for(j = 1; j<= len_s2; j++)
+      {
+          if( s1[i-1] == s2[j-1] )
+          {
+              len_cost = 0;
+          }
+          else
+          {
+              len_cost = 1;
+          }
+          dist[i][j] = std::min(
+          dist[i-1][j] + 1,                  // delete
+          std::min(dist[i][j-1] + 1,         // insert
+          dist[i-1][j-1] + len_cost)           // substitution
+        );
+       if( (i > 1) &&
+       (j > 1) &&
+       (s1[i-1] == s2[j-2]) &&
+       (s1[i-2] == s2[j-1])
+       )
+       {
+       dist[i][j] = std::min(
+       dist[i][j],
+        dist[i-2][j-2] + len_cost   // transposition
+       );
+       }
+   }
+}
+return dist[len_s1][len_s2];
+}
 ```
 **Example**
 *Need to add*
@@ -225,7 +282,7 @@ Given an int echo an int
 -----------
 
 ### rand_int
-Given a min and max int generate a random integer 
+Given a min and max int generate a random integer
 
 **UDF Code**
 ```
@@ -279,7 +336,7 @@ Given a distance in km and lat and lon return nearby
 ```
 inline SetAccum<string> getNearbyGridId (double distKm, double lat, double lon) {
 
-    string gridIdStr = map_lat_long_grid_id(lat, lon); 
+    string gridIdStr = map_lat_long_grid_id(lat, lon);
     uint64_t gridId = atoi(gridIdStr.c_str());
 
     int dia_long = gridNumLong (distKm, lat);
