@@ -1,19 +1,57 @@
+CREATE DISTRIBUTED QUERY bi15_add_weighted_edges(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+
+  MapAccum<UINT, DOUBLE> @weight;
+
+  forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
+
+  messages =
+    SELECT m
+    FROM forums -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m;
+
+  messages2 =
+    SELECT m2
+    FROM messages:m1 -(<REPLY_OF)- messages:m2 -(HAS_CREATOR>)- Person:p2
+    ACCUM
+      IF m1.type == "Post" THEN
+        m1.@weight += (p2.id -> 1)
+      ELSE
+        m1.@weight += (p2.id -> 0.5)
+      END;
+
+  persons1 =
+    SELECT p1
+    FROM messages:m1 -(HAS_CREATOR>)- Person:p1
+    ACCUM
+      FOREACH (p2Id, w) IN m1.@weight DO
+        p1.@weight += (p2Id -> w)
+      END;
+
+  persons2 =
+    SELECT p2
+    FROM persons1:p1 -(KNOWS)- Person:p2
+    ACCUM
+      DOUBLE weight = p1.@weight.get(p2.id) + p2.@weight.get(p1.id),
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, weight);
+}
+
+CREATE DISTRIBUTED QUERY bi15_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+  tmp =
+    SELECT v2
+    FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
+    ACCUM DELETE (e);
+}
+
 CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
 
-  # These variables are needed out of limitation.
-  ListAccum<VERTEX<Person>> @@EMPTY_LIST;
-  SetAccum<VERTEX<Person>> @@conv;
-
+  BagAccum<RESULT> @@midResult;
   HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
-  ListAccum<ListAccum<VERTEX<Person>>> @@allPaths;
   OrAccum @@stop;
-  SumAccum<DOUBLE> @@weight;
 
-  ListAccum<ListAccum<VERTEX<Person>>> @path1;
+  MapAccum<STRING, DOUBLE> @path1;
+  MapAccum<STRING, DOUBLE> @path2;
   OrAccum @visited1;
-  ListAccum<ListAccum<VERTEX<Person>>> @path2;
   OrAccum @visited2;
 
   STRING jsonStr;
@@ -24,13 +62,13 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
     SELECT p
     FROM start:p
     ACCUM
-      IF p == person1Id THEN p.@visited1 = TRUE, p.@path1 += @@EMPTY_LIST END,
-      IF p == person2Id THEN p.@visited2 = TRUE, p.@path2 += @@EMPTY_LIST END;
+      IF p == person1Id THEN p.@visited1 = TRUE, p.@path1 += ("[" -> 0.0) END,
+      IF p == person2Id THEN p.@visited2 = TRUE, p.@path2 += ("]" -> 0.0) END;
 
   WHILE NOT @@stop AND current.size() > 0 DO
     current =
       SELECT t
-      FROM current:s -(KNOWS)- Person:t
+      FROM current:s -(WEIGHT_DOUBLE:e)- Person:t
       WHERE (s.@visited1 AND NOT t.@visited1) OR (s.@visited2 AND NOT t.@visited2)
       ACCUM
         IF (s.@visited1 AND t.@visited2) OR (s.@visited2 AND t.@visited1) THEN
@@ -39,80 +77,44 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
           # We don't want to store the result twice.
           # Store once only for one direction.
           IF s.@visited1 AND t.@visited2 THEN
-            FOREACH p1 IN s.@path1 DO
-              FOREACH p2 IN t.@path2 DO
-                @@allPaths += p1 + [s, t] + p2
+            FOREACH (p1, w1) IN s.@path1 DO
+              FOREACH (p2, w2) IN t.@path2 DO
+                STRING path = p1 + to_string(s.id) + ", " + to_string(t.id) + p2,
+                DOUBLE weight = w1 + e.weight + w2,
+                @@midResult += RESULT(parse_json_array(path), weight)
               END
             END
           END
         END,
         IF s.@visited1 THEN
           t.@visited1 = TRUE,
-          FOREACH p IN s.@path1 DO
-            t.@path1 += p + [s]
+          FOREACH (p, w) IN s.@path1 DO
+            t.@path1 += (p + to_string(s.id) + ", " -> w + e.weight)
           END
         ELSE IF s.@visited2 THEN
           t.@visited2 = TRUE,
-          FOREACH p IN s.@path2 DO
-            t.@path2 += [s] + p
+          FOREACH (p, w) IN s.@path2 DO
+            t.@path2 += (", " + to_string(s.id) + p -> e.weight + w)
           END
         END
       POST-ACCUM
         IF NOT @@stop AND t.@visited1 AND t.@visited2 THEN
           # Meet on the vertex.
           @@stop += TRUE,
-          FOREACH p1 IN t.@path1 DO
-            FOREACH p2 IN t.@path2 DO
-              @@allPaths += p1 + [t] + p2
+          FOREACH (p1, w1) IN t.@path1 DO
+            FOREACH (p2, w2) IN t.@path2 DO
+              STRING path = p1 + to_string(t.id) + p2,
+              DOUBLE weight = w1 + w2,
+              @@midResult += RESULT(parse_json_array(path), weight)
             END
           END
         END;
   END;
 
-  forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
-  messages =
-    SELECT m
-    FROM forums -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m;
-
-  @@result.resize(@@allPaths.size());
-  FOREACH path in @@allPaths DO
-    jsonStr = "[";
-    @@weight = 0.0;
-
-    FOREACH i IN range[0, path.size()-2] DO
-      jsonStr = jsonStr + to_string(path.get(i).id) + ",";
-
-      @@conv = (path.get(i));
-      personA = @@conv;
-      @@conv = (path.get(i+1));
-      personB = @@conv;
-
-      messagesA = SELECT m FROM personA -(<HAS_CREATOR)- messages:m;
-      messagesB = SELECT m FROM personB -(<HAS_CREATOR)- messages:m;
-
-      a2b =
-        SELECT mB
-        FROM messagesA:mA -(REPLY_OF>)- messagesB:mB
-        ACCUM
-          IF mB.type == "Post" THEN
-            @@weight += 1.0
-          ELSE
-            @@weight += 0.5
-          END;
-
-      b2a =
-        SELECT mA
-        FROM messagesB:mB -(REPLY_OF>)- messagesA:mA
-        ACCUM
-          IF mA.type == "Post" THEN
-            @@weight += 1.0
-          ELSE
-            @@weight += 0.5
-          END;
-    END;
-    jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";
-
-    @@result += RESULT(parse_json_array(jsonStr), @@weight);
+  # Need the intermediate result to get the specific size of the result.
+  @@result.resize(@@midResult.size());
+  FOREACH r IN @@midResult DO
+    @@result += r;
   END;
 
   PRINT @@result;
