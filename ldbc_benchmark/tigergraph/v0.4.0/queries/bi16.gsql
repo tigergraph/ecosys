@@ -1,4 +1,4 @@
-CREATE DISTRIBUTED QUERY bi16(STRING tagAName, DATETIME dateA, STRING tagBName, DATETIME dateB, UINT maxKnowsLimit) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tagB, DATETIME dateB, UINT maxKnowsLimit) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
 
@@ -22,11 +22,11 @@ CREATE DISTRIBUTED QUERY bi16(STRING tagAName, DATETIME dateA, STRING tagBName, 
   monthA = month(dateA);
   dayA = day(dateA);
 
-  tagA = SELECT t FROM Tag:t WHERE t.name == tagAName;
+  tagWithNameA = SELECT t FROM Tag:t WHERE t.name == tagA;
 
   personsA =
     SELECT p
-    FROM tagA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    FROM tagWithNameA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
       year(m.creationDate) == yearA AND
       month(m.creationDate) == monthA AND
@@ -43,11 +43,11 @@ CREATE DISTRIBUTED QUERY bi16(STRING tagAName, DATETIME dateA, STRING tagBName, 
   monthB = month(dateB);
   dayB = day(dateB);
 
-  tagB = SELECT t FROM Tag:t WHERE t.name == tagBName;
+  tagWithNameB = SELECT t FROM Tag:t WHERE t.name == tagB;
 
   personsB =
     SELECT p
-    FROM tagB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    FROM tagWithNameB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
       year(m.creationDate) == yearB AND
       month(m.creationDate) == monthB AND

@@ -1,4 +1,4 @@
-CREATE DISTRIBUTED QUERY bi8(STRING tagName, DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT score, UINT friendsScore, UINT totalScore> RESULT;
 
@@ -7,16 +7,16 @@ CREATE DISTRIBUTED QUERY bi8(STRING tagName, DATETIME date) FOR GRAPH ldbc_snb S
   SumAccum<UINT> @score;
   SumAccum<UINT> @friendsScore;
 
-  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
 
   personsWithInterest =
     SELECT p
-    FROM tag -(<HAS_INTEREST)- Person:p
+    FROM tagWithName -(<HAS_INTEREST)- Person:p
     ACCUM p.@score += 100;
 
   personsWithMessages =
     SELECT p
-    FROM tag -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    FROM tagWithName -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE m.creationDate > date
     ACCUM p.@score += 1;
 

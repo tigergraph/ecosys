@@ -1,22 +1,22 @@
-CREATE DISTRIBUTED QUERY bi4(STRING countryName) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi4(STRING country) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   # The description is wrong.
   # There is no mention of the parameter date in the description.
   # The Neo4j implementation follows the old version.
 
-  TYPEDEF TUPLE <INT personId, STRING personFirstName, STRING personLastName,
-    DATETIME personCreationDate, INT messageCount> RESULT;
+  TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
+    DATETIME personCreationDate, UINT messageCount> RESULT;
 
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
 
-  SumAccum<INT> @memberCount;
-  SumAccum<INT> @messageCount;
+  SumAccum<UINT> @memberCount;
+  SumAccum<UINT> @messageCount;
 
-  country = SELECT c FROM Country:c WHERE c.name == countryName;
+  countryWithName = SELECT c FROM Country:c WHERE c.name == country;
 
   forums =
     SELECT f
-    FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
+    FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
     ACCUM f.@memberCount += 1
     ORDER BY f.@memberCount DESC, f.id ASC
     LIMIT 100;

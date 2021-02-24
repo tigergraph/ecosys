@@ -1,5 +1,6 @@
-CREATE DISTRIBUTED QUERY bi15_add_weighted_edges(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi15_add_weighted_edges(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
+  # MapAccum<VERTEX<Person>, DOUBLE> does not work due to a bug.
   MapAccum<UINT, DOUBLE> @weight;
 
   forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
@@ -34,14 +35,14 @@ CREATE DISTRIBUTED QUERY bi15_add_weighted_edges(DATETIME startDate, DATETIME en
       INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, weight);
 }
 
-CREATE DISTRIBUTED QUERY bi15_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi15_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
   tmp =
     SELECT v2
     FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
     ACCUM DELETE (e);
 }
 
-CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
 
@@ -53,8 +54,6 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
   MapAccum<STRING, DOUBLE> @path2;
   OrAccum @visited1;
   OrAccum @visited2;
-
-  STRING jsonStr;
 
   start = {person1Id, person2Id};
 
@@ -86,6 +85,7 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
             END
           END
         END,
+
         IF s.@visited1 THEN
           t.@visited1 = TRUE,
           FOREACH (p, w) IN s.@path1 DO
@@ -97,6 +97,7 @@ CREATE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id
             t.@path2 += (", " + to_string(s.id) + p -> e.weight + w)
           END
         END
+
       POST-ACCUM
         IF NOT @@stop AND t.@visited1 AND t.@visited2 THEN
           # Meet on the vertex.

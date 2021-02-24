@@ -1,4 +1,4 @@
-CREATE QUERY bi19AddEdges() FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
   MapAccum<VERTEX<Person>, UINT> @interactions;
 
   tmp =
@@ -16,15 +16,16 @@ CREATE QUERY bi19AddEdges() FOR GRAPH ldbc_snb SYNTAX v2 {
       END;
 }
 
-CREATE QUERY bi19DeleteEdges() FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
   tmp =
     SELECT v2
     FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
     ACCUM DELETE (e);
+  # The line below does not work because of a bug.
   #DELETE e FROM :v1 -(WEIGHT_DOUBLE:e)-> :v2;
 }
 
-CREATE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   # The algorithm is Bellman-Ford algorithm, shamelessly copied from
   # shortest path algorithm in GSQL graph algorithms library.

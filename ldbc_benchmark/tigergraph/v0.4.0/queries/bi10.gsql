@@ -1,12 +1,11 @@
-CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRING tagClassName,
-  INT minPathDistance, INT maxPathDistance) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass, UINT minPathDistance, UINT maxPathDistance) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  SumAccum<INT> @@pathLength;
+  SumAccum<UINT> @@pathLength;
 
   OrAccum @visited;
 
-  country = SELECT c FROM Country:c WHERE c.name == countryName;
-  candidates = SELECT p FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+  countryWithName = SELECT c FROM Country:c WHERE c.name == country;
+  candidates = SELECT p FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
 
   sources = {personId};
   targets (Person) = {};
@@ -30,10 +29,10 @@ CREATE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING countryName, STRIN
   END;
 
   expertCandidatePersons = targets INTERSECT candidates;
-  tagClass = SELECT tc FROM TagClass:tc WHERE tc.name == tagClassName;
+  tagClassWithName = SELECT tc FROM TagClass:tc WHERE tc.name == tagClass;
   messages =
     SELECT m
-    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClass;
+    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName;
 
   SELECT
     p.id AS expertCandidatePersonId,

@@ -1,4 +1,4 @@
-CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClass) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow2, INT diff> RESULT;
 
@@ -16,7 +16,7 @@ CREATE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClassName) FOR GRAPH ldbc_
   tagsUnderTagClass =
     SELECT t
     FROM TagClass:tc -(<HAS_TYPE)- Tag:t
-    WHERE tc.name == tagClassName;
+    WHERE tc.name == tagClass;
 
   tmp =
     SELECT m

@@ -1,14 +1,16 @@
-CREATE DISTRIBUTED QUERY bi5(STRING tagName) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi5(STRING tag) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT personId, INT replyCount, INT likeCount, INT messageCount, INT score> RESULT;
+  TYPEDEF TUPLE <UINT personId, UINT replyCount, UINT likeCount, UINT messageCount, UINT score> RESULT;
 
   HeapAccum<RESULT>(100, score DESC, personId ASC) @@result;
 
-  SumAccum<INT> @likeCount, @messageCount, @replyCount;
+  SumAccum<UINT> @likeCount;
+  SumAccum<UINT> @messageCount;
+  SumAccum<UINT> @replyCount;
 
-  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
 
-  messages = SELECT m FROM tag -(<HAS_TAG)- (Comment|Post):m;
+  messages = SELECT m FROM tagWithName -(<HAS_TAG)- (Comment|Post):m;
 
   tmp = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
   tmp = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;

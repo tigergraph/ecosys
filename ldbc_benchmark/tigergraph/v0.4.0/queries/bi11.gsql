@@ -1,9 +1,9 @@
-CREATE DISTRIBUTED QUERY bi11(STRING countryName, DATETIME startDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  SumAccum<INT> @@count;
+  SumAccum<UINT> @@count;
 
-  country = SELECT c FROM Country:c WHERE c.name == countryName;
-  persons = SELECT p FROM country -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+  countryWithName = SELECT c FROM Country:c WHERE c.name == country;
+  persons = SELECT p FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
 
   persons =
     SELECT p1
@@ -16,4 +16,3 @@ CREATE DISTRIBUTED QUERY bi11(STRING countryName, DATETIME startDate) FOR GRAPH 
 
   PRINT @@count;
 }
-

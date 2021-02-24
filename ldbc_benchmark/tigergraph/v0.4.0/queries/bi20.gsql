@@ -1,23 +1,23 @@
-CREATE QUERY bi20(STRING companyName, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
-  TYPEDEF TUPLE<UINT person1Id, INT totalWeight> RESULT;
+CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
 
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
   OrAccum @@visited;
-  MinAccum<INT> @@minWeight;
-  MinAccum<INT> @@maxInt;
+  MinAccum<UINT> @@minWeight;
 
   OrAccum @visited;
-  MinAccum<INT> @weight;
+  MinAccum<UINT> @weight;
 
   person1s =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
-    WHERE c.name == companyName;
+    WHERE c.name == company;
 
+  person2 = {person2Id};
   person2 =
     SELECT p
-    FROM Person:p
-    WHERE p.id == person2Id
+    FROM person2:p
     POST-ACCUM
       p.@visited = TRUE,
       p.@weight = 0;
@@ -62,7 +62,7 @@ CREATE QUERY bi20(STRING companyName, UINT person2Id) FOR GRAPH ldbc_snb SYNTAX 
   result =
     SELECT p
     FROM result:p
-    WHERE p.@weight == @@minWeight AND p.@weight < @@maxInt
+    WHERE p.@weight == @@minWeight AND p.@weight < GSQL_UINT_MAX
     POST-ACCUM @@result += RESULT(p.id, p.@weight);
 
   PRINT @@result;

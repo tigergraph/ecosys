@@ -1,20 +1,19 @@
-CREATE DISTRIBUTED QUERY bi7(STRING tagName) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  # count is reserved keyword (?).
-  TYPEDEF TUPLE <STRING relatedTagName, INT replyCount> RESULT;
+  # count is a reserved keyword.
+  TYPEDEF TUPLE <STRING relatedTagName, UINT replyCount> RESULT;
 
   HeapAccum<RESULT>(100, replyCount DESC, relatedTagName ASC) @@result;
 
-  SumAccum<INT> @count;
+  SumAccum<UINT> @count;
 
-  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
 
-  replies = SELECT c FROM tag -(<HAS_TAG.<REPLY_OF)- Comment:c;
+  replies = SELECT c FROM tagWithName -(<HAS_TAG.<REPLY_OF)- Comment:c;
 
   repliesWithTag =
     SELECT r
-    FROM replies:r -(HAS_TAG>)- Tag:t
-    WHERE t.name == tagName;
+    FROM tagWithName -(<HAS_TAG)- replies:r;
 
   repliesWithoutTag = replies MINUS repliesWithTag;
 

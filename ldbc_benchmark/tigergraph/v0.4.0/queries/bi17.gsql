@@ -1,4 +1,5 @@
-CREATE QUERY bi17(STRING tagName, INT delta) FOR GRAPH ldbc_snb SYNTAX _v2 {
+# DISTRIBUTED keyword produces a bug.
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) FOR GRAPH ldbc_snb SYNTAX _v2 {
 
   TYPEDEF TUPLE <UINT person1Id, UINT messageCount> RESULT;
 
@@ -14,7 +15,7 @@ CREATE QUERY bi17(STRING tagName, INT delta) FOR GRAPH ldbc_snb SYNTAX _v2 {
   messagesWithTag =
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
-    WHERE t.name == tagName;
+    WHERE t.name == tag;
 
   threadForums =
     SELECT f

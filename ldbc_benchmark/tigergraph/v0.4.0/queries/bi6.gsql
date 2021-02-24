@@ -1,16 +1,15 @@
-CREATE DISTRIBUTED QUERY bi6(STRING tagName) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  TYPEDEF TUPLE <INT personId, INT authorityScore> RESULT;
+  TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
 
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
 
-  SumAccum<INT> @authorityScore, @popularityScore;
-  SetAccum<VERTEX<Person>> @likedby;
-  MapAccum<VERTEX<Person>, SumAccum<INT>> @@personPopScore;
+  SumAccum<UINT> @authorityScore;
+  SumAccum<UINT> @popularityScore;
 
-  tag = SELECT t FROM Tag:t WHERE t.name == tagName;
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
 
-  m1 = SELECT m FROM tag -(<HAS_TAG)- (Comment|Post):m;
+  m1 = SELECT m FROM tagWithName -(<HAS_TAG)- (Comment|Post):m;
   person2 = SELECT p FROM m1 -(<LIKES)- Person:p;
 
   person2 =
