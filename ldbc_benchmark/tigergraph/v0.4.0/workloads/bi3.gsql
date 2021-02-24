@@ -17,8 +17,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) FOR GRA
 
   tmp =
     SELECT f
-    FROM tagClassWithName -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m -(REPLY_OF>*.<CONTAINER_OF)- forums:f
-    # FROM forums:f -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName
+    FROM forums:f -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName
+    # The below should work the same as the above, but it doesn't due to a bug.
+    #FROM tagClassWithName -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m -(REPLY_OF>*.<CONTAINER_OF)- forums:f
     ACCUM f.@messageCount += 1
     POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
 
