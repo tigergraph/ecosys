@@ -20,6 +20,7 @@ class ResultWithElapsed:
 class Query:
 
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
+    HEADERS = {'GSQL-TIMEOUT': '7200000'}
 
     def __init__(self, name, transform_parameter=None):
         self.name = name
@@ -30,7 +31,7 @@ class Query:
             parameter = self.transform_parameter(parameter)
 
         start = timer()
-        response = requests.get(self.ENDPOINT + self.name, params=parameter).json()
+        response = requests.get(self.ENDPOINT + self.name, headers=self.HEADERS, params=parameter).json()
         end = timer()
 
         if response['error']:
