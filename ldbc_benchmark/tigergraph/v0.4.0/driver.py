@@ -237,12 +237,12 @@ def load_parameters(parameters_dir, workload):
     return parameters
 
 
-def load_schema(args):
+def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(['gsql', 'schema.gsql'])
 
 
-def load_query(args):
+def cmd_load_query(args):
     '''Loads queries from the given workloads.'''
     gsql = ''
 
@@ -260,7 +260,7 @@ def load_query(args):
     subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
 
 
-def load_data(args):
+def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
     file_paths = [(args.data_dir / name).with_suffix('.csv') for name in DATA_NAMES]
     gsql = 'RUN LOADING JOB load_ldbc_snb_composite_merged_fk USING '
@@ -268,14 +268,14 @@ def load_data(args):
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
 
 
-def load_all(args):
+def cmd_load_all(args):
     '''Loads the schema, queries, and data.'''
-    load_schema(args)
-    load_query(args)
-    load_data(args)
+    cmd_load_schema(args)
+    cmd_load_query(args)
+    cmd_load_data(args)
 
 
-def run(args):
+def cmd_run(args):
     '''Runs the given workload(s).'''
     for workload in args.workload:
         parameters = load_parameters(args.parameters_dir, workload)
@@ -283,6 +283,11 @@ def run(args):
             result = workload.run(parameter)
             print(result.result)
             print(result.elapsed)
+
+
+def cmd_all(args):
+    cmd_load_all(args)
+    cmd_run(args)
 
 
 def get_parser():
@@ -297,31 +302,41 @@ def get_parser():
     load_subparsers = load_parser.add_subparsers(dest='cmd_load')
 
     load_schema_parser = load_subparsers.add_parser('schema', help='Load the LDBC SNB schema.')
-    load_schema_parser.set_defaults(func=load_schema)
+    load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
     load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
-    load_query_parser.set_defaults(func=load_query)
+    load_query_parser.set_defaults(func=cmd_load_query)
 
     load_data_parser = load_subparsers.add_parser('data', help='Load data.')
     load_data_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
-    load_data_parser.set_defaults(func=load_data)
+    load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data.')
     load_all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
-    load_all_parser.set_defaults(func=load_all)
+    load_all_parser.set_defaults(func=cmd_load_all)
 
     # The parser for running.
     run_parser = main_subparsers.add_parser('run', help='Run the workload(s).')
     run_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
     run_parser.add_argument('workload', nargs='*', help='The workload to run.')
-    run_parser.set_defaults(func=run)
+    run_parser.set_defaults(func=cmd_run)
+
+    # Running all from loading to running.
+    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    all_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
+    all_parser.set_defaults(func=cmd_all)
 
     return main_parser
 
 
 def check_args(args):
-    if args.cmd == 'load' and (args.cmd_load == 'query' or args.cmd_load == 'all') or args.cmd == 'run':
+    if (
+        args.cmd == 'load' and (args.cmd_load == 'query' or args.cmd_load == 'all')
+        or args.cmd == 'run'
+        or args.cmd == 'all'
+    ):
         # If the command is all, the workload may not be defined.
         if len(getattr(args, 'workload', [])) == 0:
             # The default is all workloads.
@@ -334,7 +349,10 @@ def check_args(args):
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
 
-    if args.cmd == 'load' and (args.cmd_load == 'data' or args.cmd_load == 'all'):
+    if (
+        args.cmd == 'load' and (args.cmd_load == 'data' or args.cmd_load == 'all')
+        or args.cmd == 'all'
+    ):
         missing = []
         for name in DATA_NAMES:
             file_path = (args.data_dir / name).with_suffix('.csv')
