@@ -51,5 +51,5 @@ You can also specify the workloads from which to install the queries.
 
 Run
 ```sh
-./driver.py run [workload...]
+./driver.py run <parameters_dir> [workload...]
 ```
