@@ -240,7 +240,7 @@ def load_parameters(parameters_dir, workload):
 
 def cmd_load_schema(args):
     '''Loads the schema.'''
-    subprocess.run(['gsql', 'schema.gsql'])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
 
 
 def cmd_load_query(args):
