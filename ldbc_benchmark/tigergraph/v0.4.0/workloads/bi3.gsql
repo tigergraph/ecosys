@@ -15,28 +15,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) FOR GRA
     FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MODERATOR)- Forum:f
     ACCUM f.@personId = p.id;
 
+  messages =
+    SELECT m
+    FROM tagClassWithName -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m;
+
   tmp =
     SELECT f
-    FROM forums:f -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName
-    # The below should work the same as the above, but it doesn't due to a bug.
-    #FROM tagClassWithName -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m -(REPLY_OF>*.<CONTAINER_OF)- forums:f
+    FROM messages:m -(REPLY_OF>*.<CONTAINER_OF)- forums:f
     ACCUM f.@messageCount += 1
     POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
 
   PRINT @@result;
-
-  /*
-  # Below does not work in 3.1.0. Fixed in 3.1.1.
-  SELECT
-    f.id AS forumId,
-    f.title AS forumTitle,
-    f.creationDate AS forumCreationDate,
-    f.@personId AS personId,
-    COUNT(m) AS messageCount
-  INTO result
-  FROM forums:f -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName
-  GROUP BY f
-  ORDER BY messageCount DESC, forumId ASC
-  LIMIT 20;
-  */
 }
