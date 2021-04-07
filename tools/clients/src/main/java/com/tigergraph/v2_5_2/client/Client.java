@@ -240,15 +240,15 @@ public class Client {
   private void handleServerResponse(JSONObject json) {
     if (json != null) {System.out.print(json.optString("message")); if (json.optString("message").contains("License expired")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }
     if (json == null || json.optBoolean("error", true)) {
-      throw new SecurityException();
+      if (json != null && !json.optBoolean("isClientCompatible", false)) { throw new SecurityException(); } else { System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR); }
     } else if (!json.has("isClientCompatible")) {
       // if server is outdated that doesn't have compatibility check logic,
       // isClientCompatible won't be available and message will be null so manually handle here
       System.out.print("GSQL client is not compatible with GSQL server. "
           + "Please contact support@tigergraph.com\n");
-      System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);
+      throw new SecurityException();
     } else if (!json.optBoolean("isClientCompatible", true)) {
-      System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);
+      throw new SecurityException();
     }
     // if not caught by any error, retrieve welcomeMessage and shellPrompt
     welcomeMessage = json.getString("welcomeMessage");
@@ -547,7 +547,7 @@ public class Client {
         if (connection != null) {
           connection.disconnect();
         }
-      throw new SecurityException();
+        System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);
       } else if (connection.getResponseCode() != 200) {
         String errMsg = "Connection Error.\n"
           + "Response Code : " + connection.getResponseCode() + "\n"

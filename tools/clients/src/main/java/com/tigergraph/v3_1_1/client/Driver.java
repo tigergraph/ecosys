@@ -7,12 +7,12 @@
  * Proprietary and confidential
  * ****************************************************************************
  */
-package com.tigergraph.v3_0_0.client;
+package com.tigergraph.v3_1_1.client;
 
-import static com.tigergraph.v3_0_0.client.util.SystemUtils.ExitStatus;
+import static com.tigergraph.v3_1_1.client.util.SystemUtils.ExitStatus;
 
-import com.tigergraph.v3_0_0.client.util.RetryableHttpConnection;
-import com.tigergraph.v3_0_0.client.util.SystemUtils;
+import com.tigergraph.v3_1_1.client.util.RetryableHttpConnection;
+import com.tigergraph.v3_1_1.client.util.SystemUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -128,10 +128,10 @@ public class Driver {
                   serverConn[1], DEFAULT_PUBLIC_PORT);
               port = DEFAULT_PUBLIC_PORT;
             }
-            SystemUtils.println("Connecting to %s:%d", ip, port);
+            SystemUtils.println("Adding gsql-server host %s:%d", ip, port);
           } else {
             port = DEFAULT_PUBLIC_PORT;
-            SystemUtils.println("Connecting to %s", ip);
+            SystemUtils.println("Adding gsql-server host %s", ip);
           }
           conn.addIpPort(ip, port);
         }

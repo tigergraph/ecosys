@@ -7,16 +7,16 @@
  * Proprietary and confidential
  * ****************************************************************************
  */
-package com.tigergraph.v3_1_0.client;
+package com.tigergraph.v3_1_1.client;
 
-import static com.tigergraph.v3_1_0.client.util.SystemUtils.logger;
+import static com.tigergraph.v3_1_1.client.util.SystemUtils.logger;
 
-import com.tigergraph.v3_1_0.client.util.ConsoleUtils;
-import com.tigergraph.v3_1_0.client.util.HttpResponseOperator;
-import com.tigergraph.v3_1_0.client.util.IOUtils;
-import com.tigergraph.v3_1_0.client.util.RetryableHttpConnection;
-import com.tigergraph.v3_1_0.client.util.SystemUtils;
-import com.tigergraph.v3_1_0.client.util.SystemUtils.ExitStatus;
+import com.tigergraph.v3_1_1.client.util.ConsoleUtils;
+import com.tigergraph.v3_1_1.client.util.HttpResponseOperator;
+import com.tigergraph.v3_1_1.client.util.IOUtils;
+import com.tigergraph.v3_1_1.client.util.RetryableHttpConnection;
+import com.tigergraph.v3_1_1.client.util.SystemUtils;
+import com.tigergraph.v3_1_1.client.util.SystemUtils.ExitStatus;
 
 import java.io.*;
 import java.net.*;
@@ -187,24 +187,42 @@ public class Client {
    * @param cli {@code GsqlCli} with parsed client args
    */
   public void login(GsqlCli cli) {
-    JSONObject json;
-    // for default user
-    if (username.equals(DEFAULT_USER)) {
-      json = executeAuth(ENDPOINT_LOGIN);
-      if (!cli.hasPassword() && json != null && json.optBoolean("error", true)) {
-        // if password is changed, let user input password
-        if (json.optString("message").contains("Wrong password!")) {
-          password = ConsoleUtils.prompt4Password(false, false, username);
-          json = executeAuth(ENDPOINT_LOGIN);
+    JSONObject json = new JSONObject();
+
+    // We allow user to retry login twice if unsuccessful password provided
+    // If password is provided beforehand, we do not prompt user to retry.
+    int retry = cli.hasPassword() ? 1 : 3;
+    int count = 0;
+    while (count < retry) {
+      // for default user
+      if (username.equals(DEFAULT_USER)) {
+        json = executeAuth(ENDPOINT_LOGIN);
+        if (!cli.hasPassword() && json != null && json.optBoolean("error", true)) {
+          // if password is changed, let user input password
+          if (json.optString("message").contains("Wrong password!")) {
+            password = ConsoleUtils.prompt4Password(false, false, username);
+            json = executeAuth(ENDPOINT_LOGIN);
+          }
         }
+      } else {
+        // other users
+        if (!cli.hasPassword()) {
+          // If is not the default user, just ask the user to type in password.
+          password = ConsoleUtils.prompt4Password(false, false, username);
+        }
+        json = executeAuth(ENDPOINT_LOGIN);
       }
-    } else {
-      // other users
-      if (!cli.hasPassword()) {
-        // If is not the default user, just ask the user to type in password.
-        password = ConsoleUtils.prompt4Password(false, false, username);
+
+      // If login successful we break out of retry loop.
+      if (!json.optString("message").contains("Wrong password!")) {
+        break;
       }
-      json = executeAuth(ENDPOINT_LOGIN);
+
+      // Dont output try again prompt on last attempt. GSQL Server will handle the output to user.
+      if (count < retry - 1) {
+        SystemUtils.println("Incorrect Password was provided. Please try again.");
+      }
+      count++;
     }
     handleLoginResponse(json);
   }
@@ -212,15 +230,17 @@ public class Client {
   /**
    * Handle response after login.
    *
-   * @param json {@code JSONObject} of HTTP response
+   * @param json {@code JSONObject} of HTTP response.
+   * @return false if incorrect password, this is to handle retry, o/w always return true.
    */
-  private void handleLoginResponse(JSONObject json) {
+  private boolean handleLoginResponse(JSONObject json) {
     if (json != null) {System.out.print(json.optString("message")); if (json.optString("message").contains("License expired")){ SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);} }
     if (json == null || json.optBoolean("error", true)) {
       logger.error("%s: %s",
           ExitStatus.LOGIN_OR_AUTH_ERROR.toString(),
           json == null ? null : String.valueOf(json.optBoolean("error", true)));
       if (json != null && !json.optBoolean("isClientCompatible", false)) { throw new SecurityException(); } else { SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR); }
+      return false;
     } else if (!json.has("isClientCompatible")) {
       // if server is outdated that doesn't have compatibility check logic,
       // isClientCompatible won't be available and message will be null so manually handle here
@@ -240,6 +260,7 @@ public class Client {
       SystemUtils.println(
           "If there is any relative path, it is relative to <System.AppRoot>/dev/gdk/gsql");
     }
+    return true;
   }
 
   /**
@@ -396,6 +417,9 @@ public class Client {
         if (inputCommand.equalsIgnoreCase("begin")) {
           String InputBlock = "";
           String subInputCommand = console.readLine();
+          if (subInputCommand == null) {
+            SystemUtils.exit(ExitStatus.OK);
+          }
           while (!subInputCommand.equalsIgnoreCase("end")
               && !subInputCommand.equalsIgnoreCase("abort")) {
             InputBlock += subInputCommand + "\n";
@@ -903,7 +927,7 @@ public class Client {
    * @return Commit hash
    */
   private String getCommitClient() {
-  if (true) return "e9d3c5d98e7229118309f6d4bbc9446bad7c4c3d"; String clientCommitHash = null;
+  if (true) return "375a182bc03b0c78b489e18a0d6af222916a48d2"; String clientCommitHash = null;
     try {
       Properties props = new Properties();
       InputStream in = Client.class.getClassLoader().getResourceAsStream("Version.prop");

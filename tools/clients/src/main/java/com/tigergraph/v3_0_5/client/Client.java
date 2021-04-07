@@ -216,7 +216,7 @@ public class Client {
       logger.error("%s: %s",
           ExitStatus.LOGIN_OR_AUTH_ERROR.toString(),
           json == null ? null : String.valueOf(json.optBoolean("error", true)));
-      throw new SecurityException();
+      if (json != null && !json.optBoolean("isClientCompatible", false)) { throw new SecurityException(); } else { SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR); }
     } else if (!json.has("isClientCompatible")) {
       // if server is outdated that doesn't have compatibility check logic,
       // isClientCompatible won't be available and message will be null so manually handle here
@@ -885,7 +885,7 @@ public class Client {
   private void reportUnauthorizedAndExit(HttpURLConnection conn) throws IOException {
     reportUnauthorized(conn.getResponseMessage());
     disconnectSafely(conn);
-      throw new SecurityException();
+    SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);
   }
 
   /**

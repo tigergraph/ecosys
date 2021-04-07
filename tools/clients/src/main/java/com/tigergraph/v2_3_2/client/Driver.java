@@ -49,6 +49,8 @@ public class Driver {
 
     try {
       client.start(cli);
+    } catch (SecurityException se) {
+      throw new SecurityException(se);
     } catch (Exception e) {
       e.printStackTrace();
       System.out.println("\nPlease send the error message above to TigerGraph.\n");
