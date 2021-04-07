@@ -94,18 +94,17 @@ if [[ $VSTR = v3* ]]; then
 else
   LC_ALL=C find . -type f -name 'Util.java' -exec sed $SED_OPT "s/.*clientCommitHash.*=.*null.*/  if (true) return $client_commit; String clientCommitHash = null;/" {} +
 fi
-#4.3: replace System.exit() to SecurityException()  -- so we will try the next client version
+#4.3: replace System.exit(ExitStatus.LOGIN_OR_AUTH_ERROR) to SecurityException() if the client is incompatible + System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR); to SecurityException
+rule_replace='if (json != null \&\& \!json.optBoolean("isClientCompatible", false)) { throw new SecurityException(); } else { \1 }'
 if [[ $VSTR = v3* ]]; then
-  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);.*/      throw new SecurityException();/" {} +
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/^      \(SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);\)/      $rule_replace/" {} +
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/SystemUtils.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);/throw new SecurityException();/" {} +
 else
-  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*ReturnCode.LOGIN_OR_AUTH_ERROR.*/      throw new SecurityException();/" {} +
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/^      \(System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);\)/      $rule_replace/" {} +
+  LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/System.exit(ReturnCode.CLIENT_COMPATIBILITY_ERROR);/throw new SecurityException();/" {} +
 fi
-#4.4: remove System.exit(ReturnCode.UNKNOWN_ERROR) 
-if [[ $VSTR = v3* ]]; then
-  LC_ALL=C find . -type f -name 'Driver.java' -exec sed $SED_OPT "s/.*SystemUtils.exit(ExitStatus.UNKNOWN_ERROR, e);.*//" {} +
-else
-  LC_ALL=C find . -type f -name 'Driver.java' -exec sed $SED_OPT "s/.*ReturnCode.UNKNOWN_ERROR.*//" {} +
-fi
+#4.4: catch and wrap SecurityException
+LC_ALL=C find . -type f -name 'Driver.java' -exec sed $SED_OPT 's/^    } catch (Exception e) {/    } catch (SecurityException se) {\n      throw new SecurityException(se);\n    } catch (Exception e) {/' {} +
 #4.5: exit if license expires
 if [[ $VSTR = v3* ]]; then
   LC_ALL=C find . -type f -name 'Client.java' -exec sed $SED_OPT "s/.*System.out.print(json.optString(\"message\"));.*/    if (json != null) {System.out.print(json.optString(\"message\")); if (json.optString(\"message\").contains(\"License expired\")){ SystemUtils.exit(ExitStatus.LOGIN_OR_AUTH_ERROR);} }/" {} +

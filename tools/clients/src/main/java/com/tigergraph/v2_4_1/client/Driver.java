@@ -50,11 +50,13 @@ public class Driver {
 
     try {
       client.start(cli);
+    } catch (SecurityException se) {
+      throw new SecurityException(se);
     } catch (Exception e) {
       Util.LogExceptions(e);
       System.out.println("\nGot error: " + e.getMessage()
           + "\nPlease send the log file '" + GSQL_LOG.LOG_FILE + "' to TigerGraph.\n");
-
+      System.exit(ReturnCode.UNKNOWN_ERROR);
     }
 
   } // end main

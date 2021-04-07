@@ -144,8 +144,10 @@ public class Driver {
 
       // start Client
       client.start(cli);
+    } catch (SecurityException se) {
+      throw new SecurityException(se);
     } catch (Exception e) {
-
+      SystemUtils.exit(ExitStatus.UNKNOWN_ERROR, e);
     }
   }
 }

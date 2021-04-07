@@ -228,7 +228,7 @@ public class Client {
   private void CheckAndExit(JSONObject json) {
     if (json != null) {System.out.print(json.optString("message")); if (json.optString("message").contains("License expired")){ System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);} }
     if (json == null || json.optBoolean("error", true)) {
-      throw new SecurityException();
+      if (json != null && !json.optBoolean("isClientCompatible", false)) { throw new SecurityException(); } else { System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR); }
     }
   }
 
@@ -550,7 +550,7 @@ public class Client {
         if (connection != null) {
           connection.disconnect();
         }
-      throw new SecurityException();
+        System.exit(ReturnCode.LOGIN_OR_AUTH_ERROR);
       } else if (connection.getResponseCode() != 200) {
         String errMsg = "Connection Error.\n"
           + "Response Code : " + connection.getResponseCode() + "\n"
