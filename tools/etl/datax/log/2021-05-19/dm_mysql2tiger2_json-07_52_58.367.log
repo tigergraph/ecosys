@@ -1,0 +1,128 @@
+2021-05-19 07:52:58.576 [main] INFO  VMInfo - VMInfo# operatingSystem class => com.sun.management.internal.OperatingSystemImpl
+2021-05-19 07:52:58.581 [main] INFO  Engine - the machine info  => 
+
+	osInfo:	Oracle Corporation 16 16.0.1+9-24
+	jvmInfo:	Mac OS X x86_64 10.15.7
+	cpu num:	16
+
+	totalPhysicalMemory:	-0.00G
+	freePhysicalMemory:	-0.00G
+	maxFileDescriptorCount:	-1
+	currentOpenFileDescriptorCount:	-1
+
+	GC Names	[G1 Young Generation, G1 Old Generation]
+
+	MEMORY_NAME                    | allocation_size                | init_size                      
+	CodeHeap 'profiled nmethods'   | 116.37MB                       | 2.44MB                         
+	G1 Old Gen                     | 1,024.00MB                     | 970.00MB                       
+	G1 Survivor Space              | -0.00MB                        | 0.00MB                         
+	CodeHeap 'non-profiled nmethods' | 116.38MB                       | 2.44MB                         
+	Compressed Class Space         | 1,024.00MB                     | 0.00MB                         
+	Metaspace                      | -0.00MB                        | 0.00MB                         
+	G1 Eden Space                  | -0.00MB                        | 54.00MB                        
+	CodeHeap 'non-nmethods'        | 7.25MB                         | 2.44MB                         
+
+
+2021-05-19 07:52:58.597 [main] INFO  Engine - 
+{
+	"content":[
+		{
+			"reader":{
+				"name":"mysqlreader",
+				"parameter":{
+					"column":[],
+					"connection":[
+						{
+							"jdbcUrl":[
+								"jdbc:mysql://localhost:3306/POC_ADM?useSSL=false&autoReconnect=true"
+							],
+							"querySql":[
+								"SELECT id,id,id,id from con_copy;"
+							]
+						}
+					],
+					"password":"**********",
+					"username":"root",
+					"where":""
+				}
+			},
+			"writer":{
+				"name":"tigergraphwriter",
+				"parameter":{
+					"eol":"\n",
+					"filename":"f",
+					"graph":"POC_ADM",
+					"jdbcUrl":"jdbc:tg:http://3.83.54.193:14240",
+					"password":"**********",
+					"sep":",",
+					"table":[
+						"job load_mycto"
+					],
+					"username":"tigergraph",
+					"writeMode":"insert"
+				}
+			}
+		}
+	],
+	"setting":{
+		"errorLimit":{
+			"percentage":0.02,
+			"record":0
+		},
+		"speed":{
+			"channel":5
+		}
+	}
+}
+
+2021-05-19 07:52:58.614 [main] WARN  Engine - prioriy set to 0, because NumberFormatException, the value is: null
+2021-05-19 07:52:58.615 [main] INFO  PerfTrace - PerfTrace traceId=job_-1, isEnable=false, priority=0
+2021-05-19 07:52:58.615 [main] INFO  JobContainer - DataX jobContainer starts job.
+2021-05-19 07:52:58.617 [main] INFO  JobContainer - Set jobId = 0
+2021-05-19 07:52:58.955 [job-0] INFO  OriginalConfPretreatmentUtil - Available jdbcUrl:jdbc:mysql://localhost:3306/POC_ADM?useSSL=false&autoReconnect=true&yearIsDateType=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&rewriteBatchedStatements=true.
+2021-05-19 07:52:58.999 [job-0] INFO  JobContainer - jobContainer starts to do prepare ...
+2021-05-19 07:52:59.000 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] do prepare work .
+2021-05-19 07:52:59.000 [job-0] INFO  JobContainer - DataX Writer.Job [tigergraphwriter] do prepare work .
+2021-05-19 07:52:59.000 [job-0] INFO  JobContainer - jobContainer starts to do split ...
+2021-05-19 07:52:59.000 [job-0] INFO  JobContainer - Job set Channel-Number to 5 channels.
+2021-05-19 07:52:59.002 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] splits to [1] tasks.
+2021-05-19 07:52:59.002 [job-0] INFO  JobContainer - DataX Writer.Job [tigergraphwriter] splits to [1] tasks.
+2021-05-19 07:52:59.014 [job-0] INFO  JobContainer - jobContainer starts to do schedule ...
+2021-05-19 07:52:59.018 [job-0] INFO  JobContainer - Scheduler starts [1] taskGroups.
+2021-05-19 07:52:59.020 [job-0] INFO  JobContainer - Running by standalone Mode.
+2021-05-19 07:52:59.024 [taskGroup-0] INFO  TaskGroupContainer - taskGroupId=[0] start [1] channels for [1] tasks.
+2021-05-19 07:52:59.026 [taskGroup-0] INFO  Channel - Channel set byte_speed_limit to -1, No bps activated.
+2021-05-19 07:52:59.027 [taskGroup-0] INFO  Channel - Channel set record_speed_limit to -1, No tps activated.
+2021-05-19 07:52:59.033 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] attemptCount[1] is started
+2021-05-19 07:52:59.036 [0-0-0-reader] INFO  CommonRdbmsReader$Task - Begin to read record by Sql: [SELECT id,id,id,id from con_copy;
+] jdbcUrl:[jdbc:mysql://localhost:3306/POC_ADM?useSSL=false&autoReconnect=true&yearIsDateType=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&rewriteBatchedStatements=true].
+2021-05-19 07:52:59.051 [0-0-0-reader] INFO  CommonRdbmsReader$Task - Finished read record by Sql: [SELECT id,id,id,id from con_copy;
+] jdbcUrl:[jdbc:mysql://localhost:3306/POC_ADM?useSSL=false&autoReconnect=true&yearIsDateType=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&rewriteBatchedStatements=true].
+2021-05-19 07:52:59.445 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] is successed, used[412]ms
+2021-05-19 07:52:59.445 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] completed it's tasks.
+2021-05-19 07:53:09.036 [job-0] INFO  StandAloneJobContainerCommunicator - Total 4 records, 16 bytes | Speed 1B/s, 0 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.000s |  All Task WaitReaderTime 0.000s | Percentage 100.00%
+2021-05-19 07:53:09.036 [job-0] INFO  AbstractScheduler - Scheduler accomplished all tasks.
+2021-05-19 07:53:09.037 [job-0] INFO  JobContainer - DataX Writer.Job [tigergraphwriter] do post work.
+2021-05-19 07:53:09.037 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] do post work.
+2021-05-19 07:53:09.037 [job-0] INFO  JobContainer - DataX jobId [0] completed successfully.
+2021-05-19 07:53:09.038 [job-0] INFO  HookInvoker - No hook invoked, because base dir not exists or is a file: /Users/boyu.jiang/tg-data/boa-adm/datax/hook
+2021-05-19 07:53:09.039 [job-0] INFO  JobContainer - 
+	 [total cpu info] => 
+		averageCpu                     | maxDeltaCpu                    | minDeltaCpu                    
+		-1.00%                         | -1.00%                         | -1.00%
+                        
+
+	 [total gc info] => 
+		 NAME                 | totalGCCount       | maxDeltaGCCount    | minDeltaGCCount    | totalGCTime        | maxDeltaGCTime     | minDeltaGCTime     
+		 G1 Young Generation  | 0                  | 0                  | 0                  | 0.000s             | 0.000s             | 0.000s             
+		 G1 Old Generation    | 0                  | 0                  | 0                  | 0.000s             | 0.000s             | 0.000s             
+
+2021-05-19 07:53:09.040 [job-0] INFO  JobContainer - PerfTrace not enable!
+2021-05-19 07:53:09.040 [job-0] INFO  StandAloneJobContainerCommunicator - Total 4 records, 16 bytes | Speed 1B/s, 0 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.000s |  All Task WaitReaderTime 0.000s | Percentage 100.00%
+2021-05-19 07:53:09.042 [job-0] INFO  JobContainer - 
+start time                : 2021-05-19 07:52:58
+end time                  : 2021-05-19 07:53:09
+job consume               :                 10s
+speed                     :              0rec/s
+total record              :                   4
+

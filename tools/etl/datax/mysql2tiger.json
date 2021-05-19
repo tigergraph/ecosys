@@ -1,0 +1,52 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 5
+      },
+      "errorLimit": {
+        "record": 0,
+        "percentage": 0.02
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "tigergraph",
+            "column": [],
+            "connection": [
+              {
+                "querySql": [
+                  "SELECT ID from table_name;"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://localhost:3306/graph_name?useSSL=false&autoReconnect=true"
+                ]
+              }
+            ],
+            "where": ""
+          }
+        },
+        "writer": {
+          "name": "tigergraphwriter",
+          "parameter": {
+            "username": "tigergraph",
+            "password": "tigergraph",
+            "jdbcUrl": "jdbc:tg:http://localhost:14240",
+            "writeMode": "insert",
+            "graph": "graph_name",
+            "table": [
+              "job job_name"
+            ],
+            "sep": ",",
+            "filename": "f",
+            "eol": "\n"
+          }
+        }
+      }
+    ]
+  }
+}
