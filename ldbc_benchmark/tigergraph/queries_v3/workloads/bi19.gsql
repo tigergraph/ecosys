@@ -1,0 +1,89 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+  MapAccum<VERTEX<Person>, UINT> @interactions;
+
+  tmp =
+    SELECT p2
+    FROM Person:p1 -(<HAS_CREATOR)- (Comment|Post) -(<REPLY_OF)- Comment:m2 -(HAS_CREATOR>)- Person:p2
+    ACCUM p1.@interactions += (p2 -> 1);
+
+  tmp =
+    SELECT p2
+    FROM Person:p1 -(KNOWS)- Person:p2
+    ACCUM
+      UINT totalInteractions = p1.@interactions.get(p2) + p2.@interactions.get(p1),
+      IF totalInteractions > 0 THEN
+        INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 / totalInteractions)
+      END;
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+  tmp =
+    SELECT v2
+    FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
+    ACCUM DELETE (e);
+  # The line below does not work because of a bug.
+  #DELETE e FROM :v1 -(WEIGHT_DOUBLE:e)-> :v2;
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+
+  # The algorithm is Bellman-Ford algorithm, shamelessly copied from
+  # shortest path algorithm in GSQL graph algorithms library.
+  # https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/schema-free/shortest_ss_pos_wt.gsql
+
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
+
+  HeapAccum<RESULT>(20, totalWeight DESC, person1Id ASC, person2Id ASC) @@result;
+
+  OrAccum @visited;
+  MapAccum<UINT, MinAccum<DOUBLE>> @weightFrom;
+
+  INT maxIter = 0;
+
+  city1 = {city1Id};
+  city2 = {city2Id};
+
+  # Initialize.
+  sources =
+    SELECT p
+    FROM city1:c -(<IS_LOCATED_IN)- Person:p
+    POST-ACCUM
+      p.@visited += TRUE,
+      p.@weightFrom += (p.id -> 0.0);
+  targets = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p;
+
+  # Get the connected component.
+  start = sources;
+  component = start;
+  WHILE start.size() > 0 DO
+    start =
+      SELECT t
+      FROM start:s -(WEIGHT_DOUBLE)- Person:t
+      WHERE NOT t.@visited
+      POST-ACCUM t.@visited += TRUE;
+    component = component UNION start;
+  END;
+
+  # Do N-1 iterations updating the best-known distance.
+  maxIter = component.size() - 1;
+  WHILE TRUE LIMIT maxIter DO
+    tmp =
+      SELECT t
+      FROM component:s -(WEIGHT_DOUBLE:e)- Person:t
+      ACCUM
+        FOREACH (id, weight) IN s.@weightFrom DO
+          t.@weightFrom += (id -> weight + e.weight)
+        END;
+  END;
+
+  # Accumulate the result.
+  tmp =
+    SELECT p2
+    FROM targets:p2
+    POST-ACCUM
+      FOREACH (p1Id, weight) IN p2.@weightFrom DO
+        @@result += RESULT(p1Id, p2.id, weight)
+      END;
+
+  PRINT @@result;
+}
