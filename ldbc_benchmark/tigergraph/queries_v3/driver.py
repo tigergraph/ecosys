@@ -11,6 +11,46 @@ from timeit import default_timer as timer
 import requests
 
 
+def get_parser():
+    # The top-level parser.
+    main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
+    main_parser.set_defaults(func=lambda _: main_parser.print_usage())
+    main_subparsers = main_parser.add_subparsers(dest='cmd')
+
+    # The parser for loading.
+    load_parser = main_subparsers.add_parser('load', help='Load the schema, queries, or data.')
+    load_parser.set_defaults(func=lambda _: load_parser.print_usage())
+    load_subparsers = load_parser.add_subparsers(dest='cmd_load')
+
+    load_schema_parser = load_subparsers.add_parser('schema', help='Load the LDBC SNB schema.')
+    load_schema_parser.set_defaults(func=cmd_load_schema)
+
+    load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
+    load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
+    load_query_parser.set_defaults(func=cmd_load_query)
+
+    load_data_parser = load_subparsers.add_parser('data', help='Load data.')
+    load_data_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    load_data_parser.set_defaults(func=cmd_load_data)
+
+    load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data.')
+    load_all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    load_all_parser.set_defaults(func=cmd_load_all)
+
+    # The parser for running.
+    run_parser = main_subparsers.add_parser('run', help='Run the workload(s).')
+    run_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
+    run_parser.add_argument('workload', nargs='*', help='The workload to run.')
+    run_parser.set_defaults(func=cmd_run)
+
+    # Running all from loading to running.
+    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.', default='/home/tigergraph/initial_snapshot')
+    all_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
+    all_parser.set_defaults(func=cmd_all)
+
+    return main_parser
+
 class ResultWithElapsed:
     def __init__(self, result, elapsed):
         self.result = result
@@ -248,7 +288,7 @@ def cmd_load_query(args):
     gsql = ''
 
     for workload in args.workload:
-        workload_path = (SCRIPT_DIR_PATH / 'workloads' / f'{workload.name}.gsql').resolve()
+        workload_path = (SCRIPT_DIR_PATH / 'reads' / f'{workload.name}.gsql').resolve()
         gsql += f'@{workload_path}\n'
 
     queries_to_install = [
@@ -263,24 +303,22 @@ def cmd_load_query(args):
 def cmd_load_csv(args):
     '''Loads data from the given data_dir path.'''
     file_paths = [(args.data_dir / name).with_suffix('.csv') for name in DATA_NAMES]
-    gsql = 'RUN LOADING JOB load_ldbc_snb_composite_merged_fk USING '
+    gsql = 'RUN LOADING JOB load_ldbc_snb USING '
     gsql += ', '.join(f'file_{name}="{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
     file_paths = [(args.data_dir / name) for name in DATA_NAMES]
-    gsql = 'RUN LOADING JOB load_ldbc_snb_composite_merged_fk USING '
+    gsql = 'RUN LOADING JOB load_ldbc_snb USING '
     gsql += ', '.join(f'file_{name}="ALL:{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
-
 
 def cmd_load_all(args):
     '''Loads the schema, queries, and data.'''
     cmd_load_schema(args)
     cmd_load_query(args)
     cmd_load_data(args)
-
 
 def cmd_run(args):
     '''Runs the given workload(s).'''
@@ -291,52 +329,9 @@ def cmd_run(args):
             print(result.result)
             print(result.elapsed)
 
-
 def cmd_all(args):
     cmd_load_all(args)
     cmd_run(args)
-
-
-def get_parser():
-    # The top-level parser.
-    main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
-    main_parser.set_defaults(func=lambda _: main_parser.print_usage())
-    main_subparsers = main_parser.add_subparsers(dest='cmd')
-
-    # The parser for loading.
-    load_parser = main_subparsers.add_parser('load', help='Load the schema, queries, or data.')
-    load_parser.set_defaults(func=lambda _: load_parser.print_usage())
-    load_subparsers = load_parser.add_subparsers(dest='cmd_load')
-
-    load_schema_parser = load_subparsers.add_parser('schema', help='Load the LDBC SNB schema.')
-    load_schema_parser.set_defaults(func=cmd_load_schema)
-
-    load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
-    load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
-    load_query_parser.set_defaults(func=cmd_load_query)
-
-    load_data_parser = load_subparsers.add_parser('data', help='Load data.')
-    load_data_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
-    load_data_parser.set_defaults(func=cmd_load_data)
-
-    load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data.')
-    load_all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
-    load_all_parser.set_defaults(func=cmd_load_all)
-
-    # The parser for running.
-    run_parser = main_subparsers.add_parser('run', help='Run the workload(s).')
-    run_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
-    run_parser.add_argument('workload', nargs='*', help='The workload to run.')
-    run_parser.set_defaults(func=cmd_run)
-
-    # Running all from loading to running.
-    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
-    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
-    all_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
-    all_parser.set_defaults(func=cmd_all)
-
-    return main_parser
-
 
 def check_args(args):
     if (
@@ -356,7 +351,7 @@ def check_args(args):
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
 
-    if (args.cmd == 'load' and (args.cmd_load=='csv')) or args.cmd == 'all':
+    if (args.cmd == 'load' and (args.cmd_load=='csv')):
         missing = []
         for name in DATA_NAMES:
             file_path = (args.data_dir / name).with_suffix('.csv')
@@ -365,7 +360,7 @@ def check_args(args):
         if len(missing) > 0:
             raise ValueError(f'The directory "{args.data_dir}" is missing files {", ".join(missing)}.')
 
-    if (args.cmd == 'load' and (args.cmd_load in ['dir','data','all'])) or args.cmd == 'dir':
+    if (args.cmd == 'load' and (args.cmd_load in ['dir','data','all']))  or args.cmd == 'all':
         missing = []
         for name in DATA_NAMES:
             file_path = (args.data_dir / name)
