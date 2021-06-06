@@ -7,9 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 from timeit import default_timer as timer
-
+import ast
 import requests
-
+import re
 
 def get_parser():
     # The top-level parser.
@@ -26,7 +26,7 @@ def get_parser():
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
-    load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
+    load_query_parser.add_argument('workload', help="An regular expression to select he workload. example: bi1, bi[1-9], '\b(?!bi19\b)'")
     load_query_parser.set_defaults(func=cmd_load_query)
 
     load_data_parser = load_subparsers.add_parser('data', help='Load data.')
@@ -75,7 +75,7 @@ class Query:
         end = timer()
 
         if response['error']:
-            raise Error(response['message'])
+            raise Exception(str(response['message']))
 
         return ResultWithElapsed(response['results'], end - start)
 
@@ -92,10 +92,10 @@ class Workload:
         elapsed = sum(r.elapsed for r in results)
         return ResultWithElapsed(result, elapsed)
 
-
+'''
 def transform_parameter_bi1(parameter):
     return {'date': parameter['datetime']}
-
+'''
 
 class ResultTransform:
     def __init__(self):
@@ -176,7 +176,7 @@ DATA_NAMES = [
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 
 WORKLOADS = [
-    Workload('bi1', [Query('bi1', transform_parameter_bi1)], ResultTransform()[0][0]['@@result']),
+    Workload('bi1', [Query('bi1')], ResultTransform()[0][0]['@@result']),
     Workload('bi2', [Query('bi2')], ResultTransform()[0][0]['@@result']),
     Workload('bi3', [Query('bi3')], ResultTransform()[0][0]['@@result'].change_keys({
         'forumId': 'forum.id',
@@ -257,39 +257,12 @@ WORKLOADS = [
     })),
 ]
 
-
-def load_parameters(parameters_dir, workload):
-    '''Loads parameters for the given workload in the given directory.'''
-    parameters = []
-
-    parameters_file_path = parameters_dir / f'{workload.name[:2]}-{workload.name[2:]}.txt'
-    with open(parameters_file_path, 'r') as parameters_file:
-        names = []
-        types = []
-
-        for line in parameters_file:
-
-            line = line.rstrip('\n')
-
-            if len(names) == 0:
-                # First line; parse the name and type.
-                names, types = zip(*(w.split(':') for w in line.split('|')))
-                continue
-
-            parameter = {}
-
-            for name, param_type, value in zip(names, types, line.split('|')):
-                if param_type.endswith('[]'):
-                    value = value.split(';')
-
-                # Ignore other types.
-
-                parameter[name] = value
-
-            parameters.append(parameter)
-
-    return parameters
-
+'''Loads parameters for a given file'''
+def load_allparameters(file):
+    with open(file) as f: 
+        txt = f.readlines() 
+        txt = ''.join(txt).replace('\n','')
+        return ast.literal_eval(txt)
 
 def cmd_load_schema(args):
     '''Loads the schema.'''
@@ -336,14 +309,36 @@ def cmd_load_all(args):
     cmd_load_data(args)
     cmd_load_query(args)
 
+
+def median(time_list):
+    return sorted(time_list)[len(time_list)//2]
+
 def cmd_run(args):
-    '''Runs the given workload(s).'''
+    os.makedirs('results',exist_ok=True)
+    os.makedirs('elapsed_time',exist_ok=True)
+    additional_run = 2
+
+    median_time = []
+    parameters = load_allparameters(args.parameters_dir)
     for workload in args.workload:
-        parameters = load_parameters(args.parameters_dir, workload)
-        for parameter in parameters:
-            result = workload.run(parameter)
-            print(result.result)
-            print(result.elapsed)
+        time_list = []
+        print(f"running query {workload.name} for {additional_run+1} times...")
+        result = workload.run(parameters[workload.name])
+        time_list.append(result.elapsed)    
+        # write the query results to log/bi[1-20]  
+        with open(Path('results')/ (workload.name+'.txt'), 'w') as f:
+            f.write(str(result.result))
+        with open(Path('elapsed_time')/ (workload.name+'.txt'), 'w') as f:
+            f.write(str(result.elapsed))
+        
+        for i in range(additional_run):
+            result = workload.run(parameters[workload.name])
+            time_list.append(result.elapsed)    
+            with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
+                f.write(','+str(result.elapsed))
+        median_time.append(median(time_list))
+    print(median_time)
+
 
 def cmd_all(args):
     cmd_load_all(args)
@@ -360,12 +355,20 @@ def check_args(args):
             # The default is all workloads.
             args.workload = WORKLOADS
         else:
-            actual = set(args.workload)
+            r = re.compile(args.workload)
             expected = set(w.name for w in WORKLOADS)
+            actual = list(filter(r.match, expected))
+            actual = sorted(actual, key=lambda x: int(x[2:]))
+            print('Queries to run: ',','.join(actual))
+            args.workload = [w for w in WORKLOADS if w.name in actual]
+            '''
+            actual = set(args.workload)
             remaining = actual - expected
             if len(remaining) > 0:
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
+            '''
+            
 
     if (args.cmd == 'load' and (args.cmd_load=='csv')):
         missing = []

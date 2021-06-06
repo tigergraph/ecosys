@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["load", "data", "~/initial_snapshot"]
+            "args": ["run", "parameters/seed.txt", "bi1"]
         }
     ]
 }
