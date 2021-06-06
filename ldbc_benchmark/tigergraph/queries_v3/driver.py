@@ -9,7 +9,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 import ast
 import requests
-import re
+
 
 def get_parser():
     # The top-level parser.
@@ -26,7 +26,7 @@ def get_parser():
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
-    load_query_parser.add_argument('workload', help="An regular expression to select he workload. example: bi1, bi[1-9], '\b(?!bi19\b)'")
+    load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
     load_query_parser.set_defaults(func=cmd_load_query)
 
     load_data_parser = load_subparsers.add_parser('data', help='Load data.')
@@ -337,7 +337,7 @@ def cmd_run(args):
             with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
                 f.write(','+str(result.elapsed))
         median_time.append(median(time_list))
-    print(median_time)
+    print('median time are: '+','.join(median_time))
 
 
 def cmd_all(args):
@@ -355,20 +355,12 @@ def check_args(args):
             # The default is all workloads.
             args.workload = WORKLOADS
         else:
-            r = re.compile(args.workload)
-            expected = set(w.name for w in WORKLOADS)
-            actual = list(filter(r.match, expected))
-            actual = sorted(actual, key=lambda x: int(x[2:]))
-            print('Queries to run: ',','.join(actual))
-            args.workload = [w for w in WORKLOADS if w.name in actual]
-            '''
             actual = set(args.workload)
+            expected = set(w.name for w in WORKLOADS)
             remaining = actual - expected
             if len(remaining) > 0:
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
-            '''
-            
 
     if (args.cmd == 'load' and (args.cmd_load=='csv')):
         missing = []
