@@ -1,19 +1,44 @@
 USE GRAPH ldbc_snb
 select count(*) from Comment
 select count(*) from Post
-select count(*) from Organisation
-select count(*) from Place
+select count(*) from Company
+select count(*) from University
+select count(*) from City 
+select count(*) from Country
+select count(*) from Continent
 select count(*) from Forum
 select count(*) from Person
 select count(*) from Tag
 select count(*) from TagClass
-select count(*) from Person_hasInterest_Tag
-select count(*) from Forum_hasMember_Person
-select count(*) from Comment_hasTag_Tag
-select count(*) from Post_hasTag_Tag
-select count(*) from Forum_hasTag_Tag
-select count(*) from Person_knows_Person
-select count(*) from Person_likes_Comment
-select count(*) from Person_likes_Post
-select count(*) from Person_studyAt_University
-select count(*) from Person_workAt_Company
+
+CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
+    SumAccum<INT> @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
+        @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
+        @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
+    tmp = SELECT f FROM Forum:f-(CONTAINER_OF>)-Post ACCUM @@CONTAINER_OF += 1;
+    tmp = SELECT f FROM (Comment|Post):f-(HAS_CREATOR>)-Person ACCUM @@HAS_CREATOR += 1;
+    tmp = SELECT f FROM Person:f-(HAS_INTEREST>)-Tag ACCUM @@HAS_INTEREST += 1;
+    tmp = SELECT f FROM Forum:f-(HAS_MEMBER>)-Person ACCUM @@HAS_MEMBER += 1;
+    tmp = SELECT f FROM Forum:f-(HAS_MODERATOR>)-Person ACCUM @@HAS_MODERATOR += 1;
+    tmp = SELECT f FROM (Comment|Post|Forum):f-(HAS_TAG>)-Tag ACCUM @@HAS_TAG += 1;
+    tmp = SELECT f FROM Tag:f-(HAS_TYPE>)-TagClass ACCUM @@HAS_TYPE += 1;
+    tmp = SELECT f FROM (Comment|Post|Company|Person|University):f-(IS_LOCATED_IN>)-(City|Country) ACCUM @@IS_LOCATED_IN += 1;
+    tmp = SELECT f FROM (City|Country):f-(IS_PART_OF>)-(Country|Continent) ACCUM @@IS_PART_OF += 1;
+    tmp = SELECT f FROM TagClass:f-(IS_SUBCLASS_OF>)-TagClass ACCUM @@IS_SUBCLASS_OF += 1;
+    tmp = SELECT f FROM Person:f-(KNOWS)-Person ACCUM @@KNOWS += 1;
+    tmp = SELECT f FROM Person:f-(LIKES>)-(Comment|Post) ACCUM @@LIKES += 1;
+    tmp = SELECT f FROM Comment:f-(REPLY_OF>)-(Comment|Post) ACCUM @@REPLY_OF += 1;
+    tmp = SELECT f FROM Person:f-(STUDY_AT>)-University ACCUM @@STUDY_AT += 1;
+    tmp = SELECT f FROM Person:f-(WORK_AT>)-Company ACCUM @@WORK_AT += 1;
+    PRINT @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
+        @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
+        @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
+}
+
+
+# Interpret do not support DISTRIBUTED query 
+#INTERPRET QUERY stat()
+
+INSTALL QUERY stat
+RUN QUERY stat()
+DROP QUERY stat

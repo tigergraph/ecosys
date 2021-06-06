@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["load", "data", "/home/tigergraph/ldbc_data"]
+            "args": ["load", "data", "~/initial_snapshot"]
         }
     ]
 }

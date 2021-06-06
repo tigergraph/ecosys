@@ -45,7 +45,7 @@ def get_parser():
 
     # Running all from loading to running.
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
-    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.', default='/home/tigergraph/initial_snapshot')
+    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
     all_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
     all_parser.set_defaults(func=cmd_all)
 
@@ -141,23 +141,36 @@ class ResultTransform:
 
 DATA_NAMES = [
     'Comment',
+    'Comment_hasCreator_Person',
     'Comment_hasTag_Tag',
+    'Comment_isLocatedIn_Country',
+    'Comment_replyOf_Comment',
+    'Comment_replyOf_Post',
     'Forum',
+    'Forum_containerOf_Post',
     'Forum_hasMember_Person',
+    'Forum_hasModerator_Person',
     'Forum_hasTag_Tag',
     'Organisation',
+    'Organisation_isLocatedIn_Place',
     'Person',
     'Person_hasInterest_Tag',
+    'Person_isLocatedIn_City',
     'Person_knows_Person',
     'Person_likes_Comment',
     'Person_likes_Post',
     'Person_studyAt_University',
     'Person_workAt_Company',
     'Place',
+    'Place_isPartOf_Place',
     'Post',
+    'Post_hasCreator_Person',
     'Post_hasTag_Tag',
-    'TagClass',
+    'Post_isLocatedIn_Country',
     'Tag',
+    'TagClass',
+    'TagClass_isSubclassOf_TagClass',
+    'Tag_hasType_TagClass',
 ]
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
@@ -309,16 +322,19 @@ def cmd_load_csv(args):
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
+    if args.data_dir is None: 
+        subprocess.run('RUN LOADING JOB load_ldbc_snb')
+        return 
     file_paths = [(args.data_dir / name) for name in DATA_NAMES]
     gsql = 'RUN LOADING JOB load_ldbc_snb USING '
     gsql += ', '.join(f'file_{name}="ALL:{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
 
 def cmd_load_all(args):
-    '''Loads the schema, queries, and data.'''
+    '''Loads the schema, data and queries.'''
     cmd_load_schema(args)
-    cmd_load_query(args)
     cmd_load_data(args)
+    cmd_load_query(args)
 
 def cmd_run(args):
     '''Runs the given workload(s).'''
