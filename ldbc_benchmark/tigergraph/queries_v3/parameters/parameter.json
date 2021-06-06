@@ -1,0 +1,33 @@
+{
+    "bi1": {"date":"2011-07-22 00:00:00"},
+    "bi2": {"date":"2011-07-22 00:00:00", "tagClass":"Monarch"},
+    "bi3": {"tagClass":"Monarch", "country":"India"},
+    "bi4": {"country":"China"},
+    "bi5": {"tag":"Augustine_of_Hippo"},
+    "bi6": {"tag":"Augustine_of_Hippo"},
+    "bi7": {"tag":"Jorge_Luis_Borges"},
+    "bi8": {"tag":"Augustine_of_Hippo", "date":"2011-07-22 00:00:00"},
+    "bi9": {"startDate":"2011-07-22 00:00:00", "endDate":"2011-07-31 00:00:00"},
+    "bi10": {"personId":19791209302401,
+        "country":"India",
+        "tagClass":"Monarch",
+        "minPathDistance":1,
+        "maxPathDistance":3},
+    "bi11": {"country":"India", "date":"2012-09-22 00:00:00"},
+    "bi12": {"date":"2012-09-22 00:00:00", "lengthThreshold":16, "languages":"en"},
+    "bi13": {"country":"China", "endDate":"2015-09-22 00:00:00"},
+    "bi14": {"country1":"China", "country2":"Austria"},
+    "bi15": {"person1Id":2199023259725, "person2Id":24189255821493,
+        "startDate":"2011-07-22 00:00:00", "endDate":"2012-07-31 00:00:00"},
+    "bi16": {"tagA":"Humayun", "dateA":"2012-09-22 00:00:00", 
+        "tagB":"Jorge_Luis_Borges", "dateB":"2012-09-22 00:00:00", 
+        "maxKnowsLimit":4},
+    "bi17": {"tag":"Humayun", "delta":10},
+    "bi18": {"person1Id":19791209302401,
+        "tag":"Humayun"},
+    "bi19": {"city1Id":180, "city2Id":201},
+    "bi20": {"company":"Toll_Aviation", "person2Id":19791209302401}
+}
+
+
+
