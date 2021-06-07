@@ -355,7 +355,7 @@ def check_args(args):
         or args.cmd == 'all'
     ):
         # default is all the workloads
-        if args.workload == '':
+        if getattr(args, 'workload', '') == '':
             args.workload = WORKLOADS
         # exclude cases
         elif args.workload.startswith('not:'):
