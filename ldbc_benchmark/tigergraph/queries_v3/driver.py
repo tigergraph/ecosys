@@ -9,7 +9,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 import ast
 import requests
-
+import re
 
 def get_parser():
     # The top-level parser.
@@ -26,7 +26,7 @@ def get_parser():
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Load queries for workload(s).')
-    load_query_parser.add_argument('workload', nargs='*', help='The workload to load queries from.')
+    load_query_parser.add_argument('workload', nargs='?', default='', help='The workload to load queries from.')
     load_query_parser.set_defaults(func=cmd_load_query)
 
     load_data_parser = load_subparsers.add_parser('data', help='Load data.')
@@ -40,7 +40,7 @@ def get_parser():
     # The parser for running.
     run_parser = main_subparsers.add_parser('run', help='Run the workload(s).')
     run_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
-    run_parser.add_argument('workload', nargs='*', help='The workload to run.')
+    run_parser.add_argument('workload', nargs='?', default='', help='The workload to run.')
     run_parser.set_defaults(func=cmd_run)
 
     # Running all from loading to running.
@@ -50,6 +50,9 @@ def get_parser():
     all_parser.set_defaults(func=cmd_all)
 
     return main_parser
+
+def list2str(xs):
+    return ','.join([str(x) for x in xs])
 
 class ResultWithElapsed:
     def __init__(self, result, elapsed):
@@ -337,7 +340,7 @@ def cmd_run(args):
             with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
                 f.write(','+str(result.elapsed))
         median_time.append(median(time_list))
-    print('median time are: '+','.join(median_time))
+    print('median time are: '+list2str(median_time))
 
 
 def cmd_all(args):
@@ -345,23 +348,37 @@ def cmd_all(args):
     cmd_run(args)
 
 def check_args(args):
+    # Parse workload from string to a list 
     if (
         args.cmd == 'load' and (args.cmd_load == 'query' or args.cmd_load == 'all')
         or args.cmd == 'run'
         or args.cmd == 'all'
     ):
-        # If the command is all, the workload may not be defined.
-        if len(getattr(args, 'workload', [])) == 0:
-            # The default is all workloads.
+        # default is all the workloads
+        if args.workload == '':
             args.workload = WORKLOADS
-        else:
-            actual = set(args.workload)
+        # exclude cases
+        elif args.workload.startswith('not:'):
+            print(args.workload)
+            exclude = args.workload[4:].split(',')
             expected = set(w.name for w in WORKLOADS)
+            actual = expected -set(exclude)
+            args.workload = [w for w in WORKLOADS if w.name in actual]
+        # regular expression
+        elif args.workload.startswith('reg:'):
+            r = re.compile(args.workload[4:])
+            actual = list(filter(r.match, [w.name for w in WORKLOADS]))
+            print(list(actual))
+            args.workload = [w for w in WORKLOADS if w.name in actual]
+        else:
+            args.workload = args.workload.split(',')
+            expected = set(w.name for w in WORKLOADS)
+            actual = set(args.workload)            
             remaining = actual - expected
             if len(remaining) > 0:
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
-
+    print('Queries to be run:', list2str([w.name for w in args.workload]))
     if (args.cmd == 'load' and (args.cmd_load=='csv')):
         missing = []
         for name in DATA_NAMES:

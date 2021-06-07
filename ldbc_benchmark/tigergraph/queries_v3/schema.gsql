@@ -83,12 +83,12 @@ CREATE LOADING JOB load_ldbc_snb FOR GRAPH ldbc_snb {
   LOAD file_Post
     TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7) USING header="true", separator="|";
   LOAD file_Organisation
-    TO VERTEX Company VALUES ($0, $2, $3) WHERE $1=="company",
-    TO VERTEX University VALUES ($0, $2, $3) WHERE $1=="university" USING header="true", separator="|";
+    TO VERTEX Company VALUES ($0, $2, $3) WHERE $1=="Company",
+    TO VERTEX University VALUES ($0, $2, $3) WHERE $1=="University" USING header="true", separator="|";
   LOAD file_Place
-    TO VERTEX City VALUES ($0, $1, $2) WHERE $3=="city",
-    TO VERTEX Country VALUES ($0, $1, $2) WHERE $3=="country",
-    TO VERTEX Continent VALUES ($0, $1, $2) WHERE $3=="continent" USING header="true", separator="|";
+    TO VERTEX City VALUES ($0, $1, $2) WHERE $3=="City",
+    TO VERTEX Country VALUES ($0, $1, $2) WHERE $3=="Country",
+    TO VERTEX Continent VALUES ($0, $1, $2) WHERE $3=="Continent" USING header="true", separator="|";
   LOAD file_Forum
     TO VERTEX Forum VALUES ($1, $2, $0) USING header="true", separator="|";
   LOAD file_Person

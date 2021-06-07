@@ -1,7 +1,7 @@
 {
     "bi1": {"date":"2011-07-22 00:00:00"},
     "bi2": {"date":"2011-07-22 00:00:00", "tagClass":"Monarch"},
-    "bi3": {"tagClass":"Monarch", "country":"India"},
+    "bi3": {"tagClass":"Monarch", "country":"China"},
     "bi4": {"country":"China"},
     "bi5": {"tag":"Augustine_of_Hippo"},
     "bi6": {"tag":"Augustine_of_Hippo"},
@@ -13,7 +13,7 @@
         "tagClass":"Monarch",
         "minPathDistance":1,
         "maxPathDistance":3},
-    "bi11": {"country":"India", "date":"2012-09-22 00:00:00"},
+    "bi11": {"country":"India", "startDate":"2012-09-22 00:00:00"},
     "bi12": {"date":"2012-09-22 00:00:00", "lengthThreshold":16, "languages":"en"},
     "bi13": {"country":"China", "endDate":"2015-09-22 00:00:00"},
     "bi14": {"country1":"China", "country2":"Austria"},
