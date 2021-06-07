@@ -378,7 +378,7 @@ def check_args(args):
             if len(remaining) > 0:
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
-    print('Queries to be run:', list2str([w.name for w in args.workload]))
+        print('Queries to be run:', list2str([w.name for w in args.workload]))
     if (args.cmd == 'load' and (args.cmd_load=='csv')):
         missing = []
         for name in DATA_NAMES:
