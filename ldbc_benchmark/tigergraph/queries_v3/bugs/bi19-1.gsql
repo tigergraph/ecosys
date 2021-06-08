@@ -7,11 +7,9 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight DESC, person1Id ASC, person2Id ASC) @@result;
-  #GroupByAccum<INT p1, INT p2, SumAccum<INT> number> @@interactions;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @interactions;
+  GroupByAccum<INT p1, INT p2, SumAccum<INT> number> @@interactions;
   MinAccum<DOUBLE> @dist1 = 10, @dist2 = 10;  # Max path length is 10
-  SetAccum<VERTEX<Person>> @creatorId; 
-  SumAccum<UINT> @sourceId, @targetId;
+  SumAccum<UINT> @creatorId, @sourceId, @targetId;
   DOUBLE threshhold;
   INT maxIter = 0, minDistance = 0;
   city1 = {city1Id};
@@ -27,33 +25,21 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
     END;
     # expand from source
     S2 = SELECT s2 FROM S1:s1-(KNOWS)-Person:s2 WHERE s2.@sourceId == 0;
-    SM1 = SELECT m1 FROM S1:s1 -(<HAS_CREATOR)- (Comment|Post):m1 ACCUM m1.@creatorId += s1; 
-    SM2 = SELECT m2 FROM S2:s2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId += s2;
-    # there are bugs that preventing me to put these two SELECT together
+    SM1 = SELECT m1 FROM S1:s1 -(<HAS_CREATOR)- (Comment|Post):m1 ACCUM m1.@creatorId = s1.id; 
+    SM2 = SELECT m2 FROM S2:s2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId = s2.id;
     tmp = SELECT m1 
-      FROM SM1:m1 -(<REPLY_OF)- SM2:m2
-      ACCUM FOREACH s1 IN m1.@creatorId DO
-        FOREACH s2 IN m2.@creatorId DO
-          s1.@interactions += (s2 -> 1)
-        END
-      END;  
-    tmp = SELECT m1 
-      FROM SM2:m2 -(<REPLY_OF)- SM1:m1
-      ACCUM FOREACH s1 IN m1.@creatorId DO
-        FOREACH s2 IN m2.@creatorId DO
-          s1.@interactions += (s2 -> 1)
-        END
-      END; 
+      FROM SM1:m1 -(<REPLY_OF|REPLY_OF>)- SM2:m2,
+      ACCUM @@interactions += (m1.@creatorId, m2.@creatorId -> 1);
     S2 = 
-      SELECT s2 FROM S1:s1 -(KNOWS)- Person:s2 WHERE s2.@sourceId == 0
+      SELECT s2 FROM S1:s1-(KNOWS)-Person:s2 WHERE s2.@sourceId == 0
       ACCUM
-        IF s1.@interactions.get(s2) > 0 THEN
-          s2.@dist1 += s1.@dist1 + 1.0 / s1.@interactions.get(s2)
-        END,
-        s2.@sourceId = s1.@sourceId
-      POST-ACCUM # s1.@dist1 and s2.@dist2 are shortest distance to source and target, respectively
+        IF @@interactions.get(s1.id, s2.id) > 0 THEN
+          s2.@dist1 += s1.@dist1 + 1.0 / @@interactions.get(s1.id, s2.id)
+        END
+      POST-ACCUM # s2.@dist1 and s2.@dist2 are shortest distance to source and target, respectively
+        s2.@sourceId = s1.@sourceId,
         IF s2.@targetId > 0 THEN
-          @@result += RESULT(s2.@sourceId, s2.@targetId, s2.@dist1 + s2.@dist2)
+          @@dist12 += RESULT(s1.@sourceId, s2.@targetId, s1.@dist1 + s2.@dist2)
         END;
     
     # Replace S2 with S1 and remove the found person from S1 and T1
@@ -62,33 +48,21 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
     
     # expand from target
     T2 = SELECT t2 FROM T1:t1-(KNOWS)-Person:t2 WHERE t2.@targetId == 0;
-    TM1 = SELECT m1 FROM T1:t1 -(<HAS_CREATOR)- (Comment|Post):m1 ACCUM m1.@creatorId += t1; 
-    TM2 = SELECT m2 FROM T2:t2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId += t2;
-    # there are bugs that preventing me to put these two SELECT together
+    TM1 = SELECT m1 FROM T1:t1 -(<HAS_CREATOR)- (Comment|Post):m1 ACCUM m1.@creatorId = t1.id; 
+    TM2 = SELECT m2 FROM T2:t2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId = t2.id;
     tmp = SELECT m1 
-      FROM TM1:m1 -(<REPLY_OF)- TM2:m2
-      ACCUM FOREACH t1 IN m1.@creatorId DO
-        FOREACH t2 IN m2.@creatorId DO
-          t1.@interactions += (t2 -> 1)
-        END
-      END;
-    tmp = SELECT m1 
-      FROM TM2:m2 -(<REPLY_OF)- TM1:m1
-      ACCUM FOREACH t1 IN m1.@creatorId DO
-        FOREACH t2 IN m2.@creatorId DO
-          t1.@interactions += (t2 -> 1)
-        END
-      END;
+      FROM SM1:m1 -(<REPLY_OF|REPLY_OF>)- SM2:m2,
+      ACCUM @@interactions += (m1.@creatorId, m2.@creatorId -> 1);
     T2 = 
       SELECT t2 FROM T1:t1-(KNOWS)-Person:t2 WHERE t2.@targetId == 0
       ACCUM
-        IF t1.@interactions.get(t2) > 0 THEN
-          t2.@dist2 += t1.@dist2 + 1.0 / t1.@interactions.get(t2)
-        END,
-        t2.@targetId = t1.@targetId
+        IF @@interactions.get(t1.id, t2.id) > 0 THEN
+          t2.@dist2 += t1.@dist2 + 1.0 / @@interactions.get(t1.id, t2.id)
+        END
       POST-ACCUM # t2.@dist1 and t2.@dist2 are shortest distance to source and target, respectively
+        t2.@targetId = t1.@targetId,
         IF t2.@sourceId > 0 THEN
-          @@result += RESULT(t2.@sourceId, t2.@targetId, t2.@dist1 + t2.@dist2)
+          @@dist12 += RESULT(t2.@sourceId, t1.@targetId, t2.@dist1 + t2.@dist2)
         END;
     
     # Replace T2 with T1 and remove the found person from S1 and T1

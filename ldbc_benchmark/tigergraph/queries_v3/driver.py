@@ -30,11 +30,11 @@ def get_parser():
     load_query_parser.set_defaults(func=cmd_load_query)
 
     load_data_parser = load_subparsers.add_parser('data', help='Load data.')
-    load_data_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    load_data_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
     load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data.')
-    load_all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    load_all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
     load_all_parser.set_defaults(func=cmd_load_all)
 
     # The parser for running.
@@ -45,7 +45,7 @@ def get_parser():
 
     # Running all from loading to running.
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
-    all_parser.add_argument('data_dir', type=Path, help='The directory to load data from.')
+    all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
     all_parser.add_argument('parameters_dir', type=Path, help='The directory to load parameters from.')
     all_parser.set_defaults(func=cmd_all)
 
@@ -301,9 +301,10 @@ def cmd_load_data(args):
     if args.data_dir is None: 
         subprocess.run('RUN LOADING JOB load_ldbc_snb')
         return 
+
     file_paths = [(args.data_dir / name) for name in DATA_NAMES]
     gsql = 'RUN LOADING JOB load_ldbc_snb USING '
-    gsql += ', '.join(f'file_{name}="ALL:{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
+    gsql += ', '.join(f'file_{name}="{args.machine}{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
 
 def cmd_load_all(args):
@@ -379,23 +380,29 @@ def check_args(args):
                 raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
             args.workload = [w for w in WORKLOADS if w.name in actual]
         print('Queries to be run:', list2str([w.name for w in args.workload]))
-    if (args.cmd == 'load' and (args.cmd_load=='csv')):
+    
+    #check mahine_dir
+    if (args.cmd == 'load' and (args.cmd_load in ['csv','data','all']))  or args.cmd == 'all':
         missing = []
-        for name in DATA_NAMES:
-            file_path = (args.data_dir / name).with_suffix('.csv')
-            if not file_path.is_file():
-                missing.append(file_path.name)
-        if len(missing) > 0:
-            raise ValueError(f'The directory "{args.data_dir}" is missing files {", ".join(missing)}.')
+        if ':' in args.machine_dir:
+            mds = args.machine_dir.split(':')
+            if len(mds) != 2:
+                raise Exception("<data_dir> should be in format: 'machine:data_dir'")
+            args.machine =  mds[0] + ':'
+            args.data_dir = Path(mds[1])
+        else:
+            args.machine, args.data_dir = '', Path(args.machine_dir)
 
-    if (args.cmd == 'load' and (args.cmd_load in ['dir','data','all']))  or args.cmd == 'all':
-        missing = []
         for name in DATA_NAMES:
             file_path = (args.data_dir / name)
-            if not file_path.is_dir():
+            if args.cmd_load == 'csv': file_path = file_path.withsuffix('.csv')
+            if args.machine in ['', 'ALL'] and not file_path.is_dir():
                 missing.append(file_path.name)
+            if args.machine in ['', 'ALL'] and args.cmd_load == 'csv' and not file_path.is_file():
+                missing.append(file_path.name)
+            
         if len(missing) > 0:
-            raise ValueError(f'The directory "{args.data_dir}" is missing files {", ".join(missing)}.')
+            raise ValueError(f'The directory "{args.data_dir}" is missing files/directory {", ".join(missing)}.')
 
 def main():
     args = get_parser().parse_args()

@@ -31,19 +31,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
     SM2 = SELECT m2 FROM S2:s2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId += s2;
     # there are bugs that preventing me to put these two SELECT together
     tmp = SELECT m1 
-      FROM SM1:m1 -(<REPLY_OF)- SM2:m2
+      FROM SM1:m1 -(<REPLY_OF|REPLY_OF>)- SM2:m2
       ACCUM FOREACH s1 IN m1.@creatorId DO
         FOREACH s2 IN m2.@creatorId DO
           s1.@interactions += (s2 -> 1)
         END
       END;  
-    tmp = SELECT m1 
-      FROM SM2:m2 -(<REPLY_OF)- SM1:m1
-      ACCUM FOREACH s1 IN m1.@creatorId DO
-        FOREACH s2 IN m2.@creatorId DO
-          s1.@interactions += (s2 -> 1)
-        END
-      END; 
     S2 = 
       SELECT s2 FROM S1:s1 -(KNOWS)- Person:s2 WHERE s2.@sourceId == 0
       ACCUM
@@ -66,14 +59,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
     TM2 = SELECT m2 FROM T2:t2 -(<HAS_CREATOR)- (Comment|Post):m2 ACCUM m2.@creatorId += t2;
     # there are bugs that preventing me to put these two SELECT together
     tmp = SELECT m1 
-      FROM TM1:m1 -(<REPLY_OF)- TM2:m2
-      ACCUM FOREACH t1 IN m1.@creatorId DO
-        FOREACH t2 IN m2.@creatorId DO
-          t1.@interactions += (t2 -> 1)
-        END
-      END;
-    tmp = SELECT m1 
-      FROM TM2:m2 -(<REPLY_OF)- TM1:m1
+      FROM TM1:m1 -(<REPLY_OF|REPLY_OF>)- TM2:m2
       ACCUM FOREACH t1 IN m1.@creatorId DO
         FOREACH t2 IN m2.@creatorId DO
           t1.@interactions += (t2 -> 1)
