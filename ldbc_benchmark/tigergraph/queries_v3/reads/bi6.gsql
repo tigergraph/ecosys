@@ -15,7 +15,6 @@ CREATE OR REPLACE QUERY bi6(STRING tag) FOR GRAPH ldbc_snb SYNTAX _v2 {
   person3 = 
     SELECT p3 
     FROM person2:p2 -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p3;
-  
    
   M = 
     SELECT m FROM person3 -(LIKES>)- (Comment|Post):m
