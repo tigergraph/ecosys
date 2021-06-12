@@ -81,7 +81,7 @@ for query, parameters in allParameters.items():
     allParameters[query] = {k: convert(k,v) for k, v in parameters.items()}
 
 with driver.session() as session:
-    for query_variant in ["4"]: #["1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
+    for query_variant in ["6"]: #["1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
         query_num = re.sub("[^0-9]", "", query_variant)
         query_file = open(f'queries/bi-{query_variant}.cypher', 'r')
         query_spec = query_file.read()

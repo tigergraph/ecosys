@@ -1,27 +1,43 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE QUERY bi6(STRING tag) FOR GRAPH ldbc_snb SYNTAX _v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
 
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
 
   SumAccum<UINT> @authorityScore;
-  SumAccum<UINT> @popularityScore;
+  SumAccum<UINT> @score;
+  MapAccum<UINT, SumAccum<UINT>> @@popularityScore;
+  SetAccum<VERTEX<Person>> @likedPerson;
+  M2 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
+  person2 = SELECT p2 FROM M2 -(<LIKES)- Person:p2; 
 
-  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
+  # Bug: PER(p2,m,p3) behaves like PER(P2,p3)  
+  person3 = 
+    SELECT p3 
+    FROM person2:p2 -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p3;
+  
+   
+  M = 
+    SELECT m FROM person3 -(LIKES>)- (Comment|Post):m
+    ACCUM m.@score += 1;
+    
+  P = 
+    SELECT p2 FROM M:m -(HAS_CREATOR>)- person2:p2
+    ACCUM @@popularityScore += (p2.id -> m.@score); 
+    #POST-ACCUM @@result += RESULT(p2.id, p2.@popularityScore);
 
-  m1 = SELECT m FROM tagWithName -(<HAS_TAG)- (Comment|Post):m;
-  person2 = SELECT p FROM m1 -(<LIKES)- Person:p;
-
-  person2 =
-    SELECT p2
-    FROM person2:p2 -(<HAS_CREATOR.<LIKES)- Person:p3
-    ACCUM p2.@popularityScore += 1;
-
+  # Bug: PER(p2,p1) behaves like PER(p2,m,p1)  
   person1 =
     SELECT p1
-    FROM person2:p2 -(LIKES>)- m1 -(HAS_CREATOR>)- Person:p1
-    ACCUM p1.@authorityScore += p2.@popularityScore
-    POST-ACCUM @@result += RESULT(p1.id, p1.@authorityScore);
-
+    FROM person2:p2 -(LIKES>)- M2 -(HAS_CREATOR>)- Person:p1
+    ACCUM p1.@likedPerson += p2
+    POST-ACCUM 
+      FOREACH p IN p1.@likedPerson DO
+        p1.@authorityScore += @@popularityScore.get(p.id)
+      END, 
+      @@result += RESULT(p1.id, p1.@authorityScore);
+  
   PRINT @@result;
 }
+
+#INTERPRET QUERY bi6("Augustine_of_Hippo")

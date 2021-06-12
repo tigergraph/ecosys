@@ -25,42 +25,39 @@ zstd -d sf1-composite-projected-fk.tar.zst
 tar -xvf sf1-composite-projected-fk.tar
 ```
 
-
-## Checkout Current repository
-
-```sh
-git clone https://github.com/tigergraph/ecosys.git
-2cd ecosys
-3git checkout ldbc
-4cd ecosys/ldbc_benchmark/tigergraph/queries_v3
-```
-
 ## Setup
 TigerGraph must be installed and running.
 Python (at least 3.6) must be installed to use the driver script.
 The driver script also uses `requests` library.
-Install `requests` by running:
+Install `requests` and tigergraph:
+
 ```sh
 python3 -m pip install requests
-```
-
-Run
-```sh
+#install tigergraph-3.1.3
+wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
+tar -xf tigergraph-3.1.0-offline
+cd tigergraph-3.1.0-offline/
+./install.sh
+# following the instruction to install
+su tigergraph
 gadmin status
+#to check if TigerGraph is running or not.
 ```
-to check if TigerGraph is running or not.
 
-Run
+
+## Load data
+Checkout Current repository
 ```sh
-gadmin start all
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys
+git checkout ldbc
+cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 ```
-to start TigerGraph.
-
-Run
+Load schema, data, and query
 ```sh
 ./driver.py load schema
-./driver.py load query
 ./driver.py load data <data_dir>
+./driver.py load query
 # Or
 ./driver.py load all <data_dir>
 ```
