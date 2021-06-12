@@ -15,7 +15,7 @@ The `reads` directory contains the BI queries in GSQL.
 For more details, refer to the JIRA page (https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/2352251355/LDBC-SNB)
 
 
-## LDBC SNB Data 
+## Donwload LDBC SNB Data 
 LDBC data are available for scale factor 1(https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), 3(https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), 10(https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), 30(https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), 100(https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
 
 ```sh

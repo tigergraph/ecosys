@@ -1,6 +1,6 @@
 // Q7. Related Topics
 /*
-:param tag => 'Pyrenees'
+:param tag => 'Enrique_Iglesias'
 */
 MATCH
   (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message),

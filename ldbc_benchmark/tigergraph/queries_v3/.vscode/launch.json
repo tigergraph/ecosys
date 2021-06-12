@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["run", "parameters/seed.txt", "bi1"]
+            "args" : ["compare", "-w", "bi4"]
         }
     ]
 }

@@ -1,6 +1,6 @@
 // Q1. Posting summary
 /*
-:param datetime => datetime('2011-12-01T00:00:00.000')
+:param datetime => datetime('2011-12-01T11:05:56.000+00:00')
 */
 MATCH (message:Message)
 WHERE message.creationDate < $datetime
@@ -24,7 +24,7 @@ WITH
     ELSE                           3
   END AS lengthCategory,
   count(message) AS messageCount,
-  floor(sum(message.length) / count(message)) AS averageMessageLength,
+  sum(message.length) / toFloat(count(message)) AS averageMessageLength,
   sum(message.length) AS sumMessageLength
 RETURN
   year,

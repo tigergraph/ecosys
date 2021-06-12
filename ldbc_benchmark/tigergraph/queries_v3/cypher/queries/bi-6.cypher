@@ -1,6 +1,6 @@
 // Q6. Most authoritative users on a given topic
 /*
-:param tag => 'Pyrenees'
+:param tag => 'Arnold_Schwarzenegger'
 */
 MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message2:Message)-[:HAS_CREATOR]->(person1)
 OPTIONAL MATCH (message2)<-[:LIKES]-(person2:Person)

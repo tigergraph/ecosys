@@ -6,7 +6,7 @@
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
-  HeapAccum<RESULT>(20, totalWeight DESC, person1Id ASC, person2Id ASC) @@result;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
   #GroupByAccum<INT p1, INT p2, SumAccum<INT> number> @@interactions;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @interactions;
   MinAccum<DOUBLE> @dist1 = 10, @dist2 = 10;  # Max path length is 10

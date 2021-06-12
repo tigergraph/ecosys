@@ -1,11 +1,10 @@
 // Q15. Weighted interaction paths
 /*
-:param [{ person1Id, person2Id, startDate, endDate }] => {
-  RETURN
-    2 AS person1Id,
-    4 AS person2Id,
-    datetime('2011-06-01') AS startDate,
-    datetime('2012-05-31') AS endDate
+:param [{ person1Id, person2Id, startDate, endDate }] => { RETURN
+    21990232564808 AS person1Id,
+    26388279076936 AS person2Id,
+    datetime('2010-11-01') AS startDate,
+    datetime('2010-12-01') AS endDate
 }
 */
 MATCH

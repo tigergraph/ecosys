@@ -1,0 +1,31 @@
+{
+    "datetime":"DATETIME",
+    "date": "DATETIME",
+    "dateA": "DATETIME",
+    "dateB": "DATETIME",
+    "startDate":"DATETIME",
+    "endDate":"DATETIME",
+    "tagClass":"STRING",
+    "country":"STRING",
+    "country1":"STRING",
+    "country2":"STRING",
+    "company":"STRING",
+    "tag":"STRING",
+    "tagA":"STRING",
+    "tagB":"STRING",
+    "languages":"STRING[]",
+    "minPathDistance":"LONG",
+    "maxPathDistance":"LONG",
+    "maxKnowsLimit":"LONG",
+    "lengthThreshold":"LONG",
+    "delta":"LONG",
+    "personId":"ID",
+    "person1Id":"ID",
+    "person2Id":"ID",
+    "city1Id":"ID",
+    "city2Id":"ID"
+}
+
+
+
+

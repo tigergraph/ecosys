@@ -1,6 +1,9 @@
 // Q11. Friend triangles
 /*
-:param [{ country, startDate }] => { RETURN 'France' AS country, datetime('2010-05-01') AS startDate }
+:param [{ country, startDate }] => { RETURN
+  'Belarus' AS country,
+  datetime('2010-06-01') AS startDate
+}
 */
 MATCH (country:Country {name: $country})
 MATCH (a:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country)

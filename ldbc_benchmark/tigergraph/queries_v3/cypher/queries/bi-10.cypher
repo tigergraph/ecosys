@@ -3,9 +3,9 @@
 /*
 :param [{ personId, country, tagClass, minPathDistance, maxPathDistance }] => {
   RETURN
-    5 AS personId,
-    'France' AS country,
-    'Sports' AS tagClass,
+    30786325588624 AS personId,
+    'China' AS country,
+    'MusicalArtist' AS tagClass,
     2 AS minPathDistance,
     3 AS maxPathDistance
 }

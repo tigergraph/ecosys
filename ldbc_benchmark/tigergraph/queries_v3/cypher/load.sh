@@ -1,109 +1,65 @@
-# original load-in-one-step.sh runs many files
-# to make reading and editing easier, I put wrote them in functons
-# and finally run
-# stopDelete && concate && replaceHeader && import
-
-: ${RAW_DIR:?"Environment variable RAW_DIR is unset or empty"}
+# modified from https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh
+# stopDelete && import && start
 : ${CSV_DIR:?"Environment variable CSV_DIR is unset or empty"}
-: ${POSTFIX:?"Environment variable POSTFIX is unset or empty"}
-
-# stop neo4j and delete the data in Neo4j
 stopDelete() {
-    delete the neo4j database
     $NEO4J_HOME/bin/neo4j stop
-    rm -rf $DATA_DIR
+    #rm -rf $NEO4J_HOME/data/databases/neo4j
     echo "Done stop neo4j and delete neo4j data"
 }
-stopDelete
 
-# Prepare data
-# concatenate files of each type into one csv file 
-# and store at $CSV_DIR 
-concate() {
-    if [ -d $CSV_DIR ]; then
-        rm -r $CSV_DIR
-    fi
-    mkdir -p $CSV_DIR
-
-    for d in $(ls $RAW_DIR); do
-    for f in $(ls $RAW_DIR/$d/*.csv); do
-        #echo $f
-        target=$CSV_DIR/$d.csv
-        if [ ! -f $target ]; then
-            cp $f $target
-        else
-            tail -n +2 $f >> $target #append the file without header to target 
-        fi
-    done
-    done
-    echo "done concatenate"
+removeFirstLine(){
+    for t in static dynamic ; do
+        for d in $(ls $CSV_DIR/initial_snapshot/$t); do
+            for f in $(ls $CSV_DIR/initial_snapshot/$t/$d/*.csv); do
+                tail -n +2 $f > $f.tmp && mv $f.tmp $f 
+                #echo $f
+            done
+        done
+    done 
+    echo "Done remove the header of csv files"
 }
-concate 
 
-# Replace the header
-showHeader() {
-    for f in $(ls ${CSV_DIR}); do
-        echo "${f::-4} : $(head -1 ${CSV_DIR}/$f)"
-    done
-}
-replaceHeader() {
-    while read line; do
-        IFS=' ' read -r -a array <<< $line
-        filename=${array[0]}
-        header=${array[1]}
-        sed -i "1s/.*/$header/" "${CSV_DIR}/${filename}${POSTFIX}"
-    done < headers.txt
-    echo "Done replace header"
-}
-replaceHeader
-
-# import the data
 import() {
     $NEO4J_HOME/bin/neo4j-admin import \
     --id-type=INTEGER \
-    --nodes=Place="${CSV_DIR}/Place${POSTFIX}" \
-    --nodes=Organisation="${CSV_DIR}/Organisation${POSTFIX}" \
-    --nodes=TagClass="${CSV_DIR}/TagClass${POSTFIX}" \
-    --nodes=Tag="${CSV_DIR}/Tag${POSTFIX}" \
-    --nodes=Forum="${CSV_DIR}/Forum${POSTFIX}" \
-    --nodes=Person="${CSV_DIR}/Person${POSTFIX}" \
-    --nodes=Message:Comment="${CSV_DIR}/Comment${POSTFIX}" \
-    --nodes=Message:Post="${CSV_DIR}/Post${POSTFIX}" \
-    --relationships=IS_PART_OF="${CSV_DIR}/Place_isPartOf_Place${POSTFIX}" \
-    --relationships=IS_SUBCLASS_OF="${CSV_DIR}/TagClass_isSubclassOf_TagClass${POSTFIX}" \
-    --relationships=IS_LOCATED_IN="${CSV_DIR}/Organisation_isLocatedIn_Place${POSTFIX}" \
-    --relationships=HAS_TYPE="${CSV_DIR}/Tag_hasType_TagClass${POSTFIX}" \
-    --relationships=HAS_CREATOR="${CSV_DIR}/Comment_hasCreator_Person${POSTFIX}" \
-    --relationships=IS_LOCATED_IN="${CSV_DIR}/Comment_isLocatedIn_Country${POSTFIX}" \
-    --relationships=REPLY_OF="${CSV_DIR}/Comment_replyOf_Comment${POSTFIX}" \
-    --relationships=REPLY_OF="${CSV_DIR}/Comment_replyOf_Post${POSTFIX}" \
-    --relationships=CONTAINER_OF="${CSV_DIR}/Forum_containerOf_Post${POSTFIX}" \
-    --relationships=HAS_MEMBER="${CSV_DIR}/Forum_hasMember_Person${POSTFIX}" \
-    --relationships=HAS_MODERATOR="${CSV_DIR}/Forum_hasModerator_Person${POSTFIX}" \
-    --relationships=HAS_TAG="${CSV_DIR}/Forum_hasTag_Tag${POSTFIX}" \
-    --relationships=HAS_INTEREST="${CSV_DIR}/Person_hasInterest_Tag${POSTFIX}" \
-    --relationships=IS_LOCATED_IN="${CSV_DIR}/Person_isLocatedIn_City${POSTFIX}" \
-    --relationships=KNOWS="${CSV_DIR}/Person_knows_Person${POSTFIX}" \
-    --relationships=LIKES="${CSV_DIR}/Person_likes_Comment${POSTFIX}" \
-    --relationships=LIKES="${CSV_DIR}/Person_likes_Post${POSTFIX}" \
-    --relationships=HAS_CREATOR="${CSV_DIR}/Post_hasCreator_Person${POSTFIX}" \
-    --relationships=HAS_TAG="${CSV_DIR}/Comment_hasTag_Tag${POSTFIX}" \
-    --relationships=HAS_TAG="${CSV_DIR}/Post_hasTag_Tag${POSTFIX}" \
-    --relationships=IS_LOCATED_IN="${CSV_DIR}/Post_isLocatedIn_Country${POSTFIX}" \
-    --relationships=STUDY_AT="${CSV_DIR}/Person_studyAt_University${POSTFIX}" \
-    --relationships=WORK_AT="${CSV_DIR}/Person_workAt_Company${POSTFIX}" \
+    --ignore-empty-strings=true \
+    --nodes=Place="./headers/static/Place.csv$(find ${CSV_DIR}/initial_snapshot/static/Place -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Organisation="./headers/static/Organisation.csv$(find ${CSV_DIR}/initial_snapshot/static/Organisation -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=TagClass="./headers/static/TagClass.csv$(find ${CSV_DIR}/initial_snapshot/static/TagClass -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Tag="./headers/static/Tag.csv$(find ${CSV_DIR}/initial_snapshot/static/Tag -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Forum="./headers/dynamic/Forum.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Forum -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Person="./headers/dynamic/Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Message:Comment="./headers/dynamic/Comment.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment -type f -name 'part-*.csv' -printf ',%p')" \
+    --nodes=Message:Post="./headers/dynamic/Post.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Post -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_PART_OF="./headers/static/Place_isPartOf_Place.csv$(find ${CSV_DIR}/initial_snapshot/static/Place_isPartOf_Place -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_SUBCLASS_OF="./headers/static/TagClass_isSubclassOf_TagClass.csv$(find ${CSV_DIR}/initial_snapshot/static/TagClass_isSubclassOf_TagClass -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_LOCATED_IN="./headers/static/Organisation_isLocatedIn_Place.csv$(find ${CSV_DIR}/initial_snapshot/static/Organisation_isLocatedIn_Place -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_TYPE="./headers/static/Tag_hasType_TagClass.csv$(find ${CSV_DIR}/initial_snapshot/static/Tag_hasType_TagClass -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_CREATOR="./headers/dynamic/Comment_hasCreator_Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment_hasCreator_Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_LOCATED_IN="./headers/dynamic/Comment_isLocatedIn_Country.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment_isLocatedIn_Country -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=REPLY_OF="./headers/dynamic/Comment_replyOf_Comment.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment_replyOf_Comment -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=REPLY_OF="./headers/dynamic/Comment_replyOf_Post.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment_replyOf_Post -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=CONTAINER_OF="./headers/dynamic/Forum_containerOf_Post.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Forum_containerOf_Post -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_MEMBER="./headers/dynamic/Forum_hasMember_Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Forum_hasMember_Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_MODERATOR="./headers/dynamic/Forum_hasModerator_Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Forum_hasModerator_Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_TAG="./headers/dynamic/Forum_hasTag_Tag.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Forum_hasTag_Tag -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_INTEREST="./headers/dynamic/Person_hasInterest_Tag.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_hasInterest_Tag -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_LOCATED_IN="./headers/dynamic/Person_isLocatedIn_City.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_isLocatedIn_City -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=KNOWS="./headers/dynamic/Person_knows_Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_knows_Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=LIKES="./headers/dynamic/Person_likes_Comment.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_likes_Comment -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=LIKES="./headers/dynamic/Person_likes_Post.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_likes_Post -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_CREATOR="./headers/dynamic/Post_hasCreator_Person.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Post_hasCreator_Person -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_TAG="./headers/dynamic/Comment_hasTag_Tag.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Comment_hasTag_Tag -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=HAS_TAG="./headers/dynamic/Post_hasTag_Tag.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Post_hasTag_Tag -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=IS_LOCATED_IN="./headers/dynamic/Post_isLocatedIn_Country.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Post_isLocatedIn_Country -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=STUDY_AT="./headers/dynamic/Person_studyAt_University.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_studyAt_University -type f -name 'part-*.csv' -printf ',%p')" \
+    --relationships=WORK_AT="./headers/dynamic/Person_workAt_Company.csv$(find ${CSV_DIR}/initial_snapshot/dynamic/Person_workAt_Company -type f -name 'part-*.csv' -printf ',%p')" \
     --delimiter '|'
-    echo "Done import"
 }
-import
-
-
-# Data is located at the default place.
-# use 'du -sh $DATA_DIR' to check the loaded data size 
-export DATA_DIR=$NEO4J_HOME/data/databases
 
 # Start the neo4j
 start() {
-    $NEO4J_HOME/bin/neo4j restart
+    $NEO4J_HOME/bin/neo4j start
 }
-start
+
+stopDelete && import && start

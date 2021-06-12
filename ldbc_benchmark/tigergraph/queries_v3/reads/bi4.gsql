@@ -1,32 +1,46 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi4(STRING country) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
 
-  # The description is wrong.
-  # There is no mention of the parameter date in the description.
-  # The Neo4j implementation follows the old version.
+  # The description is changed
+  #  Find the most popular *Forums* by *Country*, where the popularity of a *Forum*
+  # is measured by the number of members that *Forum* has from a given *Country*.
+  # Calculate the top 100 most popular *Forums*.
+  # If a *Forum* is popular in multiple countries, it should only included in the top 100 once.
+  # In case of a tie, the *Forum*(s) with the smaller id value(s) should be selected.
 
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     DATETIME personCreationDate, UINT messageCount> RESULT;
 
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
-
-  SumAccum<UINT> @memberCount;
+  MapAccum<VERTEX<Country>, UINT> @memberCount;
+  MaxAccum<UINT> @maxMemberCount;
+  #SumAccum<UINT> @memberCount;
   SumAccum<UINT> @messageCount;
 
-  countryWithName = SELECT c FROM Country:c WHERE c.name == country;
-
-  forums =
+  popularForums =
     SELECT f
-    FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
-    ACCUM f.@memberCount += 1
-    ORDER BY f.@memberCount DESC, f.id ASC
+    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
+    WHERE f.creationDate > date
+    PER(c,p,f)
+    ACCUM f.@memberCount += (c -> 1)
+    POST-ACCUM
+      FOREACH (city, num) IN f.@memberCount DO
+        f.@maxMemberCount += num
+      END
+    ORDER BY f.@maxMemberCount DESC, f.id ASC
     LIMIT 100;
 
-  persons = SELECT p FROM forums -(HAS_MEMBER>)- Person:p;
-  persons =
+  P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p;
+  tmp =
     SELECT p
-    FROM forums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- persons:p
+    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- P:p
+    PER(m, p)
     ACCUM p.@messageCount += 1
+    POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
+  tmp = 
+    SELECT p FROM P:p WHERE p.@messageCount == 0
     POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
 
   PRINT @@result;
 }
+
+INTERPRET QUERY bi4("2001-01-20T00:00:00")
