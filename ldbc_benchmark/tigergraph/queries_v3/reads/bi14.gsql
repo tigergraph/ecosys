@@ -5,7 +5,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) FOR G
   HeapAccum<RESULT>(0, score DESC, person1Id ASC, person2Id ASC) @@result;
   MapAccum<STRING, GroupByAccum<UINT person1Id, UINT person2Id, SumAccum<UINT> score>> @@pairScores;
   HeapAccum<RESULT>(1, score DESC, person1Id ASC, person2Id ASC) @@topPairScores;
-
+  SetAccum<VERTEX<Person>> @@person2Set;
   SumAccum<STRING> @city;
 
   countryWithName1 = SELECT c FROM Country:c WHERE c.name == country1;
@@ -14,9 +14,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) FOR G
   person1s =
     SELECT p
     FROM countryWithName1 -(<IS_PART_OF)- City:c -(<IS_LOCATED_IN)- Person:p
-    ACCUM p.@city = c.name;
+    ACCUM p.@city = c.name;  
 
-  person2s = SELECT p FROM countryWithName2 -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+  person2s = SELECT p FROM countryWithName2 -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    ACCUM @@person2Set += p; 
 
   # case 1
   tmp =

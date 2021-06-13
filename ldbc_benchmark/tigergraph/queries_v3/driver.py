@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 import json
 import os
@@ -431,7 +430,6 @@ def check_args(args):
         elif args.workload.startswith('reg:'):
             r = re.compile(args.workload[4:])
             actual = list(filter(r.match, [w.name for w in WORKLOADS]))
-            print(list(actual))
             args.workload = [w for w in WORKLOADS if w.name in actual]
         else:
             args.workload = args.workload.split(',')

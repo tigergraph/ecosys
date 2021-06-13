@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 from neo4j import GraphDatabase, time
 from datetime import datetime
 from neo4j.time import DateTime, Date
@@ -10,6 +11,16 @@ import ast
 import os
 from pathlib import Path
 
+parser = argparse.ArgumentParser(description='Cypher driver')
+parser.add_argument('-q','--queries', default='', type=str,
+    help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"')
+args = parser.parse_args()
+
+result_dir = Path('results') 
+time_dir = Path('elapsed_time')
+result_dir.mkdir(parents=True, exist_ok=True)
+time_dir.mkdir(parents=True, exist_ok=True)
+
 #@unit_of_work(timeout=300)
 def query_fun(tx, query_spec, query_parameters):
     result = tx.run(query_spec, query_parameters)
@@ -18,10 +29,7 @@ def query_fun(tx, query_spec, query_parameters):
         values.append(record.values())
     return values
 
-result_dir = Path('results') 
-time_dir = Path('elapsed_time')
-result_dir.mkdir(parents=True, exist_ok=True)
-time_dir.mkdir(parents=True, exist_ok=True)
+
 
 def writeResult(result, filename):
     with open(filename, 'w') as f:
@@ -55,37 +63,54 @@ def readJson(paramFile):
     with open(paramFile) as f: 
         txt = f.read().replace('\n','')
         return ast.literal_eval(txt)
-driver = GraphDatabase.driver("bolt://localhost:7687")
 
-
-
-# read parameters
-allParameters = readJson('../parameters/sf1.json')
-dataType = readJson('../parameters/dataType.json')
-# replace the date in bi1 to datetime
-allParameters['bi1'] = {'datetime':allParameters['bi1']['date']}
-def convert(k,v):
-    if dataType[k] in ["ID", "LONG"]:
-        return int(v)
-    if dataType[k] == "DATE":
-        return convert_to_date(v)
-    if dataType[k] == "DATETIME":
-        return convert_to_datetime(v)
-    if dataType[k] == "STRING":
-        return v
-    if dataType[k] == "STRING[]":
-        return v.split(';')
+def main():
+    if args.queries == 'all' or '':
+        actual = {str(i) for i in range(20)}
+    elif args.queries.startswith('not:'):
+        all = {str(i) for i in range(20)}
+        exclude = args.queries[4:].split(',')
+        actual = all - exclude
+    elif args.queries.startswith('reg:'):
+        r = re.compile(args.queries[4:])
+        actual = list(filter(r.match, [str(i) for i in range(20)]))
     else:
-        raise Exception(f'Error: Datatype of {k}:{v} is unknown.')
-for query, parameters in allParameters.items():
-    allParameters[query] = {k: convert(k,v) for k, v in parameters.items()}
+        actual = args.queries.split(',')
+    queries = [str(i) for i in range(20) if str(i) in actual]
+    print('Queries:'+''.join(queries))
+    driver = GraphDatabase.driver("bolt://localhost:7687")
 
-with driver.session() as session:
-    for query_variant in ["6"]: #["1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
-        query_num = re.sub("[^0-9]", "", query_variant)
-        query_file = open(f'queries/bi-{query_variant}.cypher', 'r')
-        query_spec = query_file.read()
-        run_query(session, query_variant, query_spec, allParameters['bi'+str(query_variant)])
-            
+    # read parameters
+    allParameters = readJson('../parameters/sf1.json')
+    dataType = readJson('../parameters/dataType.json')
+    # replace the date in bi1 to datetime
+    # allParameters['bi1'] = {'datetime':allParameters['bi1']['date']}
+    def convert(k,v):
+        if dataType[k] in ["ID", "LONG"]:
+            return int(v)
+        if dataType[k] == "DATE":
+            return convert_to_date(v)
+        if dataType[k] == "DATETIME":
+            return convert_to_datetime(v)
+        if dataType[k] == "STRING":
+            return v
+        if dataType[k] == "STRING[]":
+            return v.split(';')
+        else:
+            raise Exception(f'Error: Datatype of {k}:{v} is unknown.')
+    for query, parameters in allParameters.items():
+        allParameters[query] = {k: convert(k,v) for k, v in parameters.items()}
 
-driver.close()
+    with driver.session() as session:
+        for query_variant in queries: #["1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
+            query_num = re.sub("[^0-9]", "", query_variant)
+            query_file = open(f'queries/bi-{query_variant}.cypher', 'r')
+            query_spec = query_file.read()
+            run_query(session, query_variant, query_spec, allParameters['bi'+str(query_variant)])
+                
+
+    driver.close()
+
+if __name__ == '__main__':
+    main()
+
