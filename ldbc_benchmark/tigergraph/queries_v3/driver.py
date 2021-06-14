@@ -241,12 +241,7 @@ WORKLOADS = [
     })),
     Workload(
         'bi15',
-        [
-            Query('bi15_add_weighted_edges'),
-            Query('bi15'),
-            Query('bi15_delete_weighted_edges'),
-        ],
-        ResultTransform()[1][0]['@@result'].change_keys({'personId': 'person.id'}),
+        [Query('bi15'),],ResultTransform()[0][0]['@@result'].change_keys({'personId': 'person.id'}),
     ),
     Workload('bi16', [Query('bi16')], ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']).change_keys({
         'personId': 'person.id',

@@ -1,122 +1,111 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi15_add_weighted_edges(DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
-
-  # MapAccum<VERTEX<Person>, DOUBLE> does not work due to a bug.
-  MapAccum<UINT, DOUBLE> @weight;
-
-  forums = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startDate AND endDate;
-
-  messages =
-    SELECT m
-    FROM forums -(CONTAINER_OF>.<REPLY_OF*)- (Comment|Post):m;
-
-  messages2 =
-    SELECT m2
-    FROM messages:m1 -(<REPLY_OF)- messages:m2 -(HAS_CREATOR>)- Person:p2
-    ACCUM
-      IF m1.type == "Post" THEN
-        m1.@weight += (p2.id -> 1)
-      ELSE
-        m1.@weight += (p2.id -> 0.5)
-      END;
-
-  persons1 =
-    SELECT p1
-    FROM messages:m1 -(HAS_CREATOR>)- Person:p1
-    ACCUM
-      FOREACH (p2Id, w) IN m1.@weight DO
-        p1.@weight += (p2Id -> w)
-      END;
-
-  persons2 =
-    SELECT p2
-    FROM persons1:p1 -(KNOWS)- Person:p2
-    ACCUM
-      DOUBLE weight = p1.@weight.get(p2.id) + p2.@weight.get(p1.id),
-      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, weight);
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi15_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
-  tmp =
-    SELECT v2
-    FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
-    ACCUM DELETE (e);
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+# DISTRIBUTED QUERY NOT SUPPORTED
+CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
 
   TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
-
-  BagAccum<RESULT> @@midResult;
   HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
-  OrAccum @@stop;
+  OrAccum @@found, @@next=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @paths;
+  ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
+  OrAccum @visited1, @visited2;
 
-  MapAccum<STRING, DOUBLE> @path1;
-  MapAccum<STRING, DOUBLE> @path2;
-  OrAccum @visited1;
-  OrAccum @visited2;
+  SetAccum<VERTEX<Person>> @@PersonInShortestPath, @@p1, @@p2;
+  SumAccum<UINT> @creatorId;
+  #GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight;
+  MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
+  STRING jsonStr;
+  SumAccum<DOUBLE> @@weight;
 
-  start = {person1Id, person2Id};
-
-  current =
-    SELECT p
-    FROM start:p
-    ACCUM
-      IF p == person1Id THEN p.@visited1 = TRUE, p.@path1 += ("[" -> 0.0) END,
-      IF p == person2Id THEN p.@visited2 = TRUE, p.@path2 += ("]" -> 0.0) END;
-
-  WHILE NOT @@stop AND current.size() > 0 DO
-    current =
+  S1 = {person1Id};
+  S2 = {person2Id};
+  S1 = Select s FROM S1:s ACCUM s.@visited1 = TRUE, s.@paths += [s];
+  S2 = Select s FROM S2:s ACCUM s.@visited2 = TRUE, s.@paths += [s];
+  
+  WHILE NOT @@found AND @@next DO
+    @@next = false;
+    S1 = 
       SELECT t
-      FROM current:s -(WEIGHT_DOUBLE:e)- Person:t
-      WHERE (s.@visited1 AND NOT t.@visited1) OR (s.@visited2 AND NOT t.@visited2)
-      ACCUM
-        IF (s.@visited1 AND t.@visited2) OR (s.@visited2 AND t.@visited1) THEN
-          # Meet on the edge.
-          @@stop += TRUE,
-          # We don't want to store the result twice.
-          # Store once only for one direction.
-          IF s.@visited1 AND t.@visited2 THEN
-            FOREACH (p1, w1) IN s.@path1 DO
-              FOREACH (p2, w2) IN t.@path2 DO
-                STRING path = p1 + to_string(s.id) + ", " + to_string(t.id) + p2,
-                DOUBLE weight = w1 + e.weight + w2,
-                @@midResult += RESULT(parse_json_array(path), weight)
-              END
+      FROM S1:s -(KNOWS)- Person:t
+      WHERE NOT t.@visited1
+      ACCUM 
+        IF t.@visited2 THEN #found the shortest path
+          @@found += TRUE,
+          FOREACH p1 IN s.@paths DO
+            FOREACH p2 IN t.@paths DO
+              @@shortestPaths += p1 + p2
             END
           END
-        END,
-
-        IF s.@visited1 THEN
-          t.@visited1 = TRUE,
-          FOREACH (p, w) IN s.@path1 DO
-            t.@path1 += (p + to_string(s.id) + ", " -> w + e.weight)
+        ELSE #not found
+          @@next += true,
+          t.@visited1 += TRUE,
+          FOREACH p IN s.@paths DO
+            t.@paths += p + [t]
           END
-        ELSE IF s.@visited2 THEN
-          t.@visited2 = TRUE,
-          FOREACH (p, w) IN s.@path2 DO
-            t.@path2 += (", " + to_string(s.id) + p -> e.weight + w)
-          END
-        END
-
-      POST-ACCUM
-        IF NOT @@stop AND t.@visited1 AND t.@visited2 THEN
-          # Meet on the vertex.
-          @@stop += TRUE,
-          FOREACH (p1, w1) IN t.@path1 DO
-            FOREACH (p2, w2) IN t.@path2 DO
-              STRING path = p1 + to_string(t.id) + p2,
-              DOUBLE weight = w1 + w2,
-              @@midResult += RESULT(parse_json_array(path), weight)
+        END;
+    
+    IF @@found OR NOT @@next THEN
+      BREAK;
+    END;
+    @@next = false;
+    S2 =   
+      SELECT t
+      FROM S2:s -(KNOWS)- Person:t
+      WHERE NOT t.@visited2
+      ACCUM 
+        IF t.@visited1 THEN #found the shortest path
+          @@found += TRUE,
+          FOREACH p1 IN s.@paths DO
+            FOREACH p2 IN t.@paths DO
+              @@shortestPaths += p2 + p1
             END
+          END
+        ELSE #not found
+          @@next += true,
+          t.@visited2 += TRUE,
+          FOREACH p IN s.@paths DO
+            t.@paths += [t] + p 
           END
         END;
   END;
-
-  # Need the intermediate result to get the specific size of the result.
-  @@result.resize(@@midResult.size());
-  FOREACH r IN @@midResult DO
-    @@result += r;
+  #PRINT @@shortestPaths;
+  
+  
+  #Calculate weight for each path
+  FOREACH path IN @@shortestPaths DO
+    FOREACH p in path DO
+      @@PersonInShortestPath += p;
+    END;
   END;
 
-  PRINT @@result;
+  persons = {@@PersonInShortestPath};
+  comments = SELECT m FROM persons:p -(<HAS_CREATOR)- Comment:m ACCUM m.@creatorId = p.id;
+  commentsInForum = SELECT m 
+    FROM comments:m -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f 
+    WHERE f.creationDate BETWEEN startDate AND endDate;
+  postsInForum = SELECT p 
+    FROM persons:c -(<HAS_CREATOR)- Post:p -(<CONTAINER_OF)- Forum:f 
+    WHERE f.creationDate BETWEEN startDate AND endDate
+    ACCUM p.@creatorId = c.id;
+  tmp = SELECT m2
+    FROM comments:m1 -(REPLY_OF>)- postsInForum:m2
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0)),
+      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->1.0));
+  tmp = SELECT m2
+    FROM comments:m1 -(REPLY_OF>)- commentsInForum:m2
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5)),
+      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->0.5));
+  
+  @@result.resize(@@shortestPaths.size());
+  FOREACH path IN @@shortestPaths DO
+    @@weight = 0.0;
+    jsonStr = "[";
+    FOREACH i in range[0,path.size()-2] DO 
+       jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id);
+    END;
+    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@result += RESULT(parse_json_array(jsonStr), @@weight);
+  END;
+  PRINT @@result; 
 }
+#INSTALL QUERY bi15
+#RUN QUERY bi15(2199023259725,24189255821493,"2011-07-22T00:00:00","2012-07-31T00:00:00")

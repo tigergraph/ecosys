@@ -25,6 +25,17 @@ zstd -d sf1-composite-projected-fk.tar.zst
 tar -xvf sf1-composite-projected-fk.tar
 ```
 
+Prepare the data. 
+
+```sh
+cd ~
+cd sf1/csv/bi/composite-projected-fk/initial_snapshot
+mv static/* dynamic/* .
+# remove the empty files, these files can cause loading to fail
+for f in *; do rm $f/_SUCCESS; done
+```
+
+
 ## Setup
 TigerGraph must be installed and running.
 Python (at least 3.6) must be installed to use the driver script.
@@ -44,6 +55,11 @@ gadmin status
 #to check if TigerGraph is running or not.
 ```
 
+BI 15 requires big int to string.
+```sh
+#Copy the user defined function to tigergraph
+cp ExprFunctions.hpp $(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+```
 
 ## Load data
 Checkout Current repository
@@ -56,13 +72,15 @@ cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 Load schema, data, and query
 ```sh
 ./driver.py load schema
-./driver.py load data <data_dir>
+# ./driver.py load data <data_dir>
+./driver.py load data ~/initial_snapshot 
 ./driver.py load query
 # Or
-./driver.py load all <data_dir>
+./driver.py load all ~/initial_snapshot
 ```
 to load the schema, the queries from the workloads, and the data.
 You can also specify the workloads from which to install the queries.
+
 
 ## Run
 
