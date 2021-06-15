@@ -23,8 +23,8 @@
         "tagB":"Manuel_Noriega", "dateB":"2012-06-02T00:00:00", 
         "maxKnowsLimit":5},
     "bi17": {"tag":"Slavoj_Žižek", "delta":4},
-    "bi18": {"person1Id":19791209302401,
-        "tag":"Humayun"},
+    "bi18": {"person1Id":26388279076936,
+        "tag":"Frank_Sinatra"},
     "bi19": {"city1Id":180, "city2Id":201},
     "bi20": {"company":"Toll_Aviation", "person2Id":19791209302401}
 }
