@@ -1,6 +1,10 @@
 // Q17. Information propagation analysis
 /*
-:param [{ tag, delta }] => {RETURN 'Snowboard' AS tag, 10 AS delta}
+:param [{ tag, delta }] => {
+  RETURN
+    'Slavoj_Žižek' AS tag,
+    4 AS delta
+  }
 */
 MATCH
   (tag:Tag {name: $tag}),
@@ -12,6 +16,6 @@ MATCH
 WHERE forum1 <> forum2
   AND message2.creationDate > message1.creationDate + duration({hours: $delta})
   AND NOT (forum2)-[:HAS_MEMBER]->(person1)
-RETURN person1.id, count(message2) AS messageCount
-ORDER BY person1.id ASC
+RETURN count(DISTINCT message2.id) AS messageCount, person1.id
+ORDER BY messageCount DESC, person1.id ASC 
 LIMIT 10

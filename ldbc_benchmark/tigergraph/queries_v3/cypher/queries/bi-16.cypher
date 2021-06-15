@@ -2,10 +2,10 @@
 // These parameters return a 'false positive' as the maxKnowsLimit is set too high.
 /*
 :param [{ tagA, dateA, tagB, dateB, maxKnowsLimit }] => { RETURN
-  'Pyrenees' AS tagA,
+  'Augustine_of_Hippo' AS tagA,
   date('2011-10-10') AS dateA,
-  'Snowboard' AS tagB,
-  date('2012-03-04') AS dateB,
+  'Manuel_Noriega' AS tagB,
+  date('2012-06-02') AS dateB,
   5 AS maxKnowsLimit
 }
 */
@@ -17,10 +17,10 @@ WITH param.letter AS paramLetter, param.tag AS paramTagX, param.date AS paramDat
 CALL {
   WITH paramTagX, paramDateX
   MATCH (person1:Person)<-[:HAS_CREATOR]-(message1:Message)-[:HAS_TAG]->(tag:Tag {name: paramTagX})
-  WHERE date(message1.creationDate) = paramDateX
+  WHERE date(message1.creationDate) = date(paramDateX)
   // filter out people with more than $maxKnowsLimit friends who posted the same kind of message
   OPTIONAL MATCH (person1)-[:KNOWS]-(person2:Person)<-[:HAS_CREATOR]-(message2:Message)-[:HAS_TAG]->(tag)
-  WHERE date(message2.creationDate) = paramDateX
+  WHERE date(message2.creationDate) = date(paramDateX)
   WITH person1, count(DISTINCT message1) AS cm, count(DISTINCT person2) AS cp2
   WHERE cp2 <= $maxKnowsLimit
   // return count

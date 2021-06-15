@@ -337,7 +337,7 @@ def writeResult(result, filename):
 def cmd_run(args):
     os.makedirs('results',exist_ok=True)
     os.makedirs('elapsed_time',exist_ok=True)
-    additional_run = 2
+    additional_run = 0
 
     median_time = []
     parameters = load_allparameters(args.parameters_dir)

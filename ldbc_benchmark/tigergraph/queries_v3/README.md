@@ -86,5 +86,8 @@ You can also specify the workloads from which to install the queries.
 
 Run
 ```sh
+# You may need to configure time out to allow query run in longer time
+gadmin config group timeout
+
 ./driver.py run <parameters_dir> [list of workload]
 ```

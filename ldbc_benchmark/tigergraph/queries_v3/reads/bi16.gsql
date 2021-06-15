@@ -4,26 +4,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
 
   HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
 
-  SumAccum<UINT> @knowsCountA;
-  SumAccum<UINT> @messageCountA;
-
-  SumAccum<UINT> @knowsCountB;
-  SumAccum<UINT> @messageCountB;
-
-  INT yearA;
-  INT monthA;
-  INT dayA;
-
-  INT yearB;
-  INT monthB;
-  INT dayB;
-
-  yearA = year(dateA);
-  monthA = month(dateA);
-  dayA = day(dateA);
+  SumAccum<UINT> @knowsCountA, @messageCountA;
+  SumAccum<UINT> @knowsCountB, @messageCountB;
+  INT yearA, monthA, dayA;
+  INT yearB, monthB, dayB;
+  yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
+  yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
 
   tagWithNameA = SELECT t FROM Tag:t WHERE t.name == tagA;
-
   personsA =
     SELECT p
     FROM tagWithNameA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
@@ -32,19 +20,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
       month(m.creationDate) == monthA AND
       day(m.creationDate) == dayA
     ACCUM p.@messageCountA += 1;
-
   personsA =
     SELECT p
     FROM personsA:f -(KNOWS)- personsA:p
     ACCUM p.@knowsCountA += 1
     HAVING p.@knowsCountA <= maxKnowsLimit;
 
-  yearB = year(dateB);
-  monthB = month(dateB);
-  dayB = day(dateB);
-
   tagWithNameB = SELECT t FROM Tag:t WHERE t.name == tagB;
-
   personsB =
     SELECT p
     FROM tagWithNameB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
@@ -53,7 +35,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
       month(m.creationDate) == monthB AND
       day(m.creationDate) == dayB
     ACCUM p.@messageCountB += 1;
-
   personsB =
     SELECT p
     FROM personsB:f -(KNOWS)- personsB:p
@@ -68,3 +49,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
 
   PRINT @@result;
 }
+
+#INTERPRET query bi16("Rocket_88", "2012-09-06T00:00:00", "Upside_Down", "2012-05-12T00:00:00",4)

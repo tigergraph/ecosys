@@ -1,7 +1,7 @@
 // Q14. International dialog
 /*
 :param [{ country1, country2 }] => { RETURN
-  'Uruguay' AS country1,
+  'Chile' AS country1,
   'Argentina' AS country2
 }
 */

@@ -8,9 +8,10 @@ CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id,
   ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
   OrAccum @visited1, @visited2;
 
-  SetAccum<VERTEX<Person>> @@PersonInShortestPath, @@p1, @@p2;
+  SetAccum<VERTEX<Person>> @@PersonInShortestPath;
   SumAccum<UINT> @creatorId;
-  #GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight;
+  #bug in GroupAccum: semantic check error
+  #GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight; 
   MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
   STRING jsonStr;
   SumAccum<DOUBLE> @@weight;

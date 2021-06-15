@@ -1,50 +1,85 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
 # DISTRIBUTED keyword produces a bug.
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) FOR GRAPH ldbc_snb SYNTAX _v2 {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) {
 
-  TYPEDEF TUPLE <UINT person1Id, UINT messageCount> RESULT;
+  TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
+  HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
 
-  HeapAccum<RESULT>(0, person1Id ASC) @@result;
-
-  # There should be only 1 forum for a thread.
-  MinAccum<UINT> @forumId;
-  # But, there are many forums that a Person can be member of.
-  SetAccum<UINT> @creatorForumIds;
-
-  SumAccum<UINT> @messageCount;
-
+  OrAccum<BOOL> @hasTag, @isCreator;
+  # There is only one forum and creator for a message.
+  SumAccum<UINT> @forum, @creator;
+  # On the other hand, creator and forum have many message
+  SetAccum<UINT> @messages;
+  # forum1 Id -> (person1 Id -> smallest message1 creationdate)  
+  MapAccum<UINT, MapAccum<UINT, MinAccum<DATETIME>>> @@Forum2Creator;
+  # comment id -> creator forum id 
+  SetAccum<VERTEX<Forum>> @CreatorForums, @Forum1;
+  MapAccum<UINT, SetAccum<UINT>> @@hasMember;
+  # person1 id in message2
+  SetAccum<UINT> @person1Id;
+  MapAccum<UINT, SumAccum<UINT>> @@messageCount;
   messagesWithTag =
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
-    WHERE t.name == tag;
+    WHERE t.name == tag
+    ACCUM m.@hasTag = true;
 
-  threadForums =
+  creators =
+    SELECT p
+    FROM messagesWithTag:m -(HAS_CREATOR>) - Person:p
+    ACCUM m.@creator = p.id, p.@messages += m.id, p.@isCreator = True;
+
+  forum12 =
     SELECT f
     FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
-    ACCUM m.@forumId += f.id;
+    ACCUM m.@forum = f.id, @@Forum2Creator += (f.id -> (m.@creator-> m.creationDate));
 
-  creatorForums =
-    SELECT f
-    FROM messagesWithTag:m -(HAS_CREATOR>.<HAS_MEMBER)- Forum:f
-    ACCUM m.@creatorForumIds += f.id;
-
-  person1s =
-    SELECT p1
-    FROM Person:p1 -(<HAS_CREATOR)- messagesWithTag:m1 -(HAS_TAG>.<HAS_TAG)-
-      messagesWithTag:m2 -(<REPLY_OF)- messagesWithTag:c
-    WHERE
-      datetime_add(m1.creationDate, INTERVAL delta HOUR) < m2.creationDate AND
-      m1.@forumId IN m2.@creatorForumIds AND
-      m1.@forumId IN c.@creatorForumIds AND
-      m2.@forumId != m1.@forumId AND
-      m2.@forumId NOT IN m1.@creatorForumIds
-    ACCUM p1.@messageCount += 1;
-
-  @@result.resize(person1s.size());
-
-  person1s =
+  CreatorsInForum = 
     SELECT p
-    FROM person1s:p
-    POST-ACCUM @@result += RESULT(p.id, p.@messageCount);
+    FROM forum12:f -(HAS_MEMBER>)- Person:p  
+    ACCUM @@hasMember += (f.id -> p.id),
+      IF p.@isCreator THEN p.@CreatorForums += f END;
+
+  messages2 = 
+    SELECT m
+    FROM CreatorsInForum:p -(<HAS_CREATOR)- (Comment|Post): m 
+    WHERE m.@hasTag
+    ACCUM m.@CreatorForums += p.@CreatorForums;
+
+  messages2 =
+    SELECT m2
+    FROM messages2:m2 -(<REPLY_OF)- Comment:m
+    WHERE m.@hasTag #AND m.@creator != m2.@creator
+    ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
+    HAVING m2.@Forum1.size() > 0;
+    
+  message2 = 
+    SELECT m2 FROM messages2:m2 
+    ACCUM 
+      FOREACH f IN m2.@Forum1 DO
+        IF f.id == m2.@forum THEN CONTINUE END,
+        FOREACH (p1,m1date) IN @@Forum2Creator.get(f.id) DO
+          IF (datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate) 
+                AND (NOT @@hasMember.get(m2.@forum).contains(p1)) THEN 
+              m2.@person1Id += p1
+          END
+        END
+      END
+    HAVING m2.@person1Id.size() > 0;
+  
+  message2 =
+    SELECT m2 FROM message2:m2
+    ACCUM FOREACH c IN m2.@person1Id DO
+        @@messageCount += (c -> 1)
+    END;
+  
+  FOREACH (personId,num) IN @@messageCount DO
+    @@result += RESULT(num, personId);
+  END;
 
   PRINT @@result;
 }
+
+#INSTALL QUERY bi17
+#RUN QUERY bi17("Humayun", 10)
