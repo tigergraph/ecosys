@@ -16,7 +16,7 @@ For more details, refer to the JIRA page (https://graphsql.atlassian.net/wiki/sp
 
 
 ## Donwload LDBC SNB Data 
-LDBC data are available for scale factor 1(https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), 3(https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), 10(https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), 30(https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), 100(https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
+LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
 
 ```sh
 yum install zstd
@@ -44,7 +44,7 @@ Install `requests` and tigergraph:
 
 ```sh
 python3 -m pip install requests
-#install tigergraph-3.1.3
+#install tigergraph-3.1.3 Or find the latest build from http://192.168.11.192/download.html 
 wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
 tar -xf tigergraph-3.1.0-offline
 cd tigergraph-3.1.0-offline/
@@ -83,11 +83,13 @@ You can also specify the workloads from which to install the queries.
 
 
 ## Run
-
+Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs]` 
 Run
 ```sh
 # You may need to configure time out to allow query run in longer time
 gadmin config group timeout
+./driver.py run 
 
-./driver.py run <parameters_dir> [list of workload]
+# To run queries without bi19 for 3 times
+./driver.py run -q not:19 -n 3
 ```

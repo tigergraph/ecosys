@@ -12,14 +12,14 @@ import re
 from datetime import datetime
 
 def get_parser():
+    query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
+    machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
+    parameter_help = 'Parameter file in json (default:parameters/sf1.json).'
+
     # The top-level parser.
     main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
     main_parser.set_defaults(func=lambda _: main_parser.print_usage())
     main_subparsers = main_parser.add_subparsers(dest='cmd')
-
-    query_str = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'
-    machine_dir_str = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
-    parameter_str = 'Parameter file in json (default:parameters/sf1.json).'
 
     # ./driver.py load [schema/query/data] 
     load_parser = main_subparsers.add_parser('load', help='Load the schema, queries, or data')
@@ -30,35 +30,36 @@ def get_parser():
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Install queries')
-    load_query_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
+    load_query_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     load_query_parser.set_defaults(func=cmd_load_query)
     # ./driver.py load data machine:dir 
     load_data_parser = load_subparsers.add_parser('data', help='Load data')
-    load_data_parser.add_argument('machine_dir', type=str, help=machine_dir_str)
+    load_data_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
     load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data')
-    load_all_parser.add_argument('machine_dir', type=str, help=machine_dir_str)
+    load_all_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
     load_all_parser.set_defaults(func=cmd_load_all)
 
-    # ./driver.py run [-p parameter_dir] [-w workload]
+    # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_str)
-    run_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
+    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help='Parameter file in json.')
+    run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
+    run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
     run_parser.set_defaults(func=cmd_run)
 
-    # ./driver.py compare [-w workload]
+    # ./driver.py compare [-q queries]
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
-    compare_parser.add_argument('-q', '--query', type=str, default='', help=query_str)
-    compare_parser.add_argument('-s', '--source', type=Path, default=Path('results'), help='direcotry of the source results')
-    compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results')
+    compare_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
+    compare_parser.add_argument('-s', '--source', type=Path, default=Path('results'), help='direcotry of the source results (default: results)')
+    compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
     
     # Running all from loading to running.
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
     all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
-    all_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_str)
-    all_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
+    all_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_help)
+    all_parser.add_argument('-q', '--queries', type=str, default='', help=query_help)
     all_parser.set_defaults(func=cmd_all)
 
     return main_parser
@@ -189,9 +190,11 @@ DATA_NAMES = [
 ]
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
-
 total = 21
 WORKLOADS = [Workload(f'bi{i}', [Query(f'bi{i}')], ResultTransform()[0][0]['@@result']) for i in range(1,total)]
+WORKLOADS[7] = Workload('bi8', [Query('bi8')], ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
+WORKLOADS[9] = Workload('bi10', [Query('bi10')], ResultTransform()[0][0]['result'])
+WORKLOADS[10] = Workload('bi11', [Query('bi11')], ResultTransform()[0][0])
 
 '''Loads parameters for a given file'''
 def load_allparameters(file):
@@ -203,14 +206,13 @@ def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
 
-
 def cmd_load_query(args):
     '''Loads queries from the given workloads.'''
     gsql = ''
 
     for workload in args.workload:
-        query_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
-        gsql += f'@{query_path}\n'
+        workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
+        gsql += f'@{workload_path}\n'
 
     queries_to_install = [
         query.name
@@ -261,13 +263,12 @@ def writeResult(result, filename):
 def cmd_run(args):
     os.makedirs('results',exist_ok=True)
     os.makedirs('elapsed_time',exist_ok=True)
-    additional_run = 0
-
-    median_time = []
     parameters = load_allparameters(args.parameter)
+    parameters['bi1'] = {'date':parameters['bi1']['datetime']}
+    print(f"run for {args.nruns} times ...")
+    print("Q\tNrow\tMedian time\t")
     for workload in args.workload:
         time_list = []
-        print(f"running query {workload.name} for {additional_run+1} times...")
         result = workload.run(parameters[workload.name])
         time_list.append(result.elapsed)    
         # write the query results to log/bi[1-20]
@@ -276,13 +277,13 @@ def cmd_run(args):
         with open(Path('elapsed_time')/ (workload.name+'.txt'), 'w') as f:
             f.write(str(result.elapsed))
         
-        for i in range(additional_run):
+        for i in range(args.nruns-1):
             result = workload.run(parameters[workload.name])
             time_list.append(result.elapsed)    
             with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
                 f.write(','+str(result.elapsed))
-        median_time.append(median(time_list))
-    print('median time are: '+list2str(median_time))
+        median_time = median(time_list)
+        print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
 
 
 def cmd_compare(args):
@@ -327,8 +328,6 @@ def cmd_compare(args):
             if Pass: 
                 print(f'{workload.name}: Pass')
 
-
-
 def cmd_all(args):
     cmd_load_all(args)
     cmd_run(args)
@@ -337,27 +336,21 @@ def check_args(args):
     # Parse workload from string to a list 
     if args.cmd in ['load','run','compare','all'] or (args.cmd == 'load' and args.cmd_load in ['query','all']):
         # default is all the workloads
-        if getattr(args, 'workload', '') == '':
-            args.workload = WORKLOADS
+        all = [str(i) for i in range(1,total)]
+        alls = set(all)
+        if getattr(args, 'queries', 'all') == 'all':
+            actual = alls
         # exclude cases
-        elif args.query.startswith('not:'):
-            exclude = args.query[4:].split(',')
-            expected = set(w.name for w in WORKLOADS)
-            actual = expected -set(exclude)
-            args.workload = [w for w in WORKLOADS if w.name in actual]
+        elif args.queries.startswith('not:'):
+            exclude = args.queries[4:].split(',')
+            actual = alls - set(exclude)
         # regular expression
-        elif args.query.startswith('reg:'):
-            r = re.compile(args.query[4:])
-            actual = list(filter(r.match, [w.name for w in WORKLOADS]))
-            args.workload = [w for w in WORKLOADS if w.name in actual]
+        elif args.queries.startswith('reg:'):
+            r = re.compile(args.queries[4:])
+            actual = list(filter(r.match, all))
         else:
-            args.query = args.workload.split(',')
-            expected = set(w.name for w in WORKLOADS)
-            actual = set(args.workload)            
-            remaining = actual - expected
-            if len(remaining) > 0:
-                raise ValueError(f'Invalid workload {", ".join(sorted(remaining))}.')
-            args.workload = [w for w in WORKLOADS if w.name in actual]
+            actual = set(args.queries.split(','))
+        args.workload = [WORKLOADS[i-1] for i in range(1,total) if str(i) in actual]
         print('Workload:', list2str([w.name for w in args.workload]))
     
     #check mahine_dir

@@ -29,8 +29,6 @@ def query_fun(tx, query_spec, query_parameters):
         values.append(record.values())
     return values
 
-
-
 def writeResult(result, filename):
     with open(filename, 'w') as f:
         for row in result:
@@ -46,7 +44,7 @@ def run_query(session, query_id, query_spec, query_parameters):
     result = session.read_transaction(query_fun, query_spec, query_parameters)
     end = time.time()
     duration = end - start
-    print(f'{query_id}\t{duration:1.2f}\t{len(result)}')
+    print(f'{query_id}\t{len(result)}\t{duration:1.2f}')
     writeResult(result, result_dir / f'bi{query_id}.txt')
     with open(time_dir / f'bi{query_id}.txt', 'w') as f:
         f.write(str(duration))
@@ -78,7 +76,7 @@ def main():
         actual = args.queries.split(',')
     queries = [str(i) for i in range(1,21) if str(i) in actual]
     print('Queries:'+','.join(queries))
-    print('BI\ttime\tNrows')
+    print('BI\tNrows\ttime')
     driver = GraphDatabase.driver("bolt://localhost:7687")
 
     # read parameters
