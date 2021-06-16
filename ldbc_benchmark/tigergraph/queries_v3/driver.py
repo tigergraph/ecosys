@@ -195,6 +195,7 @@ WORKLOADS = [Workload(f'bi{i}', [Query(f'bi{i}')], ResultTransform()[0][0]['@@re
 WORKLOADS[7] = Workload('bi8', [Query('bi8')], ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
 WORKLOADS[9] = Workload('bi10', [Query('bi10')], ResultTransform()[0][0]['result'])
 WORKLOADS[10] = Workload('bi11', [Query('bi11')], ResultTransform()[0][0])
+WORKLOADS[15] = Workload('bi16', [Query('bi16')], ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
 
 '''Loads parameters for a given file'''
 def load_allparameters(file):
