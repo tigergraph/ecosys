@@ -1,8 +1,8 @@
 {
-    "bi1": {"date":"2011-12-01T00:00:00"},
+    "bi1": {"datetime":"2011-12-01T00:00:00"},
     "bi2": {"date":"2011-10-01T00:00:00", "tagClass":"Monarch"},
     "bi3": {"tagClass":"Monarch", "country":"China"},
-    "bi4": {"date":"2001-01-20T00:00:00"},
+    "bi4": {"date":"2012-09-01T00:00:00"},
     "bi5": {"tag":"Augustine_of_Hippo"},
     "bi6": {"tag":"Augustine_of_Hippo"},
     "bi7": {"tag":"Jorge_Luis_Borges"},

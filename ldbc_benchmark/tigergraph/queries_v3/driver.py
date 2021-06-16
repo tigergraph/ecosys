@@ -17,6 +17,10 @@ def get_parser():
     main_parser.set_defaults(func=lambda _: main_parser.print_usage())
     main_subparsers = main_parser.add_subparsers(dest='cmd')
 
+    query_str = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'
+    machine_dir_str = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
+    parameter_str = 'Parameter file in json (default:parameters/sf1.json).'
+
     # ./driver.py load [schema/query/data] 
     load_parser = main_subparsers.add_parser('load', help='Load the schema, queries, or data')
     load_parser.set_defaults(func=lambda _: load_parser.print_usage())
@@ -25,32 +29,27 @@ def get_parser():
     load_schema_parser = load_subparsers.add_parser('schema', help='Load the schema')
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
-    load_query_parser = load_subparsers.add_parser('query', help='Load queries for all workloads')
-    load_query_parser.add_argument('-w', '--workload', type=str, default='', 
-        help='The workload to run. A list seperated by comma e.g. "bi1,bi2", or "not:bi3,bi4" to exclude some queries, or "reg:bi[1-4]" to use a regular expression')
+    load_query_parser = load_subparsers.add_parser('query', help='Install queries')
+    load_query_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
     load_query_parser.set_defaults(func=cmd_load_query)
     # ./driver.py load data machine:dir 
     load_data_parser = load_subparsers.add_parser('data', help='Load data')
-    load_data_parser.add_argument('machine_dir', type=str, 
-        help='The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"')
+    load_data_parser.add_argument('machine_dir', type=str, help=machine_dir_str)
     load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data')
-    load_all_parser.add_argument('machine_dir', type=str, 
-        help='The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"')
+    load_all_parser.add_argument('machine_dir', type=str, help=machine_dir_str)
     load_all_parser.set_defaults(func=cmd_load_all)
 
     # ./driver.py run [-p parameter_dir] [-w workload]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameters_dir', type=Path, default= Path('parameters/sf1.json'), help='Parameter file in json.')
-    run_parser.add_argument('-w', '--workload', type=str, default='', 
-        help='The workload to run. A list seperated by comma e.g. "bi1,bi2", or "not:bi3,bi4" to exclude some queries, or "reg:bi[1-4]" to use a regular expression')
+    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_str)
+    run_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
     run_parser.set_defaults(func=cmd_run)
 
     # ./driver.py compare [-w workload]
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
-    compare_parser.add_argument('-w', '--workload', type=str, default='', 
-        help='The workload to run. A list seperated by comma e.g. "bi1,bi2", or "not:bi3,bi4" to exclude some queries, or "reg:bi[1-4]" to use a regular expression')
+    compare_parser.add_argument('-q', '--query', type=str, default='', help=query_str)
     compare_parser.add_argument('-s', '--source', type=Path, default=Path('results'), help='direcotry of the source results')
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results')
     compare_parser.set_defaults(func=cmd_compare)
@@ -58,9 +57,8 @@ def get_parser():
     # Running all from loading to running.
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
     all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
-    all_parser.add_argument('-p', '--parameters_dir', type=Path, default= Path('parameters/sf1.json'), help='The directory to load parameters from.')
-    all_parser.add_argument('-w', '--workload', type=str, default='', 
-        help='The workload to run. List of query "bi1,bi2", or "not:bi3,bi4" to exclude bi3 and bi4, or "reg:bi[1-4]" to use a regular expression')
+    all_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_str)
+    all_parser.add_argument('-q', '--query', type=str, default='all', help=query_str)
     all_parser.set_defaults(func=cmd_all)
 
     return main_parser
@@ -192,82 +190,8 @@ DATA_NAMES = [
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 
-WORKLOADS = [
-    Workload('bi1', [Query('bi1')], ResultTransform()[0][0]['@@result']),
-    Workload('bi2', [Query('bi2')], ResultTransform()[0][0]['@@result']),
-    Workload('bi3', [Query('bi3')], ResultTransform()[0][0]['@@result'].change_keys({
-        'forumId': 'forum.id',
-        'forumTitle': 'forum.title',
-        'forumCreationDate': 'forum.creationDate',
-        'personId': 'person.id',
-    })),
-    Workload('bi4', [Query('bi4')], ResultTransform()[0][0]['@@result'].change_keys({
-        'personId': 'person.id',
-        'personFirstName': 'person.firstName',
-        'personLastName': 'person.lastName',
-        'personCreationDate': 'person.creationDate',
-    })),
-    Workload('bi5', [Query('bi5')], ResultTransform()[0][0]['@@result'].change_keys({
-        'personId': 'person.id',
-    })),
-    Workload('bi6', [Query('bi6')], ResultTransform()[0][0]['@@result'].change_keys({
-        'personId': 'person.id',
-    })),
-    Workload('bi7', [Query('bi7')], ResultTransform()[0][0]['@@result'].change_keys({
-        'relatedTagName': 'relatedTag.name',
-        'replyCount': 'count',
-    })),
-    Workload('bi8', [Query('bi8')], ResultTransform()[0][0]['@@result'].del_keys(['totalScore']).change_keys({
-        'personId': 'person.id',
-    })),
-    Workload('bi9', [Query('bi9')], ResultTransform()[0][0]['@@result'].change_keys({
-        'personId': 'person.id',
-        'personFirstName': 'person.firstName',
-        'personLastName': 'person.lastName',
-    })),
-    Workload('bi10', [Query('bi10')], ResultTransform()[0][0]['result'].change_keys({
-        'expertCandidatePersonId': 'expertCandidatePerson.id',
-        'tagName': 'tag.name',
-    })),
-    Workload('bi11', [Query('bi11')], ResultTransform()[0][0].change_key({'@@count': 'count'})),
-    Workload('bi12', [Query('bi12')], ResultTransform()[0][0]['@@result']),
-    Workload('bi13', [Query('bi13')], ResultTransform()[0][0]['@@result'].change_keys({
-        'zombieId': 'zombie.id',
-    })),
-    Workload('bi14', [Query('bi14')], ResultTransform()[0][0]['@@result'].change_keys({
-        'person1Id': 'person1.id',
-        'person2Id': 'person2.id',
-        'city1Name': 'city1.name',
-    })),
-    Workload(
-        'bi15',
-        [Query('bi15'),],ResultTransform()[0][0]['@@result'].change_keys({'personId': 'person.id'}),
-    ),
-    Workload('bi16', [Query('bi16')], ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']).change_keys({
-        'personId': 'person.id',
-    })),
-    Workload('bi17', [Query('bi17')], ResultTransform()[0][0]['@@result'].change_keys({
-        'person1Id': 'person1.id',
-    })),
-    Workload('bi18', [Query('bi18')], ResultTransform()[0][0]['@@result'].change_keys({
-        'person2Id': 'person2.id',
-    })),
-    Workload(
-        'bi19',
-        [
-            Query('bi19_add_weighted_edges'),
-            Query('bi19'),
-            Query('bi19_delete_weighted_edges'),
-        ],
-        ResultTransform()[1][0]['@@result'].change_keys({
-            'person1Id': 'person1.id',
-            'person2Id': 'person2.id',
-        }),
-    ),
-    Workload('bi20', [Query('bi20')], ResultTransform()[0][0]['@@result'].change_keys({
-        'person1Id': 'person1.id',
-    })),
-]
+total = 21
+WORKLOADS = [Workload(f'bi{i}', [Query(f'bi{i}')], ResultTransform()[0][0]['@@result']) for i in range(1,total)]
 
 '''Loads parameters for a given file'''
 def load_allparameters(file):
@@ -285,8 +209,8 @@ def cmd_load_query(args):
     gsql = ''
 
     for workload in args.workload:
-        workload_path = (SCRIPT_DIR_PATH / 'reads' / f'{workload.name}.gsql').resolve()
-        gsql += f'@{workload_path}\n'
+        query_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
+        gsql += f'@{query_path}\n'
 
     queries_to_install = [
         query.name
@@ -340,7 +264,7 @@ def cmd_run(args):
     additional_run = 0
 
     median_time = []
-    parameters = load_allparameters(args.parameters_dir)
+    parameters = load_allparameters(args.parameter)
     for workload in args.workload:
         time_list = []
         print(f"running query {workload.name} for {additional_run+1} times...")
@@ -416,18 +340,18 @@ def check_args(args):
         if getattr(args, 'workload', '') == '':
             args.workload = WORKLOADS
         # exclude cases
-        elif args.workload.startswith('not:'):
-            exclude = args.workload[4:].split(',')
+        elif args.query.startswith('not:'):
+            exclude = args.query[4:].split(',')
             expected = set(w.name for w in WORKLOADS)
             actual = expected -set(exclude)
             args.workload = [w for w in WORKLOADS if w.name in actual]
         # regular expression
-        elif args.workload.startswith('reg:'):
-            r = re.compile(args.workload[4:])
+        elif args.query.startswith('reg:'):
+            r = re.compile(args.query[4:])
             actual = list(filter(r.match, [w.name for w in WORKLOADS]))
             args.workload = [w for w in WORKLOADS if w.name in actual]
         else:
-            args.workload = args.workload.split(',')
+            args.query = args.workload.split(',')
             expected = set(w.name for w in WORKLOADS)
             actual = set(args.workload)            
             remaining = actual - expected

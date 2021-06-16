@@ -46,7 +46,7 @@ def run_query(session, query_id, query_spec, query_parameters):
     result = session.read_transaction(query_fun, query_spec, query_parameters)
     end = time.time()
     duration = end - start
-    print("BI{}: {:.4f} seconds, {} results".format(query_id, duration, len(result)))
+    print(f'{query_id}\t{duration:1.2f}\t{len(result)}')
     writeResult(result, result_dir / f'bi{query_id}.txt')
     with open(time_dir / f'bi{query_id}.txt', 'w') as f:
         f.write(str(duration))
@@ -66,18 +66,19 @@ def readJson(paramFile):
 
 def main():
     if args.queries == 'all' or '':
-        actual = {str(i) for i in range(20)}
+        actual = {str(i) for i in range(1,21)}
     elif args.queries.startswith('not:'):
-        all = {str(i) for i in range(20)}
-        exclude = args.queries[4:].split(',')
+        all = {str(i) for i in range(1,21)}
+        exclude = set(args.queries[4:].split(','))
         actual = all - exclude
     elif args.queries.startswith('reg:'):
         r = re.compile(args.queries[4:])
         actual = list(filter(r.match, [str(i) for i in range(20)]))
     else:
         actual = args.queries.split(',')
-    queries = [str(i) for i in range(20) if str(i) in actual]
-    print('Queries:'+''.join(queries))
+    queries = [str(i) for i in range(1,21) if str(i) in actual]
+    print('Queries:'+','.join(queries))
+    print('BI\ttime\tNrows')
     driver = GraphDatabase.driver("bolt://localhost:7687")
 
     # read parameters
