@@ -14,12 +14,15 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Cypher driver')
 parser.add_argument('-q','--queries', default='', type=str,
     help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"')
+parser.add_argument('-r','--results', default=Path('results'), type=Path,
+    help='directory to write results (default: ./results)')
+
 args = parser.parse_args()
 
-result_dir = Path('results') 
-time_dir = Path('elapsed_time')
+result_dir = Path(args.results) 
 result_dir.mkdir(parents=True, exist_ok=True)
-time_dir.mkdir(parents=True, exist_ok=True)
+#time_dir = Path('elapsed_time')
+#time_dir.mkdir(parents=True, exist_ok=True)
 
 #@unit_of_work(timeout=300)
 def query_fun(tx, query_spec, query_parameters):
@@ -46,8 +49,8 @@ def run_query(session, query_id, query_spec, query_parameters):
     duration = end - start
     print(f'{query_id}\t{len(result)}\t{duration:1.2f}')
     writeResult(result, result_dir / f'bi{query_id}.txt')
-    with open(time_dir / f'bi{query_id}.txt', 'w') as f:
-        f.write(str(duration))
+    #with open(time_dir / f'bi{query_id}.txt', 'w') as f:
+    #    f.write(str(duration))
     
 def convert_to_datetime(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S')

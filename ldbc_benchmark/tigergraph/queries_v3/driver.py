@@ -46,6 +46,7 @@ def get_parser():
     run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help='Parameter file in json.')
     run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
+    run_parser.add_argument('-r','--results', default=Path('results'), type=Path, help='directory to write results (default: results)')
     run_parser.set_defaults(func=cmd_run)
 
     # ./driver.py compare [-q queries]
@@ -262,8 +263,8 @@ def writeResult(result, filename):
             f.write(str(row)+'\n')
             
 def cmd_run(args):
-    os.makedirs('results',exist_ok=True)
-    os.makedirs('elapsed_time',exist_ok=True)
+    os.makedirs(args.results,exist_ok=True)
+    #os.makedirs('elapsed_time',exist_ok=True)
     parameters = load_allparameters(args.parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     print(f"run for {args.nruns} times ...")
@@ -275,14 +276,14 @@ def cmd_run(args):
         # write the query results to log/bi[1-20]
         result_file = Path('results')/ (workload.name+'.txt')  
         writeResult(result.result, result_file)
-        with open(Path('elapsed_time')/ (workload.name+'.txt'), 'w') as f:
-            f.write(str(result.elapsed))
+        #with open(Path('elapsed_time')/ (workload.name+'.txt'), 'w') as f:
+        #    f.write(str(result.elapsed))
         
         for i in range(args.nruns-1):
             result = workload.run(parameters[workload.name])
             time_list.append(result.elapsed)    
-            with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
-                f.write(','+str(result.elapsed))
+            #with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
+            #    f.write(','+str(result.elapsed))
         median_time = median(time_list)
         print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
 
