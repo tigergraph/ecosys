@@ -108,3 +108,6 @@ Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage 
 # To run all the queries
 ./driver.py run 
 ```
+
+## Considerations in writing queries
+There are many ways to write the query, and here we present the one with the best performance. Because 

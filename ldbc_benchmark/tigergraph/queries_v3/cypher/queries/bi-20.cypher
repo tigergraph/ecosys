@@ -1,7 +1,11 @@
 // Q20. Recruitment
 // Requires the Neo4j Graph Data Science library
 /*
-:param [{ company, person2Id }] => {RETURN 'SoftEngCo' AS company, 5 AS person2Id}
+:param [{ company, person2Id }] => {
+  RETURN
+    'Pamir_Airways' AS company,
+    15393162792760 AS person2Id
+  }
 */
 MATCH
   (company:Company {name: $company})<-[:WORK_AT]-(person1:Person),
@@ -21,6 +25,7 @@ CALL gds.shortestPath.dijkstra.stream({
   relationshipWeightProperty: 'weight'
 })
 YIELD totalCost
+WHERE person1.id <> $person2Id
 RETURN person1.id, totalCost AS totalWeight
-ORDER BY totalWeight DESC, person1.id ASC
+ORDER BY totalWeight ASC, person1.id ASC
 LIMIT 20

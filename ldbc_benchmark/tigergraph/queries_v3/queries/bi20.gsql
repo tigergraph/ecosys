@@ -1,69 +1,73 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
-
-  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
-
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+  TYPEDEF TUPLE<UINT totalWeight, UINT person1Id> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
-  OrAccum @@visited;
-  MinAccum<UINT> @@minWeight;
-
-  OrAccum @visited;
-  MinAccum<UINT> @weight;
-
-  person1s =
+  SumAccum<UINT> @person1Id; 
+  OrAccum @visited2;
+  SetAccum<VERTEX<University>> @univ;
+  MapAccum<VERTEX<University>, UINT> @year;
+  MinAccum<UINT> @dist1, @dist2; 
+  MapAccum<UINT, MinAccum<UINT>> @@paths;
+  OrAccum @@next1, @@next2;
+  UINT threshold;
+  S1 =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
-    WHERE c.name == company;
-
-  person2 = {person2Id};
-  person2 =
-    SELECT p
-    FROM person2:p
-    POST-ACCUM
-      p.@visited = TRUE,
-      p.@weight = 0;
-
-  toVisit = person2;
-  targets = person1s;
-
-  WHILE targets.size() > 0 AND toVisit.size() > 0 DO
-    visiting =
-      SELECT p
-      FROM toVisit:p
-      ORDER BY p.@weight ASC
-      LIMIT 1;
-
-    nextVisiting =
-      SELECT t
-      FROM
-        visiting:s -(KNOWS)- Person:t,
-        :s -(STUDY_AT>:e1)- University:u,
-        :t -(STUDY_AT>:e2)- :u
-      #WHERE NOT t.@visited
-      # Above doesn't work when conjunctive pattern matching is used.
-      # It works fine without conjunctive pattern matching.
-      # But, below works.
-      WHERE t.@visited == FALSE
-      ACCUM t.@weight += s.@weight + abs(e1.classYear - e2.classYear) + 1
-      POST-ACCUM s.@visited = TRUE;
-
-    toVisit = (toVisit MINUS visiting) UNION nextVisiting;
-    targets = targets MINUS visiting;
+    WHERE c.name == company AND p != person2Id
+    ACCUM p.@person1Id = p.id, p.@dist1 = 0;
+  
+  S2 = {person2Id};
+  S2 = SELECT s FROM S2:s ACCUM s.@visited2 += true, s.@dist2 = 0; 
+  S = S1 UNION S2;
+  tmp = Select s
+    FROM S:s -(STUDY_AT>:e)- University:u
+    ACCUM s.@univ += u, s.@year += (u->e.classYear);
+  @@next1 = true; @@next2 = true;
+  WHILE @@next1 AND @@next2 DO
+    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE t.@person1Id==0 AND NOT t.@visited2;
+    tmp = Select s
+      FROM Next:s -(STUDY_AT>:e)- University:u
+      ACCUM s.@univ += u, s.@year += (u->e.classYear);
+    
+    S = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE (t.@person1Id == 0 OR NOT t.@visited2) AND t.@univ.size()>0
+      ACCUM
+        FOREACH u IN (s.@univ INTERSECT t.@univ) DO
+          DOUBLE weight = abs(s.@year.get(u) - t.@year.get(u)) + 1,
+          IF s.@person1Id > 0 AND s.@dist1 + weight < t.@dist1 THEN
+            t.@person1Id = s.@person1Id,
+            t.@dist1 += s.@dist1 + weight
+          END,
+          IF s.@visited2 AND s.@dist2 + weight < t.@dist2 THEN
+            t.@visited2 += true,
+            t.@dist2 += s.@dist2 + weight
+          END
+        END 
+      POST-ACCUM 
+        IF t.@person1Id>0 AND t.@visited2 THEN
+          @@paths += (t.@person1Id -> t.@dist1 + t.@dist2)
+        END;
+    # remove vertices of large distance
+    IF S.size() > 0 AND @@paths.size() >= 20 THEN
+      FOREACH (p,dist) IN @@paths DO
+        @@result += RESULT(dist,p);
+      END;
+      threshold = @@result.top().totalWeight;   
+    END;
+    @@next1 = false; @@next2 = false;
+    S = SELECT s FROM S:s
+      WHERE s.@dist1<threshold AND s.@dist2<threshold
+      ACCUM CASE WHEN s.@person1Id > 0 THEN @@next1 += true
+      WHEN s.@visited2 THEN @@next2 += true END;
+  END; # WHILE 
+  IF @@paths.size() < 20 THEN
+    FOREACH (p,dist) IN @@paths DO
+      @@result += RESULT(p,dist);
+    END;
   END;
-
-  result =
-    SELECT p
-    FROM person1s:p
-    POST-ACCUM @@minWeight += p.@weight;
-    #HAVING p.@weight == @@minWeight AND p.@weight < @@maxInt;
-    # This doesn't work either.
-    # I assumed it would filter p based on the result of POST-ACCUM clause.
-    # I put it at the WHERE clause of the next SELECT statement.
-
-  result =
-    SELECT p
-    FROM result:p
-    WHERE p.@weight == @@minWeight AND p.@weight < GSQL_UINT_MAX
-    POST-ACCUM @@result += RESULT(p.id, p.@weight);
-
   PRINT @@result;
 }
+
+# INSTALL QUERY bi20
+# RUN QUERY bi20("Pamir_Airways", 15393162792760)
