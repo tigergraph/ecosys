@@ -2,8 +2,8 @@
 
 ## Table of Contents
 * [Overview](#Overview)
-* [Download](#Donwload-LDBC-SNB-Data )
 * [Pre-requisite](#Pre-requisite)
+* [Download](#Donwload-LDBC-SNB-Data)
 * [Load-data](#Load-data)
 * [Run](#run)
 
@@ -26,11 +26,39 @@ Related links
 * [LDBC_BI by Garbor](https://github.com/ldbc/ldbc_snb_bi) contains the benchmark using Cypher and postgres
 * [Google Sheet](https://docs.google.com/spreadsheets/d/1NVdrOQtYBZl3g2B_jxYozo2pV-8B0Zzf50XDVw0JzTg/edit?ts=60b84592#gid=1034343597) contains internal benchmark results
 
+## Pre-requisite 
+* `TigerGraph` (at least 3.1.0) must be installed. I used 3.2.0. 
+* `Python` (at least 3.6) must be installed to use the driver script. 
+* Python library `requests` is required.
+
+```sh
+sudo yum install wget git tar python3 sshpass zstd 
+python3 -m pip install requests
+```
+If zstd is not available. Download and compile the source from their github.
+```sh
+git clone https://github.com/facebook/zstd
+cd zstd 
+make && sudo make install
+cd ..
+```
+
+Install tigergraph-3.1.3 Or find the latest build from (http://192.168.11.192/download.html). 
+```sh
+wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
+tar -xf tigergraph-3.1.3-offline
+cd tigergraph-3.1.3-offline/
+./install.sh
+# following the instruction to install
+su tigergraph
+gadmin status
+# check if TigerGraph is running or not.
+```
+
 ## Donwload LDBC SNB Data 
 LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
 
 ```sh
-yum install zstd
 wget -O sf1-composite-projected-fk.tar.zst https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download 
 zstd -d sf1-composite-projected-fk.tar.zst 
 tar -xvf sf1-composite-projected-fk.tar
@@ -46,36 +74,16 @@ mv static/* dynamic/* .
 for f in *; do rm $f/_SUCCESS; done
 ```
 
-
-## Pre-requisite 
-* `TigerGraph` (at least 3.1.0) must be installed. I used 3.2.0. 
-* `Python` (at least 3.6) must be installed to use the driver script. 
-* Python library `requests` is required.
-
-```sh
-python3 -m pip install requests
-# install tigergraph-3.1.3 Or find the latest build from http://192.168.11.192/download.html 
-wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
-tar -xf tigergraph-3.1.3-offline
-cd tigergraph-3.1.3-offline/
-./install.sh
-# following the instruction to install
-su tigergraph
-gadmin status
-# check if TigerGraph is running or not.
-```
-BI 15 requires user defined function bigint_to_string in `ExprFunctions.hpp `.
-```sh
-cp ExprFunctions.hpp $(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
-```
-
 ## Load data
 Checkout ldbc branch of the current repository
 ```sh
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 ```
-
+BI 15 requires user defined function bigint_to_string in `ExprFunctions.hpp `.
+```sh
+cp ExprFunctions.hpp $(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+```
 Load schema, data, and query. Usage of `driver.py` can be `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
 ./driver.py load schema
