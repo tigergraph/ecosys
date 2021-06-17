@@ -66,10 +66,10 @@ tar -xvf sf1-composite-projected-fk.tar
 
 Prepare the data. We arrange the directory struture so that the data can be loaded.
 ```sh
-cd ~
 mv sf1/csv/bi/composite-projected-fk/initial_snapshot .
 cd initial_snapshot
 mv static/* dynamic/* .
+rm -r static dynamic/
 # remove the empty files, these files can cause loading to fail
 for f in *; do rm $f/_SUCCESS; done
 ```
