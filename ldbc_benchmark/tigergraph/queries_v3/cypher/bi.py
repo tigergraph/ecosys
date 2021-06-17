@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Cypher driver')
-parser.add_argument('-q','--queries', default='', type=str,
+parser.add_argument('-q','--queries', default='all', type=str,
     help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"')
 parser.add_argument('-r','--results', default=Path('results'), type=Path,
     help='directory to write results (default: ./results)')

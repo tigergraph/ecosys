@@ -11,11 +11,13 @@ The scripts are modified from [ldbc/ldbc_snb_bi](https://github.com/ldbc/ldbc_sn
 
 
 ## Pre-requisite
-[Neo4j community edition v4.2.7](https://neo4j.com/download-center/#community) must be installed. I downloaded into my laptop and then transfered the package to the server using `scp`. After unpack the pacakge, we add the path to the `.bashrc` or `.profile` so that neo4j commands can be run directly from terminal. 
+[Neo4j community edition v4.3.0](https://neo4j.com/download-center/#community) must be installed. I downloaded into my laptop and then transfered the package to the server using `scp`. After unpack the pacakge, we add the path to the `.bashrc` or `.profile` so that neo4j commands can be run directly from terminal. 
 ```sh
+#neo4j require openjdk 11
+sudo yum install java-11-openjdk-devel
 tar -xf neo4j-community-4.2.7-unix.tar
-cat "export $NEO4J_HOME=$(pwd)/neo4j-community-4.2.7" >> ~/.bashrc
-cat "export $PATH=$PATH:$NEO4J_HOME/bin" >> ~/.bashrc
+echo 'export NEO4J_HOME='$(pwd)/neo4j-community-4.3.0 >> ~/.bashrc
+echo 'export PATH=$PATH:$NEO4J_HOME/bin' >> ~/.bashrc
 ```
 restart your terminal, turn off neo4j password and start neo4j
 ```sh
@@ -60,7 +62,9 @@ for t in static dynamic ; do
     done
 done 
 echo "Done remove the header of csv files"
-# load data
+# load data 
+# go back to the repository
+cd $HOME/ecosys/ldbc_benchmark/tigergraph/queries_v3/cypher
 sh load.sh
 ```
 
@@ -80,9 +84,12 @@ sh load-old.sh
 Other than the basic neo4j package, the BI 10 query uses `apoc.path.subgraphNodes`, which requires [APOC](https://neo4j.com/labs/apoc/4.1/installation/) package. 
 BI 19 uses `gds.shortestPath.dijkstra.stream`, which requires [graph data science (GDS)](https://neo4j.com/docs/graph-data-science/current/installation/) package. 
 
-Download [APOC](https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.2.0.4/apoc-4.2.0.4-core.jar) and [GDS](https://s3-eu-west-1.amazonaws.com/com.neo4j.graphalgorithms.dist/graph-data-science/neo4j-graph-data-science-1.6.0-standalone.zip). 
+Download [APOC](https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.3.0.0/apoc-4.3.0.0-all.jar) and [GDS](https://s3-eu-west-1.amazonaws.com/com.neo4j.graphalgorithms.dist/graph-data-science/neo4j-graph-data-science-1.6.0-standalone.zip). 
 
 After moving them to `$NEO4J_HOME/plugins`, then add the following text to `$NEO4J_HOME/conf/neo4j.conf`. We also changed the maximum memory size for queries.
+
+Note: Neo4j cypher-shell may not work if you install the packages first and then load data. So I recommend you to load data first and then install the packages.
+
 ```
 dbms.memory.heap.initial_size=31g
 dbms.memory.heap.max_size=31g
@@ -108,7 +115,7 @@ cypher-shell
 Currently parameter directory is hard coded in the file.
 ```sh
 cypher-shell < indices.cypher
-python3 bi.py
+python3 bi.py -q all
 ```
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 

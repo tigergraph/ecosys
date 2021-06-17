@@ -1,0 +1,81 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "_v2"
+CREATE OR REPLACE QUERY bi17bug1(STRING tag) {
+    MapAccum<UINT, SetAccum<VERTEX<Forum>>> @@CreatorForums;
+    SetAccum<UINT> @person1Id;
+    OrAccum @hasTag;
+    messagesWithTag =
+        SELECT m
+        FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
+        WHERE t.name == tag
+        ACCUM m.@hasTag += true;
+    message2 = 
+        SELECT m2
+        FROM messagesWithTag:m1 -(REPLY_OF>)- (Comment|Post):m2
+        WHERE m2.@hasTag
+        ACCUM 
+            FOREACH f IN @@CreatorForums.get(m1.id) DO # @@CreatorForums.get(0) can pass through semantic check
+        m2.@person1Id += f.id
+    END;
+}
+/*
+transformed query is 
+CREATE OR REPLACE QUERY bi17bug1(STRING tag) {
+/* __TF_HOP_BEGIN:0 */
+
+// while loop iteration counter
+int i;
+
+/* __TF_HOP_END:0 */
+    MapAccum<UINT, SetAccum<VERTEX<Forum>>> @@CreatorForums;
+    SetAccum<UINT> @person1Id;
+    OrAccum @hasTag;
+    /* __TF_HOP_BEGIN:7 */
+VS_t1 = { Tag.* };
+
+messagesWithTag =
+	select m
+	from   VS_t1:t -(HAS_TAG_REVERSE:x)-> (Comment|Post):m
+	where  t.name == tag
+	accum       m.@hasTag += true
+		;
+/* __TF_HOP_END:11 */
+    /* __TF_HOP_BEGIN:12 */
+message2 =
+	select m2
+	from   messagesWithTag:m1 -(REPLY_OF:x)-> (Comment|Post):m2
+	where  m2.@hasTag
+	accum       
+            FOREACH f IN @@CreatorForums.get(m1.id) DO # @@CreatorForums.get(0) can pass through semantic check
+        m2.@person1Id += f.id
+    END
+		;
+/* __TF_HOP_END:19 */
+}
+*/
+
+/*
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE QUERY bi17bug1(STRING tag) {
+    MapAccum<UINT, SetAccum<VERTEX<Forum>>> @@CreatorForums;
+    SetAccum<UINT> @person1Id;
+    messagesWithTag =
+        SELECT m
+        FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
+        WHERE t.name == tag;
+    message2 = 
+        SELECT m2
+        FROM messagesWithTag:m1 -(REPLY_OF>)- messagesWithTag:m2
+        ACCUM 
+        FOREACH f IN @@CreatorForums.get(m1.id) DO # @@CreatorForums.get(0) can pass through semantic check
+        m2.@person1Id += f.id
+    END;
+}
+*/
+/*
+The above query generate Error Message:
+Semantic Check Error in query bi17bug1 (SEM-606): line [10, 16]
+The attribute of an universal vertex type variable cannot be accessed.
+The query bi17bug1 cannot be added!
+*/
