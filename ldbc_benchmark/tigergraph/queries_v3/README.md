@@ -101,13 +101,21 @@ The directory can include the machine. If you want to load data that is distribu
 ``` 
 
 ## Run
-Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs]`. For large scale factors, you may need to configure time out to allow query to run in longer time using `gadmin config group timeout`.
+Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. For large scale factors, you may need to configure time out to allow query to run in longer time using `gadmin config group timeout`. The default parameter file is `parameters/sf1/2012-09-13.json`.
+```sh
+./driver.py run  -n 3
+```
+
+
+The starting time of LDBC SNB graph is 2012-09-13. The correct results stored in `results_sf[scale factor]/[date]` where date starts from 2012-09-13 and ends at 2013-01-01. To compare the results
+
 ```sh
 # Query bi19 is expensive, we recomment to run without bi19 for 3 times
 ./driver.py run -q not:19 -n 3
 # To run all the queries
 ./driver.py run 
 ```
+
 
 ## Considerations in writing queries
 There are many ways to write the query and here what we present is the one with the best performance. 
