@@ -1,3 +1,5 @@
+#This query calculates the shortest weighted path between two vertex sets.
+
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
@@ -7,10 +9,11 @@ CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRA
   #GroupByAccum<UINT p1, UINT p2, SumAccum<UINT> number> @@interactions;
   MapAccum<UINT, MapAccum<UINT, SumAccum<UINT>>> @@interactions;
   GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
-  MapAccum<UINT, MinAccum<DOUBLE>> @dist1, @dist2;  # Max path length is 10
+  MapAccum<UINT, MinAccum<DOUBLE>> @dist1, @dist2;  
   SumAccum<UINT> @creatorId; 
-  OrAccum @@next1, @@next2;
+  OrAccum @@next1, @@next2, @next1, @next2;
   DOUBLE threshold;
+  threshold = 10; # Max path length is 10
 
   city1 = {city1Id};
   city2 = {city2Id};
@@ -21,49 +24,57 @@ CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRA
   tmp = SELECT m1 FROM Sm:m1 -(<REPLY_OF|REPLY_OF>)- (Comment|Post):m2 
       WHERE m2.@creatorId>0
       ACCUM @@interactions += (m1.@creatorId -> (m2.@creatorId -> 1));  
-  threshold = 10;
-
+        
   @@next1 = true; @@next2 = true;
   WHILE @@next1 AND @@next2 DO
     Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE t.@dist1.size() == 0 AND t.@dist2.size() == 0;
-    #compute the weight
+    # Compute the weight
     Nm = SELECT m FROM Next:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creatorId += s.id;
     tmp = SELECT m2 FROM Nm:m2 -(<REPLY_OF|REPLY_OF>)- (Comment|Post):m1 
       WHERE m1.@creatorId>0
       ACCUM @@interactions += (m1.@creatorId -> (m2.@creatorId -> 1));  
+    
+    # Expand the know map, we also neglect the distances larger than threshold
+    S = SELECT s FROM S:s ACCUM s.@next1 = false, s.@next2 = false ; # From the previous loop, s.@next1 and s.@next2 can be true
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
-      WHERE (t.@dist1.size() == 0 OR t.@dist2.size() == 0) AND @@interactions.get(s.id).get(t.id)>0
+      WHERE @@interactions.get(s.id).get(t.id)>0
       ACCUM
         DOUBLE edgeWeight = 1.0 / @@interactions.get(s.id).get(t.id),
         FOREACH (p,dis) IN s.@dist1 DO
-          IF dis + edgeWeight < threshold THEN
-            t.@dist1 += (p -> dis + edgeWeight)
+          IF dis + edgeWeight < threshold AND dis + edgeWeight < t.@dist1.get(p) THEN
+            t.@dist1 += (p -> dis + edgeWeight),
+            t.@next1 += true
           END
         END,
         FOREACH (p,dis) IN s.@dist2 DO
-          IF dis + edgeWeight < threshold THEN
-            t.@dist2 += (p -> dis + edgeWeight)
+          IF dis + edgeWeight < threshold AND dis + edgeWeight < t.@dist2.get(p) THEN
+            t.@dist2 += (p -> dis + edgeWeight),
+            t.@next2 += true
           END
         END
-      POST-ACCUM 
+      HAVING t.@next1 OR t.@next2;
+
+      # Expand the know map, we also neglect the distances larger than threshold  
+      S = SELECT s FROM S:s ACCUM
         FOREACH (p1,dis1) IN s.@dist1 DO
           FOREACH (p2,dis2) IN s.@dist2 DO
             @@paths += (p1,p2 -> dis1+dis2)
           END
         END;
 
-    # remove vertex of large distance
+    # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
       FOREACH (p1,p2,dist) IN @@paths DO
         @@result += RESULT(p1,p2,dist);
       END;
       threshold = @@result.top().totalWeight;
     END;
-    # To continue, S must have both s.@person1Id>0 and s.@person2Id>0
+    
+    # To continue, S must have both 
     @@next1 = false; @@next1 = false;
     S = SELECT s FROM S:s ACCUM
-      CASE WHEN s.@dist1.size()>0 THEN @@next1 += true
-      WHEN s.@dist2.size()>0 THEN @@next2 += true END;
+      CASE WHEN s.@next1 THEN @@next1 += true
+      WHEN s.@next2 THEN @@next2 += true END;
   END; # WHILE (S1.size()>0 OR S2.size()>0)
   IF @@paths.size() < 20 THEN
     FOREACH (p1,p2,dist) IN @@paths DO
