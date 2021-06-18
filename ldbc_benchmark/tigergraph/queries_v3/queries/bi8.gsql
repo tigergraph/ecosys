@@ -1,4 +1,7 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME date) {
 
   TYPEDEF TUPLE <UINT personId, UINT score, UINT friendsScore, UINT totalScore> RESULT;
 

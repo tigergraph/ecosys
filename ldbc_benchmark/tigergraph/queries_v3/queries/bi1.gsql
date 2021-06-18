@@ -1,5 +1,7 @@
-# datetime is a reserved keyword.
-CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) FOR GRAPH ldbc_snb SYNTAX v2 {
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+# datetime is a reserved keyword so we use date here.
+CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) {
 
   TYPEDEF TUPLE <INT year, BOOL isComment, INT lengthCategory, INT messageCount,
     FLOAT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> RESULT;

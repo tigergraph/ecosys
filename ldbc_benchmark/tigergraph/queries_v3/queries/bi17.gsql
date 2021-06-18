@@ -1,6 +1,6 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-# DISTRIBUTED keyword produces a bug.
+# DISTRIBUTED QUERY NOT SUPPORTED
 CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) {
 
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;

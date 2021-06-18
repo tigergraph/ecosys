@@ -1,9 +1,8 @@
 #This query calculates the shortest weighted path between two vertex sets.
-
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-
-CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+# DISTRIBUTED QUERY NOT SUPPORTED
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
   #GroupByAccum<UINT p1, UINT p2, SumAccum<UINT> number> @@interactions;

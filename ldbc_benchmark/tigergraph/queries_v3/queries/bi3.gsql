@@ -1,4 +1,7 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) FOR GRAPH ldbc_snb SYNTAX v2 {
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) {
 
   TYPEDEF TUPLE <UINT forumId, STRING forumTitle, DATETIME forumCreationDate, UINT personId, UINT messageCount> RESULT;
 

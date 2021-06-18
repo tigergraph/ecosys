@@ -1,5 +1,8 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+
 # DISTRIBUTED QUERY NOT SUPPORTED
-CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) {
 
   TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
   HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
