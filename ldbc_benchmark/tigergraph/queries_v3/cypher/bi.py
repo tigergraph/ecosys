@@ -14,6 +14,10 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Cypher driver')
 parser.add_argument('-q','--queries', default='all', type=str,
     help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"')
+parser.add_argument('-p','--parameter', default=Path('../parameters/sf1/2012-09-13.json'), type=Path,
+    help='JSON file containing the input parameters')
+parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json'), type=Path,
+    help='JSON file containing containing the data types')    
 parser.add_argument('-r','--results', default=Path('results'), type=Path,
     help='directory to write results (default: ./results)')
 
@@ -83,8 +87,8 @@ def main():
     driver = GraphDatabase.driver("bolt://localhost:7687")
 
     # read parameters
-    allParameters = readJson('../parameters/sf1.json')
-    dataType = readJson('../parameters/dataType.json')
+    allParameters = readJson(args.parameter)
+    dataType = readJson(args.datatype)
     # replace the date in bi1 to datetime
     # allParameters['bi1'] = {'datetime':allParameters['bi1']['date']}
     def convert(k,v):

@@ -116,9 +116,9 @@ python3 bi.py -q all
 ```
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 
-
 ## Refreshes
 The script ./batches.py can refresh the data can only read data from there, I have not fix this issue
 ```sh
 python3 batches.py $NEO$J_HOME/import
 ```
+

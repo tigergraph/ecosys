@@ -110,4 +110,11 @@ Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage 
 ```
 
 ## Considerations in writing queries
-There are many ways to write the query, and here we present the one with the best performance. Because 
+There are many ways to write the query and here what we present is the one with the best performance. 
+I may create a folder to discuss. The query is usually faster if:
+* if you know the degree of the edges, and use SumAccum to store the information instead of SetAccum or MapAccum.
+* if you start from a smaller vertex set 
+
+## refreshes
+
+

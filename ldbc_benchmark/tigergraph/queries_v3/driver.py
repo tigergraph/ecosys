@@ -14,7 +14,7 @@ from datetime import datetime
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
-    parameter_help = 'Parameter file in json (default:parameters/sf1.json).'
+    parameter_help = 'Parameter file in json (default:parameters/sf1/2012-09-13.json).'
 
     # The top-level parser.
     main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
@@ -43,7 +43,7 @@ def get_parser():
 
     # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help='Parameter file in json.')
+    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1/2012-09-13.json'), help='Parameter file in json.')
     run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
     run_parser.add_argument('-r','--results', default=Path('results'), type=Path, help='directory to write results (default: results)')
