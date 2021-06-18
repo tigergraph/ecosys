@@ -9,11 +9,14 @@ This is because
   abs(A.classYear - B.classYear) + 1 < abs(A.classYear - C.classYear) +  abs(C.classYear - B.classYear) + 2
 Thus, the shortest weighted path is also the shortest path
 
-Furthermore, it is cheaper to expand from person2Id, which is a single vertex, 
-and we do not need to store the sourceId, which is not easy actually.
+Furthermore, it is cheaper to search from person2, which is a single vertex.
+We also do not need to store the source Id, which saves a lot of computation.
 
-For weighted edge that is not necessarily the shortest path, refer bi 19
-For the shortest path from both ends, refer bi20-1.gsql and bi15.gsql
+For weighted edge that is not necessarily the shortest path, refer to bi 19.
+For the shortest path from both ends, refer to bi 15.
+But this workload also stores the source Id for the shortest weighted path, which is 
+more difficult than I expected. I recommend to define a local HeapAccum to store the TUPLE of the shortest distance 
+and the corresponding source Id.
 */
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
