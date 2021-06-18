@@ -50,18 +50,15 @@ The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb
 ```sh
 # Set the CSV_DIR to the parent direcotry of initial_snapshot 
 export CSV_DIR=$HOME/sf1/csv/bi/composite-projected-fk/
-# make a copy of the data
-cp -r sf1 sf1-copy
-# Remove the header of csv files. Only needed for the first time loading !!!
-for t in static dynamic ; do
-    for d in $(ls $CSV_DIR/initial_snapshot/$t); do
-        for f in $(ls $CSV_DIR/initial_snapshot/$t/$d/*.csv); do
-            tail -n +2 $f > $f.tmp && mv $f.tmp $f 
-            #echo $f
-        done
-    done
-done 
-echo "Done remove the header of csv files"
+# make a copy of the data to $NEO4J_HOME/import, this is because 
+# our script ./batches.py can only read data from there, I have not fix this issue
+cp -r sf1/csv/bi/composite-projected-fk/* $NEO4J_HOME/import
+cd $NEO4J_HOME/import
+
+# Remove the header of all the csv files. Only needed for the first time loading !!!
+# this command may 20 take seconds.
+find . -type f -name \*.txt -exec sed -i 1d '{}' \;
+
 # load data 
 # go back to the repository
 cd $HOME/ecosys/ldbc_benchmark/tigergraph/queries_v3/cypher
@@ -120,3 +117,8 @@ python3 bi.py -q all
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 
 
+## Refreshes
+The script ./batches.py can refresh the data can only read data from there, I have not fix this issue
+```sh
+python3 batches.py $NEO$J_HOME/import
+```
