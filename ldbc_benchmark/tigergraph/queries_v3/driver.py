@@ -270,7 +270,8 @@ def cmd_refresh(args):
     date = begin 
     while date < end:
         print('insert data for '+date.strftime('%Y-%m-%d'))
-        load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
+        # load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
+        load_data('delete_dynamic', args.machine, args.data_dir/'deletes', False, args.suffix, date)
         date += delta
 
 
@@ -412,7 +413,9 @@ def check_args(args):
             args.data_dir = Path(mds[1])
         else:
             args.machine, args.data_dir = '', Path(args.machine_dir)
-        
+            if args.cmd == 'refresh': # because some folders may not exist
+                args.machine = 'ANY:'
+
         if args.machine in ['', 'ALL']:
             missing = []
             check_list = []

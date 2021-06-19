@@ -1,5 +1,5 @@
 USE GRAPH ldbc_snb
-CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
+CREATE LOADING JOB delete_dynamic FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Comment;
   DEFINE FILENAME file_Comment_hasCreator_Person;
   DEFINE FILENAME file_Comment_hasTag_Tag;
@@ -24,53 +24,48 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Post_hasTag_Tag;
   DEFINE FILENAME file_Post_isLocatedIn_Country;
 
-  // load vertex
-  LOAD file_Comment 
-    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5) USING header="true", separator="|";
-  LOAD file_Post
-    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7) USING header="true", separator="|";
-  LOAD file_Forum
-    TO VERTEX Forum VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Person
-    TO VERTEX Person VALUES ($1, $2, $3, $4, $5, $0, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
+  // delete edge
+  DELETE EDGE HAS_CREATOR
+    (FROM $1 Comment, TO $2 Person) from file_Comment_hasCreator_Person using header="true", separator = "|";
+  DELETE EDGE HAS_TAG
+    (FROM $1 Comment, TO $2 Tag) from file_Comment_hasTag_Tag using header="true", separator = "|";
+  DELETE EDGE IS_LOCATED_IN
+    (FROM $1 Comment, TO $2 Country) from file_Comment_isLocatedIn_Country using header="true", separator = "|";
+  DELETE EDGE REPLY_OF
+    (FROM $1 Comment, TO $2 Comment) from file_Comment_replyOf_Comment using header="true", separator = "|";
+  DELETE EDGE REPLY_OF
+    (FROM $1 Comment, TO $2 Post) from file_Comment_replyOf_Post using header="true", separator = "|";
+  DELETE EDGE CONTAINER_OF
+    (FROM $1 Forum, TO $2 Post) from file_Forum_containerOf_Post using header="true", separator = "|";
+  DELETE EDGE HAS_MEMBER
+    (FROM $1 Forum, TO $2 Person) from file_Forum_hasMember_Person using header="true", separator = "|";
+  DELETE EDGE HAS_MODERATOR
+    (FROM $1 Forum, TO $2 Person) from file_Forum_hasModerator_Person using header="true", separator = "|";
+  DELETE EDGE HAS_TAG
+    (FROM $1 Forum, TO $2 Tag) from file_Forum_hasTag_Tag using header="true", separator = "|";
+  DELETE EDGE HAS_INTEREST
+    (FROM $1 Person, TO $2 Tag) from file_Person_hasInterest_Tag using header="true", separator = "|";
+  DELETE EDGE IS_LOCATED_IN
+    (FROM $1 Person, TO $2 City) from file_Person_isLocatedIn_City using header="true", separator = "|";
+  DELETE EDGE KNOWS
+    (FROM $1 Person, TO $2 Person) from file_Person_knows_Person using header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person, TO $2 Comment) from file_Person_likes_Comment using header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person, TO $2 Post) from file_Person_likes_Post using header="true", separator = "|";
+  DELETE EDGE STUDY_AT
+    (FROM $1 Person, TO $2 University) from file_Person_studyAt_University using header="true", separator = "|";
+  DELETE EDGE WORK_AT
+    (FROM $1 Person, TO $2 Company) from file_Person_workAt_Company using header="true", separator = "|";
+  DELETE EDGE HAS_CREATOR
+    (FROM $1 Post, TO $2 Person) from file_Post_hasCreator_Person using header="true", separator = "|";
+  DELETE EDGE HAS_TAG
+    (FROM $1 Post, TO $2 Tag) from file_Post_hasTag_Tag using header="true", separator = "|";
+  DELETE EDGE IS_LOCATED_IN
+    (FROM $1 Post, TO $2 Country) from file_Post_isLocatedIn_Country using header="true", separator = "|";
 
-  // load edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2, $0) USING header="true", separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Post, $2, $0) USING header="true", separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Comment, $2, $0) USING header="true", separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Post, $2, $0) USING header="true", separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING header="true", separator="|";
-  LOAD file_Comment_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Comment, $2 Country) USING header="true", separator="|";
-  LOAD file_Post_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Post, $2 Country) USING header="true", separator="|";
-  LOAD file_Person_isLocatedIn_City
-    TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="true", separator="|";
-  LOAD file_Person_knows_Person
-    TO EDGE KNOWS VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Person_likes_Comment
-    TO EDGE LIKES VALUES ($1, $2 Comment, $0) USING header="true", separator="|";
-  LOAD file_Person_likes_Post
-    TO EDGE LIKES VALUES ($1, $2 Post, $0) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF VALUES ($1, $2 Comment, $0) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($1, $2 Post, $0) USING header="true", separator="|";
-  LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT VALUES ($1, $2, $3, $0) USING header="true", separator="|";
-  LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT VALUES ($1, $2, $3, $0) USING header="true", separator="|";
+  DELETE VERTEX Comment (primary_id $1) from file_Comment USING header="true", separator="|";
+  DELETE VERTEX Forum (primary_id $1) from file_Comment USING header="true", separator="|";
+  DELETE VERTEX Person (primary_id $1) from file_Comment USING header="true", separator="|";
+  DELETE VERTEX Post (primary_id $1) from file_Comment USING header="true", separator="|";  
 }
