@@ -9,14 +9,14 @@ from timeit import default_timer as timer
 import ast
 import requests
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
     parameter_help = 'Parameter file in json (default:parameters/sf1/2012-09-13.json).'
     suffix_help = 'suffix of the file (default: is none and read directories)'
-
+    default_parameter = Path('parameters/sf1/initial.json')
     # The top-level parser.
     main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
     main_parser.set_defaults(func=lambda _: main_parser.print_usage())
@@ -45,10 +45,11 @@ def get_parser():
 
     # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1/2012-09-13.json'), help='Parameter file in json.')
+    run_parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help='Parameter file in json.')
     run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
     run_parser.add_argument('-r','--results', default=Path('results'), type=Path, help='directory to write results (default: results)')
+    run_parser.add_argument('-o', '--output', type=str, default=Path, help='output folder')
     run_parser.set_defaults(func=cmd_run)
 
     # ./driver.py compare [-q queries]
@@ -58,23 +59,26 @@ def get_parser():
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
     
-    # ./driver insert 
+    # ./driver refresh 
     refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
-    refresh_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
-    refresh_parser.add_argument('-i', '--insert', action='store_false', help='only insert')
-    refresh_parser.add_argument('-d', '--delete', action='store_false', help='only delete')
-    refresh_parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
-    refresh_parser.add_argument('-b','--begin', type=str, default='', help='begining date')
-    refresh_parser.add_argument('-e','--end', type=str, default='', help='end date')
     refresh_parser.set_defaults(func=cmd_refresh)
+    refresh_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
+    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser.set_defaults(func=cmd_all)
+    all_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
+    for parser in [refresh_parser, all_parser]:
+        #parser.add_argument('-i', '--insert', action='store_false', help='turn off inserts')
+        #parser.add_argument('-d', '--delete', action='store_false', help='turn off delete')
+        parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
+        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date')
+        parser.add_argument('-e','--end', type=str, default='2012-09-14', help='end date')
+        parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help=parameter_help)
+        parser.add_argument('-q', '--queries', type=str, default='', help=query_help)
+        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
+        parser.add_argument('-o', '--output', type=str, default=Path, help='output folder')
+    
 
     # Running all from loading to running.
-    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
-    all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
-    all_parser.add_argument('-p', '--parameter', type=Path, default= Path('parameters/sf1.json'), help=parameter_help)
-    all_parser.add_argument('-q', '--queries', type=str, default='', help=query_help)
-    all_parser.set_defaults(func=cmd_all)
-
     return main_parser
 
 def list2str(xs):
@@ -221,7 +225,10 @@ def load_allparameters(file):
 def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
-
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'load_static.gsql')])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'insert.gsql')])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete.gsql')])
+    
 """
 Load data
     - job: load_static, load_dynamic, delete_dynamic
@@ -229,17 +236,18 @@ Load data
     - data_dir: file path
     - static : true or false
     - suffix : str
+    - date : None
 """ 
-def load_data(job, machine, data_dir, static, suffix):
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'load_static.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'insert.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete.gsql')])
+def load_data(job, machine, data_dir, static, suffix, date = None):
     tag = 'static' if static else 'dynamic'
     names = STATIC_NAMES if static else DYNAMIC_NAMES 
     file_paths = [(data_dir /tag / name) for name in names]
+    if date:
+        file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
     gsql = f'RUN LOADING JOB {job} USING '
     if suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
+    print('250')
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
     
 
@@ -255,9 +263,16 @@ def cmd_delete(args):
     load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
 
 def cmd_refresh(args):
-    if args.insert and args.delete: 
-        cmd_insert(args)
-        #cmd_delete(args)
+    begin = datetime.strptime(args.begin, '%Y-%m-%d')
+    end = datetime.strptime(args.end, '%Y-%m-%d')
+
+    delta = timedelta(days=1)
+    date = begin 
+    while date < end:
+        print('insert data for '+date.strftime('%Y-%m-%d'))
+        load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
+        date += delta
+
 
 def cmd_load_query(args):
     '''Loads queries from the given workloads.'''
@@ -408,16 +423,16 @@ def check_args(args):
                         missing.append(file_path.name)
                     if args.suffix and not file_path.is_file():
                         missing.append(file_path.name)
-            for name in DYNAMIC_NAMES:
-                file_path = (args.data_dir/'dynamic'/name)
-                if not args.suffix and not file_path.is_dir():
-                    missing.append(file_path.name)
-                if args.suffix and not file_path.is_file():
-                    missing.append(file_path.name)
-            
-            tmp = 'files' if args.suffix else 'directory'
-            if len(missing) > 0:
-                raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
+                for name in DYNAMIC_NAMES:
+                    file_path = (args.data_dir/'dynamic'/name)
+                    if not args.suffix and not file_path.is_dir():
+                        missing.append(file_path.name)
+                    if args.suffix and not file_path.is_file():
+                        missing.append(file_path.name)
+                
+                tmp = 'files' if args.suffix else 'directory'
+                if len(missing) > 0:
+                    raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
 
 def main():
     args = get_parser().parse_args()

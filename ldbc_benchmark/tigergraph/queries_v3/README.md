@@ -107,15 +107,23 @@ Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage 
 ```
 
 
-The starting time of LDBC SNB graph is 2012-09-13. The correct results stored in `results_sf[scale factor]/[date]` where date starts from 2012-09-13 and ends at 2013-01-01. To compare the results
-
 ```sh
 # Query bi19 is expensive, we recomment to run without bi19 for 3 times
 ./driver.py run -q not:19 -n 3
 # To run all the queries
 ./driver.py run 
 ```
+## Compare the results of initial state
 
+The starting time of LDBC SNB graph is 2012-09-13. The documented GSQL results are in `results_sf[scale factor]/initial`. The documented  Cypher results are in `cypher/results_sf[scale factor]/initial`. To compare the results with the documented GSQL results.
+```sh
+ ./driver.py compare -s results -t results_sf1/initial
+```
+The script can be also used to compare the GSQL and cypher results. 
+```sh
+# this is also the default parameter setting
+ ./driver.py compare -s results -t cypher/results 
+```
 
 ## Considerations in writing queries
 There are many ways to write the query and here what we present is the one with the best performance. 

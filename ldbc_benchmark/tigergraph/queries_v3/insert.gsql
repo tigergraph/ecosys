@@ -1,5 +1,5 @@
 USE GRAPH ldbc_snb
-CREATE OR REPLACE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
+CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Comment;
   DEFINE FILENAME file_Comment_hasCreator_Person;
   DEFINE FILENAME file_Comment_hasTag_Tag;

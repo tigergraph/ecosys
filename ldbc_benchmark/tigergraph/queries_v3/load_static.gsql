@@ -1,6 +1,6 @@
 
 USE GRAPH ldbc_snb
-CREATE OR REPLACE LOADING JOB load_static FOR GRAPH ldbc_snb {
+CREATE LOADING JOB load_static FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Organisation;
   DEFINE FILENAME file_Organisation_isLocatedIn_Place;
   DEFINE FILENAME file_Place;
