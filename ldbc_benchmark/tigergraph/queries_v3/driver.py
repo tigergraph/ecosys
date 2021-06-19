@@ -15,6 +15,7 @@ def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
     parameter_help = 'Parameter file in json (default:parameters/sf1/2012-09-13.json).'
+    suffix_help = 'suffix of the file (default: is none and read directories)'
 
     # The top-level parser.
     main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
@@ -35,6 +36,7 @@ def get_parser():
     # ./driver.py load data machine:dir 
     load_data_parser = load_subparsers.add_parser('data', help='Load data')
     load_data_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
+    load_data_parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
     load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data')
@@ -56,6 +58,16 @@ def get_parser():
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
     
+    # ./driver insert 
+    refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
+    refresh_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
+    refresh_parser.add_argument('-i', '--insert', action='store_false', help='only insert')
+    refresh_parser.add_argument('-d', '--delete', action='store_false', help='only delete')
+    refresh_parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
+    refresh_parser.add_argument('-b','--begin', type=str, default='', help='begining date')
+    refresh_parser.add_argument('-e','--end', type=str, default='', help='end date')
+    refresh_parser.set_defaults(func=cmd_refresh)
+
     # Running all from loading to running.
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
     all_parser.add_argument('machine_dir', type=str, help='The machine and directory to load data from. "machine:data_dir"')
@@ -155,8 +167,18 @@ class ResultTransform:
         self.transforms.append(transform_result)
         return self
 
+STATIC_NAMES = [
+    'Organisation',
+    'Organisation_isLocatedIn_Place',
+    'Place',
+    'Place_isPartOf_Place',
+    'Tag',
+    'TagClass',
+    'TagClass_isSubclassOf_TagClass',
+    'Tag_hasType_TagClass',
+]
 
-DATA_NAMES = [
+DYNAMIC_NAMES = [
     'Comment',
     'Comment_hasCreator_Person',
     'Comment_hasTag_Tag',
@@ -168,8 +190,6 @@ DATA_NAMES = [
     'Forum_hasMember_Person',
     'Forum_hasModerator_Person',
     'Forum_hasTag_Tag',
-    'Organisation',
-    'Organisation_isLocatedIn_Place',
     'Person',
     'Person_hasInterest_Tag',
     'Person_isLocatedIn_City',
@@ -178,16 +198,10 @@ DATA_NAMES = [
     'Person_likes_Post',
     'Person_studyAt_University',
     'Person_workAt_Company',
-    'Place',
-    'Place_isPartOf_Place',
     'Post',
     'Post_hasCreator_Person',
     'Post_hasTag_Tag',
     'Post_isLocatedIn_Country',
-    'Tag',
-    'TagClass',
-    'TagClass_isSubclassOf_TagClass',
-    'Tag_hasType_TagClass',
 ]
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
@@ -208,6 +222,43 @@ def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
 
+"""
+Load data
+    - job: load_static, load_dynamic, delete_dynamic
+    - machine : machine spec
+    - data_dir: file path
+    - static : true or false
+    - suffix : str
+""" 
+def load_data(job, machine, data_dir, static, suffix):
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'load_static.gsql')])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'insert.gsql')])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete.gsql')])
+    tag = 'static' if static else 'dynamic'
+    names = STATIC_NAMES if static else DYNAMIC_NAMES 
+    file_paths = [(data_dir /tag / name) for name in names]
+    gsql = f'RUN LOADING JOB {job} USING '
+    if suffix: suffix = '.' + suffix
+    gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
+    subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
+    
+
+def cmd_load_data(args):
+    '''Loads data from the given data_dir path.'''
+    load_data('load_static', args.machine, args.data_dir, True, args.suffix)
+    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
+
+def cmd_insert(args):
+    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
+
+def cmd_delete(args):
+    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
+
+def cmd_refresh(args):
+    if args.insert and args.delete: 
+        cmd_insert(args)
+        #cmd_delete(args)
+
 def cmd_load_query(args):
     '''Loads queries from the given workloads.'''
     gsql = ''
@@ -225,30 +276,11 @@ def cmd_load_query(args):
 
     subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
 
-def cmd_load_csv(args):
-    '''Loads data from the given data_dir path.'''
-    file_paths = [(args.data_dir / name).with_suffix('.csv') for name in DATA_NAMES]
-    gsql = 'RUN LOADING JOB load_ldbc_snb USING '
-    gsql += ', '.join(f'file_{name}="{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
-    subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
-
-def cmd_load_data(args):
-    '''Loads data from the given data_dir path.'''
-    if args.data_dir is None: 
-        subprocess.run('RUN LOADING JOB load_ldbc_snb')
-        return 
-
-    file_paths = [(args.data_dir / name) for name in DATA_NAMES]
-    gsql = 'RUN LOADING JOB load_ldbc_snb USING '
-    gsql += ', '.join(f'file_{name}="{args.machine}{file_path}"' for name, file_path in zip(DATA_NAMES, file_paths))
-    subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
-
 def cmd_load_all(args):
     '''Loads the schema, data and queries.'''
     cmd_load_schema(args)
     cmd_load_data(args)
     cmd_load_query(args)
-
 
 def median(time_list):
     return sorted(time_list)[len(time_list)//2]
@@ -356,8 +388,7 @@ def check_args(args):
         print('Workload:', list2str([w.name for w in args.workload]))
     
     #check mahine_dir
-    if (args.cmd == 'load' and (args.cmd_load in ['csv','data','all']))  or args.cmd == 'all':
-        missing = []
+    if (args.cmd == 'load' and (args.cmd_load in ['data','all'])) or args.cmd in ['all', 'refresh']:
         if ':' in args.machine_dir:
             mds = args.machine_dir.split(':')
             if len(mds) != 2:
@@ -366,17 +397,27 @@ def check_args(args):
             args.data_dir = Path(mds[1])
         else:
             args.machine, args.data_dir = '', Path(args.machine_dir)
-
-        for name in DATA_NAMES:
-            file_path = (args.data_dir / name)
-            if args.cmd_load == 'csv': file_path = file_path.withsuffix('.csv')
-            if args.machine in ['', 'ALL'] and not file_path.is_dir():
-                missing.append(file_path.name)
-            if args.machine in ['', 'ALL'] and args.cmd_load == 'csv' and not file_path.is_file():
-                missing.append(file_path.name)
+        
+        if args.machine in ['', 'ALL']:
+            missing = []
+            check_list = []
+            if args.cmd != 'refresh': #check static files
+                for name in STATIC_NAMES:
+                    file_path = (args.data_dir/'static'/name)
+                    if not args.suffix and not file_path.is_dir():
+                        missing.append(file_path.name)
+                    if args.suffix and not file_path.is_file():
+                        missing.append(file_path.name)
+            for name in DYNAMIC_NAMES:
+                file_path = (args.data_dir/'dynamic'/name)
+                if not args.suffix and not file_path.is_dir():
+                    missing.append(file_path.name)
+                if args.suffix and not file_path.is_file():
+                    missing.append(file_path.name)
             
-        if len(missing) > 0:
-            raise ValueError(f'The directory "{args.data_dir}" is missing files/directory {", ".join(missing)}.')
+            tmp = 'files' if args.suffix else 'directory'
+            if len(missing) > 0:
+                raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
 
 def main():
     args = get_parser().parse_args()

@@ -64,14 +64,9 @@ zstd -d sf1-composite-projected-fk.tar.zst
 tar -xvf sf1-composite-projected-fk.tar
 ```
 
-Prepare the data. We arrange the directory struture so that the data can be loaded.
+Remove the empty files `_SUCCESS`, these files can cause loading to fail
 ```sh
-mv sf1/csv/bi/composite-projected-fk/initial_snapshot .
-cd initial_snapshot
-mv static/* dynamic/* .
-rm -r static dynamic/
-# remove the empty files, these files can cause loading to fail
-for f in *; do rm $f/_SUCCESS; done
+find sf1 -name _SUCCESS -type f -delete
 ```
 
 ## Load data
@@ -87,7 +82,7 @@ cp ExprFunctions.hpp $(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryU
 Load schema, data, and query. Usage of `driver.py` can be `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
 ./driver.py load schema
-./driver.py load data ~/initial_snapshot 
+./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/
 ./driver.py load query
 ```
 THis is equivalent to
@@ -99,6 +94,11 @@ The directory can include the machine. If you want to load data that is distribu
 ```sh
 ./driver.py load data ALL:~/initial_snapshot 
 ``` 
+After loading, you can use the following GSQL script to check the number of vertices and edges. For SF1, there are 1116485 Comment vertices in the initial snapshot.
+
+```sh
+gsql stat.gsql
+```
 
 ## Run
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. For large scale factors, you may need to configure time out to allow query to run in longer time using `gadmin config group timeout`. The default parameter file is `parameters/sf1/2012-09-13.json`.
