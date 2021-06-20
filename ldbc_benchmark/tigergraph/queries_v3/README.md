@@ -133,4 +133,6 @@ I may create a folder to discuss. The query is usually faster if:
 
 ## refreshes
 
-
+```sh
+./driver.py refresh ~/sf1/sf1/csv/bi/composite-projected-fk/ 
+```

@@ -46,22 +46,21 @@ tar -xvf sf1-composite-projected-fk.tar
 ```
 
 ### load data into cypher
-The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh). The script removes the header of csv files and load the header in `./headers` and all the csv files in `initial_snapshot`. Since the data is modified, you may make a copy of the dataset before loading.
+The current script `batches.py` can only read `inserts` and `deletes` folder in `$NEO4J_HOME/import/`. We first make a copy of these folders to `$NEO4J_HOME/import/`. This issue will be fixed in the future. 
 ```sh
-# Set the CSV_DIR to the parent direcotry of initial_snapshot 
-export CSV_DIR=$HOME/sf1/csv/bi/composite-projected-fk/
-# make a copy of the data to $NEO4J_HOME/import, this is because 
-# our script ./batches.py can only read data from there, I have not fix this issue
-cp -r sf1/csv/bi/composite-projected-fk/* $NEO4J_HOME/import
-cd $NEO4J_HOME/import
+cp -r sf1/csv/bi/composite-projected-fk/* $NEO4J_HOME/import/
+# Remove the header of all the csv files. Only needed for the first time loading !!! 
+# this may takes 1 minute for scale factor 1.
+find $NEO4J_HOME/import/sf1 -type f -name \*.csv -exec sed -i 1d '{}' \;
+```
 
-# Remove the header of all the csv files. Only needed for the first time loading !!!
-# this command may 20 take seconds.
-find . -type f -name \*.txt -exec sed -i 1d '{}' \;
+The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh). The script removes the header of csv files and load the header in `./headers` and all the csv files in `initial_snapshot`. Since the data is modified, you may make a copy of the dataset before loading.
 
-# load data 
+```sh
 # go back to the repository
 cd $HOME/ecosys/ldbc_benchmark/tigergraph/queries_v3/cypher
+# Set the CSV_DIR to the parent direcotry of initial_snapshot and load 
+export CSV_DIR=$NEO4J_HOME/import
 sh load.sh
 ```
 
@@ -119,6 +118,6 @@ The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `
 ## Refreshes
 The script ./batches.py can refresh the data can only read data from there, I have not fix this issue
 ```sh
-python3 batches.py $NEO$J_HOME/import
+python3 batches.py $NEO4J_HOME/import
 ```
 

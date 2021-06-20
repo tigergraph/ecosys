@@ -7,6 +7,17 @@ import csv
 import re
 import sys
 import os
+from pathlib import Path
+import argparse
+
+main_parser = argparse.ArgumentParser(description='Utilities working with Cypher for LDBC SNB with insertion/deletion.')
+main_parser.set_defaults(func=lambda _: main_parser.print_usage())
+main_parser.add_argument('data_dir', type=Path, help='data directory, e.g. $NEO4J_HOME/import/sf1/csv/bi/composite-projected-fk')
+main_parser.add_argument('-b', '--begin', type=str, default='2012-09-13', help='start date')
+main_parser.add_argument('-e', '--end', type=str, default='2012-09-14', help='end date')
+            
+args = main_parser.parse_args()
+
 
 def write_txn_fun(tx, query_spec, batch, csv_file):
     result = tx.run(query_spec, batch=batch, csv_file=csv_file)
@@ -45,55 +56,59 @@ for entity in delete_entities:
     with open(f"dml/del-{entity}.cypher", "r") as delete_query_file:
         delete_queries[entity] = delete_query_file.read()
 
-driver = GraphDatabase.driver("bolt://localhost:7687")
-session = driver.session()
 
-data_dir = sys.argv[1]
+def main():
+    data_dir = args.data_dir
+    network_start_date = datetime.strptime(args.begin, '%Y-%m-%d')
+    network_end_date = datetime.strptime(args.end, '%Y-%m-%d')
+    batch_size = relativedelta(days=1)
+    
+    driver = GraphDatabase.driver("bolt://localhost:7687")
+    session = driver.session()
 
-network_start_date = date(2012, 9, 13)
-network_end_date = date(2012, 12, 31)
-batch_size = relativedelta(days=1)
+    batch_start_date = network_start_date
+    while batch_start_date < network_end_date:
+        # format date to yyyy-mm-dd
+        batch_id = batch_start_date.strftime('%Y-%m-%d')
+        batch_dir = f"batch_id={batch_id}"
+        print(f"#################### {batch_dir} ####################")
 
-batch_start_date = network_start_date
-while batch_start_date < network_end_date:
-    # format date to yyyy-mm-dd
-    batch_id = batch_start_date.strftime('%Y-%m-%d')
-    batch_dir = f"batch_id={batch_id}"
-    print(f"#################### {batch_dir} ####################")
+        print("## Inserts")
+        for entity in insert_entities:
+            batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
+            if not os.path.exists(batch_path):
+                continue
 
-    print("## Inserts")
-    for entity in insert_entities:
-        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
-        if not os.path.exists(batch_path):
-            continue
+            print(f"{entity}:")
+            for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+                print(f"- inserts/dynamic/{entity}/{batch_dir}/{csv_file}")
+                num_changes = run_update(session, insert_queries[entity], batch_dir, csv_file)
+                if num_changes == 0:
+                    print("!!! No changes occured")
+                else:
+                    print(f"> {num_changes} changes")
+                print()
 
-        print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
-            print(f"- inserts/dynamic/{entity}/{batch_dir}/{csv_file}")
-            num_changes = run_update(session, insert_queries[entity], batch_dir, csv_file)
-            if num_changes == 0:
-                print("!!! No changes occured")
-            else:
-                print(f"> {num_changes} changes")
-            print()
+        print("## Deletes")
+        for entity in delete_entities:
+            batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
+            if not os.path.exists(batch_path):
+                continue
 
-    print("## Deletes")
-    for entity in delete_entities:
-        batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
-        if not os.path.exists(batch_path):
-            continue
+            print(f"{entity}:")
+            for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+                print(f"- deletes/dynamic/{entity}/{batch_dir}/{csv_file}")
+                num_changes = run_update(session, delete_queries[entity], batch_dir, csv_file)
+                if num_changes == 0:
+                    print("!!! No changes occured")
+                else:
+                    print(f"> {num_changes} changes")
+                print()
 
-        print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
-            print(f"- deletes/dynamic/{entity}/{batch_dir}/{csv_file}")
-            num_changes = run_update(session, delete_queries[entity], batch_dir, csv_file)
-            if num_changes == 0:
-                print("!!! No changes occured")
-            else:
-                print(f"> {num_changes} changes")
-            print()
+        batch_start_date = batch_start_date + batch_size
 
-    batch_start_date = batch_start_date + batch_size
+    session.close()
+    driver.close()
 
-session.close()
-driver.close()
+if __name__ == '__main__':
+    main()

@@ -35,14 +35,15 @@ def get_parser():
     load_query_parser.set_defaults(func=cmd_load_query)
     # ./driver.py load data machine:dir 
     load_data_parser = load_subparsers.add_parser('data', help='Load data')
-    load_data_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
-    load_data_parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
     load_data_parser.set_defaults(func=cmd_load_data)
 
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data')
-    load_all_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
     load_all_parser.set_defaults(func=cmd_load_all)
 
+    for parser in [load_data_parser, load_all_parser]:
+        parser.add_argument('machine_dir', type=str, help=machine_dir_help)
+        parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
+    
     # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
     run_parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help='Parameter file in json.')
@@ -70,8 +71,8 @@ def get_parser():
         #parser.add_argument('-i', '--insert', action='store_false', help='turn off inserts')
         #parser.add_argument('-d', '--delete', action='store_false', help='turn off delete')
         parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
-        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date')
-        parser.add_argument('-e','--end', type=str, default='2012-09-14', help='end date')
+        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
+        parser.add_argument('-e','--end', type=str, default='2012-09-14', help='end date (exclusive))')
         parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help=parameter_help)
         parser.add_argument('-q', '--queries', type=str, default='', help=query_help)
         parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
@@ -247,14 +248,13 @@ def load_data(job, machine, data_dir, static, suffix, date = None):
     gsql = f'RUN LOADING JOB {job} USING '
     if suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
-    print('250')
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
     
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
-    load_data('load_static', args.machine, args.data_dir, True, args.suffix)
-    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
+    load_data('load_static', args.machine, args.data_dir/'initial_snapshot', True, args.suffix)
+    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', False, args.suffix)
 
 def cmd_insert(args):
     load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
@@ -269,8 +269,9 @@ def cmd_refresh(args):
     delta = timedelta(days=1)
     date = begin 
     while date < end:
-        print('insert data for '+date.strftime('%Y-%m-%d'))
-        # load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
+        print('run insertion for '+date.strftime('%Y-%m-%d'))
+        load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
+        print('run deletion for '+date.strftime('%Y-%m-%d'))
         load_data('delete_dynamic', args.machine, args.data_dir/'deletes', False, args.suffix, date)
         date += delta
 
@@ -412,22 +413,22 @@ def check_args(args):
             args.machine =  mds[0] + ':'
             args.data_dir = Path(mds[1])
         else:
-            args.machine, args.data_dir = '', Path(args.machine_dir)
+            args.machine, args.data_dir = 'm1:', Path(args.machine_dir)
             if args.cmd == 'refresh': # because some folders may not exist
                 args.machine = 'ANY:'
 
-        if args.machine in ['', 'ALL']:
+        if args.machine in ['m1', 'ALL']:
             missing = []
             check_list = []
             if args.cmd != 'refresh': #check static files
                 for name in STATIC_NAMES:
-                    file_path = (args.data_dir/'static'/name)
+                    file_path = (args.data_dir/'initial_snapshot'/'static'/name)
                     if not args.suffix and not file_path.is_dir():
                         missing.append(file_path.name)
                     if args.suffix and not file_path.is_file():
                         missing.append(file_path.name)
                 for name in DYNAMIC_NAMES:
-                    file_path = (args.data_dir/'dynamic'/name)
+                    file_path = (args.data_dir/'initial_snapshot'/'dynamic'/name)
                     if not args.suffix and not file_path.is_dir():
                         missing.append(file_path.name)
                     if args.suffix and not file_path.is_file():
