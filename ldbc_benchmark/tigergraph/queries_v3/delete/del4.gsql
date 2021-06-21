@@ -1,0 +1,17 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE DISTRIBUTED QUERY del4(STRING file) {
+  SetAccum<VERTEX<Forum>> @@forum;
+  @@forum = { LoadAccum(file, $1, "|", true)}; 
+  forum = {@@forum};
+  posts = SELECT p FROM forum -(CONTAINER_OF>)- Post:p;
+  # del 6
+  replies2 = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
+  DELETE p FROM posts:p;
+  DELETE r FROM replies2:r;
+  
+  DELETE f FROM forum:f;
+}
+
+#INSTALL QUERY del4
+#RUN QUERY del4("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Forum/batch_id=2012-09-13/part-00000-3bc36dac-10e2-49eb-9373-a2d8442c2bd7.c000.csv")

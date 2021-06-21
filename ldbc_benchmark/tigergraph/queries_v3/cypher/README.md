@@ -51,7 +51,7 @@ The current script `batches.py` can only read `inserts` and `deletes` folder in 
 cp -r sf1/csv/bi/composite-projected-fk/* $NEO4J_HOME/import/
 # Remove the header of all the csv files. Only needed for the first time loading !!! 
 # this may takes 1 minute for scale factor 1.
-find $NEO4J_HOME/import/sf1 -type f -name \*.csv -exec sed -i 1d '{}' \;
+find $NEO4J_HOME/import -type f -name \*.csv -exec sed -i 1d '{}' \;
 ```
 
 The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh). The script removes the header of csv files and load the header in `./headers` and all the csv files in `initial_snapshot`. Since the data is modified, you may make a copy of the dataset before loading.
@@ -84,7 +84,7 @@ Download [APOC](https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/
 
 After moving them to `$NEO4J_HOME/plugins`, then add the following text to `$NEO4J_HOME/conf/neo4j.conf`. We also changed the maximum memory size for queries.
 
-Note: Neo4j cypher-shell may not work if you install the packages first and then load data. So I recommend you to load data first and then install the packages.
+Note: Neo4j cypher-shell may not work if you install these packages first and then load data. So I recommend you to load data first and then install the packages.
 
 ```
 dbms.memory.heap.initial_size=31g
@@ -108,7 +108,7 @@ cypher-shell
 
 
 ## run queries
-Currently parameter directory is hard coded in the file.
+Currently parameter directory is hard coded in `bi.py`. The script `indices.cypher` create indices for data, which can improve the query speed but not affects the results. `indices.cypher` is required for insertion of edges, otherwise, the the query is extremely slow.
 ```sh
 cypher-shell < indices.cypher
 python3 bi.py -q all
@@ -116,7 +116,7 @@ python3 bi.py -q all
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 
 ## Refreshes
-The script ./batches.py can refresh the data can only read data from there, I have not fix this issue
+The script `./batches.py` can do the insertion and deletion. Data path is hard coded in the cypher scripts right now. 
 ```sh
 python3 batches.py $NEO4J_HOME/import
 ```

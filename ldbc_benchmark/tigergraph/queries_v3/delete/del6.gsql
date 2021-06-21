@@ -1,0 +1,12 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE DISTRIBUTED QUERY del6(STRING file) {
+  SetAccum<VERTEX<Post>> @@posts;
+  @@posts = { LoadAccum(file, $1, "|", true)}; 
+  posts = {@@posts};
+  # del 6 7
+  replies = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
+  DELETE r FROM replies:r;
+  
+  DELETE p FROM posts:p;
+}

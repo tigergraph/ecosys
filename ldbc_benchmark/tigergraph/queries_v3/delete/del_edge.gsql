@@ -1,0 +1,16 @@
+USE GRAPH ldbc_snb
+CREATE LOADING JOB delete_dynamic FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_Person_likes_Post; // del 2
+  DEFINE FILENAME file_Person_likes_Comment; // del 3
+  DEFINE FILENAME file_Forum_hasMember_Person; // del 5
+  DEFINE FILENAME file_Person_knows_Person; // del 8
+  // delete edge
+  DELETE EDGE LIKES
+    (FROM $1 Person, TO $2 Post) from file_Person_likes_Post using header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person, TO $2 Comment) from file_Person_likes_Comment using header="true", separator = "|";
+  DELETE EDGE HAS_MEMBER
+    (FROM $1 Forum, TO $2 Person) from file_Forum_hasMember_Person using header="true", separator = "|";
+  DELETE EDGE KNOWS
+    (FROM $1 Person, TO $2 Person) from file_Person_knows_Person using header="true", separator = "|";
+}

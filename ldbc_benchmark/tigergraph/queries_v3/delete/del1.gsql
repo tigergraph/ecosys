@@ -1,0 +1,25 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE DISTRIBUTED QUERY del1(STRING file) {
+  SetAccum<VERTEX<Person>> @@person;
+  @@person = { LoadAccum(file, $1, "|", true)}; 
+  person = {@@person};
+  # del 6 7
+  M = SELECT c FROM person:p -(<HAS_CREATOR)- (Post|Comment):c; 
+  replies = SELECT c FROM M -(<REPLY_OF*)- Comment:c;
+  DELETE m FROM M:m;
+  DELETE r FROM replies:r;
+  # del 4
+  F = SELECT f FROM person:p -(<HAS_MODERATOR)- Forum:f
+    WHERE f.title LIKE "Album %" OR f.title LIKE "Wall %";
+  posts = SELECT p FROM F -(CONTAINER_OF>)- Post:p;
+  replies2 = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
+  DELETE f FROM F:f;
+  DELETE p FROM posts:p;
+  DELETE r FROM replies2:r;
+  
+  DELETE p FROM person:p;
+}
+
+INSTALL QUERY del1
+RUN QUERY del1("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Person/batch_id=2012-09-13/part-00000-74f44777-5358-4f3f-ac18-5893f98ee838.c000.csv")
