@@ -2,9 +2,12 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY del7(STRING file) {
   SetAccum<VERTEX<Comment>> @@comments;
+  UINT result;
   @@comments = { LoadAccum(file, $1, "|", true)}; 
   comments = {@@comments};
   replies = SELECT c FROM comments -(<REPLY_OF*)- Comment:c;
   DELETE r FROM replies:r;
   DELETE p FROM comments:p;
+  result = comments.size() + replies.size();
+  print result;
 }

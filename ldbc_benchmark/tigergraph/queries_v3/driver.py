@@ -208,6 +208,12 @@ DYNAMIC_NAMES = [
     'Post_hasTag_Tag',
     'Post_isLocatedIn_Country',
 ]
+DEL_NAMES = [
+    'Person_likes_Post',
+    'Person_likes_Comment',
+    'Forum_hasMember_Person',
+    'Person_knows_Person',
+]
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 total = 21
@@ -216,6 +222,11 @@ WORKLOADS[7] = Workload('bi8', [Query('bi8')], ResultTransform()[0][0]['@@result
 WORKLOADS[9] = Workload('bi10', [Query('bi10')], ResultTransform()[0][0]['result'])
 WORKLOADS[10] = Workload('bi11', [Query('bi11')], ResultTransform()[0][0])
 WORKLOADS[15] = Workload('bi16', [Query('bi16')], ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
+
+
+DEL_JOBS = {1:"Person",4:"Forum",6:"Post",7:"Comment"}
+DEL_WORKLOADS = {i:Workload(f'del{i}', [Query(f'del{i}')], ResultTransform()[0][0]) for i,job in DEL_JOBS.items()}
+
 
 '''Loads parameters for a given file'''
 def load_allparameters(file):
@@ -228,20 +239,19 @@ def cmd_load_schema(args):
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'load_static.gsql')])
     subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'insert.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete.gsql')])
+    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete' / 'del_edge.gsql')])
     
 """
 Load data
     - job: load_static, load_dynamic, delete_dynamic
     - machine : machine spec
     - data_dir: file path
-    - static : true or false
+    - tag : dynamic or static
+    - names: STATIC_NAMES DYNAMIC_NAMES DEL_NAMES
     - suffix : str
     - date : None
 """ 
-def load_data(job, machine, data_dir, static, suffix, date = None):
-    tag = 'static' if static else 'dynamic'
-    names = STATIC_NAMES if static else DYNAMIC_NAMES 
+def load_data(job, machine, data_dir, tag, names, suffix, date = None):
     file_paths = [(data_dir /tag / name) for name in names]
     if date:
         file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
@@ -253,26 +263,26 @@ def load_data(job, machine, data_dir, static, suffix, date = None):
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
-    load_data('load_static', args.machine, args.data_dir/'initial_snapshot', True, args.suffix)
-    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', False, args.suffix)
-
-def cmd_insert(args):
-    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
-
-def cmd_delete(args):
-    load_data('load_dynamic', args.machine, args.data_dir, False, args.suffix)
+    load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
+    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
 
 def cmd_refresh(args):
     begin = datetime.strptime(args.begin, '%Y-%m-%d')
-    end = datetime.strptime(args.end, '%Y-%m-%d')
-
+    end = datetime.strptime(args.end, '%Y-%m-%d')    
     delta = timedelta(days=1)
     date = begin 
     while date < end:
-        print('run insertion for '+date.strftime('%Y-%m-%d'))
-        load_data('load_dynamic', args.machine, args.data_dir/'inserts', False, args.suffix, date)
-        print('run deletion for '+date.strftime('%Y-%m-%d'))
-        load_data('delete_dynamic', args.machine, args.data_dir/'deletes', False, args.suffix, date)
+        print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
+        load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
+        print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
+        for i,job in DEL_JOBS.items():
+            path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
+            if path.exists():
+                for fp in path.glob('*.csv'):
+                    if fp.is_file(): 
+                        result = DEL_WORKLOADS[i].run({'file':str(fp)})
+                        print(f'Deleting {job}: {result.result}')
+        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
         date += delta
 
 
@@ -284,11 +294,15 @@ def cmd_load_query(args):
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
         gsql += f'@{workload_path}\n'
 
+    for i in DEL_JOBS.keys():
+        del_query = (SCRIPT_DIR_PATH / 'delete' / f'del{i}.gsql').resolve()
+        gsql += f'@{del_query}\n'
+
     queries_to_install = [
         query.name
         for workload in args.workload
         for query in workload.queries
-    ]
+    ] + [f'del{i}' for i in DEL_JOBS.keys()]
     gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
 
     subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())

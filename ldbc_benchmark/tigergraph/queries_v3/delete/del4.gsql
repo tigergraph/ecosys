@@ -2,6 +2,7 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY del4(STRING file) {
   SetAccum<VERTEX<Forum>> @@forum;
+  UINT result;
   @@forum = { LoadAccum(file, $1, "|", true)}; 
   forum = {@@forum};
   posts = SELECT p FROM forum -(CONTAINER_OF>)- Post:p;
@@ -11,6 +12,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY del4(STRING file) {
   DELETE r FROM replies2:r;
   
   DELETE f FROM forum:f;
+  result = forum.size() + posts.size() + replies2.size();
+  print result;
 }
 
 #INSTALL QUERY del4
