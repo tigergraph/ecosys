@@ -7,18 +7,6 @@ stopDelete() {
     echo "Done stop neo4j and delete neo4j data"
 }
 
-removeFirstLine(){
-    for t in static dynamic ; do
-        for d in $(ls $CSV_DIR/initial_snapshot/$t); do
-            for f in $(ls $CSV_DIR/initial_snapshot/$t/$d/*.csv); do
-                tail -n +2 $f > $f.tmp && mv $f.tmp $f 
-                #echo $f
-            done
-        done
-    done 
-    echo "Done remove the header of csv files"
-}
-
 import() {
     $NEO4J_HOME/bin/neo4j-admin import \
     --id-type=INTEGER \

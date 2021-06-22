@@ -64,18 +64,6 @@ export CSV_DIR=$NEO4J_HOME/import
 sh load.sh
 ```
 
-### Another method to load date (deprecated)
-If you already followed the Tigergraph instruction, you should have initial_shot at the `$HOME` direcotry. 
-```sh
-export POSTFIX=.csv
-# directory of initial_snapshot
-export RAW_DIR=$HOME/initial_snapshot
-# we concatenate the csv data and store to $CSV_DIR 
-export CSV_DIR=$HOME/ldbc_data 
-cd ecosys/ldbc_benchmark/tigergraph/queries_v3/cypher
-sh load-old.sh 
-```
-
 ### Install additional algorithm packages
 Other than the basic neo4j package, the BI 10 query uses `apoc.path.subgraphNodes`, which requires [APOC](https://neo4j.com/labs/apoc/4.1/installation/) package. 
 BI 19 uses `gds.shortestPath.dijkstra.stream`, which requires [graph data science (GDS)](https://neo4j.com/docs/graph-data-science/current/installation/) package. 
@@ -106,7 +94,6 @@ cypher-shell
 >> :exit
 ```
 
-
 ## run queries
 Currently parameter directory is hard coded in `bi.py`. The script `indices.cypher` create indices for data, which can improve the query speed but not affects the results. `indices.cypher` is required for insertion of edges, otherwise, the the query is extremely slow.
 ```sh
@@ -121,3 +108,10 @@ The script `./batches.py` can do the insertion and deletion. Data path is hard c
 python3 batches.py $NEO4J_HOME/import
 ```
 
+## Uninstall Neo4j
+
+Sometimes Neo4j cypher-shell may not be stopped. Use the following command to find the process id in the last column as `pid/java`. And kill the process.
+```sh
+netstat -nlp | grep 7687
+kill pid
+```

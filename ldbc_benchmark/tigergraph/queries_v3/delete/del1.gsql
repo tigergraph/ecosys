@@ -20,5 +20,5 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY del1(STRING file) {
   //PRINT M[M.id as cId], replies[replies.id as rId];
 }
 
-INSTALL QUERY del1
-RUN QUERY del1("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Person/batch_id=2012-09-13/part-00000-74f44777-5358-4f3f-ac18-5893f98ee838.c000.csv")
+#INSTALL QUERY del1
+#RUN QUERY del1("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Person/batch_id=2012-09-13/part-00000-74f44777-5358-4f3f-ac18-5893f98ee838.c000.csv")
