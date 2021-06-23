@@ -6,16 +6,14 @@
 }
 */
 MATCH (country:Country {name: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(zombie:Person)
-OPTIONAL MATCH
-  (zombie)<-[:HAS_CREATOR]-(message:Message)
-WHERE zombie.creationDate  < $endDate
-  AND message.creationDate < $endDate
+WHERE datetime(zombie.creationDate) < datetime($endDate)
+WITH zombie
+OPTIONAL MATCH (zombie)<-[:HAS_CREATOR]-(message:Message)
+WHERE datetime(message.creationDate) < datetime($endDate)
 WITH
-  country,
   zombie,
   count(message) AS messageCount
 WITH
-  country,
   zombie,
   12 * ($endDate.year  - zombie.creationDate.year )
      + ($endDate.month - zombie.creationDate.month)
@@ -23,7 +21,6 @@ WITH
   messageCount
 WHERE messageCount / months < 1
 WITH
-  country,
   collect(zombie) AS zombies
 UNWIND zombies AS zombie
 OPTIONAL MATCH

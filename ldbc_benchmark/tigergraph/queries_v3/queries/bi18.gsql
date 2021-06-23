@@ -2,20 +2,19 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, STRING tag) {
-
   TYPEDEF TUPLE <UINT person2Id, UINT mutualFriendCount> RESULT;
-
   HeapAccum<RESULT>(20, mutualFriendCount DESC, person2Id ASC) @@result;
-
   SumAccum<UINT> @mutualFriendCount;
-
+  OrAccum<BOOL> @known;
   person1 = {person1Id};
+  tmp = SELECT t FROM person1:s -(KNOWS)- Person:t
+    ACCUM t.@known += true;
+
   tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
   person2s =
     SELECT p
     FROM tagWithName -(<HAS_INTEREST)- Person:p
-    WHERE p != person1Id;
-
+    WHERE p != person1Id AND (p.@known==false); # Bug on NOT
   person2s =
     SELECT p
     FROM person1 -(KNOWS)- Person:f -(KNOWS)- person2s:p
@@ -24,3 +23,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, STRING tag) {
 
   PRINT @@result;
 }
+
+# INTERPRET QUERY bi18(13194139538816, "Muammar_Gaddafi")

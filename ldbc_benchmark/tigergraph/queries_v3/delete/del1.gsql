@@ -16,7 +16,8 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY del1(STRING file) {
   DELETE f FROM F:f;
   DELETE r FROM replies2:r;
   DELETE p FROM person:p;
-  PRINT person.size(),replies.size(),F.size(),replies2.size();
+  result = person.size()+replies.size()+F.size()+replies2.size();
+  PRINT result;
   //PRINT M[M.id as cId], replies[replies.id as rId];
 }
 

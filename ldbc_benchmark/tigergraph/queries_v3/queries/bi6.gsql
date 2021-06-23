@@ -4,9 +4,7 @@ SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
 
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
-
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
-
   SumAccum<UINT> @authorityScore;
   SumAccum<UINT> @score;
   MapAccum<UINT, SumAccum<UINT>> @@popularityScore;
@@ -29,10 +27,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
     #POST-ACCUM @@result += RESULT(p2.id, p2.@popularityScore);
 
   # Bug: PER(p2,p1) behaves like PER(p2,m,p1)  
+  tmp = SELECT m  
+    FROM person2:p2 -(LIKES>)- M2:m
+    ACCUM m.@likedPerson += p2;
+    
   person1 =
     SELECT p1
-    FROM person2:p2 -(LIKES>)- M2 -(HAS_CREATOR>)- Person:p1
-    ACCUM p1.@likedPerson += p2
+    FROM M2:m -(HAS_CREATOR>)- Person:p1
+    ACCUM p1.@likedPerson += m.@likedPerson
     POST-ACCUM 
       FOREACH p IN p1.@likedPerson DO
         p1.@authorityScore += @@popularityScore.get(p.id)

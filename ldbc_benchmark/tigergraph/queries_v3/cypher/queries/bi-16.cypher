@@ -33,3 +33,4 @@ RETURN
   [r IN results WHERE r.letter = 'A' | r.messageCount][0] AS messageCountA,
   [r IN results WHERE r.letter = 'B' | r.messageCount][0] AS messageCountB
 ORDER BY messageCountA + messageCountB DESC, person1.id ASC
+LIMIT 20

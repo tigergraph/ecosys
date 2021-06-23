@@ -10,19 +10,20 @@ import ast
 import requests
 import re
 from datetime import datetime, timedelta
+from random import randrange
+
+default_parameter = Path('parameters/sf1/initial.json')
 
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
     parameter_help = 'Parameter file in json (default:parameters/sf1/2012-09-13.json).'
     suffix_help = 'suffix of the file (default: is none and read directories)'
-    default_parameter = Path('parameters/sf1/initial.json')
     # The top-level parser.
     main_parser = argparse.ArgumentParser(description='Various utilities working with GSQL for LDBC SNB.')
     main_parser.set_defaults(func=lambda _: main_parser.print_usage())
     main_subparsers = main_parser.add_subparsers(dest='cmd')
-
-    # ./driver.py load [schema/query/data] 
+    # ./driver.py load [schema/query/data/all] 
     load_parser = main_subparsers.add_parser('load', help='Load the schema, queries, or data')
     load_parser.set_defaults(func=lambda _: load_parser.print_usage())
     load_subparsers = load_parser.add_subparsers(dest='cmd_load')
@@ -31,9 +32,8 @@ def get_parser():
     load_schema_parser.set_defaults(func=cmd_load_schema)
 
     load_query_parser = load_subparsers.add_parser('query', help='Install queries')
-    load_query_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     load_query_parser.set_defaults(func=cmd_load_query)
-    # ./driver.py load data machine:dir 
+
     load_data_parser = load_subparsers.add_parser('data', help='Load data')
     load_data_parser.set_defaults(func=cmd_load_data)
 
@@ -43,6 +43,9 @@ def get_parser():
     for parser in [load_data_parser, load_all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
+
+    for parser in [load_query_parser, load_all_parser]:
+        parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     
     # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
@@ -60,14 +63,13 @@ def get_parser():
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
     
-    # ./driver refresh 
+    # ./driver refresh [machine:dir]
     refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
     refresh_parser.set_defaults(func=cmd_refresh)
-    refresh_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
     all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
     all_parser.set_defaults(func=cmd_all)
-    all_parser.add_argument('machine_dir', type=str, help=machine_dir_help)
     for parser in [refresh_parser, all_parser]:
+        parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         #parser.add_argument('-i', '--insert', action='store_false', help='turn off inserts')
         #parser.add_argument('-d', '--delete', action='store_false', help='turn off delete')
         parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
@@ -78,7 +80,10 @@ def get_parser():
         parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
         parser.add_argument('-o', '--output', type=str, default=Path, help='output folder')
     
-
+    # ./driver gen_para [machine:dir]
+    gen_parser = main_subparsers.add_parser('gen_para', help='auto generate parameter')
+    gen_parser.set_defaults(func=cmd_gen)
+    gen_parser.add_argument('-o', '--output', type=Path, default=Path('tmp.json'), help='output parameter file path')
     # Running all from loading to running.
     return main_parser
 
@@ -89,7 +94,6 @@ class ResultWithElapsed:
     def __init__(self, result, elapsed):
         self.result = result
         self.elapsed = elapsed
-
 
 class Query:
 
@@ -126,11 +130,6 @@ class Workload:
         elapsed = sum(r.elapsed for r in results)
         return ResultWithElapsed(result, elapsed)
 
-'''
-def transform_parameter_bi1(parameter):
-    return {'date': parameter['datetime']}
-'''
-
 class ResultTransform:
     def __init__(self):
         self.transforms = []
@@ -146,13 +145,11 @@ class ResultTransform:
         self.transforms.append(transform_result)
         return self
 
-
     def change_key(self, key_map):
         def transform_result(results):
             return {key_map.get(k, k): v for k, v in results.items()}
         self.transforms.append(transform_result)
         return self
-
 
     def del_keys(self, keys):
         def transform_result(results):
@@ -229,7 +226,7 @@ DEL_WORKLOADS = {i:Workload(f'del{i}', [Query(f'del{i}')], ResultTransform()[0][
 
 
 '''Loads parameters for a given file'''
-def load_allparameters(file):
+def load_parameters(file):
     with open(file) as f: 
         txt = f.read().replace('\n','')
         return ast.literal_eval(txt)
@@ -266,6 +263,38 @@ def cmd_load_data(args):
     load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
     load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
 
+def cmd_load_query(args):
+    '''Loads queries from the given workloads.'''
+    gsql = ''
+
+    for workload in args.workload:
+        workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
+        gsql += f'@{workload_path}\n'
+
+    for i in DEL_JOBS.keys():
+        del_query = (SCRIPT_DIR_PATH / 'delete' / f'del{i}.gsql').resolve()
+        gsql += f'@{del_query}\n'
+    # stat.gsql to check the number of vertices and edges
+    stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
+    gsql += f'@{stat_query}\n'
+    
+    queries_to_install = [
+        query.name
+        for workload in args.workload
+        for query in workload.queries
+    ] + [f'del{i}' for i in DEL_JOBS.keys()] + ['stat'] 
+    gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
+
+    subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
+
+def cmd_load_all(args):
+    '''Loads the schema, data and queries.'''
+    cmd_load_schema(args)
+    cmd_load_data(args)
+    cmd_load_query(args)
+""" 
+refresh data and run queries
+"""
 def cmd_refresh(args):
     begin = datetime.strptime(args.begin, '%Y-%m-%d')
     end = datetime.strptime(args.end, '%Y-%m-%d')    
@@ -285,33 +314,63 @@ def cmd_refresh(args):
         load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
         date += delta
 
-
-def cmd_load_query(args):
-    '''Loads queries from the given workloads.'''
-    gsql = ''
-
-    for workload in args.workload:
-        workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
-        gsql += f'@{workload_path}\n'
-
-    for i in DEL_JOBS.keys():
-        del_query = (SCRIPT_DIR_PATH / 'delete' / f'del{i}.gsql').resolve()
-        gsql += f'@{del_query}\n'
-
-    queries_to_install = [
-        query.name
-        for workload in args.workload
-        for query in workload.queries
-    ] + [f'del{i}' for i in DEL_JOBS.keys()]
-    gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
-
-    subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
-
-def cmd_load_all(args):
-    '''Loads the schema, data and queries.'''
-    cmd_load_schema(args)
-    cmd_load_data(args)
-    cmd_load_query(args)
+"""
+generate parameters automatically
+"""
+def cmd_gen(args):
+    parameters = load_parameters(Path(default_parameter))
+    dataType = load_parameters(Path('parameters/dataType.json'))
+    gen_gsql = Workload('gen', [Query('gen')], ResultTransform()[0][0])
+    result = gen_gsql.run(None).result
+    country = result['@@country']
+    tag = result['@@tag']
+    tagclass = result['@@tagclass']
+    def genValue(name, Dtype):
+        if name == 'country': return country[randrange(3)]
+        if name == 'country1': return country[0]
+        if name == 'country2': return country[1]
+        if name == 'tag': return tag[randrange(3)]
+        if name == 'tagClass': return tagclass[randrange(3)]
+        if name == 'startDate': 
+            date = datetime(2010, 9, 1) + timedelta(days=randrange(365))
+            return date.strftime("%Y-%m-%dT00:00:00")
+        if Dtype == 'LONG':
+            return randrange(100)
+        if Dtype == 'DATETIME':
+            date = datetime(2010, 9, 1) + timedelta(days=randrange(2*365))
+            return date.strftime("%Y-%m-%dT00:00:00")
+    for q, para in parameters.items():
+        for name,_ in para.items():
+            if name in ["minPathDistance", "maxPathDistance","lengthThreshold", "languages","maxKnowsLimit"]:
+                continue
+            parameters[q][name] = genValue(name, dataType[name])
+    
+    date = datetime.strptime(parameters['bi9']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=9) 
+    parameters['bi9']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
+    date = datetime.strptime(parameters['bi15']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=365) 
+    
+    bi10 = Workload('gen_bi10', [Query('gen_bi10')], ResultTransform()[0][0]).run(None).result
+    bi15 = Workload('gen_bi15', [Query('gen_bi15')], ResultTransform()[0][0]).run(None).result
+    bi16 = Workload('gen_bi16', [Query('gen_bi16')], ResultTransform()[0][0]).run(None).result
+    bi19 = Workload('gen_bi19', [Query('gen_bi19')], ResultTransform()[0][0]).run(None).result
+    bi20 = Workload('gen_bi20', [Query('gen_bi20')], ResultTransform()[0][0]).run(None).result
+    for k in bi10.keys(): parameters['bi10'][k] = bi10[k]
+    parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
+    for k in bi15.keys(): parameters['bi15'][k] = bi15[k]
+    for k in bi16.keys(): parameters['bi16'][k] = bi16[k]
+    parameters['bi16']['dateA'] = bi16['dateA'].replace(' ','T')
+    parameters['bi16']['dateB'] = bi16['dateB'].replace(' ','T')
+    parameters['bi16']['delta'] = randrange(8,16)
+    parameters['bi18']['person1Id'] = bi15['person1Id']
+    parameters['bi19']['city1Id'] = bi19['@@cities'][0]
+    parameters['bi19']['city2Id'] = bi19['@@cities'][1]
+    parameters['bi20']['company'] = bi20['company']
+    parameters['bi20']['person2Id'] = bi20['@@person2Ids'][0]
+    
+    stream = str(parameters).replace("'", '"')
+    stream = re.sub(r'"bi', r'\n"bi', stream)
+    with open(args.output,'w') as f:
+        f.write(stream)
 
 def median(time_list):
     return sorted(time_list)[len(time_list)//2]
@@ -328,7 +387,7 @@ def writeResult(result, filename):
 def cmd_run(args):
     os.makedirs(args.results,exist_ok=True)
     #os.makedirs('elapsed_time',exist_ok=True)
-    parameters = load_allparameters(args.parameter)
+    parameters = load_parameters(args.parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     print(f"run for {args.nruns} times ...")
     print("Q\tNrow\tMedian time\t")
@@ -397,60 +456,64 @@ def cmd_all(args):
     cmd_load_all(args)
     cmd_run(args)
 
-def check_args(args):
-    # Parse workload from string to a list 
-    if args.cmd in ['load','run','compare','all'] or (args.cmd == 'load' and args.cmd_load in ['query','all']):
-        # default is all the workloads
-        all = [str(i) for i in range(1,total)]
-        alls = set(all)
-        if getattr(args, 'queries', 'all') == 'all':
-            actual = alls
-        # exclude cases
-        elif args.queries.startswith('not:'):
-            exclude = args.queries[4:].split(',')
-            actual = alls - set(exclude)
-        # regular expression
-        elif args.queries.startswith('reg:'):
-            r = re.compile(args.queries[4:])
-            actual = list(filter(r.match, all))
-        else:
-            actual = set(args.queries.split(','))
-        args.workload = [WORKLOADS[i-1] for i in range(1,total) if str(i) in actual]
-        print('Workload:', list2str([w.name for w in args.workload]))
-    
-    #check mahine_dir
-    if (args.cmd == 'load' and (args.cmd_load in ['data','all'])) or args.cmd in ['all', 'refresh']:
-        if ':' in args.machine_dir:
-            mds = args.machine_dir.split(':')
-            if len(mds) != 2:
-                raise Exception("<data_dir> should be in format: 'machine:data_dir'")
-            args.machine =  mds[0] + ':'
-            args.data_dir = Path(mds[1])
-        else:
-            args.machine, args.data_dir = 'm1:', Path(args.machine_dir)
-            if args.cmd == 'refresh': # because some folders may not exist
-                args.machine = 'ANY:'
+""" 
+Parse args.queries to args.workload
+"""
+def parse_queries(args):
+    if not hasattr(args, 'queries'): 
+        args.workload = WORKLOADS
+        return
+    all = [str(i) for i in range(1,total)]
+    alls = set(all)
+    if args.queries == 'all':
+        actual = alls
+    # exclude cases
+    elif args.queries.startswith('not:'):
+        exclude = args.queries[4:].split(',')
+        actual = alls - set(exclude)
+    # regular expression
+    elif args.queries.startswith('reg:'):
+        r = re.compile(args.queries[4:])
+        actual = list(filter(r.match, all))
+    else:
+        actual = set(args.queries.split(','))
+    args.workload = [WORKLOADS[i-1] for i in range(1,total) if str(i) in actual]
+    print('Workload:', list2str([w.name for w in args.workload]))
 
-        if args.machine in ['m1', 'ALL']:
-            missing = []
-            check_list = []
-            if args.cmd != 'refresh': #check static files
-                for name in STATIC_NAMES:
-                    file_path = (args.data_dir/'initial_snapshot'/'static'/name)
-                    if not args.suffix and not file_path.is_dir():
-                        missing.append(file_path.name)
-                    if args.suffix and not file_path.is_file():
-                        missing.append(file_path.name)
-                for name in DYNAMIC_NAMES:
-                    file_path = (args.data_dir/'initial_snapshot'/'dynamic'/name)
-                    if not args.suffix and not file_path.is_dir():
-                        missing.append(file_path.name)
-                    if args.suffix and not file_path.is_file():
-                        missing.append(file_path.name)
-                
-                tmp = 'files' if args.suffix else 'directory'
-                if len(missing) > 0:
-                    raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
+""" 
+Parse args.machine_dir to args.machine and args.data_dir
+"""
+def parse_machine_dir(args):
+    if not hasattr(args, 'machine_dir'): return
+    if ':' in args.machine_dir:
+        mds = args.machine_dir.split(':')
+        if len(mds) != 2:
+            raise Exception("<data_dir> should be in format: 'machine:data_dir'")
+        args.machine =  mds[0] + ':'
+        args.data_dir = Path(mds[1])
+    else:
+        args.machine, args.data_dir = 'm1:', Path(args.machine_dir)
+        if args.cmd == 'refresh': # because some folders may not exist
+            args.machine = 'ANY:'
+    if args.cmd == 'refresh' or not args.machine in ['m1', 'ALL']: return
+    #check if path exists
+    missing = []
+    check_list = []
+    for tag in ['static', 'dynamic']:
+        names = STATIC_NAMES if tag == 'static' else DYNAMIC_NAMES
+        for name in names:
+            file_path = (args.data_dir/'initial_snapshot'/tag/name)
+            if not args.suffix and not file_path.is_dir():
+                missing.append(file_path.name)
+            if args.suffix and not file_path.is_file():
+                missing.append(file_path.name)
+    if len(missing) > 0:
+        tmp = 'files' if args.suffix else 'directory'
+        raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
+
+def check_args(args):
+    parse_queries(args)    
+    parse_machine_dir(args)
 
 def main():
     args = get_parser().parse_args()

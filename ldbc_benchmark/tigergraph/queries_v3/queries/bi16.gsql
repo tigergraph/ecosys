@@ -23,11 +23,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
       month(m.creationDate) == monthA AND
       day(m.creationDate) == dayA
     ACCUM p.@messageCountA += 1;
-  personsA =
-    SELECT p
+  tmp = SELECT p
     FROM personsA:f -(KNOWS)- personsA:p
-    ACCUM p.@knowsCountA += 1
-    HAVING p.@knowsCountA <= maxKnowsLimit;
+    ACCUM p.@knowsCountA += 1;
+  personsA = SELECT p FROM personsA:p WHERE p.@knowsCountA <= maxKnowsLimit;
 
   tagWithNameB = SELECT t FROM Tag:t WHERE t.name == tagB;
   personsB =
@@ -38,11 +37,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
       month(m.creationDate) == monthB AND
       day(m.creationDate) == dayB
     ACCUM p.@messageCountB += 1;
-  personsB =
-    SELECT p
+  tmp = SELECT p
     FROM personsB:f -(KNOWS)- personsB:p
-    ACCUM p.@knowsCountB += 1
-    HAVING p.@knowsCountB <= maxKnowsLimit;
+    ACCUM p.@knowsCountB += 1;
+  personsB = SELECT p FROM personsB:p WHERE p.@knowsCountB <= maxKnowsLimit;
 
   persons = personsA INTERSECT personsB;
   persons =
@@ -53,4 +51,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
   PRINT @@result;
 }
 
+#INTERPRET QUERY bi16 ("Imelda_Marcos", "2012-05-08T13:59:11", "Imelda_Marcos", "2012-05-08T13:59:11", 5) 
 #INTERPRET query bi16("Rocket_88", "2012-09-06T00:00:00", "Upside_Down", "2012-05-12T00:00:00",4)

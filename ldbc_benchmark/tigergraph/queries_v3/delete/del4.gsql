@@ -5,14 +5,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY del4(STRING file) {
   UINT result;
   @@forum = { LoadAccum(file, $1, "|", true)}; 
   forum = {@@forum};
-  posts = SELECT p FROM forum -(CONTAINER_OF>)- Post:p;
   # del 6
-  replies2 = SELECT c FROM posts -(<REPLY_OF*)- Comment:c;
-  DELETE p FROM posts:p;
+  replies2 = SELECT c FROM forum -(CONTAINER_OF>)- Post:p -(<REPLY_OF*)- Comment:c;
   DELETE r FROM replies2:r;
-  
   DELETE f FROM forum:f;
-  result = forum.size() + posts.size() + replies2.size();
+  result = forum.size() + replies2.size();
   print result;
 }
 

@@ -4,5 +4,5 @@ WITH
   toInteger(row[1]) AS personId,
   toInteger(row[2]) AS cityId
 MATCH (person:Person {id: personId}), (city:City {id: cityId})
-CREATE (person)-[:LIKES {creationDate: creationDate}]->(city)
+CREATE (person)-[:IS_LOCATED_IN {creationDate: creationDate}]->(city)
 RETURN count(*)

@@ -63,6 +63,7 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> 
 
     # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
       FOREACH (p1,p2,dist) IN @@paths DO
         @@result += RESULT(p1,p2,dist);
       END;

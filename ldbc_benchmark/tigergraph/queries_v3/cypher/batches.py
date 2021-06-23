@@ -72,7 +72,7 @@ def main():
         batch_id = batch_start_date.strftime('%Y-%m-%d')
         batch_dir = f"batch_id={batch_id}"
         print(f"#################### {batch_dir} ####################")
-        """
+        
         print("## Inserts")
         for entity in insert_entities:
             batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
@@ -88,7 +88,7 @@ def main():
                 else:
                     print(f"> {num_changes} changes")
                 print()
-        """
+        
         print("## Deletes")
         for entity in delete_entities:
             batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
