@@ -52,8 +52,7 @@ def get_parser():
     run_parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help='Parameter file in json.')
     run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
-    run_parser.add_argument('-r','--results', default=Path('results'), type=Path, help='directory to write results (default: results)')
-    run_parser.add_argument('-o', '--output', type=str, default=Path, help='output folder')
+    run_parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
     run_parser.set_defaults(func=cmd_run)
 
     # ./driver.py compare [-q queries]
@@ -73,17 +72,18 @@ def get_parser():
         #parser.add_argument('-i', '--insert', action='store_false', help='turn off inserts')
         #parser.add_argument('-d', '--delete', action='store_false', help='turn off delete')
         parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
-        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
-        parser.add_argument('-e','--end', type=str, default='2012-09-14', help='end date (exclusive))')
-        parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help=parameter_help)
-        parser.add_argument('-q', '--queries', type=str, default='', help=query_help)
-        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
-        parser.add_argument('-o', '--output', type=str, default=Path, help='output folder')
+        parser.add_argument('-b','--begin', type=str, default='2012-09-14', help='begin date (inclusive)')
+        parser.add_argument('-e','--end', type=str, default='2012-10-20', help='end date (exclusive))')
+        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)
+        parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
+        parser.add_argument('-r', '--read_freq', type=int, default=1, help='read frequency in days')
+        parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')    
+        parser.add_argument('-o', '--output', type=Path, default=Path('result'), help='output folder')
     
     # ./driver gen_para [machine:dir]
     gen_parser = main_subparsers.add_parser('gen_para', help='auto generate parameter')
     gen_parser.set_defaults(func=cmd_gen)
-    gen_parser.add_argument('-o', '--output', type=Path, default=Path('tmp.json'), help='output parameter file path')
+    gen_parser.add_argument('-o', '--output', type=Path, default=Path('param.json'), help='output parameter file path')
     # Running all from loading to running.
     return main_parser
 
@@ -277,12 +277,16 @@ def cmd_load_query(args):
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
     gsql += f'@{stat_query}\n'
-    
+    gen_query = (SCRIPT_DIR_PATH / 'parameter'/'gen_para.gsql').resolve()
+    gsql += f'@{gen_query}\n'
+
     queries_to_install = [
         query.name
         for workload in args.workload
         for query in workload.queries
-    ] + [f'del{i}' for i in DEL_JOBS.keys()] + ['stat'] 
+    ] + [f'del{i}' for i in DEL_JOBS.keys()] \
+        + ['stat'] \
+        + ['gen'] + [f'gen_bi{i}' for i in [10,15,16,19,20]]
     gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
 
     subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
@@ -296,13 +300,21 @@ def cmd_load_all(args):
 refresh data and run queries
 """
 def cmd_refresh(args):
+    os.makedirs(args.output, exist_ok=True)
+    timelog = args.output/'time.log'
+    with open(timelog, 'w') as f:
+        cols = ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+        f.write('\t'.join(cols))
+    
     begin = datetime.strptime(args.begin, '%Y-%m-%d')
     end = datetime.strptime(args.end, '%Y-%m-%d')    
     delta = timedelta(days=1)
     date = begin 
     while date < end:
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
+        t0 = timer()
         load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
+        t1 = timer()
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
         for i,job in DEL_JOBS.items():
             path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
@@ -312,12 +324,35 @@ def cmd_refresh(args):
                         result = DEL_WORKLOADS[i].run({'file':str(fp)})
                         print(f'Deleting {job}: {result.result}')
         load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
-        date += delta
+        t2 = timer()
+        date += delta    
+        # if args.read_freq == 0 do not read
+        if args.read_freq == 0: continue 
+        if (date - begin).days % args.read_freq != 0: continue
 
+        # generate parameter
+        path = args.output/date.strftime('%Y-%m-%d')
+        parameter = path / 'param.json'
+        os.makedirs(path, exist_ok=True)
+        if args.parameter == 'auto' and not parameter.exists():
+            print('auto generate parameters ...')
+            cmd_gen(args, parameter)
+        
+        # run query 
+        times = cmd_run(args, parameter = parameter, output = path, printTime=False)
+        
+        # write running time
+        with open(timelog, 'a') as f:
+            time = [str(t) for t in[t1-t0, t2-t1] + times]
+            f.write('\t'.join(times))
+        
+        
 """
 generate parameters automatically
 """
-def cmd_gen(args):
+def cmd_gen(args, output=None):
+    if not output:
+        output = args.output
     parameters = load_parameters(Path(default_parameter))
     dataType = load_parameters(Path('parameters/dataType.json'))
     gen_gsql = Workload('gen', [Query('gen')], ResultTransform()[0][0])
@@ -360,7 +395,8 @@ def cmd_gen(args):
     for k in bi16.keys(): parameters['bi16'][k] = bi16[k]
     parameters['bi16']['dateA'] = bi16['dateA'].replace(' ','T')
     parameters['bi16']['dateB'] = bi16['dateB'].replace(' ','T')
-    parameters['bi16']['delta'] = randrange(8,16)
+    parameters['bi17']['delta'] = randrange(8,16)
+    parameters['bi17']['tag'] = result['smalltag']
     parameters['bi18']['person1Id'] = bi15['person1Id']
     parameters['bi19']['city1Id'] = bi19['@@cities'][0]
     parameters['bi19']['city2Id'] = bi19['@@cities'][1]
@@ -369,8 +405,9 @@ def cmd_gen(args):
     
     stream = str(parameters).replace("'", '"')
     stream = re.sub(r'"bi', r'\n"bi', stream)
-    with open(args.output,'w') as f:
+    with open(output,'w') as f:
         f.write(stream)
+    print(f'Paremeters are generated to {str(output)}')
 
 def median(time_list):
     return sorted(time_list)[len(time_list)//2]
@@ -383,20 +420,30 @@ def writeResult(result, filename):
         for row in result:
             row = [v for k,v in row.items()]
             f.write(str(row)+'\n')
-            
-def cmd_run(args):
-    os.makedirs(args.results,exist_ok=True)
+
+"""
+return 
+    alltime -  list of length 20 storing the running time 
+"""        
+def cmd_run(args, parameter = None, output = None, printTime = True):
+    if not parameter:
+        parameter = args.paramter
+    if not output:
+        output = args.output
+    os.makedirs(output, exist_ok=True)
     #os.makedirs('elapsed_time',exist_ok=True)
-    parameters = load_parameters(args.parameter)
+    parameters = load_parameters(parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     print(f"run for {args.nruns} times ...")
-    print("Q\tNrow\tMedian time\t")
+    if printTime: print("Q\tNrow\tMedian time\t")
+
+    alltime = []
     for workload in args.workload:
         time_list = []
         result = workload.run(parameters[workload.name])
         time_list.append(result.elapsed)    
         # write the query results to log/bi[1-20]
-        result_file = Path('results')/ (workload.name+'.txt')  
+        result_file = output/ (workload.name+'.txt')  
         writeResult(result.result, result_file)
         #with open(Path('elapsed_time')/ (workload.name+'.txt'), 'w') as f:
         #    f.write(str(result.elapsed))
@@ -407,8 +454,10 @@ def cmd_run(args):
             #with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
             #    f.write(','+str(result.elapsed))
         median_time = median(time_list)
-        print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
-
+        alltime.append(median_time)
+        if printTime: print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
+    print(f'Results are written to {str(output)}')
+    return alltime 
 
 def cmd_compare(args):
     for workload in args.workload:

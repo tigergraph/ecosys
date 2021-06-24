@@ -44,7 +44,6 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> pers
       ACCUM s.@next = false, 
         IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END;
       #HAVING NOT s.@inCompany;
-    PRINT S.size();
     # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
       @@result.clear();
@@ -63,6 +62,6 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> pers
   PRINT @@result;
 }
 
-INSTALL QUERY bi20
-RUN QUERY bi20("Air_India_Express", 26388279068799)
+# INSTALL QUERY bi20
+# RUN QUERY bi20("Air_India_Express", 26388279068799)
 # RUN QUERY bi20("Pamir_Airways", 15393162792760)
