@@ -26,6 +26,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
   tmp = SELECT p
     FROM personsA:f -(KNOWS)- personsA:p
     ACCUM p.@knowsCountA += 1;
+  # need to include person without any friends
   personsA = SELECT p FROM personsA:p WHERE p.@knowsCountA <= maxKnowsLimit;
 
   tagWithNameB = SELECT t FROM Tag:t WHERE t.name == tagB;
@@ -40,6 +41,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
   tmp = SELECT p
     FROM personsB:f -(KNOWS)- personsB:p
     ACCUM p.@knowsCountB += 1;
+  # need to include person without any friends
   personsB = SELECT p FROM personsB:p WHERE p.@knowsCountB <= maxKnowsLimit;
 
   persons = personsA INTERSECT personsB;

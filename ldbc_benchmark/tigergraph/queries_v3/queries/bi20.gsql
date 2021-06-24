@@ -1,35 +1,18 @@
 /*
-At the first glance, this query is a simplified version of BI 9. 
-This workload calculate the shortest weighted path between a vertex set to a single vertex.
-Actually, this shortest weighted path is also the shortest path !!!!!!!!
-
-Proof: 
-The weight of path of A-(KONWS)-B is always smaller than A-(KONWS)-C-(KONWS)-B. 
-This is because 
-  abs(A.classYear - B.classYear) + 1 < abs(A.classYear - C.classYear) +  abs(C.classYear - B.classYear) + 2
-Thus, the shortest weighted path is also the shortest path
-
-Furthermore, it is cheaper to search from person2, which is a single vertex.
+It is cheaper to search from person2, which is a single vertex.
 We also do not need to store the source Id, which saves a lot of computation.
-
-For weighted edge that is not necessarily the shortest path, refer to bi 19.
-For the shortest path from both ends, refer to bi 15.
-But this workload also stores the source Id for the shortest weighted path, which is 
-more difficult than I expected. I recommend to define a local HeapAccum to store the TUPLE of the shortest distance 
-and the corresponding source Id.
 */
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
-  TYPEDEF TUPLE<UINT totalWeight, UINT person1Id> RESULT;
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
-  OrAccum @visited, @inCompany;
-  SetAccum<VERTEX<University>> @univ;
-  MapAccum<VERTEX<University>, UINT> @year;
+  OrAccum @visited, @next, @inCompany;
+  MapAccum<VERTEX<Person>, MapAccum<VERTEX<Person>, MinAccum<UINT>>> @@weight;
   MinAccum<UINT> @dist; 
   MapAccum<UINT, MinAccum<UINT>> @@paths;
   UINT threshold;
-  threshold = 30;
+  threshold = 100;
   S1 =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
@@ -37,37 +20,49 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
     ACCUM p.@inCompany += true;
   
   S = {person2Id};
-  S = Select s
-    FROM S:s -(STUDY_AT>:e)- University:u
-    ACCUM s.@visited += true, s.@dist = 0,
-      s.@univ += u, s.@year += (u->e.classYear);
-  WHILE S.size()>0 and @@paths.size()==0 DO
-    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE NOT t.@visited;
-    tmp = Select s
-      FROM Next:s -(STUDY_AT>:e)- University:u
-      ACCUM s.@univ += u, s.@year += (u->e.classYear);
-    
+  S = Select s FROM S:s ACCUM s.@visited += true, s.@dist += 0;
+  WHILE S.size()>0 DO
+    Sknows = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE NOT t.@visited
+      ACCUM t.@visited += true;
+    Next = Select t 
+      FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Sknows:t
+      WHERE s != t
+      ACCUM @@weight += (s -> (t-> abs(e1.classYear-e2.classYear) +1 )),
+        @@weight += (t -> (s-> abs(e1.classYear-e2.classYear) +1 ));
+
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
-      WHERE NOT t.@visited AND t.@univ.size()>0
-      ACCUM
-        FOREACH u IN (s.@univ INTERSECT t.@univ) DO
-          DOUBLE weight = abs(s.@year.get(u) - t.@year.get(u)) + 1,
-          IF s.@dist + weight < threshold THEN  
-            t.@visited += true,
-            t.@dist += s.@dist + weight
-          END
-        END 
-      HAVING t.@visited;
-    S = SELECT s FROM S:s  
+      WHERE @@weight.get(s).get(t)<threshold
       ACCUM 
-        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END
-      HAVING NOT s.@inCompany;
+        UINT weight = @@weight.get(s).get(t),
+        IF s.@dist + weight < t.@dist AND s.@dist + weight < threshold THEN
+          t.@dist += s.@dist + weight,
+          t.@next += true
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s  
+      ACCUM s.@next = false, 
+        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END;
+      #HAVING NOT s.@inCompany;
+    PRINT S.size();
+    # Update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p,dist) IN @@paths DO
+        @@result += RESULT(p,dist);
+      END;
+      threshold = @@result.top().totalWeight;
+    END;
+    
   END; # WHILE 
-  FOREACH (p,dist) IN @@paths DO
-    @@result += RESULT(p,dist);
+  IF @@paths.size() < 20 THEN
+    FOREACH (p,dist) IN @@paths DO
+      @@result += RESULT(p,dist);
+    END;
   END;
   PRINT @@result;
 }
 
-# INSTALL QUERY bi20
+INSTALL QUERY bi20
+RUN QUERY bi20("Air_India_Express", 26388279068799)
 # RUN QUERY bi20("Pamir_Airways", 15393162792760)

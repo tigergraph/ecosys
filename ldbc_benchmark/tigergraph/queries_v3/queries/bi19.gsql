@@ -53,13 +53,15 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> 
         END
       HAVING t.@next1 OR t.@next2;
 
-      # Expand the know map, we also neglect the distances larger than threshold  
-      S = SELECT s FROM S:s ACCUM
-        FOREACH (p1,dis1) IN s.@dist1 DO
-          FOREACH (p2,dis2) IN s.@dist2 DO
-            @@paths += (p1,p2 -> dis1+dis2)
-          END
-        END;
+    # To continue, S must have at least one true of @next1 AND @next1
+    @@next1 = false; @@next1 = false;
+    S = SELECT s FROM S:s ACCUM
+      @@next1 += s.@next1, @@next2 += s.@next2,
+      FOREACH (p1,dis1) IN s.@dist1 DO
+        FOREACH (p2,dis2) IN s.@dist2 DO
+          @@paths += (p1,p2 -> dis1+dis2)
+        END
+      END;
 
     # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
@@ -69,12 +71,6 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> 
       END;
       threshold = @@result.top().totalWeight;
     END;
-    
-    # To continue, S must have both 
-    @@next1 = false; @@next1 = false;
-    S = SELECT s FROM S:s ACCUM
-      CASE WHEN s.@next1 THEN @@next1 += true
-      WHEN s.@next2 THEN @@next2 += true END;
   END; # WHILE (S1.size()>0 OR S2.size()>0)
   IF @@paths.size() < 20 THEN
     FOREACH (p1,p2,dist) IN @@paths DO
