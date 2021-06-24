@@ -12,8 +12,6 @@ import re
 from datetime import datetime, timedelta
 from random import randrange
 
-default_parameter = Path('parameters/sf1/initial.json')
-
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
@@ -49,7 +47,7 @@ def get_parser():
     
     # ./driver.py run [-p parameter] [-q queries]
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameter', type=Path, default=default_parameter, help='Parameter file in json.')
+    run_parser.add_argument('-p', '--parameter', type=str, default='auto', help='Parameter file in json.')
     run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
     run_parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
@@ -84,7 +82,11 @@ def get_parser():
     gen_parser = main_subparsers.add_parser('gen_para', help='auto generate parameter')
     gen_parser.set_defaults(func=cmd_gen)
     gen_parser.add_argument('-o', '--output', type=Path, default=Path('param.json'), help='output parameter file path')
-    # Running all from loading to running.
+    
+    # ./driver stat
+    stat_parser = main_subparsers.add_parser('stat', help='print statistics of the graph')
+    stat_parser.set_defaults(func=cmd_stat)
+
     return main_parser
 
 def list2str(xs):
@@ -96,14 +98,11 @@ class ResultWithElapsed:
         self.elapsed = elapsed
 
 class Query:
-
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
     HEADERS = {'GSQL-TIMEOUT': '7200000'}
-
     def __init__(self, name, transform_parameter=None):
         self.name = name
         self.transform_parameter = transform_parameter
-
     def run(self, parameter):
         if self.transform_parameter is not None:
             parameter = self.transform_parameter(parameter)
@@ -119,15 +118,14 @@ class Query:
 
 
 class Workload:
-    def __init__(self, name, queries, transform_result):
+    def __init__(self, name, transform_result):
         self.name = name
-        self.queries = queries
         self.transform_result = transform_result
 
     def run(self, parameter):
-        results = [query.run(parameter) for query in self.queries]
-        result = self.transform_result([r.result for r in results])
-        elapsed = sum(r.elapsed for r in results)
+        results = Query(self.name).run(parameter)
+        result = self.transform_result(results.result)
+        elapsed = results.elapsed
         return ResultWithElapsed(result, elapsed)
 
 class ResultTransform:
@@ -214,16 +212,25 @@ DEL_NAMES = [
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 total = 21
-WORKLOADS = [Workload(f'bi{i}', [Query(f'bi{i}')], ResultTransform()[0][0]['@@result']) for i in range(1,total)]
-WORKLOADS[7] = Workload('bi8', [Query('bi8')], ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
-WORKLOADS[9] = Workload('bi10', [Query('bi10')], ResultTransform()[0][0]['result'])
-WORKLOADS[10] = Workload('bi11', [Query('bi11')], ResultTransform()[0][0])
-WORKLOADS[15] = Workload('bi16', [Query('bi16')], ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
-
+WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0]['@@result']) for i in range(1,total)]
+WORKLOADS[7] = Workload('bi8', ResultTransform()[0]['@@result'].del_keys(['totalScore']))
+WORKLOADS[9] = Workload('bi10', ResultTransform()[0]['result'])
+WORKLOADS[10] = Workload('bi11', ResultTransform()[0])
+WORKLOADS[15] = Workload('bi16', ResultTransform()[0]['@@result'].del_keys(['totalMessageCount']))
 
 DEL_JOBS = {1:"Person",4:"Forum",6:"Post",7:"Comment"}
-DEL_WORKLOADS = {i:Workload(f'del{i}', [Query(f'del{i}')], ResultTransform()[0][0]) for i,job in DEL_JOBS.items()}
+DEL_WORKLOADS = {i:Workload(f'del{i}', ResultTransform()[0]) for i,job in DEL_JOBS.items()}
 
+STAT_WORKLOADS = Workload('stat', ResultTransform()[0])
+
+GEN_WORKLOADS = {
+    0 : Workload('gen', ResultTransform()[0]),
+    10: Workload('gen_bi10', ResultTransform()[0]),
+    15: Workload('gen_bi15', ResultTransform()[0]),
+    16: Workload('gen_bi16', ResultTransform()[0]),
+    19: Workload('gen_bi19', ResultTransform()[0]),
+    20: Workload('gen_bi20', ResultTransform()[0]),
+}
 
 '''Loads parameters for a given file'''
 def load_parameters(file):
@@ -256,7 +263,6 @@ def load_data(job, machine, data_dir, tag, names, suffix, date = None):
     if suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
     subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
-    
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
@@ -277,16 +283,12 @@ def cmd_load_query(args):
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
     gsql += f'@{stat_query}\n'
-    gen_query = (SCRIPT_DIR_PATH / 'parameter'/'gen_para.gsql').resolve()
+    gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
     gsql += f'@{gen_query}\n'
 
-    queries_to_install = [
-        query.name
-        for workload in args.workload
-        for query in workload.queries
-    ] + [f'del{i}' for i in DEL_JOBS.keys()] \
-        + ['stat'] \
-        + ['gen'] + [f'gen_bi{i}' for i in [10,15,16,19,20]]
+
+    all_workloads = args.workload + list(DEL_WORKLOADS.values()) + [STAT_WORKLOADS] + list(GEN_WORKLOADS.values())
+    queries_to_install = [workload.name for workload in all_workloads]
     gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
 
     subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
@@ -296,70 +298,30 @@ def cmd_load_all(args):
     cmd_load_schema(args)
     cmd_load_data(args)
     cmd_load_query(args)
-""" 
-refresh data and run queries
-"""
-def cmd_refresh(args):
-    os.makedirs(args.output, exist_ok=True)
-    timelog = args.output/'time.log'
-    with open(timelog, 'w') as f:
-        cols = ['ins','del'] + [f'bi{i}' for i in range(1,21)]
-        f.write('\t'.join(cols))
-    
-    begin = datetime.strptime(args.begin, '%Y-%m-%d')
-    end = datetime.strptime(args.end, '%Y-%m-%d')    
-    delta = timedelta(days=1)
-    date = begin 
-    while date < end:
-        print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
-        t0 = timer()
-        load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
-        t1 = timer()
-        print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
-        for i,job in DEL_JOBS.items():
-            path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
-            if path.exists():
-                for fp in path.glob('*.csv'):
-                    if fp.is_file(): 
-                        result = DEL_WORKLOADS[i].run({'file':str(fp)})
-                        print(f'Deleting {job}: {result.result}')
-        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
-        t2 = timer()
-        date += delta    
-        # if args.read_freq == 0 do not read
-        if args.read_freq == 0: continue 
-        if (date - begin).days % args.read_freq != 0: continue
 
-        # generate parameter
-        path = args.output/date.strftime('%Y-%m-%d')
-        parameter = path / 'param.json'
-        os.makedirs(path, exist_ok=True)
-        if args.parameter == 'auto' and not parameter.exists():
-            print('auto generate parameters ...')
-            cmd_gen(args, parameter)
-        
-        # run query 
-        times = cmd_run(args, parameter = parameter, output = path, printTime=False)
-        
-        # write running time
-        with open(timelog, 'a') as f:
-            time = [str(t) for t in[t1-t0, t2-t1] + times]
-            f.write('\t'.join(times))
-        
-        
+"""
+    Print graph satistics
+"""
+def cmd_stat(verbose=True):
+    stat = STAT_WORKLOADS.run(None).result
+    if verbose: print(stat)
+    return dict((k.replace('@',''), v) for (, v) in stat.items())
+    
 """
 generate parameters automatically
 """
 def cmd_gen(args, output=None):
     if not output:
         output = args.output
-    parameters = load_parameters(Path(default_parameter))
+    parameters = load_parameters(Path('parameters/sf1/initial.json'))
     dataType = load_parameters(Path('parameters/dataType.json'))
-    gen_gsql = Workload('gen', [Query('gen')], ResultTransform()[0][0])
-    result = gen_gsql.run(None).result
-    country = result['@@country']
-    tag = result['@@tag']
-    tagclass = result['@@tagclass']
+    gen = {}
+    for i, workload in GEN_WORKLOADS.items():
+        gen[i] = workload.run(None).result
+    
+    country = gen[0]['@@country']
+    tag = gen[0]['@@tag']
+    tagclass = gen[0]['@@tagclass']
     def genValue(name, Dtype):
         if name == 'country': return country[randrange(3)]
         if name == 'country1': return country[0]
@@ -384,24 +346,19 @@ def cmd_gen(args, output=None):
     parameters['bi9']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     date = datetime.strptime(parameters['bi15']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=365) 
     
-    bi10 = Workload('gen_bi10', [Query('gen_bi10')], ResultTransform()[0][0]).run(None).result
-    bi15 = Workload('gen_bi15', [Query('gen_bi15')], ResultTransform()[0][0]).run(None).result
-    bi16 = Workload('gen_bi16', [Query('gen_bi16')], ResultTransform()[0][0]).run(None).result
-    bi19 = Workload('gen_bi19', [Query('gen_bi19')], ResultTransform()[0][0]).run(None).result
-    bi20 = Workload('gen_bi20', [Query('gen_bi20')], ResultTransform()[0][0]).run(None).result
-    for k in bi10.keys(): parameters['bi10'][k] = bi10[k]
+    for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
-    for k in bi15.keys(): parameters['bi15'][k] = bi15[k]
-    for k in bi16.keys(): parameters['bi16'][k] = bi16[k]
-    parameters['bi16']['dateA'] = bi16['dateA'].replace(' ','T')
-    parameters['bi16']['dateB'] = bi16['dateB'].replace(' ','T')
+    for k in gen[15].keys(): parameters['bi15'][k] = gen[15][k]
+    for k in gen[16].keys(): parameters['bi16'][k] = gen[16][k]
+    parameters['bi16']['dateA'] = gen[16]['dateA'].replace(' ','T')
+    parameters['bi16']['dateB'] = gen[16]['dateB'].replace(' ','T')
     parameters['bi17']['delta'] = randrange(8,16)
-    parameters['bi17']['tag'] = result['smalltag']
-    parameters['bi18']['person1Id'] = bi15['person1Id']
-    parameters['bi19']['city1Id'] = bi19['@@cities'][0]
-    parameters['bi19']['city2Id'] = bi19['@@cities'][1]
-    parameters['bi20']['company'] = bi20['company']
-    parameters['bi20']['person2Id'] = bi20['@@person2Ids'][0]
+    parameters['bi17']['tag'] = gen[0]['smalltag']
+    parameters['bi18']['person1Id'] = gen[15]['person1Id']
+    parameters['bi19']['city1Id'] = gen[19]['@@cities'][0]
+    parameters['bi19']['city2Id'] = gen[19]['@@cities'][1]
+    parameters['bi20']['company'] = gen[20]['company']
+    parameters['bi20']['person2Id'] = gen[20]['@@person2Ids'][0]
     
     stream = str(parameters).replace("'", '"')
     stream = re.sub(r'"bi', r'\n"bi', stream)
@@ -425,17 +382,24 @@ def writeResult(result, filename):
 return 
     alltime -  list of length 20 storing the running time 
 """        
-def cmd_run(args, parameter = None, output = None, printTime = True):
-    if not parameter:
-        parameter = args.paramter
+def cmd_run(args, output = None, verbose = True):
     if not output:
         output = args.output
     os.makedirs(output, exist_ok=True)
+
+    if args.parameter == 'auto':
+        parameter = output/'param.json'
+        if not parameter.exists():
+            print('auto generate parameters ...')
+            cmd_gen(args, parameter)
+    else:
+        parameter = Path(args.parameter).resolve()
+
     #os.makedirs('elapsed_time',exist_ok=True)
     parameters = load_parameters(parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     print(f"run for {args.nruns} times ...")
-    if printTime: print("Q\tNrow\tMedian time\t")
+    if verbose: print("Q\tNrow\tMedian time\t")
 
     alltime = []
     for workload in args.workload:
@@ -455,7 +419,7 @@ def cmd_run(args, parameter = None, output = None, printTime = True):
             #    f.write(','+str(result.elapsed))
         median_time = median(time_list)
         alltime.append(median_time)
-        if printTime: print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
+        if verbose: print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
     print(f'Results are written to {str(output)}')
     return alltime 
 
@@ -500,6 +464,66 @@ def cmd_compare(args):
                     break
             if Pass: 
                 print(f'{workload.name}: Pass')
+
+""" 
+refresh data and run queries
+"""
+def cmd_refresh(args):
+    os.makedirs(args.output, exist_ok=True)
+    timelog = args.output/'timelog.csv'
+    
+    stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']
+    with open(timelog, 'w') as f:
+        cols = ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+        f.write(','.join(cols))
+    
+    begin = datetime.strptime(args.begin, '%Y-%m-%d')
+    end = datetime.strptime(args.end, '%Y-%m-%d')    
+    delta = timedelta(days=1)
+    date = begin 
+
+    read_initial = True
+    if read_initial:
+        # print statistics 
+        stats = cmd_stat(verbose=False)
+        stats = [stats[name] for name in stat_name]
+        # run query 
+        output = args.output/date.strftime('%Y-%m-%d')
+        times = cmd_run(args, output = output, printTime=False)
+        # write running time
+        with open(timelog, 'a') as f:
+            time = [f'{t:.2f}' for t in[t1-t0, t2-t1] + times]
+            f.write(','.join(stats+times))
+
+    while date < end:
+        print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
+        t0 = timer()
+        load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
+        t1 = timer()
+        print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
+        for i,job in DEL_JOBS.items():
+            path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
+            if path.exists():
+                for fp in path.glob('*.csv'):
+                    if fp.is_file(): 
+                        result = DEL_WORKLOADS[i].run({'file':str(fp)})
+                        print(f'Deleting {job}: {result.result}')
+        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
+        t2 = timer()
+        date += delta    
+        # if args.read_freq == 0 do not read
+        if args.read_freq == 0: continue 
+        if (date - begin).days % args.read_freq != 0: continue
+        # print statistics 
+        stats = cmd_stat(verbose=False)
+        stats = [stats[name] for name in stat_name]
+        # run query 
+        output = args.output/date.strftime('%Y-%m-%d')
+        times = cmd_run(args, output = output, printTime=False)
+        # write running time
+        with open(timelog, 'a') as f:
+            time = [f'{t:.2f}' for t in[t1-t0, t2-t1] + times]
+            f.write(','.join(stats+times))
 
 def cmd_all(args):
     cmd_load_all(args)

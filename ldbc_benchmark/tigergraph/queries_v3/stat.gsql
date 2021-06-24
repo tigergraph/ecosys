@@ -15,7 +15,6 @@ select count(*) from TagClass
 CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     UINT nComment, nPost, nForum, nPerson;
     UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
-    
     SumAccum<INT> @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
         @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
         @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
@@ -30,8 +29,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     tmp = {Continent.*}; nConitnent = tmp.size();
     tmp = {Tag.*}; nTag = tmp.size();
     tmp = {TagClass.*}; nTagClass = tmp.size();
-    PRINT nComment, nPost, nForum, nPerson,
-        nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
     tmp = SELECT f FROM Forum:f-(CONTAINER_OF>)-Post ACCUM @@CONTAINER_OF += 1;
     tmp = SELECT f FROM (Comment|Post):f-(HAS_CREATOR>)-Person ACCUM @@HAS_CREATOR += 1;
     tmp = SELECT f FROM Person:f-(HAS_INTEREST>)-Tag ACCUM @@HAS_INTEREST += 1;
@@ -47,7 +44,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     tmp = SELECT f FROM Comment:f-(REPLY_OF>)-(Comment|Post) ACCUM @@REPLY_OF += 1;
     tmp = SELECT f FROM Person:f-(STUDY_AT>)-University ACCUM @@STUDY_AT += 1;
     tmp = SELECT f FROM Person:f-(WORK_AT>)-Company ACCUM @@WORK_AT += 1;
-    PRINT @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
+
+
+
+    PRINT nComment, nPost, nForum, nPerson,
+        nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
+        @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
         @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
         @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
 }
