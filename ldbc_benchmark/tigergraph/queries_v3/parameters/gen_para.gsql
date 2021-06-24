@@ -154,7 +154,7 @@ CREATE OR REPLACE QUERY gen_bi20() {
   PRINT company, @@person2Ids;
 }
 
-INSTALL QUERY gen, gen_bi10, gen_bi15, gen_bi16, gen_bi19,gen_bi20
+//INSTALL QUERY gen, gen_bi10, gen_bi15, gen_bi16, gen_bi19,gen_bi20
 //RUN QUERY gen_bi19()
 //INTERPRET QUERY gen()
 

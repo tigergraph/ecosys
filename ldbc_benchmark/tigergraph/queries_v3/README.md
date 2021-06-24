@@ -133,6 +133,13 @@ I may create a folder to discuss. The query is usually faster if:
 
 ## refreshes
 
+refresh is loading intensive, we first need to increase the number of loading handler.
+```sh
+gadmin config group RESTPP-LOADER
+# change FileLoader.Factory.HandlerCount from 4 to 40
+```
+
+Then run the refresh workloads. The results and timelog are output to `results/`. 
 ```sh
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ 
 ```
