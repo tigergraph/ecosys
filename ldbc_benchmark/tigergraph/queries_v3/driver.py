@@ -259,7 +259,7 @@ def load_data(job, machine, data_dir, tag, names, suffix, date = None):
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
-    for f in args.data_dir.glob('/**/_SUCCESS', recursive=True):
+    for f in args.data_dir.glob('/**/_SUCCESS'):
         f.unlink()
 
     t0 = timer()
