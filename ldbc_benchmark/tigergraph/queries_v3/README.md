@@ -55,6 +55,22 @@ gadmin status
 # check if TigerGraph is running or not.
 ```
 
+## Config Tigergraph
+To increase loading intensive, we can increase the number of loading handler based on the number of cpus in the machine. To see the cpu info, use `lscpu`. 
+The timeout is only needed for large scale factors.
+```sh
+gadmin config group RESTPP-LOADER
+# change FileLoader.Factory.HandlerCount from 4 to 40
+
+gadmin config group timeout 
+# Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+
+gadmin config apply -y
+gadmin restart all -y
+```
+
 ## Donwload LDBC SNB Data 
 LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
 
@@ -101,7 +117,7 @@ gsql stat.gsql
 ```
 
 ## Run
-Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. For large scale factors, you may need to configure time out to allow query to run in longer time using `gadmin config group timeout`. The default parameter file is `parameters/sf1/2012-09-13.json`.
+Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. The default parameter file is `parameters/sf1/2012-09-13.json`.
 ```sh
 ./driver.py run  -n 3
 ```
@@ -132,12 +148,6 @@ I may create a folder to discuss. The query is usually faster if:
 * if you start from a smaller vertex set 
 
 ## refreshes
-
-refresh is loading intensive, we first need to increase the number of loading handler.
-```sh
-gadmin config group RESTPP-LOADER
-# change FileLoader.Factory.HandlerCount from 4 to 40
-```
 
 Then run the refresh workloads. The results and timelog are output to `results/`. 
 ```sh
