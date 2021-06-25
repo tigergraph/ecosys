@@ -11,7 +11,7 @@ import requests
 import re
 from datetime import datetime, timedelta
 from random import randrange
-
+from glob import glob
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
@@ -38,45 +38,41 @@ def get_parser():
     load_all_parser = load_subparsers.add_parser('all', help='Load the schema, queries, and data')
     load_all_parser.set_defaults(func=cmd_load_all)
 
-    for parser in [load_data_parser, load_all_parser]:
+    # ./driver.py run [-p parameter] [-q queries]
+    run_parser = main_subparsers.add_parser('run', help='Run the workloads')
+    run_parser.set_defaults(func=cmd_run)
+    # ./driver refresh [machine:dir]
+    refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
+    refresh_parser.set_defaults(func=cmd_refresh)
+    # ./driver.py compare [-q queries]
+    
+    # ./driver all [machine:dir]
+    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser.set_defaults(func=cmd_all)
+    
+    for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
 
     for parser in [load_query_parser, load_all_parser]:
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     
-    # ./driver.py run [-p parameter] [-q queries]
-    run_parser = main_subparsers.add_parser('run', help='Run the workloads')
-    run_parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)
-    run_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
-    run_parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
-    run_parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
-    run_parser.set_defaults(func=cmd_run)
-
-    # ./driver.py compare [-q queries]
+    for parser in [run_parser, refresh_parser, all_parser]:
+        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)    
+        parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
+        parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
+        parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
+    
+    for parser in [refresh_parser, all_parser]:
+        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
+        parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
+        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
+    
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
     compare_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     compare_parser.add_argument('-s', '--source', type=Path, default=Path('results'), help='direcotry of the source results (default: results)')
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
-    
-    # ./driver refresh [machine:dir]
-    refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
-    refresh_parser.set_defaults(func=cmd_refresh)
-    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
-    all_parser.set_defaults(func=cmd_all)
-    for parser in [refresh_parser, all_parser]:
-        parser.add_argument('machine_dir', type=str, help=machine_dir_help)
-        #parser.add_argument('-i', '--insert', action='store_false', help='turn off inserts')
-        #parser.add_argument('-d', '--delete', action='store_false', help='turn off delete')
-        parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
-        parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
-        parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
-        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)
-        parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
-        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
-        parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')    
-        parser.add_argument('-o', '--output', type=Path, default=Path('results'), help='output folder')
     
     # ./driver gen_para [machine:dir]
     gen_parser = main_subparsers.add_parser('gen_para', help='auto generate parameter')
@@ -88,7 +84,6 @@ def get_parser():
     stat_parser.set_defaults(func=cmd_stat)
 
     return main_parser
-
 
 class ResultWithElapsed:
     def __init__(self, result, elapsed):
@@ -264,6 +259,9 @@ def load_data(job, machine, data_dir, tag, names, suffix, date = None):
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
+    for f in args.data_dir.glob('/**/_SUCCESS', recursive=True):
+        f.unlink()
+
     t0 = timer()
     load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
     load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
@@ -271,6 +269,11 @@ def cmd_load_data(args):
     print(f'loading time is {t1-t0}')
 
 def cmd_load_query(args):
+    '''copy user defined function to tigergraph path'''
+    udf_file = SCRIPT_DIR_PATH/'ExprFunctions.hpp'
+    udf_path = '$(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp'
+    os.system(f'cp {str(udf_file)} {udf_path}')
+
     '''Loads queries from the given workloads.'''
     gsql = ''
 
@@ -321,6 +324,9 @@ def cmd_gen(args, output=None):
         gen[i] = workload.run(None).result
     while len(gen[20]['@@person2Ids'])==0:
         gen[20] = GEN_WORKLOADS[20].run(None).result
+    while gen[15]['person2Id']==0:
+        gen[15] = GEN_WORKLOADS[15].run(None).result
+    
     country = gen[0]['@@country']
     tag = gen[0]['@@tag']
     tagclass = gen[0]['@@tagclass']
@@ -426,10 +432,21 @@ def cmd_run(args, output = None, verbose = True):
     return alltime 
 
 def cmd_compare(args):
-    for workload in args.workload:
+    source = args.source
+    target = args.target
+    compare_top = True
+    for datePath in source.iterdir():
+        if not datePath.is_dir(): continue
+        print(f"Comparing for {datePath.name}")
+        compare_batch(args.workload, source/datePath.name, target/datePath.name)
+        compare_top = False
+    if compare_top: compare_batch(args.workload, source, target)
+        
+def compare_batch(workloads, source, target):
+    for workload in workloads:
         Pass = True
-        file1 = args.source/(workload.name+'.txt')
-        file2 = args.target/(workload.name+'.txt')
+        file1 = source/(workload.name+'.txt')
+        file2 = target/(workload.name+'.txt')
         if not file1.exists():
             print(f'{workload.name}: file {str(file1)} does not exist') 
             continue
@@ -475,10 +492,6 @@ def cmd_refresh(args):
     timelog = args.output/'timelog.csv'
     
     stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']
-    with open(timelog, 'w') as f:
-        header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
-        f.write(','.join(header)+'\n')
-    
     begin = datetime.strptime(args.begin, '%Y-%m-%d')
     end = datetime.strptime(args.end, '%Y-%m-%d')    
     delta = timedelta(days=1)
@@ -496,7 +509,9 @@ def cmd_refresh(args):
         output = args.output/dateStr
         times = cmd_run(args, output = output, verbose=True)
         # write running time
-        with open(timelog, 'a') as f:
+        with open(timelog, 'w') as f:
+            header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+            f.write(','.join(header)+'\n')
             cols = [dateStr] + stats + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + times]
             f.write(','.join(cols)+'\n')
 
@@ -540,7 +555,7 @@ def cmd_refresh(args):
 
 def cmd_all(args):
     cmd_load_all(args)
-    cmd_run(args)
+    cmd_refresh(args)
 
 """ 
 Parse args.queries to args.workload

@@ -80,20 +80,11 @@ zstd -d sf1-composite-projected-fk.tar.zst
 tar -xvf sf1-composite-projected-fk.tar
 ```
 
-Remove the empty files `_SUCCESS`, these files can cause loading to fail
-```sh
-find sf1 -name _SUCCESS -type f -delete
-```
-
 ## Load data
 Checkout ldbc branch of the current repository
 ```sh
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3
-```
-BI 15 requires user defined function bigint_to_string in `ExprFunctions.hpp `.
-```sh
-cp ExprFunctions.hpp $(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
 ```
 Load schema, data, and query. Usage of `driver.py` can be `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
@@ -153,3 +144,19 @@ Then run the refresh workloads. The results and timelog are output to `results/`
 ```sh
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ 
 ```
+
+
+## How does the driver work
+./driver.py load query 
+- gsql schema.gsql
+
+./driver.py load query 
+- Copy paste user defined function `ExprFunctions.hpp` to tigergraph. 
+- gsql [all gsql files]
+- gsql -g ldbc_snb 'install query [all queries]' 
+
+./driver.py load data
+- remove _SUCCESS files in sf1, `find sf1 -name _SUCCESS -type f -delete`
+- gsql -g ldbc_snb 'run loading job load_static using FILENAMES' 
+- gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES' 
+

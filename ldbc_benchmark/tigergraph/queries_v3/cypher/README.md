@@ -15,7 +15,7 @@ The scripts are modified from [ldbc/ldbc_snb_bi](https://github.com/ldbc/ldbc_sn
 ```sh
 #neo4j require openjdk 11
 sudo yum install java-11-openjdk-devel
-tar -xf neo4j-community-4.2.7-unix.tar
+tar -xf neo4j-community-4.3.0-unix.tar
 echo 'export NEO4J_HOME='$(pwd)/neo4j-community-4.3.0 >> ~/.bashrc
 echo 'export PATH=$PATH:$NEO4J_HOME/bin' >> ~/.bashrc
 ```
@@ -105,7 +105,7 @@ The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `
 ## Refreshes
 The script `./batches.py` can do the insertion and deletion. Data path is hard coded in the cypher scripts right now. 
 ```sh
-python3 batches.py $NEO4J_HOME/import
+python3 batches.py $NEO4J_HOME/import -q not:17,19 #17 19 are too expensive for cypher
 ```
 
 ## Uninstall Neo4j

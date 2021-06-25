@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 from neo4j import GraphDatabase, time
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+from timeit import default_timer as timer
 import time
 import pytz
 import csv
@@ -9,15 +11,22 @@ import sys
 import os
 from pathlib import Path
 import argparse
+from bi import eval, parse_queries
 
 main_parser = argparse.ArgumentParser(description='Utilities working with Cypher for LDBC SNB with insertion/deletion.')
 main_parser.set_defaults(func=lambda _: main_parser.print_usage())
-main_parser.add_argument('data_dir', type=Path, help='data directory, e.g. $NEO4J_HOME/import/sf1/csv/bi/composite-projected-fk')
+main_parser.add_argument('data_dir', type=Path, help='data directory, e.g. $NEO4J_HOME/import/sf1/csv/bi/composite-projected-fk') #  hard coded now in dml
 main_parser.add_argument('-b', '--begin', type=str, default='2012-09-13', help='start date')
-main_parser.add_argument('-e', '--end', type=str, default='2012-09-14', help='end date')
-            
-args = main_parser.parse_args()
+main_parser.add_argument('-e', '--end', type=str, default='2012-12-31', help='end date')
+main_parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
+main_parser.add_argument('-o', '--output', type=Path, default=Path('results'), help='result folder')
 
+
+main_parser.add_argument('-q', '--queries', type=str, default='all', 
+    help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"') 
+main_parser.add_argument('-p', '--parameter', type=str, default='auto', help='parameter, default is auto.') # can only read parameters now
+main_parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json'), type=Path,
+    help='JSON file containing containing the data types')    
 
 def write_txn_fun(tx, query_spec, batch, csv_file):
     result = tx.run(query_spec, batch=batch, csv_file=csv_file)
@@ -56,23 +65,38 @@ for entity in delete_entities:
     with open(f"dml/del-{entity}.cypher", "r") as delete_query_file:
         delete_queries[entity] = delete_query_file.read()
 
+       
 
-def main():
+def main(args):
     data_dir = args.data_dir
     network_start_date = datetime.strptime(args.begin, '%Y-%m-%d')
     network_end_date = datetime.strptime(args.end, '%Y-%m-%d')
     batch_size = relativedelta(days=1)
     
+    tot_ins_time = 0
+    tot_del_time = 0
     driver = GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
+    batch_id = network_start_date.strftime('%Y-%m-%d')       
+    datatype = Path('../parameters/dataType.json')
+    queries = parse_queries(args.queries)
+    output = args.output/batch_id
+    stat, all_duration=eval(queries, output/'param.json', datatype, output)
 
+    timelog = args.output/'timelog.csv'
+    stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']
+    with open(timelog, 'w') as f:
+        header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+        f.write(','.join(header)+'\n')
+        cols = [batch_id] + [str(s) for s in stat] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
+        f.write(','.join(cols)+'\n')
     batch_start_date = network_start_date
     while batch_start_date < network_end_date:
         # format date to yyyy-mm-dd
         batch_id = batch_start_date.strftime('%Y-%m-%d')
         batch_dir = f"batch_id={batch_id}"
         print(f"#################### {batch_dir} ####################")
-        
+        t0 = timer()
         print("## Inserts")
         for entity in insert_entities:
             batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
@@ -88,7 +112,7 @@ def main():
                 else:
                     print(f"> {num_changes} changes")
                 print()
-        
+        t1 = timer()
         print("## Deletes")
         for entity in delete_entities:
             batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
@@ -103,12 +127,24 @@ def main():
                     print("!!! No changes occured")
                 else:
                     print(f"> {num_changes} changes")
-                print()
+                print()        
+        t2 = timer()
         
+        tot_ins_time += t1 - t0
+        tot_del_time += t2 - t1
         batch_start_date = batch_start_date + batch_size
+        batch_id = batch_start_date.strftime('%Y-%m-%d')
+        if args.read_freq == 0: continue 
+        if (batch_start_date - network_start_date).days % args.read_freq != 0: continue
+        output = args.output/batch_id
+        stat, all_duration=eval(queries, output/'param.json', datatype, output)
+        with open(timelog, 'a') as f:
+            cols = [batch_id] + [str(s) for s in stat] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
+            f.write(','.join(cols)+'\n')
 
     session.close()
     driver.close()
 
 if __name__ == '__main__':
-    main()
+    args = main_parser.parse_args()
+    main(args)

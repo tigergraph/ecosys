@@ -1,30 +1,19 @@
 MATCH (n:Comment)
-RETURN count(n) as nComment;
-
+WITH count(n) as nComment
 MATCH (n:Post)
-RETURN count(n) as nPost;
-
-MATCH (n:Person)
-RETURN count(n) as nPerson;
-
+WITH nComment, count(n) as nPost
 MATCH (n:Forum)
-RETURN count(n) as nForum;
-
-MATCH (n:Tag)
-RETURN count(n) as nTag;
-
-MATCH (f:Forum)-[e:HAS_MEMBER]->(t:Person)
-RETURN count(e) as nHasMember;
-
-MATCH (s:Person)-[e:KNOWS]->(t:Person)
-RETURN count(e) as nKnows;
-
-MATCH (s:Person)-[e:LIKES]->(t:Post)
-RETURN count(e) as nlikePost;
-
-MATCH (s:Person)-[e:LIKES]->(t:Comment)
-RETURN count(e) as nLikeComment;
-
-
-MATCH (:Person)-[e:IS_LOCATED_IN]->(:City)
-RETURN count(e) as nLoc;
+WITH nComment, nPost, count(n) as nForum
+MATCH (n:Person)
+WITH nComment, nPost, nForum, count(n) as nPerson
+MATCH (:Message)-[e:HAS_TAG]->(:Tag)
+WITH nComment, nPost, nForum, nPerson, count(e) as message_has_tag
+MATCH (:Forum)-[e:HAS_TAG]->(:Tag)
+WITH nComment, nPost, nForum, nPerson, message_has_tag, count(e) as forum_has_tag
+WITH nComment, nPost, nForum, nPerson, message_has_tag + forum_has_tag as has_tag
+MATCH (:Person)-[e:LIKES]->(:Message)
+WITH nComment, nPost, nForum, nPerson, has_tag, count(e) as likes
+MATCH (:Person)-[e:KNOWS]->(:Person)
+WITH nComment, nPost, nForum, nPerson, has_tag, likes, count(e) as knows
+MATCH (:Comment)-[e:REPLY_OF]->(:Message)
+RETURN nComment, nPost, nForum, nPerson, has_tag, likes, knows, count(e) as reply_of
