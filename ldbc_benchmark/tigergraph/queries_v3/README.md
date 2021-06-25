@@ -144,19 +144,23 @@ Then run the refresh workloads. The results and timelog are output to `results/`
 ```sh
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ 
 ```
+After runnning neo4j benchmark, you can compare the results
+```sh
+# after running neo4j, compare thje
+./driver.py compare 
+```
 
-
-## How does the driver work
+## How does the driver.py work
 ./driver.py load query 
 - gsql schema.gsql
 
 ./driver.py load query 
 - Copy paste user defined function `ExprFunctions.hpp` to tigergraph. 
-- gsql [all gsql files]
-- gsql -g ldbc_snb 'install query [all queries]' 
+- `gsql [queries/*.gsql, delete/*.gsql, stat.gsql, parameter/gen_para.gsql]`
+- `gsql -g ldbc_snb 'install query [all queries]'` 
 
 ./driver.py load data
 - remove _SUCCESS files in sf1, `find sf1 -name _SUCCESS -type f -delete`
-- gsql -g ldbc_snb 'run loading job load_static using FILENAMES' 
-- gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES' 
+- `gsql -g ldbc_snb 'run loading job load_static using FILENAMES'`
+- `gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES'`
 

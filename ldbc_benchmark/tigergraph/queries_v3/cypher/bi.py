@@ -44,7 +44,6 @@ def run_query(session, query_id, query_spec, query_parameters):
     result = session.read_transaction(query_fun, query_spec, query_parameters)
     end = time.time()
     duration = end - start
-    print(f'{query_id}\t{len(result)}\t{duration:1.2f}')
     return result, duration
 
     
@@ -75,20 +74,23 @@ def parse_queries(qstr):
         actual = qstr.split(',')
     return  [str(i) for i in range(1,21) if str(i) in actual]
     
-    return queries
-def eval(queries, parameter, datatype, output):
-    output.mkdir(parents=True, exist_ok=True)
-    #time_dir = Path('elapsed_time')
-    #time_dir.mkdir(parents=True, exist_ok=True)
-    
+
+def stat():
     driver = GraphDatabase.driver("bolt://localhost:7687")
     # statistics 
     with driver.session() as session:
         query_file = open(f'stat.cypher', 'r')
         query_spec = query_file.read()
         stat,_ = run_query(session, 'stat', query_spec, None)
-        print(stat)
-            
+    driver.close()
+    return stat[0]
+
+def eval(queries, parameter, datatype, output):
+    output.mkdir(parents=True, exist_ok=True)
+    #time_dir = Path('elapsed_time')
+    #time_dir.mkdir(parents=True, exist_ok=True)
+    
+    driver = GraphDatabase.driver("bolt://localhost:7687")
     # read parameters
     allParameters = readJson(parameter)
     dataType = readJson(datatype)
@@ -121,6 +123,7 @@ def eval(queries, parameter, datatype, output):
             query_spec = query_file.read()
             result, duration = run_query(session, query_variant, query_spec, allParameters['bi'+str(query_variant)])
             writeResult(result, output / f'bi{query_variant}.txt')
+            print(f'{query_variant}\t{len(result)}\t{duration:1.2f}')
             durations.append(duration)
             #with open(time_dir / f'bi{query_id}.txt', 'w') as f:
             #    f.write(str(duration))
@@ -128,7 +131,7 @@ def eval(queries, parameter, datatype, output):
     for q,d in zip(queries,durations):
         all_duration[int(q)-1] = d
     driver.close()
-    return stat[0],all_duration
+    return all_duration
 
 if __name__ == '__main__':
     args = parser.parse_args()

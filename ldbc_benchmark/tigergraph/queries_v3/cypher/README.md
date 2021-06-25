@@ -23,7 +23,7 @@ restart your terminal, turn off neo4j password and start neo4j
 ```sh
 neo4j stop
 vi $NEO4J_HOME/conf/neo4j.conf
-# comment out line 26 : dbms.security.auth_enabled=false
+# comment out line 27 : dbms.security.auth_enabled=false
 neo4j start
 # wait some time
 cypher-shell
@@ -32,6 +32,29 @@ cypher-shell
 install python dependencies
 ```sh
 pip3 install -U neo4j==4.2.1 python-dateutil
+```
+
+### Install additional algorithm packages
+Other than the basic neo4j package, the BI 10 query uses `apoc.path.subgraphNodes`, which requires [APOC](https://neo4j.com/labs/apoc/4.1/installation/) package. 
+BI 19 uses `gds.shortestPath.dijkstra.stream`, which requires [graph data science (GDS)](https://neo4j.com/docs/graph-data-science/current/installation/) package. 
+
+Download [APOC](https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.3.0.0/apoc-4.3.0.0-all.jar) and [GDS](https://s3-eu-west-1.amazonaws.com/com.neo4j.graphalgorithms.dist/graph-data-science/neo4j-graph-data-science-1.6.0-standalone.zip). 
+
+After copying them to `$NEO4J_HOME/plugins`, then add the following text to `$NEO4J_HOME/conf/neo4j.conf`. We also changed the maximum memory size for queries.
+
+*Note: for Neo4j-4.2.x cypher-shell may not work if you install these packages first and then load data. But works if you load data first and then install the packages.*
+
+```
+dbms.memory.heap.initial_size=31g
+dbms.memory.heap.max_size=31g
+dbms.memory.pagecache.size=194000m
+dbms.security.procedures.unrestricted=apoc.*,gds.*
+dbms.security.procedures.whitelist=apoc.*,gds.*
+```
+
+Restart neo4j and go into cypher shell. If the packages are present, you can also check the versions by going to cypher shell and type `RETURN gds.version();` and `RETURN apoc.version();`.
+```sh
+neo4j restart
 ```
 
 ### Donwload LDBC SNB Data 
@@ -64,36 +87,6 @@ export CSV_DIR=$NEO4J_HOME/import
 sh load.sh
 ```
 
-### Install additional algorithm packages
-Other than the basic neo4j package, the BI 10 query uses `apoc.path.subgraphNodes`, which requires [APOC](https://neo4j.com/labs/apoc/4.1/installation/) package. 
-BI 19 uses `gds.shortestPath.dijkstra.stream`, which requires [graph data science (GDS)](https://neo4j.com/docs/graph-data-science/current/installation/) package. 
-
-Download [APOC](https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.3.0.0/apoc-4.3.0.0-all.jar) and [GDS](https://s3-eu-west-1.amazonaws.com/com.neo4j.graphalgorithms.dist/graph-data-science/neo4j-graph-data-science-1.6.0-standalone.zip). 
-
-After moving them to `$NEO4J_HOME/plugins`, then add the following text to `$NEO4J_HOME/conf/neo4j.conf`. We also changed the maximum memory size for queries.
-
-Note: Neo4j cypher-shell may not work if you install these packages first and then load data. So I recommend you to load data first and then install the packages.
-
-```
-dbms.memory.heap.initial_size=31g
-dbms.memory.heap.max_size=31g
-dbms.memory.pagecache.size=194000m
-dbms.security.procedures.unrestricted=apoc.*,gds.*
-dbms.security.procedures.whitelist=apoc.*,gds.*
-```
-
-Restart neo4j and go into cypher shell
-```sh
-neo4j restart
-#wait some time
-cypher-shell
-# in cypher shell 
->> RETURN gds.version(); #to show  gds version (the ending semicolon is required)
->> RETURN apoc.version(); #to show  gds version (the ending semicolon is required)
->> CALL gds.list(); #to install the package
->> :exit
-```
-
 ## run queries
 Currently parameter directory is hard coded in `bi.py`. The script `indices.cypher` create indices for data, which can improve the query speed but not affects the results. `indices.cypher` is required for insertion of edges, otherwise, the the query is extremely slow.
 ```sh
@@ -103,8 +96,10 @@ python3 bi.py -q all
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 
 ## Refreshes
-The script `./batches.py` can do the insertion and deletion. Data path is hard coded in the cypher scripts right now. 
+The script `./batches.py` can do the insertion and deletion. Data path is hard coded in the cypher scripts right now. GSQL results need to be copied here because we use the parameters to run queries. You can skip running queries by specify reading frequency to 0 using `-r 0`.
+
 ```sh
+cp -r ../results .
 python3 batches.py $NEO4J_HOME/import -q not:17,19 #17 19 are too expensive for cypher
 ```
 

@@ -11,7 +11,7 @@ import sys
 import os
 from pathlib import Path
 import argparse
-from bi import eval, parse_queries
+from bi import parse_queries, eval, stat
 
 main_parser = argparse.ArgumentParser(description='Utilities working with Cypher for LDBC SNB with insertion/deletion.')
 main_parser.set_defaults(func=lambda _: main_parser.print_usage())
@@ -81,14 +81,15 @@ def main(args):
     datatype = Path('../parameters/dataType.json')
     queries = parse_queries(args.queries)
     output = args.output/batch_id
-    stat, all_duration=eval(queries, output/'param.json', datatype, output)
+    stats = stat()
+    all_duration=eval(queries, output/'param.json', datatype, output)
 
     timelog = args.output/'timelog.csv'
     stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']
     with open(timelog, 'w') as f:
         header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
         f.write(','.join(header)+'\n')
-        cols = [batch_id] + [str(s) for s in stat] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
+        cols = [batch_id] + [str(s) for s in stats] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
         f.write(','.join(cols)+'\n')
     batch_start_date = network_start_date
     while batch_start_date < network_end_date:
@@ -137,9 +138,10 @@ def main(args):
         if args.read_freq == 0: continue 
         if (batch_start_date - network_start_date).days % args.read_freq != 0: continue
         output = args.output/batch_id
-        stat, all_duration=eval(queries, output/'param.json', datatype, output)
+        stats = stat()
+        all_duration=eval(queries, output/'param.json', datatype, output)
         with open(timelog, 'a') as f:
-            cols = [batch_id] + [str(s) for s in stat] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
+            cols = [batch_id] + [str(s) for s in stats] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
             f.write(','.join(cols)+'\n')
 
     session.close()
