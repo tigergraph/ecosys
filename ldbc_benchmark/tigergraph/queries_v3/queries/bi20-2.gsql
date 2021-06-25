@@ -1,0 +1,57 @@
+/*
+It is cheaper to search from person2, which is a single vertex.
+We also do not need to store the source Id, which saves a lot of computation.
+*/
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+  TYPEDEF TUPLE<UINT totalWeight, UINT person1Id> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
+  OrAccum @visited, @inCompany;
+  SetAccum<VERTEX<University>> @univ;
+  MapAccum<VERTEX<University>, UINT> @year;
+  MinAccum<UINT> @dist; 
+  MapAccum<UINT, MinAccum<UINT>> @@paths;
+  UINT threshold;
+  threshold = 30;
+  S1 =
+    SELECT p
+    FROM Company:c -(<WORK_AT)- Person:p
+    WHERE c.name == company AND p != person2Id
+    ACCUM p.@inCompany += true;
+  
+  S = {person2Id};
+  S = Select s
+    FROM S:s -(STUDY_AT>:e)- University:u
+    ACCUM s.@visited += true, s.@dist = 0,
+      s.@univ += u, s.@year += (u->e.classYear);
+  WHILE S.size()>0 and @@paths.size()==0 DO
+    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE NOT t.@visited;
+    tmp = Select s
+      FROM Next:s -(STUDY_AT>:e)- University:u
+      ACCUM s.@univ += u, s.@year += (u->e.classYear);
+    
+    S = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE NOT t.@visited AND t.@univ.size()>0
+      ACCUM
+        FOREACH u IN (s.@univ INTERSECT t.@univ) DO
+          DOUBLE weight = abs(s.@year.get(u) - t.@year.get(u)) + 1,
+          IF s.@dist + weight < threshold THEN  
+            t.@visited += true,
+            t.@dist += s.@dist + weight
+          END
+        END 
+      HAVING t.@visited;
+    S = SELECT s FROM S:s  
+      ACCUM 
+        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END
+      HAVING NOT s.@inCompany;
+  END; # WHILE 
+  FOREACH (p,dist) IN @@paths DO
+    @@result += RESULT(p,dist);
+  END;
+  PRINT @@result;
+}
+
+# INSTALL QUERY bi20
+# RUN QUERY bi20("Pamir_Airways", 15393162792760)
