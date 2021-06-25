@@ -6,7 +6,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY del4(STRING file) {
   @@forum = { LoadAccum(file, $1, "|", true)}; 
   forum = {@@forum};
   # del 6
-  replies2 = SELECT c FROM forum -(CONTAINER_OF>)- Post:p -(<REPLY_OF*)- Comment:c;
+  replies2 = SELECT c FROM forum -(CONTAINER_OF>)- Post:p -(<REPLY_OF*)- (Post|Comment):c;
   DELETE r FROM replies2:r;
   DELETE f FROM forum:f;
   result = forum.size() + replies2.size();

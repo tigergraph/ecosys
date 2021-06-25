@@ -143,6 +143,8 @@ def main(args):
         with open(timelog, 'a') as f:
             cols = [batch_id] + [str(s) for s in stats] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
             f.write(','.join(cols)+'\n')
+        tot_ins_time = 0
+        tot_del_time = 0
 
     session.close()
     driver.close()
