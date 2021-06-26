@@ -31,7 +31,7 @@ cypher-shell
 ```
 install python dependencies
 ```sh
-pip3 install -U neo4j==4.2.1 python-dateutil
+sudo pip3 install -U neo4j==4.2.1 python-dateutil
 ```
 
 ### Install additional algorithm packages
@@ -109,4 +109,9 @@ Sometimes Neo4j cypher-shell may not be stopped. Use the following command to fi
 ```sh
 netstat -nlp | grep 7687
 kill pid
+```
+
+## Run in background
+```sh
+nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 < /dev/null &  
 ```

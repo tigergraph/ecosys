@@ -78,11 +78,12 @@ def main(args):
     driver = GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
     batch_id = network_start_date.strftime('%Y-%m-%d')       
-    datatype = Path('../parameters/dataType.json')
-    queries = parse_queries(args.queries)
-    output = args.output/batch_id
-    stats = stat()
-    all_duration=eval(queries, output/'param.json', datatype, output)
+    if args.read_freq > 0 :
+        datatype = Path('../parameters/dataType.json')
+        queries = parse_queries(args.queries)
+        output = args.output/batch_id
+        stats = stat()
+        all_duration=eval(queries, output/'param.json', datatype, output)
 
     timelog = args.output/'timelog.csv'
     stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']

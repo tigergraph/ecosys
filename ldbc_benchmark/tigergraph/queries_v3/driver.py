@@ -233,10 +233,11 @@ def load_parameters(file):
 
 def cmd_load_schema(args):
     '''Loads the schema.'''
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'schema.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'load_static.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'insert.gsql')])
-    subprocess.run(['gsql', str(SCRIPT_DIR_PATH / 'delete' / 'del_edge.gsql')])
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load_static.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'insert.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'delete'/'del_edge.gsql')}", shell=True)
+    
     
 """
 Load data
@@ -255,11 +256,11 @@ def load_data(job, machine, data_dir, tag, names, suffix, date = None):
     gsql = f'RUN LOADING JOB {job} USING '
     if suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
-    subprocess.run(['gsql', '-g', 'ldbc_snb', gsql])
+    subprocess.run(f'gsql -g ldbc_snb \'{gsql}\'', shell=True)
 
 def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
-    for f in args.data_dir.glob('/**/_SUCCESS'):
+    for f in args.data_dir.glob('**/_SUCCESS'):
         f.unlink()
 
     t0 = timer()
@@ -275,27 +276,24 @@ def cmd_load_query(args):
     os.system(f'cp {str(udf_file)} {udf_path}')
 
     '''Loads queries from the given workloads.'''
-    gsql = ''
-
     for workload in args.workload:
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
-        gsql += f'@{workload_path}\n'
+        subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
 
     for i in DEL_JOBS.keys():
         del_query = (SCRIPT_DIR_PATH / 'delete' / f'del{i}.gsql').resolve()
-        gsql += f'@{del_query}\n'
+        subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
-    gsql += f'@{stat_query}\n'
+    subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
     gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
-    gsql += f'@{gen_query}\n'
+    subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
 
-
+    
     all_workloads = args.workload + list(DEL_WORKLOADS.values()) + [STAT_WORKLOADS] + list(GEN_WORKLOADS.values())
     queries_to_install = [workload.name for workload in all_workloads]
-    gsql += f'INSTALL QUERY {", ".join(queries_to_install)}\n'
-
-    subprocess.run(['gsql', '-g', 'ldbc_snb'], input=gsql.encode())
+    gsql =  ", ".join(queries_to_install)
+    subprocess.run(f"gsql -g ldbc_snb 'INSTALL QUERY {gsql}'", shell=True)
 
 def cmd_load_all(args):
     '''Loads the schema, data and queries.'''
@@ -497,10 +495,9 @@ def cmd_refresh(args):
     delta = timedelta(days=1)
     date = begin 
 
-    eval_initial = True
     tot_ins_time = 0
     tot_del_time = 0
-    if eval_initial:
+    if args.read_freq > 0:
         # print statistics
         stats = cmd_stat(verbose=False)
         stats = [str(stats[name]) for name in stat_name]
@@ -519,6 +516,10 @@ def cmd_refresh(args):
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
         t0 = timer()
         load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
+        stats = cmd_stat(verbose=False)
+        stats = [str(stats[name]) for name in stat_name]
+        print(stats)
+        """
         t1 = timer()
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
         for i,job in DEL_JOBS.items():
@@ -551,7 +552,7 @@ def cmd_refresh(args):
             f.write(','.join(cols)+'\n')
         tot_ins_time = 0
         tot_del_time = 0
-
+        """
 
 def cmd_all(args):
     cmd_load_all(args)
