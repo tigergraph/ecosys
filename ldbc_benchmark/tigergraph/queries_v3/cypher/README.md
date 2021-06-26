@@ -71,7 +71,7 @@ tar -xvf sf1-composite-projected-fk.tar
 ### load data into cypher
 If your dataset has header, you need to first copy the data and remove the header.
 ```sh
-cp sf1 sf1-without-header
+cp -r sf1 sf1-without-header
 find sf1-without-header -type f -name \*.csv -exec sed -i 1d '{}' \;
 ```
 

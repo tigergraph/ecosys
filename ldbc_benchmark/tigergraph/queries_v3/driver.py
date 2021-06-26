@@ -62,12 +62,13 @@ def get_parser():
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
         parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
         parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
-    
+        parser.add_argument('-v', '--verbose', action='store_false', help='print for every query')
+        
     for parser in [refresh_parser, all_parser]:
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
         parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
         parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
-    
+        
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
     compare_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     compare_parser.add_argument('-s', '--source', type=Path, default=Path('results'), help='direcotry of the source results (default: results)')
@@ -80,7 +81,7 @@ def get_parser():
     gen_parser.add_argument('-o', '--output', type=Path, default=Path('param.json'), help='output parameter file path')
     
     # ./driver stat
-    stat_parser = main_subparsers.add_parser('stat', help='print statistics of the graph')
+    stat_parser = main_subparsers.add_parser('stat', help='print statistics of the graph')        
     stat_parser.set_defaults(func=cmd_stat)
 
     return main_parser
@@ -170,13 +171,13 @@ STATIC_NAMES = [
     'TagClass_isSubclassOf_TagClass',
     'Tag_hasType_TagClass',
 ]
-DYNAMIC_VERTEX = [
+DYNAMIC_VERTICES = [
     'Comment',
     'Forum',
     'Person',
     'Post',
 ]
-DYNAMIC_EDGE = [
+DYNAMIC_EDGES = [
     'Comment_hasCreator_Person',
     'Comment_hasTag_Tag',
     'Comment_isLocatedIn_Country',
@@ -197,12 +198,6 @@ DYNAMIC_EDGE = [
     'Post_hasTag_Tag',
     'Post_isLocatedIn_Country',
 ]
-DEL_NAMES = [
-    'Person_likes_Post',
-    'Person_likes_Comment',
-    'Forum_hasMember_Person',
-    'Person_knows_Person',
-]
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 total = 21
@@ -212,8 +207,13 @@ WORKLOADS[9] = Workload('bi10', ResultTransform()[0]['result'])
 WORKLOADS[10] = Workload('bi11', ResultTransform()[0])
 WORKLOADS[15] = Workload('bi16', ResultTransform()[0]['@@result'].del_keys(['totalMessageCount']))
 
-DEL_JOBS = {1:"Person",4:"Forum",6:"Post",7:"Comment"}
-DEL_WORKLOADS = {i:Workload(f'del{i}', ResultTransform()[0]) for i,job in DEL_JOBS.items()}
+DEL_VERTICES = ["Post","Comment","Forum","Person"]
+DEL_EDGES = ['Person_likes_Post',
+    'Person_likes_Comment',
+    'Forum_hasMember_Person',
+    'Person_knows_Person',
+]
+DEL_WORKLOADS = [Workload(f'del_{v}', ResultTransform()[0]) for v in DEL_VERTICES]
 
 STAT_WORKLOADS = Workload('stat', ResultTransform()[0])
 
@@ -237,7 +237,7 @@ def cmd_load_schema(args):
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load.gsql')}", shell=True)
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'insert.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'del_edge.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'del_Edge.gsql')}", shell=True)
     
 """
 Load data
@@ -245,7 +245,7 @@ Load data
     - machine : machine spec
     - data_dir: file path
     - tag : dynamic or static
-    - names: STATIC_NAMES DYNAMIC_NAMES DEL_NAMES
+    - names: STATIC_NAMES DYNAMIC_NAMES DEL_EDGES
     - suffix : str
     - date : None
 """ 
@@ -265,7 +265,7 @@ def cmd_load_data(args):
 
     t0 = timer()
     load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
-    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTEX+DYNAMIC_EDGE, args.suffix)
+    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTICES+DYNAMIC_EDGES, args.suffix)
     t1 = timer()
     print(f'loading time is {t1-t0}')
 
@@ -280,8 +280,8 @@ def cmd_load_query(args):
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
 
-    for i in DEL_JOBS.keys():
-        del_query = (SCRIPT_DIR_PATH / 'dml' / f'del{i}.gsql').resolve()
+    for vertex in DEL_VERTICES:
+        del_query = (SCRIPT_DIR_PATH / 'dml' / f'del_{vertex}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
@@ -290,7 +290,7 @@ def cmd_load_query(args):
     subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
 
     
-    all_workloads = args.workload + list(DEL_WORKLOADS.values()) + [STAT_WORKLOADS] + list(GEN_WORKLOADS.values())
+    all_workloads = args.workload + DEL_WORKLOADS + [STAT_WORKLOADS] + list(GEN_WORKLOADS.values())
     queries_to_install = [workload.name for workload in all_workloads]
     gsql =  ", ".join(queries_to_install)
     subprocess.run(f"gsql -g ldbc_snb 'INSTALL QUERY {gsql}'", shell=True)
@@ -304,12 +304,13 @@ def cmd_load_all(args):
 """
     Print graph satistics
 """
-def cmd_stat(names = None, verbose=True):
+def cmd_stat(names = None):
     stat = STAT_WORKLOADS.run(None).result
     stat = {k.replace('@',''):v for k,v in stat.items()}
     if names:
         stat = [stat[name] for name in names]
-    if verbose: print(stat)
+    else:
+        print('stats:', stat)
     return stat
     
     
@@ -392,7 +393,7 @@ def writeResult(result, filename):
 return 
     alltime -  list of length 20 storing the running time 
 """        
-def cmd_run(args, output = None, verbose = True):
+def cmd_run(args, output = None):
     if not output:
         output = args.output
     os.makedirs(output, exist_ok=True)
@@ -409,7 +410,7 @@ def cmd_run(args, output = None, verbose = True):
     parameters = load_parameters(parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     print(f"run for {args.nruns} times ...")
-    if verbose: print("Q\tNrow\tMedian time\t")
+    print("Q\tNrow\tMedian time\t")
 
     alltime = []
     for workload in args.workload:
@@ -429,7 +430,7 @@ def cmd_run(args, output = None, verbose = True):
             #    f.write(','+str(result.elapsed))
         median_time = median(time_list)
         alltime.append(median_time)
-        if verbose: print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
+        print(f'{workload.name}\t{len(result.result)}\t{median_time:.2f}')
     print(f'Results are written to {str(output)}')
     return alltime 
 
@@ -495,7 +496,7 @@ def toStr(x_list):
     if isinstance(x_list[0], float):
         return ','.join([f'{x:.2f}' for x in x_list])
 
-def cmd_refresh(args, verbose=True):
+def cmd_refresh(args):
     os.makedirs(args.output, exist_ok=True)
     timelog = args.output/'timelog.csv'
     
@@ -517,30 +518,30 @@ def cmd_refresh(args, verbose=True):
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
     if args.read_freq > 0: 
         # run query 
-        durations = cmd_run(args, output = output, verbose=True)
+        durations = cmd_run(args, output = output)
         batch_log += toStr(durations)
     logf.write(batch_log+'\n')
     logf.flush()
     while date < end:
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
         t0 = timer()
-        load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTEX, args.suffix, date)
-        load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGE, args.suffix, date)
+        load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTICES, args.suffix, date)
+        load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGES, args.suffix, date)
         t1 = timer()
-        if verbose: logf.write('insert,' + toStr(cmd_stat(stat_name))+ '\n')
+        if args.verbose: logf.write('insert,' + toStr(cmd_stat(stat_name))+ '\n')
 
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
-        for i,job in DEL_JOBS.items():
-            path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
-            if path.exists():
-                for fp in path.glob('*.csv'):
-                    if fp.is_file(): 
-                        result = DEL_WORKLOADS[i].run({'file':str(fp)})
-                        print(f'Deleting {job}: {result.result}')
-                if verbose: logf.write(f'{job},' + toStr(cmd_stat(stat_name))+ '\n')
+        for vertex,workload in zip(DEL_VERTICES, DEL_WORKLOADS):
+            path = args.data_dir/'deletes'/'dynamic'/vertex/date.strftime('batch_id=%Y-%m-%d') 
+            if not path.exists(): continue
+            for fp in path.glob('*.csv'):
+                if fp.is_file(): 
+                    result = workload.run({'file':str(fp)})
+                    print(f'Deleting {vertex}: {result.result}')
+            if args.verbose: logf.write(f'{vertex},' + toStr(cmd_stat(stat_name))+ '\n')
 
-        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
-        if verbose: logf.write('delete_edge,' + toStr(cmd_stat(stat_name))+ '\n')
+        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_EDGES, args.suffix, date)
+        if args.verbose: logf.write('delete_edge,' + toStr(cmd_stat(stat_name))+ '\n')
         t2 = timer()
         date += delta    
         
@@ -552,7 +553,7 @@ def cmd_refresh(args, verbose=True):
         batch_log += ',' + toStr([tot_ins_time, tot_del_time])
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
-            batch_log += ',' + toStr(cmd_run(args, output = output, verbose=True))
+            batch_log += ',' + toStr(cmd_run(args, output = output))
         logf.write(batch_log+'\n')
         logf.flush()
         tot_ins_time = 0

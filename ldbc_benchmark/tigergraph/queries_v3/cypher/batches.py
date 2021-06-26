@@ -25,6 +25,7 @@ main_parser.add_argument('-q', '--queries', type=str, default='all',
 main_parser.add_argument('-p', '--parameter', type=str, default='auto', help='parameter, default is auto.') # can only read parameters now
 main_parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json'), type=Path,
     help='JSON file containing containing the data types')    
+main_parser.add_argument('-v', '--verbose', action='store_false', help='print for every query')
 
 def write_txn_fun(tx, query_spec, batch, csv_file):
     result = tx.run(query_spec, batch=batch, csv_file=csv_file)
@@ -49,7 +50,7 @@ insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasCreator_Person", "Comment_hasTag_Tag", "Comment_isLocatedIn_Country", "Comment_replyOf_Comment", "Comment_replyOf_Post", "Forum_containerOf_Post", "Forum_hasMember_Person", "Forum_hasModerator_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_isLocatedIn_City", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post_hasCreator_Person", "Post_hasTag_Tag", "Post_isLocatedIn_Country"]
 insert_entities = insert_nodes + insert_edges
 
-delete_nodes = ["Comment", "Forum", "Person", "Post"]
+delete_nodes = ["Post", "Comment", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
 
@@ -69,7 +70,7 @@ def toStr(x_list):
     if isinstance(x_list[0], float):
         return ','.join([f'{x:.2f}' for x in x_list])
 
-def main(args, verbose = True):
+def main(args):
     data_dir = args.data_dir
     network_start_date = datetime.strptime(args.begin, '%Y-%m-%d')
     network_end_date = datetime.strptime(args.end, '%Y-%m-%d')
@@ -117,7 +118,7 @@ def main(args, verbose = True):
                 else:
                     print(f"> {num_changes} changes")
                 print()
-            if verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
+            if args.verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
             
         t1 = timer()
         print("## Deletes")
@@ -135,7 +136,7 @@ def main(args, verbose = True):
                 else:
                     print(f"> {num_changes} changes")
                 print()
-            if verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
+            if args.verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
         
         t2 = timer()
         

@@ -1,6 +1,6 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY del6(STRING file) {
+CREATE OR REPLACE DISTRIBUTED QUERY del_Post(STRING file) {
   SetAccum<VERTEX<Post>> @@posts;
   UINT result;
   @@posts = { LoadAccum(file, $1, "|", true)}; 
