@@ -69,22 +69,22 @@ tar -xvf sf1-composite-projected-fk.tar
 ```
 
 ### load data into cypher
-The current script `batches.py` can only read `inserts` and `deletes` folder in `$NEO4J_HOME/import/`. We first make a copy of these folders to `$NEO4J_HOME/import/`. This issue will be fixed in the future. 
+If your dataset has header, you need to first copy the data and remove the header.
 ```sh
-cp -r sf1/csv/bi/composite-projected-fk/* $NEO4J_HOME/import/
-# Remove the header of all the csv files. Only needed for the first time loading !!! 
-# this may takes 1 minute for scale factor 1.
-find $NEO4J_HOME/import -type f -name \*.csv -exec sed -i 1d '{}' \;
+cp sf1 sf1-without-header
+find sf1-without-header -type f -name \*.csv -exec sed -i 1d '{}' \;
 ```
 
-The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh). The script removes the header of csv files and load the header in `./headers` and all the csv files in `initial_snapshot`. Since the data is modified, you may make a copy of the dataset before loading.
+The current script `batches.py` can only read `inserts` and `deletes` folder in `$NEO4J_HOME/import/`. The script `load.sh` is modified from [ldbc_bi](https://github.com/ldbc/ldbc_snb_bi/blob/main/cypher/scripts/load-in-one-step.sh). 
 
 ```sh
+cp -r sf1-without-header/csv/bi/composite-projected-fk/* $NEO4J_HOME/import/
 # go back to the repository
 cd $HOME/ecosys/ldbc_benchmark/tigergraph/queries_v3/cypher
 # Set the CSV_DIR to the parent direcotry of initial_snapshot and load 
 export CSV_DIR=$NEO4J_HOME/import
 sh load.sh
+# wait a minute for neo4j to start
 ```
 
 ## run queries

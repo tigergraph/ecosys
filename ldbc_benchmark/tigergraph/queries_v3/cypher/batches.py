@@ -20,8 +20,6 @@ main_parser.add_argument('-b', '--begin', type=str, default='2012-09-13', help='
 main_parser.add_argument('-e', '--end', type=str, default='2012-12-31', help='end date')
 main_parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
 main_parser.add_argument('-o', '--output', type=Path, default=Path('results'), help='result folder')
-
-
 main_parser.add_argument('-q', '--queries', type=str, default='all', 
     help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"') 
 main_parser.add_argument('-p', '--parameter', type=str, default='auto', help='parameter, default is auto.') # can only read parameters now
@@ -65,9 +63,13 @@ for entity in delete_entities:
     with open(f"dml/del-{entity}.cypher", "r") as delete_query_file:
         delete_queries[entity] = delete_query_file.read()
 
-       
+def toStr(x_list):
+    if isinstance(x_list[0], int) or isinstance(x_list[0], str):
+        return ','.join([f'{x}' for x in x_list])
+    if isinstance(x_list[0], float):
+        return ','.join([f'{x:.2f}' for x in x_list])
 
-def main(args):
+def main(args, verbose = True):
     data_dir = args.data_dir
     network_start_date = datetime.strptime(args.begin, '%Y-%m-%d')
     network_end_date = datetime.strptime(args.end, '%Y-%m-%d')
@@ -78,24 +80,25 @@ def main(args):
     driver = GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
     batch_id = network_start_date.strftime('%Y-%m-%d')       
-    if args.read_freq > 0 :
-        datatype = Path('../parameters/dataType.json')
-        queries = parse_queries(args.queries)
-        output = args.output/batch_id
-        stats = stat()
-        all_duration=eval(queries, output/'param.json', datatype, output)
-
+    datatype = Path('../parameters/dataType.json')
+    queries = parse_queries(args.queries)
+    output = args.output/batch_id
+    
     timelog = args.output/'timelog.csv'
     stat_name = ['nComment', 'nPost', 'nForum', 'nPerson', 'HAS_TAG', 'LIKES', 'KNOWS', 'REPLY_OF']
-    with open(timelog, 'w') as f:
-        header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
-        f.write(','.join(header)+'\n')
-        cols = [batch_id] + [str(s) for s in stats] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
-        f.write(','.join(cols)+'\n')
-    batch_start_date = network_start_date
-    while batch_start_date < network_end_date:
+    logf = open(timelog, 'w')
+    header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+    logf.write(','.join(header)+'\n')
+    batch_log = batch_id + ',' + toStr(stat()) + ',' + toStr([tot_ins_time, tot_del_time])
+    if args.read_freq > 0:
+        all_duration=eval(queries, output/'param.json', datatype, output)
+        batch_log += toStr(all_duration)    
+    logf.write(batch_log+'\n')
+    logf.flush()
+    date = network_start_date
+    while date < network_end_date:
         # format date to yyyy-mm-dd
-        batch_id = batch_start_date.strftime('%Y-%m-%d')
+        batch_id = date.strftime('%Y-%m-%d')
         batch_dir = f"batch_id={batch_id}"
         print(f"#################### {batch_dir} ####################")
         t0 = timer()
@@ -114,6 +117,8 @@ def main(args):
                 else:
                     print(f"> {num_changes} changes")
                 print()
+            if verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
+            
         t1 = timer()
         print("## Deletes")
         for entity in delete_entities:
@@ -129,24 +134,26 @@ def main(args):
                     print("!!! No changes occured")
                 else:
                     print(f"> {num_changes} changes")
-                print()        
+                print()
+            if verbose: logf.write(entity+ ',' + toStr(stat())+ '\n')
+        
         t2 = timer()
         
         tot_ins_time += t1 - t0
         tot_del_time += t2 - t1
-        batch_start_date = batch_start_date + batch_size
-        batch_id = batch_start_date.strftime('%Y-%m-%d')
-        if args.read_freq == 0: continue 
-        if (batch_start_date - network_start_date).days % args.read_freq != 0: continue
+        date = date + batch_size
+        batch_id = date.strftime('%Y-%m-%d')
         output = args.output/batch_id
-        stats = stat()
-        all_duration=eval(queries, output/'param.json', datatype, output)
-        with open(timelog, 'a') as f:
-            cols = [batch_id] + [str(s) for s in stats] + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + all_duration]   
-            f.write(','.join(cols)+'\n')
+        batchlog = f'{batch_id},'  + toStr(stat())
+        batchlog += ',' + toStr([tot_ins_time, tot_del_time])
+        if args.read_freq and (date - network_start_date).days % args.read_freq == 0:
+            all_duration=eval(queries, output/'param.json', datatype, output)
+            batchlog += ',' + toStr(all_duration)   
+        logf.write(batchlog+'\n')
+        logf.flush()
         tot_ins_time = 0
         tot_del_time = 0
-
+    logf.close()
     session.close()
     driver.close()
 

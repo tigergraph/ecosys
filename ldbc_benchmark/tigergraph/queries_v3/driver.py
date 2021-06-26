@@ -234,10 +234,9 @@ def load_parameters(file):
 def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load_static.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'insert.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'delete'/'del_edge.gsql')}", shell=True)
-    
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'insert.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'del_edge.gsql')}", shell=True)
     
 """
 Load data
@@ -281,7 +280,7 @@ def cmd_load_query(args):
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
 
     for i in DEL_JOBS.keys():
-        del_query = (SCRIPT_DIR_PATH / 'delete' / f'del{i}.gsql').resolve()
+        del_query = (SCRIPT_DIR_PATH / 'dml' / f'del{i}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
@@ -304,10 +303,14 @@ def cmd_load_all(args):
 """
     Print graph satistics
 """
-def cmd_stat(verbose=True):
+def cmd_stat(names = None, verbose=True):
     stat = STAT_WORKLOADS.run(None).result
+    stat = {k.replace('@',''):v for k,v in stat.items()}
+    if names:
+        stat = [stat[name] for name in names]
     if verbose: print(stat)
-    return {k.replace('@',''):v for k,v in stat.items()}
+    return stat
+    
     
 """
 generate parameters automatically
@@ -485,7 +488,13 @@ def compare_batch(workloads, source, target):
 """ 
 refresh data and run queries
 """
-def cmd_refresh(args):
+def toStr(x_list):
+    if isinstance(x_list[0], int) or isinstance(x_list[0], str):
+        return ','.join([f'{x}' for x in x_list])
+    if isinstance(x_list[0], float):
+        return ','.join([f'{x:.2f}' for x in x_list])
+
+def cmd_refresh(args, verbose=True):
     os.makedirs(args.output, exist_ok=True)
     timelog = args.output/'timelog.csv'
     
@@ -497,30 +506,27 @@ def cmd_refresh(args):
 
     tot_ins_time = 0
     tot_del_time = 0
-    if args.read_freq > 0:
-        # print statistics
-        stats = cmd_stat(verbose=False)
-        stats = [str(stats[name]) for name in stat_name]
-        # run query 
-        dateStr = date.strftime('%Y-%m-%d')
-        output = args.output/dateStr
-        times = cmd_run(args, output = output, verbose=True)
-        # write running time
-        with open(timelog, 'w') as f:
-            header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
-            f.write(','.join(header)+'\n')
-            cols = [dateStr] + stats + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + times]
-            f.write(','.join(cols)+'\n')
+    dateStr = date.strftime('%Y-%m-%d')
+    output = args.output/dateStr
 
+    logf = open(timelog, 'w')
+    header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+    logf.write(','.join(header)+'\n')
+    batch_log = f'{dateStr},' + toStr(cmd_stat(stat_name)) 
+    batch_log += ',' + toStr([tot_ins_time, tot_del_time])
+    if args.read_freq > 0: 
+        # run query 
+        durations = cmd_run(args, output = output, verbose=True)
+        batch_log += toStr(durations)
+    logf.write(batch_log+'\n')
+    logf.flush()
     while date < end:
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
         t0 = timer()
         load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
-        stats = cmd_stat(verbose=False)
-        stats = [str(stats[name]) for name in stat_name]
-        print(stats)
-        """
         t1 = timer()
+        if verbose: logf.write('insert,' + toStr(cmd_stat(stat_name))+ '\n')
+
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
         for i,job in DEL_JOBS.items():
             path = args.data_dir/'deletes'/'dynamic'/job/date.strftime('batch_id=%Y-%m-%d') 
@@ -529,30 +535,27 @@ def cmd_refresh(args):
                     if fp.is_file(): 
                         result = DEL_WORKLOADS[i].run({'file':str(fp)})
                         print(f'Deleting {job}: {result.result}')
+                if verbose: logf.write(f'{job},' + toStr(cmd_stat(stat_name))+ '\n')
+
         load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_NAMES, args.suffix, date)
+        if verbose: logf.write('delete_edge,' + toStr(cmd_stat(stat_name))+ '\n')
         t2 = timer()
         date += delta    
         
         tot_ins_time += t1-t0
         tot_del_time += t2-t1
-        # if args.read_freq == 0 do not read
-        if args.read_freq == 0: continue 
-        if (date - begin).days % args.read_freq != 0: continue
-        
-        # print statistics 
-        stats = cmd_stat(verbose=False)
-        stats = [str(stats[name]) for name in stat_name]
-        # run query 
         dateStr = date.strftime('%Y-%m-%d')
         output = args.output/dateStr
-        times = cmd_run(args, output = output, verbose=True)
-        # write running time
-        with open(timelog, 'a') as f:
-            cols = [dateStr] + stats + [f'{t:.2f}' for t in [tot_ins_time, tot_del_time] + times]
-            f.write(','.join(cols)+'\n')
+        batch_log = f'{dateStr},' + toStr(cmd_stat(stat_name)) 
+        batch_log += ',' + toStr([tot_ins_time, tot_del_time])
+        # run query 
+        if args.read_freq and (date - begin).days % args.read_freq == 0: 
+            batch_log += ',' + toStr(cmd_run(args, output = output, verbose=True))
+        logf.write(batch_log+'\n')
+        logf.flush()
         tot_ins_time = 0
         tot_del_time = 0
-        """
+    logf.close()
 
 def cmd_all(args):
     cmd_load_all(args)
