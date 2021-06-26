@@ -152,7 +152,7 @@ After runnning neo4j benchmark, you can compare the results
 
 For large scale factors, I prefer to run in background. 
 ```sh
-nohup python3 -u ./driver.py load all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 & 
 ```
 
 ## How does the driver.py work

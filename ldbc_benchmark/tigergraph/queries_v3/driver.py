@@ -170,20 +170,22 @@ STATIC_NAMES = [
     'TagClass_isSubclassOf_TagClass',
     'Tag_hasType_TagClass',
 ]
-
-DYNAMIC_NAMES = [
+DYNAMIC_VERTEX = [
     'Comment',
+    'Forum',
+    'Person',
+    'Post',
+]
+DYNAMIC_EDGE = [
     'Comment_hasCreator_Person',
     'Comment_hasTag_Tag',
     'Comment_isLocatedIn_Country',
     'Comment_replyOf_Comment',
     'Comment_replyOf_Post',
-    'Forum',
     'Forum_containerOf_Post',
     'Forum_hasMember_Person',
     'Forum_hasModerator_Person',
     'Forum_hasTag_Tag',
-    'Person',
     'Person_hasInterest_Tag',
     'Person_isLocatedIn_City',
     'Person_knows_Person',
@@ -191,7 +193,6 @@ DYNAMIC_NAMES = [
     'Person_likes_Post',
     'Person_studyAt_University',
     'Person_workAt_Company',
-    'Post',
     'Post_hasCreator_Person',
     'Post_hasTag_Tag',
     'Post_isLocatedIn_Country',
@@ -264,7 +265,7 @@ def cmd_load_data(args):
 
     t0 = timer()
     load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
-    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
+    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTEX+DYNAMIC_EDGE, args.suffix)
     t1 = timer()
     print(f'loading time is {t1-t0}')
 
@@ -523,7 +524,8 @@ def cmd_refresh(args, verbose=True):
     while date < end:
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
         t0 = timer()
-        load_data('load_dynamic', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_NAMES, args.suffix, date)
+        load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTEX, args.suffix, date)
+        load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGE, args.suffix, date)
         t1 = timer()
         if verbose: logf.write('insert,' + toStr(cmd_stat(stat_name))+ '\n')
 
