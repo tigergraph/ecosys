@@ -110,8 +110,3 @@ Sometimes Neo4j cypher-shell may not be stopped. Use the following command to fi
 netstat -nlp | grep 7687
 kill pid
 ```
-
-## Run in background
-```sh
-nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 < /dev/null &  
-```

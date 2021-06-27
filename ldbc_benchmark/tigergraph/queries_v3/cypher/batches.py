@@ -25,7 +25,7 @@ main_parser.add_argument('-q', '--queries', type=str, default='all',
 main_parser.add_argument('-p', '--parameter', type=str, default='auto', help='parameter, default is auto.') # can only read parameters now
 main_parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json'), type=Path,
     help='JSON file containing containing the data types')    
-main_parser.add_argument('-v', '--verbose', action='store_false', help='print for every query')
+main_parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
 
 def write_txn_fun(tx, query_spec, batch, csv_file):
     result = tx.run(query_spec, batch=batch, csv_file=csv_file)
@@ -93,7 +93,7 @@ def main(args):
     batch_log = batch_id + ',' + toStr(stat()) + ',' + toStr([tot_ins_time, tot_del_time])
     if args.read_freq > 0:
         all_duration=eval(queries, output/'param.json', datatype, output)
-        batch_log += toStr(all_duration)    
+        batch_log += ',' + toStr(all_duration)    
     logf.write(batch_log+'\n')
     logf.flush()
     date = network_start_date

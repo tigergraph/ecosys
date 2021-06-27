@@ -33,7 +33,7 @@ Related links
 
 ```sh
 sudo yum install wget git tar python3 sshpass zstd 
-python3 -m pip install requests
+sudo python3 -m pip install requests
 ```
 If zstd is not available. Download and compile the source from their github.
 ```sh
@@ -155,17 +155,23 @@ For large scale factors, I prefer to run in background.
 nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 & 
 ```
 
+## Run in background
+All the driver command abvoce is equivalent to the following one command. Because it usually takes long time. I prefer to add nohup to allow the process continue after I log out.
+```sh
+nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 < /dev/null &  
+```
+
 ## How does the driver.py work
-./driver.py load query 
-- gsql schema.gsql
+./driver.py load all [dara_dir] will runs
+* ./driver.py load query 
+  *  gsql schema.gsql
+* ./driver.py load query 
+  * Copy paste user defined function `ExprFunctions.hpp` to tigergraph. 
+  * `gsql [queries/*.gsql, delete/*.gsql, stat.gsql, parameter/gen_para.gsql]`
+  * `gsql -g ldbc_snb 'install query [all queries]'` 
+* ./driver.py load data [dara_dir]
+  * remove _SUCCESS files in sf1, `find sf1 -name _SUCCESS -type f -delete`
+  * `gsql -g ldbc_snb 'run loading job load_static using FILENAMES'`
+  * `gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES'`
 
-./driver.py load query 
-- Copy paste user defined function `ExprFunctions.hpp` to tigergraph. 
-- `gsql [queries/*.gsql, delete/*.gsql, stat.gsql, parameter/gen_para.gsql]`
-- `gsql -g ldbc_snb 'install query [all queries]'` 
-
-./driver.py load data
-- remove _SUCCESS files in sf1, `find sf1 -name _SUCCESS -type f -delete`
-- `gsql -g ldbc_snb 'run loading job load_static using FILENAMES'`
-- `gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES'`
 

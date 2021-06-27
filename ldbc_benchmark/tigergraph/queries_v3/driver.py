@@ -62,7 +62,7 @@ def get_parser():
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
         parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
         parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
-        parser.add_argument('-v', '--verbose', action='store_false', help='print for every query')
+        parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
         
     for parser in [refresh_parser, all_parser]:
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
@@ -519,7 +519,7 @@ def cmd_refresh(args):
     if args.read_freq > 0: 
         # run query 
         durations = cmd_run(args, output = output)
-        batch_log += toStr(durations)
+        batch_log += ',' + toStr(durations)
     logf.write(batch_log+'\n')
     logf.flush()
     while date < end:
