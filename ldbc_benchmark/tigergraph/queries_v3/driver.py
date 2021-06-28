@@ -58,13 +58,14 @@ def get_parser():
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
     
     for parser in [run_parser, refresh_parser, all_parser]:
-        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)    
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
         parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
         parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
         parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
         
+    run_parser.add_argument('-p', '--parameter', type=str, default='parameters/sf1.json', help=parameter_help)
     for parser in [refresh_parser, all_parser]:
+        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)    
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
         parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
         parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
@@ -198,6 +199,7 @@ DYNAMIC_EDGES = [
     'Post_hasTag_Tag',
     'Post_isLocatedIn_Country',
 ]
+DYNAMIC_NAMES = DYNAMIC_VERTICES + DYNAMIC_EDGES
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 total = 21
@@ -207,7 +209,7 @@ WORKLOADS[9] = Workload('bi10', ResultTransform()[0]['result'])
 WORKLOADS[10] = Workload('bi11', ResultTransform()[0])
 WORKLOADS[15] = Workload('bi16', ResultTransform()[0]['@@result'].del_keys(['totalMessageCount']))
 
-DEL_VERTICES = ["Post","Comment","Forum","Person"]
+DEL_VERTICES = ["Comment","Post","Forum","Person"]
 DEL_EDGES = ['Person_likes_Post',
     'Person_likes_Comment',
     'Forum_hasMember_Person',
@@ -215,7 +217,7 @@ DEL_EDGES = ['Person_likes_Post',
 ]
 DEL_WORKLOADS = [Workload(f'del_{v}', ResultTransform()[0]) for v in DEL_VERTICES]
 
-STAT_WORKLOADS = Workload('stat', ResultTransform()[0])
+STAT_WORKLOADS = [Workload('quick_stat', ResultTransform()[0]), Workload('stat', ResultTransform()[0])]
 
 GEN_WORKLOADS = {
     0 : Workload('gen', ResultTransform()[0]),
@@ -304,15 +306,16 @@ def cmd_load_all(args):
 """
     Print graph satistics
 """
-def cmd_stat(names = None):
-    stat = STAT_WORKLOADS.run(None).result
-    stat = {k.replace('@',''):v for k,v in stat.items()}
-    if names:
-        stat = [stat[name] for name in names]
-    else:
-        print('stats:', stat)
-    return stat
-    
+def quick_stat():
+    stat = STAT_WORKLOADS[0].run(None).result
+    return list(stat.values())
+
+def cmd_stat(args):
+    t0 = timer()
+    stat = STAT_WORKLOADS[1].run(None).result
+    t1 = timer()
+    print(f'stats({t1-t0:.2f}):', stat)
+
     
 """
 generate parameters automatically
@@ -334,9 +337,7 @@ def cmd_gen(args, output=None):
     tag = gen[0]['@@tag']
     tagclass = gen[0]['@@tagclass']
     def genValue(name, Dtype):
-        if name == 'country': return country[randrange(3)]
-        if name == 'country1': return country[0]
-        if name == 'country2': return country[1]
+        if name == 'country': return country[randrange(4)]
         if name == 'tag': return tag[randrange(3)]
         if name == 'tagClass': return tagclass[randrange(3)]
         if name == 'startDate': 
@@ -358,6 +359,9 @@ def cmd_gen(args, output=None):
     date = datetime.strptime(parameters['bi15']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=365) 
     
     for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
+    i = randrange(4)
+    parameters['bi14']['country1'] = country[i]
+    parameters['bi14']['country2'] = country[(i+1)%4]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     for k in gen[15].keys(): parameters['bi15'][k] = gen[15][k]
     for k in gen[16].keys(): parameters['bi16'][k] = gen[16][k]
@@ -514,7 +518,7 @@ def cmd_refresh(args):
     logf = open(timelog, 'w')
     header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
     logf.write(','.join(header)+'\n')
-    batch_log = f'{dateStr},' + toStr(cmd_stat(stat_name)) 
+    batch_log = f'{dateStr},' + toStr(quick_stat()) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
     if args.read_freq > 0: 
         # run query 
@@ -528,36 +532,43 @@ def cmd_refresh(args):
         load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTICES, args.suffix, date)
         load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGES, args.suffix, date)
         t1 = timer()
-        if args.verbose: logf.write('insert,' + toStr(cmd_stat(stat_name))+ '\n')
-
+        if args.verbose: logf.write('insert,' + toStr(quick_stat())+ f',{t1-t0}\n')
+        tot_ins_time += t1-t0
+        
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
+        
         for vertex,workload in zip(DEL_VERTICES, DEL_WORKLOADS):
+            t0 = timer()
             path = args.data_dir/'deletes'/'dynamic'/vertex/date.strftime('batch_id=%Y-%m-%d') 
             if not path.exists(): continue
             for fp in path.glob('*.csv'):
                 if fp.is_file(): 
                     result = workload.run({'file':str(fp)})
                     print(f'Deleting {vertex}: {result.result}')
-            if args.verbose: logf.write(f'{vertex},' + toStr(cmd_stat(stat_name))+ '\n')
-
+            t1 = timer()
+            tot_del_time += t1 - t0
+            if args.verbose: logf.write(f'{vertex},' + toStr(quick_stat())+ f',{t1-t0}\n')
+        t0 = timer()
         load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_EDGES, args.suffix, date)
-        if args.verbose: logf.write('delete_edge,' + toStr(cmd_stat(stat_name))+ '\n')
-        t2 = timer()
-        date += delta    
+        t1 = timer()
+        tot_del_time += t1 - t0
+        if args.verbose: logf.write('delete_edge,' + toStr(quick_stat())+ f',{t1-t0}\n')
         
-        tot_ins_time += t1-t0
-        tot_del_time += t2-t1
+        
+        date += delta    
         dateStr = date.strftime('%Y-%m-%d')
         output = args.output/dateStr
-        batch_log = f'{dateStr},' + toStr(cmd_stat(stat_name)) 
+        batch_log = f'{dateStr},' + toStr(quick_stat()) 
         batch_log += ',' + toStr([tot_ins_time, tot_del_time])
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
             batch_log += ',' + toStr(cmd_run(args, output = output))
         logf.write(batch_log+'\n')
         logf.flush()
-        tot_ins_time = 0
-        tot_del_time = 0
+        if args.read_freq == 0 or (date - begin).days % args.read_freq == 0:
+            tot_ins_time = 0
+            tot_del_time = 0
+        
     logf.close()
 
 def cmd_all(args):

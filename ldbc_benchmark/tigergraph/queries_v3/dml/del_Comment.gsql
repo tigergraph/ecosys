@@ -7,6 +7,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY del_Comment(STRING file) {
   comments = {@@comments};
   replies = SELECT c FROM comments -(<REPLY_OF*)- Comment:c;
   DELETE r FROM replies:r;
-  result = replies.size();
-  print result;
+  print replies.size();
 }

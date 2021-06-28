@@ -86,3 +86,6 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
 
   PRINT @@result;
 }
+
+//INSTALL QUERY bi14
+//RUN QUERY bi14("China", "Austria")

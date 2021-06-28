@@ -7,18 +7,18 @@ CREATE OR REPLACE DISTRIBUTED QUERY del_Person(STRING file) {
   person = {@@person};
 
   # del 6 7
-  replies = SELECT c FROM person:p -(<HAS_CREATOR)- (Post|Comment) -(<REPLY_OF*)- (Post|Comment):c;  
+  replies1 = SELECT c FROM person:p -(<HAS_CREATOR)- (Post|Comment):c;
+  
   # del 4
   F = SELECT f FROM person:p -(<HAS_MODERATOR)- Forum:f
     WHERE f.title LIKE "Album %" OR f.title LIKE "Wall %";
-  replies2 = SELECT c FROM F -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Post|Comment):c;
-  DELETE r FROM replies:r;
-  DELETE f FROM F:f;
-  DELETE r FROM replies2:r;
-  DELETE p FROM person:p;
-  result = person.size()+replies.size()+F.size()+replies2.size();
-  PRINT result;
-  //PRINT M[M.id as cId], replies[replies.id as rId];
+  replies2 = SELECT p FROM F -(CONTAINER_OF>)- Post:p;
+  
+  replies = replies1 UNION replies2; 
+  replies = SELECT c FROM replies -(<REPLY_OF*)- (Post|Comment):c;
+  allv = replies UNION F UNION person;
+  DELETE v FROM allv:v;
+  PRINT allv.size();
 }
 
 #INSTALL QUERY del1

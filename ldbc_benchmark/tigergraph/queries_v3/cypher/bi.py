@@ -14,7 +14,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(description='Cypher driver')
 parser.add_argument('-q','--queries', default='all', type=str,
     help='querie numbers to run (default: all), numbers separated by comma. i.e., "1,2"')
-parser.add_argument('-p','--parameter', default=Path('../parameters/sf1/initial.json'), type=Path,
+parser.add_argument('-p','--parameter', default=Path('../parameters/sf1.json'), type=Path,
     help='JSON file containing the input parameters')
 parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json'), type=Path,
     help='JSON file containing containing the data types')    

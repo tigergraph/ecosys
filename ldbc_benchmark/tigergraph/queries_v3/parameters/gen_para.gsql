@@ -9,7 +9,7 @@ CREATE OR REPLACE QUERY gen() {
   SetAccum<STRING> @@country, @@tag, @@tagclass;
   STRING smalltag;
   V = {Country.*};
-  V = SELECT v FROM V:v LIMIT 3;
+  V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
   V = SELECT v FROM Person-(LIKES>)-(Post|Comment)-(HAS_TAG>)-Tag:v LIMIT 3;
 

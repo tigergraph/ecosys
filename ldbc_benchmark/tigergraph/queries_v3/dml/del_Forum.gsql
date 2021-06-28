@@ -7,10 +7,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY del_Forum(STRING file) {
   forum = {@@forum};
   # del 6
   replies2 = SELECT c FROM forum -(CONTAINER_OF>)- Post:p -(<REPLY_OF*)- (Post|Comment):c;
-  DELETE r FROM replies2:r;
-  DELETE f FROM forum:f;
-  result = forum.size() + replies2.size();
-  print result;
+  allv = forum UNION replies2; 
+  DELETE v FROM allv:v;
+  PRINT allv.size();
 }
 
 #INSTALL QUERY del4
