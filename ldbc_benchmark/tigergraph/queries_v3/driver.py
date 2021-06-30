@@ -12,6 +12,8 @@ import re
 from datetime import datetime, timedelta
 from random import randrange
 from glob import glob
+
+
 def get_parser():
     query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
     machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
@@ -328,7 +330,7 @@ generate parameters automatically
 def cmd_gen(args, output=None):
     if not output:
         output = args.output
-    parameters = load_parameters(Path('parameters/sf1/initial.json'))
+    parameters = load_parameters(Path('parameters/sf1.json'))
     dataType = load_parameters(Path('parameters/dataType.json'))
     gen = {}
     for i, workload in GEN_WORKLOADS.items():
@@ -414,7 +416,6 @@ def cmd_run(args, output = None):
     if args.parameter == 'auto':
         parameter = output/'param.json'
         if not parameter.exists():
-            print(f'{parameter} does not exist, auto generate parameters ...')
             t0 = timer()
             cmd_gen(args, parameter)
             t1 = timer()
