@@ -9,6 +9,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY del_Post(STRING file) {
   replies = SELECT c FROM posts -(<REPLY_OF*)- (Post|Comment):c;
   allv = posts UNION replies;
   DELETE v FROM allv:v;
-  result =  + allv.size();
+  result = allv.size();
   print result;
 }

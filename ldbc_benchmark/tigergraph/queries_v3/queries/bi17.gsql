@@ -1,21 +1,21 @@
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
 # DISTRIBUTED QUERY NOT SUPPORTED
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) {
-
+CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
   HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
-
   OrAccum<BOOL> @hasTag, @isCreator;
   # There is only one forum and creator for a message.
-  SumAccum<UINT> @forum, @creator;
-  # On the other hand, creator and forum have many message
+  MinAccum<VERTEX<Forum>> @forum;
+  MinAccum<VERTEX<Person>> @creator;
+  # On the other hand, creator and forum have many messages
   SetAccum<UINT> @messages;
   # forum1 Id -> (person1 Id -> smallest message1 creationdate)  
-  MapAccum<UINT, MapAccum<UINT, MinAccum<DATETIME>>> @@Forum2Creator;
+  MapAccum<VERTEX<Forum>, MapAccum<VERTEX<Person>, MinAccum<DATETIME>>> @@Forum2Creator;
   # comment id -> creator forum id 
   SetAccum<VERTEX<Forum>> @CreatorForums, @Forum1;
-  MapAccum<UINT, SetAccum<UINT>> @@hasMember;
+  # MapAccum<VERTEX<Forum>, SetAccum<VERTEX<Person>>> @@hasMember;
+  SetAccum<VERTEX<Person>> @hasMember;
   # person1 id in message2
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
@@ -28,41 +28,39 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi17(STRING tag, INT delta) {
   creators =
     SELECT p
     FROM messagesWithTag:m -(HAS_CREATOR>) - Person:p
-    ACCUM m.@creator = p.id, p.@messages += m.id, p.@isCreator = True;
+    ACCUM m.@creator = p, p.@messages += m.id, p.@isCreator = True;
 
   forum12 =
     SELECT f
-    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
-    ACCUM m.@forum = f.id, @@Forum2Creator += (f.id -> (m.@creator-> m.creationDate));
-
-  CreatorsInForum = 
-    SELECT p
-    FROM forum12:f -(HAS_MEMBER>)- Person:p  
-    ACCUM @@hasMember += (f.id -> p.id),
-      IF p.@isCreator THEN p.@CreatorForums += f END;
+    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f -(HAS_MEMBER>)- Person:p
+    ACCUM 
+      m.@forum = f, 
+      @@Forum2Creator += (f -> (m.@creator-> m.creationDate)),
+      m.@hasMember += p;
 
   messages2 = 
     SELECT m
-    FROM CreatorsInForum:p -(<HAS_CREATOR)- (Comment|Post): m 
-    WHERE m.@hasTag
-    ACCUM m.@CreatorForums += p.@CreatorForums;
+    FROM forum12:f -(HAS_MEMBER>)- Person:p -(<HAS_CREATOR)- (Comment|Post): m 
+    WHERE p.@isCreator AND m.@hasTag
+    ACCUM m.@CreatorForums += f;
 
   messages2 =
     SELECT m2
     FROM messages2:m2 -(<REPLY_OF)- Comment:m
     WHERE m.@hasTag #AND m.@creator != m2.@creator
     ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
+    POST-ACCUM m2.@Forum1.remove(m2.@forum)
     HAVING m2.@Forum1.size() > 0;
     
   message2 = 
     SELECT m2 FROM messages2:m2 
     ACCUM 
       FOREACH f IN m2.@Forum1 DO
-        IF f.id == m2.@forum THEN CONTINUE END,
-        FOREACH (p1,m1date) IN @@Forum2Creator.get(f.id) DO
-          IF (datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate) 
-                AND (NOT @@hasMember.get(m2.@forum).contains(p1)) THEN 
-              m2.@person1Id += p1
+        FOREACH (p1,m1date) IN @@Forum2Creator.get(f) DO
+          IF datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate 
+               AND (NOT m2.@hasMember.contains(p1)) //not supported in distributed  
+              THEN 
+              m2.@person1Id += p1.id
           END
         END
       END

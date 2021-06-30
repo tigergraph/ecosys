@@ -8,30 +8,24 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
   SumAccum<INT> @@score;
   SumAccum<STRING> @city;
   OrAccum @valid;
-  SetAccum<VERTEX<Person>> @@P2Set;
+  SetAccum<VERTEX<City>> @@city1;
   SumAccum<INT> @pid1, @pid2;
+  MinAccum<INT> @min_pid1, @@min_pid2;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@result;
   
-  // identify person1 and person2
+  // select city1, person1 and person2
+  City1 = SELECT c FROM Country:s -(<IS_PART_OF)- City:c  
+    WHERE s.name == country1;
+  P1 = SELECT p FROM City1:c -(<IS_LOCATED_IN)-Person:p 
+    ACCUM p.@city = c.name;
   P2 = 
     SELECT p
     FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
     WHERE s.name == country2
-    ACCUM p.@valid+=True, @@P2Set += p;
-  P1 = 
-    SELECT p
-    FROM Country:s -(<IS_PART_OF)- City:c -(<IS_LOCATED_IN)-Person:p
-    WHERE s.name == country1
-    PER(c,p)
-    ACCUM p.@city = c.name
-    POST-ACCUM 
-      FOREACH p2 in @@P2Set DO 
-        @@pairScoreMap += (p.@city -> (p.id, p2.id -> False, False, False, False, False))
-      END;
-  
+    ACCUM p.@valid+=True;
+  // Calculate score
   C1 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
-  #C2 = SELECT m FROM P2:p -(<HAS_CREATOR)- Comment:m;
   M1 = 
     SELECT m FROM P1:p -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@pid1 = p.id, m.@city = p.@city;
@@ -83,7 +77,16 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
     END;
     @@result += @@pairScoreGroupTop.top();
   END;
-
+  // add cities of zero scores (min pid1 in city1, min pid2, city name, 0)
+  IF @@result.size() < City1.size() THEN
+    P2p = SELECT p FROM P2:p ACCUM @@min_pid2 += p.id;
+    tmp = 
+      SELECT c FROM City1:c -(<IS_LOCATED_IN)- Person:p
+      WHERE NOT @@pairScoreMap.containsKey(c.name)
+      ACCUM c.@min_pid1 += p.id
+      POST-ACCUM 
+        @@result += pairScore(c.@min_pid1, @@min_pid2, c.name, 0);
+  END;
   PRINT @@result;
 }
 

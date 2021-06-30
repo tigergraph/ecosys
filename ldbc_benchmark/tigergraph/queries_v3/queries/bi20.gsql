@@ -50,14 +50,14 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> pers
       FOREACH (p,dist) IN @@paths DO
         @@result += RESULT(p,dist);
       END;
-      threshold = @@result.top().totalWeight;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END; 
     END;
     
   END; # WHILE 
-  IF @@paths.size() < 20 THEN
-    FOREACH (p,dist) IN @@paths DO
-      @@result += RESULT(p,dist);
-    END;
+  FOREACH (p,dist) IN @@paths DO
+    @@result += RESULT(p,dist);
   END;
   PRINT @@result;
 }

@@ -54,5 +54,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
 
 # Interpret do not support DISTRIBUTED query 
 # INTERPRET QUERY stat()
-INSTALL QUERY quick_stat, stat
+# INSTALL QUERY quick_stat, stat
 # RUN QUERY stat()

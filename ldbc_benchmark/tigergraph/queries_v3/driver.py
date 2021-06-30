@@ -101,7 +101,6 @@ class Query:
     def run(self, parameter):
         if self.transform_parameter is not None:
             parameter = self.transform_parameter(parameter)
-
         start = timer()
         response = requests.get(self.ENDPOINT + self.name, headers=self.HEADERS, params=parameter).json()
         end = timer()
@@ -111,16 +110,19 @@ class Query:
 
         return ResultWithElapsed(response['results'], end - start)
 
-
 class Workload:
-    def __init__(self, name, transform_result):
+    def __init__(self, name, transform, queries = None):
         self.name = name
-        self.transform_result = transform_result
+        if not queries:
+            self.queries = [Query(self.name)]
+        else:
+            self.queries = queries
+        self.transform_result = transform
 
     def run(self, parameter):
-        results = Query(self.name).run(parameter)
-        result = self.transform_result(results.result)
-        elapsed = results.elapsed
+        results = [query.run(parameter) for query in self.queries]
+        result = self.transform_result([r.result for r in results])
+        elapsed = sum(r.elapsed for r in results)
         return ResultWithElapsed(result, elapsed)
 
 class ResultTransform:
@@ -203,11 +205,12 @@ DYNAMIC_NAMES = DYNAMIC_VERTICES + DYNAMIC_EDGES
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
 total = 21
-WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0]['@@result']) for i in range(1,total)]
-WORKLOADS[7] = Workload('bi8', ResultTransform()[0]['@@result'].del_keys(['totalScore']))
-WORKLOADS[9] = Workload('bi10', ResultTransform()[0]['result'])
-WORKLOADS[10] = Workload('bi11', ResultTransform()[0])
-WORKLOADS[15] = Workload('bi16', ResultTransform()[0]['@@result'].del_keys(['totalMessageCount']))
+WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0][0]['@@result']) for i in range(1,total)]
+WORKLOADS[7] = Workload('bi8', ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
+WORKLOADS[9] = Workload('bi10', ResultTransform()[0][0]['result'])
+WORKLOADS[10] = Workload('bi11', ResultTransform()[0][0])
+WORKLOADS[15] = Workload('bi16', ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
+WORKLOADS[18] = Workload('bi19', ResultTransform()[1][0]['@@result'], queries = [Query('bi19_add_weighted_edges'), Query('bi19'), Query('bi19_delete_weighted_edges')])
 
 DEL_VERTICES = ["Comment","Post","Forum","Person"]
 DEL_EDGES = ['Person_likes_Post',
@@ -215,17 +218,17 @@ DEL_EDGES = ['Person_likes_Post',
     'Forum_hasMember_Person',
     'Person_knows_Person',
 ]
-DEL_WORKLOADS = [Workload(f'del_{v}', ResultTransform()[0]) for v in DEL_VERTICES]
-
-STAT_WORKLOADS = [Workload('quick_stat', ResultTransform()[0]), Workload('stat', ResultTransform()[0])]
-
+DEL_WORKLOADS = [Workload(f'del_{v}', ResultTransform()[0][0]) for v in DEL_VERTICES]
+STAT_WORKLOADS = [
+    Workload('quick_stat', ResultTransform()[0][0]), 
+    Workload('stat', ResultTransform()[0][0])]
 GEN_WORKLOADS = {
-    0 : Workload('gen', ResultTransform()[0]),
-    10: Workload('gen_bi10', ResultTransform()[0]),
-    15: Workload('gen_bi15', ResultTransform()[0]),
-    16: Workload('gen_bi16', ResultTransform()[0]),
-    19: Workload('gen_bi19', ResultTransform()[0]),
-    20: Workload('gen_bi20', ResultTransform()[0]),
+    0 : Workload('gen', ResultTransform()[0][0]),
+    10: Workload('gen_bi10', ResultTransform()[0][0]),
+    15: Workload('gen_bi15', ResultTransform()[0][0]),
+    16: Workload('gen_bi16', ResultTransform()[0][0]),
+    19: Workload('gen_bi19', ResultTransform()[0][0]),
+    20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
 
 '''Loads parameters for a given file'''
@@ -290,10 +293,12 @@ def cmd_load_query(args):
     subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
     gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
     subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
-
     
-    all_workloads = args.workload + DEL_WORKLOADS + [STAT_WORKLOADS] + list(GEN_WORKLOADS.values())
-    queries_to_install = [workload.name for workload in all_workloads]
+    all_workloads = args.workload + DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values())
+    queries_to_install = [
+        query.name 
+        for workload in all_workloads 
+        for query in workload.queries]
     gsql =  ", ".join(queries_to_install)
     subprocess.run(f"gsql -g ldbc_snb 'INSTALL QUERY {gsql}'", shell=True)
 
@@ -402,21 +407,25 @@ def cmd_run(args, output = None):
         output = args.output
     os.makedirs(output, exist_ok=True)
 
+    #os.makedirs('elapsed_time',exist_ok=True)
+    print(f"run for {args.nruns} times ...")
+    print("Q\tNrow\tMedian time\t")
+    alltime = []
     if args.parameter == 'auto':
         parameter = output/'param.json'
         if not parameter.exists():
             print(f'{parameter} does not exist, auto generate parameters ...')
+            t0 = timer()
             cmd_gen(args, parameter)
+            t1 = timer()
+            alltime.append(t1-t0)
+            print(f'param_gen\t20\t{t1-t0:.2f}')
     else:
         parameter = Path(args.parameter).resolve()
-
-    #os.makedirs('elapsed_time',exist_ok=True)
     parameters = load_parameters(parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
-    print(f"run for {args.nruns} times ...")
-    print("Q\tNrow\tMedian time\t")
+    
 
-    alltime = []
     for workload in args.workload:
         time_list = []
         result = workload.run(parameters[workload.name])
@@ -516,7 +525,7 @@ def cmd_refresh(args):
     output = args.output/dateStr
 
     logf = open(timelog, 'w')
-    header = ['date'] + stat_name + ['ins','del'] + [f'bi{i}' for i in range(1,21)]
+    header = ['date'] + stat_name + ['ins','del','gen'] + [f'bi{i}' for i in range(1,21)]
     logf.write(','.join(header)+'\n')
     batch_log = f'{dateStr},' + toStr(quick_stat()) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
@@ -536,7 +545,6 @@ def cmd_refresh(args):
         tot_ins_time += t1-t0
         
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
-        
         for vertex,workload in zip(DEL_VERTICES, DEL_WORKLOADS):
             t0 = timer()
             path = args.data_dir/'deletes'/'dynamic'/vertex/date.strftime('batch_id=%Y-%m-%d') 
@@ -553,7 +561,6 @@ def cmd_refresh(args):
         t1 = timer()
         tot_del_time += t1 - t0
         if args.verbose: logf.write('delete_edge,' + toStr(quick_stat())+ f',{t1-t0}\n')
-        
         
         date += delta    
         dateStr = date.strftime('%Y-%m-%d')

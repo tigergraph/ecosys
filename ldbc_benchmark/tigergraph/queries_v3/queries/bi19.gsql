@@ -1,67 +1,65 @@
-#This query calculates the shortest weighted path between two vertex sets.
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
+# Compute the weight 
+# For SF100, bi19_add_weighted_edges takes ~1min for 2 hops, ~2m44s for 3 hops.
+# NOTE the outdegree of REPLY_OF and indegress of HAS_CREATOR is 1
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+  OrAccum<BOOL> @visited;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @interactions;
+  
+  C ={city1Id,city2Id};
+  S = SELECT p FROM C -(<IS_LOCATED_IN)- Person:p;
+  S = SELECT p FROM S -(KNOWS*0..2)-Person:p ACCUM p.@visited += true;
+  Sm = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creator += s, m.@visited += true;
+  Cm = SELECT m1 FROM S:s -(<HAS_CREATOR)- Comment:m1 -(REPLY_OF>)- (Comment|Post):m2
+    WHERE m2.@visited
+    ACCUM m1.@replyto += m2.@creator;
+  Cm = SELECT m FROM Cm:m -(HAS_CREATOR>)- Person:t
+    ACCUM t.@interactions += (m.@replyto -> 1);
+  tmp =
+    SELECT p2
+    FROM S:p1 -(KNOWS)- Person:p2
+    WHERE p2.@visited
+    ACCUM
+      UINT totalInteractions = p1.@interactions.get(p2) + p2.@interactions.get(p1),
+      IF totalInteractions > 0 THEN
+        INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 / totalInteractions)
+      END;
+}
+
 # DISTRIBUTED QUERY NOT SUPPORTED
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
-  #GroupByAccum<UINT p1, UINT p2, SumAccum<UINT> number> @@interactions;
-  MapAccum<UINT, MapAccum<UINT, SumAccum<UINT>>> @@interactions;
   GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
-  MapAccum<UINT, MinAccum<DOUBLE>> @dist1, @dist2;  
+  MapAccum<UINT, MinAccum<DOUBLE>> @dist1;  
   SumAccum<UINT> @creatorId; 
-  OrAccum @@next1, @@next2, @next1, @next2;
+  OrAccum @next1, @isTarget;
   DOUBLE threshold;
-  threshold = 10; # Max path length is 10
+  threshold = 8; # Max path length is 8
 
   city1 = {city1Id};
   city2 = {city2Id};
-  S1 = SELECT p FROM city1:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist1 += (p.id->0);
-  S2 = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist2 += (p.id->0);
-  S = S1 UNION S2;
-  Sm = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creatorId += s.id;  
-  tmp = SELECT m1 FROM Sm:m1 -(<REPLY_OF|REPLY_OF>)- (Comment|Post):m2 
-      WHERE m2.@creatorId>0
-      ACCUM @@interactions += (m1.@creatorId -> (m2.@creatorId -> 1));  
-        
-  @@next1 = true; @@next2 = true;
-  WHILE @@next1 AND @@next2 DO
-    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE t.@dist1.size() == 0 AND t.@dist2.size() == 0;
-    # Compute the weight
-    Nm = SELECT m FROM Next:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creatorId += s.id;
-    tmp = SELECT m2 FROM Nm:m2 -(<REPLY_OF|REPLY_OF>)- (Comment|Post):m1 
-      WHERE m1.@creatorId>0
-      ACCUM @@interactions += (m1.@creatorId -> (m2.@creatorId -> 1));  
-    
+  S = SELECT p FROM city1:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist1 += (p.id->0);
+  S2 = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@isTarget += True;
+  
+  WHILE S.size()>0 DO
     # Expand the know map, we also neglect the distances larger than threshold
-    S = SELECT s FROM S:s ACCUM s.@next1 = false, s.@next2 = false ; # From the previous loop, s.@next1 and s.@next2 can be true
-    S = SELECT t FROM S:s-(KNOWS)-Person:t 
-      WHERE @@interactions.get(s.id).get(t.id)>0
+    S = SELECT t FROM S:s-(WEIGHT_DOUBLE:e)-Person:t 
       ACCUM
-        DOUBLE edgeWeight = 1.0 / @@interactions.get(s.id).get(t.id),
         FOREACH (p,dis) IN s.@dist1 DO
-          IF dis + edgeWeight < threshold AND dis + edgeWeight < t.@dist1.get(p) THEN
-            t.@dist1 += (p -> dis + edgeWeight),
-            t.@next1 += true
-          END
-        END,
-        FOREACH (p,dis) IN s.@dist2 DO
-          IF dis + edgeWeight < threshold AND dis + edgeWeight < t.@dist2.get(p) THEN
-            t.@dist2 += (p -> dis + edgeWeight),
-            t.@next2 += true
+          DOUBLE t_dis = dis + e.weight, 
+          IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN
+            t.@dist1 += (p -> t_dis),
+            t.@next1 += true, 
+            IF t.@isTarget THEN
+              @@paths += (p, t.id->t_dis)
+            END 
           END
         END
-      HAVING t.@next1 OR t.@next2;
-
-    # To continue, S must have at least one true of @next1 AND @next1
-    @@next1 = false; @@next1 = false;
-    S = SELECT s FROM S:s ACCUM
-      @@next1 += s.@next1, @@next2 += s.@next2,
-      FOREACH (p1,dis1) IN s.@dist1 DO
-        FOREACH (p2,dis2) IN s.@dist2 DO
-          @@paths += (p1,p2 -> dis1+dis2)
-        END
-      END;
+      HAVING t.@next1;
+    S = SELECT s FROM S:s ACCUM s.@next1 = false;
 
     # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
@@ -69,16 +67,25 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi19(VERTEX<City> city1Id, VERTEX<City> 
       FOREACH (p1,p2,dist) IN @@paths DO
         @@result += RESULT(p1,p2,dist);
       END;
-      threshold = @@result.top().totalWeight;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END; 
     END;
+    #PRINT S.size();
   END; # WHILE (S1.size()>0 OR S2.size()>0)
-  IF @@paths.size() < 20 THEN
-    FOREACH (p1,p2,dist) IN @@paths DO
-      @@result += RESULT(p1,p2,dist);
-    END;
+  FOREACH (p1,p2,dist) IN @@paths DO
+    @@result += RESULT(p1,p2,dist);
   END;
   PRINT @@result;
 }
 
-#INSTALL QUERY bi19
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+  tmp =
+    SELECT v2
+    FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
+    ACCUM DELETE (e);
+}
+
+
+#INSTALL QUERY bi19, bi19_add_weighted_edges, bi19_delete_weighted_edges
 #RUN QUERY bi19(669, 648)
