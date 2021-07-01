@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+import time
 from timeit import default_timer as timer
 import ast
 import requests
@@ -54,7 +55,7 @@ def get_parser():
     
     for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
-        parser.add_argument('-s','--suffix', type=str, default='', help=suffix_help)
+        parser.add_argument('--suffix', type=str, default='', help=suffix_help)
 
     for parser in [load_query_parser, load_all_parser]:
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -64,7 +65,8 @@ def get_parser():
         parser.add_argument('-n', '--nruns', type=int, default=1, help='number of runs')
         parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
         parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
-        
+        parser.add_argument('-s', '--sleep', type=float, default=0, help='factor times elapsed time to sleep between runs')
+    # default parameter file for './driver run' is parameters/sf1.json, but auto for refresh
     run_parser.add_argument('-p', '--parameter', type=str, default='parameters/sf1.json', help=parameter_help)
     for parser in [refresh_parser, all_parser]:
         parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)    
@@ -382,7 +384,7 @@ def cmd_gen(args, output=None):
     parameters['bi20']['company'] = gen[20]['company']
     parameters['bi20']['person2Id'] = gen[20]['@@person2Ids'][0]
     
-    stream = str(parameters).replace("'", '"')
+    stream = str(parameters)
     stream = re.sub(r'"bi', r'\n"bi', stream)
     with open(output,'w') as f:
         f.write(stream)
@@ -421,8 +423,10 @@ def cmd_run(args, output = None):
             t1 = timer()
             alltime.append(t1-t0)
             print(f'param_gen\t20\t{t1-t0:.2f}')
+            if args.sleep: time.sleep((t1-t0)*args.sleep)
     else:
         parameter = Path(args.parameter).resolve()
+        alltime.append(0)
     parameters = load_parameters(parameter)
     parameters['bi1'] = {'date':parameters['bi1']['datetime']}
     
@@ -431,6 +435,7 @@ def cmd_run(args, output = None):
         time_list = []
         result = workload.run(parameters[workload.name])
         time_list.append(result.elapsed)    
+        if args.sleep: time.sleep(result.elapsed * args.sleep)
         # write the query results to log/bi[1-20]
         result_file = output/ (workload.name+'.txt')  
         writeResult(result.result, result_file)
@@ -440,6 +445,7 @@ def cmd_run(args, output = None):
         for i in range(args.nruns-1):
             result = workload.run(parameters[workload.name])
             time_list.append(result.elapsed)    
+            if args.sleep: time.sleep(result.elapsed * args.sleep)
             #with open(Path('elapsed_time')/ (workload.name+'.txt'), 'a') as f:
             #    f.write(','+str(result.elapsed))
         median_time = median(time_list)

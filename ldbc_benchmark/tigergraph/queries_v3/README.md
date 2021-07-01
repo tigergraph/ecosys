@@ -156,9 +156,12 @@ nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 
 ```
 
 ## Run in background
-All the driver command abvoce is equivalent to the following one command. Because it usually takes long time. I prefer to add nohup to allow the process continue after I log out.
+All the driver command abvoce is equivalent to the following one command. 
+For scale factors larger than 100, it usually takes many hours. 
+I prefer to add nohup to allow the process continue after I log out. 
+We also add sleep time equal to the running time between query runs because releasing memory also takes time.
 ```sh
-nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ -s 1 > foo.out 2>&1 < /dev/null &  
 ```
 
 ## How does the driver.py work
