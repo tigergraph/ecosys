@@ -324,6 +324,7 @@ def cmd_stat(args):
     stat = STAT_WORKLOADS[1].run(None).result
     t1 = timer()
     print(f'stats({t1-t0:.2f}):', stat)
+    return stat
 
     
 """
@@ -572,11 +573,17 @@ def cmd_refresh(args):
         date += delta    
         dateStr = date.strftime('%Y-%m-%d')
         output = args.output/dateStr
-        batch_log = f'{dateStr},' + toStr(quick_stat()) 
-        batch_log += ',' + toStr([tot_ins_time, tot_del_time])
+            
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
+            stat_dict = cmd_stat()
+            batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
+            batch_log += ',' + toStr([tot_ins_time, tot_del_time])
             batch_log += ',' + toStr(cmd_run(args, output = output))
+        else:
+            batch_log = f'{dateStr},' + toStr(quick_stat()) 
+            batch_log += ',' + toStr([tot_ins_time, tot_del_time])
+        
         logf.write(batch_log+'\n')
         logf.flush()
         if args.read_freq == 0 or (date - begin).days % args.read_freq == 0:
