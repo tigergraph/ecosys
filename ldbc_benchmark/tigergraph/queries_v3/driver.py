@@ -386,7 +386,7 @@ def cmd_gen(args, output=None):
     parameters['bi20']['person2Id'] = gen[20]['@@person2Ids'][0]
     
     stream = str(parameters)
-    stream = re.sub(r'"bi', r'\n"bi', stream)
+    stream = re.sub(r"'bi", r"\n'bi", stream)
     with open(output,'w') as f:
         f.write(stream)
     print(f'Parameters are generated to {str(output)}')
