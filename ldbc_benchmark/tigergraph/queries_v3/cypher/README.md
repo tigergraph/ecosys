@@ -101,6 +101,9 @@ The script `./batches.py` can do the insertion and deletion. Data path is hard c
 ```sh
 cp -r ../results .
 python3 batches.py $NEO4J_HOME/import -q not:17,19 #17 19 are too expensive for cypher
+
+#to run in background
+nohup python3 -u batches.py $NEO4J_HOME/import -q not:17,19 > foo.out 2>&1 & 
 ```
 
 ## Uninstall Neo4j

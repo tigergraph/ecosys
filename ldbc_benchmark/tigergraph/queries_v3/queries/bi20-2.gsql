@@ -5,15 +5,14 @@ We also do not need to store the source Id, which saves a lot of computation.
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
-  TYPEDEF TUPLE<UINT totalWeight, UINT person1Id> RESULT;
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
-  OrAccum @visited, @inCompany;
-  SetAccum<VERTEX<University>> @univ;
-  MapAccum<VERTEX<University>, UINT> @year;
+  OrAccum @visited, @next, @inCompany;
+  MapAccum<VERTEX<Person>, MinAccum<UINT>> @weight;
   MinAccum<UINT> @dist; 
   MapAccum<UINT, MinAccum<UINT>> @@paths;
   UINT threshold;
-  threshold = 30;
+  threshold = 100;
   S1 =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
@@ -21,31 +20,42 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
     ACCUM p.@inCompany += true;
   
   S = {person2Id};
-  S = Select s
-    FROM S:s -(STUDY_AT>:e)- University:u
-    ACCUM s.@visited += true, s.@dist = 0,
-      s.@univ += u, s.@year += (u->e.classYear);
-  WHILE S.size()>0 and @@paths.size()==0 DO
-    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE NOT t.@visited;
-    tmp = Select s
-      FROM Next:s -(STUDY_AT>:e)- University:u
-      ACCUM s.@univ += u, s.@year += (u->e.classYear);
-    
+  S = Select s FROM S:s ACCUM s.@visited += true, s.@dist += 0;
+  WHILE S.size()>0 DO
+    Sknows = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE NOT t.@visited
+      ACCUM t.@visited += true, t.@next += true;
+    Next = Select t 
+      FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Person:t
+      WHERE t.@next AND s != t
+      ACCUM s.@weight += (t-> abs(e1.classYear-e2.classYear) +1 ),
+      t.@weight += (s-> abs(e1.classYear-e2.classYear) +1 )
+      POST-ACCUM t.@next = false;
+
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
-      WHERE NOT t.@visited AND t.@univ.size()>0
-      ACCUM
-        FOREACH u IN (s.@univ INTERSECT t.@univ) DO
-          DOUBLE weight = abs(s.@year.get(u) - t.@year.get(u)) + 1,
-          IF s.@dist + weight < threshold THEN  
-            t.@visited += true,
-            t.@dist += s.@dist + weight
-          END
-        END 
-      HAVING t.@visited;
-    S = SELECT s FROM S:s  
+      WHERE s.@weight.get(t)<threshold
       ACCUM 
-        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END
-      HAVING NOT s.@inCompany;
+        UINT weight = s.@weight.get(t),
+        IF s.@dist + weight < t.@dist AND s.@dist + weight < threshold THEN
+          t.@dist += s.@dist + weight,
+          t.@next += true
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s  
+      ACCUM s.@next = false, 
+        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END;
+      #HAVING NOT s.@inCompany;
+    # Update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p,dist) IN @@paths DO
+        @@result += RESULT(p,dist);
+      END;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END; 
+    END;
+    
   END; # WHILE 
   FOREACH (p,dist) IN @@paths DO
     @@result += RESULT(p,dist);
@@ -54,4 +64,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
 }
 
 # INSTALL QUERY bi20
+# RUN QUERY bi20("Air_India_Express", 26388279068799)
 # RUN QUERY bi20("Pamir_Airways", 15393162792760)

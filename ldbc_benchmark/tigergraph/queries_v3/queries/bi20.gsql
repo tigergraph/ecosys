@@ -1,9 +1,8 @@
 /*
-It is cheaper to search from person2, which is a single vertex.
-We also do not need to store the source Id, which saves a lot of computation.
+It version is slow
 */
 USE GRAPH ldbc_snb
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> person2Id) {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
@@ -24,13 +23,13 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> pers
   WHILE S.size()>0 DO
     Sknows = SELECT t FROM S:s-(KNOWS)-Person:t 
       WHERE NOT t.@visited
-      ACCUM t.@visited += true;
+      ACCUM t.@visited += true, t.@next += true;
     Next = Select t 
-      FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Sknows:t
-      WHERE s != t
+      FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Person:t
+      WHERE t.@next AND s != t
       ACCUM @@weight += (s -> (t-> abs(e1.classYear-e2.classYear) +1 )),
-        @@weight += (t -> (s-> abs(e1.classYear-e2.classYear) +1 ));
-
+        @@weight += (t -> (s-> abs(e1.classYear-e2.classYear) +1 ))
+      POST-ACCUM t.@next = false;
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
       WHERE @@weight.get(s).get(t)<threshold
       ACCUM 

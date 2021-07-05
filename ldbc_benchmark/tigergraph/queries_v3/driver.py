@@ -323,8 +323,12 @@ def cmd_stat(args):
     t0 = timer()
     stat = STAT_WORKLOADS[1].run(None).result
     t1 = timer()
-    print(f'stats({t1-t0:.2f}):', stat)
-    return stat
+    stat2 = {}
+    for k,v in stat.items():
+        if k.startswith('@@'): stat2[k[2:]] = v
+        else: stat2[k] = v
+    print(f'stats({t1-t0:.2f}):', stat2)
+    return stat2
 
     
 """
