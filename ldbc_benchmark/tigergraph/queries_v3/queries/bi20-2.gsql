@@ -24,13 +24,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   WHILE S.size()>0 DO
     Sknows = SELECT t FROM S:s-(KNOWS)-Person:t 
       WHERE NOT t.@visited
-      ACCUM t.@visited += true, t.@next += true;
+      ACCUM t.@visited += true;
     Next = Select t 
       FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Person:t
-      WHERE t.@next AND s != t
+      WHERE t.@visited AND s != t
       ACCUM s.@weight += (t-> abs(e1.classYear-e2.classYear) +1 ),
-      t.@weight += (s-> abs(e1.classYear-e2.classYear) +1 )
-      POST-ACCUM t.@next = false;
+      t.@weight += (s-> abs(e1.classYear-e2.classYear) +1 );
 
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
       WHERE s.@weight.get(t)<threshold
