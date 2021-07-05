@@ -576,7 +576,7 @@ def cmd_refresh(args):
             
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
-            stat_dict = cmd_stat()
+            stat_dict = cmd_stat(args)
             batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
             batch_log += ',' + toStr([tot_ins_time, tot_del_time])
             batch_log += ',' + toStr(cmd_run(args, output = output))
