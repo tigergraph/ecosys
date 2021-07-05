@@ -21,7 +21,7 @@ parser.add_argument('-d','--datatype', default=Path('../parameters/dataType.json
 parser.add_argument('-o','--output', default=Path('results'), type=Path,
     help='directory to write results (default: ./results)')
 
-@unit_of_work(timeout=600)
+@unit_of_work(timeout=900)
 def query_fun(tx, query_spec, query_parameters):
     result = tx.run(query_spec, query_parameters)
     values = []
