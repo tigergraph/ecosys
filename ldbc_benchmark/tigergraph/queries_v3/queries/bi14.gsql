@@ -2,13 +2,13 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
 TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
-  MapAccum<STRING, 
+  MapAccum<VERTEX<City>, 
       GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
           OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
   SumAccum<INT> @@score;
-  SumAccum<STRING> @city;
+  MinAccum<VERTEX<City>> @city;
+  SetAccum<VERTEX<City>> @@CityNonzeroScore;
   OrAccum @valid;
-  SetAccum<VERTEX<City>> @@city1;
   SumAccum<INT> @pid1, @pid2;
   MinAccum<INT> @min_pid1, @@min_pid2;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
@@ -18,7 +18,7 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
   City1 = SELECT c FROM Country:s -(<IS_PART_OF)- City:c  
     WHERE s.name == country1;
   P1 = SELECT p FROM City1:c -(<IS_LOCATED_IN)-Person:p 
-    ACCUM p.@city = c.name;
+    ACCUM p.@city = c;
   P2 = 
     SELECT p
     FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
@@ -63,8 +63,9 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
     WHERE p2.@valid
     ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, p2.id -> False, False, False, False, True));
 
-  @@result.resize(@@pairScoreMap.size());
+  @@result.resize(City1.size());
   FOREACH (city,gba) IN @@pairScoreMap DO
+    @@CityNonzeroScore += city;
     @@pairScoreGroupTop.clear();
     FOREACH (p1,p2,b1,b2,b3,b4,b5) IN gba DO
       @@score = 0;
@@ -73,16 +74,17 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
       IF b3 THEN @@score += 15; END;
       IF b4 THEN @@score += 10; END;
       IF b5 THEN @@score += 1; END;
-      @@pairScoreGroupTop += pairScore(p1, p2, city, @@score);
+      @@pairScoreGroupTop += pairScore(p1, p2, city.name, @@score);
     END;
     @@result += @@pairScoreGroupTop.top();
   END;
   // add cities of zero scores (min pid1 in city1, min pid2, city name, 0)
   IF @@result.size() < City1.size() THEN
     P2p = SELECT p FROM P2:p ACCUM @@min_pid2 += p.id;
-    tmp = 
-      SELECT c FROM City1:c -(<IS_LOCATED_IN)- Person:p
-      WHERE NOT @@pairScoreMap.containsKey(c.name)
+    nonzeroScoreCity = {@@CityNonzeroScore};
+    zeroScoreCity = City1 MINUS nonzeroScoreCity;
+    tmp = SELECT c 
+      FROM zeroScoreCity:c -(<IS_LOCATED_IN)- Person:p
       ACCUM c.@min_pid1 += p.id
       POST-ACCUM 
         @@result += pairScore(c.@min_pid1, @@min_pid2, c.name, 0);
@@ -90,5 +92,5 @@ TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairSco
   PRINT @@result;
 }
 
-//INSTALL QUERY bi14
-//RUN QUERY bi14("China", "Austria")
+// INSTALL QUERY bi14
+// RUN QUERY bi14("Brazil", "Argentina")

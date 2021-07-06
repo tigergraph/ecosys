@@ -1,6 +1,5 @@
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-# DISTRIBUTED QUERY NOT SUPPORTED
 CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
   HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
@@ -47,7 +46,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   messages2 =
     SELECT m2
     FROM messages2:m2 -(<REPLY_OF)- Comment:m
-    WHERE m.@hasTag #AND m.@creator != m2.@creator
+    WHERE m.@hasTag AND m.@creator != m2.@creator
     ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
     POST-ACCUM m2.@Forum1.remove(m2.@forum)
     HAVING m2.@Forum1.size() > 0;
@@ -58,7 +57,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
       FOREACH f IN m2.@Forum1 DO
         FOREACH (p1,m1date) IN @@Forum2Creator.get(f) DO
           IF datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate 
-               AND (NOT m2.@hasMember.contains(p1)) //not supported in distributed  
+               AND (NOT m2.@hasMember.contains(p1))   
               THEN 
               m2.@person1Id += p1.id
           END
@@ -79,5 +78,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   PRINT @@result;
 }
 
-#INSTALL QUERY bi17
+INSTALL QUERY bi17
 #RUN QUERY bi17("Humayun", 10)

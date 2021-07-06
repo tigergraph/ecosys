@@ -12,7 +12,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY quick_stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     PRINT nComment, nPost, nForum, nPerson;
 }
 
-# counting number of edges takes long time
+# counting number of edges takes long time DISTRIBUTED
 CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     UINT nComment, nPost, nForum, nPerson;
     UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
@@ -30,21 +30,21 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     tmp = {Continent.*}; nConitnent = tmp.size();
     tmp = {Tag.*}; nTag = tmp.size();
     tmp = {TagClass.*}; nTagClass = tmp.size();
-    tmp = SELECT f FROM Forum:f-(CONTAINER_OF>)-Post ACCUM @@CONTAINER_OF += f.outdegree("CONTAINER_OF");
-    tmp = SELECT f FROM (Comment|Post):f-(HAS_CREATOR>)-Person ACCUM @@HAS_CREATOR += f.outdegree("HAS_CREATOR");
-    tmp = SELECT f FROM Person:f-(HAS_INTEREST>)-Tag ACCUM @@HAS_INTEREST += f.outdegree("HAS_INTEREST");
-    tmp = SELECT f FROM Forum:f-(HAS_MEMBER>)-Person ACCUM @@HAS_MEMBER += f.outdegree("HAS_MEMBER");
-    tmp = SELECT f FROM Forum:f-(HAS_MODERATOR>)-Person ACCUM @@HAS_MODERATOR += f.outdegree("HAS_MODERATOR");
-    tmp = SELECT f FROM (Comment|Post|Forum):f-(HAS_TAG>)-Tag ACCUM @@HAS_TAG += f.outdegree("HAS_TAG");
-    tmp = SELECT f FROM Tag:f-(HAS_TYPE>)-TagClass ACCUM @@HAS_TYPE += f.outdegree("HAS_TYPE");
-    tmp = SELECT f FROM (Comment|Post|Company|Person|University):f-(IS_LOCATED_IN>)-(City|Country) ACCUM @@IS_LOCATED_IN += f.outdegree("IS_LOCATED_IN");
-    tmp = SELECT f FROM (City|Country):f-(IS_PART_OF>)-(Country|Continent) ACCUM @@IS_PART_OF += f.outdegree("IS_PART_OF");
-    tmp = SELECT f FROM TagClass:f-(IS_SUBCLASS_OF>)-TagClass ACCUM @@IS_SUBCLASS_OF += f.outdegree("IS_SUBCLASS_OF");
-    tmp = SELECT f FROM Person:f-(KNOWS)-Person ACCUM @@KNOWS += f.outdegree("KNOWS");
-    tmp = SELECT f FROM Person:f-(LIKES>)-(Comment|Post) ACCUM @@LIKES += f.outdegree("LIKES");
-    tmp = SELECT f FROM Comment:f-(REPLY_OF>)-(Comment|Post) ACCUM @@REPLY_OF += f.outdegree("REPLY_OF");
-    tmp = SELECT f FROM Person:f-(STUDY_AT>)-University ACCUM @@STUDY_AT += f.outdegree("STUDY_AT");
-    tmp = SELECT f FROM Person:f-(WORK_AT>)-Company ACCUM @@WORK_AT += f.outdegree("WORK_AT");
+    tmp = SELECT f FROM Forum:f ACCUM @@CONTAINER_OF += f.outdegree("CONTAINER_OF");
+    tmp = SELECT f FROM (Comment|Post):f ACCUM @@HAS_CREATOR += f.outdegree("HAS_CREATOR");
+    tmp = SELECT f FROM Person:f ACCUM @@HAS_INTEREST += f.outdegree("HAS_INTEREST");
+    tmp = SELECT f FROM Forum:f ACCUM @@HAS_MEMBER += f.outdegree("HAS_MEMBER");
+    tmp = SELECT f FROM Forum:f ACCUM @@HAS_MODERATOR += f.outdegree("HAS_MODERATOR");
+    tmp = SELECT f FROM (Comment|Post|Forum):f ACCUM @@HAS_TAG += f.outdegree("HAS_TAG");
+    tmp = SELECT f FROM Tag:f ACCUM @@HAS_TYPE += f.outdegree("HAS_TYPE");
+    tmp = SELECT f FROM (Comment|Post|Company|Person|University):f ACCUM @@IS_LOCATED_IN += f.outdegree("IS_LOCATED_IN");
+    tmp = SELECT f FROM (City|Country):f ACCUM @@IS_PART_OF += f.outdegree("IS_PART_OF");
+    tmp = SELECT f FROM TagClass:f ACCUM @@IS_SUBCLASS_OF += f.outdegree("IS_SUBCLASS_OF");
+    tmp = SELECT f FROM Person:f ACCUM @@KNOWS += f.outdegree("KNOWS");
+    tmp = SELECT f FROM Person:f ACCUM @@LIKES += f.outdegree("LIKES");
+    tmp = SELECT f FROM Comment:f ACCUM @@REPLY_OF += f.outdegree("REPLY_OF");
+    tmp = SELECT f FROM Person:f ACCUM @@STUDY_AT += f.outdegree("STUDY_AT");
+    tmp = SELECT f FROM Person:f ACCUM @@WORK_AT += f.outdegree("WORK_AT");
     PRINT nComment, nPost, nForum, nPerson,
         nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
         @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,

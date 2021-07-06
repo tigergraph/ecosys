@@ -539,7 +539,7 @@ def cmd_refresh(args):
     logf = open(timelog, 'w')
     header = ['date'] + stat_name + ['ins','del','gen'] + [f'bi{i}' for i in range(1,21)]
     logf.write(','.join(header)+'\n')
-    batch_log = f'{dateStr},' + toStr(quick_stat()) 
+    batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
     if args.read_freq > 0: 
         # run query 
