@@ -2,7 +2,6 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
-
   # The description is changed
   #  Find the most popular *Forums* by *Country*, where the popularity of a *Forum*
   # is measured by the number of members that *Forum* has from a given *Country*.
@@ -12,11 +11,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
 
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     DATETIME personCreationDate, UINT messageCount> RESULT;
-
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
   MapAccum<VERTEX<Country>, UINT> @memberCount;
   MaxAccum<UINT> @maxMemberCount;
-  #SumAccum<UINT> @memberCount;
+  OrAccum<BOOL> @inForum;
   SumAccum<UINT> @messageCount;
 
   popularForums =
@@ -32,10 +30,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
     ORDER BY f.@maxMemberCount DESC, f.id ASC
     LIMIT 100;
 
-  P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p;
+  P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p ACCUM p.@inForum += true;
   tmp =
     SELECT p
-    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- P:p
+    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- Person:p
+    WHERE p.@inForum
     PER(m, p)
     ACCUM p.@messageCount += 1
     POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
