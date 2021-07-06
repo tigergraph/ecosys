@@ -2,24 +2,25 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
-CREATE OR REPLACE QUERY gen() {
-  TYPEDEF TUPLE <UINT nc, STRING tname> tagComment;
-  HeapAccum<tagComment>(30, nc DESC) @@tagComments;
+CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   SumAccum<UINT> @ncomment;
   SetAccum<STRING> @@country, @@tag, @@tagclass;
-  STRING smalltag;
+  STRING smalltag; // for bi 17
   V = {Country.*};
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
   V = SELECT v FROM Person-(LIKES>)-(Post|Comment)-(HAS_TAG>)-Tag:v LIMIT 3;
 
-  M = SELECT m FROM (Comment|Post):m-(HAS_TAG>)-Tag LIMIT 5000;
+  M = SELECT m FROM (Comment|Post):m-(HAS_TAG>)-Tag LIMIT 10000;
   T = SELECT t FROM M:m-(HAS_TAG>)-Tag:t
     ACCUM t.@ncomment += 1
-    POST-ACCUM @@tagComments += tagComment(t.@ncomment, t.name)
     ORDER BY t.@ncomment DESC
     LIMIT 3;
-  smalltag = @@tagComments.top().tname;
+  T2 = SELECT t FROM Tag:t
+    HAVING t.@ncomment > 40
+    ORDER BY t.@ncomment ASC
+    LIMIT 1;
+  T2 = SELECT t FROM T2:t ACCUM smalltag = t.name;
 
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
   V = {TagClass.*};
@@ -28,7 +29,7 @@ CREATE OR REPLACE QUERY gen() {
   PRINT @@country, @@tag, @@tagclass, smalltag;
 }
 
-CREATE OR REPLACE QUERY gen_bi10() {
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
   UINT personId;
   STRING tagClass, country;
   V = {TagClass.*};
@@ -49,9 +50,7 @@ CREATE OR REPLACE QUERY gen_bi10() {
   PRINT personId, country ,tagClass;
 }    
 
-
-
-CREATE OR REPLACE QUERY gen_bi15() {
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi15() {
   OrAccum @flag,@visited;
   UINT person1Id, person2Id, iter; 
   P = {Person.*};
@@ -70,55 +69,65 @@ CREATE OR REPLACE QUERY gen_bi15() {
   PRINT person1Id, person2Id;
 }
 
-CREATE OR REPLACE QUERY gen_bi16() {
-  TYPEDEF TUPLE <DATETIME d, INT nc> dn;
-  MapAccum<DATETIME, SumAccum<UINT>> @ncomment;
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi16() {
+  TYPEDEF TUPLE <INT d, INT nc> dn;
+  MapAccum<INT, SumAccum<UINT>> @ncomment;
   HeapAccum<dn>(1, nc DESC, d ASC) @dateCount;  
   STRING tagA, tagB;
   DATETIME dateA, dateB;
   M = SELECT m FROM (Post|Comment):m-(HAS_TAG>)-Tag
     LIMIT 5000;
   T = SELECT t FROM M:m-(HAS_TAG>)-Tag:t
-    ACCUM t.@ncomment += (m.creationDate -> 1)
-    POST-ACCUM FOREACH (date, num) IN t.@ncomment DO 
-      t.@dateCount += dn(date,num)
+    ACCUM 
+      INT d = datetime_diff(m.creationDate, to_datetime("2010-01-01 00:00:00")) / 86400,
+      t.@ncomment += (d -> 1)
+    POST-ACCUM FOREACH (d, num) IN t.@ncomment DO 
+      t.@dateCount += dn(d,num)
       END
     ORDER BY t.@dateCount.top().nc DESC
     LIMIT 2;
   T1 = SELECT t FROM T:t 
     ORDER BY t.@dateCount.top().nc DESC, t.id ASC
     LIMIT 1;
+  T = T MINUS T1;
   T2 = SELECT t FROM T:t 
-    ORDER BY t.@dateCount.top().nc ASC, t.id DESC
+    ORDER BY t.@dateCount.top().nc DESC, t.id ASC
     LIMIT 1;
-  T1 = SELECT t FROM T1:t ACCUM tagA=t.name, dateA = t.@dateCount.top().d;
-  T2 = SELECT t FROM T2:t ACCUM tagB=t.name, dateB = t.@dateCount.top().d;
+  T1 = SELECT t FROM T1:t ACCUM tagA=t.name, 
+    dateA = datetime_add(to_datetime("2010-01-01 00:00:00"), INTERVAL t.@dateCount.top().d DAY);
+  T2 = SELECT t FROM T2:t ACCUM tagB=t.name,
+    dateB = datetime_add(to_datetime("2010-01-01 00:00:00"), INTERVAL t.@dateCount.top().d DAY);
   PRINT tagA, dateA, tagB, dateB;
 }
 
 # BI 19
-CREATE OR REPLACE QUERY gen_bi19() {
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   UINT iter;
-  MaxAccum<UINT> @creatorId; 
+  SetAccum<VERTEX<Person>> @persons; 
+  SumAccum<UINT> @nperson;
   MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@interactions;
   SetAccum<UINT> @cities, @@cities;
-  P = SELECT p
-    FROM City:c -(<IS_LOCATED_IN)- Person:p
-    ACCUM p.@cities += c.id
-    LIMIT 5000;
+  C = SELECT c 
+    FROM City:c-(<IS_LOCATED_IN)- Person ACCUM c.@nperson += 1
+    HAVING c.@nperson > 0
+    ORDER BY c.@nperson ASC
+    LIMIT 30;
+  P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
+    ACCUM p.@cities += c.id;
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
-    ACCUM m.@creatorId += p.id;
-  M = SELECT m2 FROM M:m1 -(<REPLY_OF|REPLY_OF>)-(Post|Comment):m2
-    WHERE m2.@creatorId >0 and m1.@creatorId != m2.@creatorId
-    ACCUM @@interactions += (m1.@creatorId -> (m2.@creatorId -> true)),
-      @@interactions += (m2.@creatorId -> (m1.@creatorId -> true));  
-
+    ACCUM m.@persons+= p;
+  M = SELECT m2 FROM M:m1 -(<REPLY_OF)-Comment:m2
+    WHERE m2.@persons.size() >0 
+    ACCUM m1.@persons += m2.@persons;
+  M = SELECT m 
+    FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
+    ACCUM p.@persons += m.@persons;
   iter = 0;
   WHILE iter < 4 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t 
-      WHERE @@interactions.get(s.id).get(t.id)  
+      WHERE s.@persons.contains(t) OR t.@persons.contains(s)   
       ACCUM t.@cities += s.@cities;
   END;
   P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
