@@ -10,8 +10,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
   V = SELECT v FROM Person-(LIKES>)-(Post|Comment)-(HAS_TAG>)-Tag:v LIMIT 3;
-
-  M = SELECT m FROM (Comment|Post):m-(HAS_TAG>)-Tag LIMIT 10000;
+  M = {Comment.*};
+  M = SELECT m FROM M:m LIMIT 10000;
   T = SELECT t FROM M:m-(HAS_TAG>)-Tag:t
     ACCUM t.@ncomment += 1
     ORDER BY t.@ncomment DESC
@@ -32,19 +32,21 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
   UINT personId;
   STRING tagClass, country;
-  V = {TagClass.*};
-  V = SELECT v FROM V:v LIMIT 1;
-  TC = SELECT v FROM V:v ACCUM tagClass = v.name;
-  V = {Country.*};
-  V = SELECT v FROM V:v LIMIT 1;
-  V = SELECT v FROM V:v ACCUM country = v.name;
+  OrAccum<BOOL> @selected;
+  C = {Country.*};
+  C = SELECT c FROM C:c LIMIT 1;
+  C = SELECT c FROM C:c ACCUM country = c.name;
+  P = SELECT p FROM C -(<IS_PART_OF)-City-(<IS_LOCATED_IN)-Person:p
+    ACCUM p.@selected += TRUE;
+  P = SELECT p FROM P:p LIMIT 4;
+  TC = SELECT tc
+      FROM P:p -(<HAS_CREATOR.HAS_TAG>.HAS_TYPE>)- TagClass:tc; 
+  TC = SELECT tc FROM TC:tc LIMIT 1;
+  TC = SELECT tc FROM TC:tc ACCUM tagClass = tc.name;
   P = SELECT p 
-      FROM TagClass:c -(<HAS_TYPE)- Tag -(<HAS_TAG)- (Post|Comment) 
-        -(HAS_CREATOR>)- Person:p
-      WHERE c.name == tagClass;
-  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- City -(IS_PART_OF>)- Country:c
-      WHERE c.name == country;
-  P2 = SELECT t FROM P-(KNOWS*3)- Person:t
+      FROM TC -(<HAS_TYPE.<HAS_TAG.HAS_CREATOR>)-Person:p
+      WHERE p.@selected;
+  P2 = SELECT t FROM P-(KNOWS*2..3)- Person:t
     ACCUM personId = t.id
     LIMIT 1;
   PRINT personId, country ,tagClass;
@@ -135,9 +137,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   PRINT @@cities;
 }  
 
-CREATE OR REPLACE QUERY gen_bi20() {
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   SetAccum<VERTEX<University>> @univ;
-  MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@connected;
+  MapAccum<VERTEX<Person>, OrAccum<BOOL>> @connected;
   SetAccum<UINT> @source, @@person2Ids;
   
   UINT iter;
@@ -149,12 +151,12 @@ CREATE OR REPLACE QUERY gen_bi20() {
     FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- P:t
     WHERE s.id != t.id
     ACCUM s.@source += s.id,
-      @@connected += (s.id -> (t.id -> true));
+      s.@connected += (t -> true);
   iter = 0;
   WHILE iter < 4 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t
-      WHERE @@connected.get(s.id).get(t.id)
+      WHERE s.@connected.get(t)
       ACCUM t.@source += s.@source;
   END;
   P = SELECT p FROM P:p WHERE p.@source.size() > 2 LIMIT 1;

@@ -281,9 +281,8 @@ def cmd_load_data(args):
 def cmd_load_query(args):
     '''copy user defined function to tigergraph path'''
     udf_file = SCRIPT_DIR_PATH/'ExprFunctions.hpp'
-    udf_path = '$(gadmin config get System.AppRoot)/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp'
-    os.system(f'cp {str(udf_file)} {udf_path}')
-
+    udf_str = f'"{str(udf_file)}"'
+    subprocess.run(f"gsql 'PUT ExprFunctions FROM {udf_str}'", shell=True)
     '''Loads queries from the given workloads.'''
     for workload in args.workload:
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
@@ -342,11 +341,15 @@ def cmd_gen(args, output=None):
     gen = {}
     for i, workload in GEN_WORKLOADS.items():
         gen[i] = workload.run(None).result
-    while len(gen[20]['@@person2Ids'])==0:
-        gen[20] = GEN_WORKLOADS[20].run(None).result
+    while gen[10]['personId']==0:
+        gen[10] = GEN_WORKLOADS[10].run(None).result
+        print('rerun gen_bi10')
     while gen[15]['person2Id']==0:
         gen[15] = GEN_WORKLOADS[15].run(None).result
-    
+        print('rerun gen_bi15')
+    while len(gen[20]['@@person2Ids'])==0:
+        gen[20] = GEN_WORKLOADS[20].run(None).result
+        print('rerun gen_bi20')
     country = gen[0]['@@country']
     tag = gen[0]['@@tag']
     tagclass = gen[0]['@@tagclass']
