@@ -557,8 +557,8 @@ def cmd_refresh(args):
         load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTICES, args.suffix, date)
         load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGES, args.suffix, date)
         t1 = timer()
-        if args.verbose: logf.write('insert,' + toStr(quick_stat())+ f',{t1-t0}\n')
         tot_ins_time += t1-t0
+        if args.verbose: logf.write('insert,' + toStr(quick_stat())+ f',{t1-t0}\n')
         
         print('======== deletion for ' + date.strftime('%Y-%m-%d') + '========')
         for vertex,workload in zip(DEL_VERTICES, DEL_WORKLOADS):

@@ -32,7 +32,7 @@ Related links
 * Python library `requests` is required.
 
 ```sh
-sudo yum install wget git tar python3 sshpass zstd 
+sudo yum install wget git tar python3 sshpass zstd gcc
 sudo python3 -m pip install requests
 ```
 If zstd is not available. Download and compile the source from their github.
@@ -55,9 +55,9 @@ gadmin status
 # check if TigerGraph is running or not.
 ```
 
-## Config Tigergraph
+## Config Tigergraph 
 To increase loading intensive, we can increase the number of loading handler based on the number of cpus in the machine. To see the cpu info, use `lscpu`. 
-The timeout is only needed for large scale factors.
+The timeout is only needed for large scale factors. It seems python requests are not constrained by the timeout, and timeout is not needed if you run only through python.
 ```sh
 gadmin config group RESTPP-LOADER
 # change FileLoader.Factory.HandlerCount from 4 to 40
@@ -152,7 +152,7 @@ After runnning neo4j benchmark, you can compare the results
 
 For large scale factors, I prefer to run in background. 
 ```sh
-nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 & 
+nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 & < /dev/null &  
 ```
 
 ## Run in background
@@ -161,7 +161,7 @@ For scale factors larger than 100, it usually takes many hours.
 I prefer to add nohup to allow the process continue after I log out. 
 We also add sleep time equal to the running time between query runs because releasing memory also takes time.
 ```sh
-nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ -s 1 > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 > foo.out 2>&1 < /dev/null &  
 ```
 
 ## How does the driver.py work
