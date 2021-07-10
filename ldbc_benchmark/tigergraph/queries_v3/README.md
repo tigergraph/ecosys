@@ -150,11 +150,6 @@ After runnning neo4j benchmark, you can compare the results
 ./driver.py compare 
 ```
 
-For large scale factors, I prefer to run in background. 
-```sh
-nohup python3 -u ./driver.py all ~/sf1/csv/bi/composite-projected-fk/ > foo.out 2>&1 & < /dev/null &  
-```
-
 ## Run in background
 All the driver command abvoce is equivalent to the following one command. 
 For scale factors larger than 100, it usually takes many hours. 
