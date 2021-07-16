@@ -33,18 +33,11 @@ Related links
 * Python library `requests` is required.
 
 ```sh
-sudo yum install wget git tar python3 sshpass zstd gcc
+sudo yum install wget git tar python3-pip sshpass gcc
 sudo python3 -m pip install requests
 ```
-If zstd is not available. Download and compile the source from their github.
-```sh
-git clone https://github.com/facebook/zstd
-cd zstd 
-make && sudo make install
-cd ..
-```
 
-Install tigergraph-3.1.3 Or find the latest build from (http://192.168.11.192/download.html). 
+Install tigergraph-3.1.3. For internal test, you can find the latest build from (http://192.168.11.192/download.html). 
 ```sh
 wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
 tar -xf tigergraph-3.1.3-offline
@@ -79,6 +72,14 @@ For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). LDBC data are avail
 wget -O sf1-composite-projected-fk.tar.zst https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download 
 zstd -d sf1-composite-projected-fk.tar.zst 
 tar -xvf sf1-composite-projected-fk.tar
+```
+
+To install `zstd`, use `sudo yum install zstd`. If zstd is not available. Download and compile the source from their github.
+```sh
+git clone https://github.com/facebook/zstd
+cd zstd 
+make && sudo make install
+cd ..
 ```
 
 ## Load data

@@ -7,7 +7,7 @@ sudo yum install -y  python3-pip perl bzip2 gzip wget lynx
 (wget -O - pi.dk/3 || lynx -source pi.dk/3 || curl pi.dk/3/ || \
    fetch -o - http://pi.dk/3 ) > install.sh
 sh install.sh
-# install google-cloud-storage for python3
+# install python3 google-cloud-storage package
 pip3 install google-cloud-storage
 ```
 
