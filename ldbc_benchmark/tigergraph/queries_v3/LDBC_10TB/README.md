@@ -36,3 +36,10 @@ or download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk
 ```sh
 gsutil cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/ .  
 ```
+
+## uncompress the data
+Uncompress the data on each node
+```sh
+cd sf10000
+find . -name *.gz  -print0 | parallel -q0 gunzip 
+```
