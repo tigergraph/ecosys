@@ -6,7 +6,8 @@
 * [Download LDBC SNB data](#Donwload-LDBC-SNB-Data)
 * [Load data](#Load-data)
 * [Run Query and batch update](#run)
-
+* [Usage of driver.py](#Usage-of-driver.py)
+* [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
 ## Overview
 This follows [LDBC Social Network Benchmark v.0.4.0](https://github.com/ldbc/ldbc_snb_docs). BI 4 and 17 are modified based on discussion with Garbor. 
 ```
@@ -86,7 +87,7 @@ Checkout ldbc branch of the current repository
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 ```
-Load schema, data, and query. Usage of `driver.py` can be `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
+Load schema, data, and query. Usage of `driver.py` can be shown using `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
 ./driver.py load schema
 ./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/
@@ -107,12 +108,11 @@ After loading, you can use the following GSQL script to check the number of vert
 gsql stat.gsql
 ```
 
-## Run
+## Run query and batch updates
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. The default parameter file is `parameters/sf1/2012-09-13.json`.
 ```sh
 ./driver.py run  -n 3
 ```
-
 
 ```sh
 # Query bi19 is expensive, we recomment to run without bi19 for 3 times
@@ -121,7 +121,6 @@ Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage 
 ./driver.py run 
 ```
 ## Compare the results of initial state
-
 The starting time of LDBC SNB graph is 2012-09-13. The documented GSQL results are in `results_sf[scale factor]/initial`. The documented  Cypher results are in `cypher/results_sf[scale factor]/initial`. To compare the results with the documented GSQL results.
 ```sh
  ./driver.py compare -s results -t results_sf1/initial
@@ -132,13 +131,7 @@ The script can be also used to compare the GSQL and cypher results.
  ./driver.py compare -s results -t cypher/results 
 ```
 
-## Considerations in writing queries
-There are many ways to write the query and here what we present is the one with the best performance. 
-I may create a folder to discuss. The query is usually faster if:
-* if you know the degree of the edges, and use SumAccum to store the information instead of SetAccum or MapAccum.
-* if you start from a smaller vertex set 
-
-## refreshes
+## Refreshes with batch inserts and deletes
 Then run the refresh workloads. The results and timelog are output to `results/`. 
 ```sh
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ 
@@ -158,7 +151,7 @@ We also add sleep time equal to the running time between query runs because rele
 nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 > foo.out 2>&1 < /dev/null &  
 ```
 
-## How does the driver.py work
+# Usage of driver.py
 ./driver.py load all [dara_dir] will runs
 * ./driver.py load query 
   *  gsql schema.gsql
@@ -171,4 +164,11 @@ nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 > f
   * `gsql -g ldbc_snb 'run loading job load_static using FILENAMES'`
   * `gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES'`
 
+
+
+# Considerations in writing gsql queries
+There are many ways to write the query and here what we present is the one with the best performance. 
+I may create a folder to discuss. The query is usually faster if:
+* if you know the degree of the edges, and use SumAccum to store the information instead of SetAccum or MapAccum.
+* if you start from a smaller vertex set 
 
