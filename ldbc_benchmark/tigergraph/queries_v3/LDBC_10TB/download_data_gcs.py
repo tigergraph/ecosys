@@ -4,11 +4,11 @@ from pathlib import Path
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Download one partition of initial_snapshot/ and inserts/ and whole data set of deletes/.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--bucket', '-b', type=str, default='ldbc_snb_10k' ,help='bucket to download ldbc snb data from')
-parser.add_argument('--target', '-t', type=Path, default=Path('sf10000'), help='target directory')
+parser.add_argument('--target', '-t', type=Path, default=Path('sf10000_2'), help='target directory')
 parser.add_argument('--root', '-r', type=str, default='v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/', 
   help='path to composite-projected-fk')
 
@@ -51,36 +51,38 @@ DYNAMIC_NAMES = [
   'Post_isLocatedIn_Country',
 ]
 NAMES = {'static':STATIC_NAMES, 'dynamic':DYNAMIC_NAMES}
-
 client = storage.Client()
-for d1 in ['initial_snapshot', 'inserts']:
-  d2s = ['static', 'dynamic'] if d1 == 'initial_snapshot' else ['dynamic']
-  for d2 in d2s:
-    for name in NAMES[d2]:
-      loc = '/'.join([d1,d2,name]) + '/'
-      prefix = args.root + loc
-      target = args.target / loc
-      target.mkdir(parents=True, exist_ok=True)
-      i = -1
-      for blob in client.list_blobs(args.bucket, prefix=prefix):
-        if not blob.name.endswith('.csv.gz'): continue
-        i += 1
-        if i % args.nodes != args.index: continue
-        print(name,i)
-        blob.download_to_filename(target/f'{i:06d}.csv.gz')
-        
-d1 = 'deletes'
-d2 = 'dynamic'
-for name in NAMES[d2]:
-  loc = '/'.join([d1,d2,name]) + '/'
-  prefix = args.root + loc
-  target = args.target / loc
-  target.mkdir(parents=True, exist_ok=True)
-  i = -1
-  for blob in client.list_blobs(args.bucket, prefix=prefix):
-    if not blob.name.endswith('.csv.gz'): continue
-    i += 1
-    print(name,i)
-    blob.download_to_filename(target/f'{i:06d}.csv.gz')
-    
+d1 ='initial_snapshot'
+for d2 in ['static', 'dynamic']:
+  for name in NAMES[d2]:
+    loc = '/'.join([d1,d2,name]) + '/'
+    prefix = args.root + loc
+    target = args.target / loc
+    target.mkdir(parents=True, exist_ok=True)
+    i = -1
+    for blob in client.list_blobs(args.bucket, prefix=prefix):
+      if not blob.name.endswith('.csv.gz'): continue
+      i += 1
+      if i % args.nodes != args.index: continue
+      csv = blob.name.rsplit('/',1)[-1]
+      print(name, i)
+      blob.download_to_filename(target/csv)
 
+for d1 in ['inserts','deletes']:
+  d2 = 'dynamic'
+  for name in NAMES[d2]:
+      loc = '/'.join([d1,d2,name]) + '/'  
+      prefix = args.root + loc 
+      for batch in client.list_blobs(args.bucket, prefix=prefix):
+        loc = '/'.join([d1,d2,name]) + '/'
+        prefix = args.root + loc
+        i = -1
+        for blob in client.list_blobs(args.bucket, prefix=prefix):
+          if not blob.name.endswith('.csv.gz'): continue
+          i += 1
+          if d1=='inserts' and i % args.nodes != args.index: continue
+          batch, csv = blob.name.rsplit('/',2)[-2:]
+          print(name, batch, i)
+          target = args.target / loc / batch
+          target.mkdir(parents=True, exist_ok=True)
+          blob.download_to_filename(target/csv)
