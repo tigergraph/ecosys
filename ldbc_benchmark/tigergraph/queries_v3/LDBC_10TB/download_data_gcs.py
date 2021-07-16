@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--bucket', '-b', type=str, default='ldbc_snb_10k' ,help='bucket to download ldbc snb data from')
-parser.add_argument('--target', '-t', type=Path, default=Path('ldbc_snb'), help='target directory')
+parser.add_argument('--target', '-t', type=Path, default=Path('sf10000'), help='target directory')
 parser.add_argument('--root', '-r', type=str, default='v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/', 
   help='path to composite-projected-fk')
 
