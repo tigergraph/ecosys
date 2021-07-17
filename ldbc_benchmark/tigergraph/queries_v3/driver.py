@@ -16,8 +16,8 @@ from glob import glob
 
 
 def get_parser():
-    query_help = 'Query numbers (default:"all"). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
-    machine_dir_help = 'The machine (optional) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
+    query_help = 'Query numbers (default:all). A list split by comma e.g. "1,2", or "not:bi3,bi4" to exclude some queries, or "reg:[1-4]" to use a regular expression'	
+    machine_dir_help = 'The machine (default:ANY) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"'
     parameter_help = '"auto" to find parameter in the output folder and generate one if not exist. Or a parameter file path (default:auto).'
     suffix_help = 'suffix of the file (default: is none and read directories)'
     # The top-level parser.
@@ -56,6 +56,8 @@ def get_parser():
     for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('--suffix', type=str, default='', help=suffix_help)
+        parser.add_argument('--header', type=bool, default=False, help='whether data has the header')
+
 
     for parser in [load_query_parser, load_all_parser]:
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -271,10 +273,10 @@ def cmd_load_data(args):
     '''Loads data from the given data_dir path.'''
     for f in args.data_dir.glob('**/_SUCCESS'):
         f.unlink()
-
     t0 = timer()
-    load_data('load_static', args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
-    load_data('load_dynamic', args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTICES+DYNAMIC_EDGES, args.suffix)
+    header = '_with_header' if args.header else ''
+    load_data('load_static' + header, args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
+    load_data('load_dynamic' + header, args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTICES+DYNAMIC_EDGES, args.suffix)
     t1 = timer()
     print(f'loading time is {t1-t0}')
 
@@ -533,7 +535,7 @@ def cmd_refresh(args):
     end = datetime.strptime(args.end, '%Y-%m-%d')    
     delta = timedelta(days=1)
     date = begin 
-
+    header = '_with_header' if args.header else ''
     tot_ins_time = 0
     tot_del_time = 0
     dateStr = date.strftime('%Y-%m-%d')
@@ -554,8 +556,8 @@ def cmd_refresh(args):
     while date < end:
         print('======== insertion for ' + date.strftime('%Y-%m-%d') + '========')
         t0 = timer()
-        load_data('insert_vertex', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTICES, args.suffix, date)
-        load_data('insert_edge', args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGES, args.suffix, date)
+        load_data('insert_vertex' + header, args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_VERTICES, args.suffix, date)
+        load_data('insert_edge' + header, args.machine, args.data_dir/'inserts', 'dynamic', DYNAMIC_EDGES, args.suffix, date)
         t1 = timer()
         tot_ins_time += t1-t0
         if args.verbose: logf.write('insert,' + toStr(quick_stat())+ f',{t1-t0}\n')
@@ -573,7 +575,7 @@ def cmd_refresh(args):
             tot_del_time += t1 - t0
             if args.verbose: logf.write(f'{vertex},' + toStr(quick_stat())+ f',{t1-t0}\n')
         t0 = timer()
-        load_data('delete_edge', args.machine, args.data_dir/'deletes', 'dynamic', DEL_EDGES, args.suffix, date)
+        load_data('delete_edge' + header, args.machine, args.data_dir/'deletes', 'dynamic', DEL_EDGES, args.suffix, date)
         t1 = timer()
         tot_del_time += t1 - t0
         if args.verbose: logf.write('delete_edge,' + toStr(quick_stat())+ f',{t1-t0}\n')
@@ -638,11 +640,9 @@ def parse_machine_dir(args):
         if len(mds) != 2:
             raise Exception("<data_dir> should be in format: 'machine:data_dir'")
         args.machine =  mds[0] + ':'
-        args.data_dir = Path(mds[1])
+        args.data_dir = Path(mds[1]).expanduser()
     else:
-        args.machine, args.data_dir = 'm1:', Path(args.machine_dir)
-        if args.cmd == 'refresh': # because some folders may not exist
-            args.machine = 'ANY:'
+        args.machine, args.data_dir = 'ANY:', Path(args.machine_dir).expanduser()
     if args.cmd == 'refresh' or not args.machine in ['m1', 'ALL']: return
     #check if path exists
     missing = []

@@ -23,7 +23,7 @@ download_data.py 1 4
 # on node m4
 download_data.py 1 4
 ```
-The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`
+The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. You can write your own script to process the data, use `grun all "[command]" ` to run the script across the all the nodes. 
 
 The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
 

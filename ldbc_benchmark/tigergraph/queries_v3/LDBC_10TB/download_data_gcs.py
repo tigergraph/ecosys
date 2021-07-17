@@ -12,8 +12,13 @@ parser.add_argument('--target', '-t', type=Path, default=Path('sf10000_2'), help
 parser.add_argument('--root', '-r', type=str, default='v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/', 
   help='path to composite-projected-fk')
 
-
 args = parser.parse_args()
+
+PARTITION_OR_NOT = {
+  'initial_snapshot': True,
+  'inserts':True,
+  'deletes':False,
+}
 
 STATIC_NAMES = [
   'Organisation',
@@ -52,6 +57,7 @@ DYNAMIC_NAMES = [
 ]
 NAMES = {'static':STATIC_NAMES, 'dynamic':DYNAMIC_NAMES}
 client = storage.Client()
+"""
 d1 ='initial_snapshot'
 for d2 in ['static', 'dynamic']:
   for name in NAMES[d2]:
@@ -63,11 +69,11 @@ for d2 in ['static', 'dynamic']:
     for blob in client.list_blobs(args.bucket, prefix=prefix):
       if not blob.name.endswith('.csv.gz'): continue
       i += 1
-      if i % args.nodes != args.index: continue
+      if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
       csv = blob.name.rsplit('/',1)[-1]
       print(name, i)
       blob.download_to_filename(target/csv)
-
+"""
 for d1 in ['inserts','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
@@ -80,7 +86,7 @@ for d1 in ['inserts','deletes']:
         for blob in client.list_blobs(args.bucket, prefix=prefix):
           if not blob.name.endswith('.csv.gz'): continue
           i += 1
-          if d1=='inserts' and i % args.nodes != args.index: continue
+          if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
           batch, csv = blob.name.rsplit('/',2)[-2:]
           print(name, batch, i)
           target = args.target / loc / batch
