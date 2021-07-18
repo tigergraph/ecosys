@@ -16,8 +16,8 @@ args = parser.parse_args()
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,
-  'inserts':False,
-  'deletes':False,
+  'inserts_split': True,
+  'deletes': False,
 }
 
 STATIC_NAMES = [
@@ -57,7 +57,7 @@ DYNAMIC_NAMES = [
 ]
 NAMES = {'static':STATIC_NAMES, 'dynamic':DYNAMIC_NAMES}
 client = storage.Client()
-"""
+
 d1 ='initial_snapshot'
 for d2 in ['static', 'dynamic']:
   for name in NAMES[d2]:
@@ -73,8 +73,8 @@ for d2 in ['static', 'dynamic']:
       csv = blob.name.rsplit('/',1)[-1]
       print(name, i)
       blob.download_to_filename(target/csv)
-"""
-for d1 in ['inserts','deletes']:
+
+for d1 in ['inserts_split','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'

@@ -34,7 +34,7 @@ wget https://storage.googleapis.com/ldbc_snb_10k/v1/results/sf10000-compressed/r
 ```
 or download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]
 ```sh
-gsutil cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/ .  
+gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
 ```
 
 ## uncompress the data

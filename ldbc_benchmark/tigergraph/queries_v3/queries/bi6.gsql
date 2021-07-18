@@ -6,7 +6,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
   SumAccum<UINT> @authorityScore;
   SumAccum<UINT> @score;
   MapAccum<VERTEX<Person>, MinAccum<UINT>> @pScore;
-  message1 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
+  T = {Tag.*};
+  T = SELECT t FROM T:t WHERE t.name == tag;
+  message1 = SELECT m FROM T -(<HAS_TAG)- (Comment|Post):m;
   person2 = SELECT p2 FROM message1 -(<LIKES)- Person:p2; 
   message2 = SELECT m FROM person2:p2 -(<HAS_CREATOR)- (Comment|Post):m;
   message2 = SELECT m FROM message2:m-(<LIKES)-Person 
