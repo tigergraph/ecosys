@@ -9,7 +9,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   V = {Country.*};
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
-  V = SELECT v FROM Person-(LIKES>)-(Post|Comment)-(HAS_TAG>)-Tag:v LIMIT 3;
+  V = {TagClass.*};
+  V = SELECT v FROM V:v LIMIT 3;
+  V = SELECT v FROM V:v ACCUM @@tagclass += v.name;
   M = {Comment.*};
   M = SELECT m FROM M:m LIMIT 10000;
   T = SELECT t FROM M:m-(HAS_TAG>)-Tag:t
@@ -21,11 +23,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
     ORDER BY t.@ncomment ASC
     LIMIT 1;
   T2 = SELECT t FROM T2:t ACCUM smalltag = t.name;
-
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
-  V = {TagClass.*};
-  V = SELECT v FROM V:v LIMIT 3;
-  V = SELECT v FROM V:v ACCUM @@tagclass += v.name;
   PRINT @@country, @@tag, @@tagclass, smalltag;
 }
 
@@ -37,8 +35,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
   C = SELECT c FROM C:c LIMIT 1;
   C = SELECT c FROM C:c ACCUM country = c.name;
   P = SELECT p FROM C -(<IS_PART_OF)-City-(<IS_LOCATED_IN)-Person:p
-    ACCUM p.@selected += TRUE;
-  P = SELECT p FROM P:p LIMIT 4;
+    LIMIT 1000;
+  P = SELECT p FROM P:p ACCUM p.@selected += TRUE;
   TC = SELECT tc
       FROM P:p -(<HAS_CREATOR.HAS_TAG>.HAS_TYPE>)- TagClass:tc; 
   TC = SELECT tc FROM TC:tc LIMIT 1;
@@ -65,7 +63,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi15() {
     S = SELECT t 
       FROM S-(<HAS_CREATOR)-(Post|Comment)-(REPLY_OF>)-(Post|Comment)-(HAS_CREATOR>)-Person:t
       WHERE NOT t.@visited AND t.@flag
-      ACCUM t.@visited += true;
+      ACCUM t.@visited += true
+      LIMIT 100;
   END;
   S = SELECT s FROM S:s ACCUM person2Id = s.id LIMIT 1;
   PRINT person1Id, person2Id;
@@ -109,13 +108,16 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   SumAccum<UINT> @nperson;
   MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@interactions;
   SetAccum<UINT> @cities, @@cities;
+  P = {Person.*};
+  P = SELECT p FROM P:p LIMIT 30000;
   C = SELECT c 
-    FROM City:c-(<IS_LOCATED_IN)- Person ACCUM c.@nperson += 1
+    FROM P-(IS_LOCATED_IN>)-City:c ACCUM c.@nperson += 1
     HAVING c.@nperson > 0
     ORDER BY c.@nperson ASC
-    LIMIT 30;
+    LIMIT 8;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
-    ACCUM p.@cities += c.id;
+    ACCUM p.@cities += c.id
+    LIMIT 400;
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
     ACCUM m.@persons+= p;
@@ -126,11 +128,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
     ACCUM p.@persons += m.@persons;
   iter = 0;
-  WHILE iter < 4 DO
+  WHILE iter < 2 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t 
       WHERE s.@persons.contains(t) OR t.@persons.contains(s)   
-      ACCUM t.@cities += s.@cities;
+      ACCUM t.@cities += s.@cities
+      LIMIT 100;
   END;
   P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
@@ -153,15 +156,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
     ACCUM s.@source += s.id,
       s.@connected += (t -> true);
   iter = 0;
-  WHILE iter < 4 DO
+  WHILE iter < 3 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t
       WHERE s.@connected.get(t)
       ACCUM t.@source += s.@source;
   END;
-  P = SELECT p FROM P:p WHERE p.@source.size() > 2 LIMIT 1;
-  P = SELECT p FROM P:p -(WORK_AT>)-Company:c
-    ACCUM company=c.name, @@person2Ids += p.@source;
+  P = SELECT p FROM P:p-(WORK_AT>)-Company:c WHERE p.@source.size() > 2 
+    ACCUM company=c.name, @@person2Ids += p.@source
+    LIMIT 1;
   PRINT company, @@person2Ids;
 }
 

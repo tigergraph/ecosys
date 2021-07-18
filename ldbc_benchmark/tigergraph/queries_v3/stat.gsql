@@ -11,33 +11,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY quick_stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     tmp = {Person.*}; nPerson = tmp.size();
     PRINT nComment, nPost, nForum, nPerson;
 }
-
-CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
-    UINT nComment, nPost, nForum, nPerson;
-    UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
-    SumAccum<INT> @@HAS_TAG, @@KNOWS, @@LIKES, @@REPLY_OF;
-    tmp = {Comment.*}; nComment = tmp.size();
-    tmp = {Post.*}; nPost = tmp.size();
-    tmp = {Forum.*}; nForum = tmp.size();
-    tmp = {Person.*}; nPerson = tmp.size();
-    tmp = {Company.*}; nCompany = tmp.size();
-    tmp = {University.*}; nUniversity = tmp.size();
-    tmp = {City.*}; nCity = tmp.size();
-    tmp = {Country.*}; nCountry = tmp.size();
-    tmp = {Continent.*}; nConitnent = tmp.size();
-    tmp = {Tag.*}; nTag = tmp.size();
-    tmp = {TagClass.*}; nTagClass = tmp.size();
-    tmp = SELECT f FROM Tag:f -(<HAS_TAG)- (Comment|Post|Forum) ACCUM @@HAS_TAG += 1;
-    tmp = SELECT f FROM Person:f-(KNOWS)-Person ACCUM @@KNOWS += 1;
-    tmp = SELECT f FROM Person:f-(LIKES>)-(Comment|Post) ACCUM @@LIKES += 1;
-    tmp = SELECT f FROM Comment:f-(REPLY_OF>)-(Comment|Post) ACCUM @@REPLY_OF += 1;
-    PRINT nComment, nPost, nForum, nPerson,
-        nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
-        @@HAS_TAG, @@KNOWS, @@LIKES, @@REPLY_OF;
-}
-/*
+ 
+# this one is faster but need to be run after some time of update 
 # there can be a lag before outdegree is updated
-CREATE OR REPLACE DISTRIBUTED QUERY stat2() FOR GRAPH ldbc_snb SYNTAX v2 {
+#
+CREATE OR REPLACE DISTRIBUTED QUERY stat() FOR GRAPH ldbc_snb SYNTAX v2 {
     UINT nComment, nPost, nForum, nPerson;
     UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
     SumAccum<INT> @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
@@ -75,7 +53,34 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat2() FOR GRAPH ldbc_snb SYNTAX v2 {
         @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
         @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
 }
+
+
+/*
+CREATE OR REPLACE DISTRIBUTED QUERY stat2() FOR GRAPH ldbc_snb SYNTAX v2 {
+    UINT nComment, nPost, nForum, nPerson;
+    UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
+    SumAccum<INT> @@HAS_TAG, @@KNOWS, @@LIKES, @@REPLY_OF;
+    tmp = {Comment.*}; nComment = tmp.size();
+    tmp = {Post.*}; nPost = tmp.size();
+    tmp = {Forum.*}; nForum = tmp.size();
+    tmp = {Person.*}; nPerson = tmp.size();
+    tmp = {Company.*}; nCompany = tmp.size();
+    tmp = {University.*}; nUniversity = tmp.size();
+    tmp = {City.*}; nCity = tmp.size();
+    tmp = {Country.*}; nCountry = tmp.size();
+    tmp = {Continent.*}; nConitnent = tmp.size();
+    tmp = {Tag.*}; nTag = tmp.size();
+    tmp = {TagClass.*}; nTagClass = tmp.size();
+    tmp = SELECT f FROM Tag:f -(<HAS_TAG)- (Comment|Post|Forum) ACCUM @@HAS_TAG += 1;
+    tmp = SELECT f FROM Person:f-(KNOWS)-Person ACCUM @@KNOWS += 1;
+    tmp = SELECT f FROM Person:f-(LIKES>)-(Comment|Post) ACCUM @@LIKES += 1;
+    tmp = SELECT f FROM Comment:f-(REPLY_OF>)-(Comment|Post) ACCUM @@REPLY_OF += 1;
+    PRINT nComment, nPost, nForum, nPerson,
+        nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
+        @@HAS_TAG, @@KNOWS, @@LIKES, @@REPLY_OF;
+}
 */
+
 # Interpret do not support DISTRIBUTED query 
 # INTERPRET QUERY stat()
 # INSTALL QUERY quick_stat, stat

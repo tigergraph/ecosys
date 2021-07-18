@@ -66,7 +66,7 @@ gadmin restart all -y
 ```
 
 ## Donwload LDBC SNB Data 
-For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
+For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). *These data has headers.* To download data of scale factor 1,
 
 ```sh
 wget -O sf1-composite-projected-fk.tar.zst https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download 
@@ -91,28 +91,27 @@ cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 Load schema, data, and query. Usage of `driver.py` can be shown using `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
 ./driver.py load schema
-./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/
+./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/ --header
 ./driver.py load query
 ```
 THis is equivalent to
 ```sh
-./driver.py load all ~/initial_snapshot
+./driver.py load all ~/initial_snapshot --header
 ```
 
-The directory can include the machine. If you want to load data that is distributed on all the machines, use
+The directory can include the machine. Default setting is `ANY`, which loads any data on each on the machine. If you want to load data on the node m1, use
 ```sh
-./driver.py load data ALL:~/initial_snapshot 
+./driver.py load data m1:~/initial_snapshot --header
 ``` 
-After loading, you can use the following GSQL script to check the number of vertices and edges. For SF1, there are 1116485 Comment vertices in the initial snapshot.
-
+After loading, you can checkout the number of vertices and edges using the following command. For SF1, there are 1116485 Comment vertices in the initial snapshot.
 ```sh
-gsql stat.gsql
+./driver.py stat
 ```
 
 ## Run query and batch updates
-Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. The default parameter file is `parameters/sf1/2012-09-13.json`.
+Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. The default parameter file is `auto`, which means if `param.json` file is not in the results folder, the driver will automatically generate the parameter file. An example paramter file for sf1 is in [./paramters/sf1.json](./paramters/sf1.json). you can use it by using `-p paramters/sf1.json`
 ```sh
-./driver.py run  -n 3
+./driver.py run  -n 3 
 ```
 
 ```sh
@@ -135,7 +134,7 @@ The script can be also used to compare the GSQL and cypher results.
 ## Refreshes with batch inserts and deletes
 Then run the refresh workloads. The results and timelog are output to `results/`. 
 ```sh
-./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ 
+./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header
 ```
 After runnning neo4j benchmark, you can compare the results
 ```sh
@@ -149,7 +148,7 @@ For scale factors larger than 100, it usually takes many hours.
 I prefer to add nohup to allow the process continue after I log out. 
 We also add sleep time equal to the running time between query runs because releasing memory also takes time. No sleep time can generate out-of-memory issue.
 ```sh
-nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 --header > foo.out 2>&1 < /dev/null &  
 ```
 
 # Usage of driver.py

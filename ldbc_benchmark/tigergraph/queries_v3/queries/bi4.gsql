@@ -14,9 +14,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
   MapAccum<VERTEX<Country>, UINT> @memberCount;
   MaxAccum<UINT> @maxMemberCount;
-  OrAccum<BOOL> @inForum;
+  MinAccum<VERTEX<Country>> @country;
+  OrAccum<BOOL> @inForum, @selected;
   SumAccum<UINT> @messageCount;
-
+  /*
   popularForums =
     SELECT f
     FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
@@ -27,6 +28,22 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
       FOREACH (city, num) IN f.@memberCount DO
         f.@maxMemberCount += num
       END
+    ORDER BY f.@maxMemberCount DESC, f.id ASC
+    LIMIT 100;
+  */
+  F = {Forum.*};
+  F = SELECT f FROM F:f WHERE f.creationDate > date;
+  persons = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p ACCUM p.@selected += TRUE;
+  persons = SELECT p FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
+    WHERE p.@selected
+    ACCUM p.@country = c;
+  popularForums = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p 
+    ACCUM f.@memberCount += (p.@country -> 1)
+    POST-ACCUM
+      FOREACH (city, num) IN f.@memberCount DO
+        f.@maxMemberCount += num
+      END
+    
     ORDER BY f.@maxMemberCount DESC, f.id ASC
     LIMIT 100;
 

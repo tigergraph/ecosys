@@ -16,7 +16,7 @@ args = parser.parse_args()
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,
-  'inserts':True,
+  'inserts':False,
   'deletes':False,
 }
 
@@ -77,18 +77,15 @@ for d2 in ['static', 'dynamic']:
 for d1 in ['inserts','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
-      loc = '/'.join([d1,d2,name]) + '/'  
-      prefix = args.root + loc 
-      for batch in client.list_blobs(args.bucket, prefix=prefix):
-        loc = '/'.join([d1,d2,name]) + '/'
-        prefix = args.root + loc
-        i = -1
-        for blob in client.list_blobs(args.bucket, prefix=prefix):
-          if not blob.name.endswith('.csv.gz'): continue
-          i += 1
-          if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
-          batch, csv = blob.name.rsplit('/',2)[-2:]
-          print(name, batch, i)
-          target = args.target / loc / batch
-          target.mkdir(parents=True, exist_ok=True)
-          blob.download_to_filename(target/csv)
+    loc = '/'.join([d1,d2,name]) + '/'
+    prefix = args.root + loc
+    i = -1
+    for blob in client.list_blobs(args.bucket, prefix=prefix):
+      if not blob.name.endswith('.csv.gz'): continue
+      i += 1
+      if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
+      batch, csv = blob.name.rsplit('/',2)[-2:]
+      print(name, batch, i)
+      target = args.target / loc / batch
+      target.mkdir(parents=True, exist_ok=True)
+      blob.download_to_filename(target/csv)

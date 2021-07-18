@@ -68,10 +68,9 @@ def get_parser():
         parser.add_argument('-o','--output', default=Path('results'), type=Path, help='directory to write results (default: results)')
         parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
         parser.add_argument('-s', '--sleep', type=float, default=0, help='factor times elapsed time to sleep between runs')
-    # default parameter file for './driver run' is parameters/sf1.json, but auto for refresh
-    run_parser.add_argument('-p', '--parameter', type=str, default='parameters/sf1.json', help=parameter_help)
+        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)
+
     for parser in [refresh_parser, all_parser]:
-        parser.add_argument('-p', '--parameter', type=str, default='auto', help=parameter_help)    
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
         parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
         parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
@@ -82,15 +81,16 @@ def get_parser():
     compare_parser.add_argument('-t', '--target', type=Path, default=Path('cypher/results'), help='direcotry of the target results (default: cypher/results)')
     compare_parser.set_defaults(func=cmd_compare)
     
-    # ./driver gen_para [machine:dir]
     gen_parser = main_subparsers.add_parser('gen_para', help='auto generate parameter')
     gen_parser.set_defaults(func=cmd_gen)
     gen_parser.add_argument('-o', '--output', type=Path, default=Path('param.json'), help='output parameter file path')
+    gen_parser.add_argument('-v', '--verbose', action='store_true', help='print for every query')
     
     # ./driver stat
     stat_parser = main_subparsers.add_parser('stat', help='print statistics of the graph')        
     stat_parser.set_defaults(func=cmd_stat)
-
+    stat_parser = main_subparsers.add_parser('quick_stat', help='print statistics of the graph')        
+    stat_parser.set_defaults(func=quick_stat)
     return main_parser
 
 class ResultWithElapsed:
@@ -317,7 +317,10 @@ def cmd_load_all(args):
     Print graph satistics
 """
 def quick_stat():
+    t0 = timer()
     stat = STAT_WORKLOADS[0].run(None).result
+    t1 = timer()
+    print(stat)
     return list(stat.values())
 
 def cmd_stat(args):
@@ -331,6 +334,7 @@ def cmd_stat(args):
     print(f'stats({t1-t0:.2f}):', stat2)
     return stat2
 
+
     
 """
 generate parameters automatically
@@ -342,7 +346,10 @@ def cmd_gen(args, output=None):
     dataType = load_parameters(Path('parameters/dataType.json'))
     gen = {}
     for i, workload in GEN_WORKLOADS.items():
+        t0 = timer()
         gen[i] = workload.run(None).result
+        t1 = timer()
+        if args.verbose: print(f'done {workload.name} in {t1-t0:.2f} s')
     while gen[10]['personId']==0:
         gen[10] = GEN_WORKLOADS[10].run(None).result
         print('rerun gen_bi10')
@@ -373,12 +380,13 @@ def cmd_gen(args, output=None):
                 continue
             parameters[q][name] = genValue(name, dataType[name])
     
-    date = datetime.strptime(parameters['bi9']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=9) 
+    date = datetime.strptime(parameters['bi9']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=5) 
     parameters['bi9']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     date = datetime.strptime(parameters['bi15']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=365) 
     
     for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
     i = randrange(4)
+    parameters['bi1']['date'] = datetime(2010, 2, 1) + timedelta(days=randrange(200))
     parameters['bi14']['country1'] = country[i]
     parameters['bi14']['country2'] = country[(i+1)%4]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
@@ -586,6 +594,7 @@ def cmd_refresh(args):
             
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
+            time.sleep(20)
             stat_dict = cmd_stat(args)
             batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
             batch_log += ',' + toStr([tot_ins_time, tot_del_time])
