@@ -11,7 +11,7 @@ import ast
 import requests
 import re
 from datetime import datetime, timedelta
-from random import randrange
+from random import randrange, choice
 from glob import glob
 
 
@@ -386,7 +386,9 @@ def cmd_gen(args, output=None):
     
     for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
     i = randrange(4)
-    parameters['bi1']['date'] = (datetime(2010,2,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
+    parameters['bi1']['datetime'] = (datetime(2010,2,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
+    parameters['bi4']['date'] = (datetime(2012,3,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
+
     parameters['bi14']['country1'] = country[i]
     parameters['bi14']['country2'] = country[(i+1)%4]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
@@ -400,7 +402,7 @@ def cmd_gen(args, output=None):
     parameters['bi19']['city1Id'] = gen[19]['@@cities'][0]
     parameters['bi19']['city2Id'] = gen[19]['@@cities'][1]
     parameters['bi20']['company'] = gen[20]['company']
-    parameters['bi20']['person2Id'] = gen[20]['@@person2Ids'][0]
+    parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
     
     stream = str(parameters)
     stream = re.sub(r"'bi", r"\n'bi", stream)
@@ -543,18 +545,18 @@ def cmd_refresh(args):
     end = datetime.strptime(args.end, '%Y-%m-%d')    
     delta = timedelta(days=1)
     date = begin 
-    header = '_with_header' if args.header else ''
     tot_ins_time = 0
     tot_del_time = 0
     dateStr = date.strftime('%Y-%m-%d')
     output = args.output/dateStr
 
     logf = open(timelog, 'w')
-    header = ['date'] + stat_name + ['ins','del','gen'] + [f'bi{i}' for i in range(1,21)]
-    logf.write(','.join(header)+'\n')
+    cols = ['date'] + stat_name + ['ins','del','gen'] + [f'bi{i}' for i in range(1,21)]
+    logf.write(','.join(cols)+'\n')
     stat_dict = cmd_stat(args)
     batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
+    header = '_with_header' if args.header else ''
     if args.read_freq > 0: 
         # run query 
         durations = cmd_run(args, output = output)

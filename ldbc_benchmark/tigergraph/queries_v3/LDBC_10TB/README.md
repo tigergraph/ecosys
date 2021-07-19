@@ -54,7 +54,12 @@ Run query withou bi 17 and 19
 ```sh
 ./driver.py run -q not:17,19
 ```
-Perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days
+Perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1.
 ```sh
-./driver.py refresh ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7
+./driver.py refresh ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7 -s 1
+```
+
+The combine command in background is
+```sh
+nohup python3 -u ./driver.py all ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
