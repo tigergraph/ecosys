@@ -386,7 +386,7 @@ def cmd_gen(args, output=None):
     
     for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
     i = randrange(4)
-    parameters['bi1']['date'] = datetime(2010, 2, 1) + timedelta(days=randrange(200))
+    parameters['bi1']['date'] = (datetime(2010,2,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
     parameters['bi14']['country1'] = country[i]
     parameters['bi14']['country2'] = country[(i+1)%4]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")

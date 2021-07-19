@@ -141,6 +141,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
 }  
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
+  OrAccum<BOOL> @selected;
   SetAccum<VERTEX<University>> @univ;
   MapAccum<VERTEX<Person>, OrAccum<BOOL>> @connected;
   SetAccum<UINT> @source, @@person2Ids;
@@ -148,8 +149,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   UINT iter;
   STRING company;
   P = SELECT p
-    FROM Person:p -(STUDY_AT>)- University
-    LIMIT 2000;
+    FROM University -(<STUDY_AT)- Person:p 
+    LIMIT 5000;
+  P = SELECT p FROM P:p ACCUM p.@selected += True;
   P = SELECT s
     FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- P:t
     WHERE s.id != t.id
@@ -162,7 +164,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
       WHERE s.@connected.get(t)
       ACCUM t.@source += s.@source;
   END;
-  P = SELECT p FROM P:p-(WORK_AT>)-Company:c WHERE p.@source.size() > 2 
+
+  P = SELECT p FROM P:p WHERE p.@source.size() > 2;
+  P = SELECT p FROM P:p-(WORK_AT>)-Company:c  
     ACCUM company=c.name, @@person2Ids += p.@source
     LIMIT 1;
   PRINT company, @@person2Ids;

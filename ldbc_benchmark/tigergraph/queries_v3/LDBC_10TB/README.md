@@ -43,3 +43,18 @@ Uncompress the data on each node
 cd sf10000
 find . -name *.gz  -print0 | parallel -q0 gunzip 
 ```
+
+
+# Prepare LDBC SNB 10 TB data
+The dataset does not have header. So do not add the option `--header`. To load the data
+```sh
+./driver.py load all ~/sf10000 
+```
+Run query withou bi 17 and 19
+```sh
+./driver.py run -q not:17,19
+```
+Perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days
+```sh
+./driver.py refresh ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7
+```
