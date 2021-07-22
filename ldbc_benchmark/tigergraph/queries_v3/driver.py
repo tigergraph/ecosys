@@ -356,6 +356,9 @@ def cmd_gen(args, output=None):
     while gen[15]['person2Id']==0:
         gen[15] = GEN_WORKLOADS[15].run(None).result
         print('rerun gen_bi15')
+    while len(gen[19]['@@cities'])==0:
+        gen[19] = GEN_WORKLOADS[19].run(None).result
+        print('rerun gen_bi19')
     while len(gen[20]['@@person2Ids'])==0:
         gen[20] = GEN_WORKLOADS[20].run(None).result
         print('rerun gen_bi20')

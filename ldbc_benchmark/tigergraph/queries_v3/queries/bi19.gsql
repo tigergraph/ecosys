@@ -79,7 +79,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   PRINT @@result;
 }
 
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() FOR GRAPH ldbc_snb SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() {
   tmp =
     SELECT v2
     FROM :v1 -(WEIGHT_DOUBLE:e)- :v2

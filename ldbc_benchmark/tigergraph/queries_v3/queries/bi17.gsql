@@ -18,10 +18,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   # person1 id in message2
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
+  T = {Tag.*};
+  T = SELECT t FROM Tag:t WHERE t.name == tag;
   messagesWithTag =
     SELECT m
-    FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
-    WHERE t.name == tag
+    FROM T -(<HAS_TAG)- (Comment|Post):m
     ACCUM m.@hasTag = true;
 
   creators =
@@ -68,7 +69,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   message2 =
     SELECT m2 FROM message2:m2
     ACCUM FOREACH c IN m2.@person1Id DO
-        @@messageCount += (c -> 1)
+      @@messageCount += (c -> 1)
     END;
   
   FOREACH (personId,num) IN @@messageCount DO

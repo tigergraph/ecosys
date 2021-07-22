@@ -108,13 +108,17 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   SumAccum<UINT> @nperson;
   MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@interactions;
   SetAccum<UINT> @cities, @@cities;
+  SumAccum<UINT> @nknows;
   P = {Person.*};
-  P = SELECT p FROM P:p LIMIT 30000;
+  P = SELECT p FROM P:p LIMIT 10000;
+  P = SELECT p FROM P:p -(KNOWS)- Person ACCUM p.@nknows += 1 
+    ORDER BY p.@nknows
+    LIMIT 1000;
   C = SELECT c 
     FROM P-(IS_LOCATED_IN>)-City:c ACCUM c.@nperson += 1
     HAVING c.@nperson > 0
     ORDER BY c.@nperson ASC
-    LIMIT 8;
+    LIMIT 15;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
     ACCUM p.@cities += c.id
     LIMIT 400;
@@ -135,7 +139,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
       ACCUM t.@cities += s.@cities
       LIMIT 100;
   END;
-  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
+  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 
+    ORDER BY p.@nknows
+    LIMIT 1;
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
   PRINT @@cities;
 }  
@@ -143,32 +149,40 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   OrAccum<BOOL> @selected;
   SetAccum<VERTEX<University>> @univ;
-  MapAccum<VERTEX<Person>> @connected;
+  SetAccum<VERTEX<Person>> @connected;
   SetAccum<UINT> @source, @@person2Ids;
-  
+  SumAccum<STRING> @company;
+  SumAccum<UINT> @nknows;
   UINT iter;
   STRING company;
   P = SELECT p
     FROM University -(<STUDY_AT)- Person:p 
     LIMIT 5000;
-  P = SELECT p FROM P:p ACCUM p.@selected += True;
+  P = SELECT p FROM P:p -(KNOWS)- Person ACCUM p.@nknows += 1 
+    ORDER BY p.@nknows
+    LIMIT 1000;
   P = SELECT s
     FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- P:t
-    WHERE s.id != t.id
-    ACCUM s.@source += s.id,
+    WHERE s.id < t.id
+    ACCUM 
+      s.@selected += True,
+      s.@source += s.id,
       s.@connected += t;
   iter = 0;
-  WHILE iter < 3 DO
+  WHILE iter < 2 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t
-      WHERE s.@connected.contains(t)
+      WHERE s.id < t.id AND s.@connected.contains(t)
       ACCUM t.@source += s.@source;
   END;
 
   P = SELECT p FROM P:p WHERE p.@source.size() > 2;
-  P = SELECT p FROM P:p-(WORK_AT>)-Company:c  
-    ACCUM company=c.name, @@person2Ids += p.@source
-    LIMIT 1;
+  P = SELECT p FROM P:p -(KNOWS)- Person 
+    ORDER BY p.@nknows
+    LIMIT 10;
+  P = SELECT p FROM P:p-(WORK_AT>)-Company:c ACCUM p.@company += c.name LIMIT 1;
+  P = SELECT p FROM P:p ACCUM company = p.@company, @@person2Ids += p.@source;
+    
   PRINT company, @@person2Ids;
 }
 

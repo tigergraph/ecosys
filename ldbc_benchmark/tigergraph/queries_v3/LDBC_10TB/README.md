@@ -63,3 +63,11 @@ The combine command in background is
 ```sh
 nohup python3 -u ./driver.py all ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
+
+
+# About running queries
+The BI queries on 10TB data is typically ~60 s and greatly depends on the parameters. We chose some parameters that are easy for use, for example if we filter the comments after an input date, we will chose a later time for the Social network graph.
+
+BI20 have several version. The query is fast for some parameters (in this case, the non-distributed one `bi20-1.gsql` takes less time). But the query is super slow for other parameters (>200s, in this case, the distributed one `bi20-2.gsql` is better). We have not validated `bi20-3` yet.
+
+BI17 and 19 are too hard for 10TB data and they ran out of memory.
