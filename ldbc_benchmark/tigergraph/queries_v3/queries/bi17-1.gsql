@@ -1,0 +1,83 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
+  TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
+  HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
+  OrAccum<BOOL> @hasTag, @isCreator;
+  # There is only one forum and creator for a message.
+  MinAccum<VERTEX<Forum>> @forum;
+  MinAccum<VERTEX<Person>> @creator;
+  # On the other hand, creator and forum have many messages
+  SetAccum<UINT> @messages;
+  # forum1 Id -> (person1 Id -> smallest message1 creationdate)  
+  MapAccum<VERTEX<Forum>, MapAccum<VERTEX<Person>, MinAccum<DATETIME>>> @@Forum2Creator;
+  # comment id -> creator forum id 
+  SetAccum<VERTEX<Forum>> @CreatorForums, @Forum1;
+  # MapAccum<VERTEX<Forum>, SetAccum<VERTEX<Person>>> @@hasMember;
+  SetAccum<VERTEX<Person>> @hasMember;
+  # person1 id in message2
+  SetAccum<UINT> @person1Id;
+  MapAccum<UINT, SumAccum<UINT>> @@messageCount;
+  T = {Tag.*};
+  T = SELECT t FROM Tag:t WHERE t.name == tag;
+  messagesWithTag =
+    SELECT m
+    FROM T -(<HAS_TAG)- (Comment|Post):m
+    ACCUM m.@hasTag = true;
+
+  creators =
+    SELECT p
+    FROM messagesWithTag:m -(HAS_CREATOR>) - Person:p
+    ACCUM m.@creator = p, p.@messages += m.id, p.@isCreator = True;
+
+  forum12 =
+    SELECT f
+    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f -(HAS_MEMBER>)- Person:p
+    ACCUM 
+      m.@forum = f, 
+      @@Forum2Creator += (f -> (m.@creator-> m.creationDate)),
+      m.@hasMember += p;
+
+  messages2 = 
+    SELECT m
+    FROM forum12:f -(HAS_MEMBER>)- Person:p -(<HAS_CREATOR)- (Comment|Post): m 
+    WHERE p.@isCreator AND m.@hasTag
+    ACCUM m.@CreatorForums += f;
+
+  messages2 =
+    SELECT m2
+    FROM messages2:m2 -(<REPLY_OF)- Comment:m
+    WHERE m.@hasTag AND m.@creator != m2.@creator
+    ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
+    POST-ACCUM m2.@Forum1.remove(m2.@forum)
+    HAVING m2.@Forum1.size() > 0;
+    
+  message2 = 
+    SELECT m2 FROM messages2:m2 
+    ACCUM 
+      FOREACH f IN m2.@Forum1 DO
+        FOREACH (p1,m1date) IN @@Forum2Creator.get(f) DO
+          IF datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate 
+               AND (NOT m2.@hasMember.contains(p1))   
+              THEN 
+              m2.@person1Id += p1.id
+          END
+        END
+      END
+    HAVING m2.@person1Id.size() > 0;
+  
+  message2 =
+    SELECT m2 FROM message2:m2
+    ACCUM FOREACH c IN m2.@person1Id DO
+      @@messageCount += (c -> 1)
+    END;
+  
+  FOREACH (personId,num) IN @@messageCount DO
+    @@result += RESULT(num, personId);
+  END;
+
+  PRINT @@result;
+}
+
+#INSTALL QUERY bi17
+#RUN QUERY bi17("Humayun", 10)
