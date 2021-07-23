@@ -12,7 +12,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   MinAccum<UINT> @dist; 
   MapAccum<UINT, MinAccum<UINT>> @@paths;
   UINT threshold;
-  threshold = 100;
+  threshold = 40;
   S1 =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p

@@ -145,44 +145,37 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
   PRINT @@cities;
 }  
-
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
-  OrAccum<BOOL> @selected;
   SetAccum<VERTEX<University>> @univ;
   SetAccum<VERTEX<Person>> @connected;
   SetAccum<UINT> @source, @@person2Ids;
-  SumAccum<STRING> @company;
   SumAccum<UINT> @nknows;
   UINT iter;
   STRING company;
   P = SELECT p
-    FROM University -(<STUDY_AT)- Person:p 
-    LIMIT 5000;
-  P = SELECT p FROM P:p -(KNOWS)- Person ACCUM p.@nknows += 1 
-    ORDER BY p.@nknows
-    LIMIT 1000;
+    FROM University -(<STUDY_AT)- Person:p
+    LIMIT 20000;
   P = SELECT s
     FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- P:t
-    WHERE s.id < t.id
-    ACCUM 
-      s.@selected += True,
-      s.@source += s.id,
+    WHERE s.id != t.id
+    ACCUM s.@source += s.id,
       s.@connected += t;
   iter = 0;
-  WHILE iter < 2 DO
+  WHILE iter < 3 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t
-      WHERE s.id < t.id AND s.@connected.contains(t)
+      WHERE s.@connected.contains(t)
       ACCUM t.@source += s.@source;
   END;
-
-  P = SELECT p FROM P:p WHERE p.@source.size() > 2;
-  P = SELECT p FROM P:p -(KNOWS)- Person 
+  
+  P = SELECT p FROM P:p -(KNOWS)- Person
+    WHERE p.@source.size() > 2 
+    ACCUM p.@nknows += 1;
+  P = SELECT p FROM P:p -(WORK_AT>)-Company:c 
     ORDER BY p.@nknows
-    LIMIT 10;
-  P = SELECT p FROM P:p-(WORK_AT>)-Company:c ACCUM p.@company += c.name LIMIT 1;
-  P = SELECT p FROM P:p ACCUM company = p.@company, @@person2Ids += p.@source;
-    
+    LIMIT 1;
+  P = SELECT p FROM P:p -(WORK_AT>)-Company:c ACCUM company=c.name, @@person2Ids += p.@source, @@exclude += p.id;
+  @@person2Ids  =  @@person2Ids  MINUS @@exclude;
   PRINT company, @@person2Ids;
 }
 
