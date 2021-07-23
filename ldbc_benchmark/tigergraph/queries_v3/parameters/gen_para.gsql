@@ -13,7 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   V = SELECT v FROM V:v LIMIT 3;
   V = SELECT v FROM V:v ACCUM @@tagclass += v.name;
   M = {Comment.*};
-  M = SELECT m FROM M:m LIMIT 10000;
+  M = SELECT m FROM M:m LIMIT 1000000;
   T = SELECT t FROM M:m-(HAS_TAG>)-Tag:t
     ACCUM t.@ncomment += 1
     ORDER BY t.@ncomment DESC
@@ -110,7 +110,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   SetAccum<UINT> @cities, @@cities;
   SumAccum<UINT> @nknows;
   P = {Person.*};
-  P = SELECT p FROM P:p LIMIT 10000;
+  P = SELECT p FROM P:p LIMIT 1000000;
   P = SELECT p FROM P:p -(KNOWS)- Person ACCUM p.@nknows += 1 
     ORDER BY p.@nknows
     LIMIT 1000;
