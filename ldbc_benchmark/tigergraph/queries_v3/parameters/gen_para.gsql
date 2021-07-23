@@ -148,13 +148,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   SetAccum<VERTEX<University>> @univ;
   SetAccum<VERTEX<Person>> @connected;
-  SetAccum<UINT> @source, @@person2Ids;
+  SetAccum<UINT> @source, @@person2Ids, @@exclude;
   SumAccum<UINT> @nknows;
   UINT iter;
   STRING company;
   P = SELECT p
     FROM University -(<STUDY_AT)- Person:p
-    LIMIT 20000;
+    LIMIT 4000;
   P = SELECT s
     FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- P:t
     WHERE s.id != t.id
