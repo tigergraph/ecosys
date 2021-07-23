@@ -1,4 +1,4 @@
-SET syntax_version = "_v2"
+SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;

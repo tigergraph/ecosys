@@ -1,5 +1,5 @@
 USE GRAPH ldbc_snb
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 # Compute the weight 
 # For SF100, bi19_add_weighted_edges takes ~1min for 2 hops, ~2m44s for 3 hops.
 # NOTE the outdegree of REPLY_OF and indegress of HAS_CREATOR is 1
