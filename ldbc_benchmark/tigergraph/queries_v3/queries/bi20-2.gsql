@@ -1,6 +1,5 @@
 /*
-It is cheaper to search from person2, which is a single vertex.
-We also do not need to store the source Id, which saves a lot of computation.
+Similar query as bi20-1.gsql  but in distributed mode
 */
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"

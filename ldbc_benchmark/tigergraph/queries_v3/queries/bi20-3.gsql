@@ -1,4 +1,4 @@
-
+# I have not validate this query
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi20_add_weighted_edges(STRING company, VERTEX<Person> person2Id) {

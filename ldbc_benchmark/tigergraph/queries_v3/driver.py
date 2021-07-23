@@ -56,7 +56,7 @@ def get_parser():
     for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('--suffix', type=str, default='', help=suffix_help)
-        parser.add_argument('--header', type=bool, default=False, help='whether data has the header')
+        parser.add_argument('--header', action='store_true', help='whether data has the header')
 
 
     for parser in [load_query_parser, load_all_parser]:

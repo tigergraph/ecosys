@@ -1,4 +1,4 @@
-#This query calculates the shortest weighted path between two vertex sets.
+#This query calculates the shortest weighted path between two vertex sets. This query occasionaly produce wrong results.
 # takes 4min40 for SF 100
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
