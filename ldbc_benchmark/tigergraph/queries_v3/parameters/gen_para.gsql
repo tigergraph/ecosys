@@ -107,21 +107,16 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   SetAccum<VERTEX<Person>> @persons; 
   SumAccum<UINT> @nperson;
   MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@interactions;
-  SetAccum<UINT> @cities, @@cities;
+  SetAccum<VERTEX> @cities, @@cities;
+  SetAccum<UINT> @@cityIds;
   SumAccum<UINT> @nknows;
   P = {Person.*};
-  P = SELECT p FROM P:p LIMIT 1000000;
-  P = SELECT p FROM P:p -(KNOWS)- Person ACCUM p.@nknows += 1 
-    ORDER BY p.@nknows
-    LIMIT 1000;
   C = SELECT c 
     FROM P-(IS_LOCATED_IN>)-City:c ACCUM c.@nperson += 1
-    HAVING c.@nperson > 0
     ORDER BY c.@nperson ASC
-    LIMIT 15;
+    LIMIT 100;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
-    ACCUM p.@cities += c.id
-    LIMIT 400;
+    ACCUM p.@cities += c;
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
     ACCUM m.@persons+= p;
@@ -139,12 +134,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
       ACCUM t.@cities += s.@cities
       LIMIT 100;
   END;
-  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 
-    ORDER BY p.@nknows
-    LIMIT 1;
+  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
-  PRINT @@cities;
+  C = {@@cities};
+  @@cities.clear();
+  C = SELECT c FROM C:c ORDER BY c.@nperson LIMIT 2;
+  C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
+  PRINT @@cityIds;
 }  
+
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   SetAccum<VERTEX<University>> @univ;
   SetAccum<VERTEX<Person>> @connected;

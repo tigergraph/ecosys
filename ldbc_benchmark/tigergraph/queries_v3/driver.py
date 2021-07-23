@@ -356,7 +356,7 @@ def cmd_gen(args, output=None):
     while gen[15]['person2Id']==0:
         gen[15] = GEN_WORKLOADS[15].run(None).result
         print('rerun gen_bi15')
-    while len(gen[19]['@@cities'])==0:
+    while len(gen[19]['@@cityIds'])==0:
         gen[19] = GEN_WORKLOADS[19].run(None).result
         print('rerun gen_bi19')
     while len(gen[20]['@@person2Ids'])==0:
@@ -402,8 +402,8 @@ def cmd_gen(args, output=None):
     parameters['bi17']['delta'] = randrange(12,16)
     parameters['bi17']['tag'] = gen[0]['smalltag']
     parameters['bi18']['person1Id'] = gen[15]['person1Id']
-    parameters['bi19']['city1Id'] = gen[19]['@@cities'][0]
-    parameters['bi19']['city2Id'] = gen[19]['@@cities'][1]
+    parameters['bi19']['city1Id'] = gen[19]['@@cityIds'][0]
+    parameters['bi19']['city2Id'] = gen[19]['@@cityIds'][1]
     parameters['bi20']['company'] = gen[20]['company']
     parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
     
