@@ -10,7 +10,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id
   
   C ={city1Id,city2Id};
   S = SELECT p FROM C -(<IS_LOCATED_IN)- Person:p;
-  S = SELECT p FROM S -(KNOWS*0..2)-Person:p ACCUM p.@visited += true;
+  S = SELECT p FROM S -(KNOWS*0..1)-Person:p ACCUM p.@visited += true;
   Sm = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creator += s, m.@visited += true;
   Cm = SELECT m1 FROM Sm:m1 -(REPLY_OF>)- (Comment|Post):m2
     WHERE m2.@visited
