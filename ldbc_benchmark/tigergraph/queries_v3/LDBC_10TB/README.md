@@ -21,14 +21,15 @@ gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_2
 
 ## Download one partition of the data
 ### Pre-requisites
-we need to install gzip and gnu parrel to uncompress the data. On CentOs, the command is
+`python3` is required to run the script we will use `google-cloud-storage` package. and `gzip` and GNU `parallel` are required to uncompress the data. On CentOs, the command is
 ```sh
 sudo yum install -y  python3-pip perl bzip2 gzip wget lynx
+# install python3 google-cloud-storage package
+pip3 install google-cloud-storage
+# install GNU parallel
 (wget -O - pi.dk/3 || lynx -source pi.dk/3 || curl pi.dk/3/ || \
    fetch -o - http://pi.dk/3 ) > install.sh
 sh install.sh
-# install python3 google-cloud-storage package
-pip3 install google-cloud-storage
 ```
 
 ### Download data
