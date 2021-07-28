@@ -1,7 +1,7 @@
 # Prepare LDBC SNB 10 TB data
 ## Table of Contents
 * [Direct download](#Direct-download-(not-recommended))
-* [Download one partition](#Direct-one-partition-of-the-data)
+* [Download one partition](#Download-one-partition-of-the-data)
    * [Pre-requisites](#Pre-requisites)
    * [Download data](#Donwload-data)
    * [Uncompress data](#Uncompress-data)
