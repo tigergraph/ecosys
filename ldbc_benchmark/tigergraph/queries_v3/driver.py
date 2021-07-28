@@ -349,7 +349,10 @@ def cmd_gen(args, output=None):
         t0 = timer()
         gen[i] = workload.run(None).result
         t1 = timer()
+        if i == 19: time.sleep(300)
         if args.verbose: print(f'done {workload.name} in {t1-t0:.2f} s')
+        
+        
     while gen[10]['personId']==0:
         gen[10] = GEN_WORKLOADS[10].run(None).result
         print('rerun gen_bi10')
