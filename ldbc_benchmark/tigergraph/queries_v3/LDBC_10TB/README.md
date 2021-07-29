@@ -40,12 +40,12 @@ Use the `download_one_partition.py` to download one partition of the data. The p
 The usage of the script is `python3 download_one_partition.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in the background using `nohup`.
 ```sh
 # on node m1
-nohup python3 -u download_one_partition.py 0 4  > foo.out 2>&1 < /dev/null &
+nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, just add option `-d 30t`
+The data location in GCS bucket is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, use
 ```sh
 # download 30TB data
-nohup python3 -u download_one_partition.py 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
+nohup python3 -u download_one_partition.py 30t 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
 ```
 
 ### Decompress data

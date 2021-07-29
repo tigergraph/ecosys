@@ -36,19 +36,23 @@ def main():
     print(f'logging to {ip}')
     scp.put('download_one_partition.py', workdir)
     scp.put('download_decompress.sh', workdir)
-    """
-    ssh.exec_command(f''' 
+    stdin, stdout, stderr = ssh.exec_command(f''' 
       cd {workdir}
       . .profile
+      export data={args.data}
       export index={i}
       export nodes={args.nodes}
-      export data={args.data}
       export target={target}
       nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &  
     ''')
-    """
+    for line in stdout.read().splitlines():
+      print(line)
+    
     time.sleep(4)
-    ssh.exec_command(f'tail {workdir}/foo.out')
+    stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/foo.out')
+    for line in stdout.read().splitlines():
+      print(line)
+    
     ssh.close()
     scp.close()  
 
