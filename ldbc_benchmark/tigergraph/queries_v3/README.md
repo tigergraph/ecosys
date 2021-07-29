@@ -66,7 +66,7 @@ gadmin restart all -y
 ```
 
 ## Donwload LDBC SNB Data 
-For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). *These data has headers.* To download data of scale factor 1,
+For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). *For smaller dataset, we worked on the data with headers.* To download data of scale factor 1 (the link is no longer valid),
 
 ```sh
 wget -O sf1-composite-projected-fk.tar.zst https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download 

@@ -30,13 +30,13 @@ gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_2
 option `-m` means using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
 
 ## Download one partition of the data
-This is the guide for downloadin one partition of the data for one of the machine. You need to repeat the downloading and decompressing procedures for all the machines.
+This is the guide for downloading one partition of the data for one of the machine. You need to repeat the downloading and decompressing procedures for all the machines.
 
 ### Pre-requisites
-`python3` is required to run the script we will use `google-cloud-storage` package. and `gzip` and GNU `parallel` are required to uncompress the data. On CentOs, the command is
+The script require python installation and `google-cloud-storage` package. Decompressing data requires `gzip` and `GNU parallel`. On CentOS, the command is
 ```sh
 sudo yum install -y  python3-pip perl bzip2 gzip wget lynx
-# install python3 google-cloud-storage package
+# install google-cloud-storage package
 pip3 install google-cloud-storage
 # install GNU parallel
 (wget -O - pi.dk/3 || lynx -source pi.dk/3 || curl pi.dk/3/ || \
@@ -45,9 +45,9 @@ sh install.sh
 ```
 
 ### Download data
-Use the `download_one_partition.py` to download one partition of the data. The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
+Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so it can be any Google Cloud users. The tutorial for creating the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
 
-The usage of the script is `python3 download_one_partition.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in the background using `nohup`.
+The usage of the script is `python3 download_one_partition.py [data] [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
 ```sh
 # on node m1
 nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
@@ -69,15 +69,15 @@ nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 
 ### Download for all the machines
 The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
-If you go through the above procedures and have pre-requisite packages setup on all the machines. You can also use the script `download_all.py` to download and decompress data for all the machines. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
+If you go through the above procedures and have pre-requisite packages setup on all the machines. You can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
 python3 download_all.py [data] [start ip addresss] [number of nodes] 
-#for example
+#for example, to download and decompress 30TB data for machines from IP 10.128.0.4 to 10.128.0.13 
 python3 download_all.py 30t 10.128.0.4 10
 ```
 
 ## Run queries and updates
-The dataset does not have header. So do not add the option `--header`. To load the data (take ~12hr)
+Please refer to the the [parent page](../) for the installation of TigerGraph. The dataset does not have header. To load the data (take ~12hr)
 ```sh
 ./driver.py load all ~/sf10000 
 ```
