@@ -3,8 +3,8 @@
 * [Direct download](#Direct-download-(not-recommended))
 * [Download one partition](#Download-one-partition-of-the-data)
    * [Pre-requisites](#Pre-requisites)
-   * [Download data](#Donwload-data)
-   * [Uncompress data](#Uncompress-data)
+   * [Download data](#Download-data)
+   * [Decompress data](#Decompress-data)
 * [Run queries and updates](#Run-queries-and-updates)
 * [About queries](#About-queries)
 
@@ -52,11 +52,7 @@ The usage of the script is `python3 download_one_partition.py [node index] [numb
 # on node m1
 nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The data location in GCS bucket is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, use
-```sh
-# download 30TB data
-nohup python3 -u download_one_partition.py 30t 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
-```
+The data location in GCS bucket is hard coded in the code. The data is downloaded to `./sf10000/`. 
 
 ### Decompress data
 Decompress the data on each node in parallel.
@@ -94,7 +90,7 @@ Perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. 
 ./driver.py refresh ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7 -s 1
 ```
 
-The combine command in background is
+The combined command in background is
 ```sh
 nohup python3 -u ./driver.py all ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
