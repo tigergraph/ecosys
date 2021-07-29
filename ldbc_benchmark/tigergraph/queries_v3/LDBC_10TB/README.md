@@ -62,7 +62,9 @@ nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 
 We also provide a script `download_all.py` to download and decompress for all the nodes. The script require installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
-python3 download_all.py [start ip addresss] [number of nodes] -d [data type]
+python3 download_all.py [data] [start ip addresss] [number of nodes] 
+#for example
+python3 download_all.py 30t 10.128.0.4 10
 ```
 
 ## Run queries and updates

@@ -6,9 +6,9 @@ from scp import SCPClient
 
 
 parser = argparse.ArgumentParser(description='Download and uncompress the data on all the nodes.')
+parser.add_argument('data', type=str, help='the data size. 10t or 30t')
 parser.add_argument('ip', type=str, help='starting ip address')
 parser.add_argument('nodes', type=int, help='the number of nodes')
-parser.add_argument('--data', '-d', type=str, default='10t' ,help='the data size. 10t or 30t')
 args = parser.parse_args()
 
 user = "tigergraph"
@@ -36,16 +36,19 @@ def main():
     print(f'logging to {ip}')
     scp.put('download_one_partition.py', workdir)
     scp.put('download_decompress.sh', workdir)
-    ssh.exec_command(f""" 
+    """
+    ssh.exec_command(f''' 
       cd {workdir}
+      . .profile
       export index={i}
       export nodes={args.nodes}
       export data={args.data}
       export target={target}
       nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &  
-    """)
+    ''')
+    """
     time.sleep(4)
-    ssh.exec_command('tail foo.out')
+    ssh.exec_command(f'tail {workdir}/foo.out')
     ssh.close()
     scp.close()  
 

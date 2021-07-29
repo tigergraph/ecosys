@@ -1,13 +1,12 @@
 #!usr/bin/sh
 # remove existing data
-echo '======= start remove ======='
+echo "remove folder $target"
 rm -r $target
-echo '======= done remove ======='
+echo 'done remove'
 
 # download data
-echo '======= start download ======='
+echo "download ($index/$nodes)"
 python3 -u download_data_gcs.py $index $nodes -d $data 
-echo '======= done download ======='
 
 # decompress data
 echo '======= start decompress ======='

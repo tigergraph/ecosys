@@ -82,7 +82,7 @@ def download_one_partition(data):
         i += 1
         if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
         csv = blob_name.rsplit('/',1)[-1]
-        print(name, i)
+        if i<100: print(name, i)
         jobs.append((blob_name, target_dir/csv))
 
   for d1 in ['inserts_split','deletes']:
@@ -97,7 +97,7 @@ def download_one_partition(data):
         i += 1
         if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
         batch, csv = blob_name.rsplit('/',2)[-2:]
-        print(name, batch, i)
+        if i<100: print(name, batch, i)
         target_dir = target / loc / batch
         target_dir.mkdir(parents=True, exist_ok=True)
         jobs.append((blob_name, target_dir/csv))
@@ -106,10 +106,11 @@ def download_one_partition(data):
   with Pool(processes=cpu_count()) as pool:
     client = storage.Client()
     gcs_bucket = client.bucket(bucket)
+    print(f'start downloading {len(jobs)} files ...')
     def download(job):
       blob_name, target = job
       gcs_bucket.blob(blob_name).download_to_filename(target)
-      print('download to ', str(target))
+      #print('download to ', str(target))
     pool.map(download,jobs)
   print("downloading is done")
 
