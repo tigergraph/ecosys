@@ -73,7 +73,6 @@ for d2 in ['static', 'dynamic']:
       csv = blob.name.rsplit('/',1)[-1]
       print(name, i)
       blob.download_to_filename(target/csv)
-"""
 for d1 in ['inserts_split','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
@@ -89,4 +88,3 @@ for d1 in ['inserts_split','deletes']:
       target = args.target / loc / batch
       target.mkdir(parents=True, exist_ok=True)
       blob.download_to_filename(target/csv)
-"""
