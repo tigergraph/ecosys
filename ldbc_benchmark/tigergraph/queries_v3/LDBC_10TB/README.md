@@ -33,7 +33,7 @@ option `-m` means using multiple threads. When using multiple machines, I recomm
 This is the guide for downloading one partition of the data for one of the machine. You need to repeat the downloading and decompressing procedures for all the machines.
 
 ### Pre-requisites
-The script require python installation and `google-cloud-storage` package. Decompressing data requires `gzip` and `GNU parallel`. On CentOS, the command is
+The script requires python installation and `google-cloud-storage` package. Decompressing data requires `gzip` and `GNU parallel`. On CentOS, the command is
 ```sh
 sudo yum install -y  python3-pip perl bzip2 gzip wget lynx
 # install google-cloud-storage package
@@ -45,7 +45,7 @@ sh install.sh
 ```
 
 ### Download data
-Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so it can be any Google Cloud users. The tutorial for creating the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
+Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so you can use the service key from any Google account. The tutorial for creating the service key can be found on [GCP document](https://cloud.google.com/docs/authentication/getting-started).
 
 The usage of the script is `python3 download_one_partition.py [data] [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
 ```sh
