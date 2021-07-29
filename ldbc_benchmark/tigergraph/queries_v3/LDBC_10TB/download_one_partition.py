@@ -114,5 +114,5 @@ def download_one_partition(data):
     pool.map(download,jobs)
   print("downloading is done")
 
-if __name__ == 'main':
+if __name__ == '__main__':
   download_one_partition(args.data)
