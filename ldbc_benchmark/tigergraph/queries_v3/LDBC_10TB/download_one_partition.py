@@ -10,6 +10,13 @@ parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 args = parser.parse_args()
 
+pool = Pool(processes=cpu_count())
+client = storage.Client()  
+gcs_bucket = client.bucket(bucket)
+def download(job):
+  blob_name, target = job
+  gcs_bucket.blob(blob_name).download_to_filename(target)
+  
 def download_one_partition(data):
   buckets = {
     '10t': 'ldbc_snb_10k',
@@ -82,7 +89,7 @@ def download_one_partition(data):
         i += 1
         if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
         csv = blob_name.rsplit('/',1)[-1]
-        if i<100: print(name, i)
+        if name=='Comment' and i<100: print(name, i)
         jobs.append((blob_name, target_dir/csv))
 
   for d1 in ['inserts_split','deletes']:
@@ -97,21 +104,14 @@ def download_one_partition(data):
         i += 1
         if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
         batch, csv = blob_name.rsplit('/',2)[-2:]
-        if i<100: print(name, batch, i)
+        if name=='Comment' and i<100: print(name, batch, i)
         target_dir = target / loc / batch
         target_dir.mkdir(parents=True, exist_ok=True)
         jobs.append((blob_name, target_dir/csv))
 
-    
-  with Pool(processes=cpu_count()) as pool:
-    client = storage.Client()
-    gcs_bucket = client.bucket(bucket)
-    print(f'start downloading {len(jobs)} files ...')
-    def download(job):
-      blob_name, target = job
-      gcs_bucket.blob(blob_name).download_to_filename(target)
-      #print('download to ', str(target))
-    pool.map(download,jobs)
+  #print('download to ', str(target))
+  print(f'start downloading {len(jobs)} files ...')
+  pool.map(download,jobs)
   print("downloading is done")
 
 if __name__ == '__main__':

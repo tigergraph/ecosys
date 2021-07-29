@@ -45,9 +45,6 @@ def main():
       export target={target}
       nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &  
     ''')
-    for line in stdout.read().splitlines():
-      print(line)
-    
     time.sleep(4)
     stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/foo.out')
     for line in stdout.read().splitlines():
