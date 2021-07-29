@@ -9,19 +9,29 @@
 * [About queries](#About-queries)
 
 ## Direct download (not recommended)
-The data of 10TB is located in `gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/` and 30 TB in `gs://ldbc_snb_30k/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/`. You can use `gsutil ls` to explore the two folder
+The location of data
+- 10TB LDBC SNB data: gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
+- 30TB LDBC SNB data: gs://ldbc_snb_30k/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/
+
+You can use `gsutil ls` to explore the two folder. This requires installation of [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 ```sh
 gsutil ls gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
 ```
-You should see four folders: `initial_snapshot`, `inserts`, `inserts_split`, `deletes`. The `inserts_split` is the same data as `inserts` but csv files are split into smaller CSVs.
+You will see four folders
+- initial_snapshot
+- inserts
+- inserts_split
+- deletes
 
-To download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]. 
+The `inserts_split` stores the same data as `inserts` but csv files are split into smaller CSV files. The command to download the whole dataset is
 ```sh
 gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
 ```
-option `-m` means running using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
+option `-m` means using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
 
 ## Download one partition of the data
+This is the guide for downloadin one partition of the data for one of the machine. You need to repeat the downloading and decompressing procedures for all the machines.
+
 ### Pre-requisites
 `python3` is required to run the script we will use `google-cloud-storage` package. and `gzip` and GNU `parallel` are required to uncompress the data. On CentOs, the command is
 ```sh
@@ -49,7 +59,7 @@ nohup python3 -u download_one_partition.py 30t 0 4 -d 30t  > foo.out 2>&1 < /dev
 ```
 
 ### Decompress data
-Uncompress the data on each node in parallel.
+Decompress the data on each node in parallel.
 ```sh
 cat << EOF > uncompress.sh
 cd sf10000
@@ -60,7 +70,10 @@ EOF
 nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 ```
 
-We also provide a script `download_all.py` to download and decompress for all the nodes. The script require installation of `paramiko` and `scp` on the host. The usage is 
+
+### Download for all the machines
+The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
+If you go through the above procedures and have pre-requisite packages setup on all the machines. You can also use the script `download_all.py` to download and decompress data for all the machines. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
 python3 download_all.py [data] [start ip addresss] [number of nodes] 
 #for example
