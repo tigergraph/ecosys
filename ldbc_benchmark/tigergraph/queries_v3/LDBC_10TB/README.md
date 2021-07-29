@@ -17,7 +17,7 @@ You can use `gsutil ls` to explore the two folder. This requires installation of
 ```sh
 gsutil ls gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
 ```
-You will see four folders
+The ending `/` must be included. You will see four folders
 - initial_snapshot
 - inserts
 - inserts_split
