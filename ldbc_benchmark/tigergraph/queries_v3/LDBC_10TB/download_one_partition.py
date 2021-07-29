@@ -96,19 +96,27 @@ for d1 in ['inserts_split','deletes']:
       i += 1
       if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
       batch, csv = blob_name.rsplit('/',2)[-2:]
-      if name=='Comment' and batch == 'batch_id=2012-11-29' and i<100: print(name, batch, i)
+      if name=='Comment' and batch == 'batch_id=2012-11-29' and i<100: print(d1, name, batch, i)
       target_dir = target / loc / batch
       target_dir.mkdir(parents=True, exist_ok=True)
       jobs.append((blob_name, target_dir/csv))
 
-def download(job):
-  client = storage.Client()  
-  gcs_bucket = client.bucket(bucket)
-  blob_name, target = job
-  gcs_bucket.blob(blob_name).download_to_filename(target)
 
 #print('download to ', str(target))
 print(f'start downloading {len(jobs)} files ...')
+njobs = cpu_count()*5
+jobs2 = [[] for i in range(njobs)]
+for i,job in enumerate(jobs):
+  jobs2[i%njobs].append(job)
+
+def download(jobs):
+  client = storage.Client()  
+  gcs_bucket = client.bucket(bucket)
+  for job in jobs:
+    blob_name, target = job
+    gcs_bucket.blob(blob_name).download_to_filename(target)
+
+
 with Pool(processes=cpu_count()) as pool:
-  pool.map(download,jobs)
+  pool.map(download,jobs2)
 print("downloading is done")
