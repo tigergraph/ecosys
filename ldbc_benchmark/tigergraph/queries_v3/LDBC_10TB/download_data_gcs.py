@@ -2,17 +2,31 @@
 from google.cloud import storage
 from pathlib import Path
 import argparse
-
+from multiprocessing import Pool, cpu_count
 
 parser = argparse.ArgumentParser(description='Download one partition of initial_snapshot/ and inserts/ and whole data set of deletes/.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
-parser.add_argument('--bucket', '-b', type=str, default='ldbc_snb_10k' ,help='bucket to download ldbc snb data from')
-parser.add_argument('--target', '-t', type=Path, default=Path('sf10000_2'), help='target directory')
-parser.add_argument('--root', '-r', type=str, default='v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/', 
-  help='path to composite-projected-fk')
-
+parser.add_argument('--data', '-d', type=str, default='10t' ,help='the data size 10t and 30t data')
 args = parser.parse_args()
+
+buckets = {
+  '10t': 'ldbc_snb_10k',
+  '30t': 'ldbc_snb_30k',
+}
+roots = {
+  '10t':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
+  '30t':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'
+}
+targets = {
+  '10t':'sf10k',
+  '30t':'sf30k'
+}
+
+bucket = buckets[args.data]
+root = roots[args.data]
+target = Path(targets[args.data])
+
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,
@@ -58,33 +72,47 @@ DYNAMIC_NAMES = [
 NAMES = {'static':STATIC_NAMES, 'dynamic':DYNAMIC_NAMES}
 client = storage.Client()
 
+jobs = []
 d1 ='initial_snapshot'
 for d2 in ['static', 'dynamic']:
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
-    prefix = args.root + loc
-    target = args.target / loc
-    target.mkdir(parents=True, exist_ok=True)
+    prefix = root + loc
+    target_dir = target / loc
+    target_dir.mkdir(parents=True, exist_ok=True)
     i = -1
-    for blob in client.list_blobs(args.bucket, prefix=prefix):
-      if not blob.name.endswith('.csv.gz'): continue
+    for blob in client.list_blobs(bucket, prefix=prefix):
+      blob_name = blob.name
+      if not blob_name.endswith('.csv.gz'): continue
       i += 1
       if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
-      csv = blob.name.rsplit('/',1)[-1]
+      csv = blob_name.rsplit('/',1)[-1]
       print(name, i)
-      blob.download_to_filename(target/csv)
+      jobs.append((blob_name, target_dir/csv))
+
 for d1 in ['inserts_split','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
-    prefix = args.root + loc
+    prefix = root + loc
     i = -1
-    for blob in client.list_blobs(args.bucket, prefix=prefix):
-      if not blob.name.endswith('.csv.gz'): continue
+    for blob in client.list_blobs(bucket, prefix=prefix):
+      blob_name = blob.name
+      if not blob_name.endswith('.csv.gz'): continue
       i += 1
       if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
-      batch, csv = blob.name.rsplit('/',2)[-2:]
+      batch, csv = blob_name.rsplit('/',2)[-2:]
       print(name, batch, i)
-      target = args.target / loc / batch
-      target.mkdir(parents=True, exist_ok=True)
-      blob.download_to_filename(target/csv)
+      target_dir = target / loc / batch
+      target_dir.mkdir(parents=True, exist_ok=True)
+      jobs.append((blob_name, target_dir/csv))
+
+
+gcs_bucket = client.bucket(bucket)
+def download(job):
+  blob_name, target = job
+  gcs_bucket.blob(blob_name).download_to_filename(target)
+  print('download to ', str(target))
+  
+with Pool(processes=cpu_count()) as pool:
+  pool.map(download,jobs)

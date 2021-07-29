@@ -50,12 +50,18 @@ gsutil -m cp -r inserts_split gs://ldbc_snb_10k/v1/results/sf10000-compressed/ru
 ### Download data
 Use the `download_data_gcs.py` to download the certain partition of the data. The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
 
-The usage of the script is `download_data.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine.
+The usage of the script is `download_data.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in the background using `nohup`.
 ```sh
 # on node m1
-python3 download_data_gcs.py 0 4
+nohup python3 -u download_data_gcs.py 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. 
+The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, just add option `-d 30t`.
+```sh
+# on node m1
+nohup python3 -u download_data_gcs.py 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
+```
+
+
 
 ### Uncompress data
 Uncompress the data on each node in parallel.

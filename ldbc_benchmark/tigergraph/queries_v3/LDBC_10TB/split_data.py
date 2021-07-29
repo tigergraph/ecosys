@@ -1,4 +1,4 @@
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 import gzip
 from pathlib import Path
 
@@ -16,5 +16,5 @@ def split(f):
     for fo in outputs: fo.close()
   f.unlink()
 
-with Pool(processes=80) as pool:
+with Pool(processes=cpu_count()) as pool:
   pool.map(split, files)
