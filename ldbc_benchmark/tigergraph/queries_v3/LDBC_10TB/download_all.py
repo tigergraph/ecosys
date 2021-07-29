@@ -33,7 +33,7 @@ def main():
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
     target = '/home/tigergraph/' + targets[args.data]
-    
+    print(f'logging to {ip}')
     scp.put('download_one_partition.py', workdir)
     scp.put('download_decompress.sh', workdir)
     ssh.exec_command(f""" 

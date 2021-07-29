@@ -13,11 +13,13 @@ The data of 10TB is located in `gs://ldbc_snb_10k/v1/results/sf10000-compressed/
 ```sh
 gsutil ls gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
 ```
-or download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]. option `-m` means running using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
+You should see four folders: `initial_snapshot`, `inserts`, `inserts_split`, `deletes`. The `inserts_split` is the same data as `inserts` but csv files are split into smaller CSVs.
+
+To download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]. 
 ```sh
 gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
 ```
-
+option `-m` means running using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
 
 ## Download one partition of the data
 ### Pre-requisites
