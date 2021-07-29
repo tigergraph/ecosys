@@ -32,6 +32,21 @@ pip3 install google-cloud-storage
 sh install.sh
 ```
 
+### Split data in inserts folder
+The original data in `inserts` folder for each date is a single large csv file. It is better to split these data into smaller csv files so that the cluster can load the data in parallel. I have uploaded the split data in the folder `inserts_split`. If it does not exist, the command for spliting the data in the folder is 
+```sh
+mkdir sf10000
+cd sf10000
+gsutil -m cp -r gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/inserts .
+find . -name _SUCCESS -exec rm '{}' \;
+# check the number of files. It should be 759
+find . -type f | wc -l
+python3 split_data.py
+find . -name *.csv  -print0 | parallel -q0 gzip 
+mv inserts inserts_split
+gsutil -m cp -r inserts_split gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
+```
+
 ### Download data
 Use the `download_data_gcs.py` to download the certain partition of the data. The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
 
