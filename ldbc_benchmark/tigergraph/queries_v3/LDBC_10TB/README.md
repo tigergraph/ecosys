@@ -9,11 +9,11 @@
 * [About queries](#About-queries)
 
 ## Direct download (not recommended)
-You can access a single sample csv file by using 
+The data of 10TB is located in `gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/` and 30 TB in `gs://ldbc_snb_30k/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/`. You can use `gsutil ls` to explore the two folder
 ```sh
-wget https://storage.googleapis.com/ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/deletes/dynamic/Comment/batch_id%3D2012-11-29/part-00000-e89742bf-096f-44c5-88e5-aa3822fbff75.c000.csv.gz
+gsutil ls gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
 ```
-or download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]. option `-m` means running using multiple threads. However, in the benchmark, I used 24 nodes and each node only donwload one part of the data set. The procedures is in the next section.
+or download the whole data using (Google Cloud SDK)[https://cloud.google.com/sdk/docs/install]. option `-m` means running using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
 ```sh
 gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
 ```
@@ -32,42 +32,35 @@ pip3 install google-cloud-storage
 sh install.sh
 ```
 
-### Split data in inserts folder
-The original data in `inserts` folder for each date is a single large csv file. It is better to split these data into smaller csv files so that the cluster can load the data in parallel. I have uploaded the split data in the folder `inserts_split`. If it does not exist, the command for spliting the data in the folder is 
-```sh
-mkdir sf10000
-cd sf10000
-gsutil -m cp -r gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/inserts .
-find . -name _SUCCESS -exec rm '{}' \;
-# check the number of files. It should be 759
-find . -type f | wc -l
-python3 split_data.py
-find . -name *.csv  -print0 | parallel -q0 gzip 
-mv inserts inserts_split
-gsutil -m cp -r inserts_split gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
-```
-
 ### Download data
-Use the `download_data_gcs.py` to download the certain partition of the data. The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
+Use the `download_one_partition.py` to download one partition of the data. The python script in the next step requires a GCP service key in json. The data is public and open to all users, so it is no matter what the public key is. The tutorial for setting up the service key can be found on [GCP docs](https://cloud.google.com/docs/authentication/getting-started).
 
-The usage of the script is `download_data.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in the background using `nohup`.
+The usage of the script is `python3 download_one_partition.py [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in the background using `nohup`.
 ```sh
 # on node m1
-nohup python3 -u download_data_gcs.py 0 4  > foo.out 2>&1 < /dev/null &
+nohup python3 -u download_one_partition.py 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, just add option `-d 30t`.
+The GCS bucket address is hard coded in the code. The data is downloaded to `./sf10000/`. For 30TB data, just add option `-d 30t`
 ```sh
-# on node m1
-nohup python3 -u download_data_gcs.py 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
+# download 30TB data
+nohup python3 -u download_one_partition.py 0 4 -d 30t  > foo.out 2>&1 < /dev/null &
 ```
 
-
-
-### Uncompress data
+### Decompress data
 Uncompress the data on each node in parallel.
 ```sh
+cat << EOF > uncompress.sh
 cd sf10000
+mv inserts_split inserts 
 find . -name *.gz  -print0 | parallel -q0 gunzip 
+echo 'done uncompress'
+EOF
+nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
+```
+
+We also provide a script `download_all.py` to download and decompress for all the nodes. The script require installation of `paramiko` and `scp` on the host. The usage is 
+```sh
+python3 download_all.py [start ip addresss] [number of nodes] -d [data type]
 ```
 
 ## Run queries and updates

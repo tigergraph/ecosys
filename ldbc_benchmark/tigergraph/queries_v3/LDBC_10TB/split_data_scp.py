@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import subprocess
 from pathlib import Path
 import math
 import os
@@ -10,7 +9,6 @@ from scp import SCPClient
 
 main_parser = argparse.ArgumentParser(description='Split data')
 main_parser.add_argument('data_dir', type=Path, help='Data directory')
-
 main_parser.add_argument('--target','-t', type=Path, default=Path('~/snb_split'), help='target directory')
 args = main_parser.parse_args()
 
