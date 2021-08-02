@@ -69,7 +69,7 @@ nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 
 ### Download for all the machines
 The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
-If you go through the above procedures and have pre-requisite packages setup on all the machines. You can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
+If you have pre-requisite packages setup on all the machines, you can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
 python3 download_all.py [data] [start ip addresss] [number of nodes] 
 #for example, to download and decompress 30TB data for machines from IP 10.128.0.4 to 10.128.0.13 
