@@ -5,20 +5,19 @@ SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   SumAccum<UINT> @ncomment;
   SetAccum<STRING> @@country, @@tag, @@tagclass;
-  STRING smalltag; // for bi 17
   V = {Country.*};
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
   V = {TagClass.*};
   V = SELECT v FROM V:v LIMIT 3;
   V = SELECT v FROM V:v ACCUM @@tagclass += v.name;
-  T2 = SELECT t FROM Tag:t
+  T = SELECT t FROM Tag:t
     ACCUM t.@ncomment += t.outdegree("HAS_TAG_REVERSE")
-    HAVING t.@ncomment > 1000
+    HAVING t.@ncomment > 6000
     ORDER BY t.@ncomment ASC
-    LIMIT 4;
-  T2 = SELECT t FROM T2:t ACCUM @@tag += t.name;
-  PRINT @@country, @@tag, @@tagclass, smalltag;
+    LIMIT 10;
+  T = SELECT t FROM T:t ACCUM @@tag += t.name;
+  PRINT @@country, @@tag, @@tagclass;
 }
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
@@ -116,7 +115,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
     FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
     HAVING c.@nperson > 50
     ORDER BY c.@nperson ASC
-    LIMIT 20;
+    LIMIT 10;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
     ACCUM p.@cities += c;
   M = SELECT m 

@@ -1,16 +1,16 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
-TYPEDEF TUPLE<INT person1Id, INT person2Id, STRING city1Name, INT score> pairScore;
+TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
   MapAccum<VERTEX<City>, 
-      GroupByAccum<INT person1Id, INT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
+      GroupByAccum<UINT person1Id, UINT person2Id, OrAccum<bool> b1, OrAccum<bool> b2, 
           OrAccum<bool> b3, OrAccum<bool> b4, OrAccum<bool> b5>> @@pairScoreMap;
-  SumAccum<INT> @@score;
+  SumAccum<UINT> @@score;
   MinAccum<VERTEX<City>> @city;
   SetAccum<VERTEX<City>> @@CityNonzeroScore;
   OrAccum @valid;
-  SumAccum<INT> @pid1, @pid2;
-  MinAccum<INT> @min_pid1, @@min_pid2;
+  SumAccum<UINT> @pid1, @pid2;
+  MinAccum<UINT> @min_pid1, @@min_pid2;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@result;
   

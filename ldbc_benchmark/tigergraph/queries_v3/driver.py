@@ -310,9 +310,8 @@ def cmd_load_query(args):
 def cmd_load_all(args):
     '''Loads the schema, data and queries.'''
     cmd_load_schema(args)
-    cmd_load_query(args)
     cmd_load_data(args)
-
+    cmd_load_query(args)
 """
     Print graph satistics
 """
@@ -402,7 +401,6 @@ def cmd_gen(args, output=None):
     parameters['bi16']['dateA'] = gen[16]['dateA'].replace(' ','T')
     parameters['bi16']['dateB'] = gen[16]['dateB'].replace(' ','T')
     parameters['bi17']['delta'] = randrange(12,16)
-    parameters['bi17']['tag'] = gen[0]['smalltag']
     parameters['bi18']['person1Id'] = gen[15]['person1Id']
     parameters['bi19']['city1Id'] = gen[19]['@@cityIds'][0]
     parameters['bi19']['city2Id'] = gen[19]['@@cityIds'][1]

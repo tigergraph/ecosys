@@ -1,5 +1,8 @@
 /*
-Similar query as bi20-1.gsql  but in distributed mode
+bi20-2.gsql
+This is similar to bi20-1.gsql
+This query is much slower than bi20-2.gsql for SF1. 
+But works well for larger data size on multiple machines, because this one support distributed.
 */
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
