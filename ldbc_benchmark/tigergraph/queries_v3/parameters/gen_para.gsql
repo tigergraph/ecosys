@@ -12,18 +12,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   V = {TagClass.*};
   V = SELECT v FROM V:v LIMIT 3;
   V = SELECT v FROM V:v ACCUM @@tagclass += v.name;
-  M = {Comment.*};
-  M = SELECT m FROM M:m LIMIT 500000;
-  T = SELECT t FROM Tag:t
-    ACCUM t.@ncomment += t.outdegree("HAS_TAG_REVERSE")
-    ORDER BY t.@ncomment DESC
-    LIMIT 10;
   T2 = SELECT t FROM Tag:t
-    HAVING t.@ncomment > 40
+    ACCUM t.@ncomment += t.outdegree("HAS_TAG_REVERSE")
+    HAVING t.@ncomment > 1000
     ORDER BY t.@ncomment ASC
-    LIMIT 1;
-  T2 = SELECT t FROM T2:t ACCUM smalltag = t.name;
-  T = SELECT t FROM T:t ACCUM @@tag += t.name;
+    LIMIT 4;
+  T2 = SELECT t FROM T2:t ACCUM @@tag += t.name;
   PRINT @@country, @@tag, @@tagclass, smalltag;
 }
 
@@ -120,8 +114,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   P = {Person.*};
   C = SELECT c 
     FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
+    HAVING c.@nperson > 50
     ORDER BY c.@nperson ASC
-    LIMIT 10;
+    LIMIT 20;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
     ACCUM p.@cities += c;
   M = SELECT m 
