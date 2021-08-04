@@ -57,8 +57,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() {
     PRINT nComment, nPost, nForum, nPerson,
         nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
         @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
-        @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
-        @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
+        @@HAS_TAG, @@IS_LOCATED_IN, @@KNOWS, @@LIKES, @@REPLY_OF, 
+        @@STUDY_AT, @@WORK_AT,
+        @@HAS_TYPE, @@IS_PART_OF, @@IS_SUBCLASS_OF;
 }
 
 
