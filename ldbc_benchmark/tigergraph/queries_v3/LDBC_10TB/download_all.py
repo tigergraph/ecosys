@@ -39,6 +39,7 @@ def main():
     stdin, stdout, stderr = ssh.exec_command(f''' 
       cd {workdir}
       . .profile
+      pip3 install google-cloud-storage 
       export data={args.data}
       export index={i}
       export nodes={args.nodes}

@@ -12,5 +12,4 @@ sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/s
 sudo service sshd reload
 
 sudo apt-get update
-sudo apt-get -y install python3-pip  net-tools sshpass parallel
-pip3 install --user google-cloud-storage
+sudo apt-get -y install python3-pip net-tools sshpass parallel
