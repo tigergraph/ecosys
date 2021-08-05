@@ -101,7 +101,6 @@ for d1 in ['inserts_split','deletes']:
       target_dir.mkdir(parents=True, exist_ok=True)
       jobs.append((blob_name, target_dir/csv))
 
-
 #print('download to ', str(target))
 print(f'start downloading {len(jobs)} files ...')
 njobs = cpu_count()*5
