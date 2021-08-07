@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description='Download one partition of data fro
 parser.add_argument('data',  type=str, help='the data size. 10t or 30t')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
+parser.add_argument('--thread','-t', type=int, default=cpu_count(), help='number of threads')
 args = parser.parse_args()
 
 buckets = {
@@ -103,7 +104,7 @@ for d1 in ['inserts_split','deletes']:
 
 #print('download to ', str(target))
 print(f'start downloading {len(jobs)} files ...')
-njobs = cpu_count()*5
+njobs = args.thread *5
 jobs2 = [[] for i in range(njobs)]
 for i,job in enumerate(jobs):
   jobs2[i%njobs].append(job)
@@ -116,6 +117,6 @@ def download(jobs):
     gcs_bucket.blob(blob_name).download_to_filename(target)
 
 
-with Pool(processes=cpu_count()) as pool:
+with Pool(processes=args.thread) as pool:
   pool.map(download,jobs2)
 print("downloading is done")
