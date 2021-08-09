@@ -5,8 +5,8 @@ rm -r $target
 echo 'done remove'
 
 # download data
-echo "download $data($index/$nodes)"
-python3 -u download_one_partition.py $data $index $nodes && \
+echo "download $data($index/$nodes) using $thread threads"
+python3 -u download_one_partition.py $data $index $nodes -t $thread -k $key && \
 echo 'done download' && \
 echo "deompose files in $target" && \
 mv $target/inserts_split $target/inserts && \

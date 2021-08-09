@@ -33,7 +33,7 @@ option `-m` means using multiple threads. When using multiple machines, I recomm
 This is the guide for downloading one partition of the data for one of the machine. You need to repeat the downloading and decompressing procedures for all the machines.
 
 ### Pre-requisites
-The script requires python installation and `google-cloud-storage` package. Decompressing data requires `gzip` and `GNU parallel`. On CentOS, the command is
+The scrit also requires python installation and `google-cloud-storage` package. Decompressing data requires `gzip` and `GNU parallel`. On CentOS, the command is
 ```sh
 sudo yum install -y  python3-pip perl bzip2 gzip wget lynx
 # install google-cloud-storage package
@@ -47,7 +47,7 @@ sh install.sh
 ### Download data
 Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so you can use the service key from any Google account. The tutorial for creating the service key can be found on [GCP document](https://cloud.google.com/docs/authentication/getting-started).
 
-The usage of the script is `python3 download_one_partition.py [data] [node index] [number of nodes]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
+The usage of the script is `python3 download_one_partition.py [data] [node index] [number of nodes] -k [service-key file] -t [number of threads]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
 ```sh
 # on node m1
 nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
@@ -71,7 +71,7 @@ nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
 If you have pre-requisite packages setup on all the machines, you can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
-python3 download_all.py [data] [start ip addresss] [number of nodes] 
+python3 download_all.py [data] [start ip addresss] [number of nodes] -k [service-key file] -t [number of threads]
 #for example, to download and decompress 30TB data for machines from IP 10.128.0.4 to 10.128.0.13 
 python3 download_all.py 30t 10.128.0.4 10
 ```
