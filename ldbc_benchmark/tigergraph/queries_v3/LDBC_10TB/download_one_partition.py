@@ -12,8 +12,8 @@ parser.add_argument('--thread','-t', type=int, default=cpu_count(), help='number
 args = parser.parse_args()
 
 buckets = {
-    '10t': 'ldbc_snb_10k',
-    '30t': 'ldbc_snb_30k',}
+    '10t': 'ldbc_snb_10t',
+    '30t': 'ldbc_snb_30t',}
 roots = {
   '10t':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
   '30t':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}

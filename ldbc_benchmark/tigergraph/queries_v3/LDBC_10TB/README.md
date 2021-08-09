@@ -10,12 +10,12 @@
 
 ## Direct download (not recommended)
 The location of data
-- 10TB LDBC SNB data: gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
-- 30TB LDBC SNB data: gs://ldbc_snb_30k/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/
+- 10TB LDBC SNB data: gs://ldbc_snb_10t/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
+- 30TB LDBC SNB data: gs://ldbc_snb_30t/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/
 
 You can use `gsutil ls` to explore the two folder. This requires installation of [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 ```sh
-gsutil ls gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
+gsutil ls gs://ldbc_snb_10t/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
 ```
 The ending `/` must be included. You will see four folders
 - initial_snapshot
@@ -25,7 +25,7 @@ The ending `/` must be included. You will see four folders
 
 The `inserts_split` stores the same data as `inserts` but csv files are split into smaller CSV files. The command to download the whole dataset is
 ```sh
-gsutil -m cp -r  gs://ldbc_snb_10k/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
+gsutil -m cp -r  gs://ldbc_snb_10t/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/ .  
 ```
 option `-m` means using multiple threads. When using multiple machines, I recommend to only donwload one part for each machine. The procedures is in the next section.
 
