@@ -75,10 +75,10 @@ def main():
       export target={target}
       export thread={args.thread}
       export key="{key}"
-      nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &  
+      nohup sh download_decompress.sh > log.download 2>&1 < /dev/null &  
     ''')
     time.sleep(4)
-    stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/foo.out')
+    stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/log.download')
     for line in stdout.read().splitlines():
       print(line.decode('utf-8'))
     

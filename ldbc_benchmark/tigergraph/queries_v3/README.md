@@ -46,11 +46,16 @@ gadmin status
 ```
 
 ## Config Tigergraph 
+Enterprise edition also store a backup copy be default. We turn off this backup copy to have higher loading speed and less disk space.
 To increase loading intensive, we can increase the number of loading handler based on the number of cpus in the machine. To see the cpu info, use `lscpu`. 
 The timeout is only needed for large scale factors. It seems python requests are not constrained by the timeout, and timeout is not needed if you run only through python.
 ```sh
+gadmin config entry GPE.BasicConfig.Env
+# add MVExtraCopy=0; (default is 1) to turn off backup copy
+# add ConcurrentRequest=128; (default is 16) may increase loading speed  
+
 gadmin config group RESTPP-LOADER
-# change FileLoader.Factory.HandlerCount from 4 to 40
+# change FileLoader.Factory.HandlerCount from 4 to 40 or 80
 
 gadmin config group timeout 
 # Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
