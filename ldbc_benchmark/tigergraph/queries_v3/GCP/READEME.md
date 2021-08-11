@@ -25,7 +25,7 @@ gcloud compute addresses create ip${i} --region us-central1 --subnet default  --
 done
 
 # create instances with a specific IP
-for i in $(seq 11 19)
+for i in $(seq 0 39)
 do
 let "m = $i + 1"
 let "ip = $i + 10"
