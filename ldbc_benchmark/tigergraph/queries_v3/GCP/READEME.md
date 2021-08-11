@@ -12,7 +12,7 @@ gcloud init
 Reserve IP address (to be filled)
 
 Create intance template `ultramem-40`. * It is better to create a large number of smaller machines than a small number of large mechines. Each machine only run one instance of GPE. Larger number of machines speed up loading and query running. * 
-Machine type is `m1-ultramem-40`. Boot disk system use `Ubuntu 20LTS` and `balanced persistent disk` of `4000 GB`.
+Machine type is `m1-ultramem-40`. Boot disk system use `CentOS 7` (there are bugs on Ubuntu !!!) and `balanced persistent disk` of `4096 GB`. 
 
 Create instances.
 ```sh

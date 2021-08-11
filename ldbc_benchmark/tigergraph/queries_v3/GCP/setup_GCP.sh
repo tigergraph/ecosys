@@ -1,7 +1,7 @@
 # !/usr/bin/sh
 # run `gcloud init` to log in before using this script
-export sys=ubuntu
-export nvm=10
+export sys=centOS
+export nvm=40
 gcloud compute config-ssh
 for i in $(seq 1 $nvm)
 do
