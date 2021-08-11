@@ -36,9 +36,10 @@ roots = {
   '30t':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
 
 def main():
+  key = ''
   if args.key:
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
-  
+    key = f'-k {args.key}'
   print("check data accessibility")
   storage_client = storage.Client()  
   bucket_name = 'my_bucket_name'
@@ -73,7 +74,7 @@ def main():
       export nodes={args.parts if args.parts else args.nodes}
       export target={target}
       export thread={args.thread}
-      export key={os.environ["GOOGLE_APPLICATION_CREDENTIALS"]}
+      export key="{key}"
       nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &  
     ''')
     time.sleep(4)
