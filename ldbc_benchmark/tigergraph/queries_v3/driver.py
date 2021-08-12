@@ -323,6 +323,9 @@ def quick_stat():
     return list(stat.values())
 
 def cmd_stat(args):
+    # this command flushes delta records in memory to disk. Without this command, outdegree function can return a lagged value. 
+    subprocess.run('curl -s -H "GSQL-TIMEOUT: 2500000" "http://127.0.0.1:9000/rebuildnow', shell=True)
+            
     t0 = timer()
     stat = STAT_WORKLOADS[1].run(None).result
     t1 = timer()
@@ -599,7 +602,6 @@ def cmd_refresh(args):
             
         # run query 
         if args.read_freq and (date - begin).days % args.read_freq == 0: 
-            time.sleep(20)
             stat_dict = cmd_stat(args)
             batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
             batch_log += ',' + toStr([tot_ins_time, tot_del_time])

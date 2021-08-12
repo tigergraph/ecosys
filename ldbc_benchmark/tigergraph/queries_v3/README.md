@@ -95,9 +95,14 @@ Load schema, data, and query. Usage of `driver.py` can be shown using `-h` optio
 ./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/ --header
 ./driver.py load query
 ```
-THis is equivalent to
+This is equivalent to
 ```sh
-./driver.py load all ~/initial_snapshot --header
+./driver.py load all ~/sf1/sf1/csv/bi/composite-projected-fk/ --header
+```
+
+To check the data size, use
+```sh
+gstatusgraph
 ```
 
 The directory can include the machine. Default setting is `ANY`, which loads any data on each on the machine. If you want to load data on the node m1, use
