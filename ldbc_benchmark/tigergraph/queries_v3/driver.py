@@ -371,7 +371,7 @@ def cmd_gen(args, output=None):
     tag = gen[0]['@@tag']
     tagclass = gen[0]['@@tagclass']
     def genValue(name, Dtype):
-        if name == 'country': return country[randrange(4)]
+        if name == 'country': return country[randrange(3)]
         if name == 'tag': return tag[randrange(3)]
         if name == 'tagClass': return tagclass[randrange(3)]
         if name == 'startDate': 
