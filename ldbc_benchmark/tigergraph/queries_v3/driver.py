@@ -326,6 +326,7 @@ def cmd_stat(args):
     # this command flushes delta records in memory to disk. Without this command, outdegree function can return a lagged value. 
     print('update delta ...')
     subprocess.run('curl -s -H "GSQL-TIMEOUT: 2500000" "http://127.0.0.1:9000/rebuildnow"', shell=True)
+    print()
     print('done update delta ...')
     t0 = timer()
     stat = STAT_WORKLOADS[1].run(None).result
@@ -393,10 +394,10 @@ def cmd_gen(args, output=None):
     date = datetime.strptime(parameters['bi15']['startDate'], "%Y-%m-%dT%H:%M:%S") + timedelta(days=365) 
     
     for k in gen[10].keys(): parameters['bi10'][k] = gen[10][k]
-    i = randrange(4)
     parameters['bi1']['datetime'] = (datetime(2010,2,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
     parameters['bi4']['date'] = (datetime(2012,3,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
-
+    
+    i = randrange(3)
     parameters['bi14']['country1'] = country[i]
     parameters['bi14']['country2'] = country[(i+1)%4]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
