@@ -324,8 +324,9 @@ def quick_stat():
 
 def cmd_stat(args):
     # this command flushes delta records in memory to disk. Without this command, outdegree function can return a lagged value. 
+    print('update delta ...')
     subprocess.run('curl -s -H "GSQL-TIMEOUT: 2500000" "http://127.0.0.1:9000/rebuildnow', shell=True)
-            
+    print('done update delta ...')
     t0 = timer()
     stat = STAT_WORKLOADS[1].run(None).result
     t1 = timer()
