@@ -122,7 +122,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
     ACCUM m.@persons+= p;
-  M = SELECT m2 FROM M:m1 -(<REPLY_OF)-Comment:m2
+  M = SELECT m2 FROM M:m1 -(REPLY_OF>)-_:m2
     WHERE m2.@persons.size() >0 
     ACCUM m1.@persons += m2.@persons;
   M = SELECT m 
