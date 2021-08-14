@@ -115,10 +115,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
     FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
     HAVING c.@nperson > 50
     ORDER BY c.@nperson ASC
-    LIMIT 5;
+    LIMIT 10;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
     ACCUM p.@cities += c
-    LIMIT 1000;
+    LIMIT 10000;
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
     ACCUM m.@persons+= p;
