@@ -452,6 +452,8 @@ def cmd_run(args, output = None):
             alltime.append(t1-t0)
             print(f'param_gen\t20\t{t1-t0:.2f}')
             if args.sleep: time.sleep((t1-t0)*args.sleep)
+        else:
+            alltime.append(0)    
     else:
         parameter = Path(args.parameter).resolve()
         alltime.append(0)
