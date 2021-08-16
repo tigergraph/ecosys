@@ -233,6 +233,7 @@ GEN_WORKLOADS = {
     10: Workload('gen_bi10', ResultTransform()[0][0]),
     15: Workload('gen_bi15', ResultTransform()[0][0]),
     16: Workload('gen_bi16', ResultTransform()[0][0]),
+    18: Workload('gen_bi18', ResultTransform()[0][0]),
     19: Workload('gen_bi19', ResultTransform()[0][0]),
     20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
@@ -355,7 +356,6 @@ def cmd_gen(args, output=None):
         t1 = timer()
         if args.verbose: print(f'done {workload.name} in {t1-t0:.2f} s')
         
-        
     while gen[10]['personId']==0:
         gen[10] = GEN_WORKLOADS[10].run(None).result
         print('rerun gen_bi10')
@@ -406,7 +406,7 @@ def cmd_gen(args, output=None):
     parameters['bi16']['dateA'] = gen[16]['dateA'].replace(' ','T')
     parameters['bi16']['dateB'] = gen[16]['dateB'].replace(' ','T')
     parameters['bi17']['delta'] = randrange(12,16)
-    parameters['bi18']['person1Id'] = gen[15]['person1Id']
+    parameters['bi18'] = gen[18]
     parameters['bi19']['city1Id'] = gen[19]['@@cityIds'][0]
     parameters['bi19']['city2Id'] = gen[19]['@@cityIds'][1]
     parameters['bi20']['company'] = gen[20]['company']

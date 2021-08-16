@@ -101,6 +101,21 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi16() {
   PRINT tagA, dateA, tagB, dateB;
 }
 
+# BI18: for large graph, random person1Id usually gives empty results
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi18() {
+  UINT person1Id;
+  STRING tag;
+  OrAccum @visited;
+  S = SELECT s FROM Person:s LIMIT 1;
+  S = SELECT s FROM S:s ACCUM person1Id = s.id;
+  P1 = SELECT t FROM S-(KNOWS)-Person:t ACCUM t.@visited += TRUE;
+  P2 = SELECT t FROM P1-(KNOWS)-Person:t WHERE NOT t.@visited AND t.id != person1Id
+    LIMIT 1000;
+  T = SELECT t FROM P2-(HAS_INTEREST>)-Tag:t LIMIT 1;
+  T = SELECT t FROM T:t ACCUM tag = t.name;  
+  PRINT person1Id, tag;
+}
+
 # BI 19
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   UINT iter;
@@ -189,7 +204,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   PRINT company, @@person2Ids;
 }
 
-//INSTALL QUERY gen, gen_bi10, gen_bi15, gen_bi16, gen_bi19,gen_bi20
+//INSTALL QUERY gen, gen_bi10, gen_bi15, gen_bi16, gen_bi18, gen_bi19, gen_bi20
 //RUN QUERY gen_bi19()
 //INTERPRET QUERY gen()
 
