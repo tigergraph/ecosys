@@ -60,13 +60,9 @@ cd ldbc_benchmark/tigergraph/queries_v2
 ```
 
 ### Run queries
-bi25 and ic14 requires user defined function bigint_to_string, which is included in ExprFunctions.hpp. Copy the file to tigergraph package.
+bi25 and ic14 requires user defined function bigint_to_string, which is included in ExprFunctions.hpp. Update the user defined function.
 ```bash
-#get the root directory of tigergraph
-ROOTDIR=$(gadmin config get System.AppRoot)
-
-# Copy paste the user defined function to the tigergraph directory
-cp ExprFunctions.hpp $ROOTDIR/dev/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
+gsql 'PUT ExprFunctions FROM ExprFunctions.hpp'
 ```
 
 gsql_batch.sh is the script to parse gsql files in batch. The script stores query names in environment variable $query_list and loads three functions: install, drop and run to install, drop and run those queries. For help info: run "gsql_batch.sh -h"
