@@ -1,0 +1,110 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: installer
+  namespace: default
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      initContainers:
+      - name: init-tigergraph
+        image: alpine:latest
+        env:
+          - name: SERVICE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: service.headless.name
+          - name: POD_PREFIX
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: pod.prefix
+          - name: NAMESPACE
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: namespace
+          - name: CLUSTER_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: cluster_size
+        command: 
+        - "/bin/sh"
+        - "-c"
+        - >
+          set -e;
+          for i in $(seq 1 ${CLUSTER_SIZE});
+          do
+            until nslookup ${POD_PREFIX}-$((i-1)).${SERVICE_NAME}.${NAMESPACE}.svc.cluster.local;
+            do
+              echo waiting for tigergraph;
+              sleep 1;
+            done;
+          done;
+          sleep 15;
+      containers:
+      - name: cluster-installer
+        image: alpine:latest
+        env:
+        - name: LICENSE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: license
+        - name: HA
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: ha
+        - name: SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: service.headless.name
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
+        - name: NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: namespace
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          set -e;
+          apk update && apk add sshpass openssh jq;
+          export SSHPASS='tigergraph';
+          sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-0.${SERVICE_NAME}.${NAMESPACE} "
+            if [[ \$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1) ]]; then
+              echo 'found lagacy data, skip installation'
+            else
+              export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH;
+              tg_cfg=\$(find /home/tigergraph/tigergraph/app/ -name .tg.cfg|head -n 1);
+              ln -sf \$tg_cfg .tg.cfg;
+              cp /tmp/init_tg_cfg /tmp/tg_cfg;
+              sed -i 's/\=/\: /g' /tmp/tg_cfg;
+              echo >> /tmp/tg_cfg;
+              jq -j '.System | \"System.AppRoot: \",.AppRoot' \$tg_cfg >> /tmp/tg_cfg;
+              echo >> /tmp/tg_cfg;
+              if [[ -z \"$LICENSE\" ]]; then
+                jq -j '.System | \"System.License: \",.License' \$tg_cfg >> /tmp/tg_cfg;
+              else
+                echo \"System.License: ${LICENSE}\" >> /tmp/tg_cfg;
+              fi;
+              gadmin config init -i /tmp/tg_cfg --file /tmp/tg.cfg --ha ${HA};
+              cp --remove-destination /tmp/tg.cfg ~/.tg.cfg;
+              gadmin init cluster -y --skip-stop;
+            fi
+          ";
+      restartPolicy: OnFailure
+  backoffLimit: 0

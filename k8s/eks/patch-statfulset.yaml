@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tigergraph
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: tg-data
+        labels:
+          app: tigergraph
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "gp2"
+        resources:
+          requests:
+            storage: 50Gi

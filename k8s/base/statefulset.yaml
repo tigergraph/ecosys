@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: tigergraph
+  name: tigergraph
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tigergraph
+  serviceName: tigergraph
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      containers:
+      - env:
+          - name: SERVICE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: service.headless.name
+          - name: POD_PREFIX
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: pod.prefix
+          - name: NAMESPACE
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: namespace
+          - name: CLUSTER_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: env-config
+                key: cluster_size
+        image: docker.tigergraph.com/tigergraph-k8s:latest
+        imagePullPolicy: IfNotPresent
+        name: tigergraph
+        ports:
+        - containerPort: 9000
+          name: rest
+        - containerPort: 14240
+          name: graphstudio
+        - containerPort: 22
+          name: ssh
+        resources:
+          requests:
+            cpu: 8000m
+            memory: 16Gi
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - |
+                (
+                  if [ "$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1)" ]; then
+                    for i in $(seq 1 ${CLUSTER_SIZE});
+                    do
+                      until nslookup ${POD_PREFIX}-$((i-1)).${SERVICE_NAME}.${NAMESPACE}.svc.cluster.local;
+                      do
+                        echo "wait dns to be updated";
+                        sleep 1;
+                      done;
+                    done;
+                    sleep 15;
+                    export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH
+                    ln -sf /home/tigergraph/tigergraph/data/configs/tg.cfg /home/tigergraph/.tg.cfg
+                    grun all "hostname"
+                    echo "starting service at $(date)"
+                    gadmin start all --with-config /home/tigergraph/.tg.cfg;
+                  else
+                    sudo chown -R tigergraph:tigergraph /home/tigergraph/tigergraph/data;
+                  fi
+                ) > /tmp/init.log 2>&1 &
+                disown -a
+                exit 0
+                "
+        volumeMounts:
+        - mountPath: /home/tigergraph/tigergraph/data
+          name: tg-data
+        - mountPath: /tmp/init_tg_cfg
+          name: config-volume
+          subPath: init_tg_cfg     
+      volumes:
+      - name: config-volume
+        configMap:
+          name: tg-config
+          items: 
+          - key: init_tg_cfg
+            path: init_tg_cfg
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+    - metadata:
+        name: tg-data
+        labels:
+          app: tigergraph
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: ""
+        resources:
+          requests:
+            storage: 50Gi

@@ -1,0 +1,119 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tg-config
+  labels:
+    app: tigergraph
+data:
+  init_tg_cfg: |
+    System.HostList: [{"ID":"m1","Hostname":"127.0.0.1","Region":""}]
+    System.SSH.User.Username: tigergraph
+    System.SSH.User.Password: 
+    System.SSH.User.Privatekey: /home/tigergraph/.ssh/tigergraph_rsa
+    System.DataRoot: /home/tigergraph/tigergraph/data
+    System.AppRoot: /home/tigergraph/tigergraph/app/3.2.0
+    System.LogRoot: /home/tigergraph/tigergraph/log
+    System.TempRoot: /tmp
+    System.License: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJJc3N1ZXIiOiJUaWdlckdyYXBoIEluYy4iLCJBdWRpZW5jZSI6IlRpZ2VyR3JhcGggRnJlZSIsIlN0YXJ0VGltZSI6MTYwNzA0MDUzMiwiRW5kVGltZSI6MTY0MTI1ODUzMiwiSXNzdWVUaW1lIjoxNjA3MDQ0MTMyLCJFZGl0aW9uIjoiRW50ZXJwcmlzZSIsIlZlcnNpb24iOiJBbGwiLCJIb3N0Ijp7Ik1heENQVUNvcmUiOjEwMDAwMDAwMDAwMDAwMDAsIk1heFBoeXNpY2FsTWVtb3J5Qnl0ZXMiOjEwMDAwMDAwMDAwMDAwMDAsIk1heENsdXN0ZXJOb2RlTnVtYmVyIjoxMDI0fSwiVG9wb2xvZ3kiOnsiTWF4VmVydGV4TnVtYmVyIjoxMDAwMDAwMDAwMDAwMDAwLCJNYXhFZGdlTnVtYmVyIjoxMDAwMDAwMDAwMDAwMDAwLCJNYXhHcmFwaE51bWJlciI6MTAyNCwiTWF4VG9wb2xvZ3lCeXRlcyI6NTM2ODcwNjM3MTJ9LCJHU1QiOnsiRW5hYmxlIjp0cnVlLCJab29tQ2hhcnRzTGljZW5zZSI6IntcbiAgXCJsaWNlbnNlXCI6IFwiWkNCLTRtZmk3NDRsdjogWm9vbUNoYXJ0cyBFbnRlcnByaXNlIGxpY2VuY2UgZm9yIFRpZ2VyR3JhcGggZm9yIG9mZmxpbmUgdXNlOyB1cGdyYWRlcyB1bnRpbDogMjAyMi0xMi0zMVwiLFxuICBcImxpY2Vuc2VLZXlcIjogXCI4Zjg2ZWQzM2Y0ZWJmYmE4YTI4NjlkZGUzMmYzYTMwZGI4NGEzOTgxYmEzNmZhZWZlYTMxNDhhYzY4MzkxZTlhYzUzZDU3YmI5MjdmNjY5YWI1ZWJhYzJhYmQ3YTFkNDBiM2UxNDRmZjIwMDYyZWNiZmIwZjJiN2I0ZWFmZWIwYzU2NTc2NjBhZGExZDc1MWNhODU3NWZhYTE1ZWQwODI0NzkwZWQxMjJkY2Q4NjcyZTJiN2QzN2MwNmE3MzFhYTc2MDIwM2FhYmMwYjYzOWEzMjBhOGQxNmI0YmFiNGY5NTJiNTMwOTUzMWI4MDkxNjYwZDVjOGMzNGY0NmMyNjZiOGZiNzc2YzFmN2Y0MTdlMGQ5Y2JkZGFlOTExNTFlY2Y3YmMzZDlkNDgyNWE2MjAwYzk0MWMyMDE4ZDY4YjkyOWE5ZWY2MzQ2MDE5NjFhYmU1MGI0ZTk0ZmY5Y2VjMjA1ODEwYmVlZmRkM2NlZDU2YjM5NTVjYmE0YWIyMGNiNzc5MWE0NmQxNzIwMzNiZmI0ZDIyMDM4ODZhZTllZDFkOWMzOWIyOTM2ODc3Yjc2NzY4ZjQwNWQ5Y2MwY2JlODVjOTE2NDllMDI5YTA0NDFlOGFmYjA2MzY4MTMxZGM1YTc1NDEyOTc1NjFlMDRlMGM1MzE1ZmFjMDdhYzViOWViM1wiXG59In0sIlJ1bnRpbWVNZW1vcnkiOnsiTWF4VXNlclJlc2lkZW50U2V0Qnl0ZXMiOjEwMDAwMDAwMDAwMDAwMDB9fQ.qiaDEdFtJ8Mpzy_QklRJjA8eMV5TrKfHBQiOewdV-A3j8NiI8cuZqcgTkVzz-3Y6OVVWJgd4Fx1b7M5OgRQrQpCWbCt3-xVMuOZ8BqUWWsRa-nM-ZqJq5Nbxtfkde-xGw683ScsrTLEiUkUukD0082AziYfbsP52Us6vKb8mXuCTioHfnMQP3gduHXhY2eWRrKzRPQC5kxqFZUIY3ZzbuITbYcpK9MkioTliDFtXSMVSFn5KBjGGwN7OTKhgAZ6dmzW-6oPaw-IA8cCGJNhJQXADZf7ueHC_pVRVYTsrJSgFVhGBcwwspFbOJAwPIjUBCXGAsqt5PXC-zI_Kd5Q2yw
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tigergraph
+  name: tigergraph
+spec:
+  type: NodePort
+  selector:
+    app: tigergraph
+  ports:
+  - port: 9000
+    name: rest
+    targetPort: 9000
+    nodePort: 30090
+  - port: 14240
+    name: graphstudio
+    targetPort: 14240
+    nodePort: 30240
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tg-data-pvc
+  labels:
+    app: tigergraph
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 40Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tigergraph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tigergraph
+  serviceName: tigergraph-service
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      containers:
+      - env:
+        - name: APP_VERSION
+          value: 3.2.0
+        image: docker.tigergraph.com/tigergraph-k8s:latest
+        imagePullPolicy: IfNotPresent
+        name: tigergraph
+        ports:
+        - containerPort: 9000
+          name: rest
+        - containerPort: 14240
+          name: graphstudio
+        - containerPort: 22
+          name: ssh
+        resources:
+          requests:
+            cpu: 4000m
+            memory: 6Gi
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - "/bin/bash"
+              - "-c"
+              - >
+                set -e
+                sudo chown -R tigergraph:tigergraph /home/tigergraph/tigergraph/data/;
+                export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH;
+                if [ -z '$(ls -A /home/tigergraph/tigergraph/data/ |grep -v lost+found)' ]; then
+                  gadmin start all;
+                else
+                  tg_cfg=$(find /home/tigergraph/tigergraph/app/ -name .tg.cfg|head -n 1);
+                  ln -sf $tg_cfg .tg.cfg;
+                  gadmin config init -i /tmp/init_tg_cfg --file /tmp/tg.cfg;
+                  cp --remove-destination /tmp/tg.cfg ~/.tg.cfg;
+                  gadmin init cluster --with-config .tg.cfg -y;
+                fi
+        volumeMounts:
+        - mountPath: /home/tigergraph/tigergraph/data
+          name: tg-data
+        - mountPath: /tmp/init_tg_cfg
+          name: config-volume
+          subPath: init_tg_cfg     
+      volumes:
+      - name: tg-data
+        persistentVolumeClaim:
+          claimName: tg-data-pvc
+      - name: config-volume
+        configMap:
+          name: tg-config
+          items: 
+          - key: init_tg_cfg
+            path: init_tg_cfg
