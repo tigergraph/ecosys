@@ -28,7 +28,7 @@ USAGE:
      ./tg eks delete
    ## List clusters:
      ./tg eks list -n tigergraph
-   ```
+```
     
 
 ## Create deployment
@@ -37,10 +37,10 @@ After you have customized your `kustomize.yaml` file, you can run `kubectl apply
 # Deploy in EKS
 $ kubectl apply -k ./eks
 
-# deploy in GKE
+# Deploy in GKE
 $ kubectl apply -k ./gke
 
-# deploy in AKS
+# Deploy in AKS
 $ kubectl apply -k ./aks
 
 # Use tg script with eks in tigergraph namespace 
@@ -56,9 +56,10 @@ $ kubectl apply -f deploy/tigergraph-eks.yaml
 
 ## Verify deployment
 Run `kubectl get all -k app=tigergraph` to verify deployment:
-   ```bash
-      kubectl get all -l app=tigergraph
-   ```
+```bash
+   kubectl get all -l app=tigergraph
+```
+
 You should see a response similar to below:
 ```
    NAME               READY   STATUS    RESTARTS   AGE
@@ -69,27 +70,27 @@ You should see a response similar to below:
 ```
 
 Log in to the instances:
-   ```bash
-   # via kubectl
-   kubectl exec -it tigergraph-0 -- /bin/bash
-   
-   # via ssh
-   ip_m1=$(kubectl get pod -o wide |grep tigergraph-0| awk '{print $6}')
-   ssh tigergraph@ip_m1
-   
-   # verify cluster status
-   source ~/.bashrc
-   gadmin status -v
-   ```
+```bash
+# via kubectl
+kubectl exec -it tigergraph-0 -- /bin/bash
 
-   Work in GraphStudio by visiting the following URL in the browser. Change ```EXTERNAL-IP``` to the corresponding field in the output of the `kubectl get all` command:
+# via ssh
+ip_m1=$(kubectl get pod -o wide |grep tigergraph-0| awk '{print $6}')
+ssh tigergraph@ip_m1
 
-   ```
-   http://<EXTERNAL-IP>:14240
-   ```
+# verify cluster status
+source ~/.bashrc
+gadmin status -v
+```
 
-   Verify that RESTPP is up and running: ```EXTERNAL-IP```
-   ```bash
-   curl <EXTERNAL-IP>:9000/echo
-   ```
+Work in GraphStudio by visiting the following URL in the browser. Change ```EXTERNAL-IP``` to the corresponding field in the output of the `kubectl get all` command:
+
+```
+http://<EXTERNAL-IP>:14240
+```
+
+Verify that RESTPP is up and running: ```EXTERNAL-IP```
+```bash
+curl <EXTERNAL-IP>:9000/echo
+```
 

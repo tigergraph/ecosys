@@ -10,10 +10,10 @@ generatorOptions:
 bases:
 - ../base
 
-# uncomment and revise blow to update global namespace 
+# uncomment and revise below to update global namespace 
 #namespace: default
 
-# uncomment and revise blow to update images
+# uncomment and revise below to update images
 # images:
 # - name: docker.tigergraph.com/tigergraph-k8s
 #   newName: tigergraph001.azurecr.io/tigergraph
