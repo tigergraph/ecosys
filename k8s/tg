@@ -1,0 +1,200 @@
+#!/bin/bash
+set -e
+# this script is used to simplify the manifest customization and delpoyment of tigergraph in K8S
+
+cwd=$(cd $(dirname $0) && pwd)
+sedi=(-i)
+case "$(uname)" in
+  # For mac os
+  Darwin*) sedi=(-i "")
+esac
+
+# help documents
+function usage() {
+cat << EOF
+USAGE:
+  $0 K8S_PROVIDER [kustomize|create|delete|list|help] [OPTIONS]
+  -n|--namespace :  set namespace to deploy TG cluster, default as default
+  -s|--size :       set TG cluster size, default as 1
+  -v|--version :    set TG cluster version,default as latest
+  -l|--license :    set TG cluster license, default as free tier license from docker image
+  --ha :            set TG cluster ha setting, default as 1
+  --pv :            set Persistent volume size, default as 50
+  --prefix :        set Pod name prefix-${index}
+
+# Examples when working in eks:
+## Generate the manifest for deployment
+  ./tg eks kustomize -n tigergraph --size 3
+## Create TG cluster:
+  ./tg eks create -n tigergraph -s 2 
+## Delete TG cluster: 
+  ./tg eks delete -n tigergraph
+## List TG cluster:
+  ./tg eks list -n tigergraph
+EOF
+}
+
+# parse all arguments
+function set_opts () {
+  MODE=""
+  while [ -n "$2" ];
+  do
+    case "$2" in
+      kustomize|create|delete|list|help)
+        MODE=$2
+        ;;
+      -n|--namespace)
+        shift
+        NAMESPACE=$2
+        ;;
+      -s|--size)
+        shift
+        CLUSTER_SIZE=$2
+        ;;
+      --ha)
+        shift
+        TG_HA=$2
+        ;;
+      --prefix)
+        shift
+        TG_PREFIX=$2
+        ;;
+      --pv)
+        shift
+        TG_PV=$2
+        ;;
+      -v|--version)
+        shift
+        TG_VERSION=$2
+        ;;
+      -l|--license)
+        shift
+        TG_LICENSE=$2
+        ;;
+      -h|--help)
+        shift
+        usage
+        ;;
+      *)
+        shift
+        usage
+        ;;
+    esac
+    shift
+  done
+}
+# update namespace
+function update_namespace () {
+  if [ $NAMESPACE != 'default' ]; then
+    sed "${sedi[@]}" -e "s/namespace: default/namespace: $NAMESPACE/g" $MANIFEST
+  fi
+}
+# change Tigergraph cluster size if not 1 
+function update_cluster_size () {
+  if [ $CLUSTER_SIZE -gt 1 2>/dev/null ]; then
+    sed "${sedi[@]}" -e "s/cluster_size: \"1\"/cluster_size: \"${CLUSTER_SIZE}\"/g" $MANIFEST
+    sed "${sedi[@]}" -e "s/replicas: 1/replicas: ${CLUSTER_SIZE}/g" $MANIFEST
+    HOSTS=$(printf '{"ID":"m1","Hostname":"%s-0.tigergraph","Region":""}' "$TG_PREFIX")
+    for i in $(seq 2 ${CLUSTER_SIZE});
+    do   
+      HOSTS+=',{"ID":"m'
+      HOSTS+="${i}"
+      HOSTS+=$(printf '","Hostname":"%s-' "$TG_PREFIX")
+      HOSTS+="$((i-1))"
+      HOSTS+='.tigergraph","Region":""}'
+    done
+    sed "${sedi[@]}" -e "s/System.HostList=\[.*\]/System.HostList=\[${HOSTS}\]/1" $MANIFEST
+  fi
+}
+# update Tigergraph Version if not default 
+function update_version () {
+  if [ "${TG_VERSION}" != "latest" ]; then
+    sed "${sedi[@]}" -e "s/tigergraph-k8s:latest/tigergraph-k8s:${TG_VERSION}/g" $MANIFEST
+  fi
+}
+# update Tigergraph license
+function update_license () {
+  if [ "${TG_LICENSE}" != "" ]; then
+    sed "${sedi[@]}" -e "s/license: \"\"/license: \"${TG_LICENSE}\"/1" $MANIFEST
+  fi
+}
+# update Tigergraph HA
+function update_ha () {
+   if [ "${TG_HA}" != "1" ]; then
+      sed "${sedi[@]}" -e "s/ha: \"1\"/ha: \"${TG_HA}\"/1" $MANIFEST
+   fi
+}
+
+# update Tigergraph PV size
+function update_pv () {
+   if [ "${TG_PV}" != "50" ]; then
+      sed "${sedi[@]}" -e "s/storage: 50Gi/storage: ${TG_PV}Gi/1" $MANIFEST
+   fi
+}
+
+# update Tigergraph PV size
+function update_prefix () {
+   if [ "${TG_PREFIX}" != "tigergraph" ]; then
+      sed "${sedi[@]}" -e "s/pod.prefix: tigergraph/pod.prefix: ${TG_PREFIX}/g" $MANIFEST
+      sed "${sedi[@]}" -e "/StatefulSet/{n;n;n;n;s/tigergraph/${TG_PREFIX}/;}" $MANIFEST
+   fi
+}
+
+# create the combined mainfest and customize the settings
+function init_manifest () {
+  kubectl -n ${NAMESPACE} kustomize ${cwd}/${K8S_PROVIDER} > $MANIFEST
+  update_namespace
+  update_cluster_size
+  update_version
+  update_license
+  update_ha
+  update_pv
+  update_prefix
+}
+
+# start Tigergraph cluster 
+function tg_start () {
+  if [ -f "$MANIFEST" ]; then
+    kubectl -n ${NAMESPACE} apply -f $MANIFEST
+  fi
+}
+# clean up all resouces for Tigergraph cluster.
+# It will also clean up all data, be careful to use!!
+function tg_cleanup () {
+  kubectl delete -f $MANIFEST || : 
+  kubectl -n ${NAMESPACE} delete pvc -l app=tigergraph || :
+}
+# main entry
+function main () {
+    K8S_PROVIDER=$1
+    NAMESPACE="default"
+    CLUSTER_SIZE="1"
+    TG_VERSION="latest"
+    TG_HA="1"
+    TG_PV="50"
+    TG_PREFIX="tigergraph"
+    TG_LICENSE=""
+    CWD=$(cd $(dirname $0) && pwd)
+    MANIFEST="${CWD}/deploy/tigergraph-${K8S_PROVIDER}.yaml"
+    [ -d ${CWD}/deploy ] || mkdir -p ${CWD}/deploy
+    set_opts $@
+    case $MODE in
+        kustomize)
+            init_manifest
+        ;;
+        create)
+            init_manifest
+            tg_start
+        ;;
+        delete)
+            tg_cleanup
+        ;;
+        list)
+            kubectl -n ${NAMESPACE} get po -o wide
+        ;;
+        *)
+            usage
+    esac
+}
+
+main $@

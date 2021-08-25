@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app: tigergraph
+
+# source base yaml
+bases:
+- ../base
+
+# uncomment and revise blow to update global namespace 
+#namespace: default
+
+# uncomment and revise blow to update images
+#images:
+#- name: docker.tigergraph.com/tigergraph-k8s
+#  newName: aws_account_id.dkr.ecr.us-west-2.amazonaws.com/tigergraph
+#  newTag: 3.2.0
+
+configMapGenerator:
+- name: env-config
+  literals:
+  - service.headless.name=tigergraph
+  - pod.prefix=tigergraph
+  - namespace=default
+  - cluster_size=1
+  - license=
+  - ha=1
+
+patchesStrategicMerge:
+- patch-statfulset.yaml
+
