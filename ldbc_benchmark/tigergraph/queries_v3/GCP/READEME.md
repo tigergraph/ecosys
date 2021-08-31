@@ -59,8 +59,9 @@ su tigergraph
 # password tigergraph
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3/LDBC_10TB
+sudo python3 -m pip install --upgrade pip
 sudo pip3 install paramiko scp
-python3 download_all.py 30t 10.128.0.10 40 
+python3 download_all.py 30t 10.128.0.10 40 -t 10
 ```
 
 For large number of machines, GCP takes long time (~3 hr) to set up the ports. Upload the tigergraph package, wait some time and install 

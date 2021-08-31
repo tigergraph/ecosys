@@ -15,7 +15,7 @@ parser.add_argument('nodes', type=int, help='the number of nodes')
 parser.add_argument('--key','-k', type=str, default=None, help='location of the service key json file')
 parser.add_argument('--thread','-t', type=int, default=1, help='number of threads for each node')
 parser.add_argument('--parts','-p', type=int, default=0, help='number of parts to split the data (0 means the same as node number)')
-parser.add_argument('--start','-s', type=int, default=0, help='the start index (default 0)')
+parser.add_argument('--start','-s', type=int, default=0, help='the start index of the data partition (default 0)')
 args = parser.parse_args()
 
 user = "tigergraph"
