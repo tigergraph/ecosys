@@ -100,7 +100,7 @@ class ResultWithElapsed:
 
 class Query:
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
-    HEADERS = {'GSQL-TIMEOUT': '7200000'}
+    HEADERS = {'GSQL-TIMEOUT': '36000000'}
     def __init__(self, name, transform_parameter=None):
         self.name = name
         self.transform_parameter = transform_parameter
