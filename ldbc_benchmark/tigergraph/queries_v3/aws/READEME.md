@@ -44,7 +44,7 @@ Setup instances
 ```sh
 # on GCP m1 
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
-cd ecosys/ldbc_benchmark/tigergraph/queries_v3/GCP
+cd ecosys/ldbc_benchmark/tigergraph/queries_v3/aws
 gcloud init 
 # log in 
 sh setup_GCP.sh 
