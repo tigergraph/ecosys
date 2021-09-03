@@ -14,6 +14,6 @@ sudo service sshd reload
 sudo yum -y update
 sudo yum -y install python3-pip net-tools sshpass parallel git gzip
 sudo python3 -m pip install --upgrade pip
-sudo pip3 install google-cloud-storage
-
+#sudo pip3 install google-cloud-storage
+#sudo pip3 install boto3
 
