@@ -1,6 +1,6 @@
 #!usr/bin/sh
 export target=sf30k
-chmod 400 ~/.aws/credentials 
+chmod 600 ~/.aws/credentials 
 # remove existing data
 echo "remove folder $target"
 rm -r $target

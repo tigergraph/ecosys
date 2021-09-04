@@ -25,7 +25,7 @@ def main():
     scp = SCPClient(ssh.get_transport())
     print(f'logging to {ip}')
     scp.put('/home/tigergraph/.aws/credentials', workdir + '/.aws')
-    scp.put('download_one_partition.py', workdir)
+    scp.put('download_one_part.py', workdir)
     scp.put('download_decompress.sh', workdir)
     
     stdin, stdout, stderr = ssh.exec_command(f''' 
