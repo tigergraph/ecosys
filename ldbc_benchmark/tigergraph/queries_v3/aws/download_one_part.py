@@ -10,9 +10,9 @@ parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 args = parser.parse_args()
 
-buckets = 'ldbc-snb-datagen-bi-2021-07'
-roots = 'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'
-targets = Path('sf30k')
+bucket = 'ldbc-snb-datagen-bi-2021-07'
+root = 'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'
+target = Path('sf30k')
 
 STATIC_NAMES = [
   'Organisation',
