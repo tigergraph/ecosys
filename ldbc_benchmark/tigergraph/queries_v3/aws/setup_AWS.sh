@@ -2,7 +2,7 @@
 export key=~/yuchen.pem
 export sys=ubuntu
 export user=ubuntu
-export ip_list="172.31.44.49"
+export ip_list="172.31.25.8 172.31.25.82"
 
 for ip in ${ip_list}
 do

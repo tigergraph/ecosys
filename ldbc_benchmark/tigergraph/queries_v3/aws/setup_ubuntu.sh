@@ -5,7 +5,6 @@ then
   sudo mkfs -t xfs /dev/xvdb 
   sudo mkdir -p /home/tigergraph 
   sudo mount /dev/xvdb /home/tigergraph/
-  sudo chown -R tigergraph:tigergraph /home/tigergraph/
 fi
 
 sudo useradd -ms /bin/bash tigergraph
@@ -18,6 +17,8 @@ sudo sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ss
 sudo sed -i 's/\#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sudo service sshd reload
+
+sudo chown -R tigergraph:tigergraph /home/tigergraph/
 
 sudo apt-get update
 sudo apt-get -y install python3-pip net-tools sshpass parallel awscli 

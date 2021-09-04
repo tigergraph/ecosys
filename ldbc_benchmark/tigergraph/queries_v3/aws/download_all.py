@@ -6,7 +6,8 @@ import paramiko
 from pathlib import Path
 import os
 
-ips = []
+ip_list="172.31.25.8 172.31.25.82"
+ips = ip_list.split(' ')
 nodes = len(ips)
 user = "tigergraph"
 pin = "tigergraph"
