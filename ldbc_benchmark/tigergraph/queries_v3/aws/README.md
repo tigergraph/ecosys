@@ -12,3 +12,7 @@ git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3/aws
 sh setup_AWS.sh 
 ```
+
+
+## Download
+fill aws credentials in `download_decompress.sh`

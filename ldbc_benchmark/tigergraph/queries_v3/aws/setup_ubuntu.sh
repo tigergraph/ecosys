@@ -5,6 +5,7 @@ then
   sudo mkfs -t xfs /dev/xvdb 
   sudo mkdir -p /home/tigergraph 
   sudo mount /dev/xvdb /home/tigergraph/
+  sudo chown -R tigergraph:tigergraph /home/tigergraph/
 fi
 
 sudo useradd -ms /bin/bash tigergraph
