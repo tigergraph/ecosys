@@ -1,6 +1,7 @@
 # !/usr/bin/sh
 # prepare the disk
-if [ ! -d "/home/tigergraph"] ;
+if [ ! -d "/home/tigergraph"]
+then
   sudo mkfs -t xfs /dev/xvdb 
   mkdir -p /home/tigergraph 
   sudo mount /dev/xvdb /home/tigergraph/

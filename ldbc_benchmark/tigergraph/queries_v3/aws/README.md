@@ -4,8 +4,7 @@ Benchmark on GCP encountered unexpected loading errors. We migrate the benchmark
 
 ## Table of Contents
 ## Setup
-Create 
-
+In `setup_AWS.sh`, `key` need to be the location of your private key, `ip_list` is the list of Private IPv4 addresses of mahcines.
 Setup instances 
 ```sh
 # on AWS  
