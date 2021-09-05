@@ -14,3 +14,4 @@ sudo service sshd reload
 sudo apt-get update
 sudo apt-get -y install python3-pip net-tools sshpass parallel
 sudo pip3 install google-cloud-storage
+echo 'done ubuntu setup'

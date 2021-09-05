@@ -24,3 +24,4 @@ sudo apt-get update
 sudo apt-get -y install python3-pip net-tools sshpass parallel awscli 
 sudo pip3 install --upgrade awscli
 sudo pip3 install boto3
+echo 'done ubuntu setup'
