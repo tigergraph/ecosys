@@ -79,7 +79,7 @@ for obj in get_objects(bucket, root+d1, '.csv.gz'):
   key = obj["Key"]
   if not key.endswith('.csv.gz'): continue
   i += 1
-  if i % 40 != 0: continue
+  if i % args.nodes != args.index: continue
   if ii == 0:
     ii = key.find('composite-projected-fk') + len('composite-projected-fk') + 1
   fn = str(target/key[ii:])

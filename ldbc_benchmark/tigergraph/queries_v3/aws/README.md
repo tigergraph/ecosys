@@ -3,6 +3,9 @@
 Benchmark on GCP encountered unexpected loading errors. We migrate the benchmark to AWS.
 
 ## Table of Contents
+## Create instances 
+Create 10 x1.16xlarge instances. Disk change to EBS, otherwise, data is deleted when you stop instances. Security group needs to allow all traffic.
+
 ## Setup
 up load your private key and aws credentials
 ```sh
