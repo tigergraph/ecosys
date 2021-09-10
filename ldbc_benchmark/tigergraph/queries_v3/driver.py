@@ -398,8 +398,9 @@ def cmd_gen(args, output=None):
     parameters['bi4']['date'] = (datetime(2012,3,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
     
     i = randrange(3)
-    parameters['bi14']['country1'] = country[i]
-    parameters['bi14']['country2'] = country[(i+1)%3]
+    # bi 14 is too expensive, we choose two country manually
+    parameters['bi14']['country1'] = 'Singapore' #country[i]
+    parameters['bi14']['country2'] =  'Morocco' #country[(i+1)%3]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     for k in gen[15].keys(): parameters['bi15'][k] = gen[15][k]
     for k in gen[16].keys(): parameters['bi16'][k] = gen[16][k]
