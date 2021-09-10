@@ -1,86 +1,87 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
-TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
-  MapAccum<VERTEX<City>, GroupByAccum<UINT person1Id, UINT person2Id, BitwiseOrAccum bits>> @@pairScoreMap;
-  MinAccum<VERTEX<City>> @city;
-  SetAccum<VERTEX<City>> @@CityNonzeroScore;
+  TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
+  TYPEDEF TUPLE <UINT pid, UINT score> ps;
+
+  HeapAccum<ps>(1, score DESC, pid ASC) @pScore;
+  MapAccum<VERTEX<Person>, UINT> @score;
+  SetAccum<VERTEX<Person>> @person2, @p2s1, @p2s2, @p2s3, @p2s4, @p2s5;
   OrAccum @valid;
-  SumAccum<UINT> @pid1, @pid2;
-  MinAccum<UINT> @min_pid1, @@min_pid2;
-  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
-  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@result;
-  UINT score;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults, @@result;
+  MinAccum<UINT> @@min_pid2;
   // select city1, person1 and person2
-  City1 = SELECT c FROM Country:s -(<IS_PART_OF)- City:c  
-    WHERE s.name == country1;
-  P1 = SELECT p FROM City1:c -(<IS_LOCATED_IN)-Person:p 
-    ACCUM p.@city = c;
+  P1 = SELECT p 
+    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p 
+    WHERE s.name == country1
+    ACCUM p.@valid += True;
+
   P2 = 
     SELECT p
     FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
     WHERE s.name == country2
-    ACCUM p.@valid+=True;
-  // Calculate score
-  C1 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
+    POST-ACCUM @@min_pid2 += p.id;
+  
   M1 = 
     SELECT m FROM P1:p -(<HAS_CREATOR)- (Comment|Post):m
-    ACCUM m.@pid1 = p.id, m.@city = p.@city;
+    ACCUM m.@valid += True;
+
   M2 = 
     SELECT m FROM P2:p -(<HAS_CREATOR)- (Comment|Post):m
-    ACCUM m.@pid2 = p.id;
+    ACCUM m.@person2 += p;
   
-  acc1 =
-    SELECT m2
-    FROM C1:c1 -(REPLY_OF>)- (Comment|Post):m2
-    WHERE m2.@pid2>0
-    ACCUM @@pairScoreMap += (c1.@city -> (c1.@pid1, m2.@pid2 -> 16)); // 10000
+  P = SELECT p1 FROM M2:m2 -(<REPLY_OF)- Comment:c1 -(HAS_CREATOR>)- Person:p1 
+    WHERE c1.@valid AND p1.@valid
+    ACCUM p1.@p2s1 += m2.@person2;
+
+  P = SELECT p1 FROM M2:m2 -(REPLY_OF>)- _:m1 -(HAS_CREATOR>)- Person:p1 
+    WHERE m1.@valid AND p1.@valid
+    ACCUM p1.@p2s2 += m2.@person2;
+
+  P = SELECT p1 FROM P2:p2 -(KNOWS)- Person:p1
+    WHERE p1.@valid
+    ACCUM p1.@p2s3 += p2;
+
+  P = SELECT p1 FROM M2:m2 -(<LIKES)- Person:p1
+    WHERE p1.@valid
+    ACCUM p1.@p2s4 += m2.@person2;
+
+  P = SELECT p1 FROM P2:p2 -(LIKES>)- _:m1 -(HAS_CREATOR>)- Person:p1
+    WHERE m1.@valid AND p1.@valid
+    ACCUM p1.@p2s5 += p2;
+
+  P1 = SELECT p1 FROM P1:p1
+    ACCUM 
+      FOREACH p2 IN p1.@p2s1 DO
+        p1.@score += (p2 -> 4)
+      END,
+      FOREACH p2 IN p1.@p2s2 DO
+        p1.@score += (p2 -> 1)
+      END,
+      FOREACH p2 IN p1.@p2s3 DO
+        p1.@score += (p2 -> 15)
+      END,
+      FOREACH p2 IN p1.@p2s4 DO
+        p1.@score += (p2 -> 10)
+      END,
+      FOREACH p2 IN p1.@p2s5 DO
+        p1.@score += (p2 -> 1)
+      END
+    POST-ACCUM
+      FOREACH (p2,score) IN p1.@score DO
+        p1.@pScore += ps(p2.id,score)
+      END;
+
+  City1 = SELECT c1 FROM P1:p1 -(IS_LOCATED_IN>)- City:c1
+    ACCUM c1.@cityresults += pairScore(p1.id, p1.@pScore.top().pid, c1.name, p1.@pScore.top().score);
+
+  zeroCity1 = SELECT c1 FROM City1:c1 -(<IS_LOCATED_IN)- Person:p1
+    WHERE c1.@cityresults.size() == 0
+    ACCUM c1.@cityresults += pairScore(p1.id, @@min_pid2, c1.name, 0);
   
-  acc2 =
-    SELECT c2
-    FROM M1:m1 -(<REPLY_OF)- Comment:c2
-    WHERE c2.@pid2>0
-    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, c2.@pid2 -> 8)); //01000
-
-  acc3 =
-    SELECT p2
-    FROM P1:p1 -(KNOWS)- Person:p2
-    WHERE p2.@valid
-    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, p2.id -> 4)); //00100
-
-  acc4 =
-    SELECT m2
-    FROM P1:p1 -(LIKES>)- (Comment|Post):m2
-    WHERE m2.@pid2>0
-    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, m2.@pid2 -> 2)); //00010
-
-  acc5 =
-    SELECT p2
-    FROM M1:m1 -(<LIKES)- Person:p2
-    WHERE p2.@valid
-    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, p2.id -> 1)); //00001
-
   @@result.resize(City1.size());
-  FOREACH (city,gba) IN @@pairScoreMap DO
-    @@CityNonzeroScore += city;
-    @@pairScoreGroupTop.clear();
-    FOREACH (p1,p2,b) IN gba DO
-      score = (b&16)/16 * 4 + (b&8)/8 + (b&4)/4 * 15  + (b&2)/2 * 10  + (b&1);  
-      @@pairScoreGroupTop += pairScore(p1, p2, city.name, score);
-    END;
-    @@result += @@pairScoreGroupTop.top();
-  END;
-  // add cities of zero scores (min pid1 in city1, min pid2, city name, 0)
-  IF @@result.size() < City1.size() THEN
-    P2p = SELECT p FROM P2:p ACCUM @@min_pid2 += p.id;
-    nonzeroScoreCity = {@@CityNonzeroScore};
-    zeroScoreCity = City1 MINUS nonzeroScoreCity;
-    tmp = SELECT c 
-      FROM zeroScoreCity:c -(<IS_LOCATED_IN)- Person:p
-      ACCUM c.@min_pid1 += p.id
-      POST-ACCUM 
-        @@result += pairScore(c.@min_pid1, @@min_pid2, c.name, 0);
-  END;
+  City1 = SELECT c1 FROM City1:c1
+    ACCUM @@result += c1.@cityresults.top();
   PRINT @@result;
 }
 
