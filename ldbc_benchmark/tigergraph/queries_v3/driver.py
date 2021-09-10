@@ -399,7 +399,7 @@ def cmd_gen(args, output=None):
     
     i = randrange(3)
     parameters['bi14']['country1'] = country[i]
-    parameters['bi14']['country2'] = country[(i+1)%4]
+    parameters['bi14']['country2'] = country[(i+1)%3]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     for k in gen[15].keys(): parameters['bi15'][k] = gen[15][k]
     for k in gen[16].keys(): parameters['bi16'][k] = gen[16][k]

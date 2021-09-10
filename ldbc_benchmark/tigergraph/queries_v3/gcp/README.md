@@ -1,4 +1,4 @@
-# 30TB LDBC SNB on GCP (Failed) 
+# 30TB LDBC SNB on GCP
 ## Overview
 I benchmarked for LDBC 30TB using 10 ultramem-160 machine, but I can run the queries but loading and query running are very slow. This is because each machine only run one GPE instance. Then I tried to use 40 ultramem-40 to do the benchamrk. However, the port check failed during TG installation if the number of instances is larger than 20. I finally decided to use our local CentOS machines to do the benchmark. 
 

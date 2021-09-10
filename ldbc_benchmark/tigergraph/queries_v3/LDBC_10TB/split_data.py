@@ -4,12 +4,12 @@ from pathlib import Path
 
 npart = 40
 target = Path('~/sf30k/inserts').expanduser()
-files = list(target.glob('**/*.csv.gz'))
+files = list(target.glob('**/*c000.csv.gz'))
 #print(files[:3],len(files))
 
 def split(f):
-  with gzip.open(f, 'rt') as fin:
-    outputs = [open(str(f).replace('.csv.gz',f'_{n:02d}.csv'),'w') for n in range(npart)]
+  with gzip.open(f, 'rb') as fin:
+    outputs = [gzip.open(str(f).replace('c000.csv.gz',f'c000_{n:02d}.csv.gz'),'wb') for n in range(npart)]
     print(str(f))
     for i, row in enumerate(fin):
       outputs[i%npart].write(row)

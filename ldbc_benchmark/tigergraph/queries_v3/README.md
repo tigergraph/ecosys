@@ -45,13 +45,18 @@ gadmin status
 # check if TigerGraph is running or not.
 ```
 
-## Config Tigergraph (optional)
-The default cofiguration are good. This section is optonal.
+## Config Tigergraph 
+For small data on a small number of nodes, the default setting works. 
+For 30TB benchmark on 40 nodes, the GPE request time can be larger than default timeout setting.
+```sh
+gadmin config group timeout 
+# Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+```
 
 Enterprise edition also store a backup copy be default. You can turn off this backup copy to save disk space.
-The loading performance can be tuned by changing the number of loading handler 
-
-The timeout is only needed for large scale factors. Python requests are not constrained by the timeout, and timeout is not needed if you use the `driver.py` to run the queries.
+The loading performance can be tuned by changing the line batch size, number of concurrent requests and number of loading handler.
 ```sh
 gadmin config entry GPE.BasicConfig.Env
 # add MVExtraCopy=0; (default is 1)
@@ -59,11 +64,6 @@ gadmin config entry GPE.BasicConfig.Env
 
 gadmin config group RESTPP-LOADER
 # You can change FileLoader.Factory.HandlerCount
-
-gadmin config group timeout 
-# Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
-# Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
-# Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
 
 gadmin config apply -y
 gadmin restart all -y
