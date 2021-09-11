@@ -234,7 +234,7 @@ GEN_WORKLOADS = {
     15: Workload('gen_bi15', ResultTransform()[0][0]),
     16: Workload('gen_bi16', ResultTransform()[0][0]),
     18: Workload('gen_bi18', ResultTransform()[0][0]),
-    19: Workload('gen_bi19_2', ResultTransform()[0][0]),
+    19: Workload('gen_bi19', ResultTransform()[0][0]),
     20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
 
