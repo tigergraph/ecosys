@@ -160,6 +160,19 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   PRINT @@cityIds;
 }  
 
+
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19_2() {
+  SetAccum<UINT> @@cityIds;
+  SumAccum<UINT> @nperson;
+  C = SELECT c 
+    FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
+    ORDER BY c.@nperson ASC
+    LIMIT 2;
+  C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
+  PRINT @@cityIds;
+}
+
+
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   SetAccum<VERTEX<University>> @univ;
   SetAccum<VERTEX<Person>> @connected;
