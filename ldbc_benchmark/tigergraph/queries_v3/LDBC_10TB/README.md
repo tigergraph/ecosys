@@ -52,7 +52,7 @@ The usage of the script is `python3 download_one_partition.py [data] [node index
 # on node m1
 nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The data location in GCS bucket is hard coded in the code. The data is downloaded to `./sf10000/`. 
+The data location in GCS bucket is hard coded in the code. The data is downloaded to `~/sf10000/` for 10t data and `~/sf30k/` for 30t data. 
 
 ### Decompress data
 Decompress the data on each node in parallel.
@@ -76,18 +76,14 @@ python3 download_all.py [data] [start ip addresss] [number of nodes] -k [service
 python3 download_all.py 30t 10.128.0.4 10
 ```
 
-## Run queries and updates
-Please refer to the the [parent page](../) for the installation of TigerGraph. The dataset does not have header. To load the data (take ~12hr)
+## Run queries and updates (30T)
+Please refer to the the [parent page](../) for the installation of TigerGraph. The dataset does not have header. For 10T data, just replace `~/sf30k` with `~/sf10000`. To load the data in background(take ~12hr)
 ```sh
-./driver.py load all ~/sf10000 
+nohup python3 -u ./driver.py load all ~/sf30k > foo.out 2>&1 < /dev/null &
 ```
-Run all the queries
+Run queries and perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1. 
 ```sh
-./driver.py run 
-```
-Perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1. 
-```sh
-./driver.py refresh ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -q not:17,19 -r 7 -s 1
+./driver.py refresh ~/sf30k/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
 ```
 
 The combined command in background is
