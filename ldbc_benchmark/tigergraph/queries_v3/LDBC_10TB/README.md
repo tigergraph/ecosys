@@ -77,7 +77,21 @@ python3 download_all.py 30t 10.128.0.4 10
 ```
 
 ## Run queries and updates (30T)
-Please refer to the the [parent page](../) for the installation of TigerGraph. The dataset does not have header. For 10T data, just replace `~/sf30k` with `~/sf10000`. To load the data in background(take ~12hr)
+Please refer to the the [parent page](../) for the installation of TigerGraph. 
+Before loading, config the timeout limit is required
+```sh
+gadmin config entry GPE.BasicConfig.Env
+# add MVExtraCopy=0; (default is 1) This turn off back up copy.
+
+gadmin config group timeout 
+# Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+gadmin config apply -y
+gadmin restart -y
+```
+
+The dataset does not have header. For 10T data, just replace `~/sf30k` with `~/sf10000`. To load the data in background(take ~12hr)
 ```sh
 nohup python3 -u ./driver.py load all ~/sf30k > foo.out 2>&1 < /dev/null &
 ```
