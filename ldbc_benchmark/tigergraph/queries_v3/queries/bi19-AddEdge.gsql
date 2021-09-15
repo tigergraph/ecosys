@@ -1,19 +1,29 @@
 /*
-This scripts contain different level of optimization, 
+This script contains different levels of optimization, 
 from the cheapest to expensive
 from more approximation to more correct results
 IN SF-100 (100GB) data,
-bi19_add_edges_2hop - sometimes incorrect - 4s
-bi19_add_edges_3hop - correct - 8s
-bi19_add_edges_3hop_v2 - correct - 8.5s
-bi19_add_edges_5hop - correct - 50s
+bi19_mehtod1_2hop - sometimes incorrect - 4s
+bi19_method1_3hop - correct - 8s
+bi19_method2_3hop - correct - 8.5s
+bi19_method2_5hop - correct - 50s
+bi19_method2_7hop - correct - 2min44s
+
+The most expensive part is the calculation of the number of replies. 
+This is because the number of comments is very large.
+In SF-100 data, each city contains hundreds of person,
+each person knows hundreds other person, and each person creates hundreds of comments.
+
+In bi19_add_edges_2hop and bi19_add_edges_3hop,
+we use paths in Person-KNOWS-Person graph to filter out person first. 
+This reduces the computation.
 */
 
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 // Include all paths of lengths <= 2
 // source -(KNOWS)- mid -(KNOWS)- target
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_2hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_mehtod1_2hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @source, @target, @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
@@ -48,7 +58,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_2hop(VERTEX<City> city1Id, VE
 
 // Include all paths of lengths <= 3
 // source -(KNOWS)- m1 -(KNOWS)- m1 -(KNOWS)- target
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_method1_3hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @source, @target, @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
@@ -89,7 +99,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop(VERTEX<City> city1Id, VE
 // Include all paths of lengths <= 3
 // source -(KNOWS)- m1 -(KNOWS)- m1 -(KNOWS)- target
 // simpler but costly
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop_v2(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_method2_3hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
@@ -113,8 +123,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop_v2(VERTEX<City> city1Id,
 
 // Include all paths of lengths <= 5
 // Robust results but costly
-// You can simply change KNOWS*0..2 to KNOWS*0..3 to make it 7 hops
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_5hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+// You can simply change KNOWS*0..2 to KNOWS*0..3 to make it bi19_method2_7hop
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_method2_5hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;

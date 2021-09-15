@@ -4,20 +4,23 @@ SET syntax_version = "v2"
 This is an approxmiated query, which insert WEIGHT_DOUBLE edge in a subgraph 
 within a few hops from source and target and then find the cheapest paths
 
-The edge adding is usually the bottleneck
+The edge adding is usually the bottleneck. 
+More specifically, the most expensive part is the calculation of the number of replies. 
+This is because the number of comments is very large.
+
 Different level of approximation for edge adding is in bi19-AddEdge.gsql
-IN SF-100 (100GB) data,
-bi19_add_edges_2hop - sometimes incorrect - 4s
-bi19_add_edges_3hop - correct - 8s
-bi19_add_edges_3hop_v2 - correct - 8.5s
-bi19_add_edges_5hop - correct - 50s
-bi19_add_edges_7hop - correct - 2min44s
+In SF-100 (100GB) data,
+bi19_mehtod1_2hop - sometimes incorrect - 4s
+bi19_method1_3hop - correct - 8s
+bi19_method2_3hop - correct - 8.5s
+bi19_method2_5hop - correct - 50s
+bi19_method2_7hop - correct - 2min44s
 
 A correct solution is in bi19-3.gsql, it takes ~2min 
 
 The current adding edge method is "bi19_add_edges_2hop" for 30TB data.
 For larger data, there are more paths between source and target, and 
-approximate queries are less likely to be incorrect
+approximate queries are less likely to be incorrect 
 */
 
 // approximate query "bi19_add_edges_2hop" from bi19-AddEdge.gsql
