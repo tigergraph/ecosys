@@ -1,0 +1,139 @@
+/*
+This scripts contain different level of optimization, 
+from the cheapest to expensive
+from more approximation to more correct results
+IN SF-100 (100GB) data,
+bi19_add_edges_2hop - sometimes incorrect - 4s
+bi19_add_edges_3hop - correct - 8s
+bi19_add_edges_3hop_v2 - correct - 8.5s
+bi19_add_edges_5hop - correct - 50s
+*/
+
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+// Include all paths of lengths <= 2
+// source -(KNOWS)- mid -(KNOWS)- target
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_2hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+  OrAccum<BOOL> @source, @target, @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
+  C1 = {city1Id};
+  C2 = {city2Id};
+  vsource = SELECT p FROM C1 -(<IS_LOCATED_IN)- Person:p ACCUM p.@source += true;
+  vtarget = SELECT p FROM C2 -(<IS_LOCATED_IN)- Person:p ACCUM p.@target += true;
+  S = vsource UNION vtarget;
+  mid = SELECT t FROM S:s -(KNOWS)- Person:t
+    WHERE NOT (t.@source) AND (NOT t.@target)  
+    ACCUM t.@source += s.@source, t.@target += s.@target
+    HAVING t.@source AND t.@target;
+  S = S UNION mid;
+  vMessages = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m 
+    ACCUM m.@creator += s, m.@selected += true; // only one can be true
+  
+  vMessages = SELECT m2 FROM vMessages:m1 -(<REPLY_OF)- (Comment|Post):m2
+    WHERE m2.@selected
+    ACCUM m2.@replyto += m1.@creator;
+
+  PersonReplied = SELECT p FROM vMessages:m -(HAS_CREATOR>)- Person:p    
+    ACCUM p.@replyToCount += (m.@replyto -> 1);
+  
+  tmp =
+    SELECT p2
+    FROM PersonReplied:p1 -(KNOWS)- Person:p2
+    WHERE p1.@replyToCount.get(p2)>0 OR p2.@replyToCount.get(p1)>0
+    ACCUM
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+}
+
+
+// Include all paths of lengths <= 3
+// source -(KNOWS)- m1 -(KNOWS)- m1 -(KNOWS)- target
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+  OrAccum<BOOL> @source, @target, @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
+  C1 = {city1Id};
+  C2 = {city2Id};
+  vsource = SELECT p FROM C1 -(<IS_LOCATED_IN)- Person:p ACCUM p.@source += true;
+  vtarget = SELECT p FROM C2 -(<IS_LOCATED_IN)- Person:p ACCUM p.@target += true;
+  S = vsource UNION vtarget;
+  mid = SELECT t FROM S:s -(KNOWS)- Person:t
+    WHERE NOT (t.@source) AND (NOT t.@target)  
+    ACCUM t.@source += s.@source, t.@target += s.@target;
+
+  mid1 = SELECT s FROM mid:s WHERE s.@source AND s.@target 
+    ACCUM s.@source = false, s.@target = false;
+  mid2 = SELECT s FROM mid:s -(KNOWS)- Person:t
+    WHERE (s.@source AND t.@target) OR (s.@target AND t.@source);
+  S = S UNION mid1 UNION mid2;
+  
+  vMessages = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m 
+    ACCUM m.@creator += s, m.@selected += true; // only one can be true
+  
+  vMessages = SELECT m2 FROM vMessages:m1 -(<REPLY_OF)- (Comment|Post):m2
+    WHERE m2.@selected
+    ACCUM m2.@replyto += m1.@creator;
+
+  PersonReplied = SELECT p FROM vMessages:m -(HAS_CREATOR>)- Person:p    
+    ACCUM p.@replyToCount += (m.@replyto -> 1);
+  
+  tmp =
+    SELECT p2
+    FROM PersonReplied:p1 -(KNOWS)- Person:p2
+    WHERE p1.@replyToCount.get(p2)>0 OR p2.@replyToCount.get(p1)>0
+    ACCUM
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+}
+
+
+// Include all paths of lengths <= 3
+// source -(KNOWS)- m1 -(KNOWS)- m1 -(KNOWS)- target
+// simpler but costly
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_3hop_v2(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+  OrAccum<BOOL> @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
+  
+  C ={city1Id,city2Id};
+  S = SELECT p FROM C -(<IS_LOCATED_IN)- Person:p;
+  S = SELECT p FROM S -(KNOWS*0..1)-Person:p ACCUM p.@selected += true;
+  Sm = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creator += s, m.@selected += true;
+  Cm = SELECT m1 FROM Sm:m1 -(REPLY_OF>)- (Comment|Post):m2
+    WHERE m2.@selected
+    ACCUM m1.@replyto += m2.@creator;
+  Cm = SELECT m FROM Cm:m -(HAS_CREATOR>)- Person:t
+    ACCUM t.@replyToCount += (m.@replyto -> 1);
+  tmp =
+    SELECT p2
+    FROM S:p1 -(KNOWS)- Person:p2
+    WHERE p1.@replyToCount.get(p2)>0 OR p2.@replyToCount.get(p1)>0
+    ACCUM
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 /  (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+}
+
+// Include all paths of lengths <= 5
+// Robust results but costly
+// You can simply change KNOWS*0..2 to KNOWS*0..3 to make it 7 hops
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_edges_5hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+  OrAccum<BOOL> @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
+  
+  C ={city1Id,city2Id};
+  S = SELECT p FROM C -(<IS_LOCATED_IN)- Person:p;
+  S = SELECT p FROM S -(KNOWS*0..2)-Person:p ACCUM p.@selected += true;
+  Sm = SELECT m FROM S:s -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creator += s, m.@selected += true;
+  Cm = SELECT m1 FROM Sm:m1 -(REPLY_OF>)- (Comment|Post):m2
+    WHERE m2.@selected
+    ACCUM m1.@replyto += m2.@creator;
+  Cm = SELECT m FROM Cm:m -(HAS_CREATOR>)- Person:t
+    ACCUM t.@replyToCount += (m.@replyto -> 1);
+  tmp =
+    SELECT p2
+    FROM S:p1 -(KNOWS)- Person:p2
+    WHERE p1.@replyToCount.get(p2)>0 OR p2.@replyToCount.get(p1)>0
+    ACCUM
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 /  (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+}
+
+INSTALL QUERY bi19_add_edges_2hop, bi19_add_edges_3hop, bi19_add_edges_3hop_v2, bi19_add_edges_5hop 
