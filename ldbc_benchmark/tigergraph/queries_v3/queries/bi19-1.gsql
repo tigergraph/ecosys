@@ -6,51 +6,52 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
   #GroupByAccum<UINT p1, UINT p2, SumAccum<UINT> number> @@interactions;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replies;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
   GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
   MapAccum<UINT, MinAccum<DOUBLE>> @dist1;  
-  MinAccum<VERTEX<Person>> @creator; 
-  OrAccum @next1, @isTarget, @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto; 
+  OrAccum @next1, @isTarget, @selected, @next;
   DOUBLE threshold;
-  threshold = 10; # Max path length is 10
+  P = {Person.*};
+  threshold = P.size();
 
   city1 = {city1Id};
   city2 = {city2Id};
-  S = SELECT p FROM city1:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist1 += (p.id->0);
+  S = SELECT p FROM city1:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist1 += (p.id->0), p.@selected += true;
   S2 = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@isTarget += True;
   Sm = SELECT m 
     FROM S:s -(<HAS_CREATOR)- (Comment|Post):m 
-    ACCUM 
-      m.@creator += s, m.@selected += TRUE;  
-  tmp = SELECT m2 FROM Sm:m1 -(REPLY_OF>)- (Comment|Post):m2 
+    ACCUM m.@creator += s, m.@selected += TRUE;  
+  Sm = SELECT m1 FROM Sm:m1 -(REPLY_OF>)- (Comment|Post):m2 
       WHERE m2.@selected
-      ACCUM m2.@replies += (m1.@creator -> 1);
-  tmp = SELECT m FROM tmp:m -(HAS_CREATOR>)- Person:s  
-    ACCUM s.@replies += m.@replies
-    POST-ACCUM m.@replies.clear();
+      ACCUM m1.@replyto += m2.@creator;
+  tmp = SELECT s FROM Sm:m -(HAS_CREATOR>)- Person:s  
+    ACCUM s.@replyToCount += (m.@replyto -> 1);
 
   WHILE S.size()>0 DO
-    Next = SELECT t FROM S:s-(KNOWS)-Person:t WHERE t.@dist1.size() == 0;
+    Next = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE NOT t.@selected
+      ACCUM t.@selected += true;
     # Compute the edge weight
-    Nm = SELECT m FROM Next:s -(<HAS_CREATOR)- (Comment|Post):m 
-      ACCUM m.@creator += s, m.@selected += TRUE;  
-    R1 = SELECT m2 FROM Nm:m1 -(REPLY_OF>)- (Comment|Post):m2 
-      WHERE m2.@selected
-      ACCUM m2.@replies += (m1.@creator -> 1);
-    R2 = SELECT m2 FROM Nm:m2 -(<REPLY_OF)- :m1
+    Nm = SELECT m FROM Next:s -(<HAS_CREATOR)- (Comment|Post):m
+      ACCUM m.@creator += s, m.@next += TRUE;
+    R1 = SELECT m1 FROM Nm:m1 -(REPLY_OF>)- (Comment|Post):m2 
+      WHERE m2.@selected OR m2.@next
+      ACCUM m1.@replyto += m2.@creator;
+    R2 = SELECT m1 FROM Nm:m2 -(<REPLY_OF)- (Comment|Post):m1 
       WHERE m1.@selected
-      ACCUM m2.@replies += (m1.@creator -> 1);
+      ACCUM m1.@replyto += m2.@creator;
+    Nm = SELECT m FROM Nm:m ACCUM m.@next = false, m.@selected = true;
 
-    R12 = R1 UNION R2;
-    tmp = SELECT m FROM R12:m -(HAS_CREATOR>)- Person:s 
-      ACCUM s.@replies += m.@replies
-      POST-ACCUM m.@replies.clear();
-
+    Reply = R1 UNION R2;
+    tmp = SELECT s FROM Reply:m -(HAS_CREATOR>)- Person:s 
+      ACCUM s.@replyToCount += (m.@replyto -> 1);
+    
     # Expand the know map, we also neglect the distances larger than threshold
     S = SELECT t FROM S:s-(KNOWS)-Person:t 
-      WHERE s.@replies.get(t) + t.@replies.get(s)>0
+      WHERE s.@replyToCount.get(t) + t.@replyToCount.get(s)>0
       ACCUM
-        DOUBLE edgeWeight = 1.0 / (s.@replies.get(t) + t.@replies.get(s)),
+        DOUBLE edgeWeight = 1.0 / (s.@replyToCount.get(t) + t.@replyToCount.get(s)),
         FOREACH (p,dis) IN s.@dist1 DO
           DOUBLE t_dis = dis + edgeWeight, 
           IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN

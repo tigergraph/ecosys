@@ -16,7 +16,7 @@ bi19_method2_3hop - correct - 8.5s
 bi19_method2_5hop - correct - 50s
 bi19_method2_7hop - correct - 2min44s
 
-A correct solution is in bi19-3.gsql, it takes ~2min 
+An exact solution is in bi19-1.gsql, it takes ~2min for SF-100 data
 
 The current adding edge method is "bi19_add_edges_2hop" for 30TB data.
 For larger data, there are more paths between source and target, and 
