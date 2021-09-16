@@ -146,4 +146,4 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_method2_5hop(VERTEX<City> city1Id, VERT
       INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 /  (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
 }
 
-INSTALL QUERY bi19_mehtod1_2hop, bi19_mehtod1_3hop, bi19_mehtod2_3hop, bi19_mehtod2_5hop 
+INSTALL QUERY bi19_method1_2hop, bi19_method1_3hop, bi19_method2_3hop, bi19_method2_5hop 
