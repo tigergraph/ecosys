@@ -1,4 +1,4 @@
-#This query produce wrong results. I have not validate this query. 
+# This query provides the exact solution 
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 # DISTRIBUTED QUERY NOT SUPPORTED
