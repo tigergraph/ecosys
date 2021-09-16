@@ -23,7 +23,7 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 // Include all paths of lengths <= 2
 // source -(KNOWS)- mid -(KNOWS)- target
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_mehtod1_2hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_method1_2hop(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @source, @target, @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
