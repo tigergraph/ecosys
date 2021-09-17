@@ -66,7 +66,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   SumAccum<UINT> @creatorId; 
   OrAccum @next1, @isTarget;
   DOUBLE threshold;
-  threshold = 8; # Max path length is 8
+  P = {Person.*};
+  threshold = P.size();
 
   city1 = {city1Id};
   city2 = {city2Id};
