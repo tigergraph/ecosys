@@ -100,7 +100,7 @@ nohup python3 -u ./driver.py load all ~/sf30k > foo.out 2>&1 < /dev/null &
 ```
 Run queries and perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1. 
 ```sh
-./driver.py refresh ~/sf30k/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py refresh ~/sf30k/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
 ```
 
 The combined command in background is

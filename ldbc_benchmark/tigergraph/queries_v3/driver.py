@@ -417,7 +417,7 @@ def cmd_gen(args, output=None):
     stream = re.sub(r"'bi", r"\n'bi", stream)
     with open(output,'w') as f:
         f.write(stream)
-    print(f'Parameters are generated to {str(output)}')
+    print(f'Generating parameter to {str(output)}')
 
 def median(time_list):
     return sorted(time_list)[len(time_list)//2]
