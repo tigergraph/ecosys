@@ -49,9 +49,16 @@ $ ./tg eks create -n tigergraph --size 3
 
 Alternatively, you can use `kustomize` command in the `./tg` script to generate a manifest, and then deploy using the manifest. The manifest will be generated in the `deploy` directory.  
 
+For example, the following command will create a manifest that will deploy a 3*2 cluster with a replication factor of 2 and a partitioning factor of 3.
+The `--version` flag specifies the version of TigerGraph to use for the deployment. 
+
+```
+$ ./tg gke kustomize -s 6 --ha 2 --version 3.2.0
+```
+
+You can then use `kubetl apply` to create the deployment. 
 ```bash
-$ ./tg eks kustomize -s 3
-$ kubectl apply -f deploy/tigergraph-eks.yaml
+$ kubectl apply -f deploy/tigergraph-gke.yaml
 ```
 
 ## Verify deployment
