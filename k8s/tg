@@ -136,6 +136,7 @@ function update_pv () {
 function update_prefix () {
    if [ "${TG_PREFIX}" != "tigergraph" ]; then
       sed "${sedi[@]}" -e "s/pod.prefix: tigergraph/pod.prefix: ${TG_PREFIX}/g" $MANIFEST
+      sed "${sedi[@]}" -e "s/app: tigergraph/app: ${TG_PREFIX}/g" $MANIFEST
       sed "${sedi[@]}" -e "/StatefulSet/{n;n;n;n;s/tigergraph/${TG_PREFIX}/;}" $MANIFEST
    fi
 }

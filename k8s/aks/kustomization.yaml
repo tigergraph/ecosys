@@ -10,8 +10,8 @@ generatorOptions:
 bases:
 - ../base
 
-# uncomment and revise below to update global namespace 
-#namespace: default
+# revise below to update global namespace 
+namespace: default
 
 # uncomment and revise below to update images
 # images:
