@@ -3,6 +3,8 @@ kind: Job
 metadata:
   name: installer
   namespace: default
+  labels:
+    app: tigergraph
 spec:
   ttlSecondsAfterFinished: 60
   template:

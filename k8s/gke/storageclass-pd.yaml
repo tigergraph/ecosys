@@ -3,6 +3,8 @@ kind: StorageClass
 metadata:
   name: gcp-pd-ssd
   namespace: default
+  labels:
+    app: tigergraph
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
