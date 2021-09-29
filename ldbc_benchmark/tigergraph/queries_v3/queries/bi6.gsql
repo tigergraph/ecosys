@@ -3,7 +3,7 @@ SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
-  MapAccum<VERTEX<Person>, UINT> @@authorityScore;
+  MapAccum<VERTEX<Person>, UINT> @@popularityScore;
   SumAccum<UINT> @authorityScore;
   SumAccum<UINT> @score;
   SetAccum<VERTEX<Person>> @liked;
@@ -13,7 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
   person2 = SELECT p2 FROM message1 -(<LIKES)- Person:p2; 
   person2 = SELECT p2 FROM person2:p2 -(<HAS_CREATOR)- _:m
     ACCUM p2.@score += m.outdegree("LIKES_REVERSE")
-    POST-ACCUM @@authorityScore += (p2 -> p2.@score);  
+    POST-ACCUM @@popularityScore += (p2 -> p2.@score);  
   tmp = SELECT m 
     FROM message1:m -(<LIKES)- Person:p2 
     ACCUM m.@liked += p2;
@@ -24,7 +24,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
     ACCUM p1.@liked += m.@liked
     POST-ACCUM 
       FOREACH p IN p1.@liked DO
-        p1.@authorityScore += @@authorityScore.get(p)
+        p1.@authorityScore += @@popularityScore.get(p)
       END, 
       @@result += RESULT(p1.id, p1.@authorityScore);
   

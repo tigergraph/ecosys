@@ -8,14 +8,18 @@
 * [Run Query and batch update](#run)
 * [Usage of driver.py](#Usage-of-driver.py)
 * [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
+
 ## Overview
-The benchmark follows the speficiation in [LDBC Social Network Benchmark v.0.4.0](https://github.com/ldbc/ldbc_snb_docs). The repository contains the following folders
+Repository for LDBC SNB 30TB benchmark by TigerGraph in 2021-10-01. 
+The benchmark runs the Business Intelligence (BI) workloads in [LDBC Social Network Benchmark v.0.4.0](https://github.com/ldbc/ldbc_snb_docs). The repository contains the following folders
 * [`queries`](./queries) BI GSQL queries.
 * [`dml`](./dml) GSQL loading job and queries for inserting and deleting data.
 * [`driver.py`](./driver.py) is the utility script to run the benchmark.
 * [`schema.gsql`](./schema.gsql) defines the LDBC SNB schema and loading job
 * [`cypher`](./cypher) the same benchmark using Neo4j.
 * [`LDBC_10TB`](./LDBC_10TB) scripts for downloading and processing data of 10TB and 30TB.
+* [`gcp`](./gcp) scripts for setting up environment on google cloud platform (GCP).
+* [`aws`](./aws) scripts for setting up environment on AWS, not used in our benchmark.
 
 Related links
 * [LDBC_BI by Garbor](https://github.com/ldbc/ldbc_snb_bi) contains the benchmark using Cypher and postgres
