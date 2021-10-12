@@ -78,16 +78,14 @@ python3 download_all.py 30t 10.128.0.4 10
 
 ## Run queries and updates (30T)
 Please refer to the the [parent page](../) for the installation of TigerGraph. 
+Default setting can get random errors during loading because FileLoader timeout too small. 
 Before loading, config the timeout limit is required
 ```sh
 gadmin config entry GPE.BasicConfig.Env
-# add MVExtraCopy=0; (default is 1) This turn off back up copy.
+# add MVExtraCopy=0; (default is 1) This turns off backup copy.
 
 gadmin config group RESTPP-LOADER
-# Change FileLoader.Factory.HandlerCount: 4 -> 40
-
-gadmin config group timeout 
-# Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
+# Change FileLoader.Factory.HandlerCount: 16 -> 100
 # Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
 # Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
 gadmin config apply -y
