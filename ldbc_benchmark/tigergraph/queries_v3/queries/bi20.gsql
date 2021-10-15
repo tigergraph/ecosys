@@ -70,8 +70,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
 /*
 This one works faster on SF-1 
 but is not distributed
-
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
   OrAccum @visited, @next, @inCompany;
