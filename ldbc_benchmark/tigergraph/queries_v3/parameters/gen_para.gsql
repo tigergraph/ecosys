@@ -155,7 +155,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   // LIMIT 1, somtimes return 2 vertices
   IF P.size() == 2 THEN
     P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
-  END
+  END;
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
   C = {@@cities};
   @@cities.clear();
