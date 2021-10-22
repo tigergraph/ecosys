@@ -1,3 +1,6 @@
+# This page is obsolete. Please visit [tigergraph/gsql_client](https://github.com/tigergraph/gsql_client) to access the up-to-date version.
+---
+
 # GSQL Client
 GSQL client here is to access TigerGraph programmatically.
 Please check out our [Bintray](https://bintray.com/tigergraphecosys/tgjars/gsql_client) for more details.
