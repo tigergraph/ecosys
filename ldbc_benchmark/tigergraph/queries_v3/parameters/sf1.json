@@ -26,7 +26,28 @@
     "bi18": {"person1Id":26388279076936,
         "tag":"Frank_Sinatra"},
     "bi19": {"city1Id":669, "city2Id":648},
-    "bi20": {"company":"Pamir_Airways", "person2Id":15393162792760}
+    "bi20": {"company":"Pamir_Airways", "person2Id":15393162792760},
+    "ic1": {"personId":10995116280704, "firstName":"Wei"},
+    "ic2": {"personId":10995116280704, "date":"2011-07-31T00:00:00"},
+    "ic3": {"personId":10995116280704, "country1":"China", "country2":"Austria", "startDate":"2011-07-22T00:00:00", "duration":10},
+    "ic4": {"personId":10995116280704, "startDate":"2011-07-22T00:00:00", "duration":10},
+    "ic5": {"personId":10995116280704, "startDate":"2011-07-22T00:00:00"},
+    "ic6": {"personId":10995116280704, "tag":"Frank_Sinatra"},
+    "ic7": {"personId":10995116280704},
+    "ic8": {"personId":10995116280704},
+    "ic9": {"personId":10995116280704, "date":"2011-07-22T00:00:00"},
+    "ic10": {"personId":10995116280704, "month":3},
+    "ic11": {"personId":10995116280704, "country":"India", "workFromYear":2000},
+    "ic12": {"personId":10995116280704, "tagClass":"Monarch"},
+    "ic13": {"person1Id":10995116280704, "person2Id":15393162792760},
+    "ic14": {"person1Id":10995116280704, "person2Id":15393162792760},
+    "is1": {"personId":10995116280704},
+    "is2": {"personId":10995116280704},
+    "is3": {"personId":10995116280704},
+    "is4": {"messageId":1924145349115},
+    "is5": {"messageId":1924145349115},
+    "is6": {"messageId":1924145349115},
+    "is7": {"messageId":1924145349115}
 }
 
 

@@ -377,16 +377,22 @@ def cmd_gen(args, output=None):
     while len(gen[20]['@@person2Ids'])==0:
         gen[20] = GEN_WORKLOADS[20].run(None).result
         print('rerun gen_bi20')
-    country = gen[0]['@@country']
-    tag = gen[0]['@@tag']
-    tagclass = gen[0]['@@tagclass']
     def genValue(name, Dtype):
-        if name == 'country': return country[randrange(3)]
-        if name == 'tag': return tag[randrange(3)]
-        if name == 'tagClass': return tagclass[randrange(3)]
+        if name == 'country': return gen[0]['@@country'][randrange(3)]
+        if name == 'tag': return gen[0]['@@tag'][randrange(3)]
+        if name == 'tagClass': return  gen[0]['@@tagclass'][randrange(3)]
+        if name == 'personId': return gen[0]['@@personId'][randrange(3)]
+        if name == 'commentId': return gen[0]['@@commentId'][randrange(3)]
+        if name == 'firstName': return gen[0]['@@firstName'][randrange(3)]
         if name == 'startDate': 
             date = datetime(2010, 9, 1) + timedelta(days=randrange(365))
             return date.strftime("%Y-%m-%dT00:00:00")
+        if name == 'month':
+            return randrange(12) + 1
+        if name == 'duration':
+            return randrange(20,60)
+        if name == 'workFromYear':
+            return randrange(1990,2010)
         if Dtype == 'LONG':
             return randrange(100)
         if Dtype == 'DATETIME':

@@ -1,6 +1,6 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic3(VERTEX<Person> personId, STRING x, STRING y, DATETIME startDate, INT duration) syntax v2 {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic3(VERTEX<Person> personId, STRING country1, STRING country2, DATETIME startDate, INT duration) syntax v2 {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
   HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@result;
   SumAccum<int> @xCount, @yCount;
@@ -11,18 +11,18 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic3(VERTEX<Person> personId, STRING x, S
   P =
     SELECT p
     FROM S:s -(KNOWS*1..2)- Person:p -(IS_LOCATED_IN>.IS_PART_OF>)- Country:cp
-    WHERE p != s and cp.name != x and cp.name != y;
+    WHERE p != s and cp.name != country1 and cp.name != country2;
   
    P =
     SELECT p
     FROM P:p -(<HAS_CREATOR)- (Post|Comment):m -(IS_LOCATED_IN>)- Country:cm
-    WHERE (cm.name == x or cm.name == y)
+    WHERE (cm.name == country1 or cm.name == country2)
       and (m.creationDate >= startDate and m.creationDate < endDate)
     PER(p,cm)
     ACCUM
       CASE 
-        WHEN cm.name == x THEN p.@xCount += 1
-        WHEN cm.name == y THEN p.@yCount += 1
+        WHEN cm.name == country1 THEN p.@xCount += 1
+        WHEN cm.name == country2 THEN p.@yCount += 1
       END;
       
     P =

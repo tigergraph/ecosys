@@ -13,21 +13,18 @@ CREATE OR REPLACE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH
   P1 = SELECT p
     FROM S:s -(KNOWS)- Person:p 
     WHERE p != personId AND p.firstName == firstName
-    PER(p)
     ACCUM p.@distance = 1;
   //dis=2  
   P2 = 
     SELECT p
-    FROM S:s -(KNOWS*2)- Person:p 
-    WHERE p != personId AND p.firstName == firstName
-    PER(p)
+    FROM P1 -(KNOWS)- Person:p 
+    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
     ACCUM p.@distance = 2;
   //dis=3
   P3 = 
     SELECT p
-    FROM S:s -(KNOWS*3)- Person:p
-    WHERE p != personId AND p.firstName == firstName
-    PER(p)
+    FROM P2 -(KNOWS)- Person:p
+    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
     ACCUM p.@distance = 3;
   
   P = P1 UNION P2 UNION P3;
@@ -64,6 +61,7 @@ CREATE OR REPLACE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH
     P.browserUsed AS friendBrowserUsed,
     P.locationIP AS friendLocationIp,
     P.email AS friendEmails,
+    P.speaks AS friendSpeaks,
     P.@friendCityName AS friendCityName,
     P.@univ AS friendUniversities,
     P.@comp AS friendCompanies];

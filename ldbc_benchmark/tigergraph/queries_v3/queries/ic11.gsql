@@ -2,7 +2,7 @@
 //IC 11 query description is on page 42 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE DISTRIBUTED QUERY ic11(vertex<Person> personId, string countryName, int workFromYear) {
+CREATE OR REPLACE DISTRIBUTED QUERY ic11(vertex<Person> personId, string country, int workFromYear) {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
   HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@result;
   
@@ -10,7 +10,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic11(vertex<Person> personId, string country
   P =
     SELECT p
     FROM S:s -(KNOWS*1..2)- Person:p -(WORK_AT>:e)- Company:org -(IS_LOCATED_IN>)- Country:c
-    WHERE p != personId AND c.name == countryName AND e.workFrom < workFromYear 
+    WHERE p != personId AND c.name == country AND e.workFrom < workFromYear 
     PER(p,org,e)
     ACCUM @@result += friendInfo(p.id, p.firstName, p.lastName, org.name, e.workFrom);
   PRINT @@result;

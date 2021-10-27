@@ -2,7 +2,7 @@
 //IC 5 query description is on page 36 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) {
+CREATE OR REPLACE QUERY ic5(VERTEX<Person> personId, DATETIME startDate) {
   TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
 	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@result;
   SetAccum<VERTEX<Person>> @@friendAll;
@@ -13,7 +13,7 @@ CREATE OR REPLACE QUERY ic5(VERTEX<Person> personId, DATETIME minDate) {
   vForum =
     SELECT t
     FROM S:s-(KNOWS*1..2)-Person:p-(<HAS_MEMBER:e)-Forum:t
-    WHERE p != s AND e.creationDate > minDate
+    WHERE p != s AND e.creationDate > startDate
     PER(p,t)
     ACCUM t.@memberIds += p.id, @@friendAll += p;
 

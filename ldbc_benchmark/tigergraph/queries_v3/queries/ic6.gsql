@@ -2,20 +2,20 @@
 //IC 6 query description is on page 37 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic6(VERTEX<Person> personId, STRING tagName) {
-  TYPEDEF tuple<STRING tagName, INT postCount> tagStats;
-  HeapAccum<tagStats>(10, postCount DESC, tagName ASC) @@result;
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic6(VERTEX<Person> personId, STRING tag) {
+  TYPEDEF tuple<STRING tag, INT postCount> tagStats;
+  HeapAccum<tagStats>(10, postCount DESC, tag ASC) @@result;
   SumAccum<INT> @postCount;
   S = { personId };
   vPost =
     SELECT m
     FROM S:s -(KNOWS*1..2)-Person:p -(<HAS_CREATOR)-Post:m -(HAS_TAG>)-Tag:t
-    WHERE s != p AND t.name == tagName;
+    WHERE s != p AND t.name == tag;
 
   vTag = 
     SELECT t
     FROM vPost-(HAS_TAG>)-Tag:t
-    WHERE t.name != tagName
+    WHERE t.name != tag
     ACCUM t.@postCount += 1
     POST-ACCUM @@result += tagStats(t.name, t.@postCount);
     

@@ -3,8 +3,9 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen() {
-  SumAccum<UINT> @ncomment;
-  SetAccum<STRING> @@country, @@tag, @@tagclass;
+  SumAccum<UINT> @ncomment, @@personId, @@commentId;
+  SetAccum<STRING> @@country, @@tag, @@tagclass, @@firstName;
+
   V = {Country.*};
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
@@ -17,7 +18,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
     ORDER BY t.@ncomment ASC
     LIMIT 10;
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
-  PRINT @@country, @@tag, @@tagclass;
+  P = {Person.*}
+  P = SELECT p FROM P:p LIMIT 4;
+  P = SELECT p FROM P:p  ACCUM @@personId += p.id, @@firstName += p.firstName;
+  M = {Comment.*}
+  M = SELECT M FROM M:m LIMIT 4;
+  M = SELECT m FROM M:m  ACCUM @@commentId += m.id;
+  PRINT @@country, @@tag, @@tagclass, @@personId, @@commentId, @@firstName;
 }
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {

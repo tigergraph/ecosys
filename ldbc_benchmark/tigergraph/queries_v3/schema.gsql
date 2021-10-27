@@ -15,7 +15,7 @@ CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary
 CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 ## etc
 CREATE VERTEX Forum (PRIMARY_ID id UINT, title STRING, creationDate DATETIME) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, language SET<STRING>, email SET<STRING>) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 

@@ -2,7 +2,7 @@
 //IC 9 query description is on page 40 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic9(VERTEX<Person> personId, DATETIME maxDate) {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic9(VERTEX<Person> personId, DATETIME date) {
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
                 INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
   
@@ -14,7 +14,7 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic9(VERTEX<Person> personId, DATETIME ma
   M =
     SELECT s
     FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_CREATOR)- (Comment|Post):m 
-    WHERE s != p AND m.creationDate < maxDate
+    WHERE s != p AND m.creationDate < date
     PER(s,p,m)
     ACCUM 
       m.@personId = p.id,

@@ -2,14 +2,14 @@
 //IC 4 query description is on page 35 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT durationDays) {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT duration) {
   TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
   SumAccum<int> @postCount;
   SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;
   HeapAccum<topic>(10, postCount DESC, tagName ASC) @@result;
 
   DATETIME endDate;
-  endDate = DATETIME_add(startDate, INTERVAL durationDays DAY);
+  endDate = DATETIME_add(startDate, INTERVAL duration DAY);
 
   S = { personId };
   // find tags of posts created by the Person's friends in the given timeframe

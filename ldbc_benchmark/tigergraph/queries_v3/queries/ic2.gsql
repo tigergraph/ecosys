@@ -1,6 +1,6 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic2(VERTEX<Person> personId, DATETIME maxDate) {
+CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic2(VERTEX<Person> personId, DATETIME date) {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
   HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@result;
   S = { personId };
