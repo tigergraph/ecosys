@@ -1,0 +1,70 @@
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+CREATE OR REPLACE QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
+  typedef tuple<string orgName, int orgYear, string orgPlace> org;
+  SumAccum<uint> @distance;
+  SumAccum<string> @friendCityName;
+  MapAccum<INT, INT> @personInfo;
+  MapAccum<INT, SetAccum<org>> @@compInfo, @@univInfo;
+  SetAccum<org> @comp, @univ;
+  
+  S = { personId };
+  //dis=1 
+  P1 = SELECT p
+    FROM S:s -(KNOWS)- Person:p 
+    WHERE p != personId AND p.firstName == firstName
+    PER(p)
+    ACCUM p.@distance = 1;
+  //dis=2  
+  P2 = 
+    SELECT p
+    FROM S:s -(KNOWS*2)- Person:p 
+    WHERE p != personId AND p.firstName == firstName
+    PER(p)
+    ACCUM p.@distance = 2;
+  //dis=3
+  P3 = 
+    SELECT p
+    FROM S:s -(KNOWS*3)- Person:p
+    WHERE p != personId AND p.firstName == firstName
+    PER(p)
+    ACCUM p.@distance = 3;
+  
+  P = P1 UNION P2 UNION P3;
+  tmp = 
+    SELECT ct
+    FROM P:p -(IS_LOCATED_IN>)- City:ct
+    ACCUM p.@friendCityName = ct.name;
+      
+  tmp = 
+    SELECT cn
+    FROM P:p -(WORK_AT>:ew)- Company:co -(IS_LOCATED_IN>)- Country:cn
+    PER MATCH
+    ACCUM p.@comp += org(co.name, ew.workFrom, cn.name); //this causes installation slow in distributed mode 
+  
+  tmp = 
+    SELECT ct
+    FROM P:p -(STUDY_AT>:es)-University:u -(IS_LOCATED_IN>)- City:ct 
+    PER MATCH
+    ACCUM p.@univ += org(u.name, es.classYear, ct.name); //this causes installation slow in distributed mode 
+            
+  P =
+    SELECT p
+    FROM P:p
+    ORDER BY p.@distance ASC, p.lastName ASC, p.id ASC
+    LIMIT 20;
+  
+  print P[
+    P.id AS friendId,
+    P.lastName AS friendLastName,
+    P.@distance AS distanceFromPerson,
+    P.birthday AS friendBirthday,
+    P.creationDate AS friendCreationDate,
+    P.gender AS friendGender,
+    P.browserUsed AS friendBrowserUsed,
+    P.locationIP AS friendLocationIp,
+    P.email AS friendEmails,
+    P.@friendCityName AS friendCityName,
+    P.@univ AS friendUniversities,
+    P.@comp AS friendCompanies];
+}

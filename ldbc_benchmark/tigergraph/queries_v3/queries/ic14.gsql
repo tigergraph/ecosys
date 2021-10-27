@@ -1,0 +1,113 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 14 query description is on page 44 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+CREATE OR REPLACE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) {
+  TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
+
+  OrAccum @visited1, @visited2;
+  OrAccum @@found, @@next1=true, @@next2=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @path;
+  ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  HeapAccum<pathInfo>(0, pathWeight DESC) @@result;
+  STRING jsonStr;
+  SetAccum<VERTEX<Person>> @@p1, @@p2;
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM S1:s ACCUM s.@visited1 += true, s.@path += [s];
+    S2 = SELECT s FROM S2:s ACCUM s.@visited2 += true, s.@path += [s];
+
+    WHILE NOT @@found AND (@@next1 OR @@next2) DO
+      IF NOT @@found AND @@next1 THEN 
+        @@next1 = false;
+        S1 = 
+          SELECT t
+          FROM S1:s-(KNOWS)-Person:t
+          WHERE NOT t.@visited1
+          ACCUM 
+            IF t.@visited2 THEN
+              @@found += True,
+              FOREACH p1 IN s.@path DO
+                FOREACH p2 IN t.@path DO
+                  @@pathAll += p1 + p2
+                END
+              END
+            ELSE
+              @@next1 += true,
+              t.@visited1 += true,
+              FOREACH p IN s.@path DO
+                t.@path += p + [t]
+              END
+            END;
+      END;
+
+      IF NOT @@found AND @@next2 THEN 
+        @@next2 = false;
+        S2 = 
+          SELECT t
+          FROM S2:s-(KNOWS)-Person:t
+          WHERE NOT t.@visited2
+          ACCUM 
+            IF t.@visited1 THEN
+              @@found += True,
+              FOREACH p1 IN s.@path DO
+                FOREACH p2 IN t.@path DO
+                  @@pathAll += p2 + p1
+                END
+              END
+            ELSE
+              @@next2 += true,
+              t.@visited2 += true,
+              FOREACH p IN s.@path DO
+                t.@path += [t] + p
+              END
+            END;
+      END;
+    END; //WHILE NOT @@found AND @@next DO
+  END; //IF person1Id != person2Id THEN
+  @@result.resize(@@pathAll.size());
+  FOREACH path IN @@pathAll DO
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i IN range[0, path.size()-2] DO
+      jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+      @@p1.clear(); @@p1 += path.get(i);
+      @@p2.clear(); @@p2 += path.get(i+1);
+      S1 = @@p1;
+      S2 = @@p2;
+      P1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Post:c;
+      P2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Post:c;
+      C1 = SELECT c FROM S1:s -(<HAS_CREATOR)- Comment:c;
+      C2 = SELECT c FROM S2:s -(<HAS_CREATOR)- Comment:c;
+      
+      c1p =
+        SELECT c1
+        FROM P2:p2 -(<REPLY_OF)- C1:c1
+        ACCUM @@weight += 1;
+
+      c1c =
+        SELECT c1
+        FROM C2:c2 -(<REPLY_OF)- C1:c1
+        ACCUM @@weight += 0.5;
+        
+      c2p =
+        SELECT c2
+        FROM P1:p1 -(<REPLY_OF)- C2:c2
+        ACCUM @@weight += 1;
+
+      c2c =
+        SELECT c2
+        FROM C1:c1 -(<REPLY_OF)- C2:c2
+        ACCUM @@weight += 0.5;
+    END; //FOREACH i IN range[0, path.size()-2] DO
+    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@result += pathInfo(parse_json_array(jsonStr), @@weight);
+  END; //FOREACH path IN @@pathAll DO
+  PRINT @@result;
+}
+
+//INSTALL QUERY ic14 
+//RUN QUERY ic14(17592186055119, 10995116282665)
