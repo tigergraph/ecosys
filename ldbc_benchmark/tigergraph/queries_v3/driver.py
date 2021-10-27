@@ -210,13 +210,22 @@ DYNAMIC_EDGES = [
 DYNAMIC_NAMES = DYNAMIC_VERTICES + DYNAMIC_EDGES
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
-total = 21
-WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0][0]['@@result']) for i in range(1,total)]
+WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0][0]['@@result']) for i in range(1,21)]
 WORKLOADS[7] = Workload('bi8', ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
 WORKLOADS[9] = Workload('bi10', ResultTransform()[0][0]['result'])
 WORKLOADS[10] = Workload('bi11', ResultTransform()[0][0])
 WORKLOADS[15] = Workload('bi16', ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
 WORKLOADS[18] = Workload('bi19', ResultTransform()[1][0]['@@result'], queries = [Query('bi19_add_weighted_edges'), Query('bi19'), Query('bi19_delete_weighted_edges')])
+
+WORKLOADS += [Workload(f'ic{i}', ResultTransform()[0][0]['@@result']) for i in range(1,15)]
+WORKLOADS[20] = Workload(f'ic1', ResultTransform()[0][0]['P'])
+WORKLOADS[20+11] = Workload(f'ic12', ResultTransform()[0][0]['P'])
+WORKLOADS += [Workload(f'is{i}', ResultTransform()[0][0]['@@result']) for i in range(1,8)]
+WORKLOADS[34] = Workload(f'is1', ResultTransform()[0][0]['P'])
+WORKLOADS[34+2] = Workload(f'is3', ResultTransform()[0][0]['P'])
+WORKLOADS[34+3] = Workload(f'is4', ResultTransform()[0][0]['result'])
+WORKLOADS[34+4] = Workload(f'is5', ResultTransform()[0][0]['P'])
+WORKLOADS[34+5] = Workload(f'is6', ResultTransform()[0][0]['vModerator'])
 
 DEL_VERTICES = ["Comment","Post","Forum","Person"]
 DEL_EDGES = ['Person_likes_Post',
@@ -634,7 +643,7 @@ def parse_queries(args):
     if not hasattr(args, 'queries'): 
         args.workload = WORKLOADS
         return
-    all = [str(i) for i in range(1,total)]
+    all = [w.name for w in WORKLOADS]
     alls = set(all)
     if args.queries == 'all':
         actual = alls
@@ -648,7 +657,7 @@ def parse_queries(args):
         actual = list(filter(r.match, all))
     else:
         actual = set(args.queries.split(','))
-    args.workload = [WORKLOADS[i-1] for i in range(1,total) if str(i) in actual]
+    args.workload = [w for w in WORKLOADS if w.name in actual]
     print('Workload:', ','.join([w.name for w in args.workload]))
 
 """ 
