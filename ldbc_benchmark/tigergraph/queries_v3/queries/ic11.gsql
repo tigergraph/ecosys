@@ -5,13 +5,18 @@ USE GRAPH ldbc_snb
 CREATE OR REPLACE DISTRIBUTED QUERY ic11(vertex<Person> personId, string country, int workFromYear) {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
   HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@result;
+  OrAccum<BOOL> @selected;
   
+  C = {Country.*};
   S = { personId };
+  companies = SELECT org FROM Country:c -(<IS_LOCATED_IN)-Company:org
+    WHERE c.name == country
+    ACCUM org.@selected += TRUE;
+  
   P =
     SELECT p
-    FROM S:s -(KNOWS*1..2)- Person:p -(WORK_AT>:e)- Company:org -(IS_LOCATED_IN>)- Country:c
-    WHERE p != personId AND c.name == country AND e.workFrom < workFromYear 
-    PER(p,org,e)
-    ACCUM @@result += friendInfo(p.id, p.firstName, p.lastName, org.name, e.workFrom);
+    FROM S:s -(KNOWS*1..2)- Person:p -(WORK_AT>:e) - Company:c  
+    WHERE p != personId AND c.@selected AND e.workFrom < workFromYear 
+    ACCUM @@result += friendInfo(p.id, p.firstName, p.lastName, c.name, e.workFrom);
   PRINT @@result;
 }
