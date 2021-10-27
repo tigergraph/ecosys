@@ -28,7 +28,7 @@
     "person2Id":"ID",
     "city1Id":"ID",
     "city2Id":"ID",
-    "commentId":"ID"
+    "messageId":"ID"
 }
 
 

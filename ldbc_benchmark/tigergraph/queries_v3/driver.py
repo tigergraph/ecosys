@@ -220,6 +220,7 @@ WORKLOADS[18] = Workload('bi19', ResultTransform()[1][0]['@@result'], queries = 
 WORKLOADS += [Workload(f'ic{i}', ResultTransform()[0][0]['@@result']) for i in range(1,15)]
 WORKLOADS[20] = Workload(f'ic1', ResultTransform()[0][0]['P'])
 WORKLOADS[20+11] = Workload(f'ic12', ResultTransform()[0][0]['P'])
+WORKLOADS[20+12] = Workload(f'ic13', ResultTransform()[0][0])
 WORKLOADS += [Workload(f'is{i}', ResultTransform()[0][0]['@@result']) for i in range(1,8)]
 WORKLOADS[34] = Workload(f'is1', ResultTransform()[0][0]['P'])
 WORKLOADS[34+2] = Workload(f'is3', ResultTransform()[0][0]['P'])
@@ -377,12 +378,16 @@ def cmd_gen(args, output=None):
     while len(gen[20]['@@person2Ids'])==0:
         gen[20] = GEN_WORKLOADS[20].run(None).result
         print('rerun gen_bi20')
+    i1 = randrange(3)
+    i2 = (i1+1) %3
     def genValue(name, Dtype):
-        if name == 'country': return gen[0]['@@country'][randrange(3)]
+        if name == 'country' or name =='country1': return gen[0]['@@country'][i1]
+        if name == 'country2': return  gen[0]['@@country'][i2]
         if name == 'tag': return gen[0]['@@tag'][randrange(3)]
         if name == 'tagClass': return  gen[0]['@@tagclass'][randrange(3)]
-        if name == 'personId': return gen[0]['@@personId'][randrange(3)]
-        if name == 'commentId': return gen[0]['@@commentId'][randrange(3)]
+        if name == 'personId' or name == 'person1Id': return gen[0]['@@personId'][i1]
+        if name == 'person2Id': return gen[0]['@@personId'][i2]
+        if name == 'messageId': return gen[0]['@@commentId'][randrange(3)]
         if name == 'firstName': return gen[0]['@@firstName'][randrange(3)]
         if name == 'startDate': 
             date = datetime(2010, 9, 1) + timedelta(days=randrange(365))
@@ -390,7 +395,7 @@ def cmd_gen(args, output=None):
         if name == 'month':
             return randrange(12) + 1
         if name == 'duration':
-            return randrange(20,60)
+            return randrange(180,720)
         if name == 'workFromYear':
             return randrange(1990,2010)
         if Dtype == 'LONG':
@@ -429,7 +434,7 @@ def cmd_gen(args, output=None):
     parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
     
     stream = str(parameters)
-    stream = re.sub(r"'bi", r"\n'bi", stream)
+    stream = re.sub(r"('[ibcs]+[0-9]+':)", r"\n\1", stream)
     with open(output,'w') as f:
         f.write(stream)
     print(f'Generating parameter to {str(output)}')
@@ -441,7 +446,7 @@ def writeResult(result, filename):
     with open(filename, 'w') as f:
         if isinstance(result, dict): 
             f.write(str(list(result.values()))+'\n')
-            return  
+            return
         for row in result:
             row = [v for k,v in row.items()]
             f.write(str(row)+'\n')

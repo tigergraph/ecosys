@@ -7,7 +7,7 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic2(VERTEX<Person> personId, DATETIME da
   T = 
     SELECT t
     FROM S:s -(KNOWS) -Person:p - (<HAS_CREATOR) - (Comment|Post):t
-    WHERE t.creationDate < maxDate
+    WHERE t.creationDate < date
     PER(p,t)
     ACCUM 
       IF t.type == "Comment" OR t.content != "" THEN

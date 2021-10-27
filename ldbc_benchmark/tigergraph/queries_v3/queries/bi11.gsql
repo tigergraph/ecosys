@@ -2,7 +2,7 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) {
-  SumAccum<UINT> @@count;
+  SumAccum<UINT> @@result;
   OrAccum<BOOL> @selected;
   SetAccum<VERTEX<Person>> @oneHopNeighbor;
   countryWithName = SELECT c FROM Country:c WHERE c.name == country;
@@ -17,9 +17,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) {
     WHERE p3.@selected AND e.creationDate > startDate AND p2.id < p3.id
     ACCUM FOREACH p1 IN p2.@oneHopNeighbor DO
         IF p1 IN p3.@oneHopNeighbor THEN
-          @@count += 1
+          @@result += 1
         END
       END; 
   
-  PRINT @@count;
+  PRINT @@result;
 }
