@@ -123,14 +123,16 @@ After loading, you can checkout the number of vertices and edges using the follo
 ```
 
 ## Run query and batch updates
-Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. The default parameter file is `auto`, which means if `param.json` file is not in the results folder, the driver will automatically generate the parameter file. An example paramter file for sf1 is in [./paramters/sf1.json](./paramters/sf1.json). you can use it by using `-p paramters/sf1.json`
+Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
+For example, `-q bi1,bi2` run bi1 and bi2, `-q reg:i[cs]*` use regular expression and run ic and is queries, `-q not:bi19` run all queries except bi19.
+The default parameter file is `auto`, which means if `param.json` file is not in the results folder, the driver will automatically generate the parameter file. An example paramter file for sf1 is in [./paramters/sf1.json](./paramters/sf1.json). you can use it by using `-p paramters/sf1.json`
 ```sh
 ./driver.py run  -n 3 
 ```
 
 ```sh
 # Query bi19 is expensive, we recomment to run without bi19 for 3 times
-./driver.py run -q not:19 -n 3
+./driver.py run -q not:bi19 -n 3
 # To run all the queries
 ./driver.py run 
 ```

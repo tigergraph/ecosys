@@ -1,9 +1,61 @@
 # 30TB LDBC SNB on GCP
+## Table of Contents
+* [Overview](#Overview)
+* [Setup on EKS](#Setup-on-EKS)
+* [Setup on GKE](#Setup-on-GKE)
+* [Setup on VM](#Setup-on-VM)
+
 ## Overview
 I benchmarked for LDBC 30TB using 10 ultramem-160 machine, but I can run the queries but loading and query running are very slow. This is because each machine only run one GPE instance. Then I tried to use 40 ultramem-40 to do the benchamrk. However, the port check failed during TG installation if the number of instances is larger than 20. I finally decided to use our local CentOS machines to do the benchmark. 
 
-## Table of Contents
-## Setup
+## Setup on EKS
+This is the setup of EKS for 1T benchmark. First, create cluster on EKS 
+```
+eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test 
+```
+
+Pull another copy of ecosys at the master branch, create the manifest 
+```
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+ ./tg eks kustomize -s 4 --pv 1024
+kubectl apply -f ./deploy/tigergraph-eks.yaml
+```
+This generate the manifest at `./deploy/tigergraph-gke.yaml`, the memory need to be modified manually. In 1T benchamrk, I used `200G` for 10T. 
+
+
+## Setup on GKE
+On your desktop, install `gcloud` and `kubectl`. Create cluster on GKE (10T benchmark exmaple)
+```
+gcloud container clusters create cluster1 -m m1-ultramem-40 --num-nodes=12 --disk-size 3000 --disk-type=pd-standard
+```
+
+Pull another copy of ecosys at the master branch, create the manifest 
+```
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg gke kustomize -s 12 --pv 3000 -l [license]
+kubectl apply -f ./deploy/tigergraph-eks.yaml
+```
+
+Write a script `download_decompress.sh` that is similar to [../LDBC_10TB/download_decompress.sh](../LDBC_10TB/download_decompress.sh), and update them to the pods 
+```
+for i in $(seq 0 11); do
+    kubectl cp download_decompress.sh tigergraph-${i}:/home/tigergraph/download_decompress.sh
+done
+```
+
+Iterating i from 0 to 11, copy paste to your desktop terminal and run. The pods will download and decompress the data automatically.
+```
+export i=0
+kubectl exec -it tigergraph-${i} -- /bin/bash
+export i=0
+nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &
+exit
+```
+
+
+## Setup on VM
 Install SDK and config the default project and region/zone
 ```
 gcloud init
