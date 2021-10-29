@@ -76,7 +76,7 @@ python3 download_all.py [data] [start ip addresss] [number of nodes] -k [service
 python3 download_all.py 30t 10.128.0.4 10
 ```
 
-## Run queries and updates (30T)
+## Run queries and updates
 Please refer to the the [parent page](../) for the installation of TigerGraph. 
 Default setting can get random errors during loading because FileLoader timeout too small. 
 Before loading, config the timeout limit is required
@@ -98,12 +98,12 @@ nohup python3 -u ./driver.py load all ~/sf30k > foo.out 2>&1 < /dev/null &
 ```
 Run queries and perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1. 
 ```sh
-nohup python3 -u ./driver.py refresh ~/sf30k/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py refresh ~/sf30k/ -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
 ```
 
 The combined command in background is
 ```sh
-nohup python3 -u ./driver.py all ~/sf10000/ -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py all ~/sf10000/ -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
 
 ## About queries

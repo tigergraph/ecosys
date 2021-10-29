@@ -1,12 +1,34 @@
 # 30TB LDBC SNB on GCP
 ## Table of Contents
 * [Overview](#Overview)
-* [Setup on EKS](#Setup-on-EKS)
 * [Setup on GKE](#Setup-on-GKE)
+* [Setup on EKS](#Setup-on-EKS)
 * [Setup on VM](#Setup-on-VM)
 
 ## Overview
 I benchmarked for LDBC 30TB using 10 ultramem-160 machine, but I can run the queries but loading and query running are very slow. This is because each machine only run one GPE instance. Then I tried to use 40 ultramem-40 to do the benchamrk. However, the port check failed during TG installation if the number of instances is larger than 20. I finally decided to use our local CentOS machines to do the benchmark. 
+
+## Setup on GKE
+This example is for 10T benchmark and also works for 30T
+On your desktop, install `gcloud` and `kubectl`. Create a cluster on GKE 
+```
+gcloud container clusters create cluster1 -m m1-ultramem-40 --num-nodes=12 --disk-size 3000 --disk-type=pd-standard
+```
+
+Download the master branch of ecosys, create the manifest 
+```
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg gke kustomize -s 12 --pv 3000 -l [license]
+kubectl apply -f ./deploy/tigergraph-eks.yaml
+```
+Upload the script [../LDBC_10TB/download_k8s.sh](../LDBC_10TB/download_k8s.sh) to all the pods and then run it to download and decompress the data. The usage is `download_k8s.sh [data] [index] [number of nodes] [threads](optional)` and is `download_k8s.sh 10t $i 12` here.
+```
+for i in $(seq 0 11); do
+    kubectl cp download_k8s.sh tigergraph-${i}:download_k8s.sh
+    kubectl exec tigergraph-${i} -- bash -c "bash download_k8s.sh 10t $i 12 > log.download 2> /dev/null &"  
+done
+```
 
 ## Setup on EKS
 This is the setup of EKS for 1T benchmark. First, create cluster on EKS 
@@ -22,37 +44,6 @@ cd ecosys/k8s
 kubectl apply -f ./deploy/tigergraph-eks.yaml
 ```
 This generate the manifest at `./deploy/tigergraph-gke.yaml`, the memory need to be modified manually. In 1T benchamrk, I used `200G` for 10T. 
-
-
-## Setup on GKE
-On your desktop, install `gcloud` and `kubectl`. Create cluster on GKE (10T benchmark exmaple)
-```
-gcloud container clusters create cluster1 -m m1-ultramem-40 --num-nodes=12 --disk-size 3000 --disk-type=pd-standard
-```
-
-Pull another copy of ecosys at the master branch, create the manifest 
-```
-git clone https://github.com/tigergraph/ecosys.git
-cd ecosys/k8s
-./tg gke kustomize -s 12 --pv 3000 -l [license]
-kubectl apply -f ./deploy/tigergraph-eks.yaml
-```
-
-Write a script `download_decompress.sh` that is similar to [../LDBC_10TB/download_decompress.sh](../LDBC_10TB/download_decompress.sh), and update them to the pods 
-```
-for i in $(seq 0 11); do
-    kubectl cp download_decompress.sh tigergraph-${i}:/home/tigergraph/download_decompress.sh
-done
-```
-
-Iterating i from 0 to 11, copy paste to your desktop terminal and run. The pods will download and decompress the data automatically.
-```
-export i=0
-kubectl exec -it tigergraph-${i} -- /bin/bash
-export i=0
-nohup sh download_decompress.sh > foo.out 2>&1 < /dev/null &
-exit
-```
 
 
 ## Setup on VM
@@ -107,7 +98,7 @@ download data, replace the ip address with the start ip in your case.
 ```sh
 # on GCP m1 
 # log in as tigergraph
-su tigergraph 
+su - tigergraph 
 # password tigergraph
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3/LDBC_10TB
