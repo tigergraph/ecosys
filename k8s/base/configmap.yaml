@@ -13,4 +13,3 @@ data:
     System.SSH.User.Privatekey=/home/tigergraph/.ssh/tigergraph_rsa
     System.DataRoot=/home/tigergraph/tigergraph/data
     System.LogRoot=/home/tigergraph/tigergraph/log
-    System.TempRoot=/tmp
