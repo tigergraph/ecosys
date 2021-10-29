@@ -79,6 +79,7 @@ spec:
                     sudo chown -R tigergraph:tigergraph /home/tigergraph/tigergraph/data;
                     tg_cfg=$(find /home/tigergraph/tigergraph/app/ -name .tg.cfg|head -n 1)
                     ln -sf $tg_cfg .tg.cfg
+                    export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH
                     gadmin init cluster -y --skip-stop;
                   fi
                 ) > /tmp/init.log 2>&1 &
