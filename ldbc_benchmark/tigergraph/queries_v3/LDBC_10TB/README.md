@@ -5,7 +5,7 @@
    * [Pre-requisites](#Pre-requisites)
    * [Download data](#Download-data)
    * [Decompress data](#Decompress-data)
-* [Run queries and updates](#Run-queries-and-updates)
+* [Load, run and update](#Load,-Run-and-Update)
 * [About queries](#About-queries)
 
 ## Direct download (not recommended)
@@ -76,7 +76,7 @@ python3 download_all.py [data size] [start ip addresss] [number of nodes] -k [se
 python3 download_all.py 30k 10.128.0.4 10
 ```
 
-## Run queries and updates
+## Load, Run and Update
 Please refer to the the [parent page](../) for the installation of TigerGraph. 
 Default setting can get random errors during loading because FileLoader timeout too small. 
 Before loading, config the timeout limit is required

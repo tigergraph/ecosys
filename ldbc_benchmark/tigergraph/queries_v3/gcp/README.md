@@ -9,7 +9,7 @@
 I benchmarked for LDBC 30TB using 10 ultramem-160 machine, but I can run the queries but loading and query running are very slow. This is because each machine only run one GPE instance. Then I tried to use 40 ultramem-40 to do the benchamrk. However, the port check failed during TG installation if the number of instances is larger than 20. I finally decided to use our local CentOS machines to do the benchmark. 
 
 ## Setup on GKE
-This example is for 10T benchmark and also works for 30T
+This example is for 10T benchmark and also works for 1T and 30T after you change the number of vm and the vm types.
 On your desktop, install `gcloud` and `kubectl`. Create a cluster on GKE 
 ```
 gcloud container clusters create cluster1 -m m1-ultramem-40 --num-nodes=12 --disk-size 3000 --disk-type=pd-standard
@@ -30,10 +30,10 @@ for i in $(seq 0 11); do
 done
 ```
 
-To load data and do benchmark, refer to [../LDBC_10TB/README.md](../LDBC_10TB/README.md).
+To load run queries and update the graph, refer to section `Load, Run and Update` in [../LDBC_10TB/README.md](../LDBC_10TB/README.md).
 
 ## Setup on EKS
-This is the setup of EKS for 1T benchmark. First, create cluster on EKS 
+This is the setup of EKS for 1T benchmark and smaller data. First, create cluster on EKS 
 ```
 eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test 
 ```
@@ -45,8 +45,7 @@ cd ecosys/k8s
  ./tg eks kustomize -s 4 --pv 1024
 kubectl apply -f ./deploy/tigergraph-eks.yaml
 ```
-This generate the manifest at `./deploy/tigergraph-gke.yaml`, the memory need to be modified manually. In 1T benchamrk, I used `200G` for 10T. 
-
+This generate the manifest at `./deploy/tigergraph-gke.yaml`, the memory need to be modified manually. In 1T benchamrk, I used `200G` for 10T. Because I did not get enough number of instances on AWS, I only stored data on Google Cloud Buckets. The downloading scripts do NOT support AWS !!!
 
 ## Setup on VM
 Install SDK and config the default project and region/zone
