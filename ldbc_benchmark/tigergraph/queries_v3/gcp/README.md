@@ -22,11 +22,13 @@ cd ecosys/k8s
 ./tg gke kustomize -s 12 --pv 3000 -l [license]
 kubectl apply -f ./deploy/tigergraph-gke.yaml
 ```
-Upload the script [../LDBC_10TB/download_k8s.sh](../LDBC_10TB/download_k8s.sh) to all the pods and then run it to download and decompress the data. The usage is `download_k8s.sh [data size] [index] [number of nodes] [threads](optional)` and is `download_k8s.sh 10k $i 12` here.
+Upload the script [../LDBC_10TB/download_k8s.sh](../LDBC_10TB/download_k8s.sh) to all the pods and then run it to download and decompress the data. The usage is `download_k8s.sh [data size] [index] [number of nodes] [threads](optional)` and is `download_k8s.sh 10k $i 12` here. The script clone the ecosys at `/home/tigergraph/data` and then use the scripts in [../LDBC_10TB](../LDBC_10TB) to download and decompress the data.
 ```
-for i in $(seq 0 11); do
+cd ../LDBC_10TB
+n=12 #need to be the number of pods
+for i in $( seq 0 $((n-1)) ); do
     kubectl cp download_k8s.sh tigergraph-${i}:download_k8s.sh
-    kubectl exec tigergraph-${i} -- bash -c "bash download_k8s.sh 10k $i 12 > log.download 2> /dev/null &"  
+    kubectl exec tigergraph-${i} -- bash -c "bash download_k8s.sh 10k $i $n > log.download 2> /dev/null &"  
 done
 ```
 
