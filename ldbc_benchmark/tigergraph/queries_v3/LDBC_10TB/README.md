@@ -47,12 +47,12 @@ sh install.sh
 ### Download data
 Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so you can use the service key from any Google account. The tutorial for creating the service key can be found on [GCP document](https://cloud.google.com/docs/authentication/getting-started).
 
-The usage of the script is `python3 download_one_partition.py [data] [node index] [number of nodes] -k [service-key file] -t [number of threads]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
+The usage of the script is `python3 download_one_partition.py [data size] [node index] [number of nodes] -k [service-key file] -t [number of threads]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
 ```sh
 # on node m1
-nohup python3 -u download_one_partition.py 10t 0 4  > foo.out 2>&1 < /dev/null &
+nohup python3 -u download_one_partition.py 10k 0 4  > foo.out 2>&1 < /dev/null &
 ```
-The data location in GCS bucket is hard coded in the code. The data is downloaded to `~/sf10000/` for 10t data and `~/sf30k/` for 30t data. 
+Available data size is `1k`, `10k` and `30k`, corresponding to about 1T, 10T and 40T data. The GCS bucket address is hard coded in the code. The data is downloaded to `~/sf1k`, `~/sf10k` and `~/sf30k`, respectively. 
 
 ### Decompress data
 Decompress the data on each node in parallel.
@@ -71,9 +71,9 @@ nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
 If you have pre-requisite packages setup on all the machines, you can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is 
 ```sh
-python3 download_all.py [data] [start ip addresss] [number of nodes] -k [service-key file] -t [number of threads]
+python3 download_all.py [data size] [start ip addresss] [number of nodes] -k [service-key file] -t [number of threads]
 #for example, to download and decompress 30TB data for machines from IP 10.128.0.4 to 10.128.0.13 
-python3 download_all.py 30t 10.128.0.4 10
+python3 download_all.py 30k 10.128.0.4 10
 ```
 
 ## Run queries and updates
@@ -92,18 +92,18 @@ gadmin config apply -y
 gadmin restart -y
 ```
 
-The dataset does not have header. For 10T data, just replace `~/sf30k` with `~/sf10000`. To load the data in background(take ~12hr)
+The dataset does not have header. For 10T data, just replace `~/sf30k` with `~/sf10k`. To load the data in background(take ~12hr)
 ```sh
 nohup python3 -u ./driver.py load all ~/sf30k > foo.out 2>&1 < /dev/null &
 ```
 Run queries and perform the batch update, begin date is `2012-11-29`, end date is `2012-12-31`. We perform bi reading queries every 7 days, we also add sleep factor 1. 
 ```sh
-nohup python3 -u ./driver.py refresh ~/sf30k/ -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py refresh ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 0.5 > foo.out 2>&1 < /dev/null & 
 ```
 
 The combined command in background is
 ```sh
-nohup python3 -u ./driver.py all ~/sf10000/ -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py all ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
 
 ## About queries

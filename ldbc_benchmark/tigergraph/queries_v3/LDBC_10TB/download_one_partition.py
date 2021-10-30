@@ -5,7 +5,7 @@ import argparse
 from multiprocessing import Pool, cpu_count
 import os
 parser = argparse.ArgumentParser(description='Download one partition of data from GCS bucket.')
-parser.add_argument('data',  type=str, help='the data size. 10t or 30t')
+parser.add_argument('data',  type=str, , choices=['1k', '10k', '30k'], help='data scale factor.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=10, help='number of threads')
@@ -16,17 +16,17 @@ if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
 
 buckets = {
-    '10t': 'ldbc_snb_10t',
-    '30t': 'ldbc_snb_30t',}
+    '1k': 'ldbc_snb_1t',
+    '10k': 'ldbc_snb_10t',
+    '30k': 'ldbc_snb_30t',}
 roots = {
-  '10t':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
-  '30t':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
-targets = {
-  '10t':'sf10k',
-  '30t':'sf30k'}
+  '1k': 'sf1k/',
+  '10k':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
+  '30k':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
+
 bucket = buckets[args.data]
 root = roots[args.data]
-target = Path(targets[args.data])
+target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,

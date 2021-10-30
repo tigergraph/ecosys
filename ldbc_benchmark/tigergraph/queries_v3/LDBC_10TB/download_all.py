@@ -9,7 +9,7 @@ import os
 
 
 parser = argparse.ArgumentParser(description='Download and uncompress the data on all the nodes.')
-parser.add_argument('data', type=str, help='the data size. 10t or 30t')
+parser.add_argument('data', type=str, choices=['1k', '10k', '30k'], help='data scale factor')
 parser.add_argument('ip', type=str, help='starting ip address')
 parser.add_argument('nodes', type=int, help='the number of nodes')
 parser.add_argument('--key','-k', type=str, default=None, help='location of the service key json file')
@@ -29,11 +29,13 @@ def createSSHClient(server, port, user, password):
     return client
 
 buckets = {
-    '10t': 'ldbc_snb_10t',
-    '30t': 'ldbc_snb_30t',}
+    '1k': 'ldbc_snb_1t',
+    '10k': 'ldbc_snb_10t',
+    '30k': 'ldbc_snb_30t',}
 roots = {
-  '10t':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
-  '30t':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
+  '1k': 'sf1k/',
+  '10k':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
+  '30k':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
 
 def main():
   key = ''
@@ -45,20 +47,17 @@ def main():
   bucket_name = 'my_bucket_name'
   bucket = storage_client.bucket(buckets[args.data])
   stats = storage.Blob(bucket=bucket, name=roots[args.data]).exists(storage_client)
-  print("The bucket can be asccessed")
+  print("The bucket can be accessed")
   
   
   start_ip = args.ip.split('.')
-  targets = {
-  '10t':'sf10k',
-  '30t':'sf30k'}
   for i in range(args.nodes):
     ip4 = int(start_ip[-1]) + i
     ip = start_ip[:-1] + [str(ip4)]
     ip = '.'.join(ip)
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
-    target = '/home/tigergraph/' + targets[args.data]
+    target = f'/home/tigergraph/sf{args.data}'
     print(f'logging to {ip}')
     scp.put('download_one_partition.py', workdir)
     scp.put('download_decompress.sh', workdir)

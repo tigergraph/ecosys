@@ -20,15 +20,17 @@ Download the master branch of ecosys, create the manifest
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
 ./tg gke kustomize -s 12 --pv 3000 -l [license]
-kubectl apply -f ./deploy/tigergraph-eks.yaml
+kubectl apply -f ./deploy/tigergraph-gke.yaml
 ```
-Upload the script [../LDBC_10TB/download_k8s.sh](../LDBC_10TB/download_k8s.sh) to all the pods and then run it to download and decompress the data. The usage is `download_k8s.sh [data] [index] [number of nodes] [threads](optional)` and is `download_k8s.sh 10t $i 12` here.
+Upload the script [../LDBC_10TB/download_k8s.sh](../LDBC_10TB/download_k8s.sh) to all the pods and then run it to download and decompress the data. The usage is `download_k8s.sh [data size] [index] [number of nodes] [threads](optional)` and is `download_k8s.sh 10k $i 12` here.
 ```
 for i in $(seq 0 11); do
     kubectl cp download_k8s.sh tigergraph-${i}:download_k8s.sh
-    kubectl exec tigergraph-${i} -- bash -c "bash download_k8s.sh 10t $i 12 > log.download 2> /dev/null &"  
+    kubectl exec tigergraph-${i} -- bash -c "bash download_k8s.sh 10k $i 12 > log.download 2> /dev/null &"  
 done
 ```
+
+To load data and do benchmark, refer to [../LDBC_10TB/README.md](../LDBC_10TB/README.md).
 
 ## Setup on EKS
 This is the setup of EKS for 1T benchmark. First, create cluster on EKS 
