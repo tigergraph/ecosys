@@ -32,7 +32,7 @@ for i in $( seq 0 $((n-1)) ); do
 done
 ```
 
-To load run queries and update the graph, refer to section `Load, Run and Update` in [../LDBC_10TB/README.md](../LDBC_10TB/README.md).
+To load data, run queries and update the graph, refer to section `Load, Run and Update` in [../LDBC_10TB/README.md](../LDBC_10TB/README.md).
 
 ## Setup on EKS
 This is the setup of EKS for 1T benchmark and smaller data. First, create cluster on EKS 
