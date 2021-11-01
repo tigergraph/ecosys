@@ -10,7 +10,7 @@ spec:
           app: tigergraph
       spec:
         accessModes: [ "ReadWriteOnce" ]
-        storageClassName: "hcp-mapr-cluster"
+        storageClassName: "isvdfclu"
         resources:
           requests:
             storage: 50Gi
