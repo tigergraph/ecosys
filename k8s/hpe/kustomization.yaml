@@ -31,4 +31,5 @@ configMapGenerator:
 
 patchesStrategicMerge:
 - patch-statfulset.yaml
+- patch-service.yaml
 
