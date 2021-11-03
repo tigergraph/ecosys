@@ -10,9 +10,12 @@
 
 ## Direct download (not recommended)
 The location of data
-- 1TB LDBC SNB data: (gs://ldbc_snb_1t/sf1k/)
-- 10TB LDBC SNB data: (gs://ldbc_snb_10t/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/)
-- 30TB LDBC SNB data: (gs://ldbc_snb_30t/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/)
+- 1TB LDBC SNB data: 
+   - gs://ldbc_snb_1t/sf1k/
+- 10TB LDBC SNB data
+   - gs://ldbc_snb_10t/v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/
+- 30TB LDBC SNB data
+   - gs://ldbc_snb_30t/results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/
 
 You can use `gsutil ls` to explore the two folder. This requires installation of [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 ```sh
