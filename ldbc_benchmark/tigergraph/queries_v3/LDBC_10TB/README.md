@@ -56,13 +56,13 @@ The usage of the script is `python3 download_one_partition.py [data size] [node 
 # on node m1
 nohup python3 -u download_one_partition.py 10k 0 4  > foo.out 2>&1 < /dev/null &
 ```
-Available data size is `1k`, `10k` and `30k`, corresponding to about 1T, 10T and 40T data. The GCS bucket address is hard coded in the code. The data is downloaded to `~/sf1k`, `~/sf10k` and `~/sf30k`, respectively. 
+Available data size is `1k`, `10k` and `30k`, corresponding to about 1T, 10T and 40T data. The GCS bucket address is hard coded in the code. The data is downloaded to `./sf1k`, `./sf10k` and `./sf30k`, respectively. 
 
 ### Decompress data
 Decompress the data on each node in parallel.
 ```sh
 cat << EOF > uncompress.sh
-cd sf10000
+cd sf10k
 mv inserts_split inserts 
 find . -name *.gz  -print0 | parallel -q0 gunzip 
 echo 'done uncompress'
