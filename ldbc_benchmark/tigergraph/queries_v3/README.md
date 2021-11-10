@@ -65,10 +65,10 @@ The loading performance can be tuned by changing the line batch size, number of 
 ```sh
 gadmin config entry GPE.BasicConfig.Env
 # add MVExtraCopy=0; (default is 1)
-# You can add ConcurrentRequest=[value]; (default value is 16)   
+# [optional] add ConcurrentRequest=[value]; (default value is 16)   
 
 gadmin config group RESTPP-LOADER
-# You can change FileLoader.Factory.HandlerCount
+# [optional] change FileLoader.Factory.HandlerCount
 
 gadmin config apply -y
 gadmin restart all -y
@@ -164,7 +164,7 @@ For scale factors larger than 100, it usually takes many hours.
 I prefer to add nohup to allow the process continue after I log out. 
 We also add sleep time equal to the running time between query runs because releasing memory also takes time. No sleep time can generate out-of-memory issue.
 ```sh
-nohup python3 -u ./driver.py all ~/sf100/csv/bi/composite-projected-fk/ -s 1 --header > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 1 --header > foo.out 2>&1 < /dev/null &  
 ```
 
 # Usage of driver.py

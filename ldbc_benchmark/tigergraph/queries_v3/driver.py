@@ -45,12 +45,12 @@ def get_parser():
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
     run_parser.set_defaults(func=cmd_run)
     # ./driver refresh [machine:dir]
-    refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
+    refresh_parser = main_subparsers.add_parser('refresh', help='microbatch of insert and delete operations in BI workload')
     refresh_parser.set_defaults(func=cmd_refresh)
     # ./driver.py compare [-q queries]
     
     # ./driver all [machine:dir]
-    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser = main_subparsers.add_parser('bi', help='Do all of the workloads in BI workloads: load, run, refresh.')
     all_parser.set_defaults(func=cmd_all)
     
     for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
@@ -258,8 +258,8 @@ def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'insert.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'del_Edge.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'batch_updates'/'insert.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'batch_updates'/'del_Edge.gsql')}", shell=True)
     
 """
 Load data
@@ -302,7 +302,7 @@ def cmd_load_query(args):
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
 
     for vertex in DEL_VERTICES:
-        del_query = (SCRIPT_DIR_PATH / 'dml' / f'del_{vertex}.gsql').resolve()
+        del_query = (SCRIPT_DIR_PATH / 'batch_updates' / f'del_{vertex}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
@@ -684,7 +684,7 @@ def parse_machine_dir(args):
         args.data_dir = Path(mds[1]).expanduser()
     else:
         args.machine, args.data_dir = 'ANY:', Path(args.machine_dir).expanduser()
-    if args.cmd == 'refresh' or not args.machine in ['m1', 'ALL']: return
+    if args.cmd == 'refresh' or args.machine == 'ANY': return
     #check if path exists
     missing = []
     check_list = []

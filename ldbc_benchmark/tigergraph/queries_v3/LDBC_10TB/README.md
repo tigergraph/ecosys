@@ -106,7 +106,7 @@ nohup python3 -u ./driver.py refresh ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12
 
 The combined command in background is
 ```sh
-nohup python3 -u ./driver.py all ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
+nohup python3 -u ./driver.py bi ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
 
 ## About queries
