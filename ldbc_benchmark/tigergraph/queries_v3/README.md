@@ -4,8 +4,13 @@
 * [Overview](#Overview)
 * [Pre-requisites](#Pre-requisite)
 * [Download LDBC SNB data](#Donwload-LDBC-SNB-Data)
-* [Load data](#Load-data)
-* [Run Query and batch update](#run)
+* [BI Workload](#BI-Workload)
+  * [Donwload and Decompress Data](#Donwload-and-Decompress-Data)   
+  * [Load Data](#Load-Data)   
+  * [[optional] Run query](#[optional]-Run-query)   
+  * [[optional] Compare the results](#[optional]-Compare-the-results)   
+  * [Refresh-and-Evaluate]
+
 * [Usage of driver.py](#Usage-of-driver.py)
 * [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
 
@@ -74,24 +79,17 @@ gadmin config apply -y
 gadmin restart all -y
 ```
 
-## Donwload LDBC SNB Data 
-For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). *For smaller dataset, we worked on the data with headers.* To download data of scale factor 1 (the link is no longer valid),
+## BI Workload
+### Donwload and Decompress Data  
+For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 data are available at GSC buckets `gs://ldbc_small/sf1.tar.gz` and `gs://ldbc_small/sf100.tar.gz`. 
+*For these smaller dataset, the data has headers.* 
 
 ```sh
-wget -O sf1-composite-projected-fk.tar.zst https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download 
-zstd -d sf1-composite-projected-fk.tar.zst 
-tar -xvf sf1-composite-projected-fk.tar
+gsutil -m cp gs://ldbc_small/sf1.tar.gz .
+tar -xf sf1.tar.gz
 ```
 
-To install `zstd`, use `sudo yum install zstd`. If zstd is not available. Download and compile the source from their github.
-```sh
-git clone https://github.com/facebook/zstd
-cd zstd 
-make && sudo make install
-cd ..
-```
-
-## Load data
+### Load Data
 Checkout ldbc branch of the current repository
 ```sh
 git clone --branch ldbc https://github.com/tigergraph/ecosys.git
@@ -122,13 +120,15 @@ After loading, you can checkout the number of vertices and edges using the follo
 ./driver.py stat
 ```
 
-## Run query and batch updates
+### [optional] Run query
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
-For example, `-q bi1,bi2` run bi1 and bi2, `-q reg:i[cs]*` use regular expression and run ic and is queries, `-q not:bi19` run all queries except bi19.
-The default parameter file is `auto`, which means if `param.json` file is not in the results folder, the driver will automatically generate the parameter file. An example paramter file for sf1 is in [./paramters/sf1.json](./paramters/sf1.json). you can use it by using `-p paramters/sf1.json`
 ```sh
-./driver.py run  -n 3 
+./driver.py run  -n 3 -q reg:bi*
 ```
+
+Default setting runs all BI, IC, and IS quereis. The option `-p` is for choosing the quereis. For example, `-q bi1,bi2` run bi1 and bi2, `-q reg:i[cs]*` use regular expression and run IC and IS queries. `-q not:bi19` run all queries except bi19.
+
+The command also runs `./driver.py gen_para -p auto` at the start. This generate parameters in `param.json` if the file does not exist in the results folder. If the `param.json` exists in the results folder, the parameters in the file will be used. The format of parameter file is shown in [./paramters/sf1.json](./paramters/sf1.json). You can modify it and use it by using `./driver.py run -p paramters/sf1.json`.
 
 ```sh
 # Query bi19 is expensive, we recomment to run without bi19 for 3 times
@@ -136,7 +136,8 @@ The default parameter file is `auto`, which means if `param.json` file is not in
 # To run all the queries
 ./driver.py run 
 ```
-## Compare the results of initial state
+
+### [optional] Compare the results
 The starting time of LDBC SNB graph is 2012-09-13. The documented GSQL results are in `results_sf[scale factor]/initial`. The documented  Cypher results are in `cypher/results_sf[scale factor]/initial`. To compare the results with the documented GSQL results.
 ```sh
  ./driver.py compare -s results -t results_sf1/initial
@@ -147,44 +148,42 @@ The script can be also used to compare the GSQL and cypher results.
  ./driver.py compare -s results -t cypher/results 
 ```
 
-## Refreshes with batch inserts and deletes
-Then run the refresh workloads. The results and timelog are output to `results/`. 
+### Refresh and Evaluate
+Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after every 30 batches (default). 
+The results and timelog are output to `results/`. 
 ```sh
-./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header
+./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header -b [begin_date] -e [end_date] -r [read_frequency]
 ```
-After runnning neo4j benchmark, you can compare the results
+Note, the queries are run at the start and after every 7 batch refreshes. So there is no need to run queries again. The options specified in the previous sections also work here.
+After runnning Neo4j benchmark, you can compare the results
 ```sh
 # after running neo4j, compare thje
 ./driver.py compare 
 ```
 
-## Run in background
-The procedures above is equivalent to the following one command. 
-For scale factors larger than 100, it usually takes many hours. 
-I prefer to add nohup to allow the process continue after I log out. 
-We also add sleep time equal to the running time between query runs because releasing memory also takes time. No sleep time can generate out-of-memory issue.
+### [optional] Run in Background
+The command `./driver.py bi` run `./driver.py load all [dara_dir]` and then `./driver.py refresh [dara_dir]`. This is all the job for BI workload. 
+For scale factors larger than 100, the workload usually takes many hours. I prefer to use `nohup` to allow the process continue after I log out. 
+Because releasing memory also takes time, we also add sleep time equal to 0.5 of the running time between query runs. Without sleep time, out-of-memory issue sometimes occurs.
 ```sh
-nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 1 --header > foo.out 2>&1 < /dev/null &  
+nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 0.5 --header > foo.out 2>&1 < /dev/null &  
 ```
 
-# Usage of driver.py
-./driver.py load all [dara_dir] will runs
-* ./driver.py load query 
-  *  gsql schema.gsql
-* ./driver.py load query 
-  * Copy paste user defined function `ExprFunctions.hpp` to tigergraph. 
-  * `gsql [queries/*.gsql, delete/*.gsql, stat.gsql, parameter/gen_para.gsql]`
-  * `gsql -g ldbc_snb 'install query [all queries]'` 
-* ./driver.py load data [dara_dir]
-  * remove _SUCCESS files in sf1, `find sf1 -name _SUCCESS -type f -delete`
-  * `gsql -g ldbc_snb 'run loading job load_static using FILENAMES'`
-  * `gsql -g ldbc_snb 'run loading job load_dynamic using FILENAMES'`
+## Usage of driver.py
+Option `--help` can be used to check for usage. The structure of the 
+
+* `./driver.py bi [dara_dir]` - run all BI Workloads, run the following in sequence
+  * `./driver.py load all [dara_dir]` will runs
+    * `./driver.py load schema` 
+    * `./driver.py load data [dara_dir]`
+    * `./driver.py load query` 
+  * `./driver.py refress [dara_dir]` - check the statistics, perform batch refresh and run queries after several batches (default is 7)
+    * `./driver.py stat` - display the statistics of the data
+    * `./driver.py run` - run queries 
+      * `./driver.py gen_para` generate paremters if parameter files are not found
+   
 
 
-
-# Considerations in writing gsql queries
-There are many ways to write the query and here what we present is the one with the best performance. 
-I may create a folder to discuss. The query is usually faster if:
-* if you know the degree of the edges, and use SumAccum to store the information instead of SetAccum or MapAccum.
-* if you start from a smaller vertex set 
+## Considerations in writing gsql queries
+The query performance depends on the data structure, the choice of parameters and cluster configuration (e.g. number of nodes). A discusion on how to write queries can be found in the Slide [V2 syntax: Best practices and Case study](https://docs.google.com/presentation/d/1f5nYGFGabQjGlcWuo3RKFnJNu4GMmFB8J3UWIWy7YX4/edit?usp=sharing) (only accessible inside TigerGraph)
 
