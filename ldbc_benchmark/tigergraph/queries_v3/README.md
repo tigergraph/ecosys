@@ -7,10 +7,10 @@
 * [BI Workload](#BI-Workload)
   * [Donwload and Decompress Data](#Donwload-and-Decompress-Data)   
   * [Load Data](#Load-Data)   
-  * [[optional] Run query](#[optional]-Run-query)   
-  * [[optional] Compare the results](#[optional]-Compare-the-results)   
-  * [Refresh-and-Evaluate]
-
+  * [[optional] Run query](#optional-Run-query)   
+  * [[optional] Compare the results](#optional-Compare-the-results)   
+  * [Refresh and Evaluate](#Refresh-and-Evaluate)
+  * [Summary](#Summary)
 * [Usage of driver.py](#Usage-of-driver.py)
 * [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
 
@@ -149,20 +149,22 @@ The script can be also used to compare the GSQL and cypher results.
 ```
 
 ### Refresh and Evaluate
-Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after every 30 batches (default). 
+Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after certain number of batches (default value is 30). 
 The results and timelog are output to `results/`. 
 ```sh
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header -b [begin_date] -e [end_date] -r [read_frequency]
 ```
-Note, the queries are run at the start and after every 7 batch refreshes. So there is no need to run queries again. The options specified in the previous sections also work here.
-After runnning Neo4j benchmark, you can compare the results
+
+Since, the queries are performed during the refresh operations, there is no need to run queries again. The options for running queries also work here for choosing queries and parameters. After runnning Neo4j benchmark, you can compare the results
 ```sh
 # after running neo4j, compare thje
 ./driver.py compare 
 ```
 
-### [optional] Run in Background
-The command `./driver.py bi` run `./driver.py load all [dara_dir]` and then `./driver.py refresh [dara_dir]`. This is all the job for BI workload. 
+### Summary
+If you get familiar with the procedures above, you can run `./driver.py bi`.
+This command first runs `./driver.py load all [dara_dir]` and then `./driver.py refresh [dara_dir]`. These are all the jobs for BI workload.
+
 For scale factors larger than 100, the workload usually takes many hours. I prefer to use `nohup` to allow the process continue after I log out. 
 Because releasing memory also takes time, we also add sleep time equal to 0.5 of the running time between query runs. Without sleep time, out-of-memory issue sometimes occurs.
 ```sh
