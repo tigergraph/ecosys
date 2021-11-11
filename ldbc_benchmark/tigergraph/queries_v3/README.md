@@ -33,7 +33,7 @@ Related links
 * [(TierGraph internal) results in Google Sheet](https://docs.google.com/spreadsheets/d/1NVdrOQtYBZl3g2B_jxYozo2pV-8B0Zzf50XDVw0JzTg/edit?ts=60b84592#gid=1034343597) contains internal benchmark results
 
 ## Pre-requisite 
-* `TigerGraph` (at least 3.1.0, the lastest 3.2.0 is recommended) and its pre-requisites 
+* `TigerGraph` (at least 3.1.0, pacakges between 3.2.0, 3.2.1, 3.3.0 have ZK timeout issue on 40 nodes) and its pre-requisites 
   * `sshpass` only required for the host
   * `net-tools`
 * `Python` (at least 3.6) 
@@ -57,7 +57,7 @@ gadmin status
 
 ## Config Tigergraph 
 For small data on a small number of nodes, the default setting works. 
-For 30TB benchmark on 40 nodes, the GPE request time can be larger than default timeout setting.
+For 30TB benchmark on 40 nodes, the GPE request time can be larger than the default timeout setting.
 ```sh
 gadmin config group timeout 
 # Change FileLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
@@ -78,7 +78,7 @@ gadmin config group RESTPP-LOADER
 gadmin config apply -y
 gadmin restart all -y
 ```
-
+&nbsp
 ## BI Workload
 ### Donwload and Decompress Data  
 For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 data are available at GSC buckets `gs://ldbc_small/sf1.tar.gz` and `gs://ldbc_small/sf100.tar.gz`. 
@@ -88,7 +88,7 @@ For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 dat
 gsutil -m cp gs://ldbc_small/sf1.tar.gz .
 tar -xf sf1.tar.gz
 ```
-
+&nbsp
 ### Load Data
 Checkout ldbc branch of the current repository
 ```sh
@@ -119,7 +119,7 @@ After loading, you can checkout the number of vertices and edges using the follo
 ```sh
 ./driver.py stat
 ```
-
+&nbsp
 ### [optional] Run query
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
 ```sh
@@ -131,12 +131,12 @@ Default setting runs all BI, IC, and IS quereis. The option `-p` is for choosing
 The command also runs `./driver.py gen_para -p auto` at the start. This generate parameters in `param.json` if the file does not exist in the results folder. If the `param.json` exists in the results folder, the parameters in the file will be used. The format of parameter file is shown in [./paramters/sf1.json](./paramters/sf1.json). You can modify it and use it by using `./driver.py run -p paramters/sf1.json`.
 
 ```sh
-# Query bi19 is expensive, we recomment to run without bi19 for 3 times
+# run all queries other than bi19 and each is performed for 3 times
 ./driver.py run -q not:bi19 -n 3
 # To run all the queries
 ./driver.py run 
 ```
-
+&nbsp
 ### [optional] Compare the results
 The starting time of LDBC SNB graph is 2012-09-13. The documented GSQL results are in `results_sf[scale factor]/initial`. The documented  Cypher results are in `cypher/results_sf[scale factor]/initial`. To compare the results with the documented GSQL results.
 ```sh
@@ -147,7 +147,7 @@ The script can be also used to compare the GSQL and cypher results.
 # this is also the default parameter setting
  ./driver.py compare -s results -t cypher/results 
 ```
-
+&nbsp
 ### Refresh and Evaluate
 Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after certain number of batches (default value is 30). 
 The results and timelog are output to `results/`. 
@@ -157,12 +157,11 @@ The results and timelog are output to `results/`.
 
 Since, the queries are performed during the refresh operations, there is no need to run queries again. The options for running queries also work here for choosing queries and parameters. After runnning Neo4j benchmark, you can compare the results
 ```sh
-# after running neo4j, compare thje
 ./driver.py compare 
 ```
-
+&nbsp
 ### Summary
-If you get familiar with the procedures above, you can run `./driver.py bi`.
+If you are familiar with the procedures above, you can run `./driver.py bi`.
 This command first runs `./driver.py load all [dara_dir]` and then `./driver.py refresh [dara_dir]`. These are all the jobs for BI workload.
 
 For scale factors larger than 100, the workload usually takes many hours. I prefer to use `nohup` to allow the process continue after I log out. 
@@ -170,7 +169,7 @@ Because releasing memory also takes time, we also add sleep time equal to 0.5 of
 ```sh
 nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 0.5 --header > foo.out 2>&1 < /dev/null &  
 ```
-
+&nbsp
 ## Usage of driver.py
 Option `--help` can be used to check for usage. The structure of the 
 
@@ -185,7 +184,7 @@ Option `--help` can be used to check for usage. The structure of the
       * `./driver.py gen_para` generate paremters if parameter files are not found
    
 
-
+&nbsp
 ## Considerations in writing gsql queries
 The query performance depends on the data structure, the choice of parameters and cluster configuration (e.g. number of nodes). A discusion on how to write queries can be found in the Slide [V2 syntax: Best practices and Case study](https://docs.google.com/presentation/d/1f5nYGFGabQjGlcWuo3RKFnJNu4GMmFB8J3UWIWy7YX4/edit?usp=sharing) (only accessible inside TigerGraph)
 
