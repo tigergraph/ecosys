@@ -1,5 +1,4 @@
 # TigerGraph LDBC SNB Benchmark
-
 ## Table of Contents
 * [Overview](#Overview)
 * [Pre-requisites](#Pre-requisite)
@@ -13,7 +12,7 @@
   * [Summary](#Summary)
 * [Usage of driver.py](#Usage-of-driverpy)
 * [Considerations in writing GSQL queries](#Considerations-in-writing-GSQL-queries)
-
+&nbsp;
 ## Overview
 Repository for LDBC SNB 30TB benchmark by TigerGraph in 2021-10-01. 
 The benchmark runs the Business Intelligence (BI) workloads in [LDBC Social Network Benchmark v.0.4.0](https://github.com/ldbc/ldbc_snb_docs). The repository contains the following folders
@@ -31,7 +30,7 @@ Related links
 * [LDBC_BI by Garbor](https://github.com/ldbc/ldbc_snb_bi) contains the benchmark using Cypher and postgres
 * [(TierGraph internal) JIRA page](https://graphsql.atlassian.net/wiki/spaces/GRAP/pages/2352251355/LDBC-SNB)
 * [(TierGraph internal) results in Google Sheet](https://docs.google.com/spreadsheets/d/1NVdrOQtYBZl3g2B_jxYozo2pV-8B0Zzf50XDVw0JzTg/edit?ts=60b84592#gid=1034343597) contains internal benchmark results
-
+&nbsp;
 ## Pre-requisite 
 * `TigerGraph` (at least 3.1.0, pacakges between 3.2.0, 3.2.1, 3.3.0 have ZK timeout issue on 40 nodes) and its pre-requisites 
   * `sshpass` only required for the host
@@ -54,7 +53,7 @@ su tigergraph
 gadmin status
 # check if TigerGraph is running or not.
 ```
-
+&nbsp;
 ## Config Tigergraph 
 For small data on a small number of nodes, the default setting works. 
 For 30TB benchmark on 40 nodes, the GPE request time can be larger than the default timeout setting.
