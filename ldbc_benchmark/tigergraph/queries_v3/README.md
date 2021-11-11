@@ -11,7 +11,7 @@
   * [[optional] Compare the results](#optional-Compare-the-results)   
   * [Refresh and Evaluate](#Refresh-and-Evaluate)
   * [Summary](#Summary)
-* [Usage of driver.py](#Usage-of-driver.py)
+* [Usage of driver.py](#Usage-of-driverpy)
 * [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
 
 ## Overview
