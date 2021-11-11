@@ -78,7 +78,7 @@ gadmin config group RESTPP-LOADER
 gadmin config apply -y
 gadmin restart all -y
 ```
-&nbsp
+&nbsp;
 ## BI Workload
 ### Donwload and Decompress Data  
 For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 data are available at GSC buckets `gs://ldbc_small/sf1.tar.gz` and `gs://ldbc_small/sf100.tar.gz`. 
@@ -88,7 +88,7 @@ For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 dat
 gsutil -m cp gs://ldbc_small/sf1.tar.gz .
 tar -xf sf1.tar.gz
 ```
-&nbsp
+&nbsp;
 ### Load Data
 Checkout ldbc branch of the current repository
 ```sh
@@ -119,7 +119,7 @@ After loading, you can checkout the number of vertices and edges using the follo
 ```sh
 ./driver.py stat
 ```
-&nbsp
+&nbsp;
 ### [optional] Run query
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
 ```sh
@@ -136,7 +136,7 @@ The command also runs `./driver.py gen_para -p auto` at the start. This generate
 # To run all the queries
 ./driver.py run 
 ```
-&nbsp
+&nbsp;
 ### [optional] Compare the results
 The starting time of LDBC SNB graph is 2012-09-13. The documented GSQL results are in `results_sf[scale factor]/initial`. The documented  Cypher results are in `cypher/results_sf[scale factor]/initial`. To compare the results with the documented GSQL results.
 ```sh
@@ -147,7 +147,7 @@ The script can be also used to compare the GSQL and cypher results.
 # this is also the default parameter setting
  ./driver.py compare -s results -t cypher/results 
 ```
-&nbsp
+&nbsp;
 ### Refresh and Evaluate
 Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after certain number of batches (default value is 30). 
 The results and timelog are output to `results/`. 
@@ -159,7 +159,7 @@ Since, the queries are performed during the refresh operations, there is no need
 ```sh
 ./driver.py compare 
 ```
-&nbsp
+&nbsp;
 ### Summary
 If you are familiar with the procedures above, you can run `./driver.py bi`.
 This command first runs `./driver.py load all [dara_dir]` and then `./driver.py refresh [dara_dir]`. These are all the jobs for BI workload.
@@ -169,7 +169,7 @@ Because releasing memory also takes time, we also add sleep time equal to 0.5 of
 ```sh
 nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 0.5 --header > foo.out 2>&1 < /dev/null &  
 ```
-&nbsp
+&nbsp;
 ## Usage of driver.py
 Option `--help` can be used to check for usage. The structure of the 
 
@@ -184,7 +184,7 @@ Option `--help` can be used to check for usage. The structure of the
       * `./driver.py gen_para` generate paremters if parameter files are not found
    
 
-&nbsp
+&nbsp;
 ## Considerations in writing gsql queries
 The query performance depends on the data structure, the choice of parameters and cluster configuration (e.g. number of nodes). A discusion on how to write queries can be found in the Slide [V2 syntax: Best practices and Case study](https://docs.google.com/presentation/d/1f5nYGFGabQjGlcWuo3RKFnJNu4GMmFB8J3UWIWy7YX4/edit?usp=sharing) (only accessible inside TigerGraph)
 
