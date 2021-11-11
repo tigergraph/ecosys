@@ -7,12 +7,12 @@
 * [BI Workload](#BI-Workload)
   * [Donwload and Decompress Data](#Donwload-and-Decompress-Data)   
   * [Load Data](#Load-Data)   
-  * [[optional] Run query](#optional-Run-query)   
+  * [[optional] Run queries](#optional-Run-queries)   
   * [[optional] Compare the results](#optional-Compare-the-results)   
   * [Refresh and Evaluate](#Refresh-and-Evaluate)
   * [Summary](#Summary)
 * [Usage of driver.py](#Usage-of-driverpy)
-* [Considerations in writing gsql queries](#Considerations-in-writing-gsql-queries)
+* [Considerations in writing GSQL queries](#Considerations-in-writing-GSQL-queries)
 
 ## Overview
 Repository for LDBC SNB 30TB benchmark by TigerGraph in 2021-10-01. 
@@ -120,7 +120,7 @@ After loading, you can checkout the number of vertices and edges using the follo
 ./driver.py stat
 ```
 &nbsp;
-### [optional] Run query
+### [optional] Run queries
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
 ```sh
 ./driver.py run  -n 3 -q reg:bi*
@@ -185,6 +185,6 @@ Option `--help` can be used to check for usage. The structure of the
    
 
 &nbsp;
-## Considerations in writing gsql queries
+## Considerations in writing GSQL queries
 The query performance depends on the data structure, the choice of parameters and cluster configuration (e.g. number of nodes). A discusion on how to write queries can be found in the Slide [V2 syntax: Best practices and Case study](https://docs.google.com/presentation/d/1f5nYGFGabQjGlcWuo3RKFnJNu4GMmFB8J3UWIWy7YX4/edit?usp=sharing) (only accessible inside TigerGraph)
 
