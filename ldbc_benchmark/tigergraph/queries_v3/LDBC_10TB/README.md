@@ -8,6 +8,7 @@
 * [Load, run and update](#Load,-Run-and-Update)
 * [About queries](#About-queries)
 
+&nbsp;
 ## Direct download (not recommended)
 The location of data
 - 1TB LDBC SNB data: 
@@ -48,6 +49,7 @@ pip3 install google-cloud-storage
 sh install.sh
 ```
 
+&nbsp;
 ### Download data
 Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so you can use the service key from any Google account. The tutorial for creating the service key can be found on [GCP document](https://cloud.google.com/docs/authentication/getting-started).
 
@@ -70,6 +72,7 @@ EOF
 nohup sh uncompress.sh  > foo2.out 2>&1 < /dev/null &
 ```
 
+&nbsp;
 ### Download for all the machines
 The above commands only download the data for one of the machine. You need to repeat the procedure in downloading and decompressing for all the machines.
 If you have pre-requisite packages setup on all the machines, you can also use the script `download_all.py` to download and decompress data for machines with contiguous IP address. The script connect to other machines and run the above commands. The script requires installation of `paramiko` and `scp` on the host. The usage is `python3 download_all.py [data size] [start ip addresss] [number of nodes] -k [service-key file] -t [number of threads]`. For example, to download and decompress 30TB data for machines from IP 10.128.0.10 to 49.128.0.49 
@@ -79,6 +82,7 @@ sudo pip3 install paramiko scp
 python3 download_all.py 30k 10.128.0.10 40
 ```
 
+&nbsp;
 ## Load, Run and Update
 Please refer to the the [parent page](../) for the installation of TigerGraph. 
 Default setting can get random errors during loading because FileLoader timeout too small. 
@@ -109,6 +113,7 @@ The combined command in background is
 nohup python3 -u ./driver.py bi ~/sf30k -q reg:bi* -b 2012-11-29 -e 2012-12-31 -r 7 -s 1  > foo.out 2>&1 < /dev/null & 
 ```
 
+&nbsp;
 ## About queries
 The BI queries on 10TB data is typically ~60 s and greatly depends on the parameters. We chose some parameters that are easy for use, for example if we filter the comments after an input date, we will chose a later time for the Social network graph.
 

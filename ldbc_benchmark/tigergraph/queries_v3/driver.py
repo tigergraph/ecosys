@@ -258,8 +258,8 @@ def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'batch_updates'/'insert.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'batch_updates'/'del_Edge.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'refreshes'/'insert.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'refreshes'/'del_Edge.gsql')}", shell=True)
     
 """
 Load data
@@ -302,7 +302,7 @@ def cmd_load_query(args):
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
 
     for vertex in DEL_VERTICES:
-        del_query = (SCRIPT_DIR_PATH / 'batch_updates' / f'del_{vertex}.gsql').resolve()
+        del_query = (SCRIPT_DIR_PATH / 'refreshes' / f'del_{vertex}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()

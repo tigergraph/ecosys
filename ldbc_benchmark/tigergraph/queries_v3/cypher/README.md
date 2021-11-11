@@ -9,7 +9,7 @@
 ## Overview
 The scripts are modified from [ldbc/ldbc_snb_bi](https://github.com/ldbc/ldbc_snb_bi/tree/main/cypher/) and [previous work](https://github.com/zhuang29/graph_database_benchmark/tree/master/neo4j). The queries are directly copied from [ldbc/ldbc_snb_bi](https://github.com/ldbc/ldbc_snb_bi/tree/main/cypher/) expect we add some conversion between date and datetime. 
 
-
+&nbsp;
 ## Pre-requisite
 [Neo4j community edition v4.3.0](https://neo4j.com/download-center/#community) must be installed. I downloaded into my laptop and then transfered the package to the server using `scp`. After unpack the pacakge, we add the path to the `.bashrc` or `.profile` so that neo4j commands can be run directly from terminal. 
 ```sh
@@ -34,6 +34,7 @@ install python dependencies
 sudo pip3 install -U neo4j==4.2.1 python-dateutil
 ```
 
+&nbsp;
 ### Install additional algorithm packages
 Other than the basic neo4j package, the BI 10 query uses `apoc.path.subgraphNodes`, which requires [APOC](https://neo4j.com/labs/apoc/4.1/installation/) package. 
 BI 19 uses `gds.shortestPath.dijkstra.stream`, which requires [graph data science (GDS)](https://neo4j.com/docs/graph-data-science/current/installation/) package. 
@@ -57,6 +58,7 @@ Restart neo4j and go into cypher shell. If the packages are present, you can als
 neo4j restart
 ```
 
+&nbsp;
 ### Donwload LDBC SNB Data 
 LDBC data are available for scale factor [1](https://surfdrive.surf.nl/files/index.php/s/xM6ujh448lnJxXX/download), [3](https://surfdrive.surf.nl/files/index.php/s/fY7YocVgsJhmqdT/download), [10](https://surfdrive.surf.nl/files/index.php/s/SY6lRzEzDvvESfJ/download), [30](https://surfdrive.surf.nl/files/index.php/s/dtkgN7ZDT37vOnm/download), [100](https://surfdrive.surf.nl/files/index.php/s/gxNeHFKWVwO0WRm/download). To download data of scale factor 1,
 
@@ -68,6 +70,7 @@ zstd -d sf1-composite-projected-fk.tar.zst
 tar -xvf sf1-composite-projected-fk.tar
 ```
 
+&nbsp;
 ### load data into cypher
 If your dataset has header, you need to first copy the data and remove the header.
 ```sh
@@ -87,6 +90,7 @@ sh load.sh
 # wait a minute for neo4j to start
 ```
 
+&nbsp;
 ## run queries
 Currently parameter directory is hard coded in `bi.py`. The script `indices.cypher` create indices for data, which can improve the query speed but not affects the results. `indices.cypher` is required for insertion of edges, otherwise, the the query is extremely slow.
 ```sh
@@ -95,6 +99,7 @@ python3 bi.py -q all
 ```
 The script`bi.py` can also specify which query to run, `./bi.py -h` for usage. `/bi.py -q 3` only runs bi3, `./bi.py -q not:19` runs all except bi19. The results are wrote to `./result` folder.
 
+&nbsp;
 ## Refreshes
 The script `./batches.py` can do the insertion and deletion. Data path is hard coded in the cypher scripts right now. GSQL results need to be copied here because we use the parameters to run queries. You can skip running queries by specify reading frequency to 0 using `-r 0`.
 
@@ -106,6 +111,7 @@ python3 batches.py $NEO4J_HOME/import -q not:17,19 #17 19 are too expensive for 
 nohup python3 -u batches.py $NEO4J_HOME/import -q not:17,19 > foo.out 2>&1 & 
 ```
 
+&nbsp;
 ## Uninstall Neo4j
 
 Sometimes Neo4j cypher-shell may not be stopped. Use the following command to find the process id in the last column as `pid/java`. And kill the process.

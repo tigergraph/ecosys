@@ -17,8 +17,9 @@
 ## Overview
 Repository for LDBC SNB 30TB benchmark by TigerGraph in 2021-10-01. 
 The benchmark runs the Business Intelligence (BI) workloads in [LDBC Social Network Benchmark v.0.4.0](https://github.com/ldbc/ldbc_snb_docs). The repository contains the following folders
-* [`queries`](./queries) BI GSQL queries.
-* [`dml`](./dml) GSQL loading job and queries for inserting and deleting data
+* [`queries`](./queries) IC IS BI GSQL read queries.
+* [`refreshes`](./refreshes) Micro-batch refreshes in BI workload.
+* [`updates`](./updates) Interactive updates in Interactive workload.
 * [`driver.py`](./driver.py) the utility script to run the benchmark
 * [`schema.gsql`](./schema.gsql) the LDBC SNB schema and loading job
 * [`load.gsql`](./load.gsql) loading job for the initial snapshot
