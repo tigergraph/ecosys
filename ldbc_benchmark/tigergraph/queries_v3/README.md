@@ -103,12 +103,12 @@ cd ecosys/ldbc_benchmark/tigergraph/queries_v3
 Load schema, data, and query. Usage of `driver.py` can be shown using `-h` option. For example, to check how to load the data use `./driver.py load data -h`. The data directory should contain 31 folders in name of the vertex and edge type names. The CSV files inside these folders are loaded. 
 ```sh
 ./driver.py load schema
-./driver.py load data ~/sf1/sf1/csv/bi/composite-projected-fk/ --header
+./driver.py load data ~/sf1/csv/bi/composite-projected-fk/ --header
 ./driver.py load query
 ```
 This is equivalent to
 ```sh
-./driver.py load all ~/sf1/sf1/csv/bi/composite-projected-fk/ --header
+./driver.py load all ~/sf1/csv/bi/composite-projected-fk/ --header
 ```
 
 To check the data size, use

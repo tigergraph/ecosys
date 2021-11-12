@@ -96,8 +96,12 @@ gcloud init
 sh setup_GCP.sh 
 # press enter and skip paraphrase
 ```
+Download TigerGraph pacakge and replace `install_conf.json` with the one in this folder. Go the tigergraph pacakge and replace the license and ip addresses if needed. Then install tigergraph in the non-interative mode
+```
+./install.sh -n
+```
 
-download data, replace the ip address with the start ip in your case.
+Download data, replace the ip address with the start ip in your case.
 ```sh
 # on GCP m1 
 # log in as tigergraph
@@ -107,7 +111,7 @@ git clone --branch ldbc https://github.com/tigergraph/ecosys.git
 cd ecosys/ldbc_benchmark/tigergraph/queries_v3/LDBC_10TB
 sudo python3 -m pip install --upgrade pip
 sudo pip3 install paramiko scp
-python3 download_all.py 30k 10.128.0.10 40 -t 20
+python3 download_all.py 30k 10.128.0.10 40 -t 10
 ```
 
 For large number of machines, GCP takes long time (~3 hr) to set up the ports. Upload the tigergraph package, wait some time and install 
