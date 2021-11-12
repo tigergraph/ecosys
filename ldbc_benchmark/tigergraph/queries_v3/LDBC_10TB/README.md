@@ -91,7 +91,7 @@ Before loading, config the timeout limit is required
 gadmin config entry GPE.BasicConfig.Env
 # add MVExtraCopy=0; (default is 1) This turns off backup copy.
 
-gadmin config group RESTPP-LOADER
+gadmin config group timeout
 # Change FileLoader.Factory.HandlerCount: 16 -> 100
 # Change KafkaLoader.Factory.DefaultQueryTimeoutSec: 16 -> 6000
 # Change RESTPP.Factory.DefaultQueryTimeoutSec: 16 -> 6000
