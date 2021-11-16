@@ -57,7 +57,7 @@ def get_parser():
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('--suffix', type=str, default='', help=suffix_help)
         parser.add_argument('--header', action='store_true', help='whether data has the header')
-
+        parser.add_argument('-f', '--format', choices=['bi', 'ic'], default='bi', help='format of data (default bi)')        
 
     for parser in [load_query_parser, load_all_parser]:
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -247,6 +247,7 @@ GEN_WORKLOADS = {
     19: Workload('gen_bi19', ResultTransform()[0][0]),
     20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
+UPDATE_WORKLOADS = [Workload(f'ins{i+1}', ResultTransform()[0][0]) for i in range(8)]
 
 '''Loads parameters for a given file'''
 def load_parameters(file):
@@ -271,12 +272,26 @@ Load data
     - suffix : str
     - date : None
 """ 
-def load_data(job, machine, data_dir, tag, names, suffix, date = None):
-    file_paths = [(data_dir /tag / name) for name in names]
-    if date:
-        file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
+def load_data(job, machine, data_dir, tag, names, suffix, date = None, interactive=False):
+    if not interactive:
+        file_paths = [(data_dir /tag / name) for name in names]
+        if date:
+            file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
+    else:
+        def ChangeName(name):
+            entities = name.split('_')
+            if len(entities) != 3: return name.lower()
+            entities[0] = entities[0].lower()
+            entities[2] = entities[2].lower()
+            if entities[2] in ['country', 'city']:
+                entities[2] = 'place'
+            if entities[2] in ['university', 'company']:
+                entities[2] = 'organisation'
+            return '_'.join(entities)
+        file_paths = [(data_dir /tag / ChangeName(name)) for name in names]
+
     gsql = f'RUN LOADING JOB {job} USING '
-    if suffix: suffix = '.' + suffix
+    if suffix and '.' not in suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
     subprocess.run(f'gsql -g ldbc_snb \'{gsql}\'', shell=True)
 
@@ -286,8 +301,16 @@ def cmd_load_data(args):
         f.unlink()
     t0 = timer()
     header = '_with_header' if args.header else ''
-    load_data('load_static' + header, args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
-    load_data('load_dynamic' + header, args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTICES+DYNAMIC_EDGES, args.suffix)
+
+    if args.format == 'bi':
+        '''BI data is in directory'''
+        load_data('load_static' + header, args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
+        load_data('load_dynamic' + header, args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
+    elif args.format == 'ic':
+        '''Interactive data is one csv files. '''
+        load_data('load_static_with_header', args.machine, args.data_dir, 'static', STATIC_NAMES, '_0_0.csv', interactive=True)
+        load_data('load_dynamic_interactive', args.machine, args.data_dir, 'dynamic', DYNAMIC_NAMES, '_0_0.csv', interactive=True)    
+    
     t1 = timer()
     print(f'loading time is {t1-t0}')
 
@@ -304,13 +327,18 @@ def cmd_load_query(args):
     for vertex in DEL_VERTICES:
         del_query = (SCRIPT_DIR_PATH / 'refreshes' / f'del_{vertex}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
+    
+    for i in range(8):
+        update_query = (SCRIPT_DIR_PATH / 'updates' / f'ins{i+1}.gsql').resolve()
+        subprocess.run(f"gsql -g ldbc_snb {update_query}", shell=True)
+    
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
     subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
     gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
     subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
     
-    all_workloads = args.workload + DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values())
+    all_workloads = args.workload + DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values()) + UPDATE_WORKLOADS
     queries_to_install = [
         query.name 
         for workload in all_workloads 
@@ -684,21 +712,6 @@ def parse_machine_dir(args):
         args.data_dir = Path(mds[1]).expanduser()
     else:
         args.machine, args.data_dir = 'ANY:', Path(args.machine_dir).expanduser()
-    if args.cmd == 'refresh' or args.machine == 'ANY': return
-    #check if path exists
-    missing = []
-    check_list = []
-    for tag in ['static', 'dynamic']:
-        names = STATIC_NAMES if tag == 'static' else DYNAMIC_NAMES
-        for name in names:
-            file_path = (args.data_dir/'initial_snapshot'/tag/name)
-            if not args.suffix and not file_path.is_dir():
-                missing.append(file_path.name)
-            if args.suffix and not file_path.is_file():
-                missing.append(file_path.name)
-    if len(missing) > 0:
-        tmp = 'files' if args.suffix else 'directory'
-        raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
 
 def check_args(args):
     parse_queries(args)    

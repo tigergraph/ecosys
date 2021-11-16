@@ -1,0 +1,61 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE QUERY ins1(
+    UINT id,
+    STRING firstName,
+    STRING lastName,
+    STRING gender,
+    DATETIME birthday,
+    DATETIME creationDate,
+    STRING locationIP,
+    STRING browserUsed,
+    UINT cityId,
+    SET<STRING> speaks,
+    SET<STRING> emails,
+    SET<VERTEX<Tag>> tagIds,
+    SET<VERTEX<University>> studyAt,
+    SET<VERTEX<Company>> workAt
+    ) {
+  INSERT INTO Person VALUES(id, firstName, lastName, gender, birthday, creationDate, locationIP, browserUsed, speaks, emails);
+  INSERT INTO IS_LOCATED_IN (FROM, TO) VALUES(id Person, cityId City);
+  tmp = {tagIds};    
+  tmp = SELECT v FROM tmp:v
+    ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);
+  tmp = {studyAt};    
+  tmp = SELECT v FROM tmp:v
+    ACCUM INSERT INTO STUDY_AT (FROM, TO) VALUES(id, v);
+  tmp = {workAt};    
+  tmp = SELECT v FROM tmp:v
+    ACCUM INSERT INTO WORK_AT (FROM, TO) VALUES(id, v);
+}
+
+/*
+CREATE OR REPLACE QUERY ins_Person(
+    UINT id,
+    STRING firstName,
+    STRING lastName,
+    STRING gender,
+    DATETIME birthday,
+    DATETIME creationDate,
+    STRING locationIP,
+    STRING browserUsed,
+    UINT cityId,
+    SET<STRING> speaks,
+    SET<STRING> emails,
+    SET<UINT> tagIds,
+    SET<UINT> studyAt,
+    SET<UINT> workAt
+    ) {
+      
+  INSERT INTO Person VALUES(id, firstName, lastName, gender, birthday, creationDate, locationIP, browserUsed, speaks, emails);
+  INSERT INTO IS_LOCATED_IN (FROM, TO) VALUES(id Person, cityId City);
+  FOREACH tid IN tagIds DO
+    INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, tid);
+  END;
+  FOREACH sid IN studyAt DO
+    INSERT INTO STUDY_AT (FROM, TO) VALUES(id, sid);
+  END;
+  FOREACH wid IN workAt DO
+    INSERT INTO WORK_AT (FROM, TO) VALUES(id, wid);
+  END;
+}*/

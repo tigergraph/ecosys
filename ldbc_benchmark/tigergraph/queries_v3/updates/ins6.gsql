@@ -1,0 +1,24 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE QUERY ins6(
+    UINT id, 
+    STRING imageFile, 
+    DATETIME creationDate,
+    STRING locationIP,
+    STRING browserUsed,
+    STRING language,
+    STRING content,
+    UINT length,
+    VERTEX<Person> personId,
+    VERTEX<Forum> forumId, 
+    VERTEX<Country> countryId, 
+    SET<VERTEX<Tag>> tagIds) {
+  INSERT INTO Post VALUES(id, imageFile, creationDate, locationIP, browserUsed, language, content, length);
+  INSERT INTO HAS_CREATOR VALUES(id Post, personId, creationDate);
+  INSERT INTO CONTAINER_OF VALUES(forumId, id Post, creationDate);
+  INSERT INTO IS_LOCATED_IN VALUES(id Post, countryId);
+
+  tmp = {tagIds};    
+  tmp = SELECT v FROM tmp:v
+    ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);
+}

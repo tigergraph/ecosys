@@ -1,0 +1,27 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE QUERY ins7(
+    UINT id, 
+    DATETIME creationDate,
+    STRING locationIP,
+    STRING browserUsed,
+    STRING content,
+    UINT length,
+    VERTEX<Person> personId,
+    VERTEX<Country> countryId, 
+    INT replyToPostId,
+    INT replyToCommentId,
+    SET<VERTEX<Tag>> tagIds) {
+  INSERT INTO Comment VALUES(id, creationDate, locationIP, browserUsed, content, length);
+  INSERT INTO HAS_CREATOR VALUES(id Comment, personId, creationDate);
+  INSERT INTO IS_LOCATED_IN VALUES(id Comment, countryId);
+  IF replyToPostId > 0 THEN 
+    INSERT INTO REPLY_OF (FROM, TO) VALUES(id, replyToPostId Post);
+  END;
+  IF replyToCommentId > 0 THEN
+    INSERT INTO REPLY_OF (FROM, TO) VALUES(id, replyToCommentId Comment);
+  END;
+  tmp = {tagIds};
+  tmp = SELECT v FROM tmp:v
+    ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);
+}
