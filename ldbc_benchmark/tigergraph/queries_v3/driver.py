@@ -76,7 +76,7 @@ def get_parser():
     for parser in [refresh_parser, all_parser]:
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
         parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
-        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
+        parser.add_argument('-r', '--read_interval', type=int, default=30, help='read interval in days')
         
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
     compare_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -621,7 +621,7 @@ def cmd_refresh(args):
     batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
     header = '_with_header' if args.header else ''
-    if args.read_freq > 0: 
+    if args.read_interval > 0: 
         # run query 
         durations = cmd_run(args, output = output)
         batch_log += ',' + toStr(durations)
@@ -659,7 +659,7 @@ def cmd_refresh(args):
         output = args.output/dateStr
             
         # run query 
-        if args.read_freq and (date - begin).days % args.read_freq == 0: 
+        if args.read_interval and (date - begin).days % args.read_interval == 0: 
             stat_dict = cmd_stat(args)
             batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
             batch_log += ',' + toStr([tot_ins_time, tot_del_time])
@@ -670,7 +670,7 @@ def cmd_refresh(args):
         
         logf.write(batch_log+'\n')
         logf.flush()
-        if args.read_freq == 0 or (date - begin).days % args.read_freq == 0:
+        if args.read_interval == 0 or (date - begin).days % args.read_interval == 0:
             tot_ins_time = 0
             tot_del_time = 0
         

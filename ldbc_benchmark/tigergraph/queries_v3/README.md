@@ -10,6 +10,9 @@
   * [[optional] Compare the results](#optional-Compare-the-results)   
   * [Refresh and Evaluate](#Refresh-and-Evaluate)
   * [Summary](#Summary)
+* [Interactive Workload](#Interactive-Workload)
+  * [Download and Load](#Download-and-Load)
+  * [Interactive Updates](#Interactive-Updates)
 * [Usage of driver.py](#Usage-of-driverpy)
 * [Considerations in writing GSQL queries](#Considerations-in-writing-GSQL-queries)
 
@@ -155,11 +158,15 @@ The script can be also used to compare the GSQL and cypher results.
 &nbsp;
 ### Refresh and Evaluate
 Regresh the data with batch insert and delete operations. The queries are evaluated at the start and after certain number of batches (default value is 30). 
-The results and timelog are output to `results/`. 
 ```sh
-./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header -b [begin_date] -e [end_date] -r [read_frequency]
+./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header -b [begin_date] -e [end_date] -r [read_interval]
 ```
+The workflow is as follows: 
+- run queries
+- perform insert and delete starting from the begin date, each operation is batchd by a day 
+- after a number of batches specified by `read_interval`, evaluate query again
 
+The results and timelog are output to `results/`. The summary of statistics, insert/delete/query time are in `results/timelog.csv`.
 Since, the queries are performed during the refresh operations, there is no need to run queries again. The options for running queries also work here for choosing queries and parameters. After runnning Neo4j benchmark, you can compare the results
 ```sh
 ./driver.py compare 
@@ -174,6 +181,27 @@ Because releasing memory also takes time, we also add sleep time equal to 0.5 of
 ```sh
 nohup python3 -u ./driver.py bi ~/sf100/csv/bi/composite-projected-fk/ -s 0.5 --header > foo.out 2>&1 < /dev/null &  
 ```
+&nbsp;
+## Interactive Workload
+### Download and Load
+The interactive data are in the GCS bucket `gs://ldbc_interactive/composite_projectecd/sf1.tar.zst`. Available scale factors are 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000. The data format is composite projected (see LDBC Specification for details).
+
+```
+cd ~
+gsutil cp gs://ldbc_interactive/composite_projectecd/sf1.tar.zst .
+unzstd sf1.tar.zst
+tar -xf sf1.tar
+# go to ./queries_v3 directory
+cd ecosys/ldbc_benchmark/tigergraph/queries_v3
+./driver.py load all /home/tigergraph/social_network-csv_composite-sf1/ --format ic
+```
+
+### Interactive Updates
+The are two update streams `updateStream_0_0_forum.csv` and `updateStream_0_0_person.csv`. To pass each line of these two csv files into insert queries (ins1~ins8)
+```
+./driver.py update /home/tigergraph/social_network-csv_composite-sf1/ 
+```
+
 &nbsp;
 ## Usage of driver.py
 Option `--help` can be used to check for usage. The structure of the 
