@@ -162,9 +162,10 @@ Regresh the data with batch insert and delete operations. The queries are evalua
 ./driver.py refresh ~/sf1/csv/bi/composite-projected-fk/ --header -b [begin_date] -e [end_date] -r [read_interval]
 ```
 The workflow is as follows: 
-- run queries
-- perform insert and delete starting from the begin date, each operation is batchd by a day 
-- after a number of batches specified by `read_interval`, evaluate query again
+1. run queries
+2. perform insert and delete starting from the begin date, each operation is batchd by a day 
+3. after a number of batches specified by `read_interval`, evaluate query again
+4. repeat step 2 and 3 
 
 The results and timelog are output to `results/`. The summary of statistics, insert/delete/query time are in `results/timelog.csv`.
 Since, the queries are performed during the refresh operations, there is no need to run queries again. The options for running queries also work here for choosing queries and parameters. After runnning Neo4j benchmark, you can compare the results
