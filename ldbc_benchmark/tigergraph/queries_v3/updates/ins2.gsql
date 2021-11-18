@@ -1,5 +1,5 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-CREATE OR REPLACE QUERY ins2(VERTEX<Person> personId, VERTEX<Post> postId, DATETIME creationDate) {
-  INSERT INTO LIKES (FROM, TO, creationDate) VALUES(personId, postId, creationDate);
+CREATE OR REPLACE QUERY ins2(UINT personId, UINT postId, DATETIME creationDate) {
+  INSERT INTO LIKES (FROM, TO, creationDate) VALUES(personId Person, postId Post, creationDate);
 }

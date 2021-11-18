@@ -49,11 +49,14 @@ def get_parser():
     refresh_parser.set_defaults(func=cmd_refresh)
     # ./driver.py compare [-q queries]
     
+    update_parser = main_subparsers.add_parser('update', help='update operations in interactive workload')
+    update_parser.set_defaults(func=cmd_update)
+
     # ./driver all [machine:dir]
     all_parser = main_subparsers.add_parser('bi', help='Do all of the workloads in BI workloads: load, run, refresh.')
     all_parser.set_defaults(func=cmd_all)
     
-    for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
+    for parser in [load_data_parser, load_all_parser, refresh_parser, update_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('--suffix', type=str, default='', help=suffix_help)
         parser.add_argument('--header', action='store_true', help='whether data has the header')
@@ -247,7 +250,7 @@ GEN_WORKLOADS = {
     19: Workload('gen_bi19', ResultTransform()[0][0]),
     20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
-UPDATE_WORKLOADS = [Workload(f'ins{i+1}', ResultTransform()[0][0]) for i in range(8)]
+UPDATE_WORKLOADS = [Workload(f'ins{i+1}', ResultTransform()) for i in range(8)]
 
 '''Loads parameters for a given file'''
 def load_parameters(file):
@@ -586,8 +589,10 @@ def compare_batch(workloads, source, target):
             if Pass: 
                 print(f'{workload.name}: Pass')
 
-""" 
-refresh data and run queries
+"""
+======================================
+refresh data and run queries in BI Workload
+======================================
 """
 def toStr(x_list):
     if isinstance(x_list[0], int) or isinstance(x_list[0], str):
@@ -670,6 +675,60 @@ def cmd_refresh(args):
             tot_del_time = 0
         
     logf.close()
+
+"""
+======================================
+Transactional updates in Interactive Workload
+======================================
+"""
+DATA_CONVERTOR = {
+    "INT":int,
+    "UINT":int,
+    "VERTEX":int,
+    "STRING":str,
+    "DATETIME": lambda x: datetime.fromtimestamp(int(x)/1000),
+    "SET<STRING>": lambda x: x.split(";"),
+    "SET<VERTEX>": lambda xs: [] if not xs else [int(x) for x in xs.split(";")],
+}
+
+def convert_row(values,types):
+    res = {}
+    for i,(n,dt) in enumerate(types.items()):
+        res[n] = DATA_CONVERTOR[dt](values[i])
+    return res
+
+def cmd_update(args):
+    types = load_parameters(Path('parameters/update.json'))
+    s1 = args.data_dir / 'updateStream_0_0_person.csv'
+    s2 = args.data_dir / 'updateStream_0_0_forum.csv'
+    with open(s1) as f1, open(s2) as f2:
+        r1 = f1.readline().strip().split('|')
+        r2 = f1.readline().strip().split('|')
+        t0 = timer()
+        i = 0
+        while len(r1) > 1 or len(r2) > 1 :
+            t1 = int(r1[0]) if len(r1) > 1 else 0
+            t2 = int(r2[0]) if len(r2) > 1 else 0
+            if t1 > 0 and t1 <= t2:
+                r = r1
+                r1 = f1.readline().strip().split('|')
+            else:
+                r = r2
+                r2 = f2.readline().strip().split('|')
+            i += 1
+            t = int(r[0])
+            op = int(r[2])
+            d = datetime.fromtimestamp(t/1000)
+            #print(d.strftime("%Y-%m-%d %H:%M:%S, ") + f'ins{op}: ', end = '')
+            parameter = convert_row(r[3:], types[f'ins{op}'])
+            try:
+                UPDATE_WORKLOADS[op-1].run(parameter)
+                #print('PASS')
+            except Exception as err:
+                #print(parameter)
+                print(f'ins{op}: '+ err)
+            t = timer()
+            if i % 100 == 0: print(d.strftime("%Y-%m-%d %H:%M:%S, ") + f'{i} inserts, time {t-t0:1.1f} s, {i/(t-t0):1.1f} inserts/second')
 
 def cmd_all(args):
     cmd_load_all(args)

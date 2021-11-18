@@ -1,5 +1,6 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
+
 CREATE OR REPLACE QUERY ins1(
     UINT id,
     STRING firstName,
@@ -13,20 +14,24 @@ CREATE OR REPLACE QUERY ins1(
     SET<STRING> speaks,
     SET<STRING> emails,
     SET<VERTEX<Tag>> tagIds,
-    SET<VERTEX<University>> studyAt,
-    SET<VERTEX<Company>> workAt
+    STRING studyAt, //array of [(vertex_id, year)]
+    STRING workAt //array of [(vertex_id, year)]
     ) {
+  MapAccum<INT,INT> @@study, @@work;
   INSERT INTO Person VALUES(id, firstName, lastName, gender, birthday, creationDate, locationIP, browserUsed, speaks, emails);
   INSERT INTO IS_LOCATED_IN (FROM, TO) VALUES(id Person, cityId City);
   tmp = {tagIds};    
   tmp = SELECT v FROM tmp:v
     ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);
-  tmp = {studyAt};    
-  tmp = SELECT v FROM tmp:v
-    ACCUM INSERT INTO STUDY_AT (FROM, TO) VALUES(id, v);
-  tmp = {workAt};    
-  tmp = SELECT v FROM tmp:v
-    ACCUM INSERT INTO WORK_AT (FROM, TO) VALUES(id, v);
+  
+  @@study = string_to_map(studyAt);
+  FOREACH (t,y) IN @@study DO
+    INSERT INTO STUDY_AT (FROM, TO, classYear) VALUES(id, t, y);
+  END;
+  @@work = string_to_map(workAt);
+  FOREACH (t,y) IN @@work DO
+    INSERT INTO WORK_AT (FROM, TO, workFrom) VALUES(id, t, y);
+  END;
 }
 
 /*

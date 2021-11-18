@@ -3,11 +3,11 @@ SET syntax_version = "v2"
 CREATE OR REPLACE QUERY ins4(
     UINT id, 
     STRING forumTitle, 
-    VERTEX<Person> personId, 
+    UINT personId, 
     DATETIME creationDate,
     SET<VERTEX<Tag>> tagIds) {
   INSERT INTO Forum VALUES(id, forumTitle, creationDate);
-  INSERT INTO HAS_MODERATOR VALUES(id, personId, creationDate);
+  INSERT INTO HAS_MODERATOR VALUES(id, personId Person, creationDate);
   tmp = {tagIds};    
   tmp = SELECT v FROM tmp:v
     ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);

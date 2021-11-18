@@ -9,13 +9,13 @@ CREATE OR REPLACE QUERY ins6(
     STRING language,
     STRING content,
     UINT length,
-    VERTEX<Person> personId,
-    VERTEX<Forum> forumId, 
+    UINT personId,
+    UINT forumId, 
     VERTEX<Country> countryId, 
     SET<VERTEX<Tag>> tagIds) {
   INSERT INTO Post VALUES(id, imageFile, creationDate, locationIP, browserUsed, language, content, length);
-  INSERT INTO HAS_CREATOR VALUES(id Post, personId, creationDate);
-  INSERT INTO CONTAINER_OF VALUES(forumId, id Post, creationDate);
+  INSERT INTO HAS_CREATOR VALUES(id Post, personId Person, creationDate);
+  INSERT INTO CONTAINER_OF VALUES(forumId Forum, id Post, creationDate);
   INSERT INTO IS_LOCATED_IN VALUES(id Post, countryId);
 
   tmp = {tagIds};    

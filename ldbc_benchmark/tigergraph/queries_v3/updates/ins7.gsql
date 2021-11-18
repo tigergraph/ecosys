@@ -7,13 +7,13 @@ CREATE OR REPLACE QUERY ins7(
     STRING browserUsed,
     STRING content,
     UINT length,
-    VERTEX<Person> personId,
+    UINT personId,
     VERTEX<Country> countryId, 
     INT replyToPostId,
     INT replyToCommentId,
     SET<VERTEX<Tag>> tagIds) {
   INSERT INTO Comment VALUES(id, creationDate, locationIP, browserUsed, content, length);
-  INSERT INTO HAS_CREATOR VALUES(id Comment, personId, creationDate);
+  INSERT INTO HAS_CREATOR VALUES(id Comment, personId Person, creationDate);
   INSERT INTO IS_LOCATED_IN VALUES(id Comment, countryId);
   IF replyToPostId > 0 THEN 
     INSERT INTO REPLY_OF (FROM, TO) VALUES(id, replyToPostId Post);

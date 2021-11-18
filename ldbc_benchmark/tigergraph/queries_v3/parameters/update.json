@@ -1,0 +1,72 @@
+{
+  "ins1": {
+    "id":"UINT",
+    "firstName":"STRING",
+    "lastName":"STRING",
+    "gender":"STRING",
+    "birthday":"DATETIME",
+    "creationDate":"DATETIME",
+    "locationIP":"STRING",
+    "browserUsed":"STRING",
+    "cityId":"UINT",
+    "speaks":"SET<STRING>",
+    "emails":"SET<STRING>",
+    "tagIds":"SET<VERTEX>",
+    "studyAt":"STRING",
+    "workAt":"STRING"
+  },
+  "ins2": {
+    "personId":"UINT",
+    "postId":"UINT",
+    "creationDate":"DATETIME"
+  },
+  "ins3": {
+    "personId":"UINT",
+    "commentId":"UINT",
+    "creationDate":"DATETIME"
+  },
+  "ins4": {
+    "id":"UINT", 
+    "forumTitle":"STRING", 
+    "personId":"UINT", 
+    "creationDate":"DATETIME",
+    "tagIds":"SET<VERTEX>"
+  },
+  "ins5": {
+    "personId":"UINT", 
+    "forumId":"UINT", 
+    "creationDate":"DATETIME"
+  },
+  "ins6": {
+    "id":"UINT", 
+    "imageFile":"STRING", 
+    "creationDate":"DATETIME",
+    "locationIP":"STRING",
+    "browserUsed":"STRING",
+    "language":"STRING",
+    "content":"STRING",
+    "length":"UINT",
+    "personId":"UINT",
+    "forumId":"UINT", 
+    "countryId":"UINT", 
+    "tagIds":"SET<VERTEX>"
+  },
+  "ins7": {
+    "id":"UINT", 
+    "creationDate":"DATETIME",
+    "locationIP":"STRING",
+    "browserUsed":"STRING",
+    "content":"STRING",
+    "length":"UINT",
+    "personId":"UINT",
+    "countryId":"UINT",
+    "replyToPostId":"INT",
+    "replyToCommentId":"INT",
+    "tagIds":"SET<VERTEX>"
+  },
+  "ins8": {
+    "person1Id":"UINT", 
+    "person2Id":"UINT", 
+    "creationDate":"DATETIME"
+  }
+}
