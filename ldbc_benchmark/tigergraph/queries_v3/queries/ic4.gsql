@@ -2,7 +2,7 @@
 //IC 4 query description is on page 35 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT duration) {
+CREATE OR REPLACE DISTRIBUTED QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT duration) {
   TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
   SumAccum<int> @postCount;
   SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;

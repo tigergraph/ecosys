@@ -2,7 +2,7 @@
 //IS 1 query description is on page 46 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY is1(VERTEX<Person> personId) {
+CREATE OR REPLACE DISTRIBUTED QUERY is1(VERTEX<Person> personId) {
   SumAccum<INT> @cityId;
   P = { personId };
   P = 

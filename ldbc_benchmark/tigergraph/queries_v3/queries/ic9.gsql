@@ -1,8 +1,8 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //IC 9 query description is on page 40 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic9(VERTEX<Person> personId, DATETIME date) {
+CREATE OR REPLACE DISTRIBUTED QUERY ic9(VERTEX<Person> personId, DATETIME date) {
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
                 INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
   
@@ -12,19 +12,15 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY ic9(VERTEX<Person> personId, DATETIME da
 
   S = { personId };
   M =
-    SELECT s
+    SELECT m
     FROM S:s -(KNOWS*1..2)- Person:p -(<HAS_CREATOR)- (Comment|Post):m 
-    WHERE s != p AND m.creationDate < date
-    PER(s,p,m)
+    WHERE p != personId AND m.creationDate < date
+    PER(p,m)
     ACCUM 
-      m.@personId = p.id,
-      m.@personFirstName = p.firstName,
-      m.@personLastName = p.lastName
-    POST-ACCUM
       IF m.type == "Comment" OR m.content != "" THEN 
-        @@result += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.content, m.creationDate)
+        @@result += msgInfo(p.id, p.firstName, p.lastName, m.id, m.content, m.creationDate)
       ELSE 
-        @@result += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.imageFile, m.creationDate)
+        @@result += msgInfo(p.id, p.firstName, p.lastName, m.id, m.imageFile, m.creationDate)
       END;
 
   PRINT @@result;

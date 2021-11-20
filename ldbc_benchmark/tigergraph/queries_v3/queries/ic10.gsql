@@ -2,7 +2,7 @@
 //IC 10 query description is on page 41 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
+CREATE OR REPLACE DISTRIBUTED QUERY ic10(vertex<Person> personId, int month) for graph ldbc_snb {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
   HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@result;
   SumAccum<int> @commonInterestScore;

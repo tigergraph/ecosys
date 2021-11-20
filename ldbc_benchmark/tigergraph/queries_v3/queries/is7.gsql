@@ -3,7 +3,7 @@
 
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY is7(STRING messageId) {
+CREATE OR REPLACE DISTRIBUTED QUERY is7(STRING messageId) {
   TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
 
   SetAccum<STRING> @@seed;

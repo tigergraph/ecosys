@@ -326,22 +326,27 @@ def cmd_load_query(args):
     for workload in args.workload:
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
+    all_workloads = args.workload
 
-    for vertex in DEL_VERTICES:
-        del_query = (SCRIPT_DIR_PATH / 'refreshes' / f'del_{vertex}.gsql').resolve()
-        subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
+    # No need to parse if already exists, TO DO: split the workloads
+    try:
+        subprocess.run(f"gsql -g ldbc_snb 'run query stat()'", shell=True)
+    except:
+        for vertex in DEL_VERTICES:
+            del_query = (SCRIPT_DIR_PATH / 'refreshes' / f'del_{vertex}.gsql').resolve()
+            subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
+        
+        for i in range(8):
+            update_query = (SCRIPT_DIR_PATH / 'updates' / f'ins{i+1}.gsql').resolve()
+            subprocess.run(f"gsql -g ldbc_snb {update_query}", shell=True)
+        
+        # stat.gsql to check the number of vertices and edges
+        stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
+        subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
+        gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
+        subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
+        all_workloads += DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values()) + UPDATE_WORKLOADS
     
-    for i in range(8):
-        update_query = (SCRIPT_DIR_PATH / 'updates' / f'ins{i+1}.gsql').resolve()
-        subprocess.run(f"gsql -g ldbc_snb {update_query}", shell=True)
-    
-    # stat.gsql to check the number of vertices and edges
-    stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
-    subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
-    gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
-    subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
-    
-    all_workloads = args.workload + DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values()) + UPDATE_WORKLOADS
     queries_to_install = [
         query.name 
         for workload in all_workloads 

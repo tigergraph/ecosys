@@ -2,7 +2,7 @@
 //IS 5 query description is on page 49 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY is5(STRING messageId) {
+CREATE OR REPLACE DISTRIBUTED QUERY is5(STRING messageId) {
   SetAccum<STRING> @@seed;
 
   @@seed += messageId;

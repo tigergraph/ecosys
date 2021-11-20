@@ -1,8 +1,8 @@
 //graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 //IS 6 query description is on page 49 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
-SET syntax_version = "v2"
+SET syntax_version = "_v2"
 USE GRAPH ldbc_snb
-CREATE OR REPLACE QUERY is6(STRING messageId) {
+CREATE OR REPLACE DISTRIBUTED QUERY is6(STRING messageId) {
   SumAccum<INT> @forumId;
   SumAccum<STRING> @forumTitle;
   SetAccum<STRING> @@seed;

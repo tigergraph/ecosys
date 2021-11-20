@@ -91,12 +91,10 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
     ACCUM p.@creatorId = c.id;
   tmp = SELECT m2
     FROM comments:m1 -(REPLY_OF>)- postsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0)),
-      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->1.0));
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0));
   tmp = SELECT m2
     FROM comments:m1 -(REPLY_OF>)- commentsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5)),
-      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->0.5));
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5));
   
   @@result.resize(@@shortestPaths.size());
   FOREACH path IN @@shortestPaths DO
@@ -104,7 +102,8 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
     jsonStr = "[";
     FOREACH i in range[0,path.size()-2] DO 
        jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
-       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id);
+       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id)
+        + @@KnowWeight.get(path.get(i+1).id).get(path.get(i).id);
     END;
     jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
     @@result += RESULT(parse_json_array(jsonStr), @@weight);
