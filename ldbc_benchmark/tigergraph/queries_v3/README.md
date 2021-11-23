@@ -62,6 +62,12 @@ su tigergraph
 gadmin status
 # check if TigerGraph is running or not.
 ```
+Then check the TigerGraph status 
+```
+gadmin status
+```
+GPE and GSE should be WARMING UP and all other services should RUNNNING. 
+
 &nbsp;
 ## Config Tigergraph 
 For small data on a small number of nodes, the default setting works. 
@@ -123,10 +129,14 @@ The directory can include the machine. Default setting is `ANY`, which loads any
 ```sh
 ./driver.py load data m1:~/initial_snapshot --header
 ``` 
-After loading, you can checkout the number of vertices and edges using the following command. For SF1, there are 1116485 Comment vertices in the initial snapshot.
+During loading and after loading, you can check the TigerGraph Status using `gadmin status -v`. All services except `KAFKASTRM-LL` must be RUNNING. If all GPE services are down or warming up, you may wait and they will return to normal later. If there is one GPE or GSE instance is down, this is probably because of the internal problem of the Package for large number of nodes.
+
+After loading, you can check the number of vertices and edges using the following command. 
 ```sh
 ./driver.py stat
 ```
+The output numbers can be verified with the number of rows in raw CSV data. To check the number of rows, run `cat *.csv | wc -l` command. Remember to subtract the header if necessary.
+ 
 &nbsp;
 ### [optional] Run queries
 Usage of `./driver.py` can be found using `./driver.py run -h`. The basic usage is `./driver.py run -q [queries] -n [number of runs] -p [parameter file]`. 
