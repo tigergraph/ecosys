@@ -49,11 +49,11 @@ The query performance depends on the data structure, the choice of parameters an
 sudo yum install wget git tar python3-pip sshpass gcc
 sudo python3 -m pip install requests
 ```
-Install tigergraph-3.1.3. For internal test, you can find the latest build from (http://192.168.11.192/download.html). 
+Install tigergraph-3.1.6 
 ```sh
-wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.3-offline.tar.gz
-tar -xf tigergraph-3.1.3-offline
-cd tigergraph-3.1.3-offline/
+wget https://dl.tigergraph.com/enterprise-edition/tigergraph-3.1.6-offline.tar.gz
+tar -xf tigergraph-3.1.6-offline
+cd tigergraph-3.1.6-offline/
 ./install.sh
 # following the instruction to install
 su tigergraph
