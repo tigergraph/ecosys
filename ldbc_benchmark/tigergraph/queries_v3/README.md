@@ -2,9 +2,8 @@
 ## Table of Contents
 * [Overview](#Overview)
 * [Pre-requisites](#Pre-requisite)
-* [Download LDBC SNB data](#Donwload-LDBC-SNB-Data)
 * [BI Workload](#BI-Workload)
-  * [Donwload and Decompress Data](#Donwload-and-Decompress-Data)   
+  * [Download and Decompress Data](#Download-and-Decompress-Data)   
   * [Load Data](#Load-Data)   
   * [[optional] Run queries](#optional-Run-queries)   
   * [[optional] Compare the results](#optional-Compare-the-results)   
@@ -14,7 +13,6 @@
   * [Download and Load](#Download-and-Load)
   * [Interactive Updates](#Interactive-Updates)
 * [Usage of driver.py](#Usage-of-driverpy)
-* [Considerations in writing GSQL queries](#Considerations-in-writing-GSQL-queries)
 
 &nbsp;
 ## Overview
@@ -94,8 +92,8 @@ gadmin restart all -y
 ```
 &nbsp;
 ## BI Workload
-### Donwload and Decompress Data  
-For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 data are available at GSC buckets `gs://ldbc_small/sf1.tar.gz` and `gs://ldbc_small/sf100.tar.gz`. 
+### Download and Decompress Data  
+For data larger than 1TB, refer to [LDBC_10TB](./LDBC_10TB). SF-1 and SF-100 data are available at GSC buckets `gs://ldbc_small/sf1.tar.gz` [HTTP link](https://storage.googleapis.com/ldbc_small/sf1.tar.gz) and `gs://ldbc_small/sf100.tar.gz` [HTTP link](https://storage.googleapis.com/ldbc_small/sf100.tar.gz). 
 *For these smaller dataset, the data has headers.* 
 
 ```sh
