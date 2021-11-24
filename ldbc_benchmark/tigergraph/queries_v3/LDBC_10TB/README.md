@@ -54,6 +54,8 @@ sh install.sh
 Use the script `download_one_partition.py` to download one partition of the data. The python script requires a GCP service key in JSON format. The data is public and open to all users, so you can use the service key from any Google account. The tutorial for creating the service key can be found on [GCP document](https://cloud.google.com/docs/authentication/getting-started).
 
 The usage of the script is `python3 download_one_partition.py [data size] [node index] [number of nodes] -k [service-key file] -t [number of threads]`. For a cluster of 4 nodes, you need to run the command on all of the 4 nodes and use the nodex index 0,1,2,3 for each machine. I also prefer to run in background using nohup.
+
+Currently, the delete operation is not distributed, and the same copy of delete data need be kept on all the nodes.
 ```sh
 # on node m1
 nohup python3 -u download_one_partition.py 10k 0 4  > foo.out 2>&1 < /dev/null &
