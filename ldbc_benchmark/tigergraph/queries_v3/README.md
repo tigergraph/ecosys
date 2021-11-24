@@ -56,12 +56,8 @@ tar -xf tigergraph-3.1.6-offline
 cd tigergraph-3.1.6-offline/
 ./install.sh
 # following the instruction to install
+# log in to Tigergraph User, and show tigergraph status
 su tigergraph
-gadmin status
-# check if TigerGraph is running or not.
-```
-Then check the TigerGraph status 
-```
 gadmin status
 ```
 GPE and GSE should be WARMING UP and all other services should RUNNNING. 
