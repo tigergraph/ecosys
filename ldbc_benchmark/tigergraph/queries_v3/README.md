@@ -60,7 +60,7 @@ cd tigergraph-3.1.6-offline/
 su tigergraph
 gadmin status
 ```
-GPE and GSE should be WARMING UP and all other services should RUNNNING. 
+GPE and GSE should be WARMING UP and all other services should be RUNNNING. 
 
 &nbsp;
 ## Config Tigergraph 
