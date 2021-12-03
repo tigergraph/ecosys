@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tigergraph
+spec:
+  template:
+    spec:
+      containers:
+        - name: tigergraph
+          securityContext:
+            capabilities:
+              add:
+                - AUDIT_WRITE
+              drop:
+                - MKNOD
+            privileged: true
+  volumeClaimTemplates:
+    - metadata:
+        name: tg-data
+        labels:
+          app: tigergraph
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "gp2"
+        resources:
+          requests:
+            storage: 50Gi

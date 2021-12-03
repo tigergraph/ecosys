@@ -63,6 +63,10 @@ function set_opts () {
         shift
         TG_PV=$2
         ;;
+      --storage)
+        shift
+        TG_STORAGE=$2
+        ;;
       -v|--version)
         shift
         TG_VERSION=$2
@@ -132,6 +136,13 @@ function update_pv () {
    fi
 }
 
+# update Tigergraph storageClassName
+function update_storage () {
+   if [ "${TG_STORAGE}" != "" ]; then
+      sed "${sedi[@]}" -e "s/storageClassName: \"gp2\"/storage: \"${TG_STORAGE}\"/1" $MANIFEST
+   fi
+}
+
 # update Tigergraph PV size
 function update_prefix () {
    if [ "${TG_PREFIX}" != "tigergraph" ]; then
@@ -150,6 +161,7 @@ function init_manifest () {
   update_license
   update_ha
   update_pv
+  update_storage
   update_prefix
 }
 
@@ -173,6 +185,7 @@ function main () {
     TG_VERSION="latest"
     TG_HA="1"
     TG_PV="50"
+    TG_STORAGE=""
     TG_PREFIX="tigergraph"
     TG_LICENSE=""
     CWD=$(cd $(dirname $0) && pwd)
