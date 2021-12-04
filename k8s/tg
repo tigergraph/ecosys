@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 # this script is used to simplify the manifest customization and delpoyment of tigergraph in K8S
 
 cwd=$(cd $(dirname $0) && pwd)
@@ -139,7 +139,7 @@ function update_pv () {
 # update Tigergraph storageClassName
 function update_storage () {
    if [ "${TG_STORAGE}" != "" ]; then
-      sed "${sedi[@]}" -e "s/storageClassName: \"gp2\"/storage: \"${TG_STORAGE}\"/1" $MANIFEST
+      sed "${sedi[@]}" -e "s/storageClassName: default/storage: \"${TG_STORAGE}\"/1" $MANIFEST
    fi
 }
 
@@ -163,6 +163,15 @@ function init_manifest () {
   update_pv
   update_storage
   update_prefix
+  if [ "${K8S_PROVIDER}" == "okd" ]; then
+    cat << EOF
+    To smoothly deploy TigerGraph in openshift, it is recommended to implement the below changes for OCP cluster:
+      - Increase pids_limit (4096) for ocp worker nodes as below guide 
+        https://computingforgeeks.com/change-pids-limit-value-in-openshift/
+      - Increase timeout for route ha proxy
+        command: oc annotate route myroute --overwrite haproxy.router.openshift.io/timeout=2s
+EOF
+  fi
 }
 
 # start Tigergraph cluster 
