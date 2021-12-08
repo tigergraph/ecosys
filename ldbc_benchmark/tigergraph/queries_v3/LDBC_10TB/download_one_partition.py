@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Download one partition of data fro
 parser.add_argument('data',  type=str, help='the data size. 10t or 30t')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
-parser.add_argument('--thread','-t', type=int, default=10, help='number of threads')
+parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
 parser.add_argument('--key','-k', type=str, default=None, help='service key file')
 args = parser.parse_args()
 
