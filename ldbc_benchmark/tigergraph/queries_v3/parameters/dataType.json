@@ -13,17 +13,22 @@
     "tag":"STRING",
     "tagA":"STRING",
     "tagB":"STRING",
+    "firstName":"STRING",
     "languages":"STRING[]",
     "minPathDistance":"LONG",
     "maxPathDistance":"LONG",
     "maxKnowsLimit":"LONG",
     "lengthThreshold":"LONG",
     "delta":"LONG",
+    "duration":"LONG",
+    "month":"LONG",
+    "workFromYear":"LONG",
     "personId":"ID",
     "person1Id":"ID",
     "person2Id":"ID",
     "city1Id":"ID",
-    "city2Id":"ID"
+    "city2Id":"ID",
+    "messageId":"ID"
 }
 
 

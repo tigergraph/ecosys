@@ -1,7 +1,5 @@
 /*
-This is bi20-2.gsql query.
-This query is slower than bi20-2.gsql for SF1. 
-But works well for larger data size on multiple machines, because this one support distributed.
+But this one support distributed thus works well for larger data size on multiple machines.
 */
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
@@ -13,7 +11,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   MinAccum<UINT> @dist; 
   MapAccum<UINT, MinAccum<UINT>> @@paths;
   UINT threshold;
-  threshold = 40;
+  P = {Person.*};
+  threshold = P.size();
   S1 =
     SELECT p
     FROM Company:c -(<WORK_AT)- Person:p
@@ -66,3 +65,67 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
 # INSTALL QUERY bi20
 # RUN QUERY bi20("Air_India_Express", 26388279068799)
 # RUN QUERY bi20("Pamir_Airways", 15393162792760)
+
+
+/*
+This one works faster on SF-1 
+but is not distributed
+CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
+  OrAccum @visited, @next, @inCompany;
+  MapAccum<VERTEX<Person>, MapAccum<VERTEX<Person>, MinAccum<UINT>>> @@weight;
+  MinAccum<UINT> @dist; 
+  MapAccum<UINT, MinAccum<UINT>> @@paths;
+  UINT threshold;
+  threshold = 40;
+  S1 =
+    SELECT p
+    FROM Company:c -(<WORK_AT)- Person:p
+    WHERE c.name == company AND p != person2Id
+    ACCUM p.@inCompany += true;
+  
+  S = {person2Id};
+  S = Select s FROM S:s ACCUM s.@visited += true, s.@dist += 0;
+  WHILE S.size()>0 DO
+    // Find the potential candidates in the next Hop
+    Sknows = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE NOT t.@visited
+      ACCUM t.@visited += true;
+    // Calcaulte the edge wight between S and Sknows and inside Sknows
+    Next = Select t 
+      FROM S:s -(STUDY_AT>:e1)- University -(<STUDY_AT:e2)- Person:t
+      WHERE t.@visited AND s != t
+      ACCUM @@weight += (s -> (t-> abs(e1.classYear-e2.classYear) +1 )),
+        @@weight += (t -> (s-> abs(e1.classYear-e2.classYear) +1 ));
+    // Update the shortest distance to the source. Only the vertices with the shortor distance is passed to the next loop
+    S = SELECT t FROM S:s-(KNOWS)-Person:t 
+      WHERE @@weight.get(s).get(t)<threshold
+      ACCUM 
+        UINT weight = @@weight.get(s).get(t),
+        IF s.@dist + weight < t.@dist AND s.@dist + weight < threshold THEN
+          t.@dist += s.@dist + weight,
+          t.@next += true
+        END
+      HAVING t.@next;
+    // Find the vertices that reach the target
+    S = SELECT s FROM S:s  
+      ACCUM s.@next = false, 
+        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END;
+    // Update the results of the shortest 20 paths, and update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p,dist) IN @@paths DO
+        @@result += RESULT(p,dist);
+      END;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END; 
+    END;
+  END; # WHILE 
+  FOREACH (p,dist) IN @@paths DO
+    @@result += RESULT(p,dist);
+  END;
+  PRINT @@result;
+}
+*/

@@ -1,0 +1,107 @@
+//graph schema is on page 13 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 14 query description is on page 44 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+SET syntax_version = "v2"
+USE GRAPH ldbc_snb
+CREATE OR REPLACE DISTRIBUTED QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id) {
+  TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> RESULT;
+
+  OrAccum @visited1, @visited2;
+  OrAccum @@found, @@next=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @path;
+  ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
+  SetAccum<VERTEX<Person>> @@PersonInShortestPath;
+  SumAccum<UINT> @creatorId;
+  MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  HeapAccum<RESULT>(0, pathWeight DESC) @@result;
+  STRING jsonStr;
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM S1:s ACCUM s.@visited1 += true, s.@path += [s];
+    S2 = SELECT s FROM S2:s ACCUM s.@visited2 += true, s.@path += [s];
+
+    WHILE NOT @@found AND @@next DO
+      @@next = false;
+      S1 = 
+        SELECT t
+        FROM S1:s-(KNOWS)-Person:t
+        WHERE NOT t.@visited1
+        ACCUM 
+          IF t.@visited2 THEN
+            @@found += True,
+            FOREACH p1 IN s.@path DO
+              FOREACH p2 IN t.@path DO
+                @@shortestPaths += p1 + p2
+              END
+            END
+          ELSE
+            @@next += true,
+            t.@visited1 += true,
+            FOREACH p IN s.@path DO
+              t.@path += p + [t]
+            END
+          END;
+      IF @@found OR NOT @@next THEN
+        BREAK;
+      END;
+      @@next = false;
+      S2 = 
+        SELECT t
+        FROM S2:s-(KNOWS)-Person:t
+        WHERE NOT t.@visited2
+        ACCUM 
+          IF t.@visited1 THEN
+            @@found += True,
+            FOREACH p1 IN s.@path DO
+              FOREACH p2 IN t.@path DO
+                @@shortestPaths += p2 + p1
+              END
+            END
+          ELSE
+            @@next += true,
+            t.@visited2 += true,
+            FOREACH p IN s.@path DO
+              t.@path += [t] + p
+            END
+          END;
+    END; //WHILE NOT @@found AND @@next DO
+  END; //IF person1Id != person2Id THEN
+
+  #Calculate weight for each path
+  FOREACH path IN @@shortestPaths DO
+    FOREACH p in path DO
+      @@PersonInShortestPath += p;
+    END;
+  END;
+
+  persons = {@@PersonInShortestPath};
+  messages = SELECT m FROM persons:p -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creatorId = p.id;
+  
+  tmp = SELECT m2
+    FROM messages:m1 -(REPLY_OF>)- messages:m2
+    ACCUM 
+      IF m2.type == "Post" THEN
+        @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0))
+      ELSE
+        @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5))
+      END;
+
+  @@result.resize(@@shortestPaths.size());
+  FOREACH path IN @@shortestPaths DO
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i in range[0,path.size()-2] DO 
+       jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
+       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id)
+        + @@KnowWeight.get(path.get(i+1).id).get(path.get(i).id);
+    END;
+    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
+    @@result += RESULT(parse_json_array(jsonStr), @@weight);
+  END; //FOREACH path IN @@shortestPaths DO
+  PRINT @@result;
+}
+
+//INSTALL QUERY ic14 
+//RUN QUERY ic14(17592186055119, 10995116282665)

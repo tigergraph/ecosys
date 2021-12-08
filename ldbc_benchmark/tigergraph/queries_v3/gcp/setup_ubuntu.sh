@@ -11,8 +11,7 @@ sudo sed -i 's/\#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/ss
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sudo service sshd reload
 
-sudo yum -y update
-sudo yum -y install python3-pip net-tools sshpass parallel git gzip
+sudo apt-get update
+sudo apt-get -y install python3-pip net-tools sshpass parallel
 sudo pip3 install google-cloud-storage
-
-
+echo 'done ubuntu setup'

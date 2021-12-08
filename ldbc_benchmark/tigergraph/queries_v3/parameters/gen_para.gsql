@@ -4,7 +4,9 @@ SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   SumAccum<UINT> @ncomment;
-  SetAccum<STRING> @@country, @@tag, @@tagclass;
+  SetAccum<UINT> @@personId, @@commentId;
+  SetAccum<STRING> @@country, @@tag, @@tagclass, @@firstName;
+
   V = {Country.*};
   V = SELECT v FROM V:v LIMIT 4;
   V = SELECT v FROM V:v ACCUM @@country += v.name; 
@@ -17,7 +19,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
     ORDER BY t.@ncomment ASC
     LIMIT 10;
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
-  PRINT @@country, @@tag, @@tagclass;
+  P = {Person.*};
+  P = SELECT p FROM P:p LIMIT 4;
+  P = SELECT p FROM P:p  ACCUM @@personId += p.id, @@firstName += p.firstName;
+  M = {Comment.*};
+  M = SELECT m FROM M:m LIMIT 4;
+  M = SELECT m FROM M:m  ACCUM @@commentId += m.id;
+  PRINT @@country, @@tag, @@tagclass, @@personId, @@commentId, @@firstName;
 }
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
@@ -151,7 +159,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
       ACCUM t.@cities += s.@cities
       LIMIT 100;
   END;
-  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
+  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 2; 
+  // LIMIT 1, somtimes return 2 vertices
+  IF P.size() == 2 THEN
+    P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
+  END;
   P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
   C = {@@cities};
   @@cities.clear();
@@ -159,6 +171,19 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
   C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
   PRINT @@cityIds;
 }  
+
+
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19_2() {
+  SetAccum<UINT> @@cityIds;
+  SumAccum<UINT> @nperson;
+  C = SELECT c 
+    FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
+    ORDER BY c.@nperson ASC
+    LIMIT 2;
+  C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
+  PRINT @@cityIds;
+}
+
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   SetAccum<VERTEX<University>> @univ;

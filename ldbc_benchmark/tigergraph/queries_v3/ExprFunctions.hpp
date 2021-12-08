@@ -68,6 +68,27 @@ namespace UDIMPL {
     sprintf(result, "%Ld", val);
     return string(result);
   }
+
+  inline MapAccum<int64_t,int64_t> string_to_map (string str) {
+    size_t pos = 0;
+    string d1 = ";";
+    string d2 = ",";
+    string token;
+    MapAccum<int64_t,int64_t> res;
+    while ((pos = str.find(d1)) != std::string::npos) {
+      token = str.substr(0, pos);
+      size_t p = token.find(d2);
+      int64_t key = atoll(token.substr(0, p).c_str());
+      int64_t val = atoll(token.substr(p+1, token.size()-1).c_str());
+      res += MapAccum<int64_t, int64_t>(key,val);
+      str.erase(0, pos + 1);
+    }
+    size_t p = str.find(d2);
+    int64_t key = atoll(str.substr(0, p).c_str());
+    int64_t val = atoll(str.substr(p+1, str.size()-1).c_str());
+    res += MapAccum<int64_t, int64_t>(key,val);
+    return res;
+  }
 }
 /****************************************/
 

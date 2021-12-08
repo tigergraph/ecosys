@@ -2,28 +2,24 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) {
-  SumAccum<UINT> @@count;
+  SumAccum<UINT> @@result;
   OrAccum<BOOL> @selected;
-  SetAccum<VERTEX<Person>> @src1;
-  MapAccum<VERTEX<Person>, SumAccum<INT>> @src2mul;
+  SetAccum<VERTEX<Person>> @oneHopNeighbor;
   countryWithName = SELECT c FROM Country:c WHERE c.name == country;
   persons = SELECT p FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p  ACCUM p.@selected += True;
   P2 = SELECT p2
     FROM persons:p1 -(KNOWS:e)- Person:p2 
     WHERE p2.@selected AND e.creationDate > startDate AND p1.id < p2.id
-    ACCUM p2.@src1 += p1; 
+    ACCUM p2.@oneHopNeighbor += p1; 
 
   P3 = SELECT p3
     FROM P2:p2 -(KNOWS:e)- Person:p3 
     WHERE p3.@selected AND e.creationDate > startDate AND p2.id < p3.id
-    ACCUM FOREACH v IN p2.@src1 DO
-      p3.@src2mul += (v->1)
-    END; 
+    ACCUM FOREACH p1 IN p2.@oneHopNeighbor DO
+        IF p1 IN p3.@oneHopNeighbor THEN
+          @@result += 1
+        END
+      END; 
   
-  P = SELECT p3
-    FROM P3:p3 -(KNOWS:e)- Person:p1 
-    WHERE e.creationDate > startDate 
-    ACCUM @@count += p3.@src2mul.get(p1);
-
-  PRINT @@count;
+  PRINT @@result;
 }

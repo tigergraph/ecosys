@@ -1,0 +1,5 @@
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
+CREATE OR REPLACE QUERY ins3(UINT personId, UINT commentId, DATETIME creationDate) {
+  INSERT INTO LIKES (FROM, TO, creationDate) VALUES(personId Person, commentId Comment, creationDate);
+}

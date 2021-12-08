@@ -45,19 +45,22 @@ def get_parser():
     run_parser = main_subparsers.add_parser('run', help='Run the workloads')
     run_parser.set_defaults(func=cmd_run)
     # ./driver refresh [machine:dir]
-    refresh_parser = main_subparsers.add_parser('refresh', help='insert and delete data')
+    refresh_parser = main_subparsers.add_parser('refresh', help='microbatch of insert and delete operations in BI workload')
     refresh_parser.set_defaults(func=cmd_refresh)
     # ./driver.py compare [-q queries]
     
+    update_parser = main_subparsers.add_parser('update', help='update operations in interactive workload')
+    update_parser.set_defaults(func=cmd_update)
+
     # ./driver all [machine:dir]
-    all_parser = main_subparsers.add_parser('all', help='Do all of the above.')
+    all_parser = main_subparsers.add_parser('bi', help='Do all of the workloads in BI workloads: load, run, refresh.')
     all_parser.set_defaults(func=cmd_all)
     
-    for parser in [load_data_parser, load_all_parser, refresh_parser, all_parser]:
+    for parser in [load_data_parser, load_all_parser, refresh_parser, update_parser, all_parser]:
         parser.add_argument('machine_dir', type=str, help=machine_dir_help)
         parser.add_argument('--suffix', type=str, default='', help=suffix_help)
         parser.add_argument('--header', action='store_true', help='whether data has the header')
-
+        parser.add_argument('-f', '--format', choices=['bi', 'ic'], default='bi', help='format of data (default bi)')        
 
     for parser in [load_query_parser, load_all_parser]:
         parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -73,7 +76,7 @@ def get_parser():
     for parser in [refresh_parser, all_parser]:
         parser.add_argument('-b','--begin', type=str, default='2012-09-13', help='begin date (inclusive)')
         parser.add_argument('-e','--end', type=str, default='2012-12-31', help='end date (exclusive))')
-        parser.add_argument('-r', '--read_freq', type=int, default=30, help='read frequency in days')
+        parser.add_argument('-r', '--read_interval', type=int, default=30, help='read interval in days')
         
     compare_parser = main_subparsers.add_parser('compare', help='Compare the results')
     compare_parser.add_argument('-q', '--queries', type=str, default='all', help=query_help)
@@ -100,7 +103,7 @@ class ResultWithElapsed:
 
 class Query:
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
-    HEADERS = {'GSQL-TIMEOUT': '7200000'}
+    HEADERS = {'GSQL-TIMEOUT': '36000000'}
     def __init__(self, name, transform_parameter=None):
         self.name = name
         self.transform_parameter = transform_parameter
@@ -210,13 +213,23 @@ DYNAMIC_EDGES = [
 DYNAMIC_NAMES = DYNAMIC_VERTICES + DYNAMIC_EDGES
 
 SCRIPT_DIR_PATH = Path(__file__).resolve().parent
-total = 21
-WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0][0]['@@result']) for i in range(1,total)]
+WORKLOADS = [Workload(f'bi{i}', ResultTransform()[0][0]['@@result']) for i in range(1,21)]
 WORKLOADS[7] = Workload('bi8', ResultTransform()[0][0]['@@result'].del_keys(['totalScore']))
 WORKLOADS[9] = Workload('bi10', ResultTransform()[0][0]['result'])
 WORKLOADS[10] = Workload('bi11', ResultTransform()[0][0])
 WORKLOADS[15] = Workload('bi16', ResultTransform()[0][0]['@@result'].del_keys(['totalMessageCount']))
 WORKLOADS[18] = Workload('bi19', ResultTransform()[1][0]['@@result'], queries = [Query('bi19_add_weighted_edges'), Query('bi19'), Query('bi19_delete_weighted_edges')])
+
+WORKLOADS += [Workload(f'ic{i}', ResultTransform()[0][0]['@@result']) for i in range(1,15)]
+WORKLOADS[20] = Workload(f'ic1', ResultTransform()[0][0]['P'])
+WORKLOADS[20+11] = Workload(f'ic12', ResultTransform()[0][0]['P'])
+WORKLOADS[20+12] = Workload(f'ic13', ResultTransform()[0][0])
+WORKLOADS += [Workload(f'is{i}', ResultTransform()[0][0]['@@result']) for i in range(1,8)]
+WORKLOADS[34] = Workload(f'is1', ResultTransform()[0][0]['P'])
+WORKLOADS[34+2] = Workload(f'is3', ResultTransform()[0][0]['P'])
+WORKLOADS[34+3] = Workload(f'is4', ResultTransform()[0][0]['result'])
+WORKLOADS[34+4] = Workload(f'is5', ResultTransform()[0][0]['P'])
+WORKLOADS[34+5] = Workload(f'is6', ResultTransform()[0][0]['vModerator'])
 
 DEL_VERTICES = ["Comment","Post","Forum","Person"]
 DEL_EDGES = ['Person_likes_Post',
@@ -237,6 +250,7 @@ GEN_WORKLOADS = {
     19: Workload('gen_bi19', ResultTransform()[0][0]),
     20: Workload('gen_bi20', ResultTransform()[0][0]),
 }
+UPDATE_WORKLOADS = [Workload(f'ins{i+1}', ResultTransform()) for i in range(8)]
 
 '''Loads parameters for a given file'''
 def load_parameters(file):
@@ -248,8 +262,8 @@ def cmd_load_schema(args):
     '''Loads the schema.'''
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'schema.gsql')}", shell=True)
     subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'load.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'insert.gsql')}", shell=True)
-    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'dml'/'del_Edge.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'refreshes'/'insert.gsql')}", shell=True)
+    subprocess.run(f"gsql {str(SCRIPT_DIR_PATH/'refreshes'/'del_Edge.gsql')}", shell=True)
     
 """
 Load data
@@ -261,12 +275,26 @@ Load data
     - suffix : str
     - date : None
 """ 
-def load_data(job, machine, data_dir, tag, names, suffix, date = None):
-    file_paths = [(data_dir /tag / name) for name in names]
-    if date:
-        file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
+def load_data(job, machine, data_dir, tag, names, suffix, date = None, interactive=False):
+    if not interactive:
+        file_paths = [(data_dir /tag / name) for name in names]
+        if date:
+            file_paths = [ f/date.strftime('batch_id=%Y-%m-%d') for f in file_paths ]
+    else:
+        def ChangeName(name):
+            entities = name.split('_')
+            if len(entities) != 3: return name.lower()
+            entities[0] = entities[0].lower()
+            entities[2] = entities[2].lower()
+            if entities[2] in ['country', 'city']:
+                entities[2] = 'place'
+            if entities[2] in ['university', 'company']:
+                entities[2] = 'organisation'
+            return '_'.join(entities)
+        file_paths = [(data_dir /tag / ChangeName(name)) for name in names]
+
     gsql = f'RUN LOADING JOB {job} USING '
-    if suffix: suffix = '.' + suffix
+    if suffix and '.' not in suffix: suffix = '.' + suffix
     gsql += ', '.join(f'file_{name}="{machine}{file_path}{suffix}"' for name, file_path in zip(names, file_paths))
     subprocess.run(f'gsql -g ldbc_snb \'{gsql}\'', shell=True)
 
@@ -276,8 +304,16 @@ def cmd_load_data(args):
         f.unlink()
     t0 = timer()
     header = '_with_header' if args.header else ''
-    load_data('load_static' + header, args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
-    load_data('load_dynamic' + header, args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_VERTICES+DYNAMIC_EDGES, args.suffix)
+
+    if args.format == 'bi':
+        '''BI data is in directory'''
+        load_data('load_static' + header, args.machine, args.data_dir/'initial_snapshot', 'static', STATIC_NAMES, args.suffix)
+        load_data('load_dynamic' + header, args.machine, args.data_dir/'initial_snapshot', 'dynamic', DYNAMIC_NAMES, args.suffix)
+    elif args.format == 'ic':
+        '''Interactive data is one csv files. '''
+        load_data('load_static_with_header', args.machine, args.data_dir, 'static', STATIC_NAMES, '_0_0.csv', interactive=True)
+        load_data('load_dynamic_interactive', args.machine, args.data_dir, 'dynamic', DYNAMIC_NAMES, '_0_0.csv', interactive=True)    
+    
     t1 = timer()
     print(f'loading time is {t1-t0}')
 
@@ -290,17 +326,24 @@ def cmd_load_query(args):
     for workload in args.workload:
         workload_path = (SCRIPT_DIR_PATH / 'queries' / f'{workload.name}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {workload_path}", shell=True)
+    all_workloads = args.workload
 
+    # No need to parse if already exists, TO DO: split the workloads
     for vertex in DEL_VERTICES:
-        del_query = (SCRIPT_DIR_PATH / 'dml' / f'del_{vertex}.gsql').resolve()
+        del_query = (SCRIPT_DIR_PATH / 'refreshes' / f'del_{vertex}.gsql').resolve()
         subprocess.run(f"gsql -g ldbc_snb {del_query}", shell=True)
+    
+    for i in range(8):
+        update_query = (SCRIPT_DIR_PATH / 'updates' / f'ins{i+1}.gsql').resolve()
+        subprocess.run(f"gsql -g ldbc_snb {update_query}", shell=True)
+    
     # stat.gsql to check the number of vertices and edges
     stat_query = (SCRIPT_DIR_PATH / 'stat.gsql').resolve()
     subprocess.run(f"gsql -g ldbc_snb {stat_query}", shell=True)
     gen_query = (SCRIPT_DIR_PATH / 'parameters'/'gen_para.gsql').resolve()
     subprocess.run(f"gsql -g ldbc_snb {gen_query}", shell=True)
+    all_workloads += DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values()) + UPDATE_WORKLOADS
     
-    all_workloads = args.workload + DEL_WORKLOADS + STAT_WORKLOADS + list(GEN_WORKLOADS.values())
     queries_to_install = [
         query.name 
         for workload in all_workloads 
@@ -368,16 +411,26 @@ def cmd_gen(args, output=None):
     while len(gen[20]['@@person2Ids'])==0:
         gen[20] = GEN_WORKLOADS[20].run(None).result
         print('rerun gen_bi20')
-    country = gen[0]['@@country']
-    tag = gen[0]['@@tag']
-    tagclass = gen[0]['@@tagclass']
+    i1 = randrange(3)
+    i2 = (i1+1) %3
     def genValue(name, Dtype):
-        if name == 'country': return country[randrange(3)]
-        if name == 'tag': return tag[randrange(3)]
-        if name == 'tagClass': return tagclass[randrange(3)]
+        if name == 'country' or name =='country1': return gen[0]['@@country'][i1]
+        if name == 'country2': return  gen[0]['@@country'][i2]
+        if name == 'tag': return gen[0]['@@tag'][randrange(3)]
+        if name == 'tagClass': return  gen[0]['@@tagclass'][randrange(3)]
+        if name == 'personId' or name == 'person1Id': return gen[0]['@@personId'][i1]
+        if name == 'person2Id': return gen[0]['@@personId'][i2]
+        if name == 'messageId': return gen[0]['@@commentId'][randrange(3)]
+        if name == 'firstName': return gen[0]['@@firstName'][randrange(3)]
         if name == 'startDate': 
             date = datetime(2010, 9, 1) + timedelta(days=randrange(365))
             return date.strftime("%Y-%m-%dT00:00:00")
+        if name == 'month':
+            return randrange(12) + 1
+        if name == 'duration':
+            return randrange(180,720)
+        if name == 'workFromYear':
+            return randrange(1990,2010)
         if Dtype == 'LONG':
             return randrange(100)
         if Dtype == 'DATETIME':
@@ -398,8 +451,9 @@ def cmd_gen(args, output=None):
     parameters['bi4']['date'] = (datetime(2012,3,1) + timedelta(days=randrange(200))).strftime("%Y-%m-%dT00:00:00")
     
     i = randrange(3)
-    parameters['bi14']['country1'] = country[i]
-    parameters['bi14']['country2'] = country[(i+1)%4]
+    # bi 14 is too expensive, we choose two country manually
+    parameters['bi14']['country1'] = 'Singapore' #country[i]
+    parameters['bi14']['country2'] =  'Morocco' #country[(i+1)%3]
     parameters['bi15']['endDate'] = date.strftime("%Y-%m-%dT00:00:00")
     for k in gen[15].keys(): parameters['bi15'][k] = gen[15][k]
     for k in gen[16].keys(): parameters['bi16'][k] = gen[16][k]
@@ -413,10 +467,10 @@ def cmd_gen(args, output=None):
     parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
     
     stream = str(parameters)
-    stream = re.sub(r"'bi", r"\n'bi", stream)
+    stream = re.sub(r"('[ibcs]+[0-9]+':)", r"\n\1", stream)
     with open(output,'w') as f:
         f.write(stream)
-    print(f'Parameters are generated to {str(output)}')
+    print(f'Generating parameter to {str(output)}')
 
 def median(time_list):
     return sorted(time_list)[len(time_list)//2]
@@ -425,7 +479,7 @@ def writeResult(result, filename):
     with open(filename, 'w') as f:
         if isinstance(result, dict): 
             f.write(str(list(result.values()))+'\n')
-            return  
+            return
         for row in result:
             row = [v for k,v in row.items()]
             f.write(str(row)+'\n')
@@ -537,8 +591,10 @@ def compare_batch(workloads, source, target):
             if Pass: 
                 print(f'{workload.name}: Pass')
 
-""" 
-refresh data and run queries
+"""
+======================================
+refresh data and run queries in BI Workload
+======================================
 """
 def toStr(x_list):
     if isinstance(x_list[0], int) or isinstance(x_list[0], str):
@@ -567,7 +623,7 @@ def cmd_refresh(args):
     batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
     batch_log += ',' + toStr([tot_ins_time, tot_del_time])
     header = '_with_header' if args.header else ''
-    if args.read_freq > 0: 
+    if args.read_interval > 0: 
         # run query 
         durations = cmd_run(args, output = output)
         batch_log += ',' + toStr(durations)
@@ -605,7 +661,7 @@ def cmd_refresh(args):
         output = args.output/dateStr
             
         # run query 
-        if args.read_freq and (date - begin).days % args.read_freq == 0: 
+        if args.read_interval and (date - begin).days % args.read_interval == 0: 
             stat_dict = cmd_stat(args)
             batch_log = f'{dateStr},' + toStr([stat_dict[n] for n in stat_name]) 
             batch_log += ',' + toStr([tot_ins_time, tot_del_time])
@@ -616,11 +672,65 @@ def cmd_refresh(args):
         
         logf.write(batch_log+'\n')
         logf.flush()
-        if args.read_freq == 0 or (date - begin).days % args.read_freq == 0:
+        if args.read_interval == 0 or (date - begin).days % args.read_interval == 0:
             tot_ins_time = 0
             tot_del_time = 0
         
     logf.close()
+
+"""
+======================================
+Transactional updates in Interactive Workload
+======================================
+"""
+DATA_CONVERTOR = {
+    "INT":int,
+    "UINT":int,
+    "VERTEX":int,
+    "STRING":str,
+    "DATETIME": lambda x: datetime.fromtimestamp(int(x)/1000),
+    "SET<STRING>": lambda x: x.split(";"),
+    "SET<VERTEX>": lambda xs: [] if not xs else [int(x) for x in xs.split(";")],
+}
+
+def convert_row(values,types):
+    res = {}
+    for i,(n,dt) in enumerate(types.items()):
+        res[n] = DATA_CONVERTOR[dt](values[i])
+    return res
+
+def cmd_update(args):
+    types = load_parameters(Path('parameters/update.json'))
+    s1 = args.data_dir / 'updateStream_0_0_person.csv'
+    s2 = args.data_dir / 'updateStream_0_0_forum.csv'
+    with open(s1) as f1, open(s2) as f2:
+        r1 = f1.readline().strip().split('|')
+        r2 = f1.readline().strip().split('|')
+        t0 = timer()
+        i = 0
+        while len(r1) > 1 or len(r2) > 1 :
+            t1 = int(r1[0]) if len(r1) > 1 else 0
+            t2 = int(r2[0]) if len(r2) > 1 else 0
+            if t1 > 0 and t1 <= t2:
+                r = r1
+                r1 = f1.readline().strip().split('|')
+            else:
+                r = r2
+                r2 = f2.readline().strip().split('|')
+            i += 1
+            t = int(r[0])
+            op = int(r[2])
+            d = datetime.fromtimestamp(t/1000)
+            #print(d.strftime("%Y-%m-%d %H:%M:%S, ") + f'ins{op}: ', end = '')
+            parameter = convert_row(r[3:], types[f'ins{op}'])
+            try:
+                UPDATE_WORKLOADS[op-1].run(parameter)
+                #print('PASS')
+            except Exception as err:
+                #print(parameter)
+                print(f'ins{op}: '+ err)
+            t = timer()
+            if i % 100 == 0: print(d.strftime("%Y-%m-%d %H:%M:%S, ") + f'{i} inserts, time {t-t0:1.1f} s, {i/(t-t0):1.1f} inserts/second')
 
 def cmd_all(args):
     cmd_load_all(args)
@@ -633,7 +743,7 @@ def parse_queries(args):
     if not hasattr(args, 'queries'): 
         args.workload = WORKLOADS
         return
-    all = [str(i) for i in range(1,total)]
+    all = [w.name for w in WORKLOADS]
     alls = set(all)
     if args.queries == 'all':
         actual = alls
@@ -647,7 +757,7 @@ def parse_queries(args):
         actual = list(filter(r.match, all))
     else:
         actual = set(args.queries.split(','))
-    args.workload = [WORKLOADS[i-1] for i in range(1,total) if str(i) in actual]
+    args.workload = [w for w in WORKLOADS if w.name in actual]
     print('Workload:', ','.join([w.name for w in args.workload]))
 
 """ 
@@ -663,21 +773,6 @@ def parse_machine_dir(args):
         args.data_dir = Path(mds[1]).expanduser()
     else:
         args.machine, args.data_dir = 'ANY:', Path(args.machine_dir).expanduser()
-    if args.cmd == 'refresh' or not args.machine in ['m1', 'ALL']: return
-    #check if path exists
-    missing = []
-    check_list = []
-    for tag in ['static', 'dynamic']:
-        names = STATIC_NAMES if tag == 'static' else DYNAMIC_NAMES
-        for name in names:
-            file_path = (args.data_dir/'initial_snapshot'/tag/name)
-            if not args.suffix and not file_path.is_dir():
-                missing.append(file_path.name)
-            if args.suffix and not file_path.is_file():
-                missing.append(file_path.name)
-    if len(missing) > 0:
-        tmp = 'files' if args.suffix else 'directory'
-        raise ValueError(f'The directory "{args.data_dir}" is missing {tmp} {", ".join(missing)}.')
 
 def check_args(args):
     parse_queries(args)    
