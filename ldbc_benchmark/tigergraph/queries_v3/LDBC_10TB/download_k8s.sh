@@ -14,6 +14,5 @@ echo "download $sf($index/$nodes) using $thread threads"
 python3 -u ecosys/ldbc_benchmark/tigergraph/queries_v3/LDBC_10TB/download_one_partition.py $sf $i $nodes -t $thread  && \
 echo 'done download' && \
 echo "deompose files in $target" && \
-mv $target/inserts_split $target/inserts && \
 find $target -name *.csv.gz  -print0 | parallel -q0 gunzip && \
 echo 'done decompress'

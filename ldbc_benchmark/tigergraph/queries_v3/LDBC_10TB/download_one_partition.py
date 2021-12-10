@@ -93,7 +93,7 @@ for d2 in ['static', 'dynamic']:
       else:
         blob.download_to_filename(target_dir/csv)
 
-for d1 in ['inserts_split','deletes']:
+for d1 in ['inserts','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
