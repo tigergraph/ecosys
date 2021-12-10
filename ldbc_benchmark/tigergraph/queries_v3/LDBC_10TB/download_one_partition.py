@@ -18,11 +18,11 @@ if args.key:
 buckets = {
     '1k': 'ldbc_snb_1t',
     '10k': 'ldbc_snb_10t',
-    '30k': 'ldbc_snb_30t',}
+    '30k': 'ldbc_snb_30t_v2',}
 roots = {
   '1k': 'sf1k/',
   '10k':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
-  '30k':'results/sf30000-compressed/runs/20210728_061923/social_network/csv/bi/composite-projected-fk/'}
+  '30k':'composite-projected-fk/'}
 
 bucket = buckets[args.data]
 root = roots[args.data]
@@ -30,7 +30,7 @@ target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,
-  'inserts_split': True,
+  'inserts': True,
   'deletes': False,}
 
 STATIC_NAMES = [
