@@ -33,11 +33,12 @@ def main():
     scp = SCPClient(ssh.get_transport())
     print(f'logging to {ip}')
     stdin, stdout, stderr = ssh.exec_command(f''' 
+      cd {workdir}
       pkill -f "download_one_partition"
-      nohup rm -r sf30k > log.stop 2>&1 < /dev/null &  
+      nohup rm -r sf30k > log.clean 2>&1 < /dev/null &  
     ''')
     time.sleep(4)
-    stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/log.download')
+    stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/log.clean')
     for line in stdout.read().splitlines():
       print(line.decode('utf-8'))
     
