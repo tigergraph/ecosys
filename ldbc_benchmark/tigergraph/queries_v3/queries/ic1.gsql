@@ -1,33 +1,40 @@
 SET syntax_version = "v2"
 USE GRAPH ldbc_snb
 CREATE OR REPLACE DISTRIBUTED QUERY ic1(vertex<Person> personId, string firstName) FOR GRAPH ldbc_snb {
-  typedef tuple<string orgName, int orgYear, string orgPlace> org;
-  SumAccum<uint> @distance;
+  TYPEDEF TUPLE<string orgName, int orgYear, string orgPlace> org;
+  TYPEDEF TUPLE<VERTEX<Person> v, INT distance, STRING lastName, INT id> friendInfo;
+
+  HeapAccum<friendInfo>(20, distance ASC, lastName ASC, id ASC) @@friendInfoTop;
+  SumAccum<UINT> @distance = 0;
+  SetAccum<VERTEX<Person>> @@friends;
+
   SumAccum<string> @friendCityName;
   MapAccum<INT, INT> @personInfo;
   MapAccum<INT, SetAccum<org>> @@compInfo, @@univInfo;
   SetAccum<org> @comp, @univ;
+  INT i = 0;
   
   S = { personId };
-  //dis=1 
-  P1 = SELECT p
-    FROM S:s -(KNOWS)- Person:p 
-    WHERE p != personId AND p.firstName == firstName
-    ACCUM p.@distance = 1;
-  //dis=2  
-  P2 = 
-    SELECT p
-    FROM P1 -(KNOWS)- Person:p 
-    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
-    ACCUM p.@distance = 2;
-  //dis=3
-  P3 = 
-    SELECT p
-    FROM P2 -(KNOWS)- Person:p
-    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
-    ACCUM p.@distance = 3;
-  
-  P = P1 UNION P2 UNION P3;
+  WHILE i < 3 DO
+    S =
+      SELECT t
+      FROM S:s-(KNOWS)-Person:t
+      WHERE t.@distance == 0 AND t != personId
+      ACCUM t.@distance = (i+1)
+      POST-ACCUM
+        CASE WHEN t.firstName == firstName THEN
+          @@friendInfoTop += friendInfo(t, t.@distance, t.lastName, t.id)
+        END;
+
+    IF @@friendInfoTop.size() >= 20 THEN BREAK; END;
+    i = i + 1;
+  END;
+
+  FOREACH f IN @@friendInfoTop DO
+    @@friends += f.v;
+  END;
+
+  P = {@@friends};
   tmp = 
     SELECT ct
     FROM P:p -(IS_LOCATED_IN>)- City:ct
