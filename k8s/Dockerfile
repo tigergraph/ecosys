@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG APP_VERSION=3.2.0
+ARG APP_VERSION=3.3.0
 ARG APP_URL=https://dl.tigergraph.com/enterprise-edition/tigergraph-${APP_VERSION}-offline.tar.gz
 
 RUN apt-get -qq update && apt-get install -y --no-install-recommends \
@@ -25,6 +25,9 @@ RUN apt-get -qq update && apt-get install -y --no-install-recommends \
     # Install TigerGraph
     cd /home/tigergraph/tigergraph-* && \
     ./install.sh -n && \
+    # Security patch for log4j
+    su - tigergraph /bin/bash -c "cd /home/tigergraph && curl -k -OL https://dl.tigergraph.com/patch/log4j/log4j-fix-3.x.y.tgz && tar xzf log4j-fix-3.x.y.tgz && cd log4j-fix-3.x.y && export PATH=\$PATH:/home/tigergraph/tigergraph/app/cmd && export ALLOW_STOP_TG=1 && ./run.sh" && \
+    rm -rf /home/tigergraph/log4j-fix-3.x.y* && \
     # Stop TigerGraph
     su - tigergraph -c "/home/tigergraph/tigergraph/app/${APP_VERSION}/cmd/gadmin stop all -y" && \
     # Clean Up unused packages
