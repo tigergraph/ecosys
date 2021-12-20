@@ -30,11 +30,11 @@ def createSSHClient(server, port, user, password):
 
 buckets = {
     '1k': 'ldbc_snb_1t',
-    '10k': 'ldbc_snb_10t',
+    '10k': 'ldbc_snb_10t_v2',
     '30k': 'ldbc_snb_30t_v2',}
 roots = {
   '1k': 'sf1k/',
-  '10k':'v1/results/sf10000-compressed/runs/20210713_203448/social_network/csv/bi/composite-projected-fk/',
+  '10k':'composite-projected-fk/',
   '30k':'composite-projected-fk/'}
 
 def main():
