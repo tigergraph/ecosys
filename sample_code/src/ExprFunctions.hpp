@@ -27,7 +27,6 @@
  *     <tigergraph_root_path>/dev_<backup_time>/gdk/gsql/src/QueryUdf/ExprFunctions.hpp
  *   after upgrading the system.
  *
- *
  ******************************************************************************/
 
 #ifndef EXPRFUNCTIONS_HPP_
