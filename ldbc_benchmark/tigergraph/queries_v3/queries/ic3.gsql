@@ -3,41 +3,41 @@ USE GRAPH ldbc_snb
 CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1, STRING country2, DATETIME startDate, INT duration) {
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
   HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@result;
-  SumAccum<int> @xCount, @yCount;
+  SumAccum<UINT> @xCount, @yCount;
   OrAccum<BOOL> @selected, @selected2;
   datetime endDate;
   endDate = datetime_add(startDate, INTERVAL duration DAY);
 
   S = { personId };
-  P =
-    SELECT p
+  P = SELECT p
     FROM S:s -(KNOWS*1..2)- Person:p
     WHERE p != personId
     ACCUM p.@selected += true;
 
-  P = 
-    SELECT p 
-    FROM Country:cp -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
-    WHERE cp.name != country1 AND cp.name != country2 AND p.@selected
-    ACCUM p.@selected2 += true;
-  
-  P1 =
-    SELECT p
-    FROM Country:cm -(<IS_LOCATED_IN)- (Post|Comment):m -(HAS_CREATOR>)- Person:p
-    WHERE cm.name == country1 AND m.creationDate >= startDate AND m.creationDate < endDate AND p.@selected2
-    PER(m,p)
-    ACCUM p.@xCount += 1;
-  
-  P2 =
-    SELECT p
-    FROM Country:cm -(<IS_LOCATED_IN)- (Post|Comment):m -(HAS_CREATOR>)- Person:p
-    WHERE cm.name == country2 AND m.creationDate >= startDate AND m.creationDate < endDate AND p.@selected2
-    PER(m,p)
-    ACCUM p.@yCount += 1;
+  PersonCity = SELECT c
+    FROM Country:cn -(<IS_PART_OF)- City:c
+    WHERE cn.name != country1 AND cn.name != country2;
 
-  P = P1 INTERSECT P2;
-  P =
-    SELECT p FROM P:p
+  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- PersonCity;
+  
+  Messages = SELECT m 
+    FROM Country:cn -(<IS_LOCATED_IN)- (Post|Comment):m
+    WHERE (cn.name == country1 OR cn.name == country2)
+      AND m.creationDate >= startDate AND m.creationDate < endDate 
+    ACCUM 
+      m.@selected += (cn.name == country1),
+      m.@selected2 += (cn.name == country2);
+
+  P = SELECT p
+    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m
+    WHERE m.@selected OR m.@selected2
+    ACCUM 
+      IF m.@selected THEN p.@xCount += 1 END,
+      IF m.@selected2 THEN p.@yCount += 1 END
+    HAVING p.@xCount > 0 AND p.@yCount > 0;   
+
+  P = SELECT p 
+    FROM P:p
     ACCUM @@result += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
   PRINT @@result;
 }
