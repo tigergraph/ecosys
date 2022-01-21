@@ -20,10 +20,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
     LIMIT 10;
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
   P = {Person.*};
-  P = SELECT p FROM P:p LIMIT 4;
+  P = SELECT p FROM P:p LIMIT 4 WHERE p.id > 0;
   P = SELECT p FROM P:p  ACCUM @@personId += p.id, @@firstName += p.firstName;
   M = {Comment.*};
-  M = SELECT m FROM M:m LIMIT 4;
+  M = SELECT m FROM M:m LIMIT 4 WHERE m.id >0 ;
   M = SELECT m FROM M:m  ACCUM @@commentId += m.id;
   PRINT @@country, @@tag, @@tagclass, @@personId, @@commentId, @@firstName;
 }
@@ -36,6 +36,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
   C = SELECT c FROM C:c LIMIT 1;
   C = SELECT c FROM C:c ACCUM country = c.name;
   P = SELECT p FROM C -(<IS_PART_OF)-City-(<IS_LOCATED_IN)-Person:p
+    WHERE p.id > 0 
     LIMIT 100;
   P = SELECT p FROM P:p ACCUM p.@selected += TRUE;
   TC = SELECT tc
@@ -48,9 +49,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
       LIMIT 1;
   P = SELECT t FROM P:t ACCUM pid = t.id;
   P1 = SELECT t FROM P-(KNOWS)-Person:t
+    WHERE t.id > 0
     LIMIT 1;
   P2 = SELECT t FROM P1-(KNOWS)-Person:t
-    WHERE t.id != pid
+    WHERE t.id != pid AND t.id > 0
     LIMIT 1;
   P2 = SELECT t FROM P2:t
     ACCUM personId = t.id;
@@ -62,15 +64,17 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi15() {
   OrAccum @flag,@visited;
   UINT person1Id, person2Id, iter; 
   P = {Person.*};
-  P = SELECT p FROM P:p-(KNOWS)-Person LIMIT 1;
+  P = SELECT p FROM P:p-(KNOWS)-Person WHERE p.id > 0 LIMIT 1;
   S = SELECT p FROM P:p ACCUM person1Id = p.id, p.@visited+=true;
   iter = 0;
   WHILE S.size()>0 AND iter < 3 DO
     iter = iter+1;
-    Next = SELECT t FROM S-(KNOWS)-Person:t WHERE NOT t.@visited ACCUM t.@flag += true;
+    Next = SELECT t FROM S-(KNOWS)-Person:t 
+      WHERE NOT t.@visited AND t.id > 0 
+      ACCUM t.@flag += true;
     S = SELECT t 
       FROM S-(<HAS_CREATOR)-(Post|Comment)-(REPLY_OF>)-(Post|Comment)-(HAS_CREATOR>)-Person:t
-      WHERE NOT t.@visited AND t.@flag
+      WHERE NOT t.@visited AND t.@flag AND t.id > 0
       ACCUM t.@visited += true
       LIMIT 100;
   END;
@@ -114,10 +118,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi18() {
   UINT person1Id;
   STRING tag;
   OrAccum @visited;
-  S = SELECT s FROM Person:s LIMIT 1;
+  S = SELECT s FROM Person:s WHERE s.id > 0 LIMIT 1;
   S = SELECT s FROM S:s ACCUM person1Id = s.id;
-  P1 = SELECT t FROM S-(KNOWS)-Person:t ACCUM t.@visited += TRUE;
-  P2 = SELECT t FROM P1-(KNOWS)-Person:t WHERE NOT t.@visited AND t.id != person1Id
+  P1 = SELECT t FROM S-(KNOWS)-Person:t 
+    WHERE t.id > 0 ACCUM t.@visited += TRUE;
+  P2 = SELECT t FROM P1-(KNOWS)-Person:t 
+    WHERE NOT t.@visited AND t.id > 0 and t.id != person1Id
     LIMIT 1000;
   T = SELECT t FROM P2-(HAS_INTEREST>)-Tag:t LIMIT 1;
   T = SELECT t FROM T:t ACCUM tag = t.name;  
@@ -140,11 +146,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
     ORDER BY c.@nperson ASC
     LIMIT 10;
   P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
+    WHERE p.id > 0
     ACCUM p.@cities += c
     LIMIT 10000;
   M = SELECT m 
     FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
-    ACCUM m.@persons+= p;
+    ACCUM m.@persons += p;
   M = SELECT m2 FROM M:m1 -(REPLY_OF>)-_:m2
     WHERE m2.@persons.size() >0 
     ACCUM m1.@persons += m2.@persons;
@@ -202,6 +209,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   
   P = SELECT p
     FROM U -(<STUDY_AT)- Person:p
+    WHERE p.id > 0
     LIMIT 4000;
   P = SELECT p FROM P:p ACCUM p.@selected += TRUE;
   P = SELECT s
@@ -214,7 +222,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
   WHILE iter < 3 DO
     iter = iter+1;
     P = SELECT t FROM P:s-(KNOWS)-Person:t
-      WHERE s.@connected.contains(t)
+      WHERE s.@connected.contains(t) AND t.id > 0
       ACCUM t.@source += s.@source;
   END;
   
