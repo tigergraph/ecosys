@@ -5,7 +5,7 @@ USE GRAPH social
 CREATE QUERY hello(VERTEX<person> p) {
   Start = {p};
   Result = SELECT tgt
-           FROM Start:s-(friendship:e) ->person:tgt;
+           FROM Start:s-(friendship:e) -person:tgt;
   PRINT Result;
 }
 
@@ -17,11 +17,11 @@ CREATE QUERY hello2 (VERTEX<person> p) {
   Start = {p};
 
   FirstNeighbors = SELECT tgt
-                   FROM Start:s -(friendship:e)-> person:tgt
+                   FROM Start:s -(friendship:e)- person:tgt
                    ACCUM tgt.@visited += true, s.@visited += true;
 
   SecondNeighbors = SELECT tgt
-                    FROM FirstNeighbors -(:e)-> :tgt
+                    FROM FirstNeighbors -(:e)- :tgt
                     WHERE tgt.@visited == false
                     POST_ACCUM @@avgAge += tgt.age;
 
