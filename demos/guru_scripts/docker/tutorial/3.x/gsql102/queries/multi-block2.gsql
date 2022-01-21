@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 # A and B are used to constraint the third pattern.
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
   
   SumAccum<int> @@cnt;
 

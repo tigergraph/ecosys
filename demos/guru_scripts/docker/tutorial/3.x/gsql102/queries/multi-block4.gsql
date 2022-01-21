@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 # the same alias is used twice in a pattern
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
 
   SumAccum<int> @@cnt;
 

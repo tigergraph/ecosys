@@ -2,7 +2,7 @@ USE GRAPH ldbc_snb
 SET query_timeout=60000
 DROP QUERY RecommendMessage
 
-CREATE QUERY RecommendMessage (String fn, String ln) SYNTAX v2 {
+CREATE QUERY RecommendMessage (String fn, String ln) {
 
   SumAccum<int> @MsgInCommon = 0;
   SumAccum<int> @MsgCnt = 0;

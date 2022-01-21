@@ -1,6 +1,6 @@
 USE GRAPH ldbc_snb
 
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
   SumAccum<int> @likesCnt;
 
   FavoriteAuthors =  SELECT t

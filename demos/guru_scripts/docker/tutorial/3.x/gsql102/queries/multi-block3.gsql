@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 # a computed vertex set A is used twice in the second pattern.
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
 
   SumAccum<int> @@cnt;
 

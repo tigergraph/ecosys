@@ -1,6 +1,6 @@
 USE GRAPH ldbc_snb
 
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
   SumAccum<int> @@cnt = 0;
 
   Result = SELECT tgt

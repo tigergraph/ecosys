@@ -1,6 +1,6 @@
 USE GRAPH ldbc_snb
 
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
 
   TagClass1 = SELECT t
               FROM TagClass:s -(IS_SUBCLASS_OF>*1)- TagClass:t

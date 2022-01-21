@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 # Example 1. Undirected Edge Pattern
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
    friends = SELECT p
              FROM Person:s - (KNOWS:e)- Person:p
              WHERE s.firstName == "Viktor" AND s.lastName == "Akhiezer"
