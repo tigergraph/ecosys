@@ -465,10 +465,12 @@ def cmd_gen(args, output=None):
     parameters['bi16']['dateB'] = gen[16]['dateB'].replace(' ','T')
     parameters['bi17']['delta'] = randrange(12,16)
     parameters['bi18'] = gen[18]
-    parameters['bi19']['city1Id'] = gen[19]['@@cityIds'][0]
-    parameters['bi19']['city2Id'] = gen[19]['@@cityIds'][1]
+    if len(gen[19]['@@cityIds']) >= 2:
+        parameters['bi19']['city1Id'] = gen[19]['@@cityIds'][0]
+        parameters['bi19']['city2Id'] = gen[19]['@@cityIds'][1]
     parameters['bi20']['company'] = gen[20]['company']
-    parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
+    if len(gen[20]['@@person2Ids']) > 0:
+        parameters['bi20']['person2Id'] = choice(gen[20]['@@person2Ids'])
     
     stream = str(parameters)
     stream = re.sub(r"('[ibcs]+[0-9]+':)", r"\n\1", stream)
