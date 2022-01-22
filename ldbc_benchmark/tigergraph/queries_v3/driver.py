@@ -398,18 +398,22 @@ def cmd_gen(args, output=None):
         gen[i] = workload.run(None).result
         t1 = timer()
         if args.verbose: print(f'done {workload.name} in {t1-t0:.2f} s')
-        
-    while gen[10]['personId']==0:
+    
+    for i in range(3):
         gen[10] = GEN_WORKLOADS[10].run(None).result
+        if gen[10]['personId'] > 0: break
         print('rerun gen_bi10')
-    while gen[15]['person2Id']==0:
+    for i in range(3):
         gen[15] = GEN_WORKLOADS[15].run(None).result
+        if gen[15]['person2Id'] > 0: break
         print('rerun gen_bi15')
-    while len(gen[19]['@@cityIds'])==0:
+    for i in range(3):
         gen[19] = GEN_WORKLOADS[19].run(None).result
+        if len(gen[19]['@@cityIds']) > 0: break
         print('rerun gen_bi19')
-    while len(gen[20]['@@person2Ids'])==0:
+    for i in range(3):
         gen[20] = GEN_WORKLOADS[20].run(None).result
+        if len(gen[20]['@@person2Ids']) > 0 : break
         print('rerun gen_bi20')
     i1 = randrange(3)
     i2 = (i1+1) %3
