@@ -20,10 +20,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
     LIMIT 10;
   T = SELECT t FROM T:t ACCUM @@tag += t.name;
   P = {Person.*};
-  P = SELECT p FROM P:p LIMIT 4 WHERE p.id > 0;
+  P = SELECT p FROM P:p WHERE p.id > 0 LIMIT 4;
   P = SELECT p FROM P:p  ACCUM @@personId += p.id, @@firstName += p.firstName;
   M = {Comment.*};
-  M = SELECT m FROM M:m LIMIT 4 WHERE m.id >0 ;
+  M = SELECT m FROM M:m  WHERE m.id >0 LIMIT 4;
   M = SELECT m FROM M:m  ACCUM @@commentId += m.id;
   PRINT @@country, @@tag, @@tagclass, @@personId, @@commentId, @@firstName;
 }
