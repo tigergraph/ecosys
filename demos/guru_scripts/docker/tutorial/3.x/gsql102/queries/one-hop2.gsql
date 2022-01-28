@@ -1,7 +1,7 @@
 USE GRAPH ldbc_snb
 
 # Example 2. Right Directed Edge Pattern
-INTERPRET QUERY () SYNTAX v2 {
+INTERPRET QUERY () {
   SumAccum<int> @commentCnt = 0;
   SumAccum<int> @postCnt = 0;
 
