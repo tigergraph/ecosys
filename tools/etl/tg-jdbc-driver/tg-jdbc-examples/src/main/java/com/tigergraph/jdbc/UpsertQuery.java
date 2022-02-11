@@ -27,10 +27,17 @@ public class UpsertQuery
     properties.put("username", "tigergraph");
     properties.put("password", "tigergraph");
 
-    /**
-     * Specify the graph name, especially when multi-graph is enabled.
-     */
+    // Specify the graph name, especially when multi-graph is enabled.
     properties.put("graph", "gsql_demo");
+
+    // Specify the query timeout (in seconds)
+    properties.put("timeout", "60");
+
+    // This request is an atomic transaction
+    properties.put("atomic", "1");
+
+    // For load balancing
+    // properties.put("ip_list", "172.30.2.20,172.30.2.21");
 
     /**
      * For loading job

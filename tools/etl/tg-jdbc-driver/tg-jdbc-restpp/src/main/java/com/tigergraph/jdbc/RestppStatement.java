@@ -18,14 +18,19 @@ import java.util.Map;
 public class RestppStatement extends Statement {
 
   private Integer debug = 0;
+  private Integer timeout = 0;
+  private Integer atomic = 0;
   private List<String> edge_list;
   private List<String> vertex_list;
   private QueryParser parser;
   private QueryType query_type;
 
-  public RestppStatement(RestppConnection restppConnection, Integer debug) {
+  public RestppStatement(RestppConnection restppConnection, Integer debug,
+      Integer timeout, Integer atomic) {
     super(restppConnection);
     this.debug = debug;
+    this.timeout = timeout;
+    this.atomic = atomic;
     edge_list = new ArrayList<String>();
     vertex_list = new ArrayList<String>();
   }
@@ -38,7 +43,7 @@ public class RestppStatement extends Statement {
   @Override public boolean execute(String query) throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(), query,
-        null, this.debug, this.timeout);
+        null, this.debug, this.timeout, this.atomic);
     this.query_type = parser.getQueryType();
 
     RestppResponse response =
@@ -61,7 +66,7 @@ public class RestppStatement extends Statement {
 
   @Override public void addBatch(String sql) throws SQLException {
     this.parser = new QueryParser((RestppConnection) getConnection(), sql,
-        null, this.debug, this.timeout);
+        null, this.debug, this.timeout, this.atomic);
     String vertex_json = parser.getVertexJson();
     String edge_json = parser.getEdgeJson();
     if (vertex_json != "") {
