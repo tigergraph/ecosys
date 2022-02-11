@@ -78,6 +78,8 @@ public class RestppConnection extends Connection {
   private String lineSchema = null;
   private String src_vertex_type = null;
   private Integer debug = 0;
+  private Integer atomic = 0;
+  private Integer timeout = -1;
   private Integer level = 1;
   private String[] ipArray = null;
 
@@ -104,6 +106,14 @@ public class RestppConnection extends Connection {
 
       if (this.debug > 1) {
         System.out.println(">>> properties: " + properties);
+      }
+
+      if (properties.containsKey("atomic")) {
+        this.atomic = Integer.valueOf(properties.getProperty("atomic"));
+      }
+
+      if (properties.containsKey("timeout")) {
+        this.timeout = Integer.valueOf(properties.getProperty("timeout"));
       }
 
       // Get token for authentication.
@@ -411,6 +421,8 @@ public class RestppConnection extends Connection {
         break;
       } catch (Exception e) {
         if (retry >= max_retry - 1) {
+          System.out.println(">>> Request: " + request +
+             ", payload: " + json + ", error: " + e);
           throw new SQLException("Request: " + request +
              ", payload size: " + json.length() + ", error: " + e);
         }
@@ -436,18 +448,18 @@ public class RestppConnection extends Connection {
   }
 
   @Override public PreparedStatement prepareStatement(String query) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug);
+    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
   @Override public PreparedStatement prepareStatement(String query,
     int resultSetType, int resultSetConcurrency) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug);
+    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
   @Override public PreparedStatement prepareStatement(String query,
     int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug);
+    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
   @Override public DatabaseMetaData getMetaData() throws SQLException {
@@ -463,7 +475,7 @@ public class RestppConnection extends Connection {
   }
 
   @Override public java.sql.Statement createStatement() throws SQLException {
-    return new RestppStatement(this, this.debug);
+    return new RestppStatement(this, this.debug, this.timeout, this.atomic);
   }
 
   @Override public void commit() throws SQLException {

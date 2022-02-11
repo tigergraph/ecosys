@@ -288,6 +288,8 @@ df.write.mode("overwrite").format("jdbc").options(
     "password" -> "tigergraph",
     "graph" -> "gsql_demo", // graph name
     "dbtable" -> "vertex Person", // vertex type
+    "timeout" -> "60", // query timeout in seconds
+    "atomic" -> "1", // 0 (default): nonatomic, 1: an atomic transaction
     "batchsize" -> "100",
     "debug" -> "0")).save()
 

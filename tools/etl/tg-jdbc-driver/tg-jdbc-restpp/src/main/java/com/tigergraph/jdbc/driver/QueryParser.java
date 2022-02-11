@@ -54,6 +54,7 @@ public class QueryParser {
   private String line;
   private String job;
   private int timeout;
+  private int atomic;
 
   // get index of a specified String (first occurrence) in an array,
   // return array length when not found.
@@ -425,13 +426,14 @@ public class QueryParser {
    * Build endpoint based on raw query and parameters.
    */
   public QueryParser(RestppConnection con, String query, Map<Integer, Object> parameters,
-      Integer debug, int timeout) throws SQLException {
+      Integer debug, Integer timeout, Integer atomic) throws SQLException {
     if ((query == null) || query.equals("")) {
       throw new SQLException("Query could not be null or empty.");
     }
 
     this.connection = con;
     this.timeout = timeout;
+    this.atomic = atomic;
     this.query = query;
     this.field_list_ = new ArrayList<>();
 
@@ -825,6 +827,13 @@ public class QueryParser {
       sb.append(urlEncode(sep));
       sb.append("&eol=");
       sb.append(urlEncode(eol));
+      if (this.atomic > 0) {
+        sb.append("&atomic_post=true");
+      }
+    } else if (this.query_type == QueryType.QUERY_TYPE_GRAPH) {
+      if (this.atomic > 0) {
+        sb.append("?atomic_post=true");
+      }
     }
 
     String url = "";
@@ -886,8 +895,11 @@ public class QueryParser {
     }
 
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
-    if (this.timeout >= 0) {
-      request.addHeader("GSQL-TIMEOUT", String.valueOf(this.timeout));
+    if (this.timeout > 0) {
+      request.addHeader("GSQL-TIMEOUT", String.valueOf(this.timeout * 1000));
+    }
+    if (this.atomic > 0) {
+      request.addHeader("gsql-atomic-level", "atomic");
     }
     // Schema queries and interpreted queries only support username/password
     if (this.query_type == QueryType.QUERY_TYPE_SCHEMA_EDGE

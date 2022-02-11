@@ -25,12 +25,17 @@ public class RestppPreparedStatement extends PreparedStatement {
   private QueryType query_type;
   private String eol = null;
   private String sep = null;
+  private int timeout;
+  private int atomic;
   private StringBuilder stringBuilder = null;
 
-  public RestppPreparedStatement(RestppConnection restppConnection, String query, Integer debug) {
+  public RestppPreparedStatement(RestppConnection restppConnection,
+      String query, Integer debug, Integer timeout, Integer atomic) {
     super(restppConnection, query);
     this.query = query;
     this.debug = debug;
+    this.timeout = timeout;
+    this.atomic = atomic;
     edge_list = new ArrayList<String>();
     vertex_list = new ArrayList<String>();
   }
@@ -43,7 +48,7 @@ public class RestppPreparedStatement extends PreparedStatement {
   @Override public boolean execute() throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.debug, this.timeout);
+        this.query, this.parameters, this.debug, this.timeout, this.atomic);
     this.query_type = parser.getQueryType();
 
     /**
@@ -100,7 +105,7 @@ public class RestppPreparedStatement extends PreparedStatement {
      * so we lower its debug level.
      */
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.debug - 1, this.timeout);
+        this.query, this.parameters, this.debug - 1, this.timeout, this.atomic);
 
     if (this.parser.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB) {
       this.query_type = this.parser.getQueryType();
@@ -131,7 +136,7 @@ public class RestppPreparedStatement extends PreparedStatement {
      * so we lower its debug level.
      */
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        sql, this.parameters, this.debug - 1, this.timeout);
+        sql, this.parameters, this.debug - 1, this.timeout, this.atomic);
 
     this.query_type = this.parser.getQueryType();
     this.eol = ((RestppConnection) getConnection()).getEol();
