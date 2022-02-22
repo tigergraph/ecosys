@@ -86,8 +86,6 @@
     </pluginManagement>
   </build>
   <modules>
-    <module>tg-jdbc-common</module>
-    <module>tg-jdbc-restpp</module>
     <module>tg-jdbc-driver</module>
     <module>tg-jdbc-examples</module>
   </modules>
