@@ -12,6 +12,10 @@ I benchmarked for LDBC 30TB using 10 ultramem-160 machine, but I can run the que
 This example is for 10T benchmark and also works for 1T and 30T after you change the number of vm and the vm types.
 On your desktop, install `gcloud` and `kubectl`. Create a cluster on GKE 
 ```
+# 100GB benchmark setup
+gcloud container clusters create cluster1 -m n2-highmem-16 --num-nodes=4 --disk-size 100 --disk-type=pd-standard
+
+# 30TB benchmark setup
 gcloud container clusters create cluster1 -m m1-ultramem-40 --num-nodes=12 --disk-size 3000 --disk-type=pd-standard
 ```
 
