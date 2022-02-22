@@ -91,15 +91,13 @@ spec:
               echo 'found lagacy data, skip installation'
             else
               export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH;
-              tg_cfg=\$(find /home/tigergraph/tigergraph/app/ -name .tg.cfg|head -n 1);
-              ln -sf \$tg_cfg .tg.cfg;
               cp /tmp/init_tg_cfg /tmp/tg_cfg;
               sed -i 's/\=/\: /g' /tmp/tg_cfg;
               echo >> /tmp/tg_cfg;
-              jq -j '.System | \"System.AppRoot: \",.AppRoot' \$tg_cfg >> /tmp/tg_cfg;
+              jq -j '.System | \"System.AppRoot: \",.AppRoot' ~/.tg.cfg >> /tmp/tg_cfg;
               echo >> /tmp/tg_cfg;
               if [[ -z \"$LICENSE\" ]]; then
-                jq -j '.System | \"System.License: \",.License' \$tg_cfg >> /tmp/tg_cfg;
+                jq -j '.System | \"System.License: \",.License' ~/.tg.cfg >> /tmp/tg_cfg;
               else
                 echo \"System.License: ${LICENSE}\" >> /tmp/tg_cfg;
               fi;

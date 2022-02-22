@@ -20,6 +20,8 @@ USAGE:
   -l|--license :    set TG cluster license, default as free tier license from docker image
   --ha :            set TG cluster ha setting, default as 1
   --pv :            set Persistent volume size, default as 50
+  --cpu:           set Request vCPU number, default as 8
+  --mem :           set Request Memory size, default as 16
   --prefix :        set Pod name prefix-${index}
 
 # Examples when working in eks:
@@ -62,6 +64,14 @@ function set_opts () {
       --pv)
         shift
         TG_PV=$2
+        ;;
+      --cpu)
+        shift
+        TG_CPU=$2
+        ;;
+      --mem)
+        shift
+        TG_MEM=$2
         ;;
       -v|--version)
         shift
@@ -132,6 +142,20 @@ function update_pv () {
    fi
 }
 
+# update Tigergraph Request CPU number
+function update_cpu () {
+   if [ "${TG_CPU}" != "8" ]; then
+      sed "${sedi[@]}" -e "s/cpu: 8000m/cpu: $((TG_CPU*1000))m/1" $MANIFEST
+   fi
+}
+
+# update Tigergraph Request MEM size
+function update_mem () {
+   if [ "${TG_MEM}" != "16" ]; then
+      sed "${sedi[@]}" -e "s/memory: 16Gi/memory: ${TG_MEM}Gi/1" $MANIFEST
+   fi
+}
+
 # update Tigergraph PV size
 function update_prefix () {
    if [ "${TG_PREFIX}" != "tigergraph" ]; then
@@ -150,6 +174,8 @@ function init_manifest () {
   update_license
   update_ha
   update_pv
+  update_cpu
+  update_mem
   update_prefix
 }
 
@@ -173,6 +199,8 @@ function main () {
     TG_VERSION="latest"
     TG_HA="1"
     TG_PV="50"
+    TG_CPU="8"
+    TG_MEM="16"
     TG_PREFIX="tigergraph"
     TG_LICENSE=""
     CWD=$(cd $(dirname $0) && pwd)
