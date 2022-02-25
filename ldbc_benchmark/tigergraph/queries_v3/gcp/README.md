@@ -117,13 +117,3 @@ sudo python3 -m pip install --upgrade pip
 sudo pip3 install paramiko scp
 python3 download_all.py 30k 10.128.0.10 40 -t 10
 ```
-
-For large number of machines, GCP takes long time (~3 hr) to set up the ports. Upload the tigergraph package, wait some time and install 
-```sh
-# on local machine
-gcloud beta compute scp [pacakge] m1:~
-gcloud beta compute scp [install config] m1
-
-# on GCP m1 
-./install.sh -n
-```
