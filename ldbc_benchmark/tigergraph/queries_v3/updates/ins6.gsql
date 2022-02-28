@@ -11,12 +11,11 @@ CREATE OR REPLACE QUERY ins6(
     UINT length,
     UINT personId,
     UINT forumId, 
-    VERTEX<Country> countryId, 
+    UINT countryId, 
     SET<VERTEX<Tag>> tagIds) {
-  INSERT INTO Post VALUES(id, imageFile, creationDate, locationIP, browserUsed, language, content, length);
+  INSERT INTO Post VALUES(id, imageFile, creationDate, locationIP, browserUsed, language, content, length, countryId);
   INSERT INTO HAS_CREATOR VALUES(id Post, personId Person, creationDate);
   INSERT INTO CONTAINER_OF VALUES(forumId Forum, id Post, creationDate);
-  INSERT INTO MESG_LOCATED_IN VALUES(id Post, countryId);
 
   tmp = {tagIds};    
   tmp = SELECT v FROM tmp:v

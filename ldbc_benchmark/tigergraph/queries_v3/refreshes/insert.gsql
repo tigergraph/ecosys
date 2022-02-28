@@ -7,9 +7,9 @@ CREATE LOADING JOB insert_vertex FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Post;
   // load vertex
   LOAD file_Comment 
-    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5) USING separator="|";
+    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5, _) USING separator="|";
   LOAD file_Post
-    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7) USING separator="|";
+    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7, _) USING separator="|";
   LOAD file_Forum
     TO VERTEX Forum VALUES ($1, $2, $0) USING separator="|";
   LOAD file_Person
@@ -58,9 +58,9 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   LOAD file_Forum_hasTag_Tag
     TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO VERTEX Comment VALUES ($1, _, _, _, _, _, $2) USING separator="|";
   LOAD file_Post_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN VALUES ($1 Post, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO VERTEX Post VALUES ($1, _, _, _, _, _, _, _, $2) USING separator="|";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
@@ -86,9 +86,9 @@ CREATE LOADING JOB insert_vertex_with_header FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Post;
   // load vertex
   LOAD file_Comment 
-    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5) USING header="true", separator="|";
+    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5, _) USING header="true", separator="|";
   LOAD file_Post
-    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7) USING header="true", separator="|";
+    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7, _) USING header="true", separator="|";
   LOAD file_Forum
     TO VERTEX Forum VALUES ($1, $2, $0) USING header="true", separator="|";
   LOAD file_Person
@@ -136,9 +136,9 @@ CREATE LOADING JOB insert_edge_with_header FOR GRAPH ldbc_snb {
   LOAD file_Forum_hasTag_Tag
     TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO VERTEX Comment VALUES ($1, _, _, _, _, _, $2) USING header="true", separator="|";
   LOAD file_Post_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN VALUES ($1 Post, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO VERTEX Post VALUES ($1, _, _, _, _, _, _, _, $2) USING header="true", separator="|";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person

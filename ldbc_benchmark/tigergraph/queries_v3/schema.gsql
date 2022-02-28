@@ -1,11 +1,8 @@
 DROP ALL
-# create vertex: attributes is based on metadata of the data files 
-# Compared to LDBC doc:
-#   Forum vertex does not have type.
-#   For Comment, Post, Forum, Person, the order of attribtues is different.
 ## Message
-CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+# IS_Located_In Country is included as an attribtue 
+CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT, countryId UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT, countryId UINT) WITH primary_id_as_attribute="TRUE"
 ## organisation
 CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX University (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
@@ -28,7 +25,6 @@ CREATE DIRECTED EDGE HAS_MODERATOR (FROM Forum, TO Person, creationDate DATETIME
 CREATE DIRECTED EDGE HAS_TAG (FROM Comment|Post|Forum, TO Tag, creationDate DATETIME) WITH REVERSE_EDGE="HAS_TAG_REVERSE"
 CREATE DIRECTED EDGE HAS_TYPE (FROM Tag, TO TagClass) WITH REVERSE_EDGE="HAS_TYPE_REVERSE"
 CREATE DIRECTED EDGE IS_LOCATED_IN ( FROM Company, TO Country | FROM Person, TO City | FROM University, TO City) WITH REVERSE_EDGE="IS_LOCATED_IN_REVERSE"
-CREATE DIRECTED EDGE MESG_LOCATED_IN (FROM Comment, TO Country | FROM Post, TO Country )
 CREATE DIRECTED EDGE IS_PART_OF (FROM City, TO Country | FROM Country, TO Continent) WITH REVERSE_EDGE="IS_PART_OF_REVERSE"
 CREATE DIRECTED EDGE IS_SUBCLASS_OF (FROM TagClass, TO TagClass) WITH REVERSE_EDGE="IS_SUBCLASS_OF_REVERSE"
 CREATE UNDIRECTED EDGE KNOWS (FROM Person, TO Person, creationDate DATETIME)
@@ -40,3 +36,13 @@ CREATE DIRECTED EDGE WORK_AT (FROM Person, TO Company, workFrom INT, creationDat
 CREATE UNDIRECTED EDGE WEIGHT_DOUBLE (FROM Person, TO Person, weight DOUBLE)
 
 CREATE GRAPH ldbc_snb (*)
+
+CREATE GLOBAL SCHEMA_CHANGE JOB addIndex {
+  ALTER VERTEX Country ADD INDEX country_name ON (name);
+  ALTER VERTEX Company ADD INDEX company_name ON (name);
+  ALTER VERTEX University ADD INDEX university_name ON (name);
+  ALTER VERTEX Tag ADD INDEX tag_name ON (name);
+  ALTER VERTEX TagClass ADD INDEX tagclass_name ON (name);
+  ALTER VERTEX Post ADD INDEX post_country ON (countryId);
+  ALTER VERTEX Comment ADD INDEX comment_country ON (countryId);
+}
