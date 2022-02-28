@@ -16,7 +16,7 @@ CREATE OR REPLACE QUERY ins6(
   INSERT INTO Post VALUES(id, imageFile, creationDate, locationIP, browserUsed, language, content, length);
   INSERT INTO HAS_CREATOR VALUES(id Post, personId Person, creationDate);
   INSERT INTO CONTAINER_OF VALUES(forumId Forum, id Post, creationDate);
-  INSERT INTO IS_LOCATED_IN VALUES(id Post, countryId);
+  INSERT INTO MESG_LOCATED_IN VALUES(id Post, countryId);
 
   tmp = {tagIds};    
   tmp = SELECT v FROM tmp:v

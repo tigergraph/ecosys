@@ -11,26 +11,30 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1
   S = { personId };
   P = SELECT p
     FROM S:s -(KNOWS*1..2)- Person:p
-    WHERE p != personId
-    ACCUM p.@selected += true;
+    WHERE p != personId;
 
   PersonCity = SELECT c
     FROM Country:cn -(<IS_PART_OF)- City:c
-    WHERE cn.name != country1 AND cn.name != country2;
+    WHERE cn.name != country1 AND cn.name != country2
+    ACCUM c.@selected += true;
 
-  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- PersonCity;
-  
+  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- City:c
+    WHERE c.@selected;
+
+  M = SELECT m
+    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m;
+    WHERE m.creationDate >= startDate AND m.creationDate < endDate
+
   Messages = SELECT m 
-    FROM Country:cn -(<IS_LOCATED_IN)- (Post|Comment):m
-    WHERE (cn.name == country1 OR cn.name == country2)
-      AND m.creationDate >= startDate AND m.creationDate < endDate 
+    FROM  M:m -(MESG_LOCATED_IN>)- Country:cn
+    WHERE (cn.name == country1 OR cn.name == country2) 
     ACCUM 
       m.@selected += (cn.name == country1),
-      m.@selected2 += (cn.name == country2);
+      m.@selected2 += (cn.name == country2)
+    HAVING m.@selected OR m.@selected2;
 
   P = SELECT p
-    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m
-    WHERE m.@selected OR m.@selected2
+    FROM M:m-(HAS_CREATOR>)-Person:p;
     ACCUM 
       IF m.@selected THEN p.@xCount += 1 END,
       IF m.@selected2 THEN p.@yCount += 1 END

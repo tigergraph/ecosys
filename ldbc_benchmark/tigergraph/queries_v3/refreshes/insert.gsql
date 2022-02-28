@@ -58,9 +58,9 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   LOAD file_Forum_hasTag_Tag
     TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Comment, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Post_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Post, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post, $2 Country) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
@@ -136,9 +136,9 @@ CREATE LOADING JOB insert_edge_with_header FOR GRAPH ldbc_snb {
   LOAD file_Forum_hasTag_Tag
     TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Comment, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Post_isLocatedIn_Country
-    TO EDGE IS_LOCATED_IN VALUES ($1 Post, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post, $2 Country) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
