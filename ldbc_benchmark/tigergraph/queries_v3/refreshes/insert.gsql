@@ -38,29 +38,30 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Post_hasTag_Tag;
   DEFINE FILENAME file_Post_isLocatedIn_Country;
 
-  // load edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Post, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST VALUES ($1, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR VALUES ($1, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Comment, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Post, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_isLocatedIn_Country
     TO VERTEX Comment VALUES ($1, _, _, _, _, _, $2) USING separator="|";
   LOAD file_Post_isLocatedIn_Country
     TO VERTEX Post VALUES ($1, _, _, _, _, _, _, _, $2) USING separator="|";
+  
+  // load edge
+  LOAD file_Forum_containerOf_Post
+    TO EDGE CONTAINER_OF VALUES ($1, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Post_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Post, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_hasInterest_Tag
+    TO EDGE HAS_INTEREST VALUES ($1, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasMember_Person
+    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasModerator_Person
+    TO EDGE HAS_MODERATOR VALUES ($1, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Comment, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Post_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Post, $2) USING separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Forum, $2) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
@@ -70,13 +71,13 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   LOAD file_Person_likes_Post
     TO EDGE LIKES VALUES ($1, $2 Post, $0) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF VALUES ($1, $2 Comment, $0) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE REPLY_OF VALUES ($1, $2 Comment) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($1, $2 Post, $0) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE REPLY_OF VALUES ($1, $2 Post) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT VALUES ($1, $2, $3, $0) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE STUDY_AT VALUES ($1, $2, $3) USING separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT VALUES ($1, $2, $3, $0) USING separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE WORK_AT VALUES ($1, $2, $3) USING separator="|", VERTEX_MUST_EXIST="true";
 }
 
 CREATE LOADING JOB insert_vertex_with_header FOR GRAPH ldbc_snb {
