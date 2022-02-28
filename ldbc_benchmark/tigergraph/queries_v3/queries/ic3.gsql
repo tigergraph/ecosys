@@ -22,8 +22,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1
     WHERE c.@selected;
 
   M = SELECT m
-    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m;
-    WHERE m.creationDate >= startDate AND m.creationDate < endDate
+    FROM P:p -(<HAS_CREATOR)- (Post|Comment):m
+    WHERE m.creationDate >= startDate AND m.creationDate < endDate;
 
   Messages = SELECT m 
     FROM  M:m -(MESG_LOCATED_IN>)- Country:cn
@@ -34,7 +34,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1
     HAVING m.@selected OR m.@selected2;
 
   P = SELECT p
-    FROM M:m-(HAS_CREATOR>)-Person:p;
+    FROM M:m-(HAS_CREATOR>)-Person:p
     ACCUM 
       IF m.@selected THEN p.@xCount += 1 END,
       IF m.@selected2 THEN p.@yCount += 1 END
