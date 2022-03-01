@@ -7,7 +7,7 @@ CREATE OR REPLACE QUERY ins4(
     DATETIME creationDate,
     SET<VERTEX<Tag>> tagIds) {
   INSERT INTO Forum VALUES(id, forumTitle, creationDate);
-  INSERT INTO HAS_MODERATOR VALUES(id, personId Person, creationDate);
+  INSERT INTO HAS_MODERATOR VALUES(id, personId Person);
   tmp = {tagIds};    
   tmp = SELECT v FROM tmp:v
     ACCUM INSERT INTO HAS_INTEREST (FROM, TO) VALUES(id, v);

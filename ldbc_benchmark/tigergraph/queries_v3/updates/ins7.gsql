@@ -13,7 +13,7 @@ CREATE OR REPLACE QUERY ins7(
     INT replyToCommentId,
     SET<VERTEX<Tag>> tagIds) {
   INSERT INTO Comment VALUES(id, creationDate, locationIP, browserUsed, content, length);
-  INSERT INTO HAS_CREATOR VALUES(id Comment, personId Person, creationDate);
+  INSERT INTO HAS_CREATOR VALUES(id Comment, personId Person);
   INSERT INTO MESG_LOCATED_IN VALUES(id Comment, countryId);
   IF replyToPostId > 0 THEN 
     INSERT INTO REPLY_OF (FROM, TO) VALUES(id, replyToPostId Post);
