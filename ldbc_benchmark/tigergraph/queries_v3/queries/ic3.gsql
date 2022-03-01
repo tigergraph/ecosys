@@ -4,7 +4,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
   HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@result;
   SumAccum<UINT> @xCount, @yCount;
-  MaxAccum<UINT> @@countryId1, @@countryId2;
   OrAccum<BOOL> @selected, @selected2;
   datetime endDate;
   endDate = datetime_add(startDate, INTERVAL duration DAY);
@@ -14,27 +13,31 @@ CREATE OR REPLACE DISTRIBUTED QUERY ic3(VERTEX<Person> personId, STRING country1
     FROM S:s -(KNOWS*1..2)- Person:p
     WHERE p != personId;
 
-  country1 = SELECT cn
+  PersonCity = SELECT c
     FROM Country:cn -(<IS_PART_OF)- City:c
-    WHERE cn.name == country1 
-    ACCUM c.@selected += true 
-    POST-ACCUM @@countryId1 += cn.id;
-  
-  country1 = SELECT cn
-    FROM Country:cn -(<IS_PART_OF)- City:c
-    WHERE cn.name == country2 
-    ACCUM c.@selected += true 
-    POST-ACCUM @@countryId2 += cn.id;
-    
-  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- City:c WHERE NOT c.@selected;
+    WHERE cn.name != country1 AND cn.name != country2
+    ACCUM c.@selected += true;
 
-  M = SELECT p
+  P = SELECT p FROM P:p -(IS_LOCATED_IN>)- City:c
+    WHERE c.@selected;
+
+  M = SELECT m
     FROM P:p -(<HAS_CREATOR)- (Post|Comment):m
-    WHERE m.creationDate >= startDate AND m.creationDate < endDate
-      AND (m.countryId == @@countryId1 OR m.countryId == @@countryId2)
+    WHERE m.creationDate >= startDate AND m.creationDate < endDate;
+
+  Messages = SELECT m 
+    FROM  M:m -(MESG_LOCATED_IN>)- Country:cn
+    WHERE (cn.name == country1 OR cn.name == country2) 
     ACCUM 
-      IF m.countryId == @@countryId1 THEN p.@xCount += 1 END, 
-      IF m.countryId == @@countryId2 THEN p.@yCount += 1 END
+      m.@selected += (cn.name == country1),
+      m.@selected2 += (cn.name == country2)
+    HAVING m.@selected OR m.@selected2;
+
+  P = SELECT p
+    FROM M:m-(HAS_CREATOR>)-Person:p
+    ACCUM 
+      IF m.@selected THEN p.@xCount += 1 END,
+      IF m.@selected2 THEN p.@yCount += 1 END
     HAVING p.@xCount > 0 AND p.@yCount > 0;   
 
   P = SELECT p 
