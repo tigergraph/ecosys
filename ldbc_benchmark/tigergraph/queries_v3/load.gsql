@@ -71,30 +71,29 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   LOAD file_Person
     TO VERTEX Person VALUES ($1, $2, $3, $4, $5, $0, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING separator="|";
 
+  // load dynamic edge
+  LOAD file_Forum_containerOf_Post
+    TO EDGE CONTAINER_OF VALUES ($1, $2, $0) USING separator="|";
+  LOAD file_Comment_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2, $0) USING separator="|";
+  LOAD file_Post_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Post, $2, $0) USING separator="|";
+  LOAD file_Person_hasInterest_Tag
+    TO EDGE HAS_INTEREST VALUES ($1, $2, $0) USING separator="|";
+  LOAD file_Forum_hasMember_Person
+    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING separator="|";
+  LOAD file_Forum_hasModerator_Person
+    TO EDGE HAS_MODERATOR VALUES ($1, $2, $0) USING separator="|";
+  LOAD file_Comment_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Comment, $2, $0) USING separator="|";
+  LOAD file_Post_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Post, $2, $0) USING separator="|";
+  LOAD file_Forum_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING separator="|";
   LOAD file_Comment_isLocatedIn_Country
     TO VERTEX Comment VALUES ($1, _, _, _, _, _, $2) USING separator="|";
   LOAD file_Post_isLocatedIn_Country
     TO VERTEX Post VALUES ($1, _, _, _, _, _, _, _, $2) USING separator="|";
-  
-  // load dynamic edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2) USING separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2) USING separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Post, $2) USING separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST VALUES ($1, $2) USING separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR VALUES ($1, $2) USING separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Comment, $2) USING separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Post, $2) USING separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Forum, $2) USING separator="|";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING separator="|";
   LOAD file_Person_knows_Person
@@ -104,13 +103,13 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   LOAD file_Person_likes_Post
     TO EDGE LIKES VALUES ($1, $2 Post, $0) USING separator="|";
   LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF VALUES ($1, $2 Comment) USING separator="|";
+    TO EDGE REPLY_OF VALUES ($1, $2 Comment, $0) USING separator="|";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($1, $2 Post) USING separator="|";
+    TO EDGE REPLY_OF VALUES ($1, $2 Post, $0) USING separator="|";
   LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT VALUES ($1, $2, $3) USING separator="|";
+    TO EDGE STUDY_AT VALUES ($1, $2, $3, $0) USING separator="|";
   LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT VALUES ($1, $2, $3) USING separator="|";
+    TO EDGE WORK_AT VALUES ($1, $2, $3, $0) USING separator="|";
 }
 
 CREATE LOADING JOB load_static_with_header FOR GRAPH ldbc_snb {
@@ -184,30 +183,29 @@ CREATE LOADING JOB load_dynamic_with_header FOR GRAPH ldbc_snb {
   LOAD file_Person
     TO VERTEX Person VALUES ($1, $2, $3, $4, $5, $0, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
 
+  // load dynamic edge
+  LOAD file_Forum_containerOf_Post
+    TO EDGE CONTAINER_OF VALUES ($1, $2, $0) USING header="true", separator="|";
+  LOAD file_Comment_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2, $0) USING header="true", separator="|";
+  LOAD file_Post_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Post, $2, $0) USING header="true", separator="|";
+  LOAD file_Person_hasInterest_Tag
+    TO EDGE HAS_INTEREST VALUES ($1, $2, $0) USING header="true", separator="|";
+  LOAD file_Forum_hasMember_Person
+    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING header="true", separator="|";
+  LOAD file_Forum_hasModerator_Person
+    TO EDGE HAS_MODERATOR VALUES ($1, $2, $0) USING header="true", separator="|";
+  LOAD file_Comment_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Comment, $2, $0) USING header="true", separator="|";
+  LOAD file_Post_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Post, $2, $0) USING header="true", separator="|";
+  LOAD file_Forum_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Forum, $2, $0) USING header="true", separator="|";
   LOAD file_Comment_isLocatedIn_Country
     TO VERTEX Comment VALUES ($1, _, _, _, _, _, $2) USING header="true", separator="|";
   LOAD file_Post_isLocatedIn_Country
     TO VERTEX Post VALUES ($1, _, _, _, _, _, _, _, $2) USING header="true", separator="|";
-  
-  // load dynamic edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER VALUES ($1, $2, $0) USING header="true", separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($1 Forum, $2) USING header="true", separator="|";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="true", separator="|";
   LOAD file_Person_knows_Person
@@ -217,13 +215,13 @@ CREATE LOADING JOB load_dynamic_with_header FOR GRAPH ldbc_snb {
   LOAD file_Person_likes_Post
     TO EDGE LIKES VALUES ($1, $2 Post, $0) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF VALUES ($1, $2 Comment) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($1, $2 Comment, $0) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($1, $2 Post) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($1, $2 Post, $0) USING header="true", separator="|";
   LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT VALUES ($1, $2, $3) USING header="true", separator="|";
+    TO EDGE STUDY_AT VALUES ($1, $2, $3, $0) USING header="true", separator="|";
   LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT VALUES ($1, $2, $3) USING header="true", separator="|";
+    TO EDGE WORK_AT VALUES ($1, $2, $3, $0) USING header="true", separator="|";
 }
 
 CREATE LOADING JOB load_dynamic_interactive FOR GRAPH ldbc_snb {
@@ -261,31 +259,30 @@ CREATE LOADING JOB load_dynamic_interactive FOR GRAPH ldbc_snb {
     TO VERTEX Forum VALUES ($0, $1, $2) USING header="true", separator="|";
   LOAD file_Person
     TO VERTEX Person VALUES ($0, $1, $2, $3, $4, $5, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="true", separator="|";
-  
+
+  // load dynamic edge
+  LOAD file_Forum_containerOf_Post
+    TO EDGE CONTAINER_OF VALUES ($0, $1, _) USING header="true", separator="|";
+  LOAD file_Comment_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($0 Comment, $1, _) USING header="true", separator="|";
+  LOAD file_Post_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($0 Post, $1, _) USING header="true", separator="|";
+  LOAD file_Person_hasInterest_Tag
+    TO EDGE HAS_INTEREST VALUES ($0, $1, _) USING header="true", separator="|";
+  LOAD file_Forum_hasMember_Person
+    TO EDGE HAS_MEMBER VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD file_Forum_hasModerator_Person
+    TO EDGE HAS_MODERATOR VALUES ($0, $1, _) USING header="true", separator="|";
+  LOAD file_Comment_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($0 Comment, $1, _) USING header="true", separator="|";
+  LOAD file_Post_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($0 Post, $1, _) USING header="true", separator="|";
+  LOAD file_Forum_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($0 Forum, $1, _) USING header="true", separator="|";
   LOAD file_Comment_isLocatedIn_Country
     TO VERTEX Comment VALUES ($0, _, _, _, _, _, $1) USING header="true", separator="|";
   LOAD file_Post_isLocatedIn_Country
     TO VERTEX Post VALUES ($0, _, _, _, _, _, _, _, $1) USING header="true", separator="|";
-  
-  // load dynamic edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($0, $1) USING header="true", separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($0 Comment, $1) USING header="true", separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR VALUES ($0 Post, $1) USING header="true", separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST VALUES ($0, $1) USING header="true", separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER VALUES ($0, $1, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR VALUES ($0, $1) USING header="true", separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($0 Comment, $1) USING header="true", separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($0 Post, $1) USING header="true", separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG VALUES ($0 Forum, $1) USING header="true", separator="|";
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($0 Person, $1 City) USING header="true", separator="|";
   LOAD file_Person_knows_Person
@@ -295,11 +292,11 @@ CREATE LOADING JOB load_dynamic_interactive FOR GRAPH ldbc_snb {
   LOAD file_Person_likes_Post
     TO EDGE LIKES VALUES ($0, $1 Post, $2) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF VALUES ($0, $1 Comment) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($0, $1 Comment, _) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($0, $1 Post) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($0, $1 Post, _) USING header="true", separator="|";
   LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT VALUES ($0, $1, $2) USING header="true", separator="|";
+    TO EDGE STUDY_AT VALUES ($0, $1, $2, _) USING header="true", separator="|";
   LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT VALUES ($0, $1, $2) USING header="true", separator="|";
+    TO EDGE WORK_AT VALUES ($0, $1, $2, _) USING header="true", separator="|";
 }
