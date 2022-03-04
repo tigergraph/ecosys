@@ -41,7 +41,6 @@ public class Builtins {
     }
 
     /**
-     * Running on TigerGraph V3.4
      * Specify ip address and port of the TigerGraph server.
      * Please use 'https' instead once ssl is enabled.
      */

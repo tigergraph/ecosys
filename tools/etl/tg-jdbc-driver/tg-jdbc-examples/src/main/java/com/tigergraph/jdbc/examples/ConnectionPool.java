@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 /**
- * Running on TigerGraph V3.4
  * Example code to demonstrate how to use it with a connection pool
  * https://github.com/brettwooldridge/HikariCP
  * data socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
