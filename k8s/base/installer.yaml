@@ -14,7 +14,7 @@ spec:
     spec:
       initContainers:
       - name: init-tigergraph
-        image: alpine:latest
+        image: alpine:3.14
         env:
           - name: SERVICE_NAME
             valueFrom:
@@ -52,7 +52,7 @@ spec:
           sleep 15;
       containers:
       - name: cluster-installer
-        image: alpine:latest
+        image: docker.tigergraph.com/tigergraph-k8s-installer:3.4.0
         env:
         - name: LICENSE
           valueFrom:
@@ -84,12 +84,12 @@ spec:
         - "-c"
         - |
           set -e;
-          apk update && apk add sshpass openssh jq;
           export SSHPASS='tigergraph';
           sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-0.${SERVICE_NAME}.${NAMESPACE} "
-            if [[ \$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1) ]]; then
+            if [[ ! -f /home/tigergraph/tigergraph/data/installation_flag ]] && [[ \$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1) ]]; then
               echo 'found lagacy data, skip installation'
             else
+              touch /home/tigergraph/tigergraph/data/installation_flag;
               export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH;
               cp /tmp/init_tg_cfg /tmp/tg_cfg;
               sed -i 's/\=/\: /g' /tmp/tg_cfg;
@@ -104,7 +104,8 @@ spec:
               gadmin config init -i /tmp/tg_cfg --file /tmp/tg.cfg --ha ${HA};
               cp --remove-destination /tmp/tg.cfg ~/.tg.cfg;
               gadmin init cluster -y --skip-stop;
+              rm /home/tigergraph/tigergraph/data/installation_flag;
             fi
           ";
       restartPolicy: OnFailure
-  backoffLimit: 0
+  backoffLimit: 6

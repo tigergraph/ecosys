@@ -23,6 +23,7 @@ USAGE:
   --cpu:           set Request vCPU number, default as 8
   --mem :           set Request Memory size, default as 16
   --prefix :        set Pod name prefix-${index}
+  --guiserver-freq: set frequency for updating status of gui servers, in (escaped) cronjob format
 
 # Examples when working in eks:
 ## Generate the manifest for deployment
@@ -34,6 +35,7 @@ USAGE:
 ## List TG cluster:
   ./tg eks list -n tigergraph
 EOF
+exit 0
 }
 
 # parse all arguments
@@ -72,6 +74,10 @@ function set_opts () {
       --mem)
         shift
         TG_MEM=$2
+        ;;
+      --guiserver-freq)
+        shift
+        GUISERVER_FREQ=$2
         ;;
       -v|--version)
         shift
@@ -156,12 +162,23 @@ function update_mem () {
    fi
 }
 
-# update Tigergraph PV size
+# update Tigergraph prefix
 function update_prefix () {
    if [ "${TG_PREFIX}" != "tigergraph" ]; then
       sed "${sedi[@]}" -e "s/pod.prefix: tigergraph/pod.prefix: ${TG_PREFIX}/g" $MANIFEST
       sed "${sedi[@]}" -e "s/app: tigergraph/app: ${TG_PREFIX}/g" $MANIFEST
+      sed "${sedi[@]}" -e "s/app=tigergraph/app=${TG_PREFIX}/g" $MANIFEST
+      sed "${sedi[@]}" -e "s/tigergraph-\[0-9\]/${TG_PREFIX}-\[0-9\]/g" $MANIFEST
+      sed "${sedi[@]}" -e "s/tigergraph-0/${TG_PREFIX}-0/g" $MANIFEST
+      sed "${sedi[@]}" -e "s/\"tigergraph-\"/\"${TG_PREFIX}-\"/g" $MANIFEST
       sed "${sedi[@]}" -e "/StatefulSet/{n;n;n;n;s/tigergraph/${TG_PREFIX}/;}" $MANIFEST
+   fi
+}
+
+# update guiserver update frequency
+function update_guiserver_freq () {
+   if [ "${GUISERVER_FREQ}" != "\*\/1 \* \* \* \*" ]; then
+      sed "${sedi[@]}" -e "s/\*\/1 \* \* \* \*/${GUISERVER_FREQ}/g" $MANIFEST
    fi
 }
 
@@ -177,19 +194,28 @@ function init_manifest () {
   update_cpu
   update_mem
   update_prefix
+  update_guiserver_freq
 }
 
 # start Tigergraph cluster 
 function tg_start () {
   if [ -f "$MANIFEST" ]; then
     kubectl -n ${NAMESPACE} apply -f $MANIFEST
+  else
+    echo "Deployment manifest not found at $MANIFEST";
+    exit 1
   fi
 }
 # clean up all resouces for Tigergraph cluster.
 # It will also clean up all data, be careful to use!!
 function tg_cleanup () {
-  kubectl delete -f $MANIFEST || : 
-  kubectl -n ${NAMESPACE} delete pvc -l app=tigergraph || :
+  if [ -f "$MANIFEST" ]; then
+    kubectl delete -f $MANIFEST || :;
+    kubectl -n ${NAMESPACE} delete pvc -l app=${TG_PREFIX} || :
+  else
+    echo "Deployment manifest not found at $MANIFEST";
+    exit 1
+  fi
 }
 # main entry
 function main () {
@@ -202,11 +228,12 @@ function main () {
     TG_CPU="8"
     TG_MEM="16"
     TG_PREFIX="tigergraph"
+    GUISERVER_FREQ="\*\/1 \* \* \* \*"
     TG_LICENSE=""
     CWD=$(cd $(dirname $0) && pwd)
-    MANIFEST="${CWD}/deploy/tigergraph-${K8S_PROVIDER}.yaml"
     [ -d ${CWD}/deploy ] || mkdir -p ${CWD}/deploy
-    set_opts $@
+    set_opts "$@"
+    MANIFEST="${CWD}/deploy/tigergraph-${K8S_PROVIDER}-${NAMESPACE}.yaml"
     case $MODE in
         kustomize)
             init_manifest
@@ -226,4 +253,4 @@ function main () {
     esac
 }
 
-main $@
+main "$@"
