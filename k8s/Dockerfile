@@ -11,7 +11,6 @@ RUN apt-get -qq update && apt-get install -y --no-install-recommends \
     # Set up default account
     useradd -ms /bin/bash tigergraph && \
     mkdir /var/run/sshd && \
-    echo 'root:root' | chpasswd && \
     echo 'tigergraph:tigergraph' | chpasswd && \
     sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \

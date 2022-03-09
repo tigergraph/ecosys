@@ -10,10 +10,10 @@ generatorOptions:
 bases:
 - ../base
 
-# revise below to update global namespace 
+# revise blow to update global namespace 
 namespace: default
 
-# uncomment and revise below to update images
+# uncomment and revise blow to update images
 #images:
 #- name: docker.tigergraph.com/tigergraph-k8s
 #  newName: aws_account_id.dkr.ecr.us-west-2.amazonaws.com/tigergraph

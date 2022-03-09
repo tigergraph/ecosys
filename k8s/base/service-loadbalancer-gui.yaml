@@ -3,16 +3,14 @@ kind: Service
 metadata:
   labels:
     app: tigergraph
-  name: tg-external-service
+  name: tg-gui-service
   namespace: default
 spec:
   type: LoadBalancer
   selector:
     app: tigergraph
+    guiserver: running
   ports:
-  - port: 9000
-    name: rest
-    targetPort: 9000
   - port: 14240
     name: graphstudio
     targetPort: 14240

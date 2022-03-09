@@ -3,7 +3,12 @@ kind: Kustomization
 
 resources:
   - service-headless.yaml
-  - service-loadbalancer.yaml
+  - service-loadbalancer-rest.yaml
+  - service-loadbalancer-gui.yaml
+  - role.yaml
+  - role-binding.yaml
+  - service-account.yaml
   - statefulset.yaml
   - configmap.yaml
   - installer.yaml
+  - guiserver-labeler.yaml

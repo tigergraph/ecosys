@@ -38,8 +38,8 @@ spec:
               configMapKeyRef:
                 name: env-config
                 key: cluster_size
-        image: docker.tigergraph.com/tigergraph-k8s:latest
-        imagePullPolicy: IfNotPresent
+        image: docker.tigergraph.com/tigergraph-k8s:3.5.0
+        imagePullPolicy: Always
         name: tigergraph
         ports:
         - containerPort: 9000
@@ -78,7 +78,7 @@ spec:
                   else
                     sudo chown -R tigergraph:tigergraph /home/tigergraph/tigergraph/data;
                     tg_cfg=$(find /home/tigergraph/tigergraph/app/ -name .tg.cfg|head -n 1)
-                    ln -sf $tg_cfg /home/tigergraph/.tg.cfg
+                    ln -sf $tg_cfg .tg.cfg
                   fi
                 ) > /tmp/init.log 2>&1 &
                 disown -a
