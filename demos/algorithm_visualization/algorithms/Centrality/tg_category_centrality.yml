@@ -1,0 +1,2 @@
+---
+  description: Centrality algorithms calculate the 'importance' of each vertex given a particular metric. These metrics generally revolve around density of a vertex's connectivity or the importance of that vertex to the general connectivity of the entire graph. Some widely used examples include Betweenness Centrality, which produces scores for vertices based on the number of shortest paths that they appear in and Closeness Centrality, which measures importance inversely proportional to how 'far' the vertex is away from every other vertex.

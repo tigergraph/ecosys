@@ -1,0 +1,108 @@
+CREATE QUERY tg_cosine_nbor_ap_batch_vis(STRING vertex_type, STRING edge_type, STRING edge_attribute, INT top_k=3, BOOL print_accum = true, STRING file_path, STRING similarity_edge="similarity", INT num_of_batches = 1, INT v_display_size=10) {
+  /*
+    This query calculates the Cosine Similarity of a given vertex and every other vertex.
+      Cosine Similarity = A \dot B/ ||A|| \dot ||B||/
+
+    Parameters :
+      vertex_type : start vertex types
+      edge_type   : edge type to traverse
+      edge_attribute  : name of the attribute on the edge_type
+      top_k        : # top scores to report
+      print_accum : print JSON output
+      file_path   : file to write CSV output to
+      similarity_edge : edge type for storing vertex-vertex similarity scores
+      num_of_batches  : how many batches to split the query into (trade off parallelism for memory optimization)
+      v_display_size: number of vertices to display (with its two-hop neighborhood)
+  */
+  TYPEDEF TUPLE<VERTEX src, VERTEX tgt, FLOAT val> vis_tup;
+  TYPEDEF TUPLE<VERTEX ver, FLOAT val> res_tup; # storing results in the heap
+  MapAccum<VERTEX, FLOAT> @numerator_map, @@norm_map; # weight value from edge, normalized value
+  HeapAccum<res_tup>(top_k, val desc) @heap; # stores topK similarity results
+  OrAccum @show;                          # Mark if a vertex is displayed.
+  SumAccum<INT> @color_id;                # color for vertices to display
+  SetAccum<EDGE> @@edge_set;             # list of display edges, if display is needed
+  FILE f (file_path);
+
+# get numerator value and normalized value from edge attribute
+  start = {vertex_type.*};
+  subjects = SELECT t
+             FROM start:s -(Cited:e)-> :t
+             WHERE e.getAttr(edge_attribute, "FLOAT") > 0
+             ACCUM t.@numerator_map += (s -> e.getAttr(edge_attribute, "FLOAT")),
+                   @@norm_map += (s -> pow(e.getAttr(edge_attribute, "FLOAT"), 2));
+
+# compute the cosine simliarity, broken up into 2 parts 
+  FOREACH i IN RANGE[0, num_of_batches-1] DO
+      neighbours = SELECT t
+                   FROM subjects:s -(Cited_by:e)-> :t
+                   WHERE e.getAttr(edge_attribute, "FLOAT") > 0
+                   AND getvid(t) % num_of_batches == i
+                   ACCUM
+                       FOREACH (k,v) IN s.@numerator_map DO
+                           CASE WHEN getvid(k) != getvid(t) THEN # for testing purposes, using !=. Use > comparison operation normally
+                               t.@numerator_map += (k -> v * e.getAttr(edge_attribute, "FLOAT"))
+                           END
+                       END;
+
+# get final similarity value and store into heap
+    neighbours = SELECT t
+                 FROM neighbours:t
+                 POST-ACCUM
+                     FOREACH (ver, w) IN t.@numerator_map DO
+                         CASE WHEN ver != t THEN
+                             FLOAT divisor = sqrt(@@norm_map.get(t) * @@norm_map.get(ver)),
+                             CASE WHEN divisor == 0 THEN
+                                 CONTINUE
+                             END,
+                             FLOAT sim = w/divisor,
+                             t.@heap += res_tup(ver, sim)
+                         END
+                     END,
+                     t.@numerator_map.clear();
+  END;
+
+# output to file/JSON or insert edge
+  start = SELECT t 
+          FROM start:t
+          POST-ACCUM
+              FOREACH tup IN t.@heap DO
+                  CASE WHEN tup.val > 0 THEN
+                      IF file_path != "" THEN
+                          f.println(t, tup.ver, tup.val)
+                      END,
+                      IF similarity_edge != "" THEN
+                          INSERT INTO EDGE similarity_edge VALUES (t, tup.ver, tup.val)
+                      END
+                  END
+              END
+          ORDER BY getvid(t) ASC;
+  
+  //Demo Display
+  
+  HeapAccum<vis_tup>(v_display_size, val desc) @@vis_heap;
+  SetAccum<VERTEX> @@vis_start;
+  
+  start = SELECT t 
+          FROM start:t
+          POST-ACCUM
+              FOREACH tup IN t.@heap DO @@vis_heap += vis_tup (t, tup.ver, tup.val) end;
+  
+  
+  foreach tup in @@vis_heap DO
+  
+    @@vis_start += (tup.src, tup.tgt);
+    v_display = @@vis_start;
+  
+    v_display = SELECT s
+                FROM v_display:s-(edge_type:e)-:t
+                ACCUM @@edge_set+=e;
+  
+    v_display = SELECT s
+                FROM v_display:s-(similarity_edge:e)-:t
+                where s == tup.src and t == tup.tgt
+                ACCUM @@edge_set+=e;
+  end;
+  
+  PRINT @@edge_set;
+
+}

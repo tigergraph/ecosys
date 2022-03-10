@@ -1,0 +1,10 @@
+USE GRAPH netscience
+DROP QUERY ALL
+DROP JOB ALL
+DROP GRAPH netscience
+
+CREATE GRAPH netscience ()
+CREATE SCHEMA_CHANGE JOB schema_netscience FOR GRAPH netscience {
+    ADD VERTEX Scientist (PRIMARY_ID id STRING, ID STRING);
+    ADD UNDIRECTED EDGE Coauthorship (FROM Scientist, TO Scientist, weight FLOAT);
+}

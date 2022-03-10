@@ -1,0 +1,16 @@
+---
+# @           : this file
+# {x}         : the directory of file x
+# &x          : any file which matches pattern x
+# **         : any depth of arbitrary directories
+# *           : wildcard character
+# [x|y...|z]  : file/directory x, y, or z
+
+  algorithm:
+    name: Betweenness Centrality
+    filename: "tg_betweenness_cent.gsql"
+    sha_id: ed6ea869749977cc0f3df71225d7325fb81c9767
+    description: The Betweenness Centrality of a vertex is defined as the number of shortest paths that pass through this vertex, divided by the total number of shortest paths.
+    schema_constraints: If you want to write the results of this algorithm (FLOAT) back to the vertices, you must have a FLOAT attribute on the target vertex type.
+    version: lib3.0
+    include: true

@@ -1,0 +1,16 @@
+---
+# @           : this file
+# {x}         : the directory of file x
+# &x          : any file which matches pattern x
+# **         : any depth of arbitrary directories
+# *           : wildcard character
+# [x|y...|z]  : file/directory x, y, or z
+
+  algorithm:
+    name: Local Clustering Coefficient
+    filename: "tg_lcc.gsql"
+    sha_id: ed6ea869749977cc0f3df71225d7325fb81c9767
+    description: The Local Clustering Coefficient algorithm computes the local clustering coefficient of every vertex in a graph. The local clustering coefficient of a vertex (node) in a graph quantifies how close its neighbors are to being a complete graph, where every two distinct vertices are connected by an edge. It is obtained by dividing the number edges between a vertex’s neighbors by the number of edges that could possibly exist.
+    schema_constraints: This algorithm can optionally write the clustering coefficient (FLOAT) to each vertex, if the vertex has a FLOAT attribute.
+    version: lib3.0
+    include: true

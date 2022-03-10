@@ -1,0 +1,16 @@
+---
+# @           : this file
+# {x}         : the directory of file x
+# &x          : any file which matches pattern x
+# **         : any depth of arbitrary directories
+# *           : wildcard character
+# [x|y...|z]  : file/directory x, y, or z
+
+  algorithm:
+    name: Single Source Shortest Path (Weighted, Any Sign)
+    filename: "tg_shortest_ss_any_wt.gsql"
+    sha_id: ed6ea869749977cc0f3df71225d7325fb81c9767
+    description: Finding shortest paths in a graph with weighted edges is algorithmically harder than in an unweighted graph because even after you find a path to a vertex T, you cannot be certain that it is a shortest path. If edge weights are always positive, then you must keep trying until you have considered every in-edge to T. If edge weights can be negative, then it’s even harder. You must consider all possible paths. The shortest_path_any_wt query is an implementation of the Bellman-Ford algorithm. If there is more than one path with the same total weight, the algorithm returns one of them.
+    schema_constraints: This algorithm requires an INT, FLOAT, or DOUBLE weight attribute on the target edge types. This algorithm can also optionally write the result (INT, FLOAT, or DOUBLE) to an attribute of the respective type on each visited vertex.
+    version: lib3.0
+    include: false

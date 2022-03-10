@@ -1,0 +1,16 @@
+---
+# @           : this file
+# {x}         : the directory of file x
+# &x          : any file which matches pattern x
+# **         : any depth of arbitrary directories
+# *           : wildcard character
+# [x|y...|z]  : file/directory x, y, or z
+
+  algorithm:
+    name: Minimum Spanning Tree
+    filename: "tg_mst.gsql"
+    sha_id: ed6ea869749977cc0f3df71225d7325fb81c9767
+    description: Given an undirected and connected graph, a minimum spanning tree is a set of edges that can connect all the vertices in the graph with the minimal sum of edge weights. The library implements a parallel version of Prim’s algorithm.
+    schema_constraints: This algorithm requires an INT, FLOAT, or DOUBLE weight attribute on the target edge types. This algorithm can also optionally write the result (BOOL) to a BOOL attribute on the respective vertices included in the MST.
+    version: lib3.0
+    include: false

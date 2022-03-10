@@ -1,0 +1,201 @@
+CREATE QUERY tg_betweeness_cent_vis(STRING v_type, STRING e_type, STRING re_type,INT max_hops = 10,
+  INT top_k = 5, BOOL print_accum = True, STRING result_attr = "label",
+  STRING file_path = "", BOOL display_edges = TRUE, INT display_edges_num = 20){ 
+  
+  /* Compute Betweenness Centrality for each VERTEX. 
+  Use multi-sourse BFS.
+  Link of the paper: http://www.vldb.org/pvldb/vol8/p449-then.pdf
+  Parameters:
+  v_type: vertex types to traverse                 print_accum: print JSON output
+  e_type: edge types to traverse                   result_attr: INT attr to store results to
+  re_type: reverse edge type in directed graph, in undirected graph set re_type=e_type
+  max_hops: look only this far from each vertex    file_path: file to write CSV output to
+  top_k: report only this many top scores          display_edges: output edges for visualization
+   */ 
+   
+  TYPEDEF TUPLE<VERTEX Vertex_ID, FLOAT score> Vertex_Score; #tuple to store betweenness centrality score
+  HeapAccum<Vertex_Score>(top_k, score DESC) @@top_scores_heap; #heap to store top K score
+  SumAccum<INT> @@sum_curr_dist; #current distance
+  BitwiseOrAccum @bitwise_or_visit_next; #use bitwise instead of setAccum
+  BitwiseOrAccum @bitwise_or_seen;
+  BitwiseOrAccum @bitwise_or_visit; 
+  SumAccum<INT> @@sum_count = 1;#used to set unique ID
+  SumAccum<INT> @sum_id; #store the unique ID
+  SetAccum<INT> @@batch_set; #used to set unique ID
+  MapAccum<INT,INT> @@map; #used to set unique ID 
+  SumAccum<FLOAT> @sum_delta = 0;
+  MapAccum<INT,BitwiseOrAccum> @times_map;
+  MapAccum<INT,SumAccum<INT>> @sigma_map;
+    
+  INT empty=0;
+  FILE f (file_path);
+  INT num_vert;
+  INT batch_number;
+
+# Compute betweenness	
+  all = {v_type};
+  num_vert = all.size();
+  batch_number = num_vert/60;
+    
+  IF batch_number == 0 
+      THEN batch_number = 1;
+  END;
+    
+  #Calculate the sum of distance to other vertex for each vertex
+  FOREACH i IN RANGE[0, batch_number-1] DO
+      Current = SELECT s 
+                FROM all:s
+                WHERE getvid(s)%batch_number == i
+                POST-ACCUM @@map+=(getvid(s)->0),
+                           @@batch_set+=getvid(s);
+  
+      FOREACH ver in @@batch_set DO 
+          @@map += (ver->@@sum_count); @@sum_count += 1;
+      END; #set a unique ID for each vertex, ID from 1-63
+    
+      Start = SELECT s 
+              FROM Current:s 
+              POST-ACCUM 
+	            s.@sum_id=@@map.get(getvid(s));
+    
+      Start = SELECT s 
+              FROM Current:s
+              POST-ACCUM 
+	            s.@bitwise_or_seen = 1<<s.@sum_id,
+                    s.@bitwise_or_visit = s.@bitwise_or_seen,
+                    s.@sigma_map += (0->1),
+                    s.@times_map += (0->s.@bitwise_or_visit); # set initial seen and visit
+      @@batch_set.clear();
+      @@map.clear();
+      @@sum_count=0;
+      
+      WHILE (Start.size() > 0) LIMIT max_hops DO
+          @@sum_curr_dist+=1;
+    
+          Start = SELECT t 
+                  FROM Start:s -(re_type:e)-v_type:t
+                  WHERE s.@bitwise_or_visit&-t.@bitwise_or_seen-1>0 AND s!=t #use -t.@seen-1 to get the trverse of t.@seen
+                  ACCUM                               #updatevisitNext
+                      INT c = s.@bitwise_or_visit&-t.@bitwise_or_seen-1,
+                      IF c>0 THEN 
+		          t.@bitwise_or_visit_next+=c,
+                          t.@bitwise_or_seen+=c
+                      END,
+                      t.@sigma_map+=(@@sum_curr_dist->s.@sigma_map.get(@@sum_curr_dist-1)) #set sigma based on depth
+                  POST-ACCUM 
+	              t.@bitwise_or_visit=t.@bitwise_or_visit_next,
+                      t.@times_map+=(@@sum_curr_dist->t.@bitwise_or_visit),
+                      t.@bitwise_or_visit_next=0;
+      END;
+      @@sum_curr_dist+=-1;
+    
+      Start = SELECT s 
+              FROM all:s 
+              WHERE s.@sigma_map.get(@@sum_curr_dist)!=0;
+    
+      WHILE (Start.size()>0) LIMIT max_hops DO
+          @@sum_curr_dist+=-1;
+          Start = SELECT t 
+                  FROM Start:s -(re_type:e)-> v_type:t
+	          WHERE t.@times_map.get(@@sum_curr_dist)&s.@times_map.get(@@sum_curr_dist+1)!=0  
+	          ACCUM 
+                      FLOAT currValue=t.@sigma_map.get(@@sum_curr_dist)/(s.@sigma_map.get(@@sum_curr_dist+1)*(1+s.@sum_delta)),
+                      INT r=t.@times_map.get(@@sum_curr_dist)&s.@times_map.get(@@sum_curr_dist+1),
+                      INT plus=0,
+                      WHILE r>0 DO 
+                          r=r&(r-1),plus=plus+1 #count how many 1 in the number, same as setAccum,size()
+                      END,
+                      FLOAT value = currValue*plus/2.0,
+                      t.@sum_delta+=value;
+          Start = SELECT s 
+                  FROM all:s 
+                  WHERE s.@sigma_map.get(@@sum_curr_dist)!=0;	
+      END;
+      
+      @@sum_curr_dist=0;
+      Start = SELECT s 
+              FROM all:s 
+              POST-ACCUM 
+	            s.@bitwise_or_seen=0,
+                    s.@bitwise_or_visit=0,
+                    s.@sigma_map.clear(),
+                    s.@times_map.clear();
+  END;
+  
+  #Output
+  IF file_path != "" THEN
+      f.println("Vertex_ID", "Betweenness");
+  END;
+	
+  Start = SELECT s 
+          FROM all:s
+          POST-ACCUM 
+    
+	      IF print_accum THEN 
+                  @@top_scores_heap += Vertex_Score(s, s.@sum_delta) 
+              END,
+    
+	      IF file_path != "" THEN 
+                  f.println(s, s.@sum_delta) 
+              END;
+    
+
+// Demo Display
+  OrAccum @show;                          # Mark if a vertex is displayed.
+  SetAccum<VERTEX> @@vertex_set;         # list of colored vertices of display vertices, if display is needed
+  SetAccum<EDGE> @@edge_set;             # list of display edges, if display is needed
+  SumAccum<INT> @color_id;                # color for vertices to display
+  MapAccum<VERTEX, INT> @@verId2colorId_map;                # map from vertex ID to Color ID
+  FLOAT MAX_score;
+  SumAccum<FLOAT> @score_normalized;
+
+  MAX_score = @@top_scores_heap.top().score;
+  all = {v_type};
+  all = SELECT s FROM all:s
+          POST-ACCUM s.@score_normalized += s.@sum_delta/MAX_score,
+                     IF result_attr != "" THEN s.setAttr(result_attr, s.@score_normalized) END;  
+    
+FOREACH VerScore IN @@top_scores_heap DO
+   @@vertex_set+=VerScore.Vertex_ID;
+   @@verId2colorId_map+=(VerScore.Vertex_ID->1);
+END; 
+/*FOREACH VerScore IN @@bot_scores_heap DO
+   @@vertex_set+=VerScore.Vertex_ID;
+   @@verId2colorId_map+=(VerScore.Vertex_ID->2);
+END;*/
+
+v_display = {@@vertex_set};
+   
+PRINT v_display[v_display.@sum_delta, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+v_display = 
+     SELECT t FROM v_display:s-(e_type:e)-:t
+     //SAMPLE display_edges_frac% EDGE WHEN s.outdegree() >= 9
+     SAMPLE display_edges_num EDGE WHEN s.outdegree() >= 0
+     //WHERE t not in @@vertex_set
+     ACCUM
+           s.@color_id=@@verId2colorId_map.get(s),
+           @@edge_set += e;
+   
+PRINT v_display[v_display.@sum_delta, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+//v_display = {v_type};
+v_display = 
+     SELECT t FROM v_display:s-(e_type:e)-:t
+     //SAMPLE display_edges_frac% EDGE WHEN s.outdegree() >= 9
+     SAMPLE display_edges_num EDGE WHEN s.outdegree() >= 0
+     //WHERE t not in @@vertex_set
+     ACCUM
+           s.@color_id=@@verId2colorId_map.get(s),
+           @@edge_set += e;
+
+PRINT v_display[v_display.@sum_delta, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+IF print_accum THEN
+    PRINT @@top_scores_heap;
+    //PRINT @@bot_scores_heap;
+    IF display_edges THEN
+        PRINT @@edge_set;
+    END;
+END;
+}

@@ -1,0 +1,16 @@
+---
+# @           : this file
+# {x}         : the directory of file x
+# &x          : any file which matches pattern x
+# **         : any depth of arbitrary directories
+# *           : wildcard character
+# [x|y...|z]  : file/directory x, y, or z
+
+  algorithm:
+    name: Label Propagation
+    filename: "tg_label_prop.gsql"
+    sha_id: ed6ea869749977cc0f3df71225d7325fb81c9767
+    description: "Label Propagation is a heuristic method for determining communities. The idea is simple: If the plurality of your neighbors all bear the label X, then you should label yourself as also a member of X. The algorithm begins with each vertex having its own unique label. Then we iteratively update labels based on the neighbor influence described above. It is important that the order for updating the vertices be random. The algorithm is favored for its efficiency and simplicity, but it is not guaranteed to produce the same results every time."
+    schema_constraints: This algorithm can optionally write the ID (INT) of the community that each vertex belongs to, if the vertex has an INT attribute.
+    version: lib3.0
+    include: true

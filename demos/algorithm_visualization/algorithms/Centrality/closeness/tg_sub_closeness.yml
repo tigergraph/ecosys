@@ -1,0 +1,2 @@
+---
+  description: The closeness centrality score is calculated as the inverse of the average of distances from each vertex to every other vertex in the graph. TigerGraph offers an exact and approximate version. 

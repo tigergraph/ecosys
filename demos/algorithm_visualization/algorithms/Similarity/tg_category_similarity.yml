@@ -1,0 +1,2 @@
+---
+  description: Similarity algorithms, as the name suggests, calculate similarity between two or more vertices given some metric or equation. For graphs, this usually manifests as a calculation of overlap of neighbors between vertices.
