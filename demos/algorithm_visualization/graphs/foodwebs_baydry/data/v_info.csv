@@ -1,0 +1,129 @@
+"name","ECO","Biomass"
+"2um Spherical Phytoplankt",1,0.01802003
+"Synedococcus",1,0.3133618
+"Oscillatoria",1,0.002764012
+"Small Diatoms (<20um)",1,0.1763444
+"Big Diatoms (>20um)",1,0.1756672
+"Dinoflagellates",1,0.00556402
+"Other Phytoplankton",1,0.0001499894
+"Benthic Phytoplankton",1,0.1556626
+"Thalassia",1,16.5
+"Halodule",1,1.8
+"Syringodium",1,0.9999999
+"Roots",1,74
+"Drift Algae",1,2.76
+"Epiphytes",1,22.99863
+"Free Bacteria",1,0.1206985
+"Water Flagellates",1,0.07412287
+"Water Cilitaes",1,0.007951836
+"Acartia Tonsa",1,0.004806444
+"Oithona nana",1,0.02306698
+"Paracalanus",1,0.0106929
+"Other Copepoda",1,0.02143428
+"Meroplankton",1,0.0003866404
+"Other Zooplankton",1,0.02065326
+"Benthic Flagellates",1,0.1150883
+"Benthic Ciliates",1,0.0136171
+"Meiofauna",1,0.4130688
+"Sponges",1,0.1422168
+"Coral",1,0.003674632
+"Other Cnidaridae",1,0.004589745
+"Echinoderma",1,0.2672399
+"Bivalves",1,0.2678349
+"Detritivorous Gastropods",1,0.0190204
+"Epiphytic Gastropods",1,0.002681845
+"Predatory Gastropods",1,0.002436125
+"Detritivorous Polychaetes",1,0.1029489
+"Predatory Polychaetes",1,0.09400757
+"Suspension Feeding Polych",1,0.0483995
+"Macrobenthos",1,0.02432888
+"Benthic Crustaceans",1,0.003158498
+"Detritivorous Amphipods",1,0.02411393
+"Herbivorous Amphipods",1,0.03911885
+"Isopods",1,0.06246698
+"Herbivorous Shrimp",1,0.09008238
+"Predatory Shrimp",1,0.04592236
+"Pink Shrimp",1,0.06470793
+"Thor Floridanus",1,0.002420578
+"Lobster",1,0.006934919
+"Detritivorous Crabs",1,0.002973886
+"Omnivorous Crabs",1,0.03193685
+"Predatory Crabs",1,0.0008769648
+"Callinectus sapidus",1,0.0053859
+"Stone Crab",1,0.0002155191
+"Sharks",1,9.19809e-05
+"Rays",1,0.007831239
+"Tarpon",1,0.0002613899
+"Bonefish",1,0.000189551
+"Sardines",1,0.002619605
+"Anchovy",1,3.639291e-05
+"Bay Anchovy",1,0.0113279
+"Lizardfish",1,0.001257074
+"Catfish",1,0.002079839
+"Eels",1,0.001651523
+"Toadfish",1,0.0009229606
+"Brotalus",1,0.0005615189
+"Halfbeaks",1,0.001259124
+"Needlefish",1,0.004822961
+"Other Killifish",1,0.0003733299
+"Goldspotted killifish",1,0.01429761
+"Rainwater killifish",1,0.00326106
+"Snook",1,0.0001075326
+"Sailfin Molly",1,0.0002442069
+"Silverside",1,0.0014678
+"Other Horsefish",1,0.001361575
+"Gulf Pipefish",1,0.001943366
+"Dwarf Seahorse",1,0.0005096441
+"Grouper",1,6.208884e-06
+"Jacks",1,0.000169284
+"Pompano",1,0.0002560978
+"Other Snapper",1,0.001482897
+"Gray Snapper",1,0.0009490504
+"Mojarra",1,0.002206859
+"Grunt",1,0.005425988
+"Porgy",1,0.0003701672
+"Pinfish",1,0.01106081
+"Scianids",1,0.005267581
+"Spotted Seatrout",1,0.002458774
+"Red Drum",1,0.0001698695
+"Spadefish",1,0.004587609
+"Parrotfish",1,0.0003750538
+"Mackerel",1,1.189805e-05
+"Mullet",1,0.00479155
+"Barracuda",1,0.003158252
+"Blennies",1,0.001242826
+"Code Goby",1,0.007927809
+"Clown Goby",1,0.001035947
+"Flatfish",1,0.001994787
+"Filefishes",1,0.004329008
+"Puffer",1,0.004706684
+"Other Pelagic Fishes",1,6.488979e-05
+"Other Demersal Fishes",1,0.002486486
+"Loon",1,3.573561e-07
+"Greeb",1,6.636811e-06
+"Pelican",1,0.0008849213
+"Comorant",1,0.0001557448
+"Big Herons & Egrets",1,0.000336176
+"Small Herons & Egrets",1,0.0002166618
+"Ibis",1,0.0001024254
+"Roseate Spoonbill",1,0.0001228198
+"Herbivorous Ducks",1,7.748776e-05
+"Omnivorous Ducks",1,0.0001579732
+"Predatory Ducks",1,1.555444e-05
+"Raptors",1,1.831346e-05
+"Gruiformes",1,0.0001103918
+"Small Shorebirds",1,3.375154e-05
+"Gulls & Terns",1,0.0001025684
+"Kingfisher",1,1.231293e-06
+"Crocodiles",1,0.0008097788
+"Loggerhead Turtle",1,3.65416e-07
+"Green Turtle",1,1.796408e-07
+"Hawksbill Turtle",1,1.28699e-09
+"Dolphin",1,0.0003096134
+"Manatee",1,0.0002885749
+"Water POC",2,2.57985
+"Benthic POC",2,608.6895
+"DOC",2,17.80588
+"Input",3,0
+"Output",4,0
+"Respiration",5,0

@@ -1,0 +1,12 @@
+USE GRAPH wiki_vote
+DROP JOB load_wiki_vote
+
+CREATE LOADING JOB load_wiki_vote FOR GRAPH wiki_vote {
+    DEFINE FILENAME efile;
+
+    LOAD efile
+        TO VERTEX Wiki_user VALUES ($0, $0),
+        TO EDGE Vote_for VALUES ($0, $1, 1)
+        USING header="true";
+        
+}
