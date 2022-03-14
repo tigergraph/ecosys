@@ -14,3 +14,4 @@ spec:
   - port: 14240
     name: graphstudio
     targetPort: 14240
+  sessionAffinity: ClientIP
