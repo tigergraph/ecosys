@@ -27,38 +27,29 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen() {
   M = SELECT m FROM M:m  ACCUM @@commentId += m.id;
   PRINT @@country, @@tag, @@tagclass, @@personId, @@commentId, @@firstName;
 }
-
-CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10() {
+CREATE OR REPLACE DISTRIBUTED QUERY gen_bi10(){
   UINT personId, pid;
   STRING tagClass, country;
-  OrAccum<BOOL> @selected;
-  C = {Country.*};
-  C = SELECT c FROM C:c LIMIT 1;
-  C = SELECT c FROM C:c ACCUM country = c.name;
-  P = SELECT p FROM C -(<IS_PART_OF)-City-(<IS_LOCATED_IN)-Person:p
-    WHERE p.id > 0 
-    LIMIT 100;
-  P = SELECT p FROM P:p ACCUM p.@selected += TRUE;
-  TC = SELECT tc
-      FROM P:p -(<HAS_CREATOR.HAS_TAG>.HAS_TYPE>)- TagClass:tc; 
-  TC = SELECT tc FROM TC:tc LIMIT 1;
-  TC = SELECT tc FROM TC:tc ACCUM tagClass = tc.name;
-  P = SELECT p 
-      FROM TC -(<HAS_TYPE.<HAS_TAG.HAS_CREATOR>)-Person:p
-      WHERE p.@selected
-      LIMIT 1;
-  P = SELECT t FROM P:t ACCUM pid = t.id;
+  T = SELECT t FROM TagClass:tc-(<HAS_TYPE)-Tag:t LIMIT 1;
+  TC = SELECT tc FROM T-(HAS_TYPE>)-TagClass:tc POST-ACCUM tagClass = tc.name;
+  M = SELECT m FROM T-(<HAS_TAG)-Comment:m LIMIT 1;
+  P = SELECT p FROM M -(HAS_CREATOR>)-Person:p;
+  Cn = SELECT cn FROM P -(IS_LOCATED_IN>.IS_PART_OF>)-Country:cn
+    POST-ACCUM country = cn.name;
   P1 = SELECT t FROM P-(KNOWS)-Person:t
     WHERE t.id > 0
-    LIMIT 1;
+    LIMIT 3;
   P2 = SELECT t FROM P1-(KNOWS)-Person:t
-    WHERE t.id != pid AND t.id > 0
-    LIMIT 1;
-  P2 = SELECT t FROM P2:t
+    WHERE t.id > 0
+    LIMIT 3;
+  P3 = SELECT t FROM P2-(KNOWS)-Person:t
+    WHERE t.id > 0
+    LIMIT 3;
+  P3 = SELECT t FROM P3:t
     ACCUM personId = t.id;
     
   PRINT personId, country ,tagClass;
-}    
+}
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi15() {
   OrAccum @flag,@visited;
@@ -130,110 +121,37 @@ CREATE OR REPLACE DISTRIBUTED QUERY gen_bi18() {
   PRINT person1Id, tag;
 }
 
-# BI 19
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19() {
-  UINT iter;
-  SetAccum<VERTEX<Person>> @persons; 
-  SumAccum<UINT> @nperson;
-  MapAccum<UINT, MapAccum<UINT, OrAccum<BOOL>>> @@interactions;
-  SetAccum<VERTEX> @cities, @@cities;
-  SetAccum<UINT> @@cityIds;
-  SumAccum<UINT> @nknows;
-  P = {Person.*};
-  C = SELECT c 
-    FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
-    HAVING c.@nperson > 50
-    ORDER BY c.@nperson ASC
-    LIMIT 10;
-  P = SELECT p FROM C:c-(<IS_LOCATED_IN)- Person:p 
-    WHERE p.id > 0
-    ACCUM p.@cities += c
-    LIMIT 10000;
-  M = SELECT m 
-    FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
-    ACCUM m.@persons += p;
-  M = SELECT m2 FROM M:m1 -(REPLY_OF>)-_:m2
-    WHERE m2.@persons.size() >0 
-    ACCUM m1.@persons += m2.@persons;
-  M = SELECT m 
-    FROM P:p-(<HAS_CREATOR)-(Post|Comment):m
-    ACCUM p.@persons += m.@persons;
-  iter = 0;
-  WHILE iter < 2 DO
-    iter = iter+1;
-    P = SELECT t FROM P:s-(KNOWS)-Person:t 
-      WHERE s.@persons.contains(t) OR t.@persons.contains(s)   
-      ACCUM t.@cities += s.@cities
-      LIMIT 100;
-  END;
-  P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 2; 
-  // LIMIT 1, somtimes return 2 vertices
-  IF P.size() == 2 THEN
-    P = SELECT p FROM P:p WHERE p.@cities.size() > 1 LIMIT 1;
-  END;
-  P = SELECT p FROM P:p ACCUM @@cities+=p.@cities;
-  C = {@@cities};
-  @@cities.clear();
-  C = SELECT c FROM C:c ORDER BY c.@nperson LIMIT 2;
-  C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
-  PRINT @@cityIds;
-}  
-
-
-CREATE OR REPLACE DISTRIBUTED QUERY gen_bi19_2() {
   SetAccum<UINT> @@cityIds;
   SumAccum<UINT> @nperson;
   C = SELECT c 
     FROM City:c ACCUM c.@nperson += c.outdegree("IS_LOCATED_IN_REVERSE")
     ORDER BY c.@nperson ASC
-    LIMIT 2;
+    LIMIT 3;
   C = SELECT c FROM C:c ACCUM @@cityIds += c.id;
   PRINT @@cityIds;
 }
 
 
 CREATE OR REPLACE DISTRIBUTED QUERY gen_bi20() {
-  SetAccum<VERTEX<University>> @univ;
-  SetAccum<VERTEX<Person>> @connected;
-  SetAccum<UINT> @source, @@person2Ids, @@exclude;
-  SumAccum<UINT> @nknows, @nperson;
-  OrAccum<BOOL> @selected;
+  SetAccum<VERTEX<Person>> @@person2Ids;
+  SumAccum<UINT> @nperson;
+  //OrAccum<BOOL> @selected;
   UINT iter;
   STRING company;
 
   U = {University.*};
-  C = SELECT u 
+  U = SELECT u 
     FROM U:u ACCUM u.@nperson += u.outdegree("STUDY_AT_REVERSE")
     ORDER BY u.@nperson ASC
-    LIMIT 10;
+    LIMIT 3;
   
   P = SELECT p
     FROM U -(<STUDY_AT)- Person:p
     WHERE p.id > 0
-    LIMIT 4000;
-  P = SELECT p FROM P:p ACCUM p.@selected += TRUE;
-  P = SELECT s
-    FROM P:s -(STUDY_AT>)- University:u -(<STUDY_AT)- _:t  
-    WHERE s.id != t.id AND t.@selected 
-    ACCUM s.@source += s.id,
-      s.@connected += t;
-
-  iter = 0;
-  WHILE iter < 3 DO
-    iter = iter+1;
-    P = SELECT t FROM P:s-(KNOWS)-Person:t
-      WHERE s.@connected.contains(t) AND t.id > 0
-      ACCUM t.@source += s.@source;
-  END;
-  
-  P = SELECT p FROM P:p -(KNOWS)- Person
-    WHERE p.@source.size() > 2 
-    ACCUM p.@nknows += 1;
-  P = SELECT p FROM P:p -(WORK_AT>)-Company:c 
-    ORDER BY p.@nknows
-    LIMIT 1;
-  P = SELECT p FROM P:p -(WORK_AT>)-Company:c ACCUM company=c.name, @@person2Ids += p.@source, @@exclude += p.id;
-  @@person2Ids  =  @@person2Ids  MINUS @@exclude;
+    LIMIT 10;
+  P = SELECT p FROM P:p ACCUM @@person2Ids += p; //p.@selected += TRUE;
+  P = SELECT p FROM P:p -(WORK_AT>)-Company:c ACCUM company=c.name;
   PRINT company, @@person2Ids;
 }
 
