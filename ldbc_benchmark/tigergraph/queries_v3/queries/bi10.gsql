@@ -2,11 +2,14 @@ USE GRAPH ldbc_snb
 SET syntax_version = "v2"
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass, UINT minPathDistance, UINT maxPathDistance) {
+  typedef tuple<uint pid, string tagName, int messageCount> result;
+  HeapAccum<result>(100, messageCount desc, tagName asc, pid asc) @@result;
 
   SumAccum<UINT> @@pathLength;
-
-  OrAccum @visited;
-
+  OrAccum @visited, @selected;
+  MaxAccum<UINT> @creator;
+  MapAccum<UINT, UINT> @creatorCount;
+  
   countryWithName = SELECT c FROM Country:c WHERE c.name == country;
   candidates = SELECT p FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
 
@@ -32,21 +35,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
   END;
 
   expertCandidatePersons = targets INTERSECT candidates;
-  tagClassWithName = SELECT tc FROM TagClass:tc WHERE tc.name == tagClass;
-  messages =
-    SELECT m
-    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- tagClassWithName;
+  T = SELECT t FROM TagClass:tc-(<HAS_TYPE)-Tag:t WHERE tc.name == tagClass;
+  messages = SELECT m FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m ACCUM m.@creator += p.id, m.@selected += true;
+  T = SELECT t FROM T:t -(<HAS_TAG)- (Comment|Post):m 
+    WHERE m.@selected 
+    ACCUM t.@creatorCount += (m.@creator -> 1)
+    POST-ACCUM FOREACH (pid, cnt) in t.@creatorCount DO
+      @@result += result(pid, t.name, cnt)
+    END;
 
-  SELECT
-    p.id AS expertCandidatePersonId,
-    t.name AS tagName,
-    COUNT(m) AS messageCount
-  INTO result
-  FROM
-    messages:m -(HAS_TAG>)- Tag:t,
-    :m -(HAS_CREATOR>)- expertCandidatePersons:p
-  ORDER BY messageCount DESC, tagName ASC, expertCandidatePersonId ASC
-  LIMIT 100;
-
-  PRINT result;
+  PRINT @@result AS result;
 }
