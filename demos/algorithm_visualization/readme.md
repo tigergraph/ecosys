@@ -22,7 +22,7 @@ Currently most of the queries built at **GSQL Graph Algorithm Library** output t
 The purpose of this project is to: (1) provide visualizations for some of the most frequently used queries current in the **GSQL Graph Algorithm Library**; (2) showcase those visualizations based on several real-world graph data. Visualizations have been developed for ~20 algorithms based on 8 real world datasets.
 
 ## Contents
-- algorithms //GSQL queries of graph algorithms with visualizations are stored here as '.gsql' files.
+- Algorithms
   - Centrality
     - [Article rank](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/article_rank)
     - [Betweenness](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/betweenness)
@@ -49,7 +49,7 @@ The purpose of this project is to: (1) provide visualizations for some of the mo
     - [Cosine](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/cosine/all_pairs)
     - [Jaccard](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/jaccard/all_pairs)
 
-- graphs //Example real-world graph data are stored here.
+- Graphs
   - [fw_baydry](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/fw_baydry)
   - [karate](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/karate)
   - [netscience](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/netscience)
@@ -57,6 +57,7 @@ The purpose of this project is to: (1) provide visualizations for some of the mo
   - [polblogs](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/polblogs)
   - [web_edu](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/web_edu)
   - [wiki_vote](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/wiki_vote)
+
 ## How to use?
 
 Follow the following steps to use graph algrithms with visualizations:
