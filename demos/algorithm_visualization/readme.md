@@ -1,5 +1,5 @@
 # TigerGraph In-Database Graph Data Science Algorithm Visualizations
-For TigerGraph version 3.1 or higher
+For TigerGraph version 3.2 or higher
 03/09/2021
 
 ## Introduction
