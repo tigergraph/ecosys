@@ -24,30 +24,30 @@ The purpose of this project is to: (1) provide visualizations for some of the mo
 ## Contents
 - Algorithms
   - Centrality
-    - [Article rank](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/article_rank)
-    - [Betweenness](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/betweenness)
-    - [Closeness](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/closeness/exact)
-    - [Degree](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/degree)
-    - [Eigenvector](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/eigenvector)
-    - [Harmonic](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/harmonic)
-    - [Influence_maximization](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/influence_maximization/CELF)
-    - [Pagerank](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/pagerank/global/unweighted)
+    - [Article rank](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_article_rank_vis.gsql)
+    - [Betweenness](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_betweenness_cent_vis.gsql)
+    - [Closeness](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_closeness_cent_vis.gsql)
+    - [Degree](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_degree_cent_vis.gsql)
+    - [Eigenvector](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_eigenvector_cent_vis.gsql)
+    - [Harmonic](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_harmonic_cent_vis.gsql)
+    - [Influence_maximization](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_influence_maximization_CELF_vis.gsql)
+    - [Pagerank](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_pagerank_vis.gsql)
   - Community
-      - [SCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/connected_components/strongly_connected_components/standard)
-      - [WCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/connected_components/weakly_connected_components/standard)
-      - [K-core](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/k_core)
-      - [Lable Propagation](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/label_propagation)
-      - [LCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/local_clustering_coefficient)
-      - [Louvain](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/louvain)
-      - [Triangle Counting](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/triangle_counting)
+      - [SCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_scc_vis.gsql)
+      - [WCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_wcc_vis.gsql)
+      - [K-core](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_kcore_vis.gsql)
+      - [Lable Propagation](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_label_prop_vis.gsql)
+      - [LCC](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_lcc_vis.gsql)
+      - [Louvain](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_louvain_vis.gsql)
+      - [Triangle Counting](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_tri_count_vis.gsql)
   - Path
-    - [Cycle Detection](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/cycle_detection/full_result)
-    - [Max_flow](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/maxflow)
-    - [Min spanning tree](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/minimum_spanning_tree)
-    - [Shortest Path](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/shortest_path/weighted/any_sign)
+    - [Cycle Detection](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/tg_cycle_detection_vis.gsql)
+    - [Max_flow](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/tg_maxflow_vis.gsql)
+    - [Min spanning tree](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/tg_mst_vis.gsql)
+    - [Shortest Path](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/tg_shortest_ss_any_wt_vis.gsql)
   - Similarity
-    - [Cosine](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/cosine/all_pairs)
-    - [Jaccard](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/jaccard/all_pairs)
+    - [Cosine](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/tg_cosine_nbor_ap_batch_vis.gsql)
+    - [Jaccard](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/tg_jaccard_nbor_ap_batch_vis.gsql)
 
 - Graphs
   - [fw_baydry](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/fw_baydry)
@@ -108,7 +108,11 @@ This section describes schema as well as exploration configurations for the grap
   <img src="./README_figures/open_exploration_1.png" alt="drawing" width="300"/>
 
   To read more about saving's and loading's of explorations, check out this [guide](https://docs.tigergraph.com/gui/current/graphstudio/explore-graph/graph-exploration-panel#_save_and_open_graph_exploration_result).
-### Examples
+## Examples
+
+A GraphStudio solution that contains the schema of 5 graphs can be found [here](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/graph_alg_vis_TGsolution.tar.gz). To load the solution, simply download the solution with '.tar.gz' postfix and import it into your GraphStudio by clicking 'Import An Existing Solution'. Directions for importing a solution can be found [here](https://docs.tigergraph.com/gui/current/graphstudio/export-and-import-solution).
+
+Example usecases of visualized graph algorithms are loaded as queries in this solution. Here are several of those:
 
 - Pagerank centralities of United States airports.
 
