@@ -55,9 +55,7 @@ The purpose of this project is to: (1) provide visualizations for some of the mo
   - [netscience](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/netscience)
   - [USairport](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/USairports)
   - [polblogs](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/polblogs)
-  - [web_edu](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/web_edu)
-  - [wiki_vote](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/wiki_vote)
-
+  
 ## How to use?
 
 Follow the following steps to use graph algrithms with visualizations:
