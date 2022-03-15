@@ -1,2 +1,0 @@
----
-  description: This category includes algorithms that extract properties or expose information relating to paths in the graph. A 'walk' is a sequence of vertices or edges, a 'trail' is a sequence of edges which doesn't revisit edges, and a 'path' is a sequence of vertices or edges which does not repeat vertices. For simplicity, any algorithms that pertain to raw traversal of the graph will be included here. The information extracted from these fundamental algorithms can be used in downstream tasks, such as fraud detection or product recommendation. 
