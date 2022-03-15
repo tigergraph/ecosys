@@ -55,7 +55,7 @@ The purpose of this project is to: (1) provide visualizations for some of the mo
   - [netscience](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/netscience)
   - [USairport](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/USairports)
   - [polblogs](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/graphs/polblogs)
-  
+
 ## How to use?
 
 Follow the following steps to use graph algrithms with visualizations:
@@ -114,7 +114,7 @@ Example usecases of visualized graph algorithms are loaded as queries in this so
 
 - Pagerank centralities of United States airports.
 
-  [Pageranks](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/pagerank/global/unweighted) are calculated for each airport based on the USairport graph, where existence of directed edges indicates whether there is a flight from one airport to another airport.
+  [Pageranks](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Centrality/tg_pagerank_vis.gsql) are calculated for each airport based on the USairport graph, where existence of directed edges indicates whether there is a flight from one airport to another airport.
   
   Query: 
   ```
@@ -129,7 +129,7 @@ Example usecases of visualized graph algorithms are loaded as queries in this so
 
 - Louvain community detection on social network.
 
-  [Louvain](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/louvain) community detection algorithm is applied to the Zachary’s karate club network, where weighted undirected edges record number of common activities the club members took part of.
+  [Louvain](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Community/tg_louvain_vis.gsql) community detection algorithm is applied to the Zachary’s karate club network, where weighted undirected edges record number of common activities the club members took part of.
   
   Query: 
   ```
@@ -144,7 +144,7 @@ Example usecases of visualized graph algorithms are loaded as queries in this so
 
 - Max-flow paths between two United States airports.
 
-  [Max flow](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/maxflow) algorithm is applied to the USairport graph, where the 'Seats' attrubute of directed edges records total number of seats on flights from one airport to another airport during the data was collected.
+  [Max flow](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/tg_maxflow_vis.gsql) algorithm is applied to the USairport graph, where the 'Seats' attrubute of directed edges records total number of seats on flights from one airport to another airport during the data was collected.
   
   Query: 
   ```
@@ -159,7 +159,7 @@ Example usecases of visualized graph algorithms are loaded as queries in this so
 
 - Cosine similarity between blog posts.
 
-  [Cosine similarity](https://github.com/tigergraph/ecosys/tree/TIDGDSA-59/demos/algorithm_visualization/algorithms/Path/maxflow) algorithm is applied to the polblogs graph, where directed edges records citations from one political blog to another political blog.
+  [Cosine similarity](https://github.com/tigergraph/ecosys/blob/TIDGDSA-59/demos/algorithm_visualization/algorithms/Similarity/tg_cosine_nbor_ap_batch_vis.gsql) algorithm is applied to the polblogs graph, where directed edges records citations from one political blog to another political blog.
   
   Query: 
   ```
