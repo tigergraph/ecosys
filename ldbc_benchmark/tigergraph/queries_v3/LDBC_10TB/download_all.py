@@ -57,7 +57,7 @@ def main():
     ip = '.'.join(ip)
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
-    target = f'/home/tigergraph/sf{args.data}'
+    target = f'~/sf{args.data}'
     print(f'logging to {ip}')
     scp.put('download_one_partition.py', workdir)
     scp.put('download_decompress.sh', workdir)
