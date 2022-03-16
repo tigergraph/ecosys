@@ -125,7 +125,7 @@ function update_cluster_size () {
 # update Tigergraph Version if not default 
 function update_version () {
   if [ "${TG_VERSION}" != "latest" ]; then
-    sed "${sedi[@]}" -e "s/tigergraph-k8s:latest/tigergraph-k8s:${TG_VERSION}/g" $MANIFEST
+    sed "${sedi[@]}" -e "s/tigergraph-k8s:3.5.0/tigergraph-k8s:${TG_VERSION}/g" $MANIFEST
   fi
 }
 # update Tigergraph license
