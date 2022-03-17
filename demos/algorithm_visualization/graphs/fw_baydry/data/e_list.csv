@@ -1,0 +1,2138 @@
+"from","to","weight"
+"Input","2um Spherical Phytoplankt",1.261404
+"Input","Synedococcus",21.9353
+"Input","Oscillatoria",0.193461
+"Input","Small Diatoms (<20um)",12.3441
+"Input","Big Diatoms (>20um)",12.2967
+"Input","Dinoflagellates",0.389479
+"Input","Other Phytoplankton",0.010475
+"Input","Benthic Phytoplankton",10.5
+"Input","Thalassia",180
+"Input","Halodule",22
+"Input","Syringodium",15
+"Input","Roots",72
+"Input","Drift Algae",75
+"Input","Epiphytes",116
+"Input","Meroplankton",0.048429
+"Input","Stone Crab",0.000664
+"Input","Water POC",3
+"Input","DOC",6
+"Thalassia","Output",1.3
+"Halodule","Output",0.13
+"Syringodium","Output",7
+"Drift Algae","Output",1.8
+"Pink Shrimp","Output",0.2477485
+"Lobster","Output",0.002981023
+"Callinectus sapidus","Output",0.01095201
+"Stone Crab","Output",1.027777e-07
+"Sharks","Output",0.0005188279
+"Rays","Output",0.004259183
+"Tarpon","Output",5.501834e-06
+"Bonefish","Output",0.0003202698
+"Lizardfish","Output",8.626596e-07
+"Catfish","Output",2.850745e-06
+"Toadfish","Output",1.399014e-06
+"Halfbeaks","Output",0.000589438
+"Needlefish","Output",2.713917e-07
+"Snook","Output",5.444443e-05
+"Grouper","Output",4.401273e-05
+"Jacks","Output",0.0002235716
+"Pompano","Output",0.0001972753
+"Other Snapper","Output",0.0003356748
+"Gray Snapper","Output",0.0002013107
+"Mojarra","Output",1.011072e-07
+"Grunt","Output",0.005922525
+"Porgy","Output",0.0001120243
+"Pinfish","Output",8.619817e-07
+"Scianids","Output",0.003509126
+"Spotted Seatrout","Output",0.0008005548
+"Red Drum","Output",0.0008798632
+"Spadefish","Output",1.970811e-05
+"Parrotfish","Output",1.282821e-07
+"Mackerel","Output",6.16899e-05
+"Mullet","Output",1.46577e-05
+"Barracuda","Output",0.004000669
+"Flatfish","Output",3.0457e-06
+"Filefishes","Output",3.854202e-08
+"Puffer","Output",0.007898174
+"Other Pelagic Fishes","Output",1.907656e-05
+"Other Demersal Fishes","Output",1.626673e-08
+"Free Bacteria","Respiration",93.61713
+"Water Flagellates","Respiration",50.5165
+"Water Cilitaes","Respiration",5.629564
+"Acartia Tonsa","Respiration",0.416118
+"Oithona nana","Respiration",2.012417
+"Paracalanus","Respiration",0.9496036
+"Other Copepoda","Respiration",2.820862
+"Meroplankton","Respiration",0.5825159
+"Other Zooplankton","Respiration",1.808016
+"Benthic Flagellates","Respiration",35.38025
+"Benthic Ciliates","Respiration",4.11128
+"Meiofauna","Respiration",9.606857
+"Sponges","Respiration",0.2160327
+"Coral","Respiration",0.01390549
+"Other Cnidaridae","Respiration",0.01749315
+"Echinoderma","Respiration",0.7531382
+"Bivalves","Respiration",0.80753
+"Detritivorous Gastropods","Respiration",0.2280016
+"Epiphytic Gastropods","Respiration",0.02755954
+"Predatory Gastropods","Respiration",0.02888223
+"Detritivorous Polychaetes","Respiration",0.9818583
+"Predatory Polychaetes","Respiration",0.8569636
+"Suspension Feeding Polych","Respiration",0.4491814
+"Macrobenthos","Respiration",0.682153
+"Benthic Crustaceans","Respiration",0.05517269
+"Detritivorous Amphipods","Respiration",0.134433
+"Herbivorous Amphipods","Respiration",0.1569536
+"Isopods","Respiration",0.4443477
+"Herbivorous Shrimp","Respiration",0.9909184
+"Predatory Shrimp","Respiration",0.4765046
+"Pink Shrimp","Respiration",0.9172407
+"Thor Floridanus","Respiration",0.04179814
+"Lobster","Respiration",0.05627013
+"Detritivorous Crabs","Respiration",0.02420889
+"Omnivorous Crabs","Respiration",0.2414584
+"Predatory Crabs","Respiration",0.007417527
+"Callinectus sapidus","Respiration",0.04086668
+"Stone Crab","Respiration",0.00190285
+"Sharks","Respiration",5.092902e-05
+"Rays","Respiration",0.01656258
+"Tarpon","Respiration",0.0009201344
+"Bonefish","Respiration",0.001248387
+"Sardines","Respiration",0.01172158
+"Anchovy","Respiration",0.0002801087
+"Bay Anchovy","Respiration",0.1376741
+"Lizardfish","Respiration",0.001419308
+"Catfish","Respiration",0.005374257
+"Eels","Respiration",0.01251804
+"Toadfish","Respiration",0.006575366
+"Brotalus","Respiration",0.001490723
+"Halfbeaks","Respiration",0.009174979
+"Needlefish","Respiration",0.00627706
+"Other Killifish","Respiration",0.002307318
+"Goldspotted killifish","Respiration",0.05909975
+"Rainwater killifish","Respiration",0.008984197
+"Snook","Respiration",0.0001860023
+"Sailfin Molly","Respiration",0.001470965
+"Silverside","Respiration",0.004340853
+"Other Horsefish","Respiration",0.003516664
+"Gulf Pipefish","Respiration",0.006688935
+"Dwarf Seahorse","Respiration",0.002437708
+"Grouper","Respiration",2.824073e-05
+"Jacks","Respiration",0.0003181371
+"Pompano","Respiration",0.0004721803
+"Other Snapper","Respiration",0.002163411
+"Gray Snapper","Respiration",0.001438076
+"Mojarra","Respiration",0.006293923
+"Grunt","Respiration",0.01267223
+"Porgy","Respiration",0.0004929068
+"Pinfish","Respiration",0.0357964
+"Scianids","Respiration",0.01522767
+"Spotted Seatrout","Respiration",0.002803472
+"Red Drum","Respiration",9.632721e-05
+"Spadefish","Respiration",0.01755993
+"Parrotfish","Respiration",0.001085012
+"Mackerel","Respiration",1.329782e-05
+"Mullet","Respiration",0.01541484
+"Barracuda","Respiration",0.01087546
+"Blennies","Respiration",0.003972482
+"Code Goby","Respiration",0.04602745
+"Clown Goby","Respiration",0.002306108
+"Flatfish","Respiration",0.005347004
+"Filefishes","Respiration",0.01759573
+"Puffer","Respiration",0.0446004
+"Other Pelagic Fishes","Respiration",0.0003104727
+"Other Demersal Fishes","Respiration",0.008327987
+"Loon","Respiration",2.426367e-05
+"Greeb","Respiration",0.0004497244
+"Pelican","Respiration",0.05937275
+"Comorant","Respiration",0.01047434
+"Big Herons & Egrets","Respiration",0.02257607
+"Small Herons & Egrets","Respiration",0.01450305
+"Ibis","Respiration",0.006869919
+"Roseate Spoonbill","Respiration",0.00822995
+"Herbivorous Ducks","Respiration",0.005195693
+"Omnivorous Ducks","Respiration",0.01056861
+"Predatory Ducks","Respiration",0.001044079
+"Raptors","Respiration",0.001226695
+"Gruiformes","Respiration",0.007384796
+"Small Shorebirds","Respiration",0.002260204
+"Gulls & Terns","Respiration",0.006878421
+"Kingfisher","Respiration",8.239404e-05
+"Crocodiles","Respiration",0.001491191
+"Loggerhead Turtle","Respiration",0.0006721045
+"Green Turtle","Respiration",0.0003318071
+"Hawksbill Turtle","Respiration",2.359473e-06
+"Dolphin","Respiration",0.004324266
+"Manatee","Respiration",0.003529095
+"Water POC","Respiration",3.572388
+"Benthic POC","Respiration",317.0636
+"2um Spherical Phytoplankt","Water Flagellates",0.555688
+"2um Spherical Phytoplankt","Water Cilitaes",0.04029807
+"2um Spherical Phytoplankt","Acartia Tonsa",0.01889703
+"2um Spherical Phytoplankt","Oithona nana",0.09212516
+"2um Spherical Phytoplankt","Paracalanus",0.04375207
+"2um Spherical Phytoplankt","Other Copepoda",0.1963723
+"2um Spherical Phytoplankt","Other Zooplankton",0.08641115
+"2um Spherical Phytoplankt","Sponges",0.008950015
+"2um Spherical Phytoplankt","Echinoderma",0.003420006
+"2um Spherical Phytoplankt","Bivalves",0.0599401
+"2um Spherical Phytoplankt","Suspension Feeding Polych",0.03227706
+"2um Spherical Phytoplankt","Other Killifish",4.700008e-05
+"2um Spherical Phytoplankt","Rainwater killifish",0.0002920005
+"2um Spherical Phytoplankt","Sailfin Molly",1.190002e-05
+"2um Spherical Phytoplankt","DOC",0.1229222
+"Synedococcus","Water Flagellates",9.663189
+"Synedococcus","Water Cilitaes",0.7007607
+"Synedococcus","Acartia Tonsa",0.3286118
+"Synedococcus","Oithona nana",1.602014
+"Synedococcus","Paracalanus",0.7608389
+"Synedococcus","Other Copepoda",3.414843
+"Synedococcus","Other Zooplankton",1.502649
+"Synedococcus","Sponges",0.1533924
+"Synedococcus","Echinoderma",0.03842609
+"Synedococcus","Bivalves",0.401662
+"Synedococcus","Detritivorous Gastropods",0.1101683
+"Synedococcus","Detritivorous Polychaetes",0.3000637
+"Synedococcus","Suspension Feeding Polych",0.2174795
+"Synedococcus","Macrobenthos",0.0807962
+"Synedococcus","Benthic Crustaceans",0.006175016
+"Synedococcus","Detritivorous Amphipods",0.01839004
+"Synedococcus","Pink Shrimp",0.1039583
+"Synedococcus","Detritivorous Crabs",0.004321011
+"Synedococcus","Sailfin Molly",0.000393001
+"Synedococcus","Pinfish",0.007611019
+"Synedococcus","Parrotfish",0.0001120003
+"Synedococcus","Mullet",0.004809012
+"Synedococcus","DOC",2.51464
+"Oscillatoria","Acartia Tonsa",0.003189014
+"Oscillatoria","Oithona nana",0.01554807
+"Oscillatoria","Paracalanus",0.007384032
+"Oscillatoria","Other Zooplankton",0.01458406
+"Oscillatoria","Echinoderma",6.190027e-05
+"Oscillatoria","Sailfin Molly",2.510011e-06
+"Oscillatoria","Pinfish",9.730043e-06
+"Oscillatoria","Parrotfish",8.560037e-07
+"Oscillatoria","Mullet",6.150027e-06
+"Oscillatoria","DOC",0.1526747
+"Small Diatoms (<20um)","Water Flagellates",5.437962
+"Small Diatoms (<20um)","Water Cilitaes",0.3943529
+"Small Diatoms (<20um)","Acartia Tonsa",0.1849264
+"Small Diatoms (<20um)","Oithona nana",0.9015341
+"Small Diatoms (<20um)","Paracalanus",0.428162
+"Small Diatoms (<20um)","Other Copepoda",1.921705
+"Small Diatoms (<20um)","Other Zooplankton",0.845616
+"Small Diatoms (<20um)","Sponges",0.08084419
+"Small Diatoms (<20um)","Coral",0.001746004
+"Small Diatoms (<20um)","Bivalves",0.2291795
+"Small Diatoms (<20um)","Suspension Feeding Polych",0.1240743
+"Small Diatoms (<20um)","DOC",1.793997
+"Big Diatoms (>20um)","Water Cilitaes",0.3928385
+"Big Diatoms (>20um)","Acartia Tonsa",0.1842162
+"Big Diatoms (>20um)","Oithona nana",0.8980711
+"Big Diatoms (>20um)","Paracalanus",0.4265175
+"Big Diatoms (>20um)","Other Zooplankton",0.8423679
+"Big Diatoms (>20um)","Sponges",0.04453605
+"Big Diatoms (>20um)","Coral",0.002646003
+"Big Diatoms (>20um)","Bivalves",0.1291271
+"Big Diatoms (>20um)","Suspension Feeding Polych",0.06989308
+"Big Diatoms (>20um)","Pink Shrimp",0.0913661
+"Big Diatoms (>20um)","Other Killifish",7.120008e-05
+"Big Diatoms (>20um)","Rainwater killifish",0.0004430005
+"Big Diatoms (>20um)","Sailfin Molly",1.800002e-05
+"Big Diatoms (>20um)","DOC",9.214587
+"Dinoflagellates","Water Cilitaes",0.01244305
+"Dinoflagellates","Acartia Tonsa",0.005835021
+"Dinoflagellates","Oithona nana",0.0284451
+"Dinoflagellates","Paracalanus",0.01350905
+"Dinoflagellates","Meroplankton",0.0278671
+"Dinoflagellates","Other Zooplankton",0.0266811
+"Dinoflagellates","Sponges",0.003394012
+"Dinoflagellates","Bivalves",0.01474605
+"Dinoflagellates","Suspension Feeding Polych",0.007958028
+"Dinoflagellates","Other Killifish",8.27003e-05
+"Dinoflagellates","Rainwater killifish",0.0005140019
+"Dinoflagellates","Sailfin Molly",2.090008e-05
+"Dinoflagellates","DOC",0.2479829
+"Other Phytoplankton","Water Cilitaes",0.0003349763
+"Other Phytoplankton","Acartia Tonsa",0.0001569889
+"Other Phytoplankton","Oithona nana",0.0007649458
+"Other Phytoplankton","Paracalanus",0.0003629743
+"Other Phytoplankton","Other Zooplankton",0.0007179492
+"Other Phytoplankton","Sponges",3.80973e-05
+"Other Phytoplankton","Echinoderma",1.109921e-05
+"Other Phytoplankton","Bivalves",0.0001169917
+"Other Phytoplankton","Suspension Feeding Polych",6.319553e-05
+"Other Phytoplankton","Other Killifish",1.789873e-06
+"Other Phytoplankton","Rainwater killifish",1.109921e-05
+"Other Phytoplankton","Sailfin Molly",4.509681e-07
+"Other Phytoplankton","DOC",0.007894441
+"Benthic Phytoplankton","Benthic Flagellates",1.381068
+"Benthic Phytoplankton","Benthic Ciliates",0.1599195
+"Benthic Phytoplankton","Meiofauna",0.3963813
+"Benthic Phytoplankton","Echinoderma",0.006233769
+"Benthic Phytoplankton","Detritivorous Gastropods",0.09361342
+"Benthic Phytoplankton","Detritivorous Polychaetes",0.2433837
+"Benthic Phytoplankton","Predatory Polychaetes",0.01582881
+"Benthic Phytoplankton","Macrobenthos",0.2620186
+"Benthic Phytoplankton","Benthic Crustaceans",0.03753441
+"Benthic Phytoplankton","Detritivorous Amphipods",0.1117772
+"Benthic Phytoplankton","Herbivorous Amphipods",0.1842236
+"Benthic Phytoplankton","Herbivorous Shrimp",0.2163368
+"Benthic Phytoplankton","Pink Shrimp",0.01687383
+"Benthic Phytoplankton","Detritivorous Crabs",0.02241853
+"Benthic Phytoplankton","Sailfin Molly",0.0003185895
+"Benthic Phytoplankton","Other Demersal Fishes",1.359454e-05
+"Benthic Phytoplankton","Benthic POC",7.352057
+"Thalassia","Herbivorous Amphipods",0.049499
+"Thalassia","Isopods",0.304268
+"Thalassia","Predatory Shrimp",0.006749
+"Thalassia","Pink Shrimp",0.233306
+"Thalassia","Omnivorous Crabs",0.147517
+"Thalassia","Halfbeaks",0.006391
+"Thalassia","Pinfish",0.004261
+"Thalassia","Other Demersal Fishes",0.001921
+"Thalassia","Herbivorous Ducks",0.001772
+"Thalassia","Omnivorous Ducks",0.001688
+"Thalassia","Green Turtle",0.000958
+"Thalassia","Manatee",0.002008
+"Thalassia","Water POC",53.3819
+"Thalassia","Benthic POC",71.17586
+"Thalassia","DOC",53.3819
+"Halodule","Herbivorous Amphipods",0.005625
+"Halodule","Isopods",0.034576
+"Halodule","Predatory Shrimp",0.000767
+"Halodule","Pink Shrimp",0.026512
+"Halodule","Omnivorous Crabs",0.016763
+"Halodule","Halfbeaks",0.0007260001
+"Halodule","Pinfish",0.000484
+"Halodule","Other Demersal Fishes",0.000218
+"Halodule","Herbivorous Ducks",0.0007730001
+"Halodule","Omnivorous Ducks",0.0007370001
+"Halodule","Manatee",0.000438
+"Halodule","Water POC",6.534715
+"Halodule","Benthic POC",8.712953
+"Halodule","DOC",6.534715
+"Syringodium","Herbivorous Amphipods",0.00405
+"Syringodium","Isopods",0.024895
+"Syringodium","Predatory Shrimp",0.000552
+"Syringodium","Pink Shrimp",0.019089
+"Syringodium","Omnivorous Crabs",0.01207
+"Syringodium","Halfbeaks",0.000523
+"Syringodium","Pinfish",0.000349
+"Syringodium","Other Demersal Fishes",0.000157
+"Syringodium","Herbivorous Ducks",0.00043
+"Syringodium","Omnivorous Ducks",0.000409
+"Syringodium","Manatee",0.000487
+"Syringodium","Water POC",2.381097
+"Syringodium","Benthic POC",3.174796
+"Syringodium","DOC",2.381097
+"Roots","Benthic POC",72
+"Drift Algae","Sailfin Molly",0.000424
+"Drift Algae","Pinfish",0.016419
+"Drift Algae","Parrotfish",0.000289
+"Drift Algae","Mullet",0.005187
+"Drift Algae","Other Demersal Fishes",0.000181
+"Drift Algae","Water POC",21.95325
+"Drift Algae","Benthic POC",29.271
+"Drift Algae","DOC",21.95325
+"Epiphytes","Echinoderma",0.6006482
+"Epiphytes","Epiphytic Gastropods",0.04620526
+"Epiphytes","Herbivorous Amphipods",0.1775115
+"Epiphytes","Isopods",0.3637164
+"Epiphytes","Herbivorous Shrimp",1.87609
+"Epiphytes","Predatory Shrimp",0.04840712
+"Epiphytes","Pink Shrimp",0.1202118
+"Epiphytes","Thor Floridanus",0.06717901
+"Epiphytes","Omnivorous Crabs",0.02204269
+"Epiphytes","Halfbeaks",0.007308566
+"Epiphytes","Sailfin Molly",0.002048878
+"Epiphytes","Porgy",5.819654e-05
+"Epiphytes","Pinfish",0.002904827
+"Epiphytes","Parrotfish",0.001046938
+"Epiphytes","Mullet",0.007516554
+"Epiphytes","Other Demersal Fishes",0.001309922
+"Epiphytes","Herbivorous Ducks",0.002469853
+"Epiphytes","Omnivorous Ducks",0.00235286
+"Epiphytes","Green Turtle",0.0006679603
+"Epiphytes","Manatee",0.001398917
+"Epiphytes","Water POC",33.79467
+"Epiphytes","Benthic POC",45.05956
+"Epiphytes","DOC",33.79467
+"Free Bacteria","Water Flagellates",12.90289
+"Free Bacteria","Water Cilitaes",1.349704
+"Free Bacteria","Acartia Tonsa",0.238394
+"Free Bacteria","Oithona nana",1.162194
+"Free Bacteria","Paracalanus",0.5519566
+"Free Bacteria","Other Copepoda",1.817246
+"Free Bacteria","Other Zooplankton",1.090109
+"Free Bacteria","Sponges",0.03004161
+"Free Bacteria","Bivalves",0.2252212
+"Free Bacteria","Water POC",25.11544
+"Water Flagellates","Water Cilitaes",4.588644
+"Water Flagellates","Acartia Tonsa",0.4007046
+"Water Flagellates","Oithona nana",1.95347
+"Water Flagellates","Paracalanus",0.9277542
+"Water Flagellates","Other Copepoda",3.295022
+"Water Flagellates","Other Zooplankton",1.832305
+"Water Flagellates","Sponges",0.03281777
+"Water Flagellates","Bivalves",0.0828484
+"Water Flagellates","Suspension Feeding Polych",0.1163758
+"Water Flagellates","Water POC",48.92028
+"Water Cilitaes","Acartia Tonsa",0.03377511
+"Water Cilitaes","Oithona nana",0.1646585
+"Water Cilitaes","Paracalanus",0.07820085
+"Water Cilitaes","Other Zooplankton",0.1544445
+"Water Cilitaes","Sponges",0.001976271
+"Water Cilitaes","Bivalves",0.004988492
+"Water Cilitaes","Suspension Feeding Polych",0.007006201
+"Water Cilitaes","Water POC",5.458323
+"Acartia Tonsa","Meroplankton",0.07303697
+"Acartia Tonsa","Coral",0.001980442
+"Acartia Tonsa","Other Cnidaridae",0.00191728
+"Acartia Tonsa","Echinoderma",0.0002872864
+"Acartia Tonsa","Pink Shrimp",0.01155462
+"Acartia Tonsa","Sardines",0.0004482483
+"Acartia Tonsa","Anchovy",1.395682e-05
+"Acartia Tonsa","Bay Anchovy",0.01094235
+"Acartia Tonsa","Halfbeaks",0.000136512
+"Acartia Tonsa","Needlefish",0.0002108804
+"Acartia Tonsa","Other Killifish",5.328042e-05
+"Acartia Tonsa","Goldspotted killifish",0.001178689
+"Acartia Tonsa","Rainwater killifish",0.0004971481
+"Acartia Tonsa","Silverside",0.000954565
+"Acartia Tonsa","Other Horsefish",0.0002343116
+"Acartia Tonsa","Gulf Pipefish",0.0004757544
+"Acartia Tonsa","Dwarf Seahorse",0.001289733
+"Acartia Tonsa","Jacks",1.650369e-05
+"Acartia Tonsa","Pompano",1.436432e-05
+"Acartia Tonsa","Mojarra",0.0001263245
+"Acartia Tonsa","Grunt",0.001115527
+"Acartia Tonsa","Scianids",0.0002933989
+"Acartia Tonsa","Spotted Seatrout",0.0001232683
+"Acartia Tonsa","Code Goby",0.0005103917
+"Acartia Tonsa","Clown Goby",5.21598e-05
+"Acartia Tonsa","Flatfish",7.070097e-05
+"Acartia Tonsa","Other Pelagic Fishes",6.081914e-06
+"Acartia Tonsa","Water POC",0.9484801
+"Oithona nana","Meroplankton",0.3447542
+"Oithona nana","Coral",0.00726408
+"Oithona nana","Other Cnidaridae",0.009040803
+"Oithona nana","Echinoderma",0.001353839
+"Oithona nana","Pink Shrimp",0.05448313
+"Oithona nana","Sardines",0.002117465
+"Oithona nana","Anchovy",6.571441e-05
+"Oithona nana","Bay Anchovy",0.05163044
+"Oithona nana","Halfbeaks",1.125664e-05
+"Oithona nana","Needlefish",0.000965434
+"Oithona nana","Other Killifish",0.0002514996
+"Oithona nana","Goldspotted killifish",0.005562401
+"Oithona nana","Rainwater killifish",0.002343611
+"Oithona nana","Silverside",0.004502655
+"Oithona nana","Other Horsefish",0.001104367
+"Oithona nana","Gulf Pipefish",0.001532322
+"Oithona nana","Dwarf Seahorse",0.0003792776
+"Oithona nana","Jacks",5.293662e-05
+"Oithona nana","Pompano",6.774264e-05
+"Oithona nana","Mojarra",0.0005942693
+"Oithona nana","Grunt",0.005260196
+"Oithona nana","Scianids",0.001384262
+"Oithona nana","Spotted Seatrout",0.0005800717
+"Oithona nana","Code Goby",0.0024075
+"Oithona nana","Clown Goby",0.0002464291
+"Oithona nana","Flatfish",0.0003336426
+"Oithona nana","Other Pelagic Fishes",1.957235e-05
+"Oithona nana","Water POC",4.66609
+"Paracalanus","Meroplankton",0.0061082
+"Paracalanus","Coral",0.0001645375
+"Paracalanus","Other Cnidaridae",0.0001594592
+"Paracalanus","Echinoderma",2.386809e-05
+"Paracalanus","Pink Shrimp",0.0009598019
+"Paracalanus","Sardines",3.727485e-05
+"Paracalanus","Anchovy",1.157856e-06
+"Paracalanus","Bay Anchovy",0.0009100345
+"Paracalanus","Halfbeaks",0.0004712678
+"Paracalanus","Needlefish",0.0004621269
+"Paracalanus","Other Killifish",4.428292e-06
+"Paracalanus","Goldspotted killifish",9.801153e-05
+"Paracalanus","Rainwater killifish",4.13375e-05
+"Paracalanus","Silverside",7.932331e-05
+"Paracalanus","Other Horsefish",1.950074e-05
+"Paracalanus","Gulf Pipefish",2.701665e-05
+"Paracalanus","Dwarf Seahorse",6.683065e-06
+"Paracalanus","Jacks",9.333947e-07
+"Paracalanus","Pompano",1.188326e-06
+"Paracalanus","Mojarra",1.046133e-05
+"Paracalanus","Grunt",9.273007e-05
+"Paracalanus","Scianids",2.437592e-05
+"Paracalanus","Spotted Seatrout",1.02582e-05
+"Paracalanus","Code Goby",4.245473e-05
+"Paracalanus","Clown Goby",4.336883e-06
+"Paracalanus","Flatfish",5.880691e-06
+"Paracalanus","Other Pelagic Fishes",3.453256e-07
+"Paracalanus","Water POC",2.449087
+"Other Copepoda","Meroplankton",0.2683339
+"Other Copepoda","Coral",0.006469587
+"Other Copepoda","Other Cnidaridae",0.0001162975
+"Other Copepoda","Echinoderma",0.001055292
+"Other Copepoda","Pink Shrimp",0.04245828
+"Other Copepoda","Sardines",0.001649702
+"Other Copepoda","Anchovy",5.125705e-05
+"Other Copepoda","Bay Anchovy",0.04023571
+"Other Copepoda","Halfbeaks",0.0004458071
+"Other Copepoda","Needlefish",0.0008916142
+"Other Copepoda","Other Killifish",0.0001959828
+"Other Copepoda","Goldspotted killifish",0.004335312
+"Other Copepoda","Rainwater killifish",0.001826302
+"Other Copepoda","Silverside",0.004048876
+"Other Copepoda","Other Horsefish",0.0004307315
+"Other Copepoda","Gulf Pipefish",0.001194203
+"Other Copepoda","Dwarf Seahorse",0.0001475255
+"Other Copepoda","Jacks",4.124254e-05
+"Other Copepoda","Pompano",5.27646e-05
+"Other Copepoda","Mojarra",0.0004630364
+"Other Copepoda","Grunt",0.002141812
+"Other Copepoda","Scianids",0.001077906
+"Other Copepoda","Spotted Seatrout",0.0004511912
+"Other Copepoda","Code Goby",0.001876912
+"Other Copepoda","Clown Goby",0.0001916755
+"Other Copepoda","Flatfish",0.0002605926
+"Other Copepoda","Other Pelagic Fishes",1.529097e-05
+"Other Copepoda","Water POC",8.003636
+"Meroplankton","Other Cnidaridae",0.005769383
+"Meroplankton","Sardines",6.669807e-05
+"Meroplankton","Anchovy",5.002355e-05
+"Meroplankton","Bay Anchovy",0.02095257
+"Meroplankton","Halfbeaks",6.482218e-06
+"Meroplankton","Needlefish",1.594501e-05
+"Meroplankton","Other Killifish",3.136894e-06
+"Meroplankton","Goldspotted killifish",0.01477675
+"Meroplankton","Rainwater killifish",1.948834e-05
+"Meroplankton","Snook",1.615344e-05
+"Meroplankton","Silverside",0.001567405
+"Meroplankton","Flatfish",1.250589e-05
+"Meroplankton","Other Pelagic Fishes",3.397433e-08
+"Meroplankton","Water POC",0.3916948
+"Other Zooplankton","Meroplankton",0.2388208
+"Other Zooplankton","Coral",0.002148907
+"Other Zooplankton","Other Cnidaridae",0.004321358
+"Other Zooplankton","Echinoderma",0.0008411558
+"Other Zooplankton","Suspension Feeding Polych",0.009239872
+"Other Zooplankton","Pink Shrimp",0.0003381746
+"Other Zooplankton","Sardines",0.001195383
+"Other Zooplankton","Anchovy",4.08806e-05
+"Other Zooplankton","Bay Anchovy",0.0320795
+"Other Zooplankton","Halfbeaks",0.0003981043
+"Other Zooplankton","Needlefish",0.0007576823
+"Other Zooplankton","Other Killifish",0.0001562452
+"Other Zooplankton","Goldspotted killifish",0.003456658
+"Other Zooplankton","Rainwater killifish",0.0006474545
+"Other Zooplankton","Silverside",0.002152117
+"Other Zooplankton","Other Horsefish",0.0003435255
+"Other Zooplankton","Gulf Pipefish",0.001068032
+"Other Zooplankton","Dwarf Seahorse",0.000117719
+"Other Zooplankton","Flatfish",0.0002076135
+"Other Zooplankton","Water POC",4.625324
+"Benthic Flagellates","Benthic Ciliates",4.149095
+"Benthic Flagellates","Meiofauna",10.66494
+"Benthic Flagellates","Detritivorous Gastropods",0.003924961
+"Benthic Flagellates","Detritivorous Polychaetes",0.001181676
+"Benthic Flagellates","Predatory Polychaetes",0.01426687
+"Benthic Flagellates","Suspension Feeding Polych",0.008346525
+"Benthic Flagellates","Macrobenthos",0.03778473
+"Benthic Flagellates","Benthic Crustaceans",0.08251093
+"Benthic Flagellates","Detritivorous Amphipods",0.2320643
+"Benthic Flagellates","Mullet",0.002304518
+"Benthic Flagellates","Benthic POC",34.34194
+"Benthic Ciliates","Meiofauna",1.122645
+"Benthic Ciliates","Detritivorous Gastropods",0.0002547266
+"Benthic Ciliates","Detritivorous Polychaetes",0.392813
+"Benthic Ciliates","Predatory Polychaetes",0.0009277929
+"Benthic Ciliates","Suspension Feeding Polych",0.0006172223
+"Benthic Ciliates","Macrobenthos",0.002456153
+"Benthic Ciliates","Benthic Crustaceans",0.005363955
+"Benthic Ciliates","Detritivorous Amphipods",0.01597332
+"Benthic Ciliates","Mullet",0.0001498968
+"Benthic Ciliates","Benthic POC",4.050062
+"Meiofauna","Echinoderma",0.0264936
+"Meiofauna","Detritivorous Gastropods",0.004339416
+"Meiofauna","Predatory Polychaetes",0.63099
+"Meiofauna","Macrobenthos",0.3446744
+"Meiofauna","Predatory Shrimp",0.01668855
+"Meiofauna","Pink Shrimp",0.3078131
+"Meiofauna","Lobster",0.04410568
+"Meiofauna","Detritivorous Crabs",0.001787062
+"Meiofauna","Anchovy",1.478876e-05
+"Meiofauna","Grunt",0.005415997
+"Meiofauna","Scianids",0.003889548
+"Meiofauna","Parrotfish",0.00108382
+"Meiofauna","Mullet",0.007781165
+"Meiofauna","Flatfish",0.002669217
+"Meiofauna","Other Demersal Fishes",0.007218571
+"Meiofauna","Benthic POC",27.52173
+"Sponges","Echinoderma",0.1542531
+"Sponges","Sardines",0.002052329
+"Sponges","Mojarra",0.001683416
+"Sponges","Porgy",9.344431e-06
+"Sponges","Pinfish",0.006519819
+"Sponges","Parrotfish",0.0004712755
+"Sponges","Filefishes",0.005229638
+"Sponges","Other Demersal Fishes",0.0005939085
+"Sponges","Loggerhead Turtle",0.0001084441
+"Sponges","Hawksbill Turtle",8.097832e-06
+"Sponges","Manatee",7.722838e-05
+"Sponges","Water POC",0.07693244
+"Coral","Spadefish",0.0003734425
+"Coral","Parrotfish",1.405654e-05
+"Coral","Filefishes",0.0001563004
+"Coral","Benthic POC",0.007970271
+"Other Cnidaridae","Echinoderma",0.050074
+"Other Cnidaridae","Mojarra",4.391454e-05
+"Other Cnidaridae","Pinfish",0.00401979
+"Other Cnidaridae","Spadefish",0.004077928
+"Other Cnidaridae","Filefishes",0.001708826
+"Other Cnidaridae","Loggerhead Turtle",5.273898e-05
+"Other Cnidaridae","Hawksbill Turtle",6.000617e-08
+"Other Cnidaridae","Benthic POC",0.01329375
+"Echinoderma","Predatory Polychaetes",0.05003602
+"Echinoderma","Lobster",0.005877969
+"Echinoderma","Catfish",0.003814868
+"Echinoderma","Parrotfish",0.0001293861
+"Echinoderma","Filefishes",0.01799781
+"Echinoderma","Puffer",0.00241487
+"Echinoderma","Other Demersal Fishes",0.002379491
+"Echinoderma","Greeb",8.460637e-06
+"Echinoderma","Loggerhead Turtle",0.0001283753
+"Echinoderma","Hawksbill Turtle",1.455593e-07
+"Echinoderma","Manatee",0.0001455593
+"Echinoderma","Benthic POC",0.2448328
+"Bivalves","Echinoderma",0.06405088
+"Bivalves","Predatory Gastropods",0.0125534
+"Bivalves","Predatory Polychaetes",0.0379689
+"Bivalves","Predatory Shrimp",0.063504
+"Bivalves","Omnivorous Crabs",0.02478584
+"Bivalves","Predatory Crabs",0.00124706
+"Bivalves","Callinectus sapidus",0.007697021
+"Bivalves","Stone Crab",0.0003332309
+"Bivalves","Sharks",0.0002422568
+"Bivalves","Rays",0.03032401
+"Bivalves","Bonefish",0.0008923638
+"Bivalves","Sardines",0.002281507
+"Bivalves","Anchovy",2.524787e-05
+"Bivalves","Catfish",0.0003056321
+"Bivalves","Other Killifish",0.001328835
+"Bivalves","Goldspotted killifish",0.008909328
+"Bivalves","Rainwater killifish",0.008260244
+"Bivalves","Pompano",0.0007165487
+"Bivalves","Mojarra",0.002504343
+"Bivalves","Grunt",0.003877132
+"Bivalves","Porgy",0.0002678114
+"Bivalves","Pinfish",0.0003863843
+"Bivalves","Scianids",0.0016406
+"Bivalves","Red Drum",4.119389e-05
+"Bivalves","Parrotfish",4.569148e-05
+"Bivalves","Filefishes",0.0001134621
+"Bivalves","Puffer",0.02308697
+"Bivalves","Other Demersal Fishes",1.369722e-05
+"Bivalves","Greeb",1.042624e-05
+"Bivalves","Big Herons & Egrets",0.0005131348
+"Bivalves","Small Herons & Egrets",0.0003311866
+"Bivalves","Ibis",0.0002535008
+"Bivalves","Roseate Spoonbill",0.0001778595
+"Bivalves","Herbivorous Ducks",0.0003107429
+"Bivalves","Omnivorous Ducks",0.001310436
+"Bivalves","Predatory Ducks",2.156802e-05
+"Bivalves","Gruiformes",0.0005356227
+"Bivalves","Small Shorebirds",0.0001819482
+"Bivalves","Gulls & Terns",0.0004262494
+"Bivalves","Loggerhead Turtle",0.0004211385
+"Bivalves","Hawksbill Turtle",4.794028e-07
+"Bivalves","Dolphin",6.879277e-05
+"Bivalves","Manatee",0.0001788816
+"Bivalves","Benthic POC",0.3838443
+"Detritivorous Gastropods","Echinoderma",0.003712812
+"Detritivorous Gastropods","Predatory Gastropods",0.0213942
+"Detritivorous Gastropods","Predatory Shrimp",0.03339564
+"Detritivorous Gastropods","Lobster",0.006017279
+"Detritivorous Gastropods","Stone Crab",1.935049e-05
+"Detritivorous Gastropods","Sharks",1.521135e-05
+"Detritivorous Gastropods","Rays",0.00176224
+"Detritivorous Gastropods","Bonefish",5.184277e-05
+"Detritivorous Gastropods","Sardines",0.004552023
+"Detritivorous Gastropods","Anchovy",4.718623e-05
+"Detritivorous Gastropods","Catfish",0.0001241743
+"Detritivorous Gastropods","Other Killifish",0.0001541831
+"Detritivorous Gastropods","Goldspotted killifish",0.0126844
+"Detritivorous Gastropods","Rainwater killifish",0.001055481
+"Detritivorous Gastropods","Gulf Pipefish",0.0003756272
+"Detritivorous Gastropods","Pompano",4.159839e-05
+"Detritivorous Gastropods","Mojarra",0.000352862
+"Detritivorous Gastropods","Grunt",0.0002255833
+"Detritivorous Gastropods","Porgy",1.552179e-05
+"Detritivorous Gastropods","Pinfish",0.0002990531
+"Detritivorous Gastropods","Red Drum",2.390355e-05
+"Detritivorous Gastropods","Filefishes",0.0007357327
+"Detritivorous Gastropods","Puffer",0.009097837
+"Detritivorous Gastropods","Other Demersal Fishes",8.847419e-05
+"Detritivorous Gastropods","Big Herons & Egrets",0.0003280271
+"Detritivorous Gastropods","Small Herons & Egrets",0.0002110963
+"Detritivorous Gastropods","Ibis",0.0001624614
+"Detritivorous Gastropods","Roseate Spoonbill",0.0001138264
+"Detritivorous Gastropods","Herbivorous Ducks",0.0001986789
+"Detritivorous Gastropods","Omnivorous Ducks",0.0008381765
+"Detritivorous Gastropods","Predatory Ducks",1.376265e-05
+"Detritivorous Gastropods","Gruiformes",0.0003425141
+"Detritivorous Gastropods","Small Shorebirds",0.000115896
+"Detritivorous Gastropods","Gulls & Terns",0.0002721487
+"Detritivorous Gastropods","Loggerhead Turtle",8.071329e-05
+"Detritivorous Gastropods","Hawksbill Turtle",9.17855e-08
+"Detritivorous Gastropods","Manatee",1.148612e-05
+"Detritivorous Gastropods","Benthic POC",0.07500438
+"Epiphytic Gastropods","Stone Crab",2.456652e-06
+"Epiphytic Gastropods","Sharks",1.760601e-06
+"Epiphytic Gastropods","Rays",0.0002231459
+"Epiphytic Gastropods","Bonefish",6.581781e-06
+"Epiphytic Gastropods","Sardines",0.0005251094
+"Epiphytic Gastropods","Anchovy",5.988089e-06
+"Epiphytic Gastropods","Catfish",4.268433e-05
+"Epiphytic Gastropods","Goldspotted killifish",0.001610131
+"Epiphytic Gastropods","Mojarra",4.473154e-05
+"Epiphytic Gastropods","Grunt",2.855858e-05
+"Epiphytic Gastropods","Porgy",1.975558e-06
+"Epiphytic Gastropods","Pinfish",3.787339e-05
+"Epiphytic Gastropods","Red Drum",1.514935e-05
+"Epiphytic Gastropods","Filefishes",9.30457e-05
+"Epiphytic Gastropods","Puffer",0.001282577
+"Epiphytic Gastropods","Other Demersal Fishes",1.125966e-05
+"Epiphytic Gastropods","Ibis",2.282639e-05
+"Epiphytic Gastropods","Herbivorous Ducks",2.794442e-05
+"Epiphytic Gastropods","Omnivorous Ducks",0.0001177146
+"Epiphytic Gastropods","Gruiformes",4.831416e-05
+"Epiphytic Gastropods","Small Shorebirds",1.637768e-05
+"Epiphytic Gastropods","Gulls & Terns",3.838519e-05
+"Epiphytic Gastropods","Loggerhead Turtle",1.136202e-05
+"Epiphytic Gastropods","Benthic POC",0.01442976
+"Predatory Gastropods","Stone Crab",2.471903e-06
+"Predatory Gastropods","Sharks",2.070761e-06
+"Predatory Gastropods","Rays",0.0002255069
+"Predatory Gastropods","Bonefish",6.635107e-06
+"Predatory Gastropods","Sardines",0.0005832823
+"Predatory Gastropods","Anchovy",6.049657e-06
+"Predatory Gastropods","Catfish",4.304147e-05
+"Predatory Gastropods","Pompano",5.323264e-06
+"Predatory Gastropods","Mojarra",4.52098e-05
+"Predatory Gastropods","Grunt",2.883887e-05
+"Predatory Gastropods","Porgy",1.994869e-06
+"Predatory Gastropods","Pinfish",3.827112e-05
+"Predatory Gastropods","Red Drum",1.528677e-05
+"Predatory Gastropods","Filefishes",0.0007708433
+"Predatory Gastropods","Puffer",0.00116548
+"Predatory Gastropods","Other Demersal Fishes",1.138376e-05
+"Predatory Gastropods","Herbivorous Ducks",2.536953e-05
+"Predatory Gastropods","Omnivorous Ducks",0.0001073326
+"Predatory Gastropods","Gruiformes",4.39088e-05
+"Predatory Gastropods","Small Shorebirds",1.48531e-05
+"Predatory Gastropods","Gulls & Terns",3.491021e-05
+"Predatory Gastropods","Loggerhead Turtle",1.033212e-05
+"Predatory Gastropods","Benthic POC",0.0111344
+"Detritivorous Polychaetes","Predatory Polychaetes",0.1228382
+"Detritivorous Polychaetes","Predatory Shrimp",0.0812204
+"Detritivorous Polychaetes","Omnivorous Crabs",0.01168215
+"Detritivorous Polychaetes","Rays",0.009535977
+"Detritivorous Polychaetes","Bonefish",0.0002808548
+"Detritivorous Polychaetes","Catfish",0.001940817
+"Detritivorous Polychaetes","Eels",2.607219e-05
+"Detritivorous Polychaetes","Goldspotted killifish",0.002846801
+"Detritivorous Polychaetes","Pompano",0.0002254892
+"Detritivorous Polychaetes","Mojarra",0.005510391
+"Detritivorous Polychaetes","Grunt",0.007224713
+"Detritivorous Polychaetes","Porgy",0.0001137512
+"Detritivorous Polychaetes","Pinfish",0.00802198
+"Detritivorous Polychaetes","Scianids",0.002273011
+"Detritivorous Polychaetes","Parrotfish",1.439507e-05
+"Detritivorous Polychaetes","Code Goby",0.008007885
+"Detritivorous Polychaetes","Clown Goby",0.0008184049
+"Detritivorous Polychaetes","Flatfish",0.0007217667
+"Detritivorous Polychaetes","Filefishes",0.00398532
+"Detritivorous Polychaetes","Puffer",0.00109322
+"Detritivorous Polychaetes","Other Demersal Fishes",0.0004791644
+"Detritivorous Polychaetes","Big Herons & Egrets",0.0003553468
+"Detritivorous Polychaetes","Small Herons & Egrets",0.0002285091
+"Detritivorous Polychaetes","Ibis",0.0001751568
+"Detritivorous Polychaetes","Roseate Spoonbill",0.0001228111
+"Detritivorous Polychaetes","Herbivorous Ducks",5.365434e-05
+"Detritivorous Polychaetes","Omnivorous Ducks",0.0004529916
+"Detritivorous Polychaetes","Predatory Ducks",7.479396e-06
+"Detritivorous Polychaetes","Gruiformes",0.0003704465
+"Detritivorous Polychaetes","Small Shorebirds",0.0002093828
+"Detritivorous Polychaetes","Gulls & Terns",0.0004912443
+"Detritivorous Polychaetes","Loggerhead Turtle",0.000145964
+"Detritivorous Polychaetes","Hawksbill Turtle",1.660969e-07
+"Detritivorous Polychaetes","Manatee",6.190885e-05
+"Detritivorous Polychaetes","Benthic POC",0.6525033
+"Predatory Polychaetes","Predatory Shrimp",0.1632525
+"Predatory Polychaetes","Omnivorous Crabs",0.009600743
+"Predatory Polychaetes","Rays",0.007836944
+"Predatory Polychaetes","Bonefish",0.0002309492
+"Predatory Polychaetes","Catfish",0.001143505
+"Predatory Polychaetes","Eels",2.145988e-05
+"Predatory Polychaetes","Goldspotted killifish",0.002339127
+"Predatory Polychaetes","Pompano",0.0001849637
+"Predatory Polychaetes","Mojarra",0.004528035
+"Predatory Polychaetes","Grunt",0.005937234
+"Predatory Polychaetes","Porgy",9.309502e-05
+"Predatory Polychaetes","Pinfish",0.006592271
+"Predatory Polychaetes","Scianids",0.001868032
+"Predatory Polychaetes","Parrotfish",1.185403e-05
+"Predatory Polychaetes","Code Goby",0.006581031
+"Predatory Polychaetes","Clown Goby",0.0006734316
+"Predatory Polychaetes","Flatfish",0.0006141614
+"Predatory Polychaetes","Filefishes",0.003275187
+"Predatory Polychaetes","Puffer",0.0009983955
+"Predatory Polychaetes","Other Demersal Fishes",0.0003934312
+"Predatory Polychaetes","Greeb",1.645258e-05
+"Predatory Polychaetes","Big Herons & Egrets",0.000323942
+"Predatory Polychaetes","Small Herons & Egrets",0.0002094893
+"Predatory Polychaetes","Ibis",0.0001604382
+"Predatory Polychaetes","Roseate Spoonbill",0.0001124089
+"Predatory Polychaetes","Herbivorous Ducks",4.905116e-05
+"Predatory Polychaetes","Omnivorous Ducks",0.0004138692
+"Predatory Polychaetes","Predatory Ducks",6.826287e-06
+"Predatory Polychaetes","Gruiformes",0.0003382486
+"Predatory Polychaetes","Small Shorebirds",0.0001910951
+"Predatory Polychaetes","Gulls & Terns",0.0004486137
+"Predatory Polychaetes","Loggerhead Turtle",0.0001328469
+"Predatory Polychaetes","Hawksbill Turtle",1.512411e-07
+"Predatory Polychaetes","Manatee",5.651102e-05
+"Predatory Polychaetes","Benthic POC",0.2607355
+"Suspension Feeding Polych","Predatory Polychaetes",0.1407042
+"Suspension Feeding Polych","Omnivorous Crabs",0.01283639
+"Suspension Feeding Polych","Rays",0.00493214
+"Suspension Feeding Polych","Bonefish",0.0001452987
+"Suspension Feeding Polych","Catfish",0.00104114
+"Suspension Feeding Polych","Eels",1.352781e-05
+"Suspension Feeding Polych","Goldspotted killifish",0.001472026
+"Suspension Feeding Polych","Rainwater killifish",0.001102266
+"Suspension Feeding Polych","Pompano",0.000116239
+"Suspension Feeding Polych","Mojarra",0.002849858
+"Suspension Feeding Polych","Grunt",0.003735679
+"Suspension Feeding Polych","Porgy",5.85203e-05
+"Suspension Feeding Polych","Pinfish",0.004148528
+"Suspension Feeding Polych","Scianids",0.001175416
+"Suspension Feeding Polych","Parrotfish",7.425264e-06
+"Suspension Feeding Polych","Code Goby",0.004141514
+"Suspension Feeding Polych","Clown Goby",0.0004238713
+"Suspension Feeding Polych","Flatfish",0.0003717642
+"Suspension Feeding Polych","Filefishes",0.00204821
+"Suspension Feeding Polych","Puffer",0.0006282916
+"Suspension Feeding Polych","Other Demersal Fishes",0.0002465068
+"Suspension Feeding Polych","Greeb",8.487447e-06
+"Suspension Feeding Polych","Big Herons & Egrets",0.000167344
+"Suspension Feeding Polych","Small Herons & Egrets",0.0001072204
+"Suspension Feeding Polych","Ibis",8.246954e-05
+"Suspension Feeding Polych","Roseate Spoonbill",5.771865e-05
+"Suspension Feeding Polych","Herbivorous Ducks",2.525191e-05
+"Suspension Feeding Polych","Omnivorous Ducks",0.0002134388
+"Suspension Feeding Polych","Predatory Ducks",3.51723e-06
+"Suspension Feeding Polych","Gruiformes",0.0001743584
+"Suspension Feeding Polych","Small Shorebirds",9.85025e-05
+"Suspension Feeding Polych","Gulls & Terns",0.0002314758
+"Suspension Feeding Polych","Loggerhead Turtle",6.84407e-05
+"Suspension Feeding Polych","Hawksbill Turtle",7.786006e-08
+"Suspension Feeding Polych","Manatee",2.915994e-05
+"Suspension Feeding Polych","Benthic POC",0.1418817
+"Macrobenthos","Predatory Polychaetes",0.06249325
+"Macrobenthos","Pink Shrimp",0.004827263
+"Macrobenthos","Lobster",0.006916722
+"Macrobenthos","Rays",0.002253338
+"Macrobenthos","Bonefish",6.626861e-05
+"Macrobenthos","Sardines",0.003479358
+"Macrobenthos","Anchovy",2.34552e-07
+"Macrobenthos","Catfish",0.007330517
+"Macrobenthos","Other Killifish",0.0001976792
+"Macrobenthos","Goldspotted killifish",0.01203077
+"Macrobenthos","Rainwater killifish",0.0002212368
+"Macrobenthos","Pompano",5.326071e-05
+"Macrobenthos","Mojarra",0.0002458187
+"Macrobenthos","Grunt",8.480744e-05
+"Macrobenthos","Pinfish",0.02801923
+"Macrobenthos","Scianids",0.0001218851
+"Macrobenthos","Spadefish",0.002247192
+"Macrobenthos","Parrotfish",1.700246e-05
+"Macrobenthos","Mullet",0.0001218851
+"Macrobenthos","Flatfish",0.0002089459
+"Macrobenthos","Puffer",0.002676351
+"Macrobenthos","Other Demersal Fishes",0.0001136911
+"Macrobenthos","Big Herons & Egrets",0.0004199402
+"Macrobenthos","Small Herons & Egrets",0.0002704005
+"Macrobenthos","Ibis",0.0002068974
+"Macrobenthos","Roseate Spoonbill",0.0001454427
+"Macrobenthos","Gruiformes",0.0004383766
+"Macrobenthos","Small Shorebirds",0.0001485154
+"Macrobenthos","Gulls & Terns",0.0003482431
+"Macrobenthos","Manatee",1.464669e-05
+"Macrobenthos","Benthic POC",0.217231
+"Benthic Crustaceans","Other Cnidaridae",0.0007925035
+"Benthic Crustaceans","Echinoderma",9.369758e-05
+"Benthic Crustaceans","Predatory Polychaetes",0.01596837
+"Benthic Crustaceans","Pink Shrimp",0.0006585003
+"Benthic Crustaceans","Lobster",0.001038525
+"Benthic Crustaceans","Omnivorous Crabs",0.02456552
+"Benthic Crustaceans","Rays",0.005983035
+"Benthic Crustaceans","Bonefish",9.013811e-06
+"Benthic Crustaceans","Sardines",0.0003758372
+"Benthic Crustaceans","Anchovy",3.789779e-06
+"Benthic Crustaceans","Catfish",0.004190742
+"Benthic Crustaceans","Other Killifish",2.690534e-05
+"Benthic Crustaceans","Goldspotted killifish",0.008519675
+"Benthic Crustaceans","Rainwater killifish",3.004604e-05
+"Benthic Crustaceans","Snook",6.448906e-07
+"Benthic Crustaceans","Other Horsefish",5.914987e-05
+"Benthic Crustaceans","Gulf Pipefish",0.0009181316
+"Benthic Crustaceans","Dwarf Seahorse",2.030987e-05
+"Benthic Crustaceans","Pompano",7.255019e-06
+"Benthic Crustaceans","Mojarra",0.002817209
+"Benthic Crustaceans","Grunt",0.0003213984
+"Benthic Crustaceans","Porgy",6.899073e-06
+"Benthic Crustaceans","Pinfish",0.002701003
+"Benthic Crustaceans","Scianids",1.821606e-05
+"Benthic Crustaceans","Red Drum",0.0008793963
+"Benthic Crustaceans","Spadefish",0.0003067418
+"Benthic Crustaceans","Mullet",1.737855e-05
+"Benthic Crustaceans","Blennies",0.0002889445
+"Benthic Crustaceans","Code Goby",0.01659651
+"Benthic Crustaceans","Clown Goby",0.0003161639
+"Benthic Crustaceans","Flatfish",5.967332e-05
+"Benthic Crustaceans","Puffer",0.003074746
+"Benthic Crustaceans","Other Demersal Fishes",1.612227e-05
+"Benthic Crustaceans","Benthic POC",0.03047736
+"Detritivorous Amphipods","Other Cnidaridae",0.006559315
+"Detritivorous Amphipods","Echinoderma",0.0007761142
+"Detritivorous Amphipods","Predatory Polychaetes",0.01595427
+"Detritivorous Amphipods","Predatory Shrimp",0.1021155
+"Detritivorous Amphipods","Lobster",0.00754044
+"Detritivorous Amphipods","Omnivorous Crabs",0.0215743
+"Detritivorous Amphipods","Stone Crab",0.001421481
+"Detritivorous Amphipods","Sardines",0.001712263
+"Detritivorous Amphipods","Anchovy",1.673562e-05
+"Detritivorous Amphipods","Bay Anchovy",0.005023823
+"Detritivorous Amphipods","Eels",3.001951e-05
+"Detritivorous Amphipods","Needlefish",0.002057435
+"Detritivorous Amphipods","Other Killifish",0.0002907813
+"Detritivorous Amphipods","Goldspotted killifish",0.002501974
+"Detritivorous Amphipods","Rainwater killifish",0.001808492
+"Detritivorous Amphipods","Snook",6.9662e-06
+"Detritivorous Amphipods","Silverside",0.0002447584
+"Detritivorous Amphipods","Other Horsefish",0.003606525
+"Detritivorous Amphipods","Gulf Pipefish",0.002894216
+"Detritivorous Amphipods","Dwarf Seahorse",0.001238436
+"Detritivorous Amphipods","Mojarra",0.0005972522
+"Detritivorous Amphipods","Grunt",0.0023524
+"Detritivorous Amphipods","Porgy",5.041604e-05
+"Detritivorous Amphipods","Pinfish",0.01575449
+"Detritivorous Amphipods","Scianids",0.0009602059
+"Detritivorous Amphipods","Spotted Seatrout",0.0003420341
+"Detritivorous Amphipods","Red Drum",0.0001108734
+"Detritivorous Amphipods","Spadefish",0.002449675
+"Detritivorous Amphipods","Mullet",0.0001328389
+"Detritivorous Amphipods","Blennies",0.002209101
+"Detritivorous Amphipods","Code Goby",0.02138079
+"Detritivorous Amphipods","Clown Goby",0.00218609
+"Detritivorous Amphipods","Flatfish",0.0004560455
+"Detritivorous Amphipods","Puffer",0.00138801
+"Detritivorous Amphipods","Other Demersal Fishes",0.0001234252
+"Detritivorous Amphipods","Manatee",1.443447e-05
+"Detritivorous Amphipods","Benthic POC",0.134341
+"Herbivorous Amphipods","Other Cnidaridae",0.007255004
+"Herbivorous Amphipods","Echinoderma",0.0008579613
+"Herbivorous Amphipods","Predatory Polychaetes",0.04352584
+"Herbivorous Amphipods","Predatory Shrimp",0.07597665
+"Herbivorous Amphipods","Lobster",0.008340011
+"Herbivorous Amphipods","Omnivorous Crabs",0.02385865
+"Herbivorous Amphipods","Sardines",0.001893793
+"Herbivorous Amphipods","Anchovy",1.851941e-05
+"Herbivorous Amphipods","Bay Anchovy",0.005555823
+"Herbivorous Amphipods","Eels",3.327215e-05
+"Herbivorous Amphipods","Needlefish",0.004501158
+"Herbivorous Amphipods","Other Killifish",0.0004771102
+"Herbivorous Amphipods","Goldspotted killifish",0.004104612
+"Herbivorous Amphipods","Rainwater killifish",0.003626456
+"Herbivorous Amphipods","Snook",1.140461e-05
+"Herbivorous Amphipods","Silverside",0.0002709902
+"Herbivorous Amphipods","Other Horsefish",0.005244027
+"Herbivorous Amphipods","Gulf Pipefish",0.004208195
+"Herbivorous Amphipods","Dwarf Seahorse",0.001800672
+"Herbivorous Amphipods","Mojarra",0.0006612579
+"Herbivorous Amphipods","Grunt",0.002602134
+"Herbivorous Amphipods","Porgy",5.576748e-05
+"Herbivorous Amphipods","Pinfish",0.01742603
+"Herbivorous Amphipods","Scianids",0.001061989
+"Herbivorous Amphipods","Spotted Seatrout",0.0003787585
+"Herbivorous Amphipods","Red Drum",0.0001234627
+"Herbivorous Amphipods","Spadefish",0.002709902
+"Herbivorous Amphipods","Mullet",0.0001475275
+"Herbivorous Amphipods","Blennies",0.002443097
+"Herbivorous Amphipods","Code Goby",0.02364834
+"Herbivorous Amphipods","Clown Goby",0.002417986
+"Herbivorous Amphipods","Flatfish",0.0005043139
+"Herbivorous Amphipods","Puffer",0.00153596
+"Herbivorous Amphipods","Other Demersal Fishes",0.0001360183
+"Herbivorous Amphipods","Manatee",1.946107e-05
+"Herbivorous Amphipods","Benthic POC",0.1485916
+"Isopods","Other Cnidaridae",0.01622049
+"Isopods","Echinoderma",0.00182673
+"Isopods","Predatory Polychaetes",0.0610384
+"Isopods","Lobster",0.0177601
+"Isopods","Bonefish",0.000170068
+"Isopods","Sardines",0.003774509
+"Isopods","Anchovy",3.841536e-06
+"Isopods","Bay Anchovy",0.01183173
+"Isopods","Other Killifish",0.0005072028
+"Isopods","Rainwater killifish",0.0005942376
+"Isopods","Snook",1.210484e-05
+"Isopods","Silverside",0.0006342536
+"Isopods","Other Horsefish",5.382152e-05
+"Isopods","Gulf Pipefish",0.0009293716
+"Isopods","Dwarf Seahorse",1.85074e-05
+"Isopods","Pompano",0.0001370548
+"Isopods","Other Snapper",0.00172569
+"Isopods","Mojarra",0.002036814
+"Isopods","Grunt",0.005540215
+"Isopods","Porgy",0.0001190476
+"Isopods","Pinfish",0.0006772708
+"Isopods","Scianids",0.002261905
+"Isopods","Red Drum",0.0001310524
+"Isopods","Spadefish",0.005770307
+"Isopods","Mullet",0.0003131252
+"Isopods","Blennies",0.00260104
+"Isopods","Flatfish",0.0005372148
+"Isopods","Other Demersal Fishes",0.0002911164
+"Isopods","Manatee",3.731492e-05
+"Isopods","Benthic POC",0.1455532
+"Herbivorous Shrimp","Other Cnidaridae",0.02562061
+"Herbivorous Shrimp","Predatory Shrimp",0.1720592
+"Herbivorous Shrimp","Predatory Crabs",0.000225437
+"Herbivorous Shrimp","Callinectus sapidus",0.001390195
+"Herbivorous Shrimp","Bonefish",0.0002457466
+"Herbivorous Shrimp","Sardines",0.002114233
+"Herbivorous Shrimp","Anchovy",0.0001188114
+"Herbivorous Shrimp","Bay Anchovy",0.01345311
+"Herbivorous Shrimp","Lizardfish",0.001711087
+"Herbivorous Shrimp","Catfish",0.0001309972
+"Herbivorous Shrimp","Eels",0.0009443982
+"Herbivorous Shrimp","Toadfish",0.004503662
+"Herbivorous Shrimp","Brotalus",0.001671483
+"Herbivorous Shrimp","Needlefish",0.005688729
+"Herbivorous Shrimp","Other Killifish",0.000731147
+"Herbivorous Shrimp","Goldspotted killifish",0.02067623
+"Herbivorous Shrimp","Rainwater killifish",0.0008570667
+"Herbivorous Shrimp","Snook",3.828367e-05
+"Herbivorous Shrimp","Silverside",0.0001309972
+"Herbivorous Shrimp","Other Horsefish",0.0003208923
+"Herbivorous Shrimp","Gulf Pipefish",0.001976128
+"Herbivorous Shrimp","Dwarf Seahorse",0.0001106875
+"Herbivorous Shrimp","Grouper",2.376228e-05
+"Herbivorous Shrimp","Jacks",0.0002051273
+"Herbivorous Shrimp","Pompano",0.0001970035
+"Herbivorous Shrimp","Other Snapper",0.00119116
+"Herbivorous Shrimp","Gray Snapper",0.000923073
+"Herbivorous Shrimp","Mojarra",0.0004620443
+"Herbivorous Shrimp","Grunt",0.002197503
+"Herbivorous Shrimp","Porgy",7.291161e-05
+"Herbivorous Shrimp","Pinfish",6.854502e-05
+"Herbivorous Shrimp","Scianids",0.007375445
+"Herbivorous Shrimp","Spotted Seatrout",0.002101032
+"Herbivorous Shrimp","Red Drum",0.0002833194
+"Herbivorous Shrimp","Spadefish",0.004160429
+"Herbivorous Shrimp","Blennies",0.0006884967
+"Herbivorous Shrimp","Flatfish",0.0008448809
+"Herbivorous Shrimp","Puffer",0.001535409
+"Herbivorous Shrimp","Other Pelagic Fishes",7.595805e-05
+"Herbivorous Shrimp","Other Demersal Fishes",0.000419394
+"Herbivorous Shrimp","Loon",1.167804e-06
+"Herbivorous Shrimp","Greeb",1.573997e-05
+"Herbivorous Shrimp","Pelican",0.001877626
+"Herbivorous Shrimp","Comorant",0.0003320626
+"Herbivorous Shrimp","Big Herons & Egrets",0.001544548
+"Herbivorous Shrimp","Small Herons & Egrets",0.0009951723
+"Herbivorous Shrimp","Ibis",0.0007626269
+"Herbivorous Shrimp","Roseate Spoonbill",0.0005341435
+"Herbivorous Shrimp","Herbivorous Ducks",0.0004671217
+"Herbivorous Shrimp","Omnivorous Ducks",0.001972066
+"Herbivorous Shrimp","Predatory Ducks",3.249542e-05
+"Herbivorous Shrimp","Gruiformes",0.00161157
+"Herbivorous Shrimp","Small Shorebirds",0.0005463293
+"Herbivorous Shrimp","Gulls & Terns",0.001281538
+"Herbivorous Shrimp","Kingfisher",6.235059e-06
+"Herbivorous Shrimp","Crocodiles",0.0004133012
+"Herbivorous Shrimp","Loggerhead Turtle",0.0007595805
+"Herbivorous Shrimp","Hawksbill Turtle",8.641751e-07
+"Herbivorous Shrimp","Dolphin",2.071583e-05
+"Herbivorous Shrimp","Manatee",5.382054e-05
+"Herbivorous Shrimp","Water POC",0.8107354
+"Predatory Shrimp","Other Cnidaridae",0.0118653
+"Predatory Shrimp","Predatory Crabs",0.001559403
+"Predatory Shrimp","Callinectus sapidus",0.009623526
+"Predatory Shrimp","Sharks",2.087134e-06
+"Predatory Shrimp","Rays",0.004254293
+"Predatory Shrimp","Bonefish",0.0001254443
+"Predatory Shrimp","Sardines",0.002155263
+"Predatory Shrimp","Anchovy",0.0001211187
+"Predatory Shrimp","Bay Anchovy",0.006859426
+"Predatory Shrimp","Lizardfish",0.003805505
+"Predatory Shrimp","Catfish",0.0002909011
+"Predatory Shrimp","Eels",0.0004812304
+"Predatory Shrimp","Toadfish",0.002295848
+"Predatory Shrimp","Brotalus",0.0008521563
+"Predatory Shrimp","Needlefish",0.001897886
+"Predatory Shrimp","Other Killifish",7.450961e-05
+"Predatory Shrimp","Goldspotted killifish",0.002107681
+"Predatory Shrimp","Rainwater killifish",0.0005093472
+"Predatory Shrimp","Snook",1.957364e-05
+"Predatory Shrimp","Silverside",6.693969e-05
+"Predatory Shrimp","Other Horsefish",0.0001632939
+"Predatory Shrimp","Gulf Pipefish",0.0005039402
+"Predatory Shrimp","Dwarf Seahorse",5.623367e-05
+"Predatory Shrimp","Grouper",1.211187e-05
+"Predatory Shrimp","Jacks",0.0001047893
+"Predatory Shrimp","Pompano",0.0001004636
+"Predatory Shrimp","Other Snapper",0.001268502
+"Predatory Shrimp","Gray Snapper",0.0009830077
+"Predatory Shrimp","Mojarra",0.00025954
+"Predatory Shrimp","Grunt",0.003664921
+"Predatory Shrimp","Porgy",5.612552e-05
+"Predatory Shrimp","Pinfish",3.492976e-05
+"Predatory Shrimp","Scianids",0.003760086
+"Predatory Shrimp","Spotted Seatrout",0.002875487
+"Predatory Shrimp","Red Drum",0.0001924922
+"Predatory Shrimp","Spadefish",0.002827904
+"Predatory Shrimp","Blennies",0.0004682534
+"Predatory Shrimp","Flatfish",0.0005742323
+"Predatory Shrimp","Puffer",0.004535461
+"Predatory Shrimp","Other Pelagic Fishes",3.871472e-05
+"Predatory Shrimp","Other Demersal Fishes",0.0002141205
+"Predatory Shrimp","Loon",5.926163e-07
+"Predatory Shrimp","Greeb",8.002484e-06
+"Predatory Shrimp","Pelican",0.0009570537
+"Predatory Shrimp","Comorant",0.000168701
+"Predatory Shrimp","Big Herons & Egrets",0.0007872714
+"Predatory Shrimp","Small Herons & Egrets",0.0005071844
+"Predatory Shrimp","Ibis",0.0003882286
+"Predatory Shrimp","Roseate Spoonbill",0.000272517
+"Predatory Shrimp","Herbivorous Ducks",0.0002379117
+"Predatory Shrimp","Omnivorous Ducks",0.001004636
+"Predatory Shrimp","Predatory Ducks",1.654567e-05
+"Predatory Shrimp","Gruiformes",0.0008218767
+"Predatory Shrimp","Small Shorebirds",0.0002790055
+"Predatory Shrimp","Gulls & Terns",0.0006531756
+"Predatory Shrimp","Kingfisher",3.179365e-06
+"Predatory Shrimp","Crocodiles",0.0002108762
+"Predatory Shrimp","Loggerhead Turtle",0.0003871472
+"Predatory Shrimp","Hawksbill Turtle",4.41218e-07
+"Predatory Shrimp","Dolphin",1.055463e-05
+"Predatory Shrimp","Manatee",2.746798e-05
+"Predatory Shrimp","Benthic POC",0.2590306
+"Pink Shrimp","Sharks",7.609493e-05
+"Pink Shrimp","Rays",0.005994746
+"Pink Shrimp","Bonefish",0.0001766129
+"Pink Shrimp","Sardines",0.0007589309
+"Pink Shrimp","Anchovy",4.279078e-05
+"Pink Shrimp","Bay Anchovy",0.002416064
+"Pink Shrimp","Lizardfish",0.002566438
+"Pink Shrimp","Catfish",0.0001967972
+"Pink Shrimp","Eels",0.0006781935
+"Pink Shrimp","Toadfish",0.003235549
+"Pink Shrimp","Brotalus",0.001200968
+"Pink Shrimp","Goldspotted killifish",0.002971133
+"Pink Shrimp","Snook",2.755161e-05
+"Pink Shrimp","Silverside",2.361567e-05
+"Pink Shrimp","Other Horsefish",0.0002311106
+"Pink Shrimp","Gulf Pipefish",0.0007094792
+"Pink Shrimp","Dwarf Seahorse",7.92235e-05
+"Pink Shrimp","Grouper",1.705576e-05
+"Pink Shrimp","Jacks",0.0001473456
+"Pink Shrimp","Pompano",0.0001412903
+"Pink Shrimp","Other Snapper",0.001787323
+"Pink Shrimp","Gray Snapper",0.001384645
+"Pink Shrimp","Mojarra",0.0003320323
+"Pink Shrimp","Grunt",0.001578415
+"Pink Shrimp","Porgy",5.237834e-05
+"Pink Shrimp","Pinfish",4.924977e-05
+"Pink Shrimp","Scianids",0.005297378
+"Pink Shrimp","Spotted Seatrout",0.002316152
+"Pink Shrimp","Red Drum",0.0004077235
+"Pink Shrimp","Spadefish",0.00597759
+"Pink Shrimp","Blennies",0.0009890322
+"Pink Shrimp","Flatfish",0.001213078
+"Pink Shrimp","Other Pelagic Fishes",5.459862e-05
+"Pink Shrimp","Other Demersal Fishes",0.0003007465
+"Pink Shrimp","Loon",8.356313e-07
+"Pink Shrimp","Greeb",9.244424e-06
+"Pink Shrimp","Pelican",0.001106101
+"Pink Shrimp","Comorant",0.000195788
+"Pink Shrimp","Big Herons & Egrets",0.0009103133
+"Pink Shrimp","Small Herons & Egrets",0.0005863548
+"Pink Shrimp","Ibis",0.0004491014
+"Pink Shrimp","Roseate Spoonbill",0.0003148756
+"Pink Shrimp","Herbivorous Ducks",0.0002745069
+"Pink Shrimp","Omnivorous Ducks",0.001161608
+"Pink Shrimp","Predatory Ducks",1.917511e-05
+"Pink Shrimp","Gruiformes",0.0009496728
+"Pink Shrimp","Small Shorebirds",0.0003219401
+"Pink Shrimp","Gulls & Terns",0.000754894
+"Pink Shrimp","Kingfisher",3.673548e-06
+"Pink Shrimp","Crocodiles",0.0002432212
+"Pink Shrimp","Loggerhead Turtle",0.0004470829
+"Pink Shrimp","Hawksbill Turtle",5.096544e-07
+"Pink Shrimp","Dolphin",1.221152e-05
+"Pink Shrimp","Manatee",3.16894e-05
+"Pink Shrimp","Benthic POC",0.2474952
+"Thor Floridanus","Other Cnidaridae",0.0002383214
+"Thor Floridanus","Bonefish",2.625575e-06
+"Thor Floridanus","Sardines",0.0009098626
+"Thor Floridanus","Anchovy",5.129969e-05
+"Thor Floridanus","Bay Anchovy",0.001448105
+"Thor Floridanus","Lizardfish",3.847476e-05
+"Thor Floridanus","Toadfish",4.847215e-05
+"Thor Floridanus","Brotalus",1.797509e-05
+"Thor Floridanus","Other Killifish",7.826232e-06
+"Thor Floridanus","Goldspotted killifish",0.0002211542
+"Thor Floridanus","Rainwater killifish",5.352133e-05
+"Thor Floridanus","Snook",4.099936e-07
+"Thor Floridanus","Silverside",1.413771e-05
+"Thor Floridanus","Other Horsefish",1.696525e-05
+"Thor Floridanus","Gulf Pipefish",2.090361e-05
+"Thor Floridanus","Dwarf Seahorse",5.836854e-06
+"Thor Floridanus","Other Snapper",2.665968e-05
+"Thor Floridanus","Gray Snapper",2.060066e-05
+"Thor Floridanus","Mojarra",4.948198e-06
+"Thor Floridanus","Grunt",2.352919e-05
+"Thor Floridanus","Scianids",7.896921e-05
+"Thor Floridanus","Spotted Seatrout",1.918689e-05
+"Thor Floridanus","Red Drum",6.069117e-06
+"Thor Floridanus","Spadefish",8.906757e-05
+"Thor Floridanus","Blennies",1.474361e-05
+"Thor Floridanus","Flatfish",1.807607e-05
+"Thor Floridanus","Water POC",0.02198313
+"Lobster","Stone Crab",9.339992e-05
+"Lobster","Sharks",6.864332e-06
+"Lobster","Rays",0.0006424441
+"Lobster","Tarpon",7.120081e-05
+"Lobster","Bonefish",1.89255e-05
+"Lobster","Catfish",0.000155496
+"Lobster","Grouper",1.54473e-06
+"Lobster","Scianids",0.001643961
+"Lobster","Spadefish",0.000291555
+"Lobster","Puffer",0.002199451
+"Lobster","Loon",8.951252e-08
+"Lobster","Greeb",1.20714e-06
+"Lobster","Ibis",5.872021e-05
+"Lobster","Roseate Spoonbill",4.112461e-05
+"Lobster","Gruiformes",0.000123783
+"Lobster","Small Shorebirds",4.204531e-05
+"Lobster","Gulls & Terns",9.871952e-05
+"Lobster","Crocodiles",3.181531e-05
+"Lobster","Loggerhead Turtle",5.851562e-05
+"Lobster","Hawksbill Turtle",6.649502e-08
+"Lobster","Benthic POC",0.03276465
+"Detritivorous Crabs","Predatory Crabs",0.000466049
+"Detritivorous Crabs","Callinectus sapidus",0.002874311
+"Detritivorous Crabs","Sharks",5.748622e-06
+"Detritivorous Crabs","Rays",0.0001847771
+"Detritivorous Crabs","Tarpon",2.607411e-05
+"Detritivorous Crabs","Bonefish",5.430395e-06
+"Detritivorous Crabs","Lizardfish",7.11392e-05
+"Detritivorous Crabs","Catfish",0.0002032549
+"Detritivorous Crabs","Eels",0.004327891
+"Detritivorous Crabs","Toadfish",8.150726e-05
+"Detritivorous Crabs","Brotalus",3.325989e-05
+"Detritivorous Crabs","Goldspotted killifish",0.0006908613
+"Detritivorous Crabs","Rainwater killifish",7.76064e-06
+"Detritivorous Crabs","Snook",2.535553e-06
+"Detritivorous Crabs","Grouper",3.633951e-07
+"Detritivorous Crabs","Pompano",3.921382e-06
+"Detritivorous Crabs","Pinfish",0.000568703
+"Detritivorous Crabs","Spadefish",0.0001652729
+"Detritivorous Crabs","Blennies",5.666499e-05
+"Detritivorous Crabs","Filefishes",6.949674e-05
+"Detritivorous Crabs","Puffer",0.000633375
+"Detritivorous Crabs","Ibis",2.515022e-05
+"Detritivorous Crabs","Herbivorous Ducks",1.53981e-05
+"Detritivorous Crabs","Omnivorous Ducks",6.508262e-05
+"Detritivorous Crabs","Gruiformes",5.317476e-05
+"Detritivorous Crabs","Small Shorebirds",1.80671e-05
+"Detritivorous Crabs","Gulls & Terns",4.229344e-05
+"Detritivorous Crabs","Crocodiles",1.365298e-05
+"Detritivorous Crabs","Loggerhead Turtle",2.504757e-05
+"Detritivorous Crabs","Hawksbill Turtle",2.853781e-08
+"Detritivorous Crabs","Benthic POC",0.01330601
+"Omnivorous Crabs","Predatory Shrimp",0.0246967
+"Omnivorous Crabs","Predatory Crabs",0.007459518
+"Omnivorous Crabs","Callinectus sapidus",0.04603454
+"Omnivorous Crabs","Stone Crab",1.907988e-05
+"Omnivorous Crabs","Sharks",4.162882e-05
+"Omnivorous Crabs","Rays",0.002957891
+"Omnivorous Crabs","Tarpon",0.0004173085
+"Omnivorous Crabs","Bonefish",8.703281e-05
+"Omnivorous Crabs","Lizardfish",0.00126723
+"Omnivorous Crabs","Catfish",0.002295707
+"Omnivorous Crabs","Eels",0.004779152
+"Omnivorous Crabs","Toadfish",0.001524349
+"Omnivorous Crabs","Brotalus",0.0005928025
+"Omnivorous Crabs","Goldspotted killifish",0.01228662
+"Omnivorous Crabs","Rainwater killifish",6.081073e-05
+"Omnivorous Crabs","Snook",4.509789e-05
+"Omnivorous Crabs","Grouper",8.40739e-06
+"Omnivorous Crabs","Pompano",6.989152e-05
+"Omnivorous Crabs","Grunt",0.0005428072
+"Omnivorous Crabs","Porgy",2.581395e-05
+"Omnivorous Crabs","Pinfish",0.0003367037
+"Omnivorous Crabs","Scianids",0.003825158
+"Omnivorous Crabs","Spadefish",0.001343754
+"Omnivorous Crabs","Blennies",0.001011131
+"Omnivorous Crabs","Flatfish",0.002635472
+"Omnivorous Crabs","Filefishes",0.001236621
+"Omnivorous Crabs","Puffer",0.01014396
+"Omnivorous Crabs","Other Demersal Fishes",0.0001489659
+"Omnivorous Crabs","Loon",4.122069e-07
+"Omnivorous Crabs","Greeb",5.560712e-06
+"Omnivorous Crabs","Big Herons & Egrets",0.0005479087
+"Omnivorous Crabs","Small Herons & Egrets",0.0003530287
+"Omnivorous Crabs","Ibis",0.0002703833
+"Omnivorous Crabs","Roseate Spoonbill",0.0001887581
+"Omnivorous Crabs","Herbivorous Ducks",0.0001652909
+"Omnivorous Crabs","Omnivorous Ducks",0.0006989152
+"Omnivorous Crabs","Predatory Ducks",1.152955e-05
+"Omnivorous Crabs","Gruiformes",0.000571376
+"Omnivorous Crabs","Small Shorebirds",0.0001938597
+"Omnivorous Crabs","Gulls & Terns",0.0004540399
+"Omnivorous Crabs","Kingfisher",2.214082e-06
+"Omnivorous Crabs","Crocodiles",0.0001469253
+"Omnivorous Crabs","Loggerhead Turtle",0.000269363
+"Omnivorous Crabs","Hawksbill Turtle",3.060943e-07
+"Omnivorous Crabs","Manatee",1.907988e-05
+"Omnivorous Crabs","Benthic POC",0.1349488
+"Predatory Crabs","Sharks",0.0004390139
+"Predatory Crabs","Rays",8.174375e-05
+"Predatory Crabs","Tarpon",1.158657e-05
+"Predatory Crabs","Lizardfish",3.475969e-05
+"Predatory Crabs","Catfish",9.981453e-05
+"Predatory Crabs","Eels",0.0001307475
+"Predatory Crabs","Toadfish",4.188171e-05
+"Predatory Crabs","Brotalus",1.626371e-05
+"Predatory Crabs","Snook",1.243695e-06
+"Predatory Crabs","Grouper",1.955897e-07
+"Predatory Crabs","Pompano",1.913378e-06
+"Predatory Crabs","Spadefish",3.688567e-05
+"Predatory Crabs","Filefishes",3.39093e-05
+"Predatory Crabs","Puffer",0.0002785027
+"Predatory Crabs","Small Shorebirds",5.314938e-06
+"Predatory Crabs","Benthic POC",0.0028892
+"Callinectus sapidus","Sharks",0.00021143
+"Callinectus sapidus","Rays",0.000498732
+"Callinectus sapidus","Tarpon",8.963012e-05
+"Callinectus sapidus","Bonefish",1.466859e-05
+"Callinectus sapidus","Lizardfish",0.0002134532
+"Callinectus sapidus","Catfish",0.0006089992
+"Callinectus sapidus","Eels",0.0008062664
+"Callinectus sapidus","Toadfish",0.0002569532
+"Callinectus sapidus","Brotalus",9.984754e-05
+"Callinectus sapidus","Snook",7.607432e-06
+"Callinectus sapidus","Grouper",1.203836e-06
+"Callinectus sapidus","Pompano",1.173487e-05
+"Callinectus sapidus","Spadefish",0.0002266044
+"Callinectus sapidus","Filefishes",0.0002083951
+"Callinectus sapidus","Puffer",0.001710661
+"Callinectus sapidus","Loon",6.949875e-08
+"Callinectus sapidus","Greeb",2.144649e-06
+"Callinectus sapidus","Ibis",0.0001041975
+"Callinectus sapidus","Roseate Spoonbill",7.303944e-05
+"Callinectus sapidus","Herbivorous Ducks",6.383364e-05
+"Callinectus sapidus","Omnivorous Ducks",0.0002701043
+"Callinectus sapidus","Predatory Ducks",4.451157e-06
+"Callinectus sapidus","Gruiformes",0.0002205346
+"Callinectus sapidus","Small Shorebirds",7.486037e-05
+"Callinectus sapidus","Gulls & Terns",0.0001750114
+"Callinectus sapidus","Kingfisher",8.528013e-07
+"Callinectus sapidus","Crocodiles",5.665109e-05
+"Callinectus sapidus","Loggerhead Turtle",0.0001041975
+"Callinectus sapidus","Hawksbill Turtle",1.183603e-07
+"Callinectus sapidus","Benthic POC",0.01315721
+"Stone Crab","Sharks",1.537875e-05
+"Stone Crab","Tarpon",2.685867e-06
+"Stone Crab","Catfish",2.328473e-05
+"Stone Crab","Grouper",4.797737e-08
+"Stone Crab","Spadefish",9.05397e-06
+"Stone Crab","Puffer",3.162391e-06
+"Stone Crab","Benthic POC",0.000598905
+"Sharks","Water POC",0.000746959
+"Rays","Raptors",0.0001205592
+"Rays","Water POC",0.05674864
+"Tarpon","Barracuda",6.345028e-05
+"Tarpon","Raptors",8.073573e-06
+"Tarpon","Crocodiles",9.159184e-05
+"Tarpon","Water POC",0.0004995919
+"Bonefish","Barracuda",4.606293e-05
+"Bonefish","Water POC",0.0009762895
+"Sardines","Sharks",9.438442e-06
+"Sardines","Tarpon",3.408327e-05
+"Sardines","Needlefish",0.001653912
+"Sardines","Snook",1.409212e-05
+"Sardines","Grouper",5.833481e-07
+"Sardines","Jacks",4.478891e-05
+"Sardines","Pompano",5.724241e-06
+"Sardines","Other Snapper",7.23177e-05
+"Sardines","Gray Snapper",5.604075e-05
+"Sardines","Spotted Seatrout",0.0002599941
+"Sardines","Mackerel",1.074934e-05
+"Sardines","Barracuda",0.006363302
+"Sardines","Other Pelagic Fishes",1.660467e-05
+"Sardines","Loon",1.049808e-06
+"Sardines","Greeb",1.715087e-05
+"Sardines","Pelican",0.002892708
+"Sardines","Comorant",0.00052982
+"Sardines","Big Herons & Egrets",0.0004402422
+"Sardines","Small Herons & Egrets",0.0003888988
+"Sardines","Ibis",0.0001693239
+"Sardines","Roseate Spoonbill",0.0002206673
+"Sardines","Predatory Ducks",4.566284e-05
+"Sardines","Gruiformes",8.444347e-05
+"Sardines","Small Shorebirds",1.289046e-05
+"Sardines","Gulls & Terns",9.198112e-05
+"Sardines","Kingfisher",2.665486e-06
+"Sardines","Dolphin",0.000174786
+"Sardines","Water POC",0.007347565
+"Anchovy","Sharks",1.315662e-07
+"Anchovy","Tarpon",4.75336e-07
+"Anchovy","Needlefish",2.302409e-05
+"Anchovy","Snook",1.962883e-07
+"Anchovy","Jacks",6.228175e-07
+"Anchovy","Pompano",7.957635e-08
+"Anchovy","Other Snapper",1.038736e-06
+"Anchovy","Gray Snapper",8.042515e-07
+"Anchovy","Spotted Seatrout",3.607461e-06
+"Anchovy","Mackerel",1.496035e-07
+"Anchovy","Barracuda",8.84889e-06
+"Anchovy","Other Pelagic Fishes",4.604817e-07
+"Anchovy","Water POC",0.0003798444
+"Bay Anchovy","Sharks",4.24228e-05
+"Bay Anchovy","Tarpon",0.0001484798
+"Bay Anchovy","Lizardfish",0.001897915
+"Bay Anchovy","Eels",0.003907947
+"Bay Anchovy","Needlefish",0.007151271
+"Bay Anchovy","Snook",6.100802e-05
+"Bay Anchovy","Grouper",2.747381e-06
+"Bay Anchovy","Jacks",0.0001939328
+"Bay Anchovy","Pompano",2.474663e-05
+"Bay Anchovy","Other Snapper",0.0003131206
+"Bay Anchovy","Gray Snapper",0.000242416
+"Bay Anchovy","Scianids",0.002234267
+"Bay Anchovy","Spotted Seatrout",0.001226221
+"Bay Anchovy","Red Drum",7.13107e-05
+"Bay Anchovy","Mackerel",4.646306e-05
+"Bay Anchovy","Barracuda",0.002751421
+"Bay Anchovy","Other Pelagic Fishes",7.171473e-05
+"Bay Anchovy","Loon",2.27265e-06
+"Bay Anchovy","Greeb",7.413889e-05
+"Bay Anchovy","Pelican",0.006254332
+"Bay Anchovy","Comorant",0.0007646204
+"Bay Anchovy","Big Herons & Egrets",0.003806941
+"Bay Anchovy","Small Herons & Egrets",0.001681761
+"Bay Anchovy","Ibis",0.0007333084
+"Bay Anchovy","Roseate Spoonbill",0.0009535029
+"Bay Anchovy","Predatory Ducks",9.878451e-05
+"Bay Anchovy","Gruiformes",0.0003656441
+"Bay Anchovy","Small Shorebirds",5.565467e-05
+"Bay Anchovy","Gulls & Terns",0.0003979663
+"Bay Anchovy","Kingfisher",1.151476e-05
+"Bay Anchovy","Dolphin",0.0005050333
+"Bay Anchovy","Water POC",0.02957172
+"Lizardfish","Eels",0.0005556771
+"Lizardfish","Spotted Seatrout",0.0002992107
+"Lizardfish","Loon",5.041896e-07
+"Lizardfish","Greeb",4.119006e-06
+"Lizardfish","Pelican",0.001388221
+"Lizardfish","Comorant",0.0002545234
+"Lizardfish","Big Herons & Egrets",0.0002108076
+"Lizardfish","Predatory Ducks",2.195507e-05
+"Lizardfish","Raptors",1.942927e-05
+"Lizardfish","Crocodiles",2.93382e-05
+"Lizardfish","Dolphin",2.80753e-05
+"Lizardfish","Water POC",0.00850322
+"Catfish","Predatory Gastropods",0.005395336
+"Catfish","Sharks",1.274805e-05
+"Catfish","Tarpon",2.720254e-05
+"Catfish","Red Drum",1.304919e-05
+"Catfish","Big Herons & Egrets",0.0006986333
+"Catfish","Raptors",3.212107e-05
+"Catfish","Crocodiles",0.0001455486
+"Catfish","Dolphin",0.0001395259
+"Catfish","Water POC",0.01411219
+"Eels","Sharks",2.733906e-05
+"Eels","Bonefish",1.79889e-05
+"Eels","Lizardfish",0.0002622111
+"Eels","Toadfish",0.0003211578
+"Eels","Brotalus",1.554973e-05
+"Eels","Grouper",1.737911e-06
+"Eels","Pompano",4.817367e-06
+"Eels","Loon",3.31321e-07
+"Eels","Pelican",0.003646564
+"Eels","Comorant",0.0002225745
+"Eels","Big Herons & Egrets",0.001109824
+"Eels","Predatory Ducks",1.443177e-05
+"Eels","Raptors",2.550969e-05
+"Eels","Crocodiles",0.0002317214
+"Eels","Dolphin",0.0001107791
+"Eels","Benthic POC",0.005940403
+"Toadfish","Sharks",7.675147e-06
+"Toadfish","Bonefish",5.800079e-06
+"Toadfish","Lizardfish",8.44266e-05
+"Toadfish","Catfish",0.0005051995
+"Toadfish","Grouper",4.741103e-07
+"Toadfish","Other Snapper",5.877802e-05
+"Toadfish","Gray Snapper",4.556511e-05
+"Toadfish","Spotted Seatrout",0.0002108236
+"Toadfish","Red Drum",1.340722e-05
+"Toadfish","Flatfish",0.000439135
+"Toadfish","Other Demersal Fishes",9.715375e-06
+"Toadfish","Loon",3.701558e-07
+"Toadfish","Greeb",3.021482e-06
+"Toadfish","Pelican",0.001019143
+"Toadfish","Comorant",0.0001865352
+"Toadfish","Big Herons & Egrets",0.000155446
+"Toadfish","Small Herons & Egrets",0.0001369868
+"Toadfish","Roseate Spoonbill",7.762584e-05
+"Toadfish","Predatory Ducks",1.612752e-05
+"Toadfish","Raptors",1.42816e-05
+"Toadfish","Crocodiles",2.156813e-05
+"Toadfish","Dolphin",0.000102983
+"Toadfish","Benthic POC",0.003450901
+"Brotalus","Sharks",4.046533e-06
+"Brotalus","Bonefish",3.057381e-06
+"Brotalus","Catfish",0.0003986585
+"Brotalus","Grouper",2.49786e-07
+"Brotalus","Red Drum",7.07394e-06
+"Brotalus","Flatfish",0.0002967458
+"Brotalus","Other Demersal Fishes",5.245507e-06
+"Brotalus","Big Herons & Egrets",0.0001888382
+"Brotalus","Raptors",8.67257e-06
+"Brotalus","Crocodiles",3.936628e-05
+"Brotalus","Benthic POC",0.002378962
+"Halfbeaks","Needlefish",0.0001327907
+"Halfbeaks","Jacks",2.159043e-05
+"Halfbeaks","Mackerel",5.16833e-06
+"Halfbeaks","Barracuda",0.0003057053
+"Halfbeaks","Other Pelagic Fishes",7.967444e-06
+"Halfbeaks","Loon",5.044137e-07
+"Halfbeaks","Greeb",4.127021e-06
+"Halfbeaks","Pelican",0.001390959
+"Halfbeaks","Comorant",0.0002550728
+"Halfbeaks","Big Herons & Egrets",0.000212083
+"Halfbeaks","Predatory Ducks",2.197257e-05
+"Halfbeaks","Raptors",3.888189e-05
+"Halfbeaks","Crocodiles",8.82724e-05
+"Halfbeaks","Dolphin",2.808667e-05
+"Halfbeaks","Water POC",0.004140396
+"Needlefish","Jacks",7.430725e-05
+"Needlefish","Mackerel",1.782573e-05
+"Needlefish","Barracuda",0.001054522
+"Needlefish","Other Pelagic Fishes",2.493599e-05
+"Needlefish","Loon",1.932789e-06
+"Needlefish","Greeb",1.582284e-05
+"Needlefish","Pelican",0.002662843
+"Needlefish","Comorant",0.0006509395
+"Needlefish","Big Herons & Egrets",0.0008101693
+"Needlefish","Predatory Ducks",8.412141e-05
+"Needlefish","Raptors",7.450753e-05
+"Needlefish","Crocodiles",0.0001131633
+"Needlefish","Dolphin",0.0001071547
+"Needlefish","Water POC",0.02017111
+"Other Killifish","Other Cnidaridae",1.841893e-05
+"Other Killifish","Sharks",2.12907e-06
+"Other Killifish","Tarpon",4.921618e-06
+"Other Killifish","Needlefish",0.0001178415
+"Other Killifish","Other Snapper",1.029876e-05
+"Other Killifish","Gray Snapper",7.981537e-06
+"Other Killifish","Spotted Seatrout",3.703592e-05
+"Other Killifish","Red Drum",2.346928e-06
+"Other Killifish","Barracuda",9.031218e-05
+"Other Killifish","Greeb",2.445955e-06
+"Other Killifish","Pelican",0.0002059751
+"Other Killifish","Comorant",5.030547e-05
+"Other Killifish","Big Herons & Egrets",0.0001257637
+"Other Killifish","Small Herons & Egrets",0.0001109097
+"Other Killifish","Ibis",4.822591e-05
+"Other Killifish","Roseate Spoonbill",6.278281e-05
+"Other Killifish","Kingfisher",7.595333e-07
+"Other Killifish","Water POC",0.00145767
+"Goldspotted killifish","Other Cnidaridae",0.0007129029
+"Goldspotted killifish","Sharks",4.63733e-05
+"Goldspotted killifish","Tarpon",0.0001868775
+"Goldspotted killifish","Lizardfish",1.156861e-05
+"Goldspotted killifish","Eels",0.002639026
+"Goldspotted killifish","Toadfish",0.0003411255
+"Goldspotted killifish","Brotalus",0.0001324951
+"Goldspotted killifish","Needlefish",0.004514722
+"Goldspotted killifish","Grouper",3.767212e-06
+"Goldspotted killifish","Jacks",0.0002442261
+"Goldspotted killifish","Pompano",1.562256e-05
+"Goldspotted killifish","Other Snapper",0.0003945191
+"Goldspotted killifish","Gray Snapper",0.0003055298
+"Goldspotted killifish","Scianids",0.002819971
+"Goldspotted killifish","Spotted Seatrout",0.001547424
+"Goldspotted killifish","Red Drum",8.997804e-05
+"Goldspotted killifish","Mackerel",5.863404e-05
+"Goldspotted killifish","Barracuda",0.003472559
+"Goldspotted killifish","Other Pelagic Fishes",9.047242e-05
+"Goldspotted killifish","Other Demersal Fishes",6.624756e-05
+"Goldspotted killifish","Loon",2.867432e-06
+"Goldspotted killifish","Greeb",9.363648e-05
+"Goldspotted killifish","Pelican",0.007893348
+"Goldspotted killifish","Comorant",0.00192909
+"Goldspotted killifish","Big Herons & Egrets",0.00240271
+"Goldspotted killifish","Small Herons & Egrets",0.004246766
+"Goldspotted killifish","Ibis",0.001850977
+"Goldspotted killifish","Roseate Spoonbill",0.002406665
+"Goldspotted killifish","Herbivorous Ducks",8.256227e-05
+"Goldspotted killifish","Omnivorous Ducks",0.0001997315
+"Goldspotted killifish","Predatory Ducks",0.000124585
+"Goldspotted killifish","Gruiformes",0.0009215333
+"Goldspotted killifish","Small Shorebirds",0.0001404053
+"Goldspotted killifish","Gulls & Terns",0.001003601
+"Goldspotted killifish","Kingfisher",2.916871e-05
+"Goldspotted killifish","Loggerhead Turtle",3.539795e-05
+"Goldspotted killifish","Dolphin",0.0003193726
+"Goldspotted killifish","Water POC",0.02490414
+"Rainwater killifish","Sharks",1.14696e-05
+"Rainwater killifish","Tarpon",3.839401e-05
+"Rainwater killifish","Eels",0.0005414041
+"Rainwater killifish","Needlefish",0.000110808
+"Rainwater killifish","Grouper",5.948641e-07
+"Rainwater killifish","Jacks",5.025241e-05
+"Rainwater killifish","Pompano",6.424921e-06
+"Rainwater killifish","Other Snapper",8.106481e-05
+"Rainwater killifish","Gray Snapper",6.279121e-05
+"Rainwater killifish","Scianids",0.0006133321
+"Rainwater killifish","Spotted Seatrout",0.0002643841
+"Rainwater killifish","Red Drum",1.8468e-05
+"Rainwater killifish","Mackerel",1.20528e-05
+"Rainwater killifish","Barracuda",0.0007134481
+"Rainwater killifish","Other Pelagic Fishes",1.69128e-05
+"Rainwater killifish","Loon",6.531841e-07
+"Rainwater killifish","Greeb",2.1384e-05
+"Rainwater killifish","Pelican",0.0009000721
+"Rainwater killifish","Comorant",0.000219672
+"Rainwater killifish","Big Herons & Egrets",0.0005482081
+"Rainwater killifish","Small Herons & Egrets",0.0009690842
+"Rainwater killifish","Ibis",0.000421848
+"Rainwater killifish","Roseate Spoonbill",0.0005491801
+"Rainwater killifish","Herbivorous Ducks",1.88568e-05
+"Rainwater killifish","Omnivorous Ducks",4.568401e-05
+"Rainwater killifish","Predatory Ducks",2.84796e-05
+"Rainwater killifish","Gruiformes",0.000209952
+"Rainwater killifish","Small Shorebirds",3.2076e-05
+"Rainwater killifish","Gulls & Terns",0.000229392
+"Rainwater killifish","Kingfisher",6.64848e-06
+"Rainwater killifish","Loggerhead Turtle",8.087041e-06
+"Rainwater killifish","Dolphin",7.280281e-05
+"Rainwater killifish","Water POC",0.009014329
+"Snook","Crocodiles",7.546658e-06
+"Snook","Dolphin",7.20759e-06
+"Snook","Water POC",5.98695e-05
+"Sailfin Molly","Grouper",5.446958e-08
+"Sailfin Molly","Other Snapper",6.744307e-06
+"Sailfin Molly","Gray Snapper",5.227553e-06
+"Sailfin Molly","Grunt",0.0002098653
+"Sailfin Molly","Scianids",4.817362e-05
+"Sailfin Molly","Barracuda",5.933464e-05
+"Sailfin Molly","Greeb",1.602608e-06
+"Sailfin Molly","Comorant",3.300609e-05
+"Sailfin Molly","Big Herons & Egrets",8.213364e-05
+"Sailfin Molly","Small Herons & Egrets",7.259431e-05
+"Sailfin Molly","Ibis",3.167058e-05
+"Sailfin Molly","Roseate Spoonbill",4.111452e-05
+"Sailfin Molly","Kingfisher",4.979531e-07
+"Sailfin Molly","Water POC",0.001175246
+"Silverside","Predatory Gastropods",0.002252644
+"Silverside","Tarpon",1.634251e-05
+"Silverside","Needlefish",0.0008736182
+"Silverside","Grouper",2.975951e-07
+"Silverside","Jacks",2.259705e-05
+"Silverside","Pompano",5.780407e-06
+"Silverside","Mackerel",5.427328e-06
+"Silverside","Barracuda",0.0003207974
+"Silverside","Other Pelagic Fishes",7.596241e-06
+"Silverside","Loon",2.945687e-07
+"Silverside","Greeb",9.613836e-06
+"Silverside","Pelican",0.0008110728
+"Silverside","Comorant",0.0001977242
+"Silverside","Big Herons & Egrets",0.0002471553
+"Silverside","Small Herons & Egrets",0.0004358003
+"Silverside","Ibis",0.0001896538
+"Silverside","Roseate Spoonbill",0.0002471553
+"Silverside","Predatory Ducks",1.281172e-05
+"Silverside","Gruiformes",9.462515e-05
+"Silverside","Small Shorebirds",1.44258e-05
+"Silverside","Gulls & Terns",0.0001028973
+"Silverside","Kingfisher",2.996127e-06
+"Silverside","Dolphin",9.825682e-05
+"Silverside","Water POC",0.004380197
+"Other Horsefish","Tarpon",6.054725e-06
+"Other Horsefish","Grouper",3.307948e-07
+"Other Horsefish","Other Snapper",3.760822e-05
+"Other Horsefish","Gray Snapper",2.914145e-05
+"Other Horsefish","Scianids",0.0002687708
+"Other Horsefish","Loon",2.727088e-07
+"Other Horsefish","Greeb",8.919645e-06
+"Other Horsefish","Pelican",0.001503344
+"Other Horsefish","Comorant",0.0002756623
+"Other Horsefish","Big Herons & Egrets",0.0002284059
+"Other Horsefish","Small Herons & Egrets",0.0004046329
+"Other Horsefish","Ibis",0.000176227
+"Other Horsefish","Roseate Spoonbill",0.0002293904
+"Other Horsefish","Predatory Ducks",1.191255e-05
+"Other Horsefish","Gruiformes",8.781814e-05
+"Other Horsefish","Small Shorebirds",1.338931e-05
+"Other Horsefish","Gulls & Terns",9.559575e-05
+"Other Horsefish","Kingfisher",2.776313e-06
+"Other Horsefish","Dolphin",3.04213e-05
+"Other Horsefish","Water POC",0.004900882
+"Gulf Pipefish","Tarpon",2.536563e-05
+"Gulf Pipefish","Grouper",4.723599e-07
+"Gulf Pipefish","Other Snapper",5.372719e-05
+"Gulf Pipefish","Gray Snapper",4.15437e-05
+"Gulf Pipefish","Scianids",0.0003834803
+"Gulf Pipefish","Loon",3.894722e-07
+"Gulf Pipefish","Greeb",1.268281e-05
+"Gulf Pipefish","Pelican",0.001073545
+"Gulf Pipefish","Comorant",0.0001308227
+"Gulf Pipefish","Big Herons & Egrets",0.0006531149
+"Gulf Pipefish","Small Herons & Egrets",0.0005772178
+"Gulf Pipefish","Ibis",0.000251659
+"Gulf Pipefish","Roseate Spoonbill",0.0003275561
+"Gulf Pipefish","Omnivorous Ducks",2.726306e-05
+"Gulf Pipefish","Predatory Ducks",1.697699e-05
+"Gulf Pipefish","Gruiformes",0.0001248308
+"Gulf Pipefish","Small Shorebirds",1.907415e-05
+"Gulf Pipefish","Gulls & Terns",0.0001368146
+"Gulf Pipefish","Kingfisher",3.964627e-06
+"Gulf Pipefish","Dolphin",4.334126e-05
+"Gulf Pipefish","Water POC",0.006240543
+"Dwarf Seahorse","Tarpon",6.59855e-06
+"Dwarf Seahorse","Grouper",1.233875e-07
+"Dwarf Seahorse","Other Snapper",1.405545e-05
+"Dwarf Seahorse","Gray Snapper",1.094394e-05
+"Dwarf Seahorse","Scianids",0.000100534
+"Dwarf Seahorse","Loon",1.021434e-07
+"Dwarf Seahorse","Greeb",3.336828e-06
+"Dwarf Seahorse","Pelican",0.0002811089
+"Dwarf Seahorse","Big Herons & Egrets",0.0003422662
+"Dwarf Seahorse","Small Herons & Egrets",0.0001512838
+"Dwarf Seahorse","Ibis",6.59855e-05
+"Dwarf Seahorse","Roseate Spoonbill",8.572749e-05
+"Dwarf Seahorse","Predatory Ducks",4.44195e-06
+"Dwarf Seahorse","Gruiformes",3.283181e-05
+"Dwarf Seahorse","Small Shorebirds",5.010606e-06
+"Dwarf Seahorse","Gulls & Terns",3.572873e-05
+"Dwarf Seahorse","Kingfisher",1.038601e-06
+"Dwarf Seahorse","Water POC",0.001692018
+"Grouper","Water POC",1.21323e-05
+"Jacks","Raptors",5.243912e-06
+"Jacks","Crocodiles",2.373867e-05
+"Jacks","Dolphin",1.897148e-05
+"Jacks","Water POC",0.0008668507
+"Pompano","Raptors",7.923025e-06
+"Pompano","Crocodiles",3.591371e-05
+"Pompano","Water POC",0.001535586
+"Other Snapper","Tarpon",5.079483e-06
+"Other Snapper","Barracuda",0.0003548813
+"Other Snapper","Loon",2.973593e-07
+"Other Snapper","Greeb",4.855244e-06
+"Other Snapper","Pelican",0.0008189569
+"Other Snapper","Comorant",0.0001998645
+"Other Snapper","Big Herons & Egrets",0.0002495869
+"Other Snapper","Predatory Ducks",1.296682e-05
+"Other Snapper","Raptors",2.29113e-05
+"Other Snapper","Crocodiles",3.461068e-05
+"Other Snapper","Dolphin",3.305076e-05
+"Other Snapper","Water POC",0.003463993
+"Gray Snapper","Big Herons & Egrets",0.000319017
+"Gray Snapper","Raptors",1.470078e-05
+"Gray Snapper","Crocodiles",3.330177e-05
+"Gray Snapper","Dolphin",2.120113e-05
+"Gray Snapper","Water POC",0.002601138
+"Mojarra","Sharks",7.95247e-06
+"Mojarra","Tarpon",7.116391e-05
+"Mojarra","Grouper",5.852551e-07
+"Mojarra","Jacks",4.491493e-05
+"Mojarra","Pompano",5.745611e-06
+"Mojarra","Other Snapper",6.095598e-05
+"Mojarra","Gray Snapper",4.724817e-05
+"Mojarra","Grunt",0.001034404
+"Mojarra","Scianids",0.0004355387
+"Mojarra","Spotted Seatrout",0.0002391574
+"Mojarra","Red Drum",1.390224e-05
+"Mojarra","Barracuda",0.0005356738
+"Mojarra","Other Demersal Fishes",1.030516e-05
+"Mojarra","Loon",8.846879e-07
+"Mojarra","Greeb",1.448555e-05
+"Mojarra","Big Herons & Egrets",0.0003704023
+"Mojarra","Small Herons & Egrets",0.0006552524
+"Mojarra","Ibis",0.0002858223
+"Mojarra","Roseate Spoonbill",0.0003713745
+"Mojarra","Omnivorous Ducks",3.091547e-05
+"Mojarra","Predatory Ducks",3.849851e-05
+"Mojarra","Raptors",3.412368e-05
+"Mojarra","Gruiformes",0.000141939
+"Mojarra","Small Shorebirds",2.167972e-05
+"Mojarra","Gulls & Terns",0.0001545774
+"Mojarra","Kingfisher",4.501215e-06
+"Mojarra","Crocodiles",5.152578e-05
+"Mojarra","Dolphin",0.0002459627
+"Mojarra","Water POC",0.00964796
+"Mojarra","Benthic POC",0.005302295
+"Grunt","Sharks",2.027865e-05
+"Grunt","Tarpon",7.068558e-05
+"Grunt","Grouper",2.414125e-07
+"Grunt","Loon",2.172713e-06
+"Grunt","Greeb",1.776796e-05
+"Grunt","Pelican",0.005991858
+"Grunt","Comorant",0.00109891
+"Grunt","Big Herons & Egrets",0.0009115736
+"Grunt","Predatory Ducks",9.463369e-05
+"Grunt","Raptors",8.381842e-05
+"Grunt","Crocodiles",0.0001265001
+"Grunt","Dolphin",0.0006054626
+"Grunt","Water POC",0.02869332
+"Porgy","Tarpon",4.841398e-06
+"Porgy","Loon",7.422828e-08
+"Porgy","Pelican",0.0002045661
+"Porgy","Comorant",3.750378e-05
+"Porgy","Predatory Ducks",3.224351e-06
+"Porgy","Raptors",2.863925e-06
+"Porgy","Crocodiles",4.325111e-06
+"Porgy","Dolphin",8.260574e-06
+"Porgy","Water POC",0.0001889801
+"Pinfish","Sharks",3.991014e-05
+"Pinfish","Tarpon",0.0001449521
+"Pinfish","Eels",0.002041891
+"Pinfish","Grouper",3.362888e-06
+"Pinfish","Jacks",0.000189404
+"Pinfish","Pompano",4.841399e-06
+"Pinfish","Other Snapper",0.0003053657
+"Pinfish","Gray Snapper",0.0002367551
+"Pinfish","Barracuda",0.002687411
+"Pinfish","Other Pelagic Fishes",6.996353e-05
+"Pinfish","Loon",4.435534e-06
+"Pinfish","Greeb",3.623802e-05
+"Pinfish","Pelican",0.01221366
+"Pinfish","Comorant",0.002239026
+"Pinfish","Big Herons & Egrets",0.001858286
+"Pinfish","Small Herons & Egrets",0.00164279
+"Pinfish","Roseate Spoonbill",0.0009305924
+"Pinfish","Predatory Ducks",0.0001932694
+"Pinfish","Raptors",0.0001710434
+"Pinfish","Crocodiles",0.0002580147
+"Pinfish","Dolphin",0.0004938034
+"Pinfish","Water POC",0.06617642
+"Scianids","Tarpon",2.294207e-05
+"Scianids","Barracuda",0.001279501
+"Scianids","Loon",2.112288e-06
+"Scianids","Greeb",1.728235e-05
+"Scianids","Pelican",0.005816371
+"Scianids","Comorant",0.00106625
+"Scianids","Big Herons & Egrets",0.0008853415
+"Scianids","Predatory Ducks",9.186935e-05
+"Scianids","Raptors",8.135846e-05
+"Scianids","Crocodiles",0.000123301
+"Scianids","Dolphin",0.0003527217
+"Scianids","Water POC",0.02347368
+"Spotted Seatrout","Barracuda",3.130833e-05
+"Spotted Seatrout","Loon",5.190859e-07
+"Spotted Seatrout","Predatory Ducks",2.253791e-05
+"Spotted Seatrout","Raptors",7.99535e-05
+"Spotted Seatrout","Crocodiles",0.0003630542
+"Spotted Seatrout","Dolphin",0.0001152391
+"Spotted Seatrout","Water POC",0.0101645
+"Red Drum","Raptors",5.258835e-06
+"Red Drum","Crocodiles",2.380208e-05
+"Red Drum","Water POC",0.001546118
+"Spadefish","Raptors",7.083971e-05
+"Spadefish","Crocodiles",0.0006427033
+"Spadefish","Dolphin",0.0003065706
+"Spadefish","Water POC",0.01446356
+"Parrotfish","Tarpon",4.866887e-06
+"Parrotfish","Barracuda",9.087466e-05
+"Parrotfish","Other Pelagic Fishes",2.369792e-06
+"Parrotfish","Loon",1.498257e-07
+"Parrotfish","Pelican",0.000414224
+"Parrotfish","Comorant",5.062737e-05
+"Parrotfish","Predatory Ducks",6.541409e-06
+"Parrotfish","Raptors",5.797177e-06
+"Parrotfish","Crocodiles",8.764312e-06
+"Parrotfish","Dolphin",4.18141e-05
+"Parrotfish","Water POC",0.001532531
+"Mackerel","Water POC",0.0001009835
+"Mullet","Sharks",1.728597e-05
+"Mullet","Tarpon",6.267429e-05
+"Mullet","Grouper",1.071528e-06
+"Mullet","Grunt",0.001075572
+"Mullet","Scianids",0.001890338
+"Mullet","Barracuda",0.0001940881
+"Mullet","Big Herons & Egrets",0.001610325
+"Mullet","Raptors",7.39961e-05
+"Mullet","Crocodiles",0.0003356107
+"Mullet","Dolphin",0.0005347533
+"Mullet","Water POC",0.02519001
+"Mullet","Benthic POC",0.0125763
+"Barracuda","Raptors",9.756476e-05
+"Barracuda","Crocodiles",0.0004428472
+"Barracuda","Dolphin",7.047992e-05
+"Barracuda","Water POC",0.011516
+"Blennies","Other Cnidaridae",6.13974e-05
+"Blennies","Sharks",4.4833e-06
+"Blennies","Bonefish",3.382313e-06
+"Blennies","Lizardfish",4.929647e-05
+"Blennies","Toadfish",6.209173e-05
+"Blennies","Brotalus",2.301163e-05
+"Blennies","Grouper",2.767347e-07
+"Blennies","Pompano",2.717753e-06
+"Blennies","Scianids",0.0002459864
+"Blennies","Barracuda",0.0003015317
+"Blennies","Flatfish",0.0003283125
+"Blennies","Other Demersal Fishes",5.772745e-06
+"Blennies","Loon",2.48962e-07
+"Blennies","Greeb",8.133421e-06
+"Blennies","Pelican",0.0003431907
+"Blennies","Comorant",8.381392e-05
+"Blennies","Big Herons & Egrets",0.0002092868
+"Blennies","Small Herons & Egrets",0.0003689796
+"Blennies","Ibis",0.0001606847
+"Blennies","Roseate Spoonbill",0.0002092868
+"Blennies","Predatory Ducks",1.08115e-05
+"Blennies","Gruiformes",8.014395e-05
+"Blennies","Small Shorebirds",1.220013e-05
+"Blennies","Gulls & Terns",8.728549e-05
+"Blennies","Kingfisher",2.529296e-06
+"Blennies","Dolphin",2.777266e-05
+"Blennies","Water POC",0.004105394
+"Code Goby","Other Cnidaridae",4.408191e-05
+"Code Goby","Bonefish",2.159518e-05
+"Code Goby","Lizardfish",0.0003140217
+"Code Goby","Eels",0.001463123
+"Code Goby","Toadfish",0.000378411
+"Code Goby","Brotalus",0.0001466095
+"Code Goby","Snook",5.517668e-06
+"Code Goby","Grouper",1.763276e-06
+"Code Goby","Pompano",1.733558e-05
+"Code Goby","Other Snapper",0.0002189236
+"Code Goby","Gray Snapper",0.0001693934
+"Code Goby","Scianids",0.001563174
+"Code Goby","Spotted Seatrout",0.0008578636
+"Code Goby","Red Drum",4.992648e-05
+"Code Goby","Barracuda",0.002888603
+"Code Goby","Flatfish",0.002092157
+"Code Goby","Loon",1.584967e-06
+"Code Goby","Greeb",5.190768e-05
+"Code Goby","Pelican",0.002188246
+"Code Goby","Comorant",0.0005349265
+"Code Goby","Big Herons & Egrets",0.001332363
+"Code Goby","Small Herons & Egrets",0.002354667
+"Code Goby","Ibis",0.001026266
+"Code Goby","Roseate Spoonbill",0.001334345
+"Code Goby","Herbivorous Ducks",4.576593e-05
+"Code Goby","Omnivorous Ducks",0.0001109477
+"Code Goby","Predatory Ducks",6.91442e-05
+"Code Goby","Gruiformes",0.000511152
+"Code Goby","Small Shorebirds",7.796058e-05
+"Code Goby","Gulls & Terns",0.0005567198
+"Code Goby","Kingfisher",1.614686e-05
+"Code Goby","Loggerhead Turtle",1.961397e-05
+"Code Goby","Dolphin",0.0001773182
+"Code Goby","Water POC",0.007776246
+"Code Goby","Benthic POC",0.01074806
+"Clown Goby","Other Cnidaridae",5.124685e-05
+"Clown Goby","Bonefish",2.82258e-06
+"Clown Goby","Lizardfish",0.0003172901
+"Clown Goby","Eels",0.0001911748
+"Clown Goby","Toadfish",5.174731e-05
+"Clown Goby","Brotalus",1.921757e-05
+"Clown Goby","Snook",4.313944e-05
+"Clown Goby","Grouper",2.312114e-07
+"Clown Goby","Pompano",2.262068e-06
+"Clown Goby","Other Snapper",3.733413e-05
+"Clown Goby","Gray Snapper",2.892644e-05
+"Clown Goby","Scianids",0.0002041867
+"Clown Goby","Spotted Seatrout",0.0001121025
+"Clown Goby","Red Drum",6.525966e-06
+"Clown Goby","Barracuda",0.001104009
+"Clown Goby","Flatfish",0.0003563258
+"Clown Goby","Loon",2.071894e-07
+"Clown Goby","Greeb",6.786204e-06
+"Clown Goby","Pelican",0.0002862617
+"Clown Goby","Comorant",6.986387e-05
+"Clown Goby","Big Herons & Egrets",0.0001741592
+"Clown Goby","Small Herons & Egrets",0.0003072809
+"Clown Goby","Ibis",0.0001341226
+"Clown Goby","Roseate Spoonbill",0.0001741592
+"Clown Goby","Predatory Ducks",9.028254e-06
+"Clown Goby","Gruiformes",6.676103e-05
+"Clown Goby","Small Shorebirds",1.020933e-05
+"Clown Goby","Gulls & Terns",7.276652e-05
+"Clown Goby","Kingfisher",2.111931e-06
+"Clown Goby","Dolphin",2.312114e-05
+"Clown Goby","Water POC",0.0005394932
+"Clown Goby","Benthic POC",0.0006195664
+"Flatfish","Predatory Gastropods",0.001609453
+"Flatfish","Tarpon",2.60782e-05
+"Flatfish","Lizardfish",7.911035e-05
+"Flatfish","Grouper",4.456647e-07
+"Flatfish","Other Demersal Fishes",9.28306e-06
+"Flatfish","Loon",7.998611e-07
+"Flatfish","Greeb",1.30391e-05
+"Flatfish","Pelican",0.002203024
+"Flatfish","Comorant",0.0004038228
+"Flatfish","Big Herons & Egrets",0.0003357081
+"Flatfish","Predatory Ducks",3.473849e-05
+"Flatfish","Raptors",6.159515e-05
+"Flatfish","Crocodiles",6.986621e-05
+"Flatfish","Dolphin",4.446916e-05
+"Flatfish","Water POC",0.002477429
+"Flatfish","Benthic POC",0.003450496
+"Filefishes","Tarpon",5.709216e-05
+"Filefishes","Eels",0.0008054415
+"Filefishes","Scianids",0.0008602269
+"Filefishes","Red Drum",2.748882e-05
+"Filefishes","Barracuda",0.001060146
+"Filefishes","Other Pelagic Fishes",2.758493e-05
+"Filefishes","Loon",8.679161e-07
+"Filefishes","Greeb",1.412887e-05
+"Filefishes","Pelican",0.002390374
+"Filefishes","Comorant",0.0005843776
+"Filefishes","Big Herons & Egrets",0.0007275886
+"Filefishes","Predatory Ducks",3.777309e-05
+"Filefishes","Raptors",6.689586e-05
+"Filefishes","Crocodiles",0.0001009205
+"Filefishes","Dolphin",0.0002902665
+"Filefishes","Water POC",0.01301586
+"Puffer","Mackerel",1.926135e-05
+"Puffer","Barracuda",0.001141852
+"Puffer","Other Pelagic Fishes",2.706467e-05
+"Puffer","Loon",9.433124e-07
+"Puffer","Greeb",1.540908e-05
+"Puffer","Pelican",0.001298907
+"Puffer","Comorant",0.0003180592
+"Puffer","Big Herons & Egrets",0.000791197
+"Puffer","Predatory Ducks",4.099211e-05
+"Puffer","Raptors",7.269926e-05
+"Puffer","Crocodiles",0.0001649562
+"Puffer","Dolphin",0.0001047027
+"Puffer","Water POC",0.01298808
+"Other Pelagic Fishes","Tarpon",3.863438e-06
+"Other Pelagic Fishes","Needlefish",0.0001138067
+"Other Pelagic Fishes","Jacks",9.983045e-07
+"Other Pelagic Fishes","Mackerel",2.39593e-07
+"Other Pelagic Fishes","Barracuda",1.307779e-05
+"Other Pelagic Fishes","Dolphin",2.895083e-06
+"Other Pelagic Fishes","Water POC",0.0001098135
+"Other Demersal Fishes","Sharks",3.485729e-06
+"Other Demersal Fishes","Tarpon",8.230193e-07
+"Other Demersal Fishes","Lizardfish",1.132862e-05
+"Other Demersal Fishes","Eels",5.306054e-05
+"Other Demersal Fishes","Snook",1.53953e-06
+"Other Demersal Fishes","Grouper",2.817631e-07
+"Other Demersal Fishes","Pompano",2.769218e-06
+"Other Demersal Fishes","Other Snapper",3.495411e-05
+"Other Demersal Fishes","Gray Snapper",2.711122e-05
+"Other Demersal Fishes","Scianids",0.0002498105
+"Other Demersal Fishes","Spotted Seatrout",0.0001258735
+"Other Demersal Fishes","Red Drum",7.968763e-06
+"Other Demersal Fishes","Barracuda",7.029553e-05
+"Other Demersal Fishes","Flatfish",0.0003369538
+"Other Demersal Fishes","Loon",5.073671e-07
+"Other Demersal Fishes","Greeb",8.288289e-06
+"Other Demersal Fishes","Pelican",0.005587817
+"Other Demersal Fishes","Comorant",0.0002565884
+"Other Demersal Fishes","Big Herons & Egrets",0.0008501305
+"Other Demersal Fishes","Small Herons & Egrets",0.000187842
+"Other Demersal Fishes","Ibis",8.191463e-05
+"Other Demersal Fishes","Roseate Spoonbill",0.0001065084
+"Other Demersal Fishes","Predatory Ducks",2.207628e-05
+"Other Demersal Fishes","Raptors",1.955881e-05
+"Other Demersal Fishes","Gruiformes",4.076366e-05
+"Other Demersal Fishes","Small Shorebirds",6.216216e-06
+"Other Demersal Fishes","Gulls & Terns",4.444304e-05
+"Other Demersal Fishes","Kingfisher",1.287783e-06
+"Other Demersal Fishes","Crocodiles",0.0001771912
+"Other Demersal Fishes","Dolphin",5.644944e-05
+"Other Demersal Fishes","Water POC",0.0002023659
+"Other Demersal Fishes","Benthic POC",0.0002023659
+"Loon","Water POC",6.253732e-06
+"Greeb","Water POC",0.0001163259
+"Pelican","Raptors",9.233961e-05
+"Pelican","Water POC",0.01615639
+"Comorant","Raptors",1.628241e-05
+"Comorant","Water POC",0.002849928
+"Big Herons & Egrets","Raptors",3.515499e-05
+"Big Herons & Egrets","Crocodiles",3.08503e-05
+"Big Herons & Egrets","Water POC",0.006143412
+"Small Herons & Egrets","Raptors",2.258597e-05
+"Small Herons & Egrets","Crocodiles",1.98266e-05
+"Small Herons & Egrets","Water POC",0.003946924
+"Ibis","Raptors",1.071654e-05
+"Ibis","Water POC",0.001869212
+"Roseate Spoonbill","Raptors",1.279373e-05
+"Roseate Spoonbill","Water POC",0.002239414
+"Herbivorous Ducks","Raptors",8.078072e-06
+"Herbivorous Ducks","Water POC",0.002303022
+"Omnivorous Ducks","Raptors",1.642089e-05
+"Omnivorous Ducks","Water POC",0.003642736
+"Predatory Ducks","Water POC",0.0002836398
+"Raptors","Water POC",0.0003335301
+"Gruiformes","Raptors",1.145575e-05
+"Gruiformes","Water POC",0.002009964
+"Small Shorebirds","Raptors",3.510997e-06
+"Small Shorebirds","Water POC",0.0006154694
+"Gulls & Terns","Raptors",1.070369e-05
+"Gulls & Terns","Water POC",0.001871587
+"Kingfisher","Water POC",2.236849e-05
+"Crocodiles","Water POC",0.003518312
+"Loggerhead Turtle","Crocodiles",3.567156e-05
+"Loggerhead Turtle","Water POC",0.002566613
+"Green Turtle","Crocodiles",1.764706e-05
+"Green Turtle","Water POC",0.001276506
+"Hawksbill Turtle","Water POC",9.244845e-06
+"Dolphin","Water POC",0.001131121
+"Manatee","Water POC",0.001581473
+"Water POC","Water Flagellates",84.10699
+"Water POC","Water Cilitaes",4.053562
+"Water POC","Acartia Tonsa",0.07343264
+"Water POC","Oithona nana",0.3579911
+"Water POC","Paracalanus",0.1700192
+"Water POC","Other Copepoda",0.5597677
+"Water POC","Meroplankton",0.01011706
+"Water POC","Other Zooplankton",0.3357872
+"Water POC","Sponges",0.1079814
+"Water POC","Bivalves",0.34569
+"Water POC","Suspension Feeding Polych",0.1811985
+"Water POC","Benthic POC",129.1526
+"Benthic POC","Benthic Flagellates",83.53754
+"Benthic POC","Benthic Ciliates",5.393528
+"Benthic POC","Meiofauna",26.34959
+"Benthic POC","Echinoderma",0.1264025
+"Benthic POC","Detritivorous Gastropods",0.1896362
+"Benthic POC","Detritivorous Polychaetes",0.9684554
+"Benthic POC","Predatory Polychaetes",0.1237943
+"Benthic POC","Macrobenthos",0.307373
+"Benthic POC","Benthic Crustaceans",0.04474781
+"Benthic POC","Detritivorous Amphipods",0.118451
+"Benthic POC","Herbivorous Amphipods",0.1320684
+"Benthic POC","Predatory Shrimp",0.02455555
+"Benthic POC","Pink Shrimp",0.4292985
+"Benthic POC","Detritivorous Crabs",0.01972458
+"Benthic POC","Omnivorous Crabs",0.178904
+"Benthic POC","Predatory Crabs",0.0005630378
+"Benthic POC","Callinectus sapidus",0.003472573
+"Benthic POC","Catfish",0.001067235
+"Benthic POC","Mullet",0.03050447
+"DOC","Free Bacteria",138.1003

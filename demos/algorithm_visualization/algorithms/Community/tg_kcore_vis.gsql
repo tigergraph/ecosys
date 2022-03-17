@@ -1,0 +1,84 @@
+CREATE QUERY tg_kcore_vis (STRING v_type, STRING e_type, INT k_min = 0, INT k_max = -1, BOOL print_accum = TRUE, STRING result_attr = "label", STRING file_path = "", BOOL print_all_k = FALSE, BOOL show_shells=FALSE) SYNTAX V1 { 
+/* An implementation of Algorithm 2 in
+ * Scalable K-Core Decomposition for Static Graphs Using a Dynamic Graph Data Structure,
+ * Tripathy et al., IEEE Big Data 2018.
+ 
+ This query is only supported for a single edge type at the moment (8/13/20)
+ */
+  SumAccum<INT> @sum_deg;        // The number of edges v has to active vertices.
+  SumAccum<INT> @sum_core;       // The core level of vertex v
+  //For Demo Display
+  SumAccum<INT> @color_id;
+  SetAccum<VERTEX> @@v_display_set;
+  SetAccum<EDGE> @@e_display_set;
+  
+  FILE f(file_path);
+  INT k;             			    
+  k = k_min;				      
+	
+  active = {v_type.*};
+  active = SELECT v 
+           FROM active:v // Initialize @deg 
+	   POST-ACCUM v.@sum_deg += v.outdegree(e_type);
+  
+  Q = active;
+  WHILE active.size() > 0 AND (k_max == -1 OR k < k_max) DO
+      deleted = SELECT v 
+                FROM active:v
+                WHERE v.@sum_deg <= k
+                ACCUM v.@sum_core += k;
+  
+      active = active MINUS deleted;
+      IF deleted.size() > 0 THEN                // "Remove adjacent edges"         
+          U = SELECT u 
+              FROM deleted:u -(e_type:e)-> :v
+	      ACCUM  v.@sum_deg += -1;  // Actually, reduce degree of vertices
+      ELSE IF show_shells THEN 
+          // Show vertices which did not satisfy kcore condition at a value of k 
+          shells = Q MINUS active;
+          PRINT k, shells; 
+      END;
+      
+      IF active.size() > 0 THEN
+          Q = active;
+      END;
+        
+      //show all vertices which satisfied the condition at k.
+      IF print_all_k THEN 
+          PRINT k, Q as members;
+      END;
+  
+      v_display = SELECT s FROM Q:s
+                  POST-ACCUM @@v_display_set+=Q;
+      k = k + 1;
+	
+  END;
+  IF file_path != "" THEN
+      f.println("Vertex", "Core");
+  END;
+  
+  IF file_path != "" OR result_attr != "" THEN
+      Seed = {v_type.*};
+      Seed = SELECT s 
+             FROM Seed:s
+             POST-ACCUM
+                 IF file_path != "" THEN 
+		     f.println(s, s.@sum_core) 
+		 END,
+                 IF result_attr != "" THEN 
+		     s.setAttr(result_attr, s.@sum_core) 
+		 END;
+  END;
+  
+  IF print_accum THEN
+      //PRINT k, Q.size() as core_size, Q as max_core;
+      PRINT k as max_core_k, Q.size() as max_core_size;
+      v_display = {@@v_display_set};
+      v_display = SELECT s FROM v_display:s-(e_type:e)-v_type:t 
+                  ACCUM @@e_display_set+=e,
+                        IF t IN @@v_display_set THEN e.score=10 END
+                  POST-ACCUM s.@color_id+=1;
+      PRINT v_display;
+      PRINT @@e_display_set;
+  END;	
+}

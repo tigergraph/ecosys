@@ -1,0 +1,191 @@
+ CREATE QUERY tg_maxflow_vis (VERTEX source, VERTEX sink, STRING v_type, STRING e_type, 
+  STRING reverse_e_type, STRING cap_attr, STRING cap_type, FLOAT min_flow_threshhold = 0.001,
+  BOOL print_accum = TRUE, BOOL display_edges = TRUE, BOOL spit_to_file = FALSE, STRING file_path = "") SYNTAX V1 { 
+    
+  /*
+   Maxflow algorithm. Finds the maximum amount of flow that source can pushes to sink
+
+   source: start vertex to  every other vertex.     cap_type: capacity data type (UINT, INT,FLOAT,DOUBLE)
+   sink:   end vertex                               min_flow_threshhold: smallest epsilon for flow
+   v_type: vertex types to traverse                 print_accum: print JSON output
+   e_type: edge types to traverse                   display_edges: visualization when print_accum && display_edges 
+   reverse_e_type: reverse edge of e_type           spit_to_file: spit output to file
+   cap_attr: attribute for edge capacity            file_path: file to write CSV output to
+     
+  */
+         
+  TYPEDEF TUPLE<INT prev_flow, BOOL is_forward, VERTEX prev> tb_node;
+  GroupByAccum<VERTEX source, VERTEX targ, SumAccum<FLOAT> flow> @@group_by_flow_accum;
+  SetAccum<VERTEX> @@curr_set;
+  SetAccum<EDGE> @@edges_set;
+  HeapAccum<tb_node>(1, prev_flow DESC) @trace_back_heap;
+                              
+  MaxAccum<FLOAT> @@max_cap_threshold;
+  SumAccum<FLOAT> @@sum_max_flow = 0;
+  MinAccum<FLOAT> @@min_flow;
+  OrAccum @or_is_visited, @@or_is_found;
+  BOOL minimum_reached = FALSE;
+	FILE f(file_path);
+  @@max_cap_threshold = min_flow_threshhold;
+         
+  IF cap_type NOT IN ("UINT", "INT", "FLOAT", "DOUBLE") THEN
+      PRINT "wt_type must be UINT, INT, FLOAT, or DOUBLE" AS errMsg;
+      RETURN;
+  END;    
+  
+  ##### Initialize #####
+  init = {v_type};       
+  init = SELECT s
+         FROM init:s - (e_type:e) -> v_type:t
+         ACCUM 
+             FLOAT fl = 0,
+             CASE cap_type 
+	         WHEN "UINT" THEN
+	             fl = e.getAttr(cap_attr, "UINT")
+                 WHEN "INT" THEN
+		     fl = e.getAttr(cap_attr, "INT")
+                 WHEN "FLOAT" THEN
+                     fl = e.getAttr(cap_attr, "FLOAT")
+                 WHEN "DOUBLE" THEN
+                     fl = e.getAttr(cap_attr, "DOUBLE")
+                 END,
+             @@group_by_flow_accum += (s, t -> 0),
+             IF s == source THEN 
+	         @@max_cap_threshold += fl 
+	     END;
+
+  //used for determining minimum flow of path, s.t. minimum flow > cap_threshold
+  @@max_cap_threshold = pow(3, float_to_int(log(@@max_cap_threshold)/log(3)));
+  
+  ##### Push one flow at a time until there is residudal graph is disconnected #####
+  WHILE TRUE DO
+      //initilize 
+      init = {v_type};
+      init = SELECT s
+             FROM init:s
+             POST-ACCUM s.@or_is_visited = FALSE,
+                        s.@trace_back_heap = tb_node(GSQL_INT_MIN, FALSE, source);
+    
+      start = {source};
+      start = SELECT s 
+              FROM start:s 
+              POST-ACCUM s.@or_is_visited = TRUE;
+  
+      @@or_is_found = False;
+    
+      //BFS to find feasible path from source -> sink
+      WHILE NOT @@or_is_found AND start.size() > 0 DO
+          forwd = SELECT t
+                  FROM start:s - (e_type:e) -> v_type:t
+                  WHERE NOT t.@or_is_visited
+                  ACCUM 
+                      FLOAT fl = 0,
+                      CASE cap_type
+                          WHEN "UINT" THEN
+			      fl = e.getAttr(cap_attr, "UINT")
+                          WHEN "INT" THEN
+			      fl = e.getAttr(cap_attr, "INT")
+                          WHEN "FLOAT" THEN
+                              fl = e.getAttr(cap_attr, "FLOAT")
+                          WHEN "DOUBLE" THEN
+                              fl = e.getAttr(cap_attr, "DOUBLE")
+                      END, 
+                      IF fl - @@group_by_flow_accum.get(s, t).flow >= @@max_cap_threshold THEN
+                          t.@trace_back_heap += tb_node(fl - @@group_by_flow_accum.get(s, t).flow, TRUE, s),
+                          t.@or_is_visited += TRUE,
+                          @@or_is_found += t == sink
+                      END
+                  HAVING t.@or_is_visited;
+  
+          bacwd = SELECT t
+                  FROM start:s - (reverse_e_type) -> v_type:t
+                  WHERE NOT t.@or_is_visited
+                  ACCUM 
+                      IF @@group_by_flow_accum.get(t, s).flow >= @@max_cap_threshold THEN
+                          t.@trace_back_heap += tb_node(@@group_by_flow_accum.get(t, s).flow, FALSE, s),
+                          t.@or_is_visited += TRUE,
+                          @@or_is_found += t == sink
+                      END
+                  HAVING t.@or_is_visited;
+  
+          start = forwd UNION bacwd;
+      END;
+    
+      //done when residual graph is disconnected                           
+      IF NOT @@or_is_found AND minimum_reached THEN
+          BREAK;
+      END;  
+    
+      //reduce cap_threshold to look for more path options
+      IF NOT @@or_is_found THEN
+          @@max_cap_threshold = float_to_int(@@max_cap_threshold/3);
+          IF @@max_cap_threshold < min_flow_threshhold THEN 
+              @@max_cap_threshold = min_flow_threshhold; 
+              minimum_reached = TRUE; 
+          END;
+                               
+          CONTINUE;
+      END;
+    
+      //find bottleneck 
+      @@curr_set.clear();
+      @@curr_set += sink;
+      @@min_flow = GSQL_INT_MAX;
+    
+      WHILE NOT @@curr_set.contains(source) DO
+          start = @@curr_set;
+          @@curr_set.clear();
+          start = SELECT s 
+                  FROM start:s
+                  POST-ACCUM @@min_flow += s.@trace_back_heap.top().prev_flow,
+                             @@curr_set += s.@trace_back_heap.top().prev;
+    
+      END;
+  
+      @@sum_max_flow += @@min_flow;
+    
+      //traceback to source and update flow vertices
+      @@curr_set.clear();
+      @@curr_set += sink;
+      WHILE NOT @@curr_set.contains(source) DO
+          start = @@curr_set;
+          @@curr_set.clear();
+          start = SELECT s 
+                  FROM start:s
+                  POST-ACCUM 
+		      @@curr_set += s.@trace_back_heap.top().prev, 
+                      CASE 
+                          WHEN s.@trace_back_heap.top().is_forward THEN
+                              @@group_by_flow_accum += (s.@trace_back_heap.top().prev, s -> @@min_flow)
+                          ELSE 
+			      @@group_by_flow_accum += (s, s.@trace_back_heap.top().prev -> -@@min_flow)
+                          END;
+      END;
+  END;
+
+  ##### Output #####
+  IF file_path != "" THEN
+      f.println("Maxflow: " + to_string(@@sum_max_flow));
+      f.println("From","To","Flow");
+  END;                            
+  start = {source};
+  WHILE start.size() != 0 DO
+      start = SELECT t
+              FROM start:s - (e_type:e) - v_type:t
+              WHERE @@group_by_flow_accum.get(s,t).flow >= min_flow_threshhold 
+              ACCUM
+                  IF print_accum THEN 
+		      @@edges_set += e 
+		  END,
+                  IF spit_to_file THEN 
+		      f.println(s, t, @@group_by_flow_accum.get(s,t).flow) 
+		  END;
+  END;
+  
+  IF print_accum THEN
+      PRINT @@sum_max_flow;
+      IF display_edges THEN
+          PRINT @@edges_set; 
+      END;
+  END;
+}

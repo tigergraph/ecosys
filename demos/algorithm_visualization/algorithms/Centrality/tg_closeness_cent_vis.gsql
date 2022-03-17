@@ -1,0 +1,177 @@
+CREATE QUERY tg_closeness_cent_vis (STRING v_type, STRING e_type, STRING re_type, INT max_hops = 10, INT top_k = 5, BOOL wf = TRUE, BOOL print_accum = True, STRING result_attr = "label", STRING file_path = "", BOOL display_edges = TRUE, INT display_edges_num = 20) SYNTAX V1 { 
+  
+  /* Compute Closeness Centrality for each VERTEX. 
+  Use multi-sourse BFS.
+  Link of the paper: http://www.vldb.org/pvldb/vol8/p449-then.pdf
+  Parameters:
+  v_type: vertex types to traverse                 print_accum: print JSON output
+  e_type: edge types to traverse                   result_attr: INT attr to store results to
+  re_type: reverse edge type in directed graph, in undirected graph set re_type=e_type
+  max_hops: look only this far from each vertex    file_path: file to write CSV output to
+  top_k: report only this many top scores          display_edges: output edges for visualization
+  wf: Wasserman and Faust normalization factor for multi-component graphs */ 
+  
+  TYPEDEF TUPLE<VERTEX Vertex_ID, FLOAT score> Vertex_Score; #tuple to store closeness centrality score
+  HeapAccum<Vertex_Score>(top_k, score DESC) @@top_scores_heap; #heap to store top K score
+  SumAccum<INT> @@sum_curr_dist; #current distance
+  BitwiseOrAccum @bitwise_or_visit_next; #use bitwise instead of setAccum
+  SumAccum<INT> @sum_res; #Result, sum of distance
+  SumAccum<INT> @sum_size; #get graph size
+  SumAccum<FLOAT> @sum_score;
+  BitwiseOrAccum @bitwise_or_seen;
+  BitwiseOrAccum @bitwise_or_visit; 
+  SumAccum<INT> @@sum_count=1;#used to set unique ID
+  SumAccum<INT> @sum_id; #store the unique ID
+  SetAccum<INT> @@batch_set; #used to set unique ID
+  MapAccum<INT,INT> @@map; #used to set unique ID 
+  OrAccum @show;                          # Mark if a vertex is displayed.
+  SetAccum<VERTEX> @@vertex_set;         # list of colored vertices of display vertices, if display is needed
+  SetAccum<EDGE> @@edge_set;             # list of display edges, if display is needed
+  SumAccum<INT> @color_id;                # color for vertices to display
+  MapAccum<VERTEX, INT> @@verId2colorId_map;                # map from vertex ID to Color ID
+  INT empty=0;
+  FILE f (file_path);
+  INT num_vert;
+  INT batch_number;
+# Compute closeness	
+  all = {v_type};
+  
+  num_vert = all.size();
+  batch_number = num_vert/60;
+  IF batch_number==0 THEN batch_number=1; END;
+    
+  #Calculate the sum of distance to other vertex for each vertex
+  FOREACH i IN RANGE[0, batch_number-1] DO
+          Start = SELECT s 
+                  FROM all:s
+                  WHERE getvid(s)%batch_number == i
+                  POST-ACCUM 
+		        @@map+=(getvid(s)->0),
+                        @@batch_set+=getvid(s);
+  
+          FOREACH ver in @@batch_set DO 
+              @@map+=(ver->@@sum_count); 
+	      @@sum_count+=1;
+          END; #set a unique ID for each vertex, ID from 1-63
+    
+          Start = SELECT s 
+                  FROM Start:s 
+                  POST-ACCUM 
+		         s.@sum_id=@@map.get(getvid(s));
+    
+          Start = Select s 
+                  FROM Start:s
+                  POST-ACCUM 
+		         s.@bitwise_or_seen=1<<s.@sum_id,
+                         s.@bitwise_or_visit=1<<s.@sum_id; # set initial seen and visit s.@seen1 s.@seen2 
+          @@batch_set.clear();
+          @@map.clear();
+          @@sum_count=0;
+      
+          WHILE (Start.size() > 0) LIMIT max_hops DO
+                @@sum_curr_dist+=1;
+                Start = SELECT t FROM Start:s -(re_type:e)-v_type:t
+                        WHERE s.@bitwise_or_visit&-t.@bitwise_or_seen-1>0 and s!=t #use -t.@seen-1 to get the trverse of t.@seen
+                        ACCUM
+                              INT c = s.@bitwise_or_visit&-t.@bitwise_or_seen-1,
+                              IF c>0 THEN
+                                  t.@bitwise_or_visit_next+=c,
+                                  t.@bitwise_or_seen+=c
+                              END
+                        POST-ACCUM
+                              t.@bitwise_or_visit=t.@bitwise_or_visit_next,
+                              INT r = t.@bitwise_or_visit_next,
+                              WHILE r>0 DO 
+                                    r=r&(r-1),t.@sum_res+=@@sum_curr_dist,t.@sum_size+=1 #count how many 1 in the number, same as setAccum,size()
+                              END,
+                              t.@bitwise_or_visit_next=0;
+          END;
+          @@sum_curr_dist=0;
+          Start = SELECT s 
+                  FROM all:s 
+                  POST-ACCUM 
+                        s.@bitwise_or_seen=0,s.@bitwise_or_visit=0;
+  END;
+  
+  #Output
+	IF file_path != "" THEN
+	    f.println("Vertex_ID", "Closeness");
+	END;
+	
+  Start = SELECT s 
+          FROM all:s
+	  # Calculate Closeness Centrality for each vertex
+          WHERE s.@sum_res>0
+          POST-ACCUM 
+                IF wf THEN 
+                    s.@sum_score = (s.@sum_size*1.0/(num_vert-1))*(s.@sum_size*1.0/s.@sum_res) 
+                ELSE 
+                    s.@sum_score = s.@sum_size*1.0/s.@sum_res*1.0 
+                END,
+    
+		            IF result_attr != "" THEN 
+                    s.setAttr(result_attr, s.@sum_score) 
+                END,
+    
+	              IF print_accum THEN 
+                    @@top_scores_heap += Vertex_Score(s, s.@sum_score) 
+                END,
+    
+		            IF file_path != "" THEN 
+                    f.println(s, s.@sum_score) 
+                END;
+   #test
+
+   IF print_accum THEN
+       Start = SELECT s 
+               FROM all:s
+               WHERE s.@sum_res<=0 
+               POST-ACCUM 
+                     @@top_scores_heap += Vertex_Score(s, -1);
+    END;
+    
+// Demo Display
+FOREACH VerScore IN @@top_scores_heap DO
+   @@vertex_set+=VerScore.Vertex_ID;
+   @@verId2colorId_map+=(VerScore.Vertex_ID->1);
+END; 
+/*FOREACH VerScore IN @@bot_scores_heap DO
+   @@vertex_set+=VerScore.Vertex_ID;
+   @@verId2colorId_map+=(VerScore.Vertex_ID->2);
+END;*/
+
+v_display = {@@vertex_set};
+   
+PRINT v_display[v_display.@sum_score, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+v_display = 
+     SELECT t FROM v_display:s-(e_type:e)-:t
+     //SAMPLE display_edges_frac% EDGE WHEN s.outdegree() >= 9
+     SAMPLE display_edges_num EDGE WHEN s.outdegree() >= 0
+     //WHERE t not in @@vertex_set
+     ACCUM
+           s.@color_id=@@verId2colorId_map.get(s),
+           @@edge_set += e;
+   
+PRINT v_display[v_display.@sum_score, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+//v_display = {v_type};
+v_display = 
+     SELECT t FROM v_display:s-(e_type:e)-:t
+     //SAMPLE display_edges_frac% EDGE WHEN s.outdegree() >= 9
+     SAMPLE display_edges_num EDGE WHEN s.outdegree() >= 0
+     //WHERE t not in @@vertex_set
+     ACCUM
+           s.@color_id=@@verId2colorId_map.get(s),
+           @@edge_set += e;
+
+PRINT v_display[v_display.@sum_score, v_display.label AS label, v_display.label, v_display.@color_id];
+   
+IF print_accum THEN
+    PRINT @@top_scores_heap;
+    //PRINT @@bot_scores_heap;
+    IF display_edges THEN
+        PRINT @@edge_set;
+    END;
+END;
+}

@@ -1,0 +1,10 @@
+USE GRAPH USairport
+DROP QUERY ALL
+DROP JOB ALL
+DROP GRAPH USairport
+
+CREATE GRAPH USairport ()
+CREATE SCHEMA_CHANGE JOB schema_USairport FOR GRAPH USairport {
+    ADD VERTEX Airport (PRIMARY_ID id STRING, name STRING, City STRING, Position STRING);
+    ADD DIRECTED EDGE Flight_to (FROM Airport, TO Airport, weight FLOAT, Carrier STRING, Departures INT, Seats INT, Passengers INT, Aircraft STRING, Distance FLOAT) WITH REVERSE_EDGE="Flight_from";
+}
