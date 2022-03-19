@@ -6,6 +6,7 @@ metadata:
   name: tigergraph
   namespace: default
 spec:
+  podManagementPolicy: Parallel
   replicas: 1
   selector:
     matchLabels:
@@ -88,12 +89,12 @@ spec:
           name: tg-data
         - mountPath: /tmp/init_tg_cfg
           name: config-volume
-          subPath: init_tg_cfg     
+          subPath: init_tg_cfg
       volumes:
       - name: config-volume
         configMap:
           name: tg-config
-          items: 
+          items:
           - key: init_tg_cfg
             path: init_tg_cfg
       imagePullSecrets:
