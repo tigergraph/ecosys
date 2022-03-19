@@ -41,7 +41,7 @@ spec:
         - "/bin/sh"
         - "-c"
         - |
-          # set -e;
+          set -e;
           pod_cnt=0;
           echo -n Waiting for tigergraph;
           until [ ${pod_cnt} -eq ${CLUSTER_SIZE} ];
