@@ -180,5 +180,4 @@ Here are sources of the graph data, please make sure that you are citing the sou
 - USairport [[1]](https://cran.r-project.org/web/packages/igraphdata/igraphdata.pdf)
 - netscience [[2]](https://networkrepository.com/ca-netscience.php) [[3]](https://arxiv.org/pdf/physics/0605087.pdf)
 - polblogs [[4]](https://networkrepository.com/polblogs.php) [[5]](https://dl.acm.org/doi/abs/10.1145/1134271.1134277)
-- web_edu [[6]](https://networkrepository.com/web-edu.php) [[7]](https://profs.info.uaic.ro/~ancai/CN/bibliografie/FastParallelPageRank-paper%20lin%20syst.pdf)
-- wiki_vote [[8]](https://snap.stanford.edu/data/wiki-Vote.html)
+
