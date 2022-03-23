@@ -297,12 +297,18 @@ public class RestppConnection extends Connection {
     }
     this.httpClient = builder.build();
 
-    if (this.token == null && this.username != null && this.password != null && this.graph != null ) {
+    /**
+     * There're 3 types of connection
+     * 1) publicly accessible: both token and username are not specified, authentication needs to be turned off
+     * 2) token exist: ignore the username&password and use current token
+     * 3) get token: must specify username, password and graph with empty token
+     */
+    if (this.token == null && this.username != null && this.password != null && this.graph != null) {
       getToken();
     } else if (this.token != null){
-      System.out.println(">>> Token exist, use current token");
+      System.out.println(">>> Token exists, use current token");
     } else {
-      System.out.println("!!! Skip authentication, please offer 'username','password' and 'graph' in properties");
+      System.out.println(">>> Skip authentication, please offer 'username','password' and 'graph' in properties if authentication is needed");
     }
   }
 
@@ -377,7 +383,7 @@ public class RestppConnection extends Connection {
     sb.append("{\"graph\":\"");
     sb.append(this.graph);
     sb.append("\"}");
-    StringEntity payload =  new StringEntity(sb.toString(), "UTF-8");
+    StringEntity payload = new StringEntity(sb.toString(), "UTF-8");
     payload.setContentType("application/json");
     HttpPost request = new HttpPost(url);
     request.addHeader("Authorization", basicAuth);
