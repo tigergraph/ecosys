@@ -1,5 +1,6 @@
 package com.tigergraph.jdbc;
 
+import com.tigergraph.jdbc.common.BaseDriver;
 import com.tigergraph.jdbc.restpp.RestppDriver;
 
 import java.util.HashMap;
