@@ -297,8 +297,12 @@ public class RestppConnection extends Connection {
     }
     this.httpClient = builder.build();
 
-    if (this.token == null && this.username != null && this.password != null) {
+    if (this.token == null && this.username != null && this.password != null && this.graph != null ) {
       getToken();
+    } else if (this.token != null){
+      System.out.println(">>> Token exist, use current token");
+    } else {
+      System.out.println("!!! Skip authentication, please offer 'username','password' and 'graph' in properties");
     }
   }
 
@@ -359,10 +363,6 @@ public class RestppConnection extends Connection {
   private void getToken() throws SQLException {
     StringBuilder sb = new StringBuilder();
     sb.append("/gsqlserver/gsql/authtoken");
-    if (this.graph != null) {
-      sb.append("?graph=");
-      sb.append(this.graph);
-    }
     String url = "";
     try {
       if (this.secure)
@@ -372,9 +372,17 @@ public class RestppConnection extends Connection {
     } catch (MalformedURLException e) {
       throw new SQLException("Invalid server URL", e);
     }
-    HttpRequestBase request = new HttpGet(url);
+
+    sb.setLength(0);
+    sb.append("{\"graph\":\"");
+    sb.append(this.graph);
+    sb.append("\"}");
+    StringEntity payload =  new StringEntity(sb.toString(), "UTF-8");
+    payload.setContentType("application/json");
+    HttpPost request = new HttpPost(url);
     request.addHeader("Authorization", basicAuth);
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
+    request.setEntity(payload);
     /**
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}
