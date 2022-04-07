@@ -106,7 +106,7 @@ public class QueryParserTest extends TestCase {
     String formattedResult = sb.toString();
     InputStream expected =
       getClass().getClassLoader().getResourceAsStream("endpoint-expected.dat");
-    String expectedString = IOUtils.toString(expected);
+    String expectedString = IOUtils.toString(expected).replaceAll("\\n|\\r\\n", System.lineSeparator());
     assertEquals(expectedString, formattedResult);
   }
 }

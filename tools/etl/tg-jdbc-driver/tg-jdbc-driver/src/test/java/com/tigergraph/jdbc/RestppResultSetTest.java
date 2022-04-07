@@ -56,7 +56,7 @@ public class RestppResultSetTest extends TestCase {
         } while (!vertexRs.isLast());
 
         InputStream inExpectedVertex = getClass().getClassLoader().getResourceAsStream("resultset-vertex-expected.dat");
-        String expectedStr = IOUtils.toString(inExpectedVertex);
+        String expectedStr = IOUtils.toString(inExpectedVertex).replaceAll("\\n|\\r\\n", System.lineSeparator());
         assertEquals(expectedStr, vertexStrBuiler.toString());
 
         inVertex.close();
@@ -97,7 +97,7 @@ public class RestppResultSetTest extends TestCase {
         } while (!edgeRs.isLast());
 
         InputStream inExpectedEdge = getClass().getClassLoader().getResourceAsStream("resultset-edge-expected.dat");
-        String expectedEdgeStr = IOUtils.toString(inExpectedEdge);
+        String expectedEdgeStr = IOUtils.toString(inExpectedEdge).replaceAll("\\n|\\r\\n", System.lineSeparator());
         assertEquals(expectedEdgeStr, edgeStrBuiler.toString());
 
         inEdge.close();
