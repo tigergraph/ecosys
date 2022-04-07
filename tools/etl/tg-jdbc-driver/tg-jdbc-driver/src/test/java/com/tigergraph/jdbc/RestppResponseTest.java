@@ -26,7 +26,7 @@ public class RestppResponseTest extends TestCase {
 		String formattedResult = restpp.toString();
 		InputStream expected = 
 			getClass().getClassLoader().getResourceAsStream("response-expected.dat");
-		String expectedString = IOUtils.toString(expected);
+		String expectedString = IOUtils.toString(expected).replaceAll("\\n|\\r\\n", System.lineSeparator());
 		assertEquals(expectedString, formattedResult);
 	}
 }
