@@ -16,7 +16,7 @@ import java.sql.Statement;
  */
 public class GraphQuery
 {
-  public static void main( String[] args ) throws SQLException {
+  public static void main(String[] args ) throws SQLException {
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
     // port of GraphStudio

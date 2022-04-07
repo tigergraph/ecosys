@@ -307,8 +307,7 @@ public class QueryParser {
       }
       this.line = sb.toString();
       this.job = tokens[3]; // loading job name
-    }
-    else if (tokens[2].toLowerCase().equals("edge")) {
+    } else if (tokens[2].toLowerCase().equals("edge")) {
       // insert an edge
       // e.g., INSERT INTO edge Follow ("Person","Person","weight") VALUES (?,?,?)
       if (count != values_index - param_offset) {
@@ -364,8 +363,7 @@ public class QueryParser {
       if (debug > 1) {
         System.out.println(">>> upsert edge: " + edge_json);
       }
-    }
-    else if (tokens[2].toLowerCase().equals("vertex")) {
+    } else if (tokens[2].toLowerCase().equals("vertex")) {
       // insert an vertex
       // e.g., INSERT INTO vertex Person ("id","account") VALUES (?,?)
       if (count != values_index - param_offset) {
@@ -412,8 +410,7 @@ public class QueryParser {
       if (debug > 1) {
         System.out.println(">>> upsert vertex: " + vertex_json);
       }
-    }
-    else {
+    } else {
       throw new SQLException("Invalid upsert query: " + tokens[2]);
     }
   }

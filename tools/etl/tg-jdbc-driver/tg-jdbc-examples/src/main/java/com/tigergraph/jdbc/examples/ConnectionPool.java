@@ -19,7 +19,7 @@ import java.sql.Statement;
  */
 public class ConnectionPool
 {
-  public static void main( String[] args ) throws SQLException {
+  public static void main(String[] args ) throws SQLException {
     HikariConfig config = new HikariConfig();
 
     String ipAddr = "127.0.0.1";

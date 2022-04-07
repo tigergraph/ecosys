@@ -32,10 +32,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.*;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.KeyStoreException;
+import java.security.UnrecoverableKeyException;
+import java.security.KeyManagementException;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Properties;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Random;
 
 public class RestppConnection extends Connection {
 
