@@ -16,7 +16,6 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | org.apache.commons | commons-io | 1.3.2 |
 | org.apache.httpcomponents | httpclient | 4.5.8 |
 | org.json | json | 20180813 |
-| javax.json | javax.json-api | 1.1.4 |
 | org.glassfish | javax.json | 1.1.4 |
 | junit | junit | 4.11 |
 
@@ -215,12 +214,13 @@ Debug mode:
 To run the examples, first clone the repository, then compile and run the examples like the following:
 
 ```
+cd tg-jdbc-driver
 mvn clean && mvn install
-cd tg-jdbc-examples
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 1"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.GraphQuery -Dexec.args="127.0.0.1 14240 1"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 1"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.UpsertQuery -Dexec.args="127.0.0.1 14240 1"
+cd ../tg-jdbc-examples
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 1 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.GraphQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.UpsertQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
 ```
 
 ## How to use in Apache Spark

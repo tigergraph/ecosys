@@ -1,77 +1,213 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>tg-java-driver</artifactId>
-    <groupId>com.tigergraph</groupId>
-    <version>1.2</version>
-  </parent>
 
   <groupId>com.tigergraph</groupId>
-  <artifactId>tg-jdbc-driver</artifactId>
-  <version>1.2</version>
+  <artifactId>tigergraph-jdbc-driver</artifactId>
+  <version>1.2.1</version>
+  <packaging>jar</packaging>
 
-  <name>TigerGraph JDBC Driver Packaging</name>
-  <description>Module to package TigerGraph JDBC Driver into one jar</description>
+  <name>TigerGraph JDBC Driver Parent</name>
+  <description>This project is a type 4 jdbc driver which implemented the standard jdbc interface. It supports connectivity to tigergraph server and varieties of query types.</description>
+  <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver</url>
+
+  <licenses>
+      <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      </license>
+  </licenses>
+
+  <developers>
+      <developer>
+          <name>Jon Herke</name>
+          <email>jon.herke@tigergraph.com</email>
+          <organization>TigerGraph Inc.</organization>
+          <organizationUrl>http://www.tigergraph.com</organizationUrl>
+      </developer>
+      <developer>
+          <name>Yong Tan</name>
+          <email>yong.tan@tigergraph.com</email>
+          <organization>TigerGraph Inc.</organization>
+          <organizationUrl>http://www.tigergraph.com</organizationUrl>
+      </developer>
+      <developer>
+          <name>Ping Xie</name>
+          <email>ping.xie@tigergraph.com</email>
+          <organization>TigerGraph Inc.</organization>
+          <organizationUrl>http://www.tigergraph.com</organizationUrl>
+      </developer>
+  </developers>
+
+  <scm>
+      <connection>scm:git:git://github.com:tigergraph/ecosys.git</connection>
+      <developerConnection>scm:git:ssh://github.com:tigergraph/ecosys.git</developerConnection>
+      <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver</url>
+  </scm>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.tigergraph</groupId>
-      <artifactId>tg-jdbc-restpp</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>1.3.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.8</version>
+      </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20180813</version>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish</groupId>
+          <artifactId>javax.json</artifactId>
+          <version>1.1.4</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>1.3.2</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-core_2.13</artifactId>
+          <version>3.2.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <version>5.8.2</version>
+          <scope>test</scope>
+      </dependency>
+          <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.3</version>
-        <executions>
-          <execution>
-          <phase>package</phase>
-          <goals>
-            <goal>shade</goal>
-          </goals>
-          <configuration>
-            <relocations>
-              <relocation>
-                <pattern>org.apache.http</pattern>
-                <shadedPattern>org.shaded.apache.http</shadedPattern>
-              </relocation>
-              <relocation>
-                <pattern>org.apache.commons.http</pattern>
-                <shadedPattern>org.shaded.apache.commons.http</shadedPattern>
-              </relocation>
-            </relocations>
-            <transformers>
-              <transformer
-                 implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-               </transformers>
-          </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+  </distributionManagement>
 
+  <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.12</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
+            <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <url>${project.organization.url}</url>
+                            <Bundle-Vendor>${project.organization.name}</Bundle-Vendor>
+                            <Bundle-ClassPath>"."</Bundle-ClassPath>
+                            <Bundle-Version>${project.version}</Bundle-Version>
+                            <Bundle-Name>TigerGraph JDBC driver</Bundle-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
+            <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+        </plugins>
+  </build>
 </project>
