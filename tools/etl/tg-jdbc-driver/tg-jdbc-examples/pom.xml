@@ -16,13 +16,13 @@
   <dependencies>
     <dependency>
       <groupId>com.tigergraph</groupId>
-      <artifactId>tg-jdbc-driver</artifactId>
-      <version>${project.version}</version>
+      <artifactId>tigergraph-jdbc-driver</artifactId>
+      <version>1.2.2</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
