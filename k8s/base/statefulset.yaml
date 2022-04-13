@@ -40,7 +40,7 @@ spec:
                 name: env-config
                 key: cluster_size
         image: docker.tigergraph.com/tigergraph-k8s:3.5.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: tigergraph
         ports:
         - containerPort: 9000
