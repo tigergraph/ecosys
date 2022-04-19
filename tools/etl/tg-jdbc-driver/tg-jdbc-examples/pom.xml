@@ -17,7 +17,7 @@
     <dependency>
       <groupId>com.tigergraph</groupId>
       <artifactId>tigergraph-jdbc-driver</artifactId>
-      <version>1.2.2</version>
+      <version>[1.2.1,)</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

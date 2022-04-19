@@ -22,7 +22,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.spark.SparkFiles;
 import org.json.JSONObject;
 
 import javax.net.ssl.SSLContext;
@@ -197,13 +196,6 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("trustStore")) {
           hasSSLContext = Boolean.TRUE;
           String trustFilename = properties.getProperty("trustStore");
-          File tempFile = new File(trustFilename);
-          if (!tempFile.exists()) {
-            trustFilename = SparkFiles.get(trustFilename);
-            if (this.debug > 0) {
-              System.out.println(">>> SparkFiles: " + trustFilename);
-            }
-          }
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
           try (final InputStream in = new FileInputStream(new File(trustFilename))) {
             truststore.load(in, trustStorePassword.toCharArray());
@@ -214,13 +206,6 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("keyStore")) {
           hasSSLContext = Boolean.TRUE;
           String keyFilename = properties.getProperty("keyStore");
-          File tempFile = new File(keyFilename);
-          if (!tempFile.exists()) {
-            keyFilename = SparkFiles.get(keyFilename);
-            if (this.debug > 0) {
-              System.out.println(">>> SparkFiles: " + keyFilename);
-            }
-          }
           final KeyStore keyStore = KeyStore.getInstance(keyStoreType);
           try (final InputStream in = new FileInputStream(new File(keyFilename))) {
             keyStore.load(in, keyStorePassword.toCharArray());

@@ -7,7 +7,8 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | JDBC Version | TigerGraph Version | Java | Protocol | Query Result Format | New Features |
 | --- | --- | --- | --- | --- | --- |
 | 1.2.1 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
-| 1.2.2 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
+| 1.2.2 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
+| 1.2.3 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -18,8 +19,6 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | org.glassfish | javax.json | 1.1.4 |
 | org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
 | org.junit.vintage | junit-vintage-engine | 5.8.2 |
-| org.apache.logging.log4j | log4j-core | 2.17.2 |
-| org.apache.spark | spark-core_2.13 | 3.2.0 |
 
 ## Download from Maven Central Repository
 
@@ -481,7 +480,7 @@ Save any piece of the above script in a file (e.g., test.scala), and run it like
 ### To enable SSL with Spark
 Please add the following options to your scala script:
 ```
-    "trustStore" -> "trust.jks",
+    "trustStore" -> org.apache.spark.SparkFiles.get("trust.jks"),
     "trustStorePassword" -> "password",
     "trustStoreType" -> "JKS",
 ```
