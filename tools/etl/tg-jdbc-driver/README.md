@@ -6,20 +6,52 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 
 | JDBC Version | TigerGraph Version | Java | Protocol | Query Result Format | New Features |
 | --- | --- | --- | --- | --- | --- |
-| 1.0 | 2.2.4+ | 1.8 | Rest++ | JSON | Support builtin, compiled queries and loading jobs |
-| 1.1 | 2.4.1+ | 1.8 | Rest++ | ResultSet | Support tabular format and Spark |
-| 1.2 | 2.4.1+ | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
+| 1.2.1 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
+| 1.2.2 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
+| 1.2.3 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
 
 ## Dependency list
 | groupId | artifactId | version |
 | --- | --- | --- |
-| org.apache.commons | commons-io | 1.3.2 |
-| org.apache.httpcomponents | httpclient | 4.5.8 |
+| org.apache.commons | commons-io | 2.7 |
+| org.apache.httpcomponents | httpclient | 4.5.13 |
 | org.json | json | 20180813 |
 | org.glassfish | javax.json | 1.1.4 |
-| junit | junit | 4.11 |
+| org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
+| org.junit.vintage | junit-vintage-engine | 5.8.2 |
+
+## Download from Maven Central Repository
+
+Tigergraph JDBC Driver can be found at [maven.org](https://search.maven.org/artifact/com.tigergraph/tigergraph-jdbc-driver).
+
+Please refer to [Versions compatibility](#versions-compatibility) to find the **suitable version**.
+
+* Use it in your java code:
+
+  * Apache Maven
+
+    ```xml
+    <dependency>
+      <groupId>com.tigergraph</groupId>
+      <artifactId>tigergraph-jdbc-driver</artifactId>
+      <version>{SUITABLE_VERSION}</version>
+    </dependency>
+    ```
+
+  * Gradle Groovy DSL
+
+    ```groovy
+    implementation 'com.tigergraph:tigergraph-jdbc-driver:{SUITABLE_VERSION}'
+    ```
+
+  Your build automation tool will download it autometically from maven central repository.
+
+* Use the jar file directly (e.g. Spark):
+
+    Go to [maven.org](https://search.maven.org/artifact/com.tigergraph/tigergraph-jdbc-driver) to get the jar file.
 
 ## Minimum viable snippet
+
 Parameters are passed as properties when creating a connection, such as username, password and graph name. Once REST++ authentication is enabled, username and password is mandatory. Graph name is required when MultiGraph is enabled.
 
 You may specify IP address and port as needed, and the port is the one used by GraphStudio.
@@ -448,7 +480,7 @@ Save any piece of the above script in a file (e.g., test.scala), and run it like
 ### To enable SSL with Spark
 Please add the following options to your scala script:
 ```
-    "trustStore" -> "trust.jks",
+    "trustStore" -> org.apache.spark.SparkFiles.get("trust.jks"),
     "trustStorePassword" -> "password",
     "trustStoreType" -> "JKS",
 ```
