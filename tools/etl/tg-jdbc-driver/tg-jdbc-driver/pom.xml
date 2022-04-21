@@ -4,7 +4,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -162,12 +162,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>commons-logging:commons-logging:jar:</exclude>
-                                    <exclude>org.apache.spark.unused.UnusedStubClass</exclude>
-                                </excludes>
-                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>org.apache.http</pattern>
@@ -200,6 +194,38 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                             </transformers>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            Check vulnerabilities in dependency.
+            Usage:
+
+                mvn clean dependency-check:check
+
+            It will create a file named "dependency-check-report.html" in target/ folder.
+            Open it in browser you'll see the security vulnerability report.
+
+            However, due to the limitation of dependency checker, we have to
+            check the jar files which are actually included in this pom file.
+            To view them, run
+
+                mvn dependency:tree
+
+            Only the jars showing up both in above two command results indicating there's
+            vulnerability.
+
+            See details at https://nullbeans.com/how-to-identify-vulnerable-dependencies-in-a-maven-project/
+            -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>7.0.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
