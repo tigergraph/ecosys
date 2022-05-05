@@ -507,7 +507,7 @@ public class QueryParser {
           sb.append(getObjectStr(this.paramArray[0]));
           sb.append("\"");
         } else {
-          sb.append(tokens[4]);
+          sb.append(tokens[3]);
           sb.append("\"");
         }
       } else {
@@ -823,13 +823,6 @@ public class QueryParser {
       sb.append(urlEncode(sep));
       sb.append("&eol=");
       sb.append(urlEncode(eol));
-      if (this.atomic > 0) {
-        sb.append("&atomic_post=true");
-      }
-    } else if (this.query_type == QueryType.QUERY_TYPE_GRAPH) {
-      if (this.atomic > 0) {
-        sb.append("?atomic_post=true");
-      }
     }
 
     String url = "";
@@ -894,7 +887,7 @@ public class QueryParser {
     if (this.timeout > 0) {
       request.addHeader("GSQL-TIMEOUT", String.valueOf(this.timeout * 1000));
     }
-    if (this.atomic > 0) {
+    if (this.atomic > 0 && this.query_type == QueryType.QUERY_TYPE_GRAPH) {
       request.addHeader("gsql-atomic-level", "atomic");
     }
     // Schema queries and interpreted queries only support username/password

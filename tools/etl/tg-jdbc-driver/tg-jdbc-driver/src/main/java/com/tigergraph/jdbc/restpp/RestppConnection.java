@@ -6,13 +6,14 @@ import com.tigergraph.jdbc.common.PreparedStatement;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
@@ -22,6 +23,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.entity.StringEntity;
 import org.json.JSONObject;
 
 import javax.net.ssl.SSLContext;
@@ -249,16 +251,15 @@ public class RestppConnection extends Connection {
     if (hasSSLContext) {
       this.secure = Boolean.TRUE;
       SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-        new String[]{"TLSv1.2", "TLSv1.1"},
-        null,
-        SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+          new String[] { "TLSv1.2", "TLSv1.1" },
+          null,
+          NoopHostnameVerifier.INSTANCE);
       builder.setSSLSocketFactory(sslConnectionFactory)
-        .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-      Registry<ConnectionSocketFactory> registry =
-        RegistryBuilder.<ConnectionSocketFactory>create()
-        .register("https", sslConnectionFactory)
-        .register("http", new PlainConnectionSocketFactory())
-        .build();
+          .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+      Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+          .register("https", sslConnectionFactory)
+          .register("http", new PlainConnectionSocketFactory())
+          .build();
       HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
       builder.setConnectionManager(ccm);
     }
@@ -268,7 +269,7 @@ public class RestppConnection extends Connection {
     }
     this.httpClient = builder.build();
 
-    if (this.token == null && this.username != null && this.password != null) {
+    if (this.token == null && this.username != null && this.password != null && this.graph != null) {
       getToken();
     }
   }
@@ -314,7 +315,7 @@ public class RestppConnection extends Connection {
      * Execute the queries one by one,
      * and append their results to the firt RestppResponse.
      */
-    for(int i = 1; i < queries.size(); i++) {
+    for (int i = 1; i < queries.size(); i++) {
       RestppResponse newResult = executeQuery(queries.get(i), "");
       result.addResults(newResult.getResults());
     }
@@ -324,28 +325,29 @@ public class RestppConnection extends Connection {
 
   /**
    * Get token. e.g.,
-   * curl --user tigergraph:tigergraph -X GET \
-   * 'http://localhost:14240/gsqlserver/gsql/authtoken?graph=gsql_demo'
+   * curl --user tigergraph:tigergraph -X POST \
+   * 'http://localhost:14240/restpp/requesttoken' -d '{"graph": "example_graph"}'
    */
   private void getToken() throws SQLException {
-    StringBuilder sb = new StringBuilder();
-    sb.append("/gsqlserver/gsql/authtoken");
-    if (this.graph != null) {
-      sb.append("?graph=");
-      sb.append(this.graph);
-    }
     String url = "";
     try {
       if (this.secure)
-        url = new URL("https", host, port, sb.toString()).toString();
+        url = new URL("https", host, port, "/restpp/requesttoken").toString();
       else
-        url = new URL("http", host, port, sb.toString()).toString();
+        url = new URL("http", host, port, "/restpp/requesttoken").toString();
     } catch (MalformedURLException e) {
       throw new SQLException("Invalid server URL", e);
     }
-    HttpRequestBase request = new HttpGet(url);
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"graph\":\"");
+    sb.append(this.graph);
+    sb.append("\"}");
+    StringEntity payload = new StringEntity(sb.toString(), "UTF-8");
+    payload.setContentType("application/json");
+    HttpPost request = new HttpPost(url);
     request.addHeader("Authorization", basicAuth);
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
+    request.setEntity(payload);
     /**
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}
@@ -357,7 +359,7 @@ public class RestppConnection extends Connection {
        */
       RestppResponse result = new RestppResponse(response, Boolean.FALSE, this.debug);
       List<JSONObject> jsonList = result.getResults();
-      for(int i = 0; i < jsonList.size(); i++){
+      for (int i = 0; i < jsonList.size(); i++) {
         JSONObject obj = jsonList.get(i);
         if (obj.has("token")) {
           this.token = obj.getString("token");
@@ -393,9 +395,9 @@ public class RestppConnection extends Connection {
       } catch (Exception e) {
         if (retry >= max_retry - 1) {
           System.out.println(">>> Request: " + request +
-             ", payload: " + json + ", error: " + e);
+              ", payload: " + json + ", error: " + e);
           throw new SQLException("Request: " + request +
-             ", payload size: " + json.length() + ", error: " + e);
+              ", payload size: " + json.length() + ", error: " + e);
         }
       }
     }
@@ -405,11 +407,13 @@ public class RestppConnection extends Connection {
     return result;
   }
 
-  @Override public boolean isClosed() throws SQLException {
+  @Override
+  public boolean isClosed() throws SQLException {
     return closed;
   }
 
-  @Override public void close() throws SQLException {
+  @Override
+  public void close() throws SQLException {
     closed = Boolean.TRUE;
     try {
       httpClient.close();
@@ -418,56 +422,68 @@ public class RestppConnection extends Connection {
     }
   }
 
-  @Override public PreparedStatement prepareStatement(String query) throws SQLException {
+  @Override
+  public PreparedStatement prepareStatement(String query) throws SQLException {
     return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
-  @Override public PreparedStatement prepareStatement(String query,
-    int resultSetType, int resultSetConcurrency) throws SQLException {
+  @Override
+  public PreparedStatement prepareStatement(String query,
+      int resultSetType, int resultSetConcurrency) throws SQLException {
     return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
-  @Override public PreparedStatement prepareStatement(String query,
-    int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+  @Override
+  public PreparedStatement prepareStatement(String query,
+      int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
     return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
   }
 
-  @Override public DatabaseMetaData getMetaData() throws SQLException {
+  @Override
+  public DatabaseMetaData getMetaData() throws SQLException {
     return new DatabaseMetaData(this, this.debug);
   }
 
-  @Override public void setAutoCommit(boolean autoCommit) throws SQLException {
+  @Override
+  public void setAutoCommit(boolean autoCommit) throws SQLException {
     return;
   }
 
-  @Override public boolean getAutoCommit() throws SQLException {
+  @Override
+  public boolean getAutoCommit() throws SQLException {
     return Boolean.TRUE;
   }
 
-  @Override public java.sql.Statement createStatement() throws SQLException {
+  @Override
+  public java.sql.Statement createStatement() throws SQLException {
     return new RestppStatement(this, this.debug, this.timeout, this.atomic);
   }
 
-  @Override public void commit() throws SQLException {
+  @Override
+  public void commit() throws SQLException {
     // Update on TigerGraph is autoCommit, nothing to do.
     return;
   }
 
-  @Override public void rollback() throws SQLException {
+  @Override
+  public void rollback() throws SQLException {
     return;
   }
 
-  @Override public void setTransactionIsolation(int level) throws SQLException {
+  @Override
+  public void setTransactionIsolation(int level) throws SQLException {
     this.level = level;
     return;
   }
 
-  @Override public int getTransactionIsolation() throws SQLException {
+  @Override
+  public int getTransactionIsolation() throws SQLException {
     return this.level;
   }
 
-  @Override public boolean isValid(int timeout) throws SQLException {
+  @Override
+  public boolean isValid(int timeout) throws SQLException {
     return Boolean.TRUE;
   }
 
@@ -475,21 +491,25 @@ public class RestppConnection extends Connection {
    * Methods not implemented yet.
    */
 
-  @Override public void setHoldability(int holdability) throws SQLException {
+  @Override
+  public void setHoldability(int holdability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getHoldability() throws SQLException {
+  @Override
+  public int getHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public java.sql.Statement createStatement(int resultSetType,
-    int resultSetConcurrency) throws SQLException {
+  @Override
+  public java.sql.Statement createStatement(int resultSetType,
+      int resultSetConcurrency) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public java.sql.Statement createStatement(int resultSetType,
-    int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+  @Override
+  public java.sql.Statement createStatement(int resultSetType,
+      int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

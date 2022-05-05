@@ -4,7 +4,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -95,6 +95,12 @@
                     <artifactId>hamcrest-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>2.27.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -197,43 +203,12 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-            Check vulnerabilities in dependency.
-            Usage:
-
-                mvn clean dependency-check:check
-
-            It will create a file named "dependency-check-report.html" in target/ folder.
-            Open it in browser you'll see the security vulnerability report.
-
-            However, due to the limitation of dependency checker, we have to
-            check the jar files which are actually included in this pom file.
-            To view them, run
-
-                mvn dependency:tree
-
-            Only the jars showing up both in above two command results indicating there's
-            vulnerability.
-
-            See details at https://nullbeans.com/how-to-identify-vulnerable-dependencies-in-a-maven-project/
-            -->
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>7.0.4</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
     <profiles>
         <!-- profile for publishing -->
+        <!-- Usage: mvn clean deploy -Ppublish -->
         <profile>
             <id>publish</id>
             <distributionManagement>
@@ -295,6 +270,45 @@
                                 <configuration>
                                     <additionalJOption>-Xdoclint:none</additionalJOption>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>check</id>
+            <build>
+                <plugins>
+                    <!--
+                    Check vulnerabilities in dependency.
+                    Usage:
+
+                        mvn clean dependency-check:check -Pcheck
+
+                    It will create a file named "dependency-check-report.html" in target/ folder.
+                    Open it in browser you'll see the security vulnerability report.
+
+                    However, due to the limitation of dependency checker, we have to
+                    check the jar files which are actually included in this pom file.
+                    To view them, run
+
+                        mvn dependency:tree
+
+                    Only the jars showing up both in above two command results indicating there's
+                    vulnerability.
+
+                    See details at https://nullbeans.com/how-to-identify-vulnerable-dependencies-in-a-maven-project/
+                    -->
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>7.0.4</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
