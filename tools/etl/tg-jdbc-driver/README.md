@@ -10,6 +10,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.2.2 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
 | 1.2.3 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
 | 1.2.4 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Add vulnerability check plugin |
+| 1.2.5 | 3.5+ | 1.8 | Rest++ | ResultSet | Fix restpp authentication incompatibility |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -20,6 +21,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | org.glassfish | javax.json | 1.1.4 |
 | org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
 | org.junit.vintage | junit-vintage-engine | 5.8.2 |
+| com.github.tomakehurst | wiremock | 2.27.2 |
 
 ## Download from Maven Central Repository
 
