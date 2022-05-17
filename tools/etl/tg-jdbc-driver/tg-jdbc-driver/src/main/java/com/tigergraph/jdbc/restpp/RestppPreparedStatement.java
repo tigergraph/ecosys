@@ -6,7 +6,9 @@ import com.tigergraph.jdbc.common.ResultSetMetaData;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,8 +17,9 @@ import java.util.List;
 
 public class RestppPreparedStatement extends PreparedStatement {
 
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppPreparedStatement.class);
+
   private String query;
-  private Integer debug = 0;
   private List<String> edge_list;
   private List<String> vertex_list;
   private QueryParser parser;
@@ -28,25 +31,26 @@ public class RestppPreparedStatement extends PreparedStatement {
   private StringBuilder stringBuilder = null;
 
   public RestppPreparedStatement(RestppConnection restppConnection,
-      String query, Integer debug, Integer timeout, Integer atomic) {
+      String query, Integer timeout, Integer atomic) {
     super(restppConnection, query);
     this.query = query;
-    this.debug = debug;
     this.timeout = timeout;
     this.atomic = atomic;
     edge_list = new ArrayList<String>();
     vertex_list = new ArrayList<String>();
   }
 
-  @Override public ResultSet executeQuery() throws SQLException {
+  @Override
+  public ResultSet executeQuery() throws SQLException {
     this.execute();
     return currentResultSet;
   }
 
-  @Override public boolean execute() throws SQLException {
+  @Override
+  public boolean execute() throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.debug, this.timeout, this.atomic);
+        this.query, this.parameters, this.timeout, this.atomic);
     this.query_type = parser.getQueryType();
 
     /**
@@ -61,8 +65,7 @@ public class RestppPreparedStatement extends PreparedStatement {
       return Boolean.TRUE;
     }
 
-    RestppResponse response =
-      ((RestppConnection) getConnection()).executeQuery(this.parser, "");
+    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, "");
 
     if (response.hasError()) {
       throw new SQLException(response.getErrMsg());
@@ -83,7 +86,8 @@ public class RestppPreparedStatement extends PreparedStatement {
     return hasResultSets;
   }
 
-  @Override public void addBatch() throws SQLException {
+  @Override
+  public void addBatch() throws SQLException {
     // Shortcut for loading jobs.
     if (this.query_type == QueryType.QUERY_TYPE_LOAD_JOB) {
       this.stringBuilder.append(eol);
@@ -94,16 +98,8 @@ public class RestppPreparedStatement extends PreparedStatement {
       return;
     }
 
-    if (this.debug > 1) {
-      System.out.println(">>> addBatch(): " + this.query);
-    }
-
-    /**
-     * addBatch() tends to be called many times,
-     * so we lower its debug level.
-     */
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.debug - 1, this.timeout, this.atomic);
+        this.query, this.parameters, this.timeout, this.atomic);
 
     if (this.parser.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB) {
       this.query_type = this.parser.getQueryType();
@@ -124,17 +120,11 @@ public class RestppPreparedStatement extends PreparedStatement {
     }
   }
 
-  @Override public void addBatch(String sql) throws SQLException {
-    if (this.debug > 1) {
-      System.out.println(">>> addBatch(sql): " + this.query);
-    }
+  @Override
+  public void addBatch(String sql) throws SQLException {
     this.query = sql;
-    /**
-     * addBatch() tends to be called many times,
-     * so we lower its debug level.
-     */
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        sql, this.parameters, this.debug - 1, this.timeout, this.atomic);
+        sql, this.parameters, this.timeout, this.atomic);
 
     this.query_type = this.parser.getQueryType();
     this.eol = ((RestppConnection) getConnection()).getEol();
@@ -149,20 +139,21 @@ public class RestppPreparedStatement extends PreparedStatement {
     }
   }
 
-  @Override public void clearBatch() throws SQLException {
+  @Override
+  public void clearBatch() throws SQLException {
     edge_list.clear();
     vertex_list.clear();
   }
 
   /**
    * Batch update.
-   * For updating vertices/edges, the return values are number of updated vertices and edges.
-   * For loading jobs, the return values are number of lines being accepted and rejected.
+   * For updating vertices/edges, the return values are number of updated vertices
+   * and edges.
+   * For loading jobs, the return values are number of lines being accepted and
+   * rejected.
    */
-  @Override public int[] executeBatch() throws SQLException {
-    if (this.debug > 0) {
-      System.out.println(">>> executeBatch: " + this.query);
-    }
+  @Override
+  public int[] executeBatch() throws SQLException {
     int[] count = new int[2];
 
     // It is a loading job.
@@ -171,18 +162,15 @@ public class RestppPreparedStatement extends PreparedStatement {
         return count;
       }
       String payload = this.stringBuilder.toString();
-      RestppResponse response =
-        ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
+      RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
       List<JSONObject> results = response.getResults();
       if (results.size() > 0) {
-        if (this.debug > 1) {
-          System.out.println(">>> payload: " + payload);
-          System.out.println(">>> result: " + results.get(0));
-        }
-        JSONObject obj  = (JSONObject)results.get(0).get("statistics");
+        logger.debug("Result: {}", results.get(0));
+        JSONObject obj = (JSONObject) results.get(0).get("statistics");
         count[0] = obj.getInt("validLine");
         count[1] = obj.getInt("rejectLine");
       }
+      logger.info("Accepted lines: {}, rejected lines: {}", count[0], count[1]);
 
       this.stringBuilder = new StringBuilder();
       return count;
@@ -218,8 +206,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     }
     sb.append("}");
     String payload = sb.toString();
-    RestppResponse response =
-      ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
+    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
 
     if (response.hasError()) {
       throw new SQLException(response.getErrMsg());
@@ -227,13 +214,11 @@ public class RestppPreparedStatement extends PreparedStatement {
 
     List<JSONObject> results = response.getResults();
     if (results.size() > 0) {
-      if (this.debug > 1) {
-        System.out.println(">>> payload: " + payload);
-        System.out.println(">>> result: " + results.get(0));
-      }
+      logger.debug("Result: {}", results.get(0));
       count[0] = results.get(0).getInt("accepted_vertices");
       count[1] = results.get(0).getInt("accepted_edges");
     }
+    logger.info("Accepted vertices: {}, accepted edges: {}", count[0], count[1]);
 
     return count;
   }
@@ -242,27 +227,33 @@ public class RestppPreparedStatement extends PreparedStatement {
    * Methods not implemented yet.
    */
 
-  @Override public int getResultSetConcurrency() throws SQLException {
+  @Override
+  public int getResultSetConcurrency() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getResultSetType() throws SQLException {
+  @Override
+  public int getResultSetType() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getResultSetHoldability() throws SQLException {
+  @Override
+  public int getResultSetHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public ParameterMetaData getParameterMetaData() throws SQLException {
+  @Override
+  public ParameterMetaData getParameterMetaData() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public ResultSetMetaData getMetaData() throws SQLException {
+  @Override
+  public ResultSetMetaData getMetaData() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int executeUpdate() throws SQLException {
+  @Override
+  public int executeUpdate() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

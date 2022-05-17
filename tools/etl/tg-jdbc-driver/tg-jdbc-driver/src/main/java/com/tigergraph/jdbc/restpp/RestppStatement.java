@@ -4,7 +4,10 @@ import com.tigergraph.jdbc.common.Statement;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
+
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,7 +16,8 @@ import java.util.List;
 
 public class RestppStatement extends Statement {
 
-  private Integer debug = 0;
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppStatement.class);
+
   private Integer timeout = 0;
   private Integer atomic = 0;
   private List<String> edge_list;
@@ -21,29 +25,29 @@ public class RestppStatement extends Statement {
   private QueryParser parser;
   private QueryType query_type;
 
-  public RestppStatement(RestppConnection restppConnection, Integer debug,
+  public RestppStatement(RestppConnection restppConnection,
       Integer timeout, Integer atomic) {
     super(restppConnection);
-    this.debug = debug;
     this.timeout = timeout;
     this.atomic = atomic;
     edge_list = new ArrayList<String>();
     vertex_list = new ArrayList<String>();
   }
 
-  @Override public ResultSet executeQuery(String query) throws SQLException {
+  @Override
+  public ResultSet executeQuery(String query) throws SQLException {
     this.execute(query);
     return currentResultSet;
   }
 
-  @Override public boolean execute(String query) throws SQLException {
+  @Override
+  public boolean execute(String query) throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(), query,
-        null, this.debug, this.timeout, this.atomic);
+        null, this.timeout, this.atomic);
     this.query_type = parser.getQueryType();
 
-    RestppResponse response =
-      ((RestppConnection) getConnection()).executeQuery(parser, "");
+    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(parser, "");
 
     if (response.hasError()) {
       throw new SQLException(response.getErrMsg());
@@ -60,9 +64,10 @@ public class RestppStatement extends Statement {
     return hasResultSets;
   }
 
-  @Override public void addBatch(String sql) throws SQLException {
+  @Override
+  public void addBatch(String sql) throws SQLException {
     this.parser = new QueryParser((RestppConnection) getConnection(), sql,
-        null, this.debug, this.timeout, this.atomic);
+        null, this.timeout, this.atomic);
     String vertex_json = parser.getVertexJson();
     String edge_json = parser.getEdgeJson();
     if (vertex_json != "") {
@@ -73,12 +78,14 @@ public class RestppStatement extends Statement {
     }
   }
 
-  @Override public void clearBatch() throws SQLException {
+  @Override
+  public void clearBatch() throws SQLException {
     edge_list.clear();
     vertex_list.clear();
   }
 
-  @Override public int[] executeBatch() throws SQLException {
+  @Override
+  public int[] executeBatch() throws SQLException {
     int[] count = new int[2];
     if (this.edge_list.size() == 0 && this.vertex_list.size() == 0) {
       return count;
@@ -109,28 +116,26 @@ public class RestppStatement extends Statement {
     }
     sb.append("}");
     String payload = sb.toString();
-    RestppResponse response =
-      ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
+    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
 
     if (response.hasError()) {
       throw new SQLException(response.getErrMsg());
     }
 
     List<JSONObject> results = response.getResults();
-    if (this.debug > 1) {
-      System.out.println(">>> payload: " + payload);
-      System.out.println(">>> result: " + results.get(0));
+    if (results.size() > 0) {
+      logger.debug("Result: {}", results.get(0));
+      count[0] = results.get(0).getInt("accepted_vertices");
+      count[1] = results.get(0).getInt("accepted_edges");
     }
-    count[0] = results.get(0).getInt("accepted_vertices");
-    count[1] = results.get(0).getInt("accepted_edges");
+    logger.info("Accepted vertices: {}, accepted edges: {}", count[0], count[1]);
 
     return count;
   }
 
-  @Override public int executeUpdate(String query) throws SQLException {
-    if (this.debug > 1) {
-      System.out.println(">>> executeUpdate: " + query);
-    }
+  @Override
+  public int executeUpdate(String query) throws SQLException {
+    logger.debug("executeUpdate: {}", query);
     return 0;
   }
 
@@ -138,15 +143,18 @@ public class RestppStatement extends Statement {
    * Methods not implemented yet.
    */
 
-  @Override public int getResultSetConcurrency() throws SQLException {
+  @Override
+  public int getResultSetConcurrency() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getResultSetType() throws SQLException {
+  @Override
+  public int getResultSetType() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getResultSetHoldability() throws SQLException {
+  @Override
+  public int getResultSetHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

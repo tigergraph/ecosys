@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc.restpp.driver;
 
 import com.tigergraph.jdbc.restpp.RestppConnection;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -9,6 +10,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -27,12 +29,13 @@ import java.util.Map.Entry;
  */
 public class QueryParser {
 
+  private static final Logger logger = TGLoggerFactory.getLogger(QueryParser.class);
+
   public enum HttpTypes {
     HttpGet, HttpPost, HttpDelete
   }
 
   private Object[] paramArray;
-  private Integer debug = 0;
   private HttpRequestBase request;
   private String endpoint = "";
   private String query = "";
@@ -48,6 +51,8 @@ public class QueryParser {
   private String job;
   private int timeout;
   private int atomic;
+
+  private static final Integer MAX_LOG_SIZE = 128;
 
   // get index of a specified String (first occurrence) in an array,
   // return array length when not found.
@@ -133,9 +138,6 @@ public class QueryParser {
       }
     }
     query = String.valueOf(encoded).substring(0, j);
-    if (this.debug > 1) {
-      System.out.println(">>> encoded query: " + query);
-    }
     String[] strArray = query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
     List<String> strListNew = new ArrayList<>();
     j = 0;
@@ -157,22 +159,17 @@ public class QueryParser {
 
   private static JsonObjectBuilder addValue(JsonObjectBuilder obj, String key, Object value) {
     if (value instanceof Integer) {
-      obj.add(key, (Integer)value);
-    }
-    else if (value instanceof String) {
-      obj.add(key, (String)value);
-    }
-    else if (value instanceof Float) {
-      obj.add(key, (Float)value);
-    }
-    else if (value instanceof Double) {
-      obj.add(key, (Double)value);
-    }
-    else if (value instanceof Boolean) {
-      obj.add(key, (Boolean)value);
-    }
-    else if (value instanceof JsonValue) {
-      JsonValue val = (JsonValue)value;
+      obj.add(key, (Integer) value);
+    } else if (value instanceof String) {
+      obj.add(key, (String) value);
+    } else if (value instanceof Float) {
+      obj.add(key, (Float) value);
+    } else if (value instanceof Double) {
+      obj.add(key, (Double) value);
+    } else if (value instanceof Boolean) {
+      obj.add(key, (Boolean) value);
+    } else if (value instanceof JsonValue) {
+      JsonValue val = (JsonValue) value;
       obj.add(key, val);
     }
     return obj;
@@ -183,8 +180,8 @@ public class QueryParser {
    * Reference: https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints
    * Return values:
    * -1: not a valid query
-   *  0: a vertex query
-   *  1: an edge query
+   * 0: a vertex query
+   * 1: an edge query
    */
   private int parseEdgeOrVertex(String[] tokens) throws SQLException {
     StringBuilder sb = new StringBuilder();
@@ -214,7 +211,8 @@ public class QueryParser {
     } else if (tokens[1].toLowerCase().equals("edge")) {
       /**
        * Query syntax:
-       * get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id)
+       * get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type,
+       * tgt_vertex_id)
        */
       ret = 1;
       if (tokens.length == 7 && this.paramArray.length == 2) {
@@ -265,8 +263,8 @@ public class QueryParser {
   /**
    * Parse queries to upsert vertices or edges
    * e.g., INSERT INTO vertex Page(id, page_id) VALUES("1234", "1234")
-   *       INSERT INTO EDGE Linkto(Page, Page, weight) VALUES("1234", "5678", 3)
-   *       INSERT INTO job loadFollow ("Person","Person","weight") VALUES (?,?,?)
+   * INSERT INTO EDGE Linkto(Page, Page, weight) VALUES("1234", "5678", 3)
+   * INSERT INTO job loadFollow ("Person","Person","weight") VALUES (?,?,?)
    */
   private void parseUpsertQuery(String[] tokens,
       Map<Integer, Object> parameters) throws SQLException {
@@ -324,45 +322,43 @@ public class QueryParser {
           String value = tokens[values_index + i - 3];
           if (value.indexOf('\'') >= 0) { // it's a string
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", value));
+                Json.createObjectBuilder().add("value", value));
           } else if (value.indexOf('.') >= 0) { // it's a double
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+                Json.createObjectBuilder().add("value", Double.parseDouble(value)));
           } else if (value.toLowerCase().equals("true") ||
-             value.toLowerCase().equals("false")) { // it's a boolean
+              value.toLowerCase().equals("false")) { // it's a boolean
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
+                Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
           } else { // it's an integer
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Integer.parseInt(value)));
+                Json.createObjectBuilder().add("value", Integer.parseInt(value)));
           }
         }
         obj.add(tokens[param_offset], // src vertex type
-          Json.createObjectBuilder().add(tokens[values_index + 1], // src vertex id
-            Json.createObjectBuilder().add(tokens[3], // edge type
-              Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
-                Json.createObjectBuilder().add(tokens[values_index + 2], // tgt vertex id
-                  attrObj))))); // attributes
+            Json.createObjectBuilder().add(tokens[values_index + 1], // src vertex id
+                Json.createObjectBuilder().add(tokens[3], // edge type
+                    Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
+                        Json.createObjectBuilder().add(tokens[values_index + 2], // tgt vertex id
+                            attrObj))))); // attributes
       } else { // It is a PrepareStatement
         // Parse attributes if any
         for (Integer i = param_offset + 2; i < values_index; ++i) {
           attrObj.add(tokens[i],
-            addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
+              addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
         }
         obj.add(tokens[param_offset], // src vertex type
-          Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // src vertex id
-            Json.createObjectBuilder().add(tokens[3], // edge type
-              Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
-                Json.createObjectBuilder().add(getObjectStr(this.paramArray[1]), // tgt vertex id
-                  attrObj))))); // attributes
+            Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // src vertex id
+                Json.createObjectBuilder().add(tokens[3], // edge type
+                    Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
+                        Json.createObjectBuilder().add(getObjectStr(this.paramArray[1]), // tgt vertex id
+                            attrObj))))); // attributes
       }
       // someone may use single-quoted strings
       edge_json = obj.build().toString().replace("\'", "");
       // remove the outmost "{}"
-      edge_json = edge_json.substring(1, edge_json.length() -1);
-      if (debug > 1) {
-        System.out.println(">>> upsert edge: " + edge_json);
-      }
+      edge_json = edge_json.substring(1, edge_json.length() - 1);
+      logger.debug("Upsert edges: {}", edge_json);
     } else if (tokens[2].toLowerCase().equals("vertex")) {
       // insert an vertex
       // e.g., INSERT INTO vertex Person ("id","account") VALUES (?,?)
@@ -377,39 +373,37 @@ public class QueryParser {
           String value = tokens[values_index + i - 3];
           if (value.indexOf('\'') >= 0) { // it's a string
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", value));
+                Json.createObjectBuilder().add("value", value));
           } else if (value.indexOf('.') >= 0) { // it's a double
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Double.parseDouble(value)));
+                Json.createObjectBuilder().add("value", Double.parseDouble(value)));
           } else if (value.toLowerCase().equals("true") ||
-             value.toLowerCase().equals("false")) { // it's a boolean
+              value.toLowerCase().equals("false")) { // it's a boolean
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
+                Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
           } else { // it's an integer
             attrObj.add(tokens[i],
-              Json.createObjectBuilder().add("value", Integer.parseInt(value)));
+                Json.createObjectBuilder().add("value", Integer.parseInt(value)));
           }
         }
         obj.add(tokens[3], // vertex type
-          Json.createObjectBuilder().add(tokens[values_index + 1], // vertex id
-            attrObj)); // attributes
+            Json.createObjectBuilder().add(tokens[values_index + 1], // vertex id
+                attrObj)); // attributes
       } else {
         // Parse attributes if any
         for (Integer i = param_offset + 1; i < values_index; ++i) {
           attrObj.add(tokens[i],
-            addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
+              addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
         }
         obj.add(tokens[3], // vertex type
-          Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // vertex id
-            attrObj)); // attributes
+            Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // vertex id
+                attrObj)); // attributes
       }
       // someone may use single-quoted strings
       vertex_json = obj.build().toString().replace("\'", "");
       // remove the outmost "{}"
-      vertex_json = vertex_json.substring(1, vertex_json.length() -1);
-      if (debug > 1) {
-        System.out.println(">>> upsert vertex: " + vertex_json);
-      }
+      vertex_json = vertex_json.substring(1, vertex_json.length() - 1);
+      logger.debug("Upsert vertex: {}", vertex_json);
     } else {
       throw new SQLException("Invalid upsert query: " + tokens[2]);
     }
@@ -419,7 +413,7 @@ public class QueryParser {
    * Build endpoint based on raw query and parameters.
    */
   public QueryParser(RestppConnection con, String query, Map<Integer, Object> parameters,
-      Integer debug, Integer timeout, Integer atomic) throws SQLException {
+      Integer timeout, Integer atomic) throws SQLException {
     if ((query == null) || query.equals("")) {
       throw new SQLException("Query could not be null or empty.");
     }
@@ -432,23 +426,15 @@ public class QueryParser {
 
     if (parameters != null) {
       map2Array(parameters);
-      if (debug > 1) {
-        System.out.println(">>> parameters: " + Arrays.toString(this.paramArray));
-      }
+      logger.debug("Parameters: {}", Arrays.toString(this.paramArray));
     }
 
     /**
      * Tokenize the raw query and remove empty items
      */
-    this.debug = debug;
     String[] tokens = tokenize(query);
-    if (debug > 0) {
-      System.out.println(">>> query: " + query);
-    }
-    if (debug > 1) {
-      System.out.println(">>> tokens: " + Arrays.toString(tokens));
-    }
-
+    logger.info("Query: {}", query);
+    logger.debug("Tokenized query: {}", Arrays.toString(tokens));
     /**
      * Start to parse query
      */
@@ -502,7 +488,7 @@ public class QueryParser {
         if (tokens[3].trim().equals("?")) {
           if (parameters.size() != 1) {
             throw new SQLException("Parameter size not match (expected 1 parameter): "
-                + String.valueOf( parameters.size()));
+                + String.valueOf(parameters.size()));
           }
           sb.append(getObjectStr(this.paramArray[0]));
           sb.append("\"");
@@ -550,7 +536,7 @@ public class QueryParser {
       Integer index = 2;
       for (Integer i = 0; i < size; ++i) {
         sb.append(tokens[index]).append("=").append(getObjectStr(this.paramArray[i]));
-        assert tokens[index+1].trim().equals("?") : "Place holder not equals ?";
+        assert tokens[index + 1].trim().equals("?") : "Place holder not equals ?";
         index += 2;
         if (i < size - 1) {
           sb.append("&");
@@ -644,10 +630,8 @@ public class QueryParser {
         // Re-parse the query without query body
         String new_query = query.substring(0, start) + query.substring(end + 1);
         tokens = tokenize(new_query);
-        if (debug > 1) {
-          System.out.println(">>> new_query: " + new_query);
-          System.out.println(">>> query_body: " + query_body);
-        }
+        logger.debug("Interpreted query: {}", new_query);
+        logger.debug("Query body: {}", query_body);
         where_index = getIndexInArray(tokens, "where");
         length = tokens.length;
       }
@@ -799,14 +783,14 @@ public class QueryParser {
         sb.append("/restpp/ddl");
         break;
       default:
-       throw new SQLException("Invalid query type.");
+        throw new SQLException("Invalid query type.");
     }
 
     if (this.query_type != QueryType.QUERY_TYPE_BUILTIN
         && this.query_type != QueryType.QUERY_TYPE_SCHEMA_EDGE
         && this.query_type != QueryType.QUERY_TYPE_SCHEMA_VERTEX) {
       if (graph != null && !graph.equals("")
-        && this.query_type != QueryType.QUERY_TYPE_INTERPRETED) {
+          && this.query_type != QueryType.QUERY_TYPE_INTERPRETED) {
         sb.append("/").append(graph);
       }
       if (!"".equals(this.endpoint)) {
@@ -837,10 +821,8 @@ public class QueryParser {
 
     switch (this.httpType) {
       case HttpGet:
-        if (debug > 0) {
-          System.out.println(">>> request: " + url.toString());
-        }
         request = new HttpGet(url);
+        logger.debug("Build request: {}", request.toString());
         break;
       case HttpPost:
         HttpPost post = new HttpPost(url);
@@ -855,32 +837,32 @@ public class QueryParser {
           this.payload.setContentEncoding("UTF-8");
           post.setEntity(this.payload);
         }
-        Header[] headers = post.getAllHeaders();
-        if (debug > 0) {
+        request = post;
+        logger.debug("Build request: {}", request.toString());
+
+        if (logger.isDebugEnabled()) {
           try {
-            System.out.println(">>> request: " + post.toString());
-            if (debug > 1) {
-              for (Header header : headers) {
-                System.out.println(">>>> header: " + header.getName() + ": " + header.getValue());
-              }
-              if (!"".equals(json)) {
-                System.out.println(">>>> json: " + json);
+            if (!"".equals(json)) {
+              // Loading job payload is extreamly large, so limit the length.
+              if (this.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB && json.length() > MAX_LOG_SIZE) {
+                logger.debug("Part of payload: {}......", json.substring(0, MAX_LOG_SIZE));
               } else {
-                String content = EntityUtils.toString(this.payload);
-                System.out.println(">>>> payload: " + content);
+                logger.debug("Payload: {}", json);
               }
+            } else {
+              logger.debug("Payload: {}", EntityUtils.toString(this.payload));
             }
           } catch (IOException e) {
             throw new SQLException("Failed to convert EntityUtils to string", e);
           }
         }
-        request = post;
         break;
       case HttpDelete:
         request = new HttpDelete(url);
+        logger.debug("Build request: {}", request.toString());
         break;
-     default:
-       throw new SQLException("Invalid http request type.");
+      default:
+        throw new SQLException("Invalid http request type.");
     }
 
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
@@ -890,6 +872,7 @@ public class QueryParser {
     if (this.atomic > 0 && this.query_type == QueryType.QUERY_TYPE_GRAPH) {
       request.addHeader("gsql-atomic-level", "atomic");
     }
+
     // Schema queries and interpreted queries only support username/password
     if (this.query_type == QueryType.QUERY_TYPE_SCHEMA_EDGE
         || this.query_type == QueryType.QUERY_TYPE_SCHEMA_VERTEX
@@ -897,6 +880,13 @@ public class QueryParser {
       request.addHeader("Authorization", this.connection.getBasicAuth());
     } else if (token != null && !token.equals("")) {
       request.addHeader("Authorization", "Bearer " + token);
+    }
+
+    if (logger.isDebugEnabled()) {
+      Header[] headers = request.getAllHeaders();
+      for (Header header : headers) {
+        logger.debug("Header: {}: {}", header.getName(), header.getValue());
+      }
     }
 
     return request;

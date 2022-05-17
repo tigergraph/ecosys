@@ -1,11 +1,13 @@
 package com.tigergraph.jdbc.restpp.driver;
 
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,12 +18,14 @@ import java.util.List;
  * Parse response from TigerGraph server, and return a JSONObject List.
  */
 public class RestppResponse {
+
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppResponse.class);
+
   private Integer code;
   private Boolean is_error;
   private String errCode;
   private String errMsg;
   private List<JSONObject> results;
-  private Integer debug = 0;
 
   /**
    * For unit test only.
@@ -31,8 +35,7 @@ public class RestppResponse {
     this.code = HttpStatus.SC_OK;
   }
 
-  public RestppResponse(HttpResponse response, Boolean panic_on_fail,
-      Integer debug) throws SQLException {
+  public RestppResponse(HttpResponse response, Boolean panic_on_fail) throws SQLException {
     this.results = new ArrayList<>();
 
     if (response.getStatusLine() == null) {
@@ -43,7 +46,6 @@ public class RestppResponse {
       }
     }
 
-    this.debug = debug;
     this.code = response.getStatusLine().getStatusCode();
 
     if (this.code != HttpStatus.SC_OK) {
@@ -65,9 +67,6 @@ public class RestppResponse {
 
     try {
       String content = EntityUtils.toString(entity);
-      if (debug > 0) {
-        System.out.println(">>> Response: " + content);
-      }
       parse(content);
     } catch (IOException e) {
       throw new SQLException(e);
@@ -87,10 +86,10 @@ public class RestppResponse {
     } else {
       Object value = obj.get("results");
       if (value instanceof JSONObject) {
-        this.results.add((JSONObject)value);
+        this.results.add((JSONObject) value);
       } else if (value instanceof JSONArray) {
-        JSONArray resultList = (JSONArray)value;
-        for(int i = 0; i < resultList.length(); i++){
+        JSONArray resultList = (JSONArray) value;
+        for (int i = 0; i < resultList.length(); i++) {
           this.results.add(resultList.getJSONObject(i));
         }
       }
@@ -122,7 +121,7 @@ public class RestppResponse {
    */
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for(int i = 0; i < this.results.size(); i++){
+    for (int i = 0; i < this.results.size(); i++) {
       sb.append(String.valueOf(this.results.get(i)));
       sb.append(System.lineSeparator());
     }

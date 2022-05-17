@@ -3,6 +3,7 @@ package com.tigergraph.jdbc.restpp;
 import com.tigergraph.jdbc.common.Connection;
 import com.tigergraph.jdbc.common.DatabaseMetaData;
 import com.tigergraph.jdbc.common.PreparedStatement;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -45,8 +46,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
+import org.slf4j.Logger;
 
 public class RestppConnection extends Connection {
+
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
 
   private String host;
   private Integer port;
@@ -64,7 +68,6 @@ public class RestppConnection extends Connection {
   private String source = null;
   private String lineSchema = null;
   private String src_vertex_type = null;
-  private Integer debug = 0;
   private Integer atomic = 0;
   private Integer timeout = -1;
   private Integer level = 1;
@@ -86,13 +89,8 @@ public class RestppConnection extends Connection {
 
     if (null != properties) {
 
-      // Get debugging mode.
-      if (properties.containsKey("debug")) {
-        this.debug = Integer.valueOf(properties.getProperty("debug"));
-      }
-
-      if (this.debug > 1) {
-        System.out.println(">>> properties: " + properties);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Properties: {}", properties.toString().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r"));
       }
 
       if (properties.containsKey("atomic")) {
@@ -357,15 +355,13 @@ public class RestppConnection extends Connection {
        * When authentication is turned off, the token request will fail.
        * In this case, just do not use token instead of panic.
        */
-      RestppResponse result = new RestppResponse(response, Boolean.FALSE, this.debug);
+      RestppResponse result = new RestppResponse(response, Boolean.FALSE);
       List<JSONObject> jsonList = result.getResults();
       for (int i = 0; i < jsonList.size(); i++) {
         JSONObject obj = jsonList.get(i);
         if (obj.has("token")) {
           this.token = obj.getString("token");
-          if (this.debug > 0) {
-            System.out.println(">>> Got token: " + token);
-          }
+          logger.debug("Got token: {}", token);
           return;
         }
       }
@@ -390,19 +386,18 @@ public class RestppConnection extends Connection {
       HttpRequestBase request = parser.buildQuery(host, port, secure,
           graph, token, json, filename, sep, eol);
       try (CloseableHttpResponse response = httpClient.execute(request)) {
-        result = new RestppResponse(response, Boolean.TRUE, this.debug);
+        result = new RestppResponse(response, Boolean.TRUE);
         break;
       } catch (Exception e) {
         if (retry >= max_retry - 1) {
-          System.out.println(">>> Request: " + request +
-              ", payload: " + json + ", error: " + e);
+          logger.error("Request: {}, payload: {}, error: {}", request, json, e.getMessage());
           throw new SQLException("Request: " + request +
               ", payload size: " + json.length() + ", error: " + e);
         }
       }
     }
-    if (this.debug > 0 && retry > 0) {
-      System.out.println(">>> Rest request succeeded after " + retry + " times retry.");
+    if (retry > 0) {
+      logger.debug("Rest request succeeded after {} times retry.", retry);
     }
     return result;
   }
@@ -424,25 +419,25 @@ public class RestppConnection extends Connection {
 
   @Override
   public PreparedStatement prepareStatement(String query) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public PreparedStatement prepareStatement(String query,
       int resultSetType, int resultSetConcurrency) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public PreparedStatement prepareStatement(String query,
       int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    return new DatabaseMetaData(this, this.debug);
+    return new DatabaseMetaData(this);
   }
 
   @Override
@@ -457,7 +452,7 @@ public class RestppConnection extends Connection {
 
   @Override
   public java.sql.Statement createStatement() throws SQLException {
-    return new RestppStatement(this, this.debug, this.timeout, this.atomic);
+    return new RestppStatement(this, this.timeout, this.atomic);
   }
 
   @Override

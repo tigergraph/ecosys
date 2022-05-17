@@ -645,3 +645,12 @@ Sometimes it may complain that "Incompatible Jackson version: 2.x.x". You may ad
 
 ## Limitation of ResultSet
 The response packet size from the TigerGraph server should be less than 2GB, which is the largest response size supported by the TigerGraph Restful API.
+
+## Logging Configuration
+Tigergraph JDBC Driver supports 4 logging levels: 0 -> ERROR, 1 -> WARN, 2 -> INFO(Default) and 3 -> DEBUG.
+It supports two logging frameworks:
+- java.util.logging (JUL)
+  - To use logger, only need to pass in logging level by `properties.put("debug", "0|1|2|3");`, it will initialize with default logging handler and formater.
+  - To customize the JUL configuration, please write your own config file `logging.properties` and specify the JVM system property **explicitly**: `-Djava.util.logging.config.file=path_to_logging.properties`. Reference: [JUL Documentation](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html).
+- Simple Logging Facade for Java (SLF4J)
+  - To use SLF4J, specify the JVM system property: `-Dcom.tigergraph.jdbc.loggerImpl=slf4j` and put SLF4J binding in your classpath. Reference: [SLF4J Documentation](https://www.slf4j.org/docs.html).

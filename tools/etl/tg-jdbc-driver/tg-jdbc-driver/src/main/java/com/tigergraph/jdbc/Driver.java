@@ -2,6 +2,7 @@ package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.common.BaseDriver;
 import com.tigergraph.jdbc.restpp.RestppDriver;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,15 +16,25 @@ public class Driver extends BaseDriver {
   /**
    * Hash map of all available drivers.
    */
-  private final Map<String, Class> DRIVERS = new HashMap<String, Class>() {{
-    put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
-  }};
+  private final Map<String, Class> DRIVERS = new HashMap<String, Class>() {
+    {
+      put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
+    }
+  };
 
   public Driver() throws SQLException {
     super(null);
   }
 
-  @Override public Connection connect(String url, Properties info) throws SQLException {
+  @Override
+  public Connection connect(String url, Properties info) throws SQLException {
+    // Get logging level.
+    Integer logLevel = 2;
+    if (info.containsKey("debug")) {
+      logLevel = Integer.valueOf(info.getProperty("debug"));
+    }
+    TGLoggerFactory.initializeLogger(logLevel);
+
     return getDriver(url).connect(url, info);
   }
 
@@ -45,7 +56,7 @@ public class Driver extends BaseDriver {
           String prefix = pieces[2];
 
           // Search the driver hash map.
-          for(String key: DRIVERS.keySet()) {
+          for (String key : DRIVERS.keySet()) {
             if (prefix.matches(key)) {
               Constructor constructor = DRIVERS.get(key).getDeclaredConstructor();
               driver = (BaseDriver) constructor.newInstance();
@@ -64,4 +75,3 @@ public class Driver extends BaseDriver {
     return driver;
   }
 }
-
