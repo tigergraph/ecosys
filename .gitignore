@@ -1,2 +1,4 @@
 cloud/aws/aws_config
+tools/etl/tg-jdbc-driver/**/target
+tools/etl/tg-jdbc-driver/tg-jdbc-driver/dependency-reduced-pom.xml
 .DS_Store

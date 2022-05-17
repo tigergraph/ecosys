@@ -4,13 +4,14 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 
 ## Versions compatibility
 
-| JDBC Version | TigerGraph Version | Java | Protocol | Query Result Format | New Features |
-| --- | --- | --- | --- | --- | --- |
-| 1.2.1 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Support interpreted queries and Spark partitioning |
-| 1.2.2 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
-| 1.2.3 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Bug fix |
-| 1.2.4 | 2.4.1~3.4 | 1.8 | Rest++ | ResultSet | Add vulnerability check plugin |
-| 1.2.5 | 3.5+ | 1.8 | Rest++ | ResultSet | Fix restpp authentication incompatibility |
+| JDBC Version | TigerGraph Version | Java | New Features |
+| --- | --- | --- | --- |
+| 1.2.1 | 2.4.1~3.4 | 1.8 | Support interpreted queries and Spark partitioning |
+| 1.2.2 | 2.4.1~3.4 | 1.8 | Bug fix |
+| 1.2.3 | 2.4.1~3.4 | 1.8 | Bug fix |
+| 1.2.4 | 2.4.1~3.4 | 1.8 | Add vulnerability check plugin |
+| 1.2.5 | 3.5+ | 1.8 | Fix restpp authentication incompatibility |
+| 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -22,6 +23,8 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
 | org.junit.vintage | junit-vintage-engine | 5.8.2 |
 | com.github.tomakehurst | wiremock | 2.27.2 |
+| org.apache.spark | spark-core_2.12 | 3.2.1 |
+| org.apache.maven | maven-artifact | 3.8.5 |
 
 ## Download from Maven Central Repository
 
@@ -59,6 +62,8 @@ Parameters are passed as properties when creating a connection, such as username
 
 You may specify IP address and port as needed, and the port is the one used by GraphStudio.
 
+You need to specify the version of tigergraph if it is under 3.5.
+
 For each ResultSet, there might be several tables with different tabular formats. **'isLast()' could be used to switch to the next table.**
 
 ```
@@ -66,6 +71,7 @@ Properties properties = new Properties();
 properties.put("username", "tigergraph");
 properties.put("password", "tigergraph");
 properties.put("graph", "gsql_demo");
+properties.put("version", "3.4");
 
 try {
   com.tigergraph.jdbc.Driver driver = new Driver();
@@ -483,7 +489,7 @@ Save any piece of the above script in a file (e.g., test.scala), and run it like
 ### To enable SSL with Spark
 Please add the following options to your scala script:
 ```
-    "trustStore" -> org.apache.spark.SparkFiles.get("trust.jks"),
+    "trustStore" -> "trust.jks",
     "trustStorePassword" -> "password",
     "trustStoreType" -> "JKS",
 ```

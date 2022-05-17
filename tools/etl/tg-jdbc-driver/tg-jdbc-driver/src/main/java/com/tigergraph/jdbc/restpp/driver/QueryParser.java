@@ -807,6 +807,13 @@ public class QueryParser {
       sb.append(urlEncode(sep));
       sb.append("&eol=");
       sb.append(urlEncode(eol));
+      if (this.atomic > 0) {
+        sb.append("&atomic_post=true");
+      }
+    } else if (this.query_type == QueryType.QUERY_TYPE_GRAPH) {
+      if (this.atomic > 0) {
+        sb.append("?atomic_post=true");
+      }
     }
 
     String url = "";

@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.restpp.RestppResultSet;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
@@ -20,6 +21,7 @@ public class RestppResultSetTest extends TestCase {
     }
 
     public void testParseResult() throws Exception {
+        TGLoggerFactory.initializeLogger(1);
         List<JSONObject> resultList = new ArrayList<>();
         List<String> field_list = new ArrayList<>();
 

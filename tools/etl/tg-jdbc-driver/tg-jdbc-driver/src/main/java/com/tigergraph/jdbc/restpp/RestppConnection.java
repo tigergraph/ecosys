@@ -6,6 +6,7 @@ import com.tigergraph.jdbc.common.PreparedStatement;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -25,6 +26,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.entity.StringEntity;
+import org.apache.spark.SparkFiles;
 import org.json.JSONObject;
 
 import javax.net.ssl.SSLContext;
@@ -72,6 +74,7 @@ public class RestppConnection extends Connection {
   private Integer timeout = -1;
   private Integer level = 1;
   private String[] ipArray = null;
+  private ComparableVersion restpp_version = new ComparableVersion("3.5.0");
 
   private CloseableHttpClient httpClient;
 
@@ -90,7 +93,8 @@ public class RestppConnection extends Connection {
     if (null != properties) {
 
       if (logger.isDebugEnabled()) {
-        logger.debug("Properties: {}", properties.toString().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r"));
+        logger.debug("Properties: {}",
+            properties.toString().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r"));
       }
 
       if (properties.containsKey("atomic")) {
@@ -158,6 +162,11 @@ public class RestppConnection extends Connection {
         this.lineSchema = properties.getProperty("schema");
       }
 
+      // Get restpp version, default version is 3.5
+      if (properties.containsKey("version")) {
+        this.restpp_version = new ComparableVersion(properties.getProperty("version"));
+      }
+
       if (properties.containsKey("ip_list")) {
         String ip_list = properties.getProperty("ip_list");
         String[] tokens = ip_list.trim().split(",");
@@ -196,6 +205,18 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("trustStore")) {
           hasSSLContext = Boolean.TRUE;
           String trustFilename = properties.getProperty("trustStore");
+          File tempFile = new File(trustFilename);
+          if (!tempFile.exists()) {
+            try {
+              trustFilename = SparkFiles.get(trustFilename);
+              logger.debug("SparkFiles: {}", trustFilename);
+              // As the spark-core dependency is provided, this exception means the jdbc is
+              // not being used with spark, so apparently the path is wrong.
+            } catch (NoClassDefFoundError e) {
+              logger.error("{} does not exist, please check this path.", trustFilename);
+              throw new SQLException(trustFilename + " does not exist, please check this path.");
+            }
+          }
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
           try (final InputStream in = new FileInputStream(new File(trustFilename))) {
             truststore.load(in, trustStorePassword.toCharArray());
@@ -206,6 +227,18 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("keyStore")) {
           hasSSLContext = Boolean.TRUE;
           String keyFilename = properties.getProperty("keyStore");
+          File tempFile = new File(keyFilename);
+          if (!tempFile.exists()) {
+            try {
+              keyFilename = SparkFiles.get(keyFilename);
+              logger.debug("SparkFiles: {}", keyFilename);
+              // As the spark-core dependency is provided, this exception means the jdbc is
+              // not being used with spark, so apparently the path is wrong.
+            } catch (NoClassDefFoundError e) {
+              logger.error("{} does not exist, please check this path.", keyFilename);
+              throw new SQLException(keyFilename + " does not exist, please check this path.");
+            }
+          }
           final KeyStore keyStore = KeyStore.getInstance(keyStoreType);
           try (final InputStream in = new FileInputStream(new File(keyFilename))) {
             keyStore.load(in, keyStorePassword.toCharArray());
@@ -327,25 +360,37 @@ public class RestppConnection extends Connection {
    * 'http://localhost:14240/restpp/requesttoken' -d '{"graph": "example_graph"}'
    */
   private void getToken() throws SQLException {
+    StringBuilder urlSb = new StringBuilder();
+    urlSb.append("/gsqlserver/gsql/authtoken");
+    // If restpp version is under 3.5, pass graph name as a parameter
+    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) < 0) {
+      urlSb.append("?graph=");
+      urlSb.append(this.graph);
+    }
     String url = "";
     try {
       if (this.secure)
-        url = new URL("https", host, port, "/restpp/requesttoken").toString();
+        url = new URL("https", host, port, urlSb.toString()).toString();
       else
-        url = new URL("http", host, port, "/restpp/requesttoken").toString();
+        url = new URL("http", host, port, urlSb.toString()).toString();
     } catch (MalformedURLException e) {
       throw new SQLException("Invalid server URL", e);
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("{\"graph\":\"");
-    sb.append(this.graph);
-    sb.append("\"}");
-    StringEntity payload = new StringEntity(sb.toString(), "UTF-8");
-    payload.setContentType("application/json");
+
     HttpPost request = new HttpPost(url);
     request.addHeader("Authorization", basicAuth);
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
-    request.setEntity(payload);
+
+    // If restpp version is no less than 3.5, pass graph name as payload
+    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) >= 0) {
+      StringBuilder payloadSb = new StringBuilder();
+      payloadSb.append("{\"graph\":\"");
+      payloadSb.append(this.graph);
+      payloadSb.append("\"}");
+      StringEntity payload = new StringEntity(payloadSb.toString(), "UTF-8");
+      payload.setContentType("application/json");
+      request.setEntity(payload);
+    }
     /**
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}

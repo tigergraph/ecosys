@@ -4,7 +4,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -106,6 +106,17 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>3.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.12</artifactId>
+            <version>3.2.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

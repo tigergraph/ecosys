@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 
@@ -18,6 +19,7 @@ public class QueryParserTest extends TestCase {
   }
 
   public void testFormat() throws Exception {
+    TGLoggerFactory.initializeLogger(1);
     String query = "get Page(limit=?)";
     Map<Integer, Object> parameters = new HashMap<>(10);
     parameters.put(1, "3");
