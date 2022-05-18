@@ -11,14 +11,12 @@ public class DatabaseMetaData implements java.sql.DatabaseMetaData {
   private String driverName;
   private String driverVersion;
   private Connection connection;
-  private Integer debug = 0;
 
   /**
    * Default constructor.
    */
-  public DatabaseMetaData(Connection connection, Integer debug) {
+  public DatabaseMetaData(Connection connection) {
     this.connection = connection;
-    this.debug = debug;
 
     /**
      * Get driver name and version.

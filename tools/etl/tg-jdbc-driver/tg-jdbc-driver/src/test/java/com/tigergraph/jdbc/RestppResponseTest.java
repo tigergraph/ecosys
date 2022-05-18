@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 
@@ -18,6 +19,7 @@ public class RestppResponseTest extends TestCase {
 	}
 	
 	public void testFormat() throws Exception {
+		TGLoggerFactory.initializeLogger(1);
 		InputStream inputStream =
 					getClass().getClassLoader().getResourceAsStream("response.xml");
     	String content = IOUtils.toString(inputStream, "utf-8");

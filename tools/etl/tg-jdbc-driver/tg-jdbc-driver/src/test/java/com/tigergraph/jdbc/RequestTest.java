@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.junit.jupiter.api.*;
 import java.util.Properties;
 import java.sql.Connection;
@@ -24,6 +25,7 @@ public class RequestTest {
 
   @BeforeAll
   static void prepare() throws Exception {
+    TGLoggerFactory.initializeLogger(1);
     // Mock server for RESTPP
     wireMockServer = new WireMockServer(options().dynamicPort());
     wireMockServer.start();
@@ -63,7 +65,7 @@ public class RequestTest {
   @Test
   @DisplayName("Should get token")
   void sendAuthRequest() throws SQLException, InterruptedException {
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/restpp/requesttoken"))
+    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/gsqlserver/gsql/authtoken"))
         .withHeader("Authorization",
             equalTo("Basic " + new String(Base64.getEncoder()
                 .encode(("tigergraph:tigergraph").getBytes()))))

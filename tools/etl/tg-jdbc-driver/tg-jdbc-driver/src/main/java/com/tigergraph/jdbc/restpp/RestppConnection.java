@@ -3,8 +3,10 @@ package com.tigergraph.jdbc.restpp;
 import com.tigergraph.jdbc.common.Connection;
 import com.tigergraph.jdbc.common.DatabaseMetaData;
 import com.tigergraph.jdbc.common.PreparedStatement;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -24,6 +26,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.entity.StringEntity;
+import org.apache.spark.SparkFiles;
 import org.json.JSONObject;
 
 import javax.net.ssl.SSLContext;
@@ -45,8 +48,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
+import org.slf4j.Logger;
 
 public class RestppConnection extends Connection {
+
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
 
   private String host;
   private Integer port;
@@ -64,11 +70,11 @@ public class RestppConnection extends Connection {
   private String source = null;
   private String lineSchema = null;
   private String src_vertex_type = null;
-  private Integer debug = 0;
   private Integer atomic = 0;
   private Integer timeout = -1;
   private Integer level = 1;
   private String[] ipArray = null;
+  private ComparableVersion restpp_version = new ComparableVersion("3.5.0");
 
   private CloseableHttpClient httpClient;
 
@@ -86,13 +92,9 @@ public class RestppConnection extends Connection {
 
     if (null != properties) {
 
-      // Get debugging mode.
-      if (properties.containsKey("debug")) {
-        this.debug = Integer.valueOf(properties.getProperty("debug"));
-      }
-
-      if (this.debug > 1) {
-        System.out.println(">>> properties: " + properties);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Properties: {}",
+            properties.toString().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r"));
       }
 
       if (properties.containsKey("atomic")) {
@@ -160,6 +162,11 @@ public class RestppConnection extends Connection {
         this.lineSchema = properties.getProperty("schema");
       }
 
+      // Get restpp version, default version is 3.5
+      if (properties.containsKey("version")) {
+        this.restpp_version = new ComparableVersion(properties.getProperty("version"));
+      }
+
       if (properties.containsKey("ip_list")) {
         String ip_list = properties.getProperty("ip_list");
         String[] tokens = ip_list.trim().split(",");
@@ -198,6 +205,18 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("trustStore")) {
           hasSSLContext = Boolean.TRUE;
           String trustFilename = properties.getProperty("trustStore");
+          File tempFile = new File(trustFilename);
+          if (!tempFile.exists()) {
+            try {
+              trustFilename = SparkFiles.get(trustFilename);
+              logger.debug("SparkFiles: {}", trustFilename);
+              // As the spark-core dependency is provided, this exception means the jdbc is
+              // not being used with spark, so apparently the path is wrong.
+            } catch (NoClassDefFoundError e) {
+              logger.error("{} does not exist, please check this path.", trustFilename);
+              throw new SQLException(trustFilename + " does not exist, please check this path.");
+            }
+          }
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
           try (final InputStream in = new FileInputStream(new File(trustFilename))) {
             truststore.load(in, trustStorePassword.toCharArray());
@@ -208,6 +227,18 @@ public class RestppConnection extends Connection {
         if (properties.containsKey("keyStore")) {
           hasSSLContext = Boolean.TRUE;
           String keyFilename = properties.getProperty("keyStore");
+          File tempFile = new File(keyFilename);
+          if (!tempFile.exists()) {
+            try {
+              keyFilename = SparkFiles.get(keyFilename);
+              logger.debug("SparkFiles: {}", keyFilename);
+              // As the spark-core dependency is provided, this exception means the jdbc is
+              // not being used with spark, so apparently the path is wrong.
+            } catch (NoClassDefFoundError e) {
+              logger.error("{} does not exist, please check this path.", keyFilename);
+              throw new SQLException(keyFilename + " does not exist, please check this path.");
+            }
+          }
           final KeyStore keyStore = KeyStore.getInstance(keyStoreType);
           try (final InputStream in = new FileInputStream(new File(keyFilename))) {
             keyStore.load(in, keyStorePassword.toCharArray());
@@ -329,25 +360,37 @@ public class RestppConnection extends Connection {
    * 'http://localhost:14240/restpp/requesttoken' -d '{"graph": "example_graph"}'
    */
   private void getToken() throws SQLException {
+    StringBuilder urlSb = new StringBuilder();
+    urlSb.append("/gsqlserver/gsql/authtoken");
+    // If restpp version is under 3.5, pass graph name as a parameter
+    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) < 0) {
+      urlSb.append("?graph=");
+      urlSb.append(this.graph);
+    }
     String url = "";
     try {
       if (this.secure)
-        url = new URL("https", host, port, "/restpp/requesttoken").toString();
+        url = new URL("https", host, port, urlSb.toString()).toString();
       else
-        url = new URL("http", host, port, "/restpp/requesttoken").toString();
+        url = new URL("http", host, port, urlSb.toString()).toString();
     } catch (MalformedURLException e) {
       throw new SQLException("Invalid server URL", e);
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("{\"graph\":\"");
-    sb.append(this.graph);
-    sb.append("\"}");
-    StringEntity payload = new StringEntity(sb.toString(), "UTF-8");
-    payload.setContentType("application/json");
+
     HttpPost request = new HttpPost(url);
     request.addHeader("Authorization", basicAuth);
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
-    request.setEntity(payload);
+
+    // If restpp version is no less than 3.5, pass graph name as payload
+    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) >= 0) {
+      StringBuilder payloadSb = new StringBuilder();
+      payloadSb.append("{\"graph\":\"");
+      payloadSb.append(this.graph);
+      payloadSb.append("\"}");
+      StringEntity payload = new StringEntity(payloadSb.toString(), "UTF-8");
+      payload.setContentType("application/json");
+      request.setEntity(payload);
+    }
     /**
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}
@@ -357,15 +400,13 @@ public class RestppConnection extends Connection {
        * When authentication is turned off, the token request will fail.
        * In this case, just do not use token instead of panic.
        */
-      RestppResponse result = new RestppResponse(response, Boolean.FALSE, this.debug);
+      RestppResponse result = new RestppResponse(response, Boolean.FALSE);
       List<JSONObject> jsonList = result.getResults();
       for (int i = 0; i < jsonList.size(); i++) {
         JSONObject obj = jsonList.get(i);
         if (obj.has("token")) {
           this.token = obj.getString("token");
-          if (this.debug > 0) {
-            System.out.println(">>> Got token: " + token);
-          }
+          logger.debug("Got token: {}", token);
           return;
         }
       }
@@ -390,19 +431,18 @@ public class RestppConnection extends Connection {
       HttpRequestBase request = parser.buildQuery(host, port, secure,
           graph, token, json, filename, sep, eol);
       try (CloseableHttpResponse response = httpClient.execute(request)) {
-        result = new RestppResponse(response, Boolean.TRUE, this.debug);
+        result = new RestppResponse(response, Boolean.TRUE);
         break;
       } catch (Exception e) {
         if (retry >= max_retry - 1) {
-          System.out.println(">>> Request: " + request +
-              ", payload: " + json + ", error: " + e);
+          logger.error("Request: {}, payload: {}, error: {}", request, json, e.getMessage());
           throw new SQLException("Request: " + request +
               ", payload size: " + json.length() + ", error: " + e);
         }
       }
     }
-    if (this.debug > 0 && retry > 0) {
-      System.out.println(">>> Rest request succeeded after " + retry + " times retry.");
+    if (retry > 0) {
+      logger.debug("Rest request succeeded after {} times retry.", retry);
     }
     return result;
   }
@@ -424,25 +464,25 @@ public class RestppConnection extends Connection {
 
   @Override
   public PreparedStatement prepareStatement(String query) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public PreparedStatement prepareStatement(String query,
       int resultSetType, int resultSetConcurrency) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public PreparedStatement prepareStatement(String query,
       int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
-    return new RestppPreparedStatement(this, query, this.debug, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
   }
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    return new DatabaseMetaData(this, this.debug);
+    return new DatabaseMetaData(this);
   }
 
   @Override
@@ -457,7 +497,7 @@ public class RestppConnection extends Connection {
 
   @Override
   public java.sql.Statement createStatement() throws SQLException {
-    return new RestppStatement(this, this.debug, this.timeout, this.atomic);
+    return new RestppStatement(this, this.timeout, this.atomic);
   }
 
   @Override
