@@ -11,7 +11,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.2.3 | 2.4.1~3.4 | 1.8 | Bug fix |
 | 1.2.4 | 2.4.1~3.4 | 1.8 | Add vulnerability check plugin |
 | 1.2.5 | 3.5+ | 1.8 | Fix restpp authentication incompatibility |
-| 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection |
+| 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection, JUL and SLF4J |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -62,7 +62,7 @@ Parameters are passed as properties when creating a connection, such as username
 
 You may specify IP address and port as needed, and the port is the one used by GraphStudio.
 
-You need to specify the version of tigergraph if it is under 3.5.
+Please specify your tigergraph version if it's earlier than v3.5.0.
 
 For each ResultSet, there might be several tables with different tabular formats. **'isLast()' could be used to switch to the next table.**
 
