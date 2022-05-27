@@ -97,7 +97,7 @@ The process described here has several goals:
 
 Please follow these steps to have your contribution considered by the maintainers:
 
-1. Follow all instructions in [the template](PULL_REQUEST_TEMPLATE.md)
+1. Follow all instructions in [the template](https://github.com/tigergraph/ecosys/blob/master/docs/PULL_REQUEST_TEMPLATE.md)
 2. Follow the [styleguides](#styleguides)
 3. After you submit your pull request, a reviewer(s) may ask you to complete additional design work, tests, or other changes before your pull request can be ultimately accepted.
 
