@@ -70,8 +70,8 @@ This image will start as a daemon, so user can ssh to it.
         docker pull tigergraph/tigergraph:3.6.0
      
     > Note: 
-    > * to use the legacy versions, use docker.tigergraph.com/tigergraph:<version> 
-    > * to use the legacy developer edition images, use docker.tigergraph.com/tigergraph-dev:latest or docker.tigergraph.com/tigergraph-dev:<version> instead
+    > * to use the legacy versions, use docker.tigergraph.com/tigergraph:version 
+    > * to use the legacy developer edition images, use docker.tigergraph.com/tigergraph-dev:latest or docker.tigergraph.com/tigergraph-dev:version instead
 
 1. stop and remove existing container in shell only if an old version is being used
 
