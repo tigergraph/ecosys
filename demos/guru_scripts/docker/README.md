@@ -67,7 +67,7 @@ This image will start as a daemon, so user can ssh to it.
         
     > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 3.6.0 version, the following would be the URL. 
      
-     docker pull tigergraph/tigergraph:3.6.0
+        docker pull tigergraph/tigergraph:3.6.0
      
     > Note: 
     > * to use the legacy versions, use docker.tigergraph.com/tigergraph:<version> 
