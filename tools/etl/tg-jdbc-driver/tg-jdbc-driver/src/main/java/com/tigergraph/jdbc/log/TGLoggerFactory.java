@@ -37,8 +37,7 @@ public class TGLoggerFactory {
     }
 
     /**
-     * Initialize parent logger `com.tigergraph.jdbc` with default settings if
-     * 
+     * Initialize parent logger `com.tigergraph.jdbc` with default settings if JUL_DEFAULT
      * 
      * NOP if JUL_WITH_CONFIG or SLF4J
      * 

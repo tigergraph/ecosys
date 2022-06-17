@@ -7,6 +7,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONException;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class RestppResponse {
   private Boolean is_error;
   private String errCode;
   private String errMsg;
+  private String content;
   private List<JSONObject> results;
 
   /**
@@ -33,26 +35,29 @@ public class RestppResponse {
   public RestppResponse() {
     this.results = new ArrayList<>();
     this.code = HttpStatus.SC_OK;
+    this.content = "";
   }
 
   public RestppResponse(HttpResponse response, Boolean panic_on_fail) throws SQLException {
     this.results = new ArrayList<>();
+    this.code = HttpStatus.SC_OK;
+    this.content = "";
 
+    // Some responses have no status code, but still have entities.
     if (response.getStatusLine() == null) {
       if (panic_on_fail) {
+        logger.error("Received response with no status code.");
         throw new SQLException("Received response with no status code.");
-      } else {
-        return;
       }
+    } else {
+      this.code = response.getStatusLine().getStatusCode();
     }
 
-    this.code = response.getStatusLine().getStatusCode();
-
+    // Some responses' status codes are not 200, but still have entities.
     if (this.code != HttpStatus.SC_OK) {
       if (panic_on_fail) {
+        logger.error("Failed to send http request: {}", String.valueOf(this.code));
         throw new SQLException("Failed to send http request: " + String.valueOf(this.code));
-      } else {
-        return;
       }
     }
 
@@ -65,9 +70,13 @@ public class RestppResponse {
       }
     }
 
+    String content = "";
     try {
-      String content = EntityUtils.toString(entity);
+      content = EntityUtils.toString(entity);
       parse(content);
+    } catch (JSONException e) {
+      // Not a json, save the content directly.
+      this.content = content;
     } catch (IOException e) {
       throw new SQLException(e);
     }
@@ -82,7 +91,9 @@ public class RestppResponse {
       /**
        * Some queries' response do not have "error code".
        */
-      // this.errCode = obj.getString("code");
+      if (obj.has("code")) {
+        this.errCode = obj.getString("code");
+      }
     } else {
       Object value = obj.get("results");
       if (value instanceof JSONObject) {
@@ -106,6 +117,18 @@ public class RestppResponse {
 
   public String getErrMsg() {
     return this.errMsg;
+  }
+
+  public String getErrCode() {
+    return this.errCode;
+  }
+
+  public Integer getCode() {
+    return this.code;
+  }
+
+  public String getContent() {
+    return this.content;
   }
 
   public List<JSONObject> getResults() {

@@ -26,7 +26,7 @@ public class RestppResultSetTest extends TestCase {
         List<String> field_list = new ArrayList<>();
 
         /**
-         * parse edge
+         * parse vertex
          */
         InputStream inVertex = getClass().getClassLoader().getResourceAsStream("resultset-vertex.dat");
         String[] vertexStrArray = IOUtils.toString(inVertex).split(System.lineSeparator());
@@ -104,5 +104,44 @@ public class RestppResultSetTest extends TestCase {
 
         inEdge.close();
         inExpectedEdge.close();
+        resultList.clear();
+
+        /**
+         * parse path
+         */
+        InputStream inPath = getClass().getClassLoader().getResourceAsStream("resultset-path.dat");
+        String[] pathStrArray = {IOUtils.toString(inPath)};
+        inPath.close();
+
+        for (String pathStr : pathStrArray) {
+            JSONObject obj = new JSONObject(pathStr);
+            resultList.add(obj);
+        }
+
+        RestppResultSet pathRs = new RestppResultSet(null, resultList, field_list, QueryType.QUERY_TYPE_ALLPATHS, false);
+        StringBuilder pathStrBuiler = new StringBuilder();
+        do {
+            java.sql.ResultSetMetaData metaData = pathRs.getMetaData();
+            pathStrBuiler.append("Table: " + metaData.getCatalogName(1)).append(System.lineSeparator());
+            pathStrBuiler.append(metaData.getColumnName(1));
+
+            for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                pathStrBuiler.append("\t" + metaData.getColumnName(i));
+            }
+            pathStrBuiler.append(System.lineSeparator());
+            while (pathRs.next()) {
+                pathStrBuiler.append(pathRs.getObject(1));
+                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+                    Object obj = pathRs.getObject(i);
+                    pathStrBuiler.append("\t" + String.valueOf(obj));
+                }
+                pathStrBuiler.append(System.lineSeparator());;
+            }
+        } while (!pathRs.isLast());
+        InputStream inExpectedPath = getClass().getClassLoader().getResourceAsStream("resultset-path-expected.dat");
+        String expectedPathStr = IOUtils.toString(inExpectedPath).replaceAll("\\n|\\r\\n", System.lineSeparator());
+        assertEquals(expectedPathStr, pathStrBuiler.toString());
+
+        inExpectedPath.close();
     }
 }

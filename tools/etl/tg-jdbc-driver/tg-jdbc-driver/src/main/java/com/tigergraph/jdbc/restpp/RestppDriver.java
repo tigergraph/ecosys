@@ -1,6 +1,7 @@
 package com.tigergraph.jdbc.restpp;
 
 import com.tigergraph.jdbc.common.BaseDriver;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,12 +9,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+
 /**
  * JDBC Driver class for the Restpp connector.
  */
 public class RestppDriver extends BaseDriver {
 
   public final static String JDBC_RESTPP_PREFIX = "http(s)?";
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppDriver.class);
 
   /**
    * Default constructor.
@@ -22,7 +26,8 @@ public class RestppDriver extends BaseDriver {
     super(JDBC_RESTPP_PREFIX);
   }
 
-  @Override public Connection connect(String url, Properties params) throws SQLException {
+  @Override
+  public Connection connect(String url, Properties params) throws SQLException {
     Connection connection = null;
     try {
       if (acceptsURL(url)) {
@@ -35,9 +40,12 @@ public class RestppDriver extends BaseDriver {
         }
         connection = new RestppConnection(host, port, secure, params, url);
       } else {
-        throw new SQLException("The URL is invalid.\nA valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
+        logger.error("The URL is invalid. A valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
+        throw new SQLException(
+            "The URL is invalid. A valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
       }
     } catch (MalformedURLException e) {
+      logger.error("The URL is invalid", e);
       throw new SQLException(e);
     }
 

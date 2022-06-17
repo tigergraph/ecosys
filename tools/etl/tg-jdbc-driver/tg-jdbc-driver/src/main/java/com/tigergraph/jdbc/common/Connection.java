@@ -167,10 +167,6 @@ public abstract class Connection implements java.sql.Connection {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
   @Override public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }

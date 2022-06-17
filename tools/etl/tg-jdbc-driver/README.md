@@ -2,6 +2,33 @@
 
 The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. This driver supports TigerGraph builtin queries, loading jobs, compiled queries (i.e., queries which has been installed to the GSQL server) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
 
+## Table of Contents
+- [Versions compatibility](#versions-compatibility)
+- [Dependency list](#dependency-list)
+- [Download from Maven Central Repository](#download-from-maven-central-repository)
+- [Minimum viable snippet](#minimum-viable-snippet)
+- [Support SSL](#support-ssl)
+- [Connection Pool](#connection-pool)
+- [Supported Queries and Syntax](#supported-queries-and-syntax)
+- [Run examples](#run-examples)
+- [How to use in Apache Spark](#how-to-use-in-apache-spark)
+  * [To read from TigerGraph](#to-read-from-tigergraph)
+  * [To write to TigerGraph](#to-write-to-tigergraph)
+  * [To load data from files](#to-load-data-from-files)
+  * [To read vertices with Spark partitioning enabled](#to-read-vertices-with-spark-partitioning-enabled)
+  * [To invoke interpreted queries](#to-invoke-interpreted-queries)
+  * [To invoke interpreted queries with Spark partitioning enabled](#to-invoke-interpreted-queries-with-spark-partitioning-enabled)
+  * [To enable SSL with Spark](#to-enable-ssl-with-spark)
+  * [Load balancing](#load-balancing)
+  * [Supported dbTable format when used in Spark](#supported-dbtable-format-when-used-in-spark)
+  * [Supported SaveMode when used in Spark](#supported-savemode-when-used-in-spark)
+- [How to use it in Python](#how-to-use-it-in-python)
+- [How to improve loading speed](#how-to-improve-loading-speed)
+- [Limitation of ResultSet](#limitation-of-resultset)
+- [Logging Configuration](#logging-configuration)
+- [Password Sealing](#password-sealing)
+- [FAQ](#faq)
+
 ## Versions compatibility
 
 | JDBC Version | TigerGraph Version | Java | New Features |
@@ -12,18 +39,20 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.2.4 | 2.4.1~3.4 | 1.8 | Add vulnerability check plugin |
 | 1.2.5 | 3.5+ | 1.8 | Fix restpp authentication incompatibility |
 | 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection, JUL and SLF4J |
+| 1.3.0 | 2.4.1+ | 1.8 | Bug fix && support path-finding algorithms && support full Spark datatypes |
 
 ## Dependency list
 | groupId | artifactId | version |
 | --- | --- | --- |
 | org.apache.commons | commons-io | 2.7 |
 | org.apache.httpcomponents | httpclient | 4.5.13 |
-| org.json | json | 20180813 |
+| org.json | json | 20220320 |
 | org.glassfish | javax.json | 1.1.4 |
 | org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
 | org.junit.vintage | junit-vintage-engine | 5.8.2 |
 | com.github.tomakehurst | wiremock | 2.27.2 |
-| org.apache.spark | spark-core_2.12 | 3.2.1 |
+| org.apache.spark | spark-core_2.12(provided) | 3.2.1 |
+| org.apache.spark | spark-sql_2.12(provided) | 3.2.1 |
 | org.apache.maven | maven-artifact | 3.8.5 |
 
 ## Download from Maven Central Repository
@@ -121,7 +150,10 @@ try {
 }
 ```
 
-Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. The certificate needs to be converted to JKS format.
+Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. The certificate needs to be converted to JKS format. The certificate can be converted to JKS format by `keytool`:
+```
+/path/to/jre/bin/keytool -import -alias alias -file cert_file.crt -keystore yourkeystore.jks -storepass yourpass
+```
 
 Detailed example can be found at [GraphQuery.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/GraphQuery.java).
 
@@ -172,85 +204,155 @@ config.addDataSourceProperty("trustStoreType", "JKS");
 
 Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/ConnectionPool.java).
 
-## Supported Queries
-```
-// Run a pre-installed query with parameters (example: the pageRank query from the GSQL Demo Examples)
-run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
+## Supported Queries and Syntax
+- `builtins`: run a built-in function
+  - Syntax: `builtins function_name(type=?)`
+  - Description: run a [built-in function](https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_built_in_functions_on_graph) and return relevant statistics about a graph.
+  - Example:
+    ```
+    // Get the number of vertices of a specific type
+    builtins stat_vertex_number(type=?)
 
-// Get the number of vertices of a specific type
-builtins stat_vertex_number(type=?)
+    // Get the number of edges
+    builtins stat_edge_number
 
-// Get the number of edges
-builtins stat_edge_number
+    // Get the number of edges of a specific type
+    builtins stat_edge_number(type=?)
+    ```
+  - ResultSet schema: `v_type/e_type | attr`
+- `get vertex`: get a vertex/vertices
+  - Syntax:
+    - `get vertex(vertex_type) [params(select=?,filter=?,limit=?,sort=?)]`
+    - `get vertex(vertex_type, vertex_id) [params(select=?)]`
+  - Description: get all vertices having the type `vertex_type` in a graph, or a single vertex by its vertex ID. [Parameters](https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_parameters_17) are optional.
+  - Example:
+    ```
+    // Get any k vertices of a specified type (example: Page type vertex)
+    get vertex(Page) params(limit=?)
 
-// Get the number of edges of a specific type
-builtins stat_edge_number(type=?)
+    // Get a vertex which has the given id (example: Page type vertex)
+    get vertex(Page, ?)
 
-// Get any k vertices of a specified type (example: Page type vertex)
-get Page(limit=?)
+    // Get specified attributes of all vertices which satisfy the given filter (example: Page type vertex)
+    get vertex(Page) params(filter=?, select=?)
+    ```
+  - ResultSet schema: `v_id | attr1 | attr2`
 
-// Get a vertex which has the given id (example: Page type vertex)
-get Page(id=?)
+- `get edge`: get an edge/edges
+  - Syntax:
+    - `get edge(src_vertex_type, src_vertex_id) [params(select=?,filter=?,limit=?,sort=?)]`
+    - `get edge(src_vertex_type, src_vertex_id, edge_type) [params(select=?,filter=?,limit=?,sort=?)]`
+    - `get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type) [params(select=?,filter=?,limit=?,sort=?)]`
+    - `get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id) [params(select=?)]`
+  - Description: get edges of a vertex or an edge between 2 vertices. [Parameters](https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_parameters_22) are optional.
+  - Example:
+    ```
+    // Get all edges whose source vertex has the specified type and id
+    // There might be several tables in ResultSet because there might be more than one type of edge
+    // (example: Page vertex with id)
+    get edge(Page, id)
 
-// Get all vertices which satisfy the given filter (example: Page type vertex)
-get Page(filter=?)
+    // Get all edges of given type (example: Linkto) whose source vertex
+    // has the specified type and id (example: Page vertex with id)
+    get edge(Page, id, Linkto) params(select=?,sort=?)
 
-// Get all edges whose source vertex has the specified type and id
-// (example: Page vertex with id)
-get edges(Page, id)
+    // Get all edges of given type (example: Linkto) whose source vertex
+    // has the specified type and id (example: Page vertex with id),
+    // and the target vertex type is also given (example: Page)
+    get edge(Page, id, Linkto, Page)
 
-// Get all edges of given type (example: Linkto) whose source vertex
-// has the specified type and id (example: Page vertex with id)
-get edges(Page, id, Linkto)
+    // Get a specific edge from a given vertex to another specific vertex
+    // (example: from a Page vertex, across a Linkto edge, to a Page vertex)
+    get edge(Page, id1, Linkto, Page, id2)
+    ```
+  - ResultSet schema: `src_vertex_type | tgt_vertex_type | attr1 | attr2`
+- `insert into vertex/edge`: upsert vertex/edge
+  - Syntax: 
+    - `insert into vertex v_type(primary_id, id, attr1, attr2) values(?, ?, ?, ?)`
+    - `insert into edge v_type(from, to, attr1, attr2) values(?, ?, ?, ?)`
+  - Description: upsert vertices and/or edges into a graph. To upsert means that if a vertex or edge does not exist, it is inserted, and if it does exist, it is updated. `PreparedStatement` and `addBatch` are recommended.
+  - Example:
+    ```
+    // Insert into a vertex type
+    INSERT INTO vertex Page(id, page_id) VALUES(?, ?)
 
-// Get all edges of given type (example: Linkto) whose source vertex
-// has the specified type and id (example: Page vertex with id),
-// and the target vertex type is also given (example: Page)
-get edges(Page, id, Linkto, Page)
+    // Insert into edge type
+    INSERT INTO edge Linkto(Page, Page) VALUES(?, ?)
+    ```
+- `insert into job`: run a loading job
+  - Syntax: `insert into job job_name(line) values(?)`
+  - Description: submit a line/lines to be loaded into the graph by the DDL Loader. If the dataset is too large, it's recommended to [use Spark to write to TigerGraph](#to-write-to-tigergraph).
+  - Example:
+    ```
+    // Run a pre-installed loading job
+    INSERT INTO job load_pagerank(line) VALUES(?)
+    ```
+- `run interpreted`: run a interpreted query
+  - Syntax: `run interpreted(arg1=?, arg2=?)`
+  - Description: run a GSQL query in Interpreted Mode. Must use `preparedStatement` and set query body as a parameter.
+  - Example:
+    ```
+    // Run an interpreted query
+    query = "run interpreted(a=?, b=?)";
+    pstmt = con.prepareStatement(query)
+    query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH gsql_demo {\n"
+      + "PRINT a, b;\n"
+      + "}\n";
+    pstmt.setString(1, "10");
+    pstmt.setString(2, "20");
+    pstmt.setString(3, query_body); // The query body is passed as a parameter.
+    ```
+  - ResultSet: results of `PRINT` statement.
 
-// Get a specific edge from a given vertex to another specific vertex
-// (example: from a Page vertex, across a Linkto edge, to a Page vertex)
-get edge(Page, id1, Linkto, Page, id2)
+- `run preinstalled`: run a pre-installed query
+  - Syntax: `run query_name(arg1=?, arg2=?)`
+  - Description: run a GSQL query which is created and installed in advance.
+  - Example:
+    ```
+    // Run a pre-installed query with parameters (example: the pageRank query from the GSQL Demo Examples)
+    run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
+    ```
+  - ResultSet: results of `PRINT` statement.
+- `find shortestpath`: find shortest path between 2 vertices
+  - Syntax: `find shortestpath(src_vertex_type, src_vertex_id, tgt_vertex_type, tgt_vertex_id)`
+  - Description: find the shortest path between the source and the target. There might be several tables in ResultSet because there might be more than one type of edge and vertex.
+  - Example:
+    ```
+    // Find the shortest path between 2 vertices(example: person)
+    find shortestpath(person, Tom, person, Jack)
+    ```
+  - ResultSet schema: same as `get vertex` and `get edge`.
+- `find allpaths`: find all paths between 2 vertices
+  - Syntax: `find allpaths(src_vertex_type, src_vertex_id, tgt_vertex_type, tgt_vertex_id, max_length)`
+  - Description: find all paths between the source and the target with maximum path length. There might be several tables in ResultSet because there might be more than one type of edge and vertex.
+  - Example:
+    ```
+    // Find all paths between 2 vertices, with limitation of path length(example: person)
+    find allpaths(person, Tom, person, Jack)
+    ```
+  - ResultSet schema: same as `get vertex` and `get edge`.
 
-// Run a pre-installed query with parameters
-run pageRank(maxChange=?, maxIteration=?, dampingFactor=?)
-
-// Run an interpreted query
-query = "run interpreted(a=?, b=?)";
-pstmt = con.prepareStatement(query)
-query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH gsql_demo {\n"
-  + "PRINT a, b;\n"
-  + "}\n";
-pstmt.setString(1, "10");
-pstmt.setString(2, "20");
-pstmt.setString(3, query_body); // The query body is passed as a parameter.
-
-// Run a pre-installed loading job
-INSERT INTO job load_pagerank(line) VALUES(?)
-
-// Insert into a vertex type
-INSERT INTO vertex Page(id, page_id) VALUES(?, ?)
-
-// Insert into edge type
-INSERT INTO edge Linkto(Page, Page) VALUES(?, ?)
-```
 See [RESTPP API User Guide: Built-in Endpoints](https://docs.tigergraph.com/dev/restpp-api/built-in-endpoints) for more details about the built-in endpoints.
 
 The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds)** of java.sql.Statement to change timeout for any specific query.
 
 **If any parameter or attribute name has spaces, tabs or other special characters, please enclose it in single quotation marks.**
 
+**If you pass the value directly in the query string instead of using the placeholder '?' , please enclose the string value in single quotation marks, e.g. `get vertex(person) params(filter='gender=\"male\"')`, `insert into person(name, age) values('tom', 5)`.**
+
 Detailed examples can be found at [tg-jdbc-examples](tg-jdbc-examples).
 
 ## Run examples
-There are 4 demo applications. All of them take 3 parameters: IP address, port, debug. The default IP address is 127.0.0.1, and the default port is 14240. Other values can be specified as needed.
+There are 4 demo applications. All of them take 4 parameters: IP address, port, debug and graph name. The default IP address is 127.0.0.1, and the default port is 14240. Other values can be specified as needed.
 
 Debug mode:
-> 0: do not print any debug information
+> 0: print error messages
 
-> 1: print basic debug information (e.g., request received, request sent to TigerGraph, response gotten from TigerGraph)
+> 1: print warning messages
 
-> 2: print detailed debug information
+> 2: print basic information (e.g., request received, request sent to TigerGraph, response gotten from TigerGraph)
+
+> 3: print detailed debug information
 
 To run the examples, first clone the repository, then compile and run the examples like the following:
 
@@ -258,14 +360,21 @@ To run the examples, first clone the repository, then compile and run the exampl
 cd tg-jdbc-driver
 mvn clean && mvn install
 cd ../tg-jdbc-examples
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 1 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.GraphQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.UpsertQuery -Dexec.args="127.0.0.1 14240 1 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 2 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.GraphQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.UpsertQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
 ```
 
 ## How to use in Apache Spark
-### To read from TigerGraph:
+
+If your vertex/edge attributes have LIST/SET type, please register TigergraphDialect, which can convert TG LIST/SET to Spark ArrayType when retrieving vertices/edges, or convert Spark ArrayType to TG LIST/SET when inserting vertices/edges.
+```
+import org.apache.spark.sql.jdbc.JdbcDialects
+JdbcDialects.registerDialect(new com.tigergraph.jdbc.TigergraphDialect())
+```
+
+### To read from TigerGraph
 ```
 // read vertex
 val jdbcDF1 = spark.read.format("jdbc").options(
@@ -308,7 +417,7 @@ jdbcDF3.show
 ```
 **When retrieving wildcard edges, option "src_vertex_type" must be specified.**
 
-### To write to TigerGraph:
+### To write to TigerGraph
 ```
 val dataList: List[(Integer, Integer)] = List(
   (4,4),
@@ -417,7 +526,7 @@ val jdbcDF1 = spark.read.format("jdbc").options(
 jdbcDF1.show
 ```
 
-### To invoke interpreted queries:
+### To invoke interpreted queries
 ```
 val dbtable1 = """interpreted(a=10, b=20) INTERPRET QUERY (int a, int b) FOR GRAPH gsql_demo {
   PRINT a, b;
@@ -481,7 +590,7 @@ val dbtable2 = """interpreted INTERPRET QUERY (int lowerBound = 0, int upperBoun
 
 Save any piece of the above script in a file (e.g., test.scala), and run it like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar -i test.scala
 ```
 
 **Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your query if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
@@ -496,7 +605,7 @@ Please add the following options to your scala script:
 
 And run it with **"--files"** option like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.2.jar --files /path/to/trust.jks -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar --files /path/to/trust.jks -i test.scala
 ```
 ### Load balancing
 For TigerGraph clusters, all the machines' ip addresses (separated by a comma) could be passed via option **"ip_list"** to the driver, and the driver will pick one ip randomly to issue the query.
@@ -510,6 +619,7 @@ For TigerGraph clusters, all the machines' ip addresses (separated by a comma) c
 | query | query_name[(param)] |
 | interpreted | [(param)] query_body |
 
+Path-finding query is not supported, because it has multiple tables in ResultSet, which cannot be written to a single dataframe.
 ### Supported SaveMode when used in Spark
 The default behavior of saving a DataFrame to TigerGraph is **upsert**:
 > when the vertex/edge exists, it will be updated.
@@ -524,6 +634,21 @@ The JDBC driver could be used in Python via pyspark. 'pyspark' needs to be insta
 sudo pip install pypandoc pyspark
 ```
 
+If your vertex/edge attributes have LIST/SET type, please register TigergraphDialect, which can convert TG LIST/SET to Spark ArrayType when retrieving vertices/edges, or convert Spark ArrayType to TG LIST/SET when inserting vertices/edges.
+```
+from pyspark.sql import SparkSession
+from py4j.java_gateway import java_import
+
+spark = SparkSession.builder \
+  .appName("TigerGraphAnalysis") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.3.0.jar") \
+  .getOrCreate()
+
+gw = spark.sparkContext._gateway
+java_import(gw.jvm, "com.tigergraph.jdbc.TigergraphDialect")
+gw.jvm.org.apache.spark.sql.jdbc.JdbcDialects.registerDialect(gw.jvm.com.tigergraph.jdbc.TigergraphDialect())
+```
+
 Then you can read from/write to TigerGraph in Python like this:
 ```
 from pyspark.sql import SparkSession
@@ -532,7 +657,7 @@ from pyspark.sql.types import StringType, IntegerType
 
 spark = SparkSession.builder \
   .appName("TigerGraphAnalysis") \
-  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.2.jar") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.3.0.jar") \
   .getOrCreate()
 
 # read vertex
@@ -649,6 +774,22 @@ Sometimes it may complain that "Incompatible Jackson version: 2.x.x". You may ad
   </dependency>
 ```
 
+## How to improve loading speed
+* use loading job instead of inserting vertex/edge directly, as the latter will force JDBC to generate JSON payload, which will be much bigger than the raw data
+* don’t split the raw data into different columns, i.e., each row should only have one column, so that JDBC can simply pass along the raw data and won’t need to re-org the data. If a data frame is being used, you can merge different columns into one column
+* choose `batchsize` carefully according to your average data size of each line/row, the idea payload size is 2-6MB.
+
+Here's a demo:
+https://tigergraph-misc.s3.amazonaws.com/jdbc-demo.tar.gz
+
+To run it:
+```
+tar zxf jdbc-demo.tar.gz
+cd demo
+bash -x run.sh
+```
+It’ll load 543MB data via JDBC and show how long it takes.
+
 ## Limitation of ResultSet
 The response packet size from the TigerGraph server should be less than 2GB, which is the largest response size supported by the TigerGraph Restful API.
 
@@ -656,7 +797,96 @@ The response packet size from the TigerGraph server should be less than 2GB, whi
 Tigergraph JDBC Driver supports 4 logging levels: 0 -> ERROR, 1 -> WARN, 2 -> INFO(Default) and 3 -> DEBUG.
 It supports two logging frameworks:
 - java.util.logging (JUL)
-  - To use logger, only need to pass in logging level by `properties.put("debug", "0|1|2|3");`, it will initialize with default logging handler and formater.
-  - To customize the JUL configuration, please write your own config file `logging.properties` and specify the JVM system property **explicitly**: `-Djava.util.logging.config.file=path_to_logging.properties`. Reference: [JUL Documentation](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html).
+  - To use logger, only need to pass in logging level by `properties.put("debug", "0|1|2|3");`, it will initialize with default logging handler and formatter, which only print logs to console.
+  - To customize the JUL configuration, please provide your logging configuration file `logging.properties` and specify the JVM system property **explicitly**: `-Djava.util.logging.config.file=path_to_logging.properties`. Reference: [JUL Documentation](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html).
+
+    For example, create a logging configuration file `logging.properties` with following contents:
+    ```
+    ###########################################################
+    #   Default Logging Configuration File
+    #
+    # You can use a different file by specifying a filename
+    # with the java.util.logging.config.file system property.
+    # For example java -Djava.util.logging.config.file=myfile
+    ############################################################
+
+    ############################################################
+    #   Global properties
+    ############################################################
+
+    # "handlers" specifies a comma-separated list of log Handler
+    # classes.  These handlers will be installed during VM startup.
+    # Note that these classes must be on the system classpath.
+    # ConsoleHandler and FileHandler are configured here such that
+    # the logs are dumped into both a standard error and a file.
+    handlers = java.util.logging.ConsoleHandler, java.util.logging.FileHandler
+
+    # Default global logging level.
+    # This specifies which kinds of events are logged across
+    # all loggers.  For any given facility this global level
+    # can be overriden by a facility specific level.
+    # Note that the ConsoleHandler also has a separate level
+    # setting to limit messages printed to the console.
+    .level = INFO
+
+    ############################################################
+    # Handler specific properties.
+    # Describes specific configuration information for Handlers.
+    ############################################################
+
+    # default file output is in the tmp dir
+    java.util.logging.FileHandler.pattern = /tmp/TG_JDBC_%u.log
+    java.util.logging.FileHandler.limit = 5000000000000000
+    java.util.logging.FileHandler.count = 10
+    java.util.logging.FileHandler.level = INFO
+    java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+
+    # Limit the messages that are printed on the console to INFO and above.
+    java.util.logging.ConsoleHandler.level = INFO
+    java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+
+    # Example to customize the SimpleFormatter output format
+    # to print one-line log message like this:
+    #     <level>: <log message> [<date/time>]
+    #
+    # java.util.logging.SimpleFormatter.format=%4$s: %5$s [%1$tc]%n
+
+    ############################################################
+    # Facility specific properties.
+    # Provides extra control for each logger.
+    ############################################################
+
+    # Tigergraph JDBC logging level.
+    com.tigergraph.jdbc.level = INFO
+    com.tigergraph.jdbc.handler = java.util.logging.FileHandler
+    ```
 - Simple Logging Facade for Java (SLF4J)
   - To use SLF4J, specify the JVM system property: `-Dcom.tigergraph.jdbc.loggerImpl=slf4j` and put SLF4J binding in your classpath. Reference: [SLF4J Documentation](https://www.slf4j.org/docs.html).
+
+## Password Sealing
+It could be insecure to type in some sensitive properties like `password`, `token` in the code directly, here we recommend storing the properties in a `.properties` file.
+- Load properties from file:
+  ```
+  Properties properties = new Properties();
+  InputStream properties_file = new FileInputStream("path/to/properties/file");
+  properties.load(properties_file);
+  ```
+- For higher security requirement, you can encrypt properties file by some third party crypto libraries like [`jasypt`](http://www.jasypt.org):
+  - Use [Jasypt CLI Tools](http://www.jasypt.org/cli.html) to encrypt each entry of the properties file, the encrypted value should be like `password=ENC(!"DGAS24FaIO$)`
+  - Load the encrypted file and decrypt it:
+    ```
+    BasicTextEncryptor encryptor = new BasicTextEncryptor();
+    encryptor.setPassword(ENCRYPTOR_STRING);
+    Properties properties = new EncryptableProperties(encryptor);
+    InputStream encrypted_properties_file = new FileInputStream("path/to/encrypted/properties/file");
+    properties.load(encrypted_properties_file);
+    ```
+
+## FAQ
+- Q: Is the JDBC driver able to load a `LIST` or `SET` attribute?
+
+  A: Yes, this can be done with a loading job, but you should ensure the [loading job and data format](https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/creating-a-loading-job#_loading_a_list_or_set_attribute) are correct.
+
+- Q: How can I run my own queries?
+
+  A: If your query is simple, we recommend using interpreted query for its convenience. However, due to [interpreted GSQL limitations](https://docs.tigergraph.com/gsql-ref/current/appendix/interpreted-gsql-limitations), you have to use pre-installed query for some features like `Accumulator`.

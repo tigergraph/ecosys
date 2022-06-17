@@ -44,12 +44,28 @@ public class RestppStatement extends Statement {
   public boolean execute(String query) throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(), query,
-        null, this.timeout, this.atomic);
+        null, this.timeout, this.atomic, true);
     this.query_type = parser.getQueryType();
 
-    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(parser, "");
+    String json = "";
+    if(!this.parser.getEdgeJson().equals("")){
+      StringBuilder sb = new StringBuilder();
+      sb.append("{\"edges\": {");
+      sb.append(this.parser.getEdgeJson());
+      sb.append("}}");
+      json = sb.toString();
+    } else if(!this.parser.getVertexJson().equals("")){
+      StringBuilder sb = new StringBuilder();
+      sb.append("{\"vertices\": {");
+      sb.append(this.parser.getVertexJson());
+      sb.append("}}");
+      json = sb.toString();
+    }
+    
+    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(parser, json);
 
     if (response.hasError()) {
+      logger.error(response.getErrMsg());
       throw new SQLException(response.getErrMsg());
     }
 
@@ -67,7 +83,7 @@ public class RestppStatement extends Statement {
   @Override
   public void addBatch(String sql) throws SQLException {
     this.parser = new QueryParser((RestppConnection) getConnection(), sql,
-        null, this.timeout, this.atomic);
+        null, this.timeout, this.atomic, false);
     String vertex_json = parser.getVertexJson();
     String edge_json = parser.getEdgeJson();
     if (vertex_json != "") {
@@ -86,6 +102,7 @@ public class RestppStatement extends Statement {
 
   @Override
   public int[] executeBatch() throws SQLException {
+    logger.info("Batch Query: {}.", this.parser.getQueryType());
     int[] count = new int[2];
     if (this.edge_list.size() == 0 && this.vertex_list.size() == 0) {
       return count;
@@ -119,6 +136,7 @@ public class RestppStatement extends Statement {
     RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
 
     if (response.hasError()) {
+      logger.error(response.getErrMsg());
       throw new SQLException(response.getErrMsg());
     }
 
