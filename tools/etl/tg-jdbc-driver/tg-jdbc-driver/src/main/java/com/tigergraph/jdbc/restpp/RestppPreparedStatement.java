@@ -7,7 +7,9 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
+
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 
 import java.sql.ResultSet;
@@ -50,7 +52,7 @@ public class RestppPreparedStatement extends PreparedStatement {
   public boolean execute() throws SQLException {
     // execute the query
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.timeout, this.atomic);
+        this.query, this.parameters, this.timeout, this.atomic, true);
     this.query_type = parser.getQueryType();
 
     /**
@@ -59,6 +61,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     if (this.query_type == QueryType.QUERY_TYPE_SCHEMA_JOB) {
       String lineSchema = ((RestppConnection) getConnection()).getLineSchema();
       if (lineSchema == null) {
+        logger.error("Option \"schema\" must be specified when invoking a loading job.");
         throw new SQLException("Option \"schema\" must be specified when invoking a loading job.");
       }
       this.currentResultSet = new RestppResultSet(this, lineSchema);
@@ -68,6 +71,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, "");
 
     if (response.hasError()) {
+      logger.error(response.getErrMsg());
       throw new SQLException(response.getErrMsg());
     }
 
@@ -99,7 +103,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     }
 
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        this.query, this.parameters, this.timeout, this.atomic);
+        this.query, this.parameters, this.timeout, this.atomic, false);
 
     if (this.parser.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB) {
       this.query_type = this.parser.getQueryType();
@@ -124,7 +128,7 @@ public class RestppPreparedStatement extends PreparedStatement {
   public void addBatch(String sql) throws SQLException {
     this.query = sql;
     this.parser = new QueryParser((RestppConnection) getConnection(),
-        sql, this.parameters, this.timeout, this.atomic);
+        sql, this.parameters, this.timeout, this.atomic, false);
 
     this.query_type = this.parser.getQueryType();
     this.eol = ((RestppConnection) getConnection()).getEol();
@@ -154,6 +158,7 @@ public class RestppPreparedStatement extends PreparedStatement {
    */
   @Override
   public int[] executeBatch() throws SQLException {
+    logger.info("Batch Query: {}. Type: {}.", this.query, this.parser.getQueryType());
     int[] count = new int[2];
 
     // It is a loading job.
@@ -165,12 +170,64 @@ public class RestppPreparedStatement extends PreparedStatement {
       RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
       List<JSONObject> results = response.getResults();
       if (results.size() > 0) {
-        logger.debug("Result: {}", results.get(0));
+        // This calculation is used to calculate the mixed insertion of multiple types
+        // of edges and vertices through a loading job
+        // accepted lines: `validLine`
+        // rejected lines: `rejectedLine` + `failedConditionLine` + `notEnoughToken` +
+        // `invalidJson` + `oversizeToken`
+        // accepted vertices: sum(accepted objs for all vertex types)
+        // rejected vertices: sum(`noIdFound` + `invalidAttribute` +
+        // `invalidPrimaryId` + `invalidSecondaryId` + `incorrectFixedBinaryLength` for
+        // all vertex types) + rejected lines
+        // accepted edges: sum(accepted objs for all vertex types)
+        // rejected edges: sum(`noIdFound` + `invalidAttribute` +
+        // `invalidPrimaryId` + `invalidSecondaryId` + `incorrectFixedBinaryLength` for
+        // all edge types) + rejected lines
         JSONObject obj = (JSONObject) results.get(0).get("statistics");
-        count[0] = obj.getInt("validLine");
-        count[1] = obj.getInt("rejectLine");
+        JSONArray vertexObjArray = obj.getJSONArray("vertex");
+        JSONArray edgeObjArray = obj.getJSONArray("edge");
+        Integer acceptedLines = obj.getInt("validLine");
+        Integer rejectedLines = obj.getInt("rejectLine") + obj.getInt("failedConditionLine")
+            + obj.getInt("notEnoughToken") + obj.getInt("invalidJson") + obj.getInt("oversizeToken");
+        Integer acceptedVertices = 0;
+        Integer rejectedVertices = 0;
+        Integer acceptedEdges = 0;
+        Integer rejectedEdges = 0;
+
+        for (int i = 0; i < vertexObjArray.length(); i++) {
+          acceptedVertices += vertexObjArray.getJSONObject(i).getInt("validObject");
+          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("noIdFound");
+          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidAttribute");
+          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidPrimaryId");
+          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidSecondaryId");
+          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("incorrectFixedBinaryLength");
+          // Only keep "invalidAttributeLines"
+          vertexObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
+        }
+
+        for (int i = 0; i < edgeObjArray.length(); i++) {
+          acceptedEdges += edgeObjArray.getJSONObject(i).getInt("validObject");
+          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("noIdFound");
+          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidAttribute");
+          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidPrimaryId");
+          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidSecondaryId");
+          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("incorrectFixedBinaryLength");
+          // Only keep "invalidAttributeLines"
+          edgeObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
+        }
+
+        count[0] = acceptedLines;
+        count[1] = rejectedLines;
+
+        logger.debug("Result: {}", results.get(0));
+
+        logger.info(
+            "Accepted lines: {}, rejected lines: {}, accepted vertices: {}, rejected vertices from accepted lines: {}, accepted edges: {}, rejected edges from accepted lines: {}",
+            count[0], count[1], acceptedVertices, rejectedVertices, acceptedEdges, rejectedEdges);
+      } else {
+        logger.error("Failed to run loading job, empty response.");
+        throw new SQLException("Failed to run loading job, empty response.");
       }
-      logger.info("Accepted lines: {}, rejected lines: {}", count[0], count[1]);
 
       this.stringBuilder = new StringBuilder();
       return count;
@@ -209,6 +266,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
 
     if (response.hasError()) {
+      logger.error(response.getErrMsg());
       throw new SQLException(response.getErrMsg());
     }
 
@@ -217,8 +275,11 @@ public class RestppPreparedStatement extends PreparedStatement {
       logger.debug("Result: {}", results.get(0));
       count[0] = results.get(0).getInt("accepted_vertices");
       count[1] = results.get(0).getInt("accepted_edges");
+      logger.info("Accepted vertices: {}, accepted edges: {}", count[0], count[1]);
+    } else {
+      logger.error("Failed to upsert, empty response.");
+      throw new SQLException("Failed to upsert, empty response.");
     }
-    logger.info("Accepted vertices: {}, accepted edges: {}", count[0], count[1]);
 
     return count;
   }

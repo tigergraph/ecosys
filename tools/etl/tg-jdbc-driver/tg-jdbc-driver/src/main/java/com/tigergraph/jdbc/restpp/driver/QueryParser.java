@@ -15,14 +15,22 @@ import org.slf4j.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+import javax.json.JsonArrayBuilder;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.sql.Array;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.Map.Entry;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Parse the raw query, and build a http request.
@@ -35,7 +43,7 @@ public class QueryParser {
     HttpGet, HttpPost, HttpDelete
   }
 
-  private Object[] paramArray;
+  private Object[] paramArray = {};
   private HttpRequestBase request;
   private String endpoint = "";
   private String query = "";
@@ -51,8 +59,9 @@ public class QueryParser {
   private String job;
   private int timeout;
   private int atomic;
+  private boolean isLoggable; // Disable logging in batch mode, whose logs will be printed in `executeBatch()`
 
-  private static final Integer MAX_LOG_SIZE = 128;
+  private static final Integer MAX_PAYLOAD_LOG_SIZE = 64;
 
   // get index of a specified String (first occurrence) in an array,
   // return array length when not found.
@@ -67,10 +76,50 @@ public class QueryParser {
 
   private String urlEncode(String s) throws SQLException {
     try {
-      return URLEncoder.encode(s, "UTF-8");
+      // Remove single-quoted strings in url query parameters
+      return URLEncoder.encode(s.replace("\'", ""), "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      throw new SQLException("Failed to encode URL: ", e);
+      logger.error("Failed to encode URL", e);
+      throw new SQLException("Failed to encode URL", e);
     }
+  }
+
+  /**
+   * Construct url query string e.g. ?a=5&b=6
+   * query = "token0 token1 token2=token3, token4=token5"
+   * => tokens = {token0, token1, token2, token3, token4, token5}
+   * token_begin=2, token_end=6
+   * => query string: ?tokens[2]=tokens[3]&tokens[4]=tokens[5]
+   */
+  private String getUrlQueryString(String[] tokens, int token_begin, int token_end, int params_begin)
+      throws SQLException {
+    // no params found
+    if (token_end <= token_begin)
+      return "";
+    // Should be in pairs, e.g. limit=5
+    if (((token_end - token_begin) & 0x1) == 1) {
+      String errMsg = "Invalid query parameter(s), should be in pairs: name=value. Missing name or value.";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
+    }
+    StringBuilder sb = new StringBuilder();
+    Boolean isFirst = Boolean.TRUE;
+    for (int i = token_begin; i < token_end; i += 2) {
+      if (isFirst) {
+        isFirst = Boolean.FALSE;
+        sb.append("?").append(tokens[i]).append("=");
+      } else {
+        sb.append("&").append(tokens[i]).append("=");
+      }
+      if (tokens[i + 1].equals("?")) {
+        sb.append(urlEncode(getObjectStr(this.paramArray[params_begin])));
+        params_begin++;
+      } else {
+        sb.append(urlEncode(tokens[i + 1]));
+      }
+    }
+    return sb.toString();
+
   }
 
   private String getObjectStr(Object o) {
@@ -86,13 +135,20 @@ public class QueryParser {
   /**
    * Convert a map to an array, use "key" as index.
    */
-  private void map2Array(Map<Integer, Object> parameters) {
+  private void map2Array(Map<Integer, Object> parameters) throws SQLException {
     this.paramArray = new Object[parameters.size()];
     Iterator<Entry<Integer, Object>> iter = parameters.entrySet().iterator();
     while (iter.hasNext()) {
       Entry<Integer, Object> entry = iter.next();
       // PreparedStatement parameter indices start at 1
       Integer index = entry.getKey() - 1;
+      // Check if parameter index out of range
+      if (index >= paramArray.length) {
+        String errMsg = "Parameter index out of range, index: " + (index + 1) + ", value: "
+            + entry.getValue().toString();
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
+      }
       /*
        * Cannot convert to String here, as some values are used as Json values,
        * which could be int, double or string.
@@ -157,20 +213,94 @@ public class QueryParser {
     return strListNew.toArray(new String[strListNew.size()]);
   }
 
-  private static JsonObjectBuilder addValue(JsonObjectBuilder obj, String key, Object value) {
+  /**
+   * Get the count of '?' in tokens
+   */
+  private Integer getParamCount(String[] tokens) {
+    Integer count = 0;
+    for (int i = 0; i < tokens.length; i++) {
+      count += tokens[i].equals("?") ? 1 : 0;
+    }
+    return count;
+  }
+
+  /**
+   * Parse value and convert to corresponding data type to build json object.
+   */
+  private Object parseValueType(String value) {
+    if (value.indexOf('\'') >= 0) { // it's a string
+      return value;
+    } else if (value.indexOf('.') >= 0) { // it's a double
+      return Double.parseDouble(value);
+    } else if (value.toLowerCase().equals("true") ||
+        value.toLowerCase().equals("false")) { // it's a boolean
+      return Boolean.parseBoolean(value);
+    } else { // it's a long(TG int has 8 bytes)
+      return Long.parseLong(value);
+    }
+  }
+
+  private static JsonObjectBuilder addValue(JsonObjectBuilder obj, String key, Object value) throws SQLException {
     if (value instanceof Integer) {
       obj.add(key, (Integer) value);
+    } else if (value instanceof Long) {
+      obj.add(key, (Long) value);
     } else if (value instanceof String) {
       obj.add(key, (String) value);
     } else if (value instanceof Float) {
       obj.add(key, (Float) value);
     } else if (value instanceof Double) {
       obj.add(key, (Double) value);
+    } else if (value instanceof BigInteger) {
+      obj.add(key, (BigInteger) value);
     } else if (value instanceof Boolean) {
       obj.add(key, (Boolean) value);
+    } else if (value instanceof Array) {
+      Object[] elements = (Object[]) ((Array) value).getArray();
+      JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+      for (Object e : elements) {
+        addValue(jsonArrayBuilder, e);
+      }
+      obj.add(key, jsonArrayBuilder);
     } else if (value instanceof JsonValue) {
       JsonValue val = (JsonValue) value;
       obj.add(key, val);
+    } else {
+      obj.add(key, String.valueOf(value));
+    }
+    return obj;
+  }
+
+  /**
+   * Parse element type of an Array
+   */
+  private static JsonArrayBuilder addValue(JsonArrayBuilder obj, Object value) {
+    if (value instanceof Integer) {
+      obj.add((Integer) value);
+    } else if (value instanceof Short) {
+      obj.add((Short) value);
+    } else if (value instanceof Byte) {
+      obj.add((Byte) value);
+    } else if (value instanceof Long) {
+      obj.add((Long) value);
+    } else if (value instanceof String) {
+      obj.add((String) value);
+    } else if (value instanceof Float) {
+      obj.add((Float) value);
+    } else if (value instanceof Double) {
+      obj.add((Double) value);
+    } else if (value instanceof Boolean) {
+      obj.add((Boolean) value);
+    } else if (value instanceof byte[]) {
+      obj.add(new String((byte[]) value, StandardCharsets.UTF_8));
+    } else if (value instanceof Timestamp) {
+      obj.add(((Timestamp) value).toString().split("\\.")[0]);
+    } else if (value instanceof Date) {
+      obj.add(((Date) value).toString());
+    } else if (value instanceof BigDecimal) {
+      obj.add(((BigDecimal) value).doubleValue());
+    } else {
+      obj.add(String.valueOf(value));
     }
     return obj;
   }
@@ -188,75 +318,69 @@ public class QueryParser {
     int ret = -1;
 
     if (tokens.length <= 1) {
+      logger.error("Invalid vertex or edge query.");
       throw new SQLException("Invalid vertex or edge query.");
     }
 
-    if (tokens[1].toLowerCase().equals("edges")) {
+    int params_index = getIndexInArray(tokens, "params");
+
+    if (tokens[1].toLowerCase().equals("edge")) {
       /**
        * Query syntax:
-       * get edges(src_vertex_type, src_vertex_id)
-       * get edges(src_vertex_type, src_vertex_id, edge_type)
-       * get edges(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type)
-       */
-      ret = 1;
-      sb.append("edges/").append(tokens[2]);
-      if (this.paramArray.length == 1) {
-        sb.append("/").append(getObjectStr(this.paramArray[0]));
-      } else {
-        throw new SQLException("Parameter number not match for edge query.");
-      }
-      for (int i = 4; i < tokens.length; ++i) {
-        sb.append("/").append(tokens[i]);
-      }
-    } else if (tokens[1].toLowerCase().equals("edge")) {
-      /**
-       * Query syntax:
+       * get edge(src_vertex_type, src_vertex_id) [params(limit=5,
+       * sort='attr1,attr2')]
+       * get edge(src_vertex_type, src_vertex_id, edge_type) [params(limit=5,
+       * sort='attr1,attr2')]
+       * get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type)
+       * [params(limit=5, sort='attr1,attr2')]
        * get edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type,
-       * tgt_vertex_id)
+       * tgt_vertex_id) [params(limit=5, sort='attr1,attr2')]
        */
       ret = 1;
-      if (tokens.length == 7 && this.paramArray.length == 2) {
-        sb.append("edges/").append(tokens[2]);
-        sb.append("/").append(getObjectStr(this.paramArray[0]));
-        sb.append("/").append(tokens[4]);
-        sb.append("/").append(tokens[5]);
-        sb.append("/").append(getObjectStr(this.paramArray[1]));
-      } else {
-        throw new SQLException("Parameter number not match for edge query.");
+      sb.append("edges");
+      if (params_index < 4 || params_index > 7) {
+        String errMsg = "Invalid query, should have 2~5 args in edge(), got " + (params_index - 2);
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
       }
-    } else {
+    } else if (tokens[1].toLowerCase().equals("vertex")) {
       /**
-       * Sample query:
-       * get/delete vertex_type(filter=?)
+       * Query syntax:
+       * get vertex(src_vertex_type) [params(limit=5, sort='attr1,attr2')]
+       * get vertex(src_vertex_type, src_vertex_id) [params(limit=5,
+       * sort='attr1,attr2')]
        */
       ret = 0;
-      sb.append("vertices/").append(tokens[1]);
-      if ((null == this.paramArray) || (this.paramArray.length == 0)) {
-        /**
-         * Delete all vertices of given type
-         */
-        if (tokens.length == 2) {
-          this.endpoint = sb.toString();
-          return ret;
-        } else {
-          throw new SQLException("Parameter number not match for vertex query.");
-        }
+      sb.append("vertices");
+      if (params_index < 3 || params_index > 4) {
+        String errMsg = "Invalid query, should have 1~2 args in vertex(), got " + (params_index - 2);
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
       }
+    } else {
+      String errMsg = "Invalid query, the second token should be 'edge' or 'vertex', got " + tokens[1];
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
+    }
 
-      if (tokens.length != 4 || this.paramArray.length != 1) {
-        throw new SQLException("Invalid vertex query.");
-      }
-      if (tokens[2].toLowerCase().equals("id")) {
-        sb.append("/").append(this.paramArray[0]);
-      } else if (tokens[2].toLowerCase().equals("filter")) {
-        sb.append("?filter=").append(urlEncode(getObjectStr(this.paramArray[0])));
-      } else if (tokens[2].toLowerCase().equals("limit")) {
-        sb.append("?limit=").append(getObjectStr(this.paramArray[0]));
+    // Construct the REST part
+    int paramArray_index = 0;
+    for (int i = 2; i < params_index; i++) {
+      if (tokens[i].equals("?")) {
+        sb.append("/").append(getObjectStr(this.paramArray[paramArray_index]));
+        paramArray_index++;
       } else {
-        throw new SQLException("Invalid vertex query.");
+        sb.append("/").append(tokens[i]);
       }
     }
-    this.endpoint = sb.toString();
+
+    // Construct the query params part
+    // User can set any parameters and JDBC won't check the validity but left it to
+    // restpp.
+    sb.append(getUrlQueryString(tokens, params_index + 1, tokens.length, paramArray_index));
+
+    // Remove the single-quoted strings in REST part
+    this.endpoint = sb.toString().replace("\'", "");
     return ret;
   }
 
@@ -271,20 +395,29 @@ public class QueryParser {
 
     if (tokens.length < 2 ||
         !(tokens[1].toLowerCase().equals("into"))) {
-      throw new SQLException("Invalid upsert query.\nA valid one should start with \"insert into\"");
+      String errMsg = "Invalid upsert query. A valid one should start with \"insert into\"";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
     }
 
     // Sanity check on attributes' number
     Integer values_index = getIndexInArray(tokens, "values");
-    if (values_index < 0) {
-      throw new SQLException("Invalid upsert query.\nA valid one should contains \"VALUES\"");
+    if (values_index == tokens.length) {
+      String errMsg = "Invalid upsert query. A valid one should contains \"VALUES\"";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
     }
     Integer count = tokens.length - values_index - 1;
     if (count < 1) {
-      throw new SQLException("Invalid upsert query.\nA valid one should contains one attribute at least.");
+      String errMsg = "Invalid upsert query. A valid one should contains one attribute at least.";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
     }
     if (parameters != null && parameters.size() != count) {
-      throw new SQLException("Numbers of attributes and parameters are not match.");
+      String errMsg = "Numbers of attributes and parameters are not match. Attribute: " + count + ", parameter: "
+          + parameters.size();
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
     }
 
     JsonObjectBuilder obj = Json.createObjectBuilder();
@@ -298,7 +431,7 @@ public class QueryParser {
       String sep = this.connection.getSeparator();
       StringBuilder sb = new StringBuilder();
       Integer size = this.paramArray.length;
-      sb.append(this.paramArray[0]);
+      sb.append(String.valueOf(this.paramArray[0]));
       for (int i = 1; i < size; ++i) {
         sb.append(sep);
         sb.append(String.valueOf(this.paramArray[i]));
@@ -309,112 +442,139 @@ public class QueryParser {
       // insert an edge
       // e.g., INSERT INTO edge Follow ("Person","Person","weight") VALUES (?,?,?)
       if (count != values_index - param_offset) {
-        throw new SQLException("Numbers of attributes and values are not match.");
+        String errMsg = "Numbers of attributes and values are not match. Attribute: " + count + ", value: "
+            + (values_index - param_offset);
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
       }
       if (count < 2) {
-        throw new SQLException("Upserting an edge needs two parameters at least.");
+        String errMsg = "Upserting an edge needs two parameters at least, got " + count;
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
       }
+
       JsonObjectBuilder attrObj = Json.createObjectBuilder();
-      if (parameters == null) { // Not a PrepareStatement
-        // Parse edge attributes if any
-        // the first 2 attributes are source vertex type and target vertex type
-        for (Integer i = param_offset + 2; i < values_index; ++i) {
-          String value = tokens[values_index + i - 3];
-          if (value.indexOf('\'') >= 0) { // it's a string
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", value));
-          } else if (value.indexOf('.') >= 0) { // it's a double
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Double.parseDouble(value)));
-          } else if (value.toLowerCase().equals("true") ||
-              value.toLowerCase().equals("false")) { // it's a boolean
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
-          } else { // it's an integer
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Integer.parseInt(value)));
-          }
+      Integer paramArray_attr_index = 0;
+      // fill src_vertex_id and tgt_vertex_id with parameter
+      for (Integer i = values_index + 1; i < values_index + 3; ++i) {
+        if (tokens[i].equals("?")) {
+          tokens[i] = getObjectStr(paramArray[paramArray_attr_index++]);
         }
-        obj.add(tokens[param_offset], // src vertex type
-            Json.createObjectBuilder().add(tokens[values_index + 1], // src vertex id
-                Json.createObjectBuilder().add(tokens[3], // edge type
-                    Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
-                        Json.createObjectBuilder().add(tokens[values_index + 2], // tgt vertex id
-                            attrObj))))); // attributes
-      } else { // It is a PrepareStatement
-        // Parse attributes if any
-        for (Integer i = param_offset + 2; i < values_index; ++i) {
-          attrObj.add(tokens[i],
-              addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
-        }
-        obj.add(tokens[param_offset], // src vertex type
-            Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // src vertex id
-                Json.createObjectBuilder().add(tokens[3], // edge type
-                    Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
-                        Json.createObjectBuilder().add(getObjectStr(this.paramArray[1]), // tgt vertex id
-                            attrObj))))); // attributes
       }
+
+      // Parse attributes if any
+      for (Integer i = 0; i < count - 2; ++i) {
+        attrObj.add(tokens[param_offset + 2 + i],
+            addValue(Json.createObjectBuilder(), "value",
+                tokens[values_index + 3 + i].equals("?") ? this.paramArray[paramArray_attr_index++]
+                    : parseValueType(tokens[values_index + 3 + i])));
+      }
+
+      obj.add(tokens[param_offset], // src vertex type
+          Json.createObjectBuilder().add(tokens[values_index + 1], // src vertex id
+              Json.createObjectBuilder().add(tokens[3], // edge type
+                  Json.createObjectBuilder().add(tokens[param_offset + 1], // tgt vertex type
+                      Json.createObjectBuilder().add(tokens[values_index + 2], // tgt vertex id
+                          attrObj))))); // attributes
+
       // someone may use single-quoted strings
       edge_json = obj.build().toString().replace("\'", "");
       // remove the outmost "{}"
       edge_json = edge_json.substring(1, edge_json.length() - 1);
-      logger.debug("Upsert edges: {}", edge_json);
     } else if (tokens[2].toLowerCase().equals("vertex")) {
       // insert an vertex
       // e.g., INSERT INTO vertex Person ("id","account") VALUES (?,?)
       if (count != values_index - param_offset) {
-        throw new SQLException("Numbers of attributes and values are not match.");
+        String errMsg = "Numbers of attributes and values are not match. Attribute: " + count + ", value: "
+            + (values_index - param_offset);
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
       }
+
       JsonObjectBuilder attrObj = Json.createObjectBuilder();
-      if (parameters == null) { // Not a PrepareStatement
-        // Parse attributes if any
-        // the first attribute is primary id
-        for (Integer i = param_offset + 1; i < values_index; ++i) {
-          String value = tokens[values_index + i - 3];
-          if (value.indexOf('\'') >= 0) { // it's a string
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", value));
-          } else if (value.indexOf('.') >= 0) { // it's a double
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Double.parseDouble(value)));
-          } else if (value.toLowerCase().equals("true") ||
-              value.toLowerCase().equals("false")) { // it's a boolean
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Boolean.parseBoolean(value)));
-          } else { // it's an integer
-            attrObj.add(tokens[i],
-                Json.createObjectBuilder().add("value", Integer.parseInt(value)));
-          }
-        }
-        obj.add(tokens[3], // vertex type
-            Json.createObjectBuilder().add(tokens[values_index + 1], // vertex id
-                attrObj)); // attributes
-      } else {
-        // Parse attributes if any
-        for (Integer i = param_offset + 1; i < values_index; ++i) {
-          attrObj.add(tokens[i],
-              addValue(Json.createObjectBuilder(), "value", this.paramArray[i - 4]));
-        }
-        obj.add(tokens[3], // vertex type
-            Json.createObjectBuilder().add(getObjectStr(this.paramArray[0]), // vertex id
-                attrObj)); // attributes
+      Integer paramArray_attr_index = 0;
+      // fill vertex_id with parameter
+      if (tokens[values_index + 1].equals("?")) {
+        tokens[values_index + 1] = getObjectStr(paramArray[paramArray_attr_index++]);
       }
+
+      // Parse attributes if any
+      for (Integer i = 0; i < count - 1; ++i) {
+        attrObj.add(tokens[param_offset + 1 + i],
+            addValue(Json.createObjectBuilder(), "value",
+                tokens[values_index + 2 + i].equals("?") ? this.paramArray[paramArray_attr_index++]
+                    : parseValueType(tokens[values_index + 2 + i])));
+      }
+
+      obj.add(tokens[3], // vertex type
+          Json.createObjectBuilder().add(tokens[values_index + 1], // vertex id
+              attrObj)); // attributes
+
       // someone may use single-quoted strings
       vertex_json = obj.build().toString().replace("\'", "");
       // remove the outmost "{}"
       vertex_json = vertex_json.substring(1, vertex_json.length() - 1);
-      logger.debug("Upsert vertex: {}", vertex_json);
     } else {
+      logger.error("Invalid upsert query: {}", tokens[2]);
       throw new SQLException("Invalid upsert query: " + tokens[2]);
     }
+  }
+
+  /**
+   * Parse queries to find shortestpath/paths between 2 vertices
+   * e.g. find shortest_path(person, tom, person, jack)
+   * find allpaths(person, tom, person, jack, 5)
+   */
+  private void parsePathFindingQuery(String[] tokens) throws SQLException {
+    if (tokens.length < 2) {
+      logger.error("Invalid query.");
+      throw new SQLException("Invalid query.");
+    }
+    if (tokens[1].toLowerCase().equals("shortestpath")) {
+      if (tokens.length != 6) {
+        String errMsg = "Invalid query, should specify src_vertex_type, src_vertex_id, tgt_vertex_type and tgt_vertex_id.";
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
+      }
+      this.query_type = QueryType.QUERY_TYPE_SHORTESTPATH;
+    } else if (tokens[1].toLowerCase().equals("allpaths")) {
+      if (tokens.length != 7) {
+        String errMsg = "Invalid query, should specify src_vertex_type, src_vertex_id, tgt_vertex_type, tgt_vertex_id and max_length.";
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
+      }
+      this.query_type = QueryType.QUERY_TYPE_ALLPATHS;
+    } else {
+      String errMsg = "Invalid query string, the second token should be 'shortestpath' or 'allpaths'.";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
+    }
+    Integer paramArray_index = 0;
+    // fill tokens with params
+    for (Integer i = 2; i < tokens.length; i++) {
+      if (tokens[i].toLowerCase().equals("?")) {
+        tokens[i] = getObjectStr(paramArray[paramArray_index++]);
+      }
+    }
+
+    JsonObjectBuilder obj = Json.createObjectBuilder();
+    obj.add("source", Json.createObjectBuilder().add("type", tokens[2]).add("id", tokens[3]));
+    obj.add("target", Json.createObjectBuilder().add("type", tokens[4]).add("id", tokens[5]));
+    if (this.query_type == QueryType.QUERY_TYPE_ALLPATHS) {
+      obj.add("maxLength", Integer.parseInt(tokens[6]));
+    }
+
+    this.payload = new StringEntity(obj.build().toString().replace("\'", ""), "UTF-8");
+    this.payload.setContentType("application/json");
   }
 
   /**
    * Build endpoint based on raw query and parameters.
    */
   public QueryParser(RestppConnection con, String query, Map<Integer, Object> parameters,
-      Integer timeout, Integer atomic) throws SQLException {
+      Integer timeout, Integer atomic, boolean isLoggable) throws SQLException {
     if ((query == null) || query.equals("")) {
+      logger.error("Query could not be null or empty.");
       throw new SQLException("Query could not be null or empty.");
     }
 
@@ -423,18 +583,33 @@ public class QueryParser {
     this.atomic = atomic;
     this.query = query;
     this.field_list_ = new ArrayList<>();
+    this.isLoggable = isLoggable;
 
     if (parameters != null) {
       map2Array(parameters);
-      logger.debug("Parameters: {}", Arrays.toString(this.paramArray));
+      if (isLoggable)
+        logger.debug("Parameters: {}", Arrays.toString(this.paramArray));
     }
 
     /**
      * Tokenize the raw query and remove empty items
      */
     String[] tokens = tokenize(query);
-    logger.info("Query: {}", query);
-    logger.debug("Tokenized query: {}", Arrays.toString(tokens));
+    if (isLoggable) {
+      logger.info("Query: {}", query);
+      logger.debug("Tokenized query: {}", Arrays.toString(tokens));
+    }
+
+    if (!tokens[0].toLowerCase().equals("select")) {
+      // For interpreted query, it has a query body.
+      if (getParamCount(tokens) + (tokens[1].toLowerCase().equals("interpreted") ? 1 : 0) != this.paramArray.length) {
+        String errMsg = "Parameter size not match, the number of '?' should be equal to the number of parameters you set, got "
+            + getParamCount(tokens) + " '?' and " + this.paramArray.length + " parameters";
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
+      }
+    }
+
     /**
      * Start to parse query
      */
@@ -450,6 +625,13 @@ public class QueryParser {
       } else {
         this.query_type = QueryType.QUERY_TYPE_GRAPH_GET_EDGE;
       }
+    } else if (tokens[0].toLowerCase().equals("find")) {
+      /**
+       * It is a query to find shortest path or all paths between 2 vertices.
+       * e.g. find shortest_path(person, tom, person, jack)
+       */
+      this.httpType = HttpTypes.HttpPost;
+      parsePathFindingQuery(tokens);
     } else if (tokens[0].toLowerCase().equals("insert")) {
       /**
        * It is a query to upsert certain vertex or edge
@@ -478,6 +660,7 @@ public class QueryParser {
       this.httpType = HttpTypes.HttpPost;
       this.query_type = QueryType.QUERY_TYPE_BUILTIN;
       if (tokens.length < 2) {
+        logger.error("Need to specify builtins function name.");
         throw new SQLException("Need to specify builtins function name.");
       }
       StringBuilder sb = new StringBuilder();
@@ -486,10 +669,6 @@ public class QueryParser {
       sb.append("\", \"type\":\"");
       if (tokens.length >= 4) {
         if (tokens[3].trim().equals("?")) {
-          if (parameters.size() != 1) {
-            throw new SQLException("Parameter size not match (expected 1 parameter): "
-                + String.valueOf(parameters.size()));
-          }
           sb.append(getObjectStr(this.paramArray[0]));
           sb.append("\"");
         } else {
@@ -515,7 +694,7 @@ public class QueryParser {
         this.query_type = QueryType.QUERY_TYPE_INTERPRETED;
         this.httpType = HttpTypes.HttpPost;
         this.payload = new StringEntity(query_body, "UTF-8");
-        sb.append("interpreted_query?");
+        sb.append("interpreted_query");
       } else {
         /**
          * It is a pre-installed query.
@@ -523,25 +702,15 @@ public class QueryParser {
          */
         this.query_type = QueryType.QUERY_TYPE_INSTALLED;
         this.httpType = HttpTypes.HttpGet;
-        sb.append(tokens[1]).append("?");
-      }
-      if (tokens.length != (2 + 2 * size)) {
-        throw new SQLException("Token size and parameter size not match : "
-            + String.valueOf(tokens.length) + ", " + size);
+        sb.append(tokens[1]);
       }
 
       /**
        * Parse parameters.
        */
-      Integer index = 2;
-      for (Integer i = 0; i < size; ++i) {
-        sb.append(tokens[index]).append("=").append(getObjectStr(this.paramArray[i]));
-        assert tokens[index + 1].trim().equals("?") : "Place holder not equals ?";
-        index += 2;
-        if (i < size - 1) {
-          sb.append("&");
-        }
-      }
+      int token_index = 2;
+      int paramArray_index = 0;
+      sb.append(getUrlQueryString(tokens, token_index, tokens.length, paramArray_index));
       endpoint = sb.toString();
     } else if (tokens[0].toLowerCase().equals("select")) { // for Spark
       this.httpType = HttpTypes.HttpGet;
@@ -576,6 +745,7 @@ public class QueryParser {
           // e.g., SELECT * FROM interpreted(a=10) WHERE 1=0
           this.query_type = QueryType.QUERY_TYPE_INTERPRETED;
         } else {
+          logger.error("Unsupported dbtable: {} ", tokens[from_index + 1]);
           throw new SQLException("Unsupported dbtable: " + tokens[from_index + 1]);
         }
       } else {
@@ -596,6 +766,7 @@ public class QueryParser {
           if (src_vertex_type.equals("*")) {
             src_vertex_type = this.connection.getSrcVertexType();
             if (src_vertex_type == null) {
+              logger.error("\"src_vertex_type\" must be specified for wildcard edge.");
               throw new SQLException("\"src_vertex_type\" must be specified for wildcard edge.");
             }
           }
@@ -612,6 +783,7 @@ public class QueryParser {
           // e.g., SELECT * FROM interpreted(a=10)
           this.query_type = QueryType.QUERY_TYPE_INTERPRETED;
         } else {
+          logger.error("Unsupported dbtable: {}", tokens[from_index + 1]);
           throw new SQLException("Unsupported dbtable: " + tokens[from_index + 1]);
         }
       }
@@ -623,6 +795,7 @@ public class QueryParser {
         int start = query.toLowerCase().indexOf("interpret query");
         int end = query.lastIndexOf("}");
         if (start < 0 || end < 0 || start >= end) {
+          logger.error("No query body was found for interpreted queries.");
           throw new SQLException("No query body was found for interpreted queries.");
         }
         String query_body = query.substring(start, end + 1);
@@ -739,6 +912,7 @@ public class QueryParser {
         this.endpoint = sb.toString();
       }
     } else {
+      logger.error("Unsupported operation: {}", query);
       throw new SQLException("Unsupported operation: " + query);
     }
   }
@@ -757,6 +931,12 @@ public class QueryParser {
         if (graph != null && !graph.equals("")) {
           sb.append("/").append(graph);
         }
+        break;
+      case QUERY_TYPE_SHORTESTPATH:
+        sb.append("/restpp/shortestpath");
+        break;
+      case QUERY_TYPE_ALLPATHS:
+        sb.append("/restpp/allpaths");
         break;
       case QUERY_TYPE_INSTALLED:
         sb.append("/restpp/query");
@@ -783,6 +963,7 @@ public class QueryParser {
         sb.append("/restpp/ddl");
         break;
       default:
+        logger.error("Invalid query type.");
         throw new SQLException("Invalid query type.");
     }
 
@@ -823,6 +1004,7 @@ public class QueryParser {
       else
         url = new URL("http", host, port, sb.toString()).toString();
     } catch (MalformedURLException e) {
+      logger.error("Invalid server URL", e);
       throw new SQLException("Invalid server URL", e);
     }
 
@@ -851,8 +1033,8 @@ public class QueryParser {
           try {
             if (!"".equals(json)) {
               // Loading job payload is extreamly large, so limit the length.
-              if (this.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB && json.length() > MAX_LOG_SIZE) {
-                logger.debug("Part of payload: {}......", json.substring(0, MAX_LOG_SIZE));
+              if (this.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB && json.length() > MAX_PAYLOAD_LOG_SIZE) {
+                logger.debug("Part of payload: {}......", json.substring(0, MAX_PAYLOAD_LOG_SIZE));
               } else {
                 logger.debug("Payload: {}", json);
               }
@@ -860,6 +1042,7 @@ public class QueryParser {
               logger.debug("Payload: {}", EntityUtils.toString(this.payload));
             }
           } catch (IOException e) {
+            logger.error("Failed to convert EntityUtils to string", e);
             throw new SQLException("Failed to convert EntityUtils to string", e);
           }
         }
@@ -869,6 +1052,7 @@ public class QueryParser {
         logger.debug("Build request: {}", request.toString());
         break;
       default:
+        logger.error("Invalid http request type.");
         throw new SQLException("Invalid http request type.");
     }
 
@@ -892,7 +1076,11 @@ public class QueryParser {
     if (logger.isDebugEnabled()) {
       Header[] headers = request.getAllHeaders();
       for (Header header : headers) {
-        logger.debug("Header: {}: {}", header.getName(), header.getValue());
+        if (header.getName() == "Authorization") {
+          logger.debug("Header: {}: {}", header.getName(), "[REDACTED]");
+        } else {
+          logger.debug("Header: {}: {}", header.getName(), header.getValue());
+        }
       }
     }
 
@@ -936,5 +1124,4 @@ public class QueryParser {
   public String getPayload() throws IOException {
     return EntityUtils.toString(this.payload);
   }
-
 }

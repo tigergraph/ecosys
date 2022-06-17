@@ -65,7 +65,7 @@ public class RequestTest {
   @Test
   @DisplayName("Should get token")
   void sendAuthRequest() throws SQLException, InterruptedException {
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/gsqlserver/gsql/authtoken"))
+    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/restpp/requesttoken"))
         .withHeader("Authorization",
             equalTo("Basic " + new String(Base64.getEncoder()
                 .encode(("tigergraph:tigergraph").getBytes()))))
@@ -184,7 +184,7 @@ public class RequestTest {
   @Test
   @DisplayName("Should be get edges requests")
   void sendGetEdgesRequest() throws SQLException, InterruptedException {
-    String query = "get edges(Page, ?, Linkto, Page)";
+    String query = "get edge(Page, ?, Linkto, Page)";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "50");
     try {
@@ -198,7 +198,7 @@ public class RequestTest {
   @Test
   @DisplayName("Should be get vertex requests")
   void sendGetVertexRequest() throws SQLException, InterruptedException {
-    String query = "get Person(limit=?)";
+    String query = "get vertex(Person) params(limit=?)";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "50");
     try {
@@ -263,7 +263,7 @@ public class RequestTest {
   @Test
   @DisplayName("Should be delete vertex requests")
   void sendDeleteVertexRequest() throws SQLException, InterruptedException {
-    String query = "DELETE person(id=?)";
+    String query = "DELETE vertex(person, ?)";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "Tom");
     try {

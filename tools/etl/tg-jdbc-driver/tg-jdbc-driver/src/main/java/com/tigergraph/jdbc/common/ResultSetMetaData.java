@@ -66,8 +66,12 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
     return java.sql.ResultSetMetaData.columnNoNulls;
   }
 
+  // Spark determines to convert Types.BIGINT to LongType or DecimalType(20,0) base on 'isSigned'
   @Override public boolean isSigned(int column) throws SQLException {
-    return Boolean.FALSE;
+    if(this.getColumnTypeName(column).toLowerCase().equals("uint")){
+      return Boolean.FALSE;
+    }
+    return Boolean.TRUE;
   }
 
   @Override public int getPrecision(int column) throws SQLException {
@@ -90,22 +94,22 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
       return Types.BOOLEAN;
     }
     if (type.equals("int")) {
-      return Types.INTEGER;
+      return Types.BIGINT;
     }
     if (type.equals("uint")) {
-      return Types.INTEGER;
+      return Types.BIGINT;
     }
     if (type.equals("double")) {
       return Types.DOUBLE;
     }
-    if (type.equals("real")) {
-      return Types.REAL;
-    }
     if (type.equals("float")) {
       return Types.FLOAT;
     }
+    if (type.startsWith("list")||type.startsWith("set")){
+      return Types.ARRAY;
+    }
     /*
-     * For set/list/map/udt and other types, they will be treated as "Types.VARCHAR".
+     * For map/udt and other types, they will be treated as "Types.VARCHAR".
      * Spark will panic if it returns "Types.OTHER".
      */
     return Types.VARCHAR;

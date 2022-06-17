@@ -5,16 +5,21 @@ import com.tigergraph.jdbc.common.ResultSet;
 import com.tigergraph.jdbc.common.Statement;
 import com.tigergraph.jdbc.common.TableResults;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
+import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.*;
 
 public class RestppResultSet extends ResultSet {
+
+  private static final Logger logger = TGLoggerFactory.getLogger(RestppResultSet.class);
 
   // All the tables in the ResultSet.
   private List<TableResults> tableResults_;
@@ -49,7 +54,7 @@ public class RestppResultSet extends ResultSet {
     this.key_set_ = new HashSet<String>();
     this.attribute_list_ = new ArrayList<>();
     this.field_list_ = field_list;
-    for(int i = 0; i < resultList.size(); i++) {
+    for (int i = 0; i < resultList.size(); i++) {
       parseResult(resultList.get(i), this.query_type_);
     }
     // Add current ResultSet to table list.
@@ -76,17 +81,18 @@ public class RestppResultSet extends ResultSet {
   /**
    * Parse a vertex's schema definition.
    */
-  private void parseSchemaVerex(JSONObject obj) {
+  private void parseSchemaVertex(JSONObject obj) {
     this.table_name_ = obj.getString("Name");
     // Get primary id.
-    JSONObject pidObj = (JSONObject)obj.get("PrimaryId");
+    JSONObject pidObj = (JSONObject) obj.get("PrimaryId");
     String attr_name = pidObj.getString("AttributeName");
     Object value = pidObj.get("AttributeType");
     String attr_type = "";
     if (value instanceof JSONObject) {
-      attr_type = ((JSONObject)value).getString("Name");
+      attr_type = ((JSONObject) value).getString("Name");
       /**
-       * When retrieving vertex schema, the primary_id is denoted as the name defined in schema.
+       * When retrieving vertex schema, the primary_id is denoted as the name defined
+       * in schema.
        * While in the query results, primary_id is denoted as "v_id".
        * So "v_id" is used for both cases for consistency.
        */
@@ -94,11 +100,19 @@ public class RestppResultSet extends ResultSet {
     }
     // Get attributes.
     JSONArray attributes = obj.getJSONArray("Attributes");
-    for(int i = 0; i < attributes.length(); i++){
+    for (int i = 0; i < attributes.length(); i++) {
       attr_name = attributes.getJSONObject(i).getString("AttributeName");
       value = attributes.getJSONObject(i).get("AttributeType");
       if (value instanceof JSONObject) {
-        attr_type = ((JSONObject)value).getString("Name");
+        attr_type = ((JSONObject) value).getString("Name");
+        /**
+         * For Spark getting CatalystType of LIST/SET
+         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} =>
+         * attr_type = LIST.INT
+         */
+        if (((JSONObject) value).has("ValueTypeName")) {
+          attr_type = attr_type + "." + ((JSONObject) value).getString("ValueTypeName");
+        }
         this.attribute_list_.add(new Attribute(attr_name, attr_type, Boolean.FALSE));
       }
     }
@@ -113,7 +127,8 @@ public class RestppResultSet extends ResultSet {
     String to_vertex_type = obj.getString("ToVertexTypeName");
     /**
      * Spark will raise exception when found duplicate column names,
-     * but TigerGraph edges' source vertex and target vertex can be of the same type.
+     * but TigerGraph edges' source vertex and target vertex can be of the same
+     * type.
      * So prefix was added here.
      */
     if (from_vertex_type.equals(to_vertex_type) && this.isGettingEdge_) {
@@ -124,12 +139,20 @@ public class RestppResultSet extends ResultSet {
       this.attribute_list_.add(new Attribute(to_vertex_type, "STRING", Boolean.TRUE));
     }
     JSONArray attributes = obj.getJSONArray("Attributes");
-    for(int i = 0; i < attributes.length(); i++){
+    for (int i = 0; i < attributes.length(); i++) {
       String attr_name = attributes.getJSONObject(i).getString("AttributeName");
       Object value = attributes.getJSONObject(i).get("AttributeType");
       String attr_type = "";
       if (value instanceof JSONObject) {
-        attr_type = ((JSONObject)value).getString("Name");
+        attr_type = ((JSONObject) value).getString("Name");
+        /**
+         * For Spark getting CatalystType of LIST/SET
+         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} =>
+         * attr_type = LIST.INT
+         */
+        if (((JSONObject) value).has("ValueTypeName")) {
+          attr_type = attr_type + "." + ((JSONObject) value).getString("ValueTypeName");
+        }
         this.attribute_list_.add(new Attribute(attr_name, attr_type, Boolean.FALSE));
       }
     }
@@ -146,7 +169,7 @@ public class RestppResultSet extends ResultSet {
      * As a workaround, all integers are treated as float.
      * Will change it back after supporting retrieving query schema.
      */
-    if ((value instanceof Double) || (value instanceof Integer)) {
+    if (value instanceof Number) {
       int index = str.indexOf('.');
       if (index < 0) {
         scale_list.add(0);
@@ -260,7 +283,7 @@ public class RestppResultSet extends ResultSet {
         if (this.precision_list_.size() == precision_list.size()) {
           for (int i = 0; i < precision_list.size(); ++i) {
             this.precision_list_.set(i,
-              Math.max(this.precision_list_.get(i), precision_list.get(i)));
+                Math.max(this.precision_list_.get(i), precision_list.get(i)));
           }
         }
       } else {
@@ -285,7 +308,7 @@ public class RestppResultSet extends ResultSet {
    */
   private void updateTableResults() {
     this.tableResults_.add(new TableResults(this.resultSets_,
-          this.attribute_list_, this.table_name_));
+        this.attribute_list_, this.table_name_));
     if ((this.scale_list_ == null) || (this.precision_list_ == null)) {
       // No result.
       return;
@@ -324,10 +347,10 @@ public class RestppResultSet extends ResultSet {
         String key = keysItr.next();
         Object value = obj.get(key);
         if (value instanceof JSONObject) {
-          parseJSONObject((JSONObject)value);
+          parseJSONObject((JSONObject) value);
         } else if (value instanceof JSONArray) {
-          for(int i = 0; i < ((JSONArray)value).length(); i++){
-            parseJSONObject(((JSONArray)value).getJSONObject(i));
+          for (int i = 0; i < ((JSONArray) value).length(); i++) {
+            parseJSONObject(((JSONArray) value).getJSONObject(i));
           }
         } else {
           map.put(key, value);
@@ -361,12 +384,14 @@ public class RestppResultSet extends ResultSet {
         parseSchemaEdge(obj);
         break;
       case QUERY_TYPE_SCHEMA_VERTEX:
-        parseSchemaVerex(obj);
+        parseSchemaVertex(obj);
         break;
       case QUERY_TYPE_BUILTIN:
       case QUERY_TYPE_INSTALLED:
       case QUERY_TYPE_INTERPRETED:
       case QUERY_TYPE_GRAPH:
+      case QUERY_TYPE_ALLPATHS:
+      case QUERY_TYPE_SHORTESTPATH:
       default:
         parseJSONObject(obj);
         break;
@@ -415,7 +440,8 @@ public class RestppResultSet extends ResultSet {
 
   public Object get(int columnIndex) throws SQLException {
     if (columnIndex > this.attribute_list_.size()) {
-      throw new SQLException("Column index out of range.");
+      logger.error("Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
+      throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
     }
     Object value = this.resultSets_.get(columnIndex - 1);
 
@@ -428,13 +454,15 @@ public class RestppResultSet extends ResultSet {
     // Attributes reordering for Spark
     if (this.field_list_.size() > 0) {
       if (columnIndex > this.field_list_.size()) {
-        throw new SQLException("Column index out of range.");
+        logger.error("Column index out of range. {} out of {}.", columnIndex, this.field_list_.size());
+        throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.field_list_.size());
       }
       return getObject(this.field_list_.get(columnIndex - 1));
     }
 
     if (columnIndex > this.attribute_list_.size()) {
-      throw new SQLException("Column index out of range.");
+      logger.error("Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
+      throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
     }
     String name = this.attribute_list_.get(columnIndex - 1).getName();
     return getObject(name);
@@ -448,77 +476,151 @@ public class RestppResultSet extends ResultSet {
     return null;
   }
 
-  @Override public String getString(int columnIndex) throws SQLException {
+  @Override
+  public String getString(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return String.valueOf(obj);
   }
 
-  @Override public String getString(String columnLabel) throws SQLException {
+  @Override
+  public String getString(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return String.valueOf(obj);
   }
 
-  @Override public int getInt(int columnIndex) throws SQLException {
+  @Override
+  public int getInt(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Integer.parseInt(obj.toString());
   }
 
-  @Override public int getInt(String columnLabel) throws SQLException {
+  @Override
+  public int getInt(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Integer.parseInt(obj.toString());
   }
 
-  @Override public short getShort(int columnIndex) throws SQLException {
+  @Override
+  public short getShort(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Short.parseShort(obj.toString());
   }
 
-  @Override public short getShort(String columnLabel) throws SQLException {
+  @Override
+  public short getShort(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Short.parseShort(obj.toString());
   }
 
-  @Override public long getLong(int columnIndex) throws SQLException {
+  @Override
+  public long getLong(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Long.parseLong(obj.toString());
   }
 
-  @Override public long getLong(String columnLabel) throws SQLException {
+  @Override
+  public long getLong(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Long.parseLong(obj.toString());
   }
 
-  @Override public float getFloat(int columnIndex) throws SQLException {
+  @Override
+  public float getFloat(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Float.parseFloat(obj.toString());
   }
 
-  @Override public float getFloat(String columnLabel) throws SQLException {
+  @Override
+  public float getFloat(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Float.parseFloat(obj.toString());
   }
 
-  @Override public double getDouble(int columnIndex) throws SQLException {
+  @Override
+  public double getDouble(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Double.parseDouble(obj.toString());
   }
 
-  @Override public double getDouble(String columnLabel) throws SQLException {
+  @Override
+  public double getDouble(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Double.parseDouble(obj.toString());
   }
 
-  @Override public boolean getBoolean(int columnIndex) throws SQLException {
+  @Override
+  public boolean getBoolean(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     return Boolean.parseBoolean(obj.toString());
   }
 
-  @Override public boolean getBoolean(String columnLabel) throws SQLException {
+  @Override
+  public boolean getBoolean(String columnLabel) throws SQLException {
     Object obj = getObject(columnLabel);
     return Boolean.parseBoolean(obj.toString());
   }
 
-  @Override public com.tigergraph.jdbc.common.ResultSetMetaData getMetaData() throws SQLException {
+  @Override
+  public Array getArray(int columnIndex) throws SQLException {
+    Object obj = getObject(columnIndex);
+    Object[] arrayObj;
+    if (obj instanceof JSONArray) {
+      arrayObj = ((JSONArray) obj).toList().toArray();
+      // TG INT/DOUBLE can be parsed to Integer/Long/BigDecimal/BigInteger by json parser.
+      // Convert them all to Double
+      if (arrayObj.length != 0 && (arrayObj[0] instanceof Number)) {
+        for (int i = 0; i < arrayObj.length; i++) {
+          arrayObj[i] = Double.valueOf(arrayObj[i].toString());
+        }
+      }
+    } else if (obj instanceof Object[]) {
+      arrayObj = (Object[]) obj;
+    } else {
+      String errMsg = "The column at index " + columnIndex + " is not an array type.";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
+    }
+    return new RestppArray("ANY", arrayObj);
+  }
+
+  @Override
+  public Array getArray(String columnLabel) throws SQLException {
+    Object obj = getObject(columnLabel);
+    Object[] arrayObj;
+    if (obj instanceof JSONArray) {
+      arrayObj = ((JSONArray) obj).toList().toArray();
+      // TG INT/DOUBLE can be parsed to Integer/Long/BigDecimal/BigInteger by json parser.
+      // Convert them all to Double
+      if (arrayObj.length != 0 && (arrayObj[0] instanceof Number)) {
+        for (int i = 0; i < arrayObj.length; i++) {
+          arrayObj[i] = Double.valueOf(arrayObj[i].toString());
+        }
+      }
+    } else if (obj instanceof Object[]) {
+      arrayObj = (Object[]) obj;
+    } else {
+      String errMsg = "The column " + columnLabel + " is not an array type.";
+      logger.error(errMsg);
+      throw new SQLException(errMsg);
+    }
+    return new RestppArray("ANY", arrayObj);
+  }
+
+  // Only be invoked when retrieving TG UINT attribute
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
+    Object obj = getObject(columnIndex);
+    return new BigDecimal(obj.toString());
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
+    Object obj = getObject(columnLabel);
+    return new BigDecimal(obj.toString());
+  }
+
+  @Override
+  public com.tigergraph.jdbc.common.ResultSetMetaData getMetaData() throws SQLException {
     return new com.tigergraph.jdbc.common.ResultSetMetaData(this.table_name_, this.attribute_list_);
   }
 
@@ -526,52 +628,43 @@ public class RestppResultSet extends ResultSet {
    * Methods not implemented yet.
    */
 
-  @Override public int getType() throws SQLException {
+  @Override
+  public int getType() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getConcurrency() throws SQLException {
+  @Override
+  public int getConcurrency() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getHoldability() throws SQLException {
+  @Override
+  public int getHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public InputStream getUnicodeStream(int columnIndex) throws SQLException {
+  @Override
+  public InputStream getUnicodeStream(int columnIndex) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public InputStream getUnicodeStream(String columnLabel) throws SQLException {
+  @Override
+  public InputStream getUnicodeStream(String columnLabel) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
+  @Override
+  public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int findColumn(String columnLabel) throws SQLException {
+  @Override
+  public int findColumn(String columnLabel) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
-  @Override public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public Array getArray(int columnIndex) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override public Array getArray(String columnLabel) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
 }

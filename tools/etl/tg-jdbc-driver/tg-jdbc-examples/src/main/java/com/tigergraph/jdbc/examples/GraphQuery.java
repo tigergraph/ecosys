@@ -69,8 +69,8 @@ public class GraphQuery
          * To get vertices of person type whose 'gender' is Female.
          * If the value on the right side of a filter is a string literal, it should be enclosed in double-quotes.
          */
-        String query = "get person(filter=?)";
-        System.out.println("Running \"get person(filter=?)\"...");
+        String query = "get vertex(person) params(filter=?)";
+        System.out.println("Running \"get vertex(person) params(filter=?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "gender=\"Female\"");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -100,8 +100,8 @@ public class GraphQuery
          * To get a person which has the given id
          */
         System.out.println();
-        query = "get person(id=?)";
-        System.out.println("Running \"get person(id=?)\"...");
+        query = "get vertex(person,?)";
+        System.out.println("Running \"get vertex(person,?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "person2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -131,8 +131,8 @@ public class GraphQuery
          * To get all edges from a given vertex
          */
         System.out.println();
-        query = "get edges(person, ?)";
-        System.out.println("Running \"get edges(person, ?)\"...");
+        query = "get edge(person, ?)";
+        System.out.println("Running \"get edge(person, ?)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "person2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -162,8 +162,8 @@ public class GraphQuery
          * To get all edges from a given vertex and edge type
          */
         System.out.println();
-        query = "get edges(person, ?, posted)";
-        System.out.println("Running \"get edges(person, ?, posted)\"...");
+        query = "get edge(person, ?, posted)";
+        System.out.println("Running \"get edge(person, ?, posted)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "person2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -193,8 +193,8 @@ public class GraphQuery
          * To get all edges from a given vertex, edge type and target vertex type
          */
         System.out.println();
-        query = "get edges(person, ?, posted, post)";
-        System.out.println("Running \"get edges(person, ?, posted, post)\"...");
+        query = "get edge(person, ?, posted, post)";
+        System.out.println("Running \"get edge(person, ?, posted, post)\"...");
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "person2");
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -289,8 +289,8 @@ public class GraphQuery
          * Delete vertices with PreparedStatement.
          */
         System.out.println("");
-        System.out.println("Running \"DELETE person(id=?)\"...");
-        query = "DELETE post(id=?)";
+        System.out.println("Running \"DELETE vertex(person, ?)\"...");
+        query = "DELETE vertex(person, ?)";
         try {
           java.sql.PreparedStatement pstmt = con.prepareStatement(query);
           pstmt.setString(1, "0");
