@@ -63,10 +63,11 @@ This image will start as a daemon, so user can ssh to it.
 
 1. pull the latesst version, only do this step in shell if you upgrade your docker image
 
-        docker pull docker.tigergraph.com/tigergraph:latest
-    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 3.0.5 version, the following would be the URL. 
-     docker pull docker.tigergraph.com/tigergraph:3.0.5
-    > Note: to use the legacy developer editions, use docker.tigergraph.com/tigergraph-dev:latest or docker.tigergraph.com/tigergraph-dev:<version> instead
+        docker pull tigergraph/tigergraph:latest
+    > Note: replace "latest" with specific version number if a dedicated version of TigerGraph is to be used. E.g. If you want to get 3.6.0 version, the following would be the URL. 
+     docker pull tigergraph/tigergraph:3.6.0
+    > Note: to use the legacy versions, use docker.tigergraph.com/tigergraph:<version> 
+    >       to use the legacy developer edition images, use docker.tigergraph.com/tigergraph-dev:latest or docker.tigergraph.com/tigergraph-dev:<version> instead
 
 1. stop and remove existing container in shell only if an old version is being used
 
@@ -82,13 +83,13 @@ This image will start as a daemon, so user can ssh to it.
      - "--name" name the container  tigergraph. 
      - "--ulimit" set the ulimit (the number of open file descriptors per process) to 1 million.
      - "-v" mount the host OS ~/data folder to the docker /home/tigergraph/mydata folder using the -v option. Note that if you are using windows, change the above ~/data to something using windows file system convention, e.g. c:\data
-     - download the "latest" docker image from the TigerGraph docker registry url docker.tigergraph.com/tigergraph. 
+     - download the "latest" docker image from the TigerGraph docker registry url tigergraph/tigergraph. 
 ```bash
-   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t docker.tigergraph.com/tigergraph:latest
+   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -v ~/data:/home/tigergraph/mydata -t tigergraph/tigergraph:latest
 ```      
 Note that if you use Windows, and have disk drive permission issue with the above command, please try the following
 ```bash
-   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t docker.tigergraph.com/tigergraph:latest
+   docker run -d -p 14022:22 -p 9000:9000 -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:latest
 ```   
 
 After pulling the image and launch the container in the background, you can try the following to verify it's running. 
