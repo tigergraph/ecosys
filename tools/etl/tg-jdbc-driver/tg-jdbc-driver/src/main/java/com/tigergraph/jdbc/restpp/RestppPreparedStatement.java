@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class RestppPreparedStatement extends PreparedStatement {
@@ -170,60 +172,65 @@ public class RestppPreparedStatement extends PreparedStatement {
       RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
       List<JSONObject> results = response.getResults();
       if (results.size() > 0) {
-        // This calculation is used to calculate the mixed insertion of multiple types
-        // of edges and vertices through a loading job
         // accepted lines: `validLine`
         // rejected lines: `rejectedLine` + `failedConditionLine` + `notEnoughToken` +
         // `invalidJson` + `oversizeToken`
-        // accepted vertices: sum(accepted objs for all vertex types)
-        // rejected vertices: sum(`noIdFound` + `invalidAttribute` +
-        // `invalidPrimaryId` + `invalidSecondaryId` + `incorrectFixedBinaryLength` for
-        // all vertex types) + rejected lines
-        // accepted edges: sum(accepted objs for all vertex types)
-        // rejected edges: sum(`noIdFound` + `invalidAttribute` +
-        // `invalidPrimaryId` + `invalidSecondaryId` + `incorrectFixedBinaryLength` for
-        // all edge types) + rejected lines
+        StringBuilder sb = new StringBuilder();
         JSONObject obj = (JSONObject) results.get(0).get("statistics");
         JSONArray vertexObjArray = obj.getJSONArray("vertex");
         JSONArray edgeObjArray = obj.getJSONArray("edge");
         Integer acceptedLines = obj.getInt("validLine");
-        Integer rejectedLines = obj.getInt("rejectLine") + obj.getInt("failedConditionLine")
+        Integer invalidLines = obj.getInt("rejectLine") + obj.getInt("failedConditionLine")
             + obj.getInt("notEnoughToken") + obj.getInt("invalidJson") + obj.getInt("oversizeToken");
-        Integer acceptedVertices = 0;
-        Integer rejectedVertices = 0;
-        Integer acceptedEdges = 0;
-        Integer rejectedEdges = 0;
 
+        // Print number of validLine, and the non-zero value of other invalid types.
+        sb.append("Line Statistics: ").append(acceptedLines).append(" validLine");
+        Iterator<String> keys = obj.keys();
+        while (keys.hasNext()) {
+          String key = keys.next();
+          if (!key.equals("validLine") && obj.optInt(key) > 0)
+            sb.append(", ").append(obj.getInt(key)).append(" ").append(key);
+        }
+        sb.append(". ");
+
+        // Print number of valid vertices, and the non-zero value of other invalid types.
         for (int i = 0; i < vertexObjArray.length(); i++) {
-          acceptedVertices += vertexObjArray.getJSONObject(i).getInt("validObject");
-          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("noIdFound");
-          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidAttribute");
-          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidPrimaryId");
-          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("invalidSecondaryId");
-          rejectedVertices += vertexObjArray.getJSONObject(i).getInt("incorrectFixedBinaryLength");
-          // Only keep "invalidAttributeLines"
+          JSONObject vertexObj = vertexObjArray.getJSONObject(i);
+          sb.append("Vertex ").append(vertexObj.getString("typeName")).append(": ");
+          sb.append(vertexObj.getInt("validObject")).append(" validVertex");
+          keys = vertexObj.keys();
+          while (keys.hasNext()) {
+            String key = keys.next();
+            if (!key.equals("validObject") && vertexObj.optInt(key) > 0)
+              sb.append(", ").append(vertexObj.getInt(key)).append(" ").append(key);
+          }
+          sb.append(". ");
+          // Only keep "invalidAttributeLines" for DEBUG level.
           vertexObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
         }
 
+        // Print number of valid edges, and the non-zero value of other invalid types.
         for (int i = 0; i < edgeObjArray.length(); i++) {
-          acceptedEdges += edgeObjArray.getJSONObject(i).getInt("validObject");
-          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("noIdFound");
-          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidAttribute");
-          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidPrimaryId");
-          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("invalidSecondaryId");
-          rejectedEdges += edgeObjArray.getJSONObject(i).getInt("incorrectFixedBinaryLength");
-          // Only keep "invalidAttributeLines"
+          JSONObject edgeObj = edgeObjArray.getJSONObject(i);
+          sb.append("Edge ").append(edgeObj.getString("typeName")).append(": ");
+          sb.append(edgeObj.getInt("validObject")).append(" validEdge");
+          keys = edgeObj.keys();
+          while (keys.hasNext()) {
+            String key = keys.next();
+            if (!key.equals("validObject") && edgeObj.optInt(key) > 0)
+              sb.append(", ").append(edgeObj.getInt(key)).append(" ").append(key);
+          }
+          sb.append(". ");
+          // Only keep "invalidAttributeLines" for DEBUG level.
           edgeObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
         }
 
         count[0] = acceptedLines;
-        count[1] = rejectedLines;
+        count[1] = invalidLines;
 
         logger.debug("Result: {}", results.get(0));
 
-        logger.info(
-            "Accepted lines: {}, rejected lines: {}, accepted vertices: {}, rejected vertices from accepted lines: {}, accepted edges: {}, rejected edges from accepted lines: {}",
-            count[0], count[1], acceptedVertices, rejectedVertices, acceptedEdges, rejectedEdges);
+        logger.info(sb.toString());
       } else {
         logger.error("Failed to run loading job, empty response.");
         throw new SQLException("Failed to run loading job, empty response.");
