@@ -40,6 +40,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.2.5 | 3.5+ | 1.8 | Fix restpp authentication incompatibility |
 | 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection, JUL and SLF4J |
 | 1.3.0 | 2.4.1+ | 1.8 | Bug fix && support path-finding algorithms && support full Spark datatypes |
+| 1.3.1 | 2.4.1+ | 1.8 | Fix loading job statistics |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -266,6 +267,28 @@ Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main
     get edge(Page, id1, Linkto, Page, id2)
     ```
   - ResultSet schema: `src_vertex_type | tgt_vertex_type | attr1 | attr2`
+- `delete vertex`: delete a vertex/vertices
+  - Syntax:
+    - `delete vertex(vertex_type) [params(filter=?,limit=?,sort=?)]`
+    - `delete vertex(vertex_type, vertex_id)`
+  - Description: delete all vertices having the type `vertex_type` in a graph, or a single vertex by its vertex ID. [Parameters](https://docs.tigergraph.com/tigergraph-server/3.2/api/built-in-endpoints#_parameters_18) are optional, and `sort` should always be used together with `limit`.
+  - Example:
+    ```
+    // Delete k vertices of a specified type sorted by attr1 (example: Page type vertex)
+    delete vertex(Page) params(limit=k, sort='attr1')
+    ```
+
+- `delete edge`: delete an edge
+  - Syntax:
+    - `delete edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id) [params(select=?)]`
+  - Description: delete an edge by its source vertex type and ID, target vertex type and ID, as well as edge type.
+  - Example:
+    ```
+    // Delete a specific edge from a given vertex to another specific vertex
+    // (example: from a Page vertex, across a Linkto edge, to a Page vertex)
+    delete edge(Page, id1, Linkto, Page, id2)
+    ```
+
 - `insert into vertex/edge`: upsert vertex/edge
   - Syntax: 
     - `insert into vertex v_type(primary_id, id, attr1, attr2) values(?, ?, ?, ?)`
@@ -328,7 +351,7 @@ Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main
   - Example:
     ```
     // Find all paths between 2 vertices, with limitation of path length(example: person)
-    find allpaths(person, Tom, person, Jack)
+    find allpaths(person, Tom, person, Jack, 5)
     ```
   - ResultSet schema: same as `get vertex` and `get edge`.
 
