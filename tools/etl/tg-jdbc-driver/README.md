@@ -7,6 +7,8 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 - [Dependency list](#dependency-list)
 - [Download from Maven Central Repository](#download-from-maven-central-repository)
 - [Minimum viable snippet](#minimum-viable-snippet)
+- [Authentication](#authentication)
+  * [Authentication for Tigergraph Cloud](#authentication-for-tigergraph-cloud)
 - [Support SSL](#support-ssl)
 - [Connection Pool](#connection-pool)
 - [Supported Queries and Syntax](#supported-queries-and-syntax)
@@ -131,6 +133,25 @@ try {
   }
 }
 ```
+
+## Authentication
+Please specify `username` and `password` in connection properties for requesting a authentication token, you can directly specify the `token` in connection properties if you already have it.
+### Authentication for Tigergraph Cloud
+With the release to TigerGraph Cloud (3.6.1), there's a new security standard of identification of secrets as a part of the integrated login between TigerGraph Cloud Console and GraphStudio. With existing TigerGraph Cloud instances users access via REST++ you can continue to access via `username` and `password`. For all **new TigerGraph Cloud instances** you will need to enter username: `__GSQL__secret` and the password will be your generated secret.
+
+To generate a secret you will need to follow these steps.
+- Log into TigerGraph Cloud UI at tgcloud.io
+- Navigate to solutions
+- Click Applications, Graph Studio
+- Select a graph
+- Click Admin in upper right corner
+- From the left side menu click management then users
+- Create new Alias
+- Click Plus and secret will be generated
+
+Known Limitations:
+- Requires UI interface
+- Requires Graph being created
 
 ## Support SSL
 To support SSL, please config TigerGraph first according to [Encrypting Connections](https://docs.tigergraph.com/admin/admin-guide/data-encryption/encrypting-connections). Then specify your SSL certificate like this:
