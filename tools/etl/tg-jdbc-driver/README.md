@@ -43,6 +43,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection, JUL and SLF4J |
 | 1.3.0 | 2.4.1+ | 1.8 | Bug fix && support path-finding algorithms && support full Spark datatypes |
 | 1.3.1 | 2.4.1+ | 1.8 | Fix loading job statistics |
+| 1.3.2 | 2.4.1+ | 1.8 | Fix compatibility issue and add exponential backoff |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -311,7 +312,7 @@ Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main
     ```
 
 - `insert into vertex/edge`: upsert vertex/edge
-  - Syntax: 
+  - Syntax:
     - `insert into vertex v_type(primary_id, id, attr1, attr2) values(?, ?, ?, ?)`
     - `insert into edge v_type(from, to, attr1, attr2) values(?, ?, ?, ?)`
   - Description: upsert vertices and/or edges into a graph. To upsert means that if a vertex or edge does not exist, it is inserted, and if it does exist, it is updated. `PreparedStatement` and `addBatch` are recommended.
