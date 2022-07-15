@@ -411,13 +411,15 @@ public class RestppConnection extends Connection {
    */
   private void getToken() throws SQLException {
     StringBuilder urlSb = new StringBuilder();
-    // /gsqlserver/gsql/authtoken is deprecated, it won't return error messages when
-    // password is wrong
-    urlSb.append("/restpp/requesttoken");
     // If restpp version is under 3.5, pass graph name as a parameter
     if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) < 0) {
+      // /gsqlserver/gsql/authtoken is deprecated, it won't return error messages when
+      // password is wrong
+      urlSb.append("/gsqlserver/gsql/authtoken");
       urlSb.append("?graph=");
       urlSb.append(this.graph);
+    } else {
+      urlSb.append("/restpp/requesttoken");
     }
     String url = "";
     try {
@@ -502,6 +504,13 @@ public class RestppConnection extends Connection {
               ", payload size: " + json.length(), e);
           throw new SQLException("Failed to execute query: request: " + request +
               ", payload size: " + json.length(), e);
+        } else {
+          // Exponential Backoff
+          try {
+            Thread.sleep((long)(Math.pow(2, retry) * 5000));
+          } catch (InterruptedException ex) {
+            // Nothing to do
+          }
         }
       }
     }
@@ -513,14 +522,14 @@ public class RestppConnection extends Connection {
 
   /**
    * Check the connectivity to TG server before any requests.
-   * 
+   *
    * @throws SQLException if jks certificate is invalid
    * @throws SQLException if use http while TG server has SSL enabled
    * @throws SQLException if use https while TG server has SSL disabled
    * @throws SQLException if connection fail (timeout, wrong ip address, wrong
    *                      port, firewall, etc.)
-   * 
-   * 
+   *
+   *
    */
   private void checkConnectivity() throws SQLException {
     String healthCheckEndpoint = "/api/ping";
@@ -563,7 +572,7 @@ public class RestppConnection extends Connection {
   /**
    * Create an Array object which can be used with
    * <code>public void setArray(int parameterIndex, Array val)</code>
-   * 
+   *
    * @param typeName the SQL name of the type the elements of the array
    *                 map to. Should be one of
    *                 SHORT,INTEGER,BYTE,LONG,DOUBLE,FLOAT,BOOLEAN,TIMESTAMP,DATE,DECIMAL,BINARY,ANY.
