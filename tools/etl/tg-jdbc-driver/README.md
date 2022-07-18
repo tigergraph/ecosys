@@ -44,6 +44,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.3.0 | 2.4.1+ | 1.8 | Bug fix && support path-finding algorithms && support full Spark datatypes |
 | 1.3.1 | 2.4.1+ | 1.8 | Fix loading job statistics |
 | 1.3.2 | 2.4.1+ | 1.8 | Fix compatibility issue and add exponential backoff |
+| 1.3.3 | 2.4.1+ | 1.8 | Print restpp responses in ERROR logs when there's any error |
 
 ## Dependency list
 | groupId | artifactId | version |
