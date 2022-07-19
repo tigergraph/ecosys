@@ -175,7 +175,6 @@ public class RestppPreparedStatement extends PreparedStatement {
         // accepted lines: `validLine`
         // rejected lines: `rejectedLine` + `failedConditionLine` + `notEnoughToken` +
         // `invalidJson` + `oversizeToken`
-        StringBuilder sb = new StringBuilder();
         JSONObject obj = (JSONObject) results.get(0).get("statistics");
         JSONArray vertexObjArray = obj.getJSONArray("vertex");
         JSONArray edgeObjArray = obj.getJSONArray("edge");
@@ -183,54 +182,35 @@ public class RestppPreparedStatement extends PreparedStatement {
         Integer invalidLines = obj.getInt("rejectLine") + obj.getInt("failedConditionLine")
             + obj.getInt("notEnoughToken") + obj.getInt("invalidJson") + obj.getInt("oversizeToken");
 
-        // Print number of validLine, and the non-zero value of other invalid types.
-        sb.append("Line Statistics: ").append(acceptedLines).append(" validLine");
-        Iterator<String> keys = obj.keys();
-        while (keys.hasNext()) {
-          String key = keys.next();
-          if (!key.equals("validLine") && obj.optInt(key) > 0)
-            sb.append(", ").append(obj.getInt(key)).append(" ").append(key);
-        }
-        sb.append(". ");
-
         // Print number of valid vertices, and the non-zero value of other invalid types.
+        Integer errors = 0;
         for (int i = 0; i < vertexObjArray.length(); i++) {
           JSONObject vertexObj = vertexObjArray.getJSONObject(i);
-          sb.append("Vertex ").append(vertexObj.getString("typeName")).append(": ");
-          sb.append(vertexObj.getInt("validObject")).append(" validVertex");
-          keys = vertexObj.keys();
-          while (keys.hasNext()) {
-            String key = keys.next();
-            if (!key.equals("validObject") && vertexObj.optInt(key) > 0)
-              sb.append(", ").append(vertexObj.getInt(key)).append(" ").append(key);
-          }
-          sb.append(". ");
-          // Only keep "invalidAttributeLines" for DEBUG level.
+          errors += vertexObj.getInt("invalidAttribute") + vertexObj.getInt("noIdFound")
+            + vertexObj.getInt("invalidVertexType") + vertexObj.getInt("invalidSecondaryId")
+            + vertexObj.getInt("incorrectFixedBinaryLength") +  vertexObj.getInt("invalidPrimaryId");
+          // "invalidAttributeLinesData" may contain sensitive info
           vertexObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
         }
 
         // Print number of valid edges, and the non-zero value of other invalid types.
         for (int i = 0; i < edgeObjArray.length(); i++) {
           JSONObject edgeObj = edgeObjArray.getJSONObject(i);
-          sb.append("Edge ").append(edgeObj.getString("typeName")).append(": ");
-          sb.append(edgeObj.getInt("validObject")).append(" validEdge");
-          keys = edgeObj.keys();
-          while (keys.hasNext()) {
-            String key = keys.next();
-            if (!key.equals("validObject") && edgeObj.optInt(key) > 0)
-              sb.append(", ").append(edgeObj.getInt(key)).append(" ").append(key);
-          }
-          sb.append(". ");
-          // Only keep "invalidAttributeLines" for DEBUG level.
+          errors += edgeObj.getInt("invalidAttribute") + edgeObj.getInt("noIdFound")
+            + edgeObj.getInt("invalidVertexType") + edgeObj.getInt("invalidSecondaryId")
+            + edgeObj.getInt("incorrectFixedBinaryLength") +  edgeObj.getInt("invalidPrimaryId");
+          // "invalidAttributeLinesData" may contain sensitive info
           edgeObjArray.getJSONObject(i).remove("invalidAttributeLinesData");
         }
 
         count[0] = acceptedLines;
         count[1] = invalidLines;
 
-        logger.debug("Result: {}", results.get(0));
-
-        logger.info(sb.toString());
+        if (invalidLines > 0 || errors > 0) {
+          logger.error("Result: {}", results.get(0));
+        } else {
+          logger.info("Result: {}", results.get(0));
+        }
       } else {
         logger.error("Failed to run loading job, empty response.");
         throw new SQLException("Failed to run loading job, empty response.");
