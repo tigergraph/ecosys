@@ -96,7 +96,9 @@ public class RestppPreparedStatement extends PreparedStatement {
   public void addBatch() throws SQLException {
     // Shortcut for loading jobs.
     if (this.query_type == QueryType.QUERY_TYPE_LOAD_JOB) {
-      this.stringBuilder.append(eol);
+      if (this.stringBuilder.length() > 0) {
+        this.stringBuilder.append(eol);
+      }
       this.stringBuilder.append(String.valueOf(this.parameters.get(1)));
       for (int i = 1; i < this.parameters.size(); ++i) {
         this.stringBuilder.append(this.sep).append(String.valueOf(this.parameters.get(i + 1)));
