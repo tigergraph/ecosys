@@ -19,6 +19,7 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
@@ -32,6 +33,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.spark.SparkFiles;
 import org.json.JSONObject;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -58,6 +60,7 @@ import org.slf4j.Logger;
 public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
+  private static final int SECOND = 1000;
 
   private String host;
   private Integer port;
@@ -77,7 +80,7 @@ public class RestppConnection extends Connection {
   private String src_vertex_type = null;
   private Integer atomic = 0;
   private Integer timeout = -1; // the timeout setting for gsql query
-  private Integer connectTimeout = 5 * 1000; // the timeout setting for establishing an http connection(5s)
+  private Integer connectTimeout = 5 * SECOND; // the timeout setting for establishing an http connection(5s)
   private Integer level = 1;
   private String[] ipArray = null;
   private ComparableVersion restpp_version = new ComparableVersion("3.5.0");
@@ -324,12 +327,15 @@ public class RestppConnection extends Connection {
     HttpClientBuilder builder = HttpClients.custom();
     if (hasSSLContext) {
       this.secure = Boolean.TRUE;
+      HostnameVerifier hostnameVerifier = properties.getProperty("sslHostnameVerification", "true")
+          .equalsIgnoreCase("true")
+              ? new DefaultHostnameVerifier()
+              : NoopHostnameVerifier.INSTANCE;
       SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
           new String[] { "TLSv1.2", "TLSv1.1" },
           null,
-          NoopHostnameVerifier.INSTANCE);
-      builder.setSSLSocketFactory(sslConnectionFactory)
-          .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+          hostnameVerifier);
+      builder.setSSLSocketFactory(sslConnectionFactory);
       Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
           .register("https", sslConnectionFactory)
           .register("http", new PlainConnectionSocketFactory())
@@ -506,8 +512,9 @@ public class RestppConnection extends Connection {
               ", payload size: " + json.length(), e);
         } else {
           // Exponential Backoff
+          logger.info("Retrying in {} seconds......", (long) (Math.pow(2, retry) * 5));
           try {
-            Thread.sleep((long)(Math.pow(2, retry) * 5000));
+            Thread.sleep((long) (Math.pow(2, retry) * 5 * SECOND));
           } catch (InterruptedException ex) {
             // Nothing to do
           }
@@ -561,8 +568,8 @@ public class RestppConnection extends Connection {
       logger.error("Invalid TigerGraph server certificate", e);
       throw new SQLException("Invalid TigerGraph server certificate", e);
     } catch (SSLException e) {
-      logger.error("Please check if SSL is enabled in TigerGraph server", e);
-      throw new SQLException("Please check if SSL is enabled in TigerGraph server", e);
+      logger.error("Build SSL connection failed", e);
+      throw new SQLException("Build SSL connection failed", e);
     } catch (Exception e) {
       logger.error("Failed to connect to TigerGraph server", e);
       throw new SQLException("Failed to connect to TigerGraph server", e);

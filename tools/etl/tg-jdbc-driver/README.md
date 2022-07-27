@@ -46,6 +46,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.3.2 | 2.4.1+ | 1.8 | Fix compatibility issue and add exponential backoff |
 | 1.3.3 | 2.4.1+ | 1.8 | Print restpp responses in ERROR logs when there's any error |
 | 1.3.4 | 2.4.1+ | 1.8 | Fix the "notEnoughToken" error |
+| 1.3.5 | 2.4.1+ | 1.8 | Add property `sslHostnameVerification` |
 
 ## Dependency list
 | groupId | artifactId | version |
@@ -179,6 +180,7 @@ Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. T
 ```
 /path/to/jre/bin/keytool -import -alias alias -file cert_file.crt -keystore yourkeystore.jks -storepass yourpass
 ```
+The hostname verification will be enabled by default to prevent man-in-the-middle attack. You can disable it by `properties.put("sslHostnameVerification", "false")`.
 
 Detailed example can be found at [GraphQuery.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/GraphQuery.java).
 
