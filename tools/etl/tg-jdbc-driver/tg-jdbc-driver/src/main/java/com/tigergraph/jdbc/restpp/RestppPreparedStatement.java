@@ -15,9 +15,8 @@ import org.slf4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class RestppPreparedStatement extends PreparedStatement {
 
@@ -99,9 +98,10 @@ public class RestppPreparedStatement extends PreparedStatement {
       if (this.stringBuilder.length() > 0) {
         this.stringBuilder.append(eol);
       }
-      this.stringBuilder.append(String.valueOf(this.parameters.get(1)));
+      this.stringBuilder.append(Objects.toString(this.parameters.get(1), ""));
       for (int i = 1; i < this.parameters.size(); ++i) {
-        this.stringBuilder.append(this.sep).append(String.valueOf(this.parameters.get(i + 1)));
+        this.stringBuilder.append(sep);
+        this.stringBuilder.append(Objects.toString(this.parameters.get(i+1), ""));
       }
       return;
     }

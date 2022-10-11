@@ -431,10 +431,10 @@ public class QueryParser {
       String sep = this.connection.getSeparator();
       StringBuilder sb = new StringBuilder();
       Integer size = this.paramArray.length;
-      sb.append(String.valueOf(this.paramArray[0]));
+      sb.append(Objects.toString(this.paramArray[0], ""));
       for (int i = 1; i < size; ++i) {
         sb.append(sep);
-        sb.append(String.valueOf(this.paramArray[i]));
+        sb.append(Objects.toString(this.paramArray[i], ""));
       }
       this.line = sb.toString();
       this.job = tokens[3]; // loading job name

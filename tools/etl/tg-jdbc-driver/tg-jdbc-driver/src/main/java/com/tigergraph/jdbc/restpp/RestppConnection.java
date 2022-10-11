@@ -8,7 +8,6 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.common.Array;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -24,6 +23,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
@@ -61,6 +61,7 @@ public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
   private static final int SECOND = 1000;
+  private static final String DEFAULT_RESTPP_VERSION = "3.5.0";
 
   private String host;
   private Integer port;
@@ -83,7 +84,7 @@ public class RestppConnection extends Connection {
   private Integer connectTimeout = 5 * SECOND; // the timeout setting for establishing an http connection(5s)
   private Integer level = 1;
   private String[] ipArray = null;
-  private ComparableVersion restpp_version = new ComparableVersion("3.5.0");
+  private ComparableVersion restpp_version = new ComparableVersion(DEFAULT_RESTPP_VERSION);
 
   private CloseableHttpClient httpClient;
 
@@ -349,6 +350,7 @@ public class RestppConnection extends Connection {
     }
     // Set the timeout for establishing a connection
     builder.setDefaultRequestConfig(RequestConfig.custom().setConnectTimeout(connectTimeout).build());
+    builder.setRetryHandler(new DefaultHttpRequestRetryHandler());
     this.httpClient = builder.build();
 
     checkConnectivity();
