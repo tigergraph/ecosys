@@ -47,6 +47,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 | 1.3.3 | 2.4.1+ | 1.8 | Print restpp responses in ERROR logs when there's any error |
 | 1.3.4 | 2.4.1+ | 1.8 | Fix the "notEnoughToken" error |
 | 1.3.5 | 2.4.1+ | 1.8 | Add property `sslHostnameVerification` |
+| 1.3.6 | 2.4.1+ | 1.8 | Bug fix for null field |
 
 ## Dependency list
 | groupId | artifactId | version |

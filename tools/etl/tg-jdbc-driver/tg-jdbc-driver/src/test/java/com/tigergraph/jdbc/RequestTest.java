@@ -22,6 +22,7 @@ import java.sql.SQLException;
 public class RequestTest {
   static WireMockServer wireMockServer;
   static Connection con;
+  static Properties properties;
 
   @BeforeAll
   static void prepare() throws Exception {
@@ -36,7 +37,7 @@ public class RequestTest {
             .withBody("{\"error\":false,\"results\":[{\"vertexName\":\"Person\"}]}")));
 
     // Connection to tg
-    Properties properties = new Properties();
+    properties = new Properties();
     String ipAddr = "127.0.0.1";
     Integer port = wireMockServer.port();
     properties.put("username", "tigergraph");
@@ -162,6 +163,29 @@ public class RequestTest {
     wireMockServer.verify(1,
         postRequestedFor(urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
             .withRequestBody(equalTo("a1,b,c\na2,b,c\na3,b,c")));
+  }
+
+  // For spark data frame with null fields, it will invoke setNull to send null value to jdbc
+  // it should be converted to empty csv field instead of "null"
+  @Test
+  @DisplayName("Should be loading job requests with empty attributes")
+  void sendLoadingRequestWithNullParms() throws SQLException, InterruptedException {
+    String query = "INSERT INTO job load_social(id,a,b,c) VALUES(?,?,?,?)";
+    PreparedStatement pstmt = con.prepareStatement(query);
+    pstmt.setNull(1, 0);
+    pstmt.setNull(2, 0);
+    pstmt.setNull(3, 0);
+    pstmt.setNull(4, 0);
+    pstmt.addBatch();
+    try {
+      pstmt.executeBatch();
+    } catch (Exception e) {
+      // ignore response error info
+    }
+
+    wireMockServer.verify(1,
+        postRequestedFor(urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
+            .withRequestBody(equalTo(",,,")));
   }
 
   @Test
