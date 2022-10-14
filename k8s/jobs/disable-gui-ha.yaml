@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: disable-gui-ha
+  namespace: default
+  labels:
+    app: tigergraph
+spec:
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      serviceAccountName: tigergraph-installer
+      initContainers:
+      - name: init-disable-gui-ha
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
+        env:
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
+        command: 
+        - "/bin/sh"
+        - "-c"
+        - >
+          set -e;
+          kubectl rollout status --watch --timeout=2h statefulset ${POD_PREFIX};
+          kubectl wait --for=condition=complete --timeout=6h job/installer || exit 0
+          sleep 5;
+      containers:
+      - name: disable-gui-ha
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
+        env:
+        - name: SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: service.headless.name
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
+        - name: NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: namespace
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          set -e;
+          export SSHPASS='tigergraph';
+          sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-0.${SERVICE_NAME}.${NAMESPACE} "
+            export PATH=$PATH:/home/tigergraph/tigergraph/app/cmd:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
+            gadmin config set GUI.BasicConfig.Nodes '[{\"HostID\":\"m1\",\"Partition\":0,\"Replica\":1}]' 
+            gadmin config apply -y;
+            gadmin restart all -y;
+          ";
+      restartPolicy: Never
+  backoffLimit: 0

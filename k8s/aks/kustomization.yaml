@@ -15,7 +15,7 @@ namespace: default
 
 # uncomment and revise blow to update images
 # images:
-# - name: docker.tigergraph.com/tigergraph-k8s
+# - name: tigergraph/tigergraph-k8s
 #   newName: tigergraph001.azurecr.io/tigergraph
 #   newTag: 3.2.0
 
@@ -28,6 +28,9 @@ configMapGenerator:
   - cluster_size=1
   - license=
   - ha=1
+  - version=3.5.0
+  - cluster_size.staging=0
+  - version.staging=0
 
 patchesStrategicMerge:
 - patch-statfulset.yaml

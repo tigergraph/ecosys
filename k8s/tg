@@ -11,88 +11,182 @@ esac
 
 # help documents
 function usage() {
+    case $MODE in
+        kustomize|create)
 cat << EOF
-USAGE:
-  $0 K8S_PROVIDER [kustomize|create|delete|list|help] [OPTIONS]
-  -n|--namespace :  set namespace to deploy TG cluster, default as default
-  -s|--size :       set TG cluster size, default as 1
-  -v|--version :    set TG cluster version,default as latest
-  -l|--license :    set TG cluster license, default as free tier license from docker image
-  --ha :            set TG cluster ha setting, default as 1
-  --pv :            set Persistent volume size, default as 50
-  --cpu:           set Request vCPU number, default as 8
-  --mem :           set Request Memory size, default as 16
-  --prefix :        set Pod name prefix-${index}
-  --guiserver-freq: set frequency for updating status of gui servers, in (escaped) cronjob format
+Cluster setup usage:
+  $0 K8S_PROVIDER [kustomize|create] [OPTIONS]
+    -v|--version :    (Required) set TG cluster version
+    -n|--namespace :  set namespace to deploy TG cluster, default as default
+    -s|--size :       set TG cluster size, default as 1
+    -l|--license :    set TG cluster license, default as free tier license from docker image
+    --ha :            set TG cluster ha setting, default as 1
+    --pv :            set Persistent volume size, default as 50
+    --cpu:            set Request vCPU number, default as 8
+    --mem :           set Request Memory size, default as 16
+    --prefix :        set Pod name prefix-${index}
+    --guiserver-freq: set frequency for updating status of gui servers, in (escaped) cronjob format
 
-# Examples when working in eks:
-## Generate the manifest for deployment
-  ./tg eks kustomize -n tigergraph --size 3
-## Create TG cluster:
-  ./tg eks create -n tigergraph -s 2 
-## Delete TG cluster: 
-  ./tg eks delete -n tigergraph
-## List TG cluster:
-  ./tg eks list -n tigergraph
+Examples when working in eks:
+  Generate the manifest for deployment
+    ./tg eks kustomize -v 3.7.0 -n tigergraph --size 3
+  Create TG cluster:
+    ./tg eks create -v 3.7.0 -n tigergraph -s 2 
 EOF
+        ;;
+        delete)
+cat << EOF
+Cluster delete usage:
+  $0 K8S_PROVIDER delete [OPTIONS]
+  -n|--namespace :  set namespace used to deploy TG cluster, default as default
+  --prefix :        set Pod name prefix-${index} used to create TGcluster
+
+Example:
+  ./tg eks delete -n tigergraph --prefix tg
+EOF
+        ;;
+        list)
+cat << EOF
+Cluster list usage:
+  $0 K8S_PROVIDER list [OPTIONS]
+  -n|--namespace :  set namespace used to deploy TG cluster, default as default
+EOF
+        ;;
+        expand)
+cat << EOF
+Cluster expansion usage:
+  $0 K8S_PROVIDER expand [OPTIONS]
+    -s|--size :      (Required) cluster size to expand to
+    --ha :           update cluster ha setting, default as 1
+    -n|--namespace : set namespace of TG cluster to modify, default as default
+    --prefix :       set Pod name prefix of TG cluster to modify
+
+Example:
+  ./tg eks expand -s 6 --ha 2 -n tigergraph
+EOF
+        ;;
+        shrink|post-shrink)
+cat << EOF
+Cluster shrink:
+  $0 K8S_PROVIDER shrink [OPTIONS]
+    -s|--size :      (Required) cluster size to shrink to
+    --ha :           update cluster ha setting, default as 1
+    -n|--namespace : set namespace of TG cluster to modify, default as default
+    --prefix :       set Pod name prefix of TG cluster to modify
+
+Example:
+  ./tg eks shrink -s 4 --ha 2 -n tigergraph --prefix tg
+
+After performing the cluster shrink operation, the script will output a command to clean up unused
+pods and resources. Please check that the shrink is successful and all necessary data is moved off
+of the unused pods before executing the command. Example of the command:
+  ./tg eks post-shrink -n tigergraph --prefix tg
+EOF
+        ;;
+        upgrade)
+cat << EOF
+Cluster upgrade:
+  $0 K8S_PROVIDER upgrade [OPTIONS]
+    -v|--version :   (Required) cluster version to upgrade to
+    -n|--namespace : set namespace of TG cluster to modify, default as default
+    --prefix :       set Pod name prefix of TG cluster to modify
+
+Example:
+  ./tg eks upgrade -v 3.7.0 -n tigergraph --prefix tg
+EOF
+        ;;
+        *)
+cat << EOF
+TG script usage:
+  $0 K8S_PROVIDER [kustomize|create|delete|list|expand|shrink|post-shrink|upgrade] [OPTIONS]
+
+Commands:
+  kustomize|create
+    Generates a manifest for the tigergraph cluster. The create command additionally starts up the cluster
+    using the generated manifest.
+  delete
+    Deletes a cluster that uses a manifest generated from this script.
+  list
+    Lists the pods in the given namespace.
+  expand
+    Expands an existing cluster.
+  shrink|post-shrink
+    Shrinks an existing cluster. The post-shrink command cleans up unused resources after the cluster shrink
+    is complete; usage of the command will be given when shrink is executed.
+  upgrade
+    Upgrades an existing cluster to a higher version.
+
+Use
+  $0 K8S_PROVIDER [kustomize|create|delete|list|expand|shrink|post-shrink|upgrade] -h
+for information on each command
+EOF
+    esac
 exit 0
 }
 
 # parse all arguments
 function set_opts () {
   MODE=""
-  while [ -n "$2" ];
+  while [ -n "$1" ];
   do
-    case "$2" in
-      kustomize|create|delete|list|help)
-        MODE=$2
+    case "$1" in
+      kustomize|create|delete|list|expand|shrink|post-shrink|upgrade|help)
+        MODE=$1
         ;;
       -n|--namespace)
         shift
-        NAMESPACE=$2
+        NAMESPACE=$1
         ;;
       -s|--size)
         shift
-        CLUSTER_SIZE=$2
+        CLUSTER_SIZE=$1
         ;;
       --ha)
         shift
-        TG_HA=$2
+        TG_HA=$1
         ;;
       --prefix)
         shift
-        TG_PREFIX=$2
+        TG_PREFIX=$1
         ;;
       --pv)
         shift
-        TG_PV=$2
+        TG_PV=$1
         ;;
       --cpu)
         shift
-        TG_CPU=$2
+        TG_CPU=$1
         ;;
       --mem)
         shift
-        TG_MEM=$2
+        TG_MEM=$1
         ;;
       --guiserver-freq)
         shift
-        GUISERVER_FREQ=$2
+        GUISERVER_FREQ=$1
         ;;
       -v|--version)
         shift
-        TG_VERSION=$2
+        DOCKERFILE_VERSION=$1
+        # Version number only, i.e. 3.6.0 instead of 3.6.0-image-tag
+        if [[ $DOCKERFILE_VERSION =~ ([0-9\.]+) ]]; then
+          TG_VERSION=${BASH_REMATCH[1]}
+        else
+          echo "Unrecognized version format"
+          exit 1
+        fi
         ;;
       -l|--license)
         shift
-        TG_LICENSE=$2
+        TG_LICENSE=$1
         ;;
       -h|--help)
+        HELP_FLAG="true"
         shift
         usage
         ;;
       *)
-        shift
+        echo "Unrecognized flag \"$1\""
         usage
         ;;
     esac
@@ -101,16 +195,18 @@ function set_opts () {
 }
 # update namespace
 function update_namespace () {
-  if [ $NAMESPACE != 'default' ]; then
+  if [[ -z $NAMESPACE ]]; then
+    sed "${sedi[@]}" -e "s/namespace: default/namespace: $cur_namespace/g" $MANIFEST
+  elif [ $NAMESPACE != 'default' ]; then
     sed "${sedi[@]}" -e "s/namespace: default/namespace: $NAMESPACE/g" $MANIFEST
   fi
 }
 # change Tigergraph cluster size if not 1 
 function update_cluster_size () {
+  sed "${sedi[@]}" -e "s/cluster_size: \"[1-9][0-9]*\"/cluster_size: \"${CLUSTER_SIZE}\"/g" $MANIFEST
+  sed "${sedi[@]}" -e "s/replicas: [1-9][0-9]*/replicas: ${CLUSTER_SIZE}/g" $MANIFEST
+  HOSTS=$(printf '{"ID":"m1","Hostname":"%s-0.tigergraph","Region":""}' "$TG_PREFIX")
   if [ $CLUSTER_SIZE -gt 1 2>/dev/null ]; then
-    sed "${sedi[@]}" -e "s/cluster_size: \"1\"/cluster_size: \"${CLUSTER_SIZE}\"/g" $MANIFEST
-    sed "${sedi[@]}" -e "s/replicas: 1/replicas: ${CLUSTER_SIZE}/g" $MANIFEST
-    HOSTS=$(printf '{"ID":"m1","Hostname":"%s-0.tigergraph","Region":""}' "$TG_PREFIX")
     for i in $(seq 2 ${CLUSTER_SIZE});
     do   
       HOSTS+=',{"ID":"m'
@@ -119,45 +215,66 @@ function update_cluster_size () {
       HOSTS+="$((i-1))"
       HOSTS+='.tigergraph","Region":""}'
     done
-    sed "${sedi[@]}" -e "s/System.HostList=\[.*\]/System.HostList=\[${HOSTS}\]/1" $MANIFEST
   fi
+  sed "${sedi[@]}" -e "s/System.HostList=\[.*\]/System.HostList=\[${HOSTS}\]/1" $MANIFEST
 }
 # update Tigergraph Version if not default 
 function update_version () {
-  if [ "${TG_VERSION}" != "latest" ]; then
-    sed "${sedi[@]}" -e "s/tigergraph-k8s:3.5.0/tigergraph-k8s:${TG_VERSION}/g" $MANIFEST
+  # Suppress errors
+  set +e
+  exec 3>&2
+  exec 2> /dev/null
+
+  if [[ -z "${DOCKERFILE_VERSION}" || -z "${TG_VERSION}" ]]; then
+    echo "Tigergraph version is required for generating manifests"
+    exit 1
+  elif [[ -z $(curl -I https://hub.docker.com/v2/repositories/tigergraph/tigergraph-k8s/tags/${DOCKERFILE_VERSION} | grep "200") ]]; then
+    echo "Tigergraph docker image version ${DOCKERFILE_VERSION} does not exist"
+    exit 1
+  else
+    sed "${sedi[@]}" -E "s/tigergraph-k8s:[0-9\.]+/tigergraph-k8s:${DOCKERFILE_VERSION}/g" $MANIFEST
+    sed "${sedi[@]}" -e "s/tigergraph-k8s:VERSION/tigergraph-k8s:${DOCKERFILE_VERSION}/g" $MANIFEST
+    sed "${sedi[@]}" -E "s/version: [0-9\.]+/version: ${TG_VERSION}/g" $MANIFEST
   fi
+
+  exec 2>&3
 }
 # update Tigergraph license
 function update_license () {
-  if [ "${TG_LICENSE}" != "" ]; then
+  if [ ! -z "${TG_LICENSE}" ]; then
     sed "${sedi[@]}" -e "s/license: \"\"/license: \"${TG_LICENSE}\"/1" $MANIFEST
   fi
 }
 # update Tigergraph HA
 function update_ha () {
-   if [ "${TG_HA}" != "1" ]; then
-      sed "${sedi[@]}" -e "s/ha: \"1\"/ha: \"${TG_HA}\"/1" $MANIFEST
-   fi
+  # check ha <= cluster size
+  if [[ ${CLUSTER_SIZE} -lt ${TG_HA} || (${CLUSTER_SIZE} -lt 3 && ${TG_HA} -eq 2) ]]; then
+    echo "Entered cluster size ${CLUSTER_SIZE} is not large enough to support HA value of ${TG_HA}"
+    exit 1
+  fi
+
+  if [ ! -z "${TG_HA}" ]; then
+    sed "${sedi[@]}" -e "s/ha: \"[0-9]*\"/ha: \"${TG_HA}\"/1" $MANIFEST
+  fi
 }
 
 # update Tigergraph PV size
 function update_pv () {
-   if [ "${TG_PV}" != "50" ]; then
+   if [ ! -z "${TG_PV}" ]; then
       sed "${sedi[@]}" -e "s/storage: 50Gi/storage: ${TG_PV}Gi/1" $MANIFEST
    fi
 }
 
 # update Tigergraph Request CPU number
 function update_cpu () {
-   if [ "${TG_CPU}" != "8" ]; then
+   if [ ! -z "${TG_CPU}" ]; then
       sed "${sedi[@]}" -e "s/cpu: 8000m/cpu: $((TG_CPU*1000))m/1" $MANIFEST
    fi
 }
 
 # update Tigergraph Request MEM size
 function update_mem () {
-   if [ "${TG_MEM}" != "16" ]; then
+   if [ ! -z "${TG_MEM}" ]; then
       sed "${sedi[@]}" -e "s/memory: 16Gi/memory: ${TG_MEM}Gi/1" $MANIFEST
    fi
 }
@@ -166,8 +283,6 @@ function update_mem () {
 function update_prefix () {
    if [ "${TG_PREFIX}" != "tigergraph" ]; then
       sed "${sedi[@]}" -e "s/pod.prefix: tigergraph/pod.prefix: ${TG_PREFIX}/g" $MANIFEST
-      sed "${sedi[@]}" -e "s/app: tigergraph/app: ${TG_PREFIX}/g" $MANIFEST
-      sed "${sedi[@]}" -e "s/app=tigergraph/app=${TG_PREFIX}/g" $MANIFEST
       sed "${sedi[@]}" -e "s/tigergraph-\[0-9\]/${TG_PREFIX}-\[0-9\]/g" $MANIFEST
       sed "${sedi[@]}" -e "s/tigergraph-0/${TG_PREFIX}-0/g" $MANIFEST
       sed "${sedi[@]}" -e "s/\"tigergraph-\"/\"${TG_PREFIX}-\"/g" $MANIFEST
@@ -177,14 +292,54 @@ function update_prefix () {
 
 # update guiserver update frequency
 function update_guiserver_freq () {
-   if [ "${GUISERVER_FREQ}" != "\*\/1 \* \* \* \*" ]; then
+   if [ ! -z "${GUISERVER_FREQ}" ]; then
       sed "${sedi[@]}" -e "s/\*\/1 \* \* \* \*/${GUISERVER_FREQ}/g" $MANIFEST
    fi
 }
 
+# extract previous cluster size from current manifest
+function extract_prev_cluster_size () {
+  CLUSTER_SIZE_PREV=$(kubectl get configmap env-config -o yaml -n ${NAMESPACE} | sed -n -E "s/ *cluster_size: \"([1-9][0-9]*)\"/\1/p")
+}
+
+# extract previous version from current manifest
+function extract_prev_version () {
+  VERSION_PREV=$(kubectl get configmap env-config -o yaml -n ${NAMESPACE} | sed -n -E "s/ *version: ([0-9\.]+)/\1/p")
+  DOCKERFILE_PREV=$(kubectl get statefulsets.apps ${TG_PREFIX} -o json | jq -r ".spec.template.spec.containers[0].image" | sed -n -E "s/docker\.tigergraph\.com\/tigergraph-k8s:(.*)/\1/p")
+  if [[ "$VERSION_PREV" = "$TG_VERSION" && "DOCKERFILE_PREV" = "$DOCKERFILE_VERSION" ]]; then
+    echo "Previous version matches input version"
+      sed "${sedi[@]}" -e "s/tigergraph-\[0-9\]/${TG_PREFIX}-\[0-9\]/g" $MANIFEST
+    exit 1
+  fi
+}
+
 # create the combined mainfest and customize the settings
 function init_manifest () {
+  # initialize default arguments if not provided
+  if [[ -z ${CLUSTER_SIZE} ]]; then
+    CLUSTER_SIZE="1"
+  fi
+  if [[ -z ${TG_HA} ]]; then
+    TG_HA="1"
+  fi
+  if [[ -z ${TG_PV} ]]; then
+    TG_PV="50"
+  fi
+  if [[ -z ${TG_CPU} ]]; then
+    TG_CPU="8"
+  fi
+  if [[ -z ${TG_MEM} ]]; then
+    TG_MEM="16"
+  fi
+  if [[ -z ${GUISERVER_FREQ} ]]; then
+    GUISERVER_FREQ="\*\/1 \* \* \* \*"
+  fi
+
   kubectl -n ${NAMESPACE} kustomize ${cwd}/${K8S_PROVIDER} > $MANIFEST
+
+  # loadbalancer patch for tg versions < 3.7.0
+  loadbalancer_patch
+
   update_namespace
   update_cluster_size
   update_version
@@ -202,37 +357,256 @@ function tg_start () {
   if [ -f "$MANIFEST" ]; then
     kubectl -n ${NAMESPACE} apply -f $MANIFEST
   else
-    echo "Deployment manifest not found at $MANIFEST";
+    echo "Deployment manifest not found at $MANIFEST"
     exit 1
   fi
 }
+
 # clean up all resouces for Tigergraph cluster.
 # It will also clean up all data, be careful to use!!
 function tg_cleanup () {
   if [ -f "$MANIFEST" ]; then
-    kubectl delete -f $MANIFEST || :;
+    kubectl delete -f $MANIFEST || :
     kubectl -n ${NAMESPACE} delete pvc -l app=${TG_PREFIX} || :
   else
-    echo "Deployment manifest not found at $MANIFEST";
+    echo "Deployment manifest not found at $MANIFEST"
     exit 1
   fi
 }
+
+# check for cluster existence with the current namespace and prefix
+function check_cluster_existence () {
+  # suppress errors and redirect stderr to prevent kubectl errors
+  set +e
+  exec 3>&2
+  exec 2> /dev/null
+  
+  if [[ ! $(kubectl get namespace ${NAMESPACE} | grep "NAME") ]]; then
+    echo "No namespace ${NAMESPACE} has been found"
+    exit 1
+  fi
+
+  if [[ ! $(kubectl get statefulsets.apps -n ${NAMESPACE} | grep ${TG_PREFIX}) ]]; then
+    echo "No cluster with prefix ${TG_PREFIX} has been found in the namespace ${NAMESPACE}"
+    exit 1
+  fi
+
+  set -e
+  exec 2>&3
+}
+
+# start cluster expansion
+function expand_start () {
+  if [ -f "$EXPAND_MANIFEST" ]; then
+    # check job already exists
+    if [[ ! -z $(kubectl get jobs -n ${NAMESPACE} | grep "cluster-expand") ]]; then
+      echo "An expand job already exists in the given namespace, make sure it is completed and delete it before rerunning the command"
+      exit 1
+    fi
+
+    if [[ -z "${CLUSTER_SIZE}" ]]; then
+      echo "Cluster size is required for expand job"
+      exit 1
+    fi
+
+    if [[ -z ${CLUSTER_SIZE_PREV} || ${CLUSTER_SIZE} -le ${CLUSTER_SIZE_PREV} ]]; then
+      echo "Entered cluster size (${CLUSTER_SIZE}) is not greater than current cluster size (${CLUSTER_SIZE_PREV})"
+      exit 1
+    fi
+
+    # if ha is not changed we need to reuse the current ha
+    if [[ -z ${TG_HA} ]]; then
+      TG_HA=$(kubectl get configmaps env-config -n ${NAMESPACE} -o json | jq -r ".data.\"ha\"")
+    fi
+
+    # update the previous and current cluster size in manifest
+    if [ ! -z ${CLUSTER_SIZE_PREV} ]; then
+        sed "${sedi[@]}" -e "s/cluster_size\.staging: \"[0-9]\"/cluster_size\.staging: \"${CLUSTER_SIZE_PREV}\"/g" $MANIFEST
+    fi
+
+    update_cluster_size
+    update_ha
+    tg_start
+
+    kubectl -n ${NAMESPACE} apply -f $EXPAND_MANIFEST
+  else
+    echo "Expansion job manifest not found at $EXPAND_MANIFEST"
+    exit 1
+  fi
+}
+
+# start cluster shrink
+function shrink_start () {
+  if [ -f "$SHRINK_MANIFEST" ]; then
+    # check job already exists
+    if [[ ! -z $(kubectl get jobs -n ${NAMESPACE} | grep "cluster-shrink") ]]; then
+      echo "A shrink job already exists in the given namespace, make sure it is completed and delete it before rerunning the command"
+      exit 1
+    fi
+
+    if [[ -z "${CLUSTER_SIZE}" ]]; then
+      echo "Cluster size is required for shrink job"
+      exit 1
+    fi
+
+    if [[ -z ${CLUSTER_SIZE_PREV} || ${CLUSTER_SIZE} -ge ${CLUSTER_SIZE_PREV} ]]; then
+      echo "Entered cluster size (${CLUSTER_SIZE}) is not less than current cluster size (${CLUSTER_SIZE_PREV})"
+      exit 1
+    fi
+
+    # if ha is not changed we need to reuse the current ha
+    if [[ -z ${TG_HA} ]]; then
+      TG_HA=$(kubectl get configmaps env-config -n ${NAMESPACE} -o json | jq -r ".data.\"ha\"")
+    fi
+
+    # check ha <= cluster size
+    if [[ ${CLUSTER_SIZE} -lt ${TG_HA} || (${CLUSTER_SIZE} -lt 3 && ${TG_HA} -eq 2) ]]; then
+      echo "Entered cluster size ${CLUSTER_SIZE} is not large enough to support HA value of ${TG_HA}"
+      exit 1
+    fi
+
+    # need to patch cluster_size & ha staging in configmap, since we are not updating the deployment
+    kubectl patch configmap/env-config -n ${NAMESPACE} --type merge -p {\"data\":{\"cluster_size.staging\":\"${CLUSTER_SIZE}\"}}
+    kubectl patch configmap/env-config -n ${NAMESPACE} --type merge -p {\"data\":{\"ha.staging\":\"${TG_HA}\"}}
+
+    kubectl -n ${NAMESPACE} apply -f $SHRINK_MANIFEST
+
+    echo "The cluster shrink job has been started. After checking that the cluster and data is correct, use the following command to delete the unused pods:"
+    echo "  ./tg ${K8S_PROVIDER} post-shrink -n ${NAMESPACE} --prefix ${TG_PREFIX}"
+  else
+    echo "Shrink job manifest not found at $SHRINK_MANIFEST"
+    exit 1
+  fi
+}
+
+# start post cluster shrink pod cleanup
+function post_shrink_start () {
+  # check job already exists
+  if [[ ! -z $(kubectl get jobs -n ${NAMESPACE} | grep "cluster-post-shrink") ]]; then
+    echo "A post-shrink job already exists in the given namespace, make sure it is completed and delete it before rerunning the command"
+    exit 1
+  fi
+
+  # get shrink cluster size & ha from configmap
+  CLUSTER_SIZE=$(kubectl get configmaps env-config -n ${NAMESPACE} -o json | jq -r ".data.\"cluster_size.staging\"")
+  OLD_CLUSTER_SIZE=$(kubectl get configmaps env-config -n ${NAMESPACE} -o json | jq -r ".data.\"cluster_size\"")
+  TG_HA=$(kubectl get configmaps env-config -n ${NAMESPACE} -o json | jq -r ".data.\"ha.staging\"")
+
+  # check current hostlist size from gadmin
+  cur_cluster_size=$(kubectl exec -n ${NAMESPACE} ${TG_PREFIX}-0 -- /home/tigergraph/tigergraph/app/cmd/gadmin config get System.HostList | grep -o "${TG_PREFIX}-" | wc -l | sed 's/ //g')
+
+  if [ $CLUSTER_SIZE -ne $cur_cluster_size ]; then
+    echo "Entered cluster size does not match the current cluster size of ${cur_cluster_size}"
+    exit 1
+  fi
+
+  update_cluster_size
+  update_ha
+  tg_start
+
+  kubectl -n ${NAMESPACE} apply -f $POST_SHRINK_MANIFEST
+
+  # delete pvc
+  for i in `seq $CLUSTER_SIZE $(($OLD_CLUSTER_SIZE-1))`
+  do
+    kubectl -n ${NAMESPACE} delete pvc tg-data-${TG_PREFIX}-${i}
+  done
+}
+
+# start cluster upgrade
+function upgrade_start () {
+  if [ -f "$UPGRADE_MANIFEST" ]; then
+    # check job already exists
+    if [[ ! -z $(kubectl get jobs -n ${NAMESPACE} | grep "cluster-upgrade") ]]; then
+      echo "An upgrade job already exists in the given namespace, make sure it is completed and delete it before rerunning the command"
+      exit 1
+    fi
+
+    if [[ ! ${TG_VERSION} > ${VERSION_PREV} ]]; then
+      if [[ ${DOCKERFILE_PREV} = ${DOCKERFILE_VERSION} ]]; then
+        echo "Entered version (${TG_VERSION}) is not greater than current version (${VERSION_PREV})"
+        exit 1
+      fi
+    fi
+
+    update_version
+
+    # copy APPROOT/dev/gdk/gsql/src/QueryUdf and TokenBank to transfer between version
+    # these folders only exist for m0 nodes
+    approot_cur="/home/tigergraph/tigergraph/app/${VERSION_PREV}"
+    kubectl exec -n ${NAMESPACE} ${TG_PREFIX}-0 -- /bin/bash -c "
+      mkdir -p /home/tigergraph/tigergraph/data/upgrade-backup &&
+      cp -r ${approot_cur}/dev/gdk/gsql/src/QueryUdf /home/tigergraph/tigergraph/data/upgrade-backup &&
+      cp -r ${approot_cur}/dev/gdk/gsql/src/TokenBank /home/tigergraph/tigergraph/data/upgrade-backup &&
+      /home/tigergraph/tigergraph/app/cmd/gadmin stop all -y
+    "
+
+    tg_start
+
+    kubectl -n ${NAMESPACE} apply -f $UPGRADE_MANIFEST
+  else
+    echo "Upgrade job manifest not found at $UPGRADE_MANIFEST"
+    exit 1
+  fi
+}
+
+# loadbalancer patch for versions < 3.7.0
+function loadbalancer_patch () {
+    if [[ ${TG_VERSION} < "3.7.0" ]]; then
+        echo "---" >> $MANIFEST
+        cat "${CWD}/jobs/service-loadbalancer-gui.yaml" >> $MANIFEST
+        echo "---" >> $MANIFEST
+        cat "${CWD}/jobs/guiserver-labeler.yaml" >> $MANIFEST
+
+        if [ "$K8S_PROVIDER" = "eks" ]; then
+            sed "${sedi[@]}" -e "/sessionAffinity: ClientIP/d" $MANIFEST
+            echo "---" >> $MANIFEST
+            cat "${CWD}/jobs/disable-gui-ha.yaml" >> $MANIFEST
+        fi
+    else
+        sed "${sedi[@]}" -e "/sessionAffinity: ClientIP/d" $MANIFEST
+    fi
+}
+
 # main entry
 function main () {
-    K8S_PROVIDER=$1
-    NAMESPACE="default"
-    CLUSTER_SIZE="1"
-    TG_VERSION="latest"
-    TG_HA="1"
-    TG_PV="50"
-    TG_CPU="8"
-    TG_MEM="16"
-    TG_PREFIX="tigergraph"
-    GUISERVER_FREQ="\*\/1 \* \* \* \*"
-    TG_LICENSE=""
     CWD=$(cd $(dirname $0) && pwd)
     [ -d ${CWD}/deploy ] || mkdir -p ${CWD}/deploy
+
+    shopt -s nocasematch
+    if [[ $1 =~ gke|eks|aks ]]; then
+        K8S_PROVIDER=$1
+        shift
+    else
+        MISSING_PROVIDER="true"
+    fi
+    shopt -u nocasematch
+
     set_opts "$@"
+
+    if [[ ! -z ${MISSING_PROVIDER} ]]; then
+        if [[ ! -z ${HELP_FLAG} ]]; then
+            usage
+        else
+            echo "Missing or unrecognized K8s provider, got \"$1\""
+            exit 1
+        fi
+    fi
+
+    # set argument defaults (arguments required for cluster initialization are set in init_manifest
+    if [[ -z ${TG_PREFIX} ]]; then
+      TG_PREFIX="tigergraph"
+    fi
+
+    # use namespace specified in context if unset
+    if [[ -z ${NAMESPACE} ]]; then
+      NAMESPACE=$(kubectl config view --minify -o jsonpath='{..namespace}')
+      if [[ -z ${NAMESPACE} ]]; then
+        echo "Could not automatically retrieve namespace from current context, please use the --namespace argument"
+        exit 1
+      fi
+    fi
+
     MANIFEST="${CWD}/deploy/tigergraph-${K8S_PROVIDER}-${NAMESPACE}.yaml"
     case $MODE in
         kustomize)
@@ -240,13 +614,54 @@ function main () {
         ;;
         create)
             init_manifest
+
+            # check cluster does not already exist
+            set +e
+            exec 3>&2
+            exec 2> /dev/null
+
+            if [[ $(kubectl get statefulsets.apps -n ${NAMESPACE} | grep ${TG_PREFIX}) ]]; then
+              echo "A cluster with prefix ${TG_PREFIX} already exists in the namespace ${NAMESPACE}"
+              exit 1
+            fi
+
+            exec 2>&3
+
             tg_start
         ;;
         delete)
             tg_cleanup
         ;;
         list)
-            kubectl -n ${NAMESPACE} get po -o wide
+            kubectl -n ${NAMESPACE} get pods -o wide
+        ;;
+        expand)
+            check_cluster_existence
+
+            EXPAND_MANIFEST="${CWD}/jobs/cluster-expand.yaml"
+            extract_prev_cluster_size
+            expand_start
+        ;;
+        shrink)
+            check_cluster_existence
+
+            SHRINK_MANIFEST="${CWD}/jobs/cluster-shrink.yaml"
+            extract_prev_cluster_size
+            shrink_start
+        ;;
+        post-shrink)
+            check_cluster_existence
+
+            POST_SHRINK_MANIFEST="${CWD}/jobs/cluster-post-shrink.yaml"
+            post_shrink_start
+        ;;
+        upgrade)
+            check_cluster_existence
+
+            UPGRADE_MANIFEST="${CWD}/jobs/cluster-upgrade.yaml"
+            extract_prev_cluster_size
+            extract_prev_version
+            upgrade_start
         ;;
         *)
             usage

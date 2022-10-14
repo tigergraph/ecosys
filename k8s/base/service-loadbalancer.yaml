@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: tigergraph
-  name: tg-rest-service
+  name: tg-external-service
   namespace: default
 spec:
   type: LoadBalancer
@@ -13,3 +13,8 @@ spec:
   - port: 9000
     name: rest
     targetPort: 9000
+  - port: 14240
+    name: graphstudio
+    targetPort: 14240 
+  externalTrafficPolicy: Local
+  sessionAffinity: ClientIP

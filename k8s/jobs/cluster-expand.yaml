@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cluster-expand
+  labels:
+    app: tigergraph
+spec:
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      serviceAccountName: tigergraph-installer
+      initContainers:
+      - name: init-cluster-expand
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
+        env:
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
+        command: 
+        - "/bin/sh"
+        - "-c"
+        - >
+          set -e;
+          kubectl rollout status --watch --timeout=2h statefulset ${POD_PREFIX};
+          sleep 5;
+      containers:
+      - name: cluster-expand
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
+        env:
+        - name: CLUSTER_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: cluster_size
+        - name: CLUSTER_SIZE_STAGING
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: cluster_size.staging
+        - name: HA
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: ha
+        - name: SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: service.headless.name
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
+        - name: NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: namespace
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          export SSHPASS='tigergraph';
+          hostlist=""
+          for i in `seq $CLUSTER_SIZE_STAGING $(($CLUSTER_SIZE-1))`
+          do
+            tg_cfg=$(kubectl exec -n ${NAMESPACE} -i ${POD_PREFIX}-${i} -- /bin/bash -c "/usr/bin/find /home/tigergraph/tigergraph/app -name .tg.cfg|head -n 1");
+            sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-${i}.${SERVICE_NAME}.${NAMESPACE} "
+              export PATH=$PATH:/home/tigergraph/tigergraph/app/cmd:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
+              ln -sf \"$tg_cfg\" /home/tigergraph/.tg.cfg;
+              gadmin init cluster -y --skip-stop;
+              gadmin config set System.TempRoot '/home/tigergraph/tigergraph/tmp';
+              gadmin config apply -y;
+              gadmin restart all -y;
+            ";
+            host="m$(($i+1)):${POD_PREFIX}-$i.tigergraph";
+            if [[ -z "$hostlist" ]]; then
+              hostlist="$host";
+            else
+              hostlist="${hostlist},${host}";
+            fi
+          done;
+          kubectl exec -n ${NAMESPACE} -i ${POD_PREFIX}-0 -- /home/tigergraph/tigergraph/app/cmd/gadmin cluster expand ${hostlist} --ha=${HA} -y;
+      restartPolicy: Never
+  backoffLimit: 0
