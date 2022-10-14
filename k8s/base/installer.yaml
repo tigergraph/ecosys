@@ -6,54 +6,37 @@ metadata:
   labels:
     app: tigergraph
 spec:
-  ttlSecondsAfterFinished: 60
   template:
     metadata:
       labels:
         app: tigergraph
     spec:
+      serviceAccountName: tigergraph-installer
       initContainers:
       - name: init-tigergraph
-        image: alpine:3.14
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
         env:
-          - name: SERVICE_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: env-config
-                key: service.headless.name
-          - name: POD_PREFIX
-            valueFrom:
-              configMapKeyRef:
-                name: env-config
-                key: pod.prefix
-          - name: NAMESPACE
-            valueFrom:
-              configMapKeyRef:
-                name: env-config
-                key: namespace
-          - name: CLUSTER_SIZE
-            valueFrom:
-              configMapKeyRef:
-                name: env-config
-                key: cluster_size
+        - name: POD_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: pod.prefix
         command: 
         - "/bin/sh"
         - "-c"
         - >
           set -e;
-          for i in $(seq 1 ${CLUSTER_SIZE});
-          do
-            until nslookup ${POD_PREFIX}-$((i-1)).${SERVICE_NAME}.${NAMESPACE}.svc.cluster.local;
-            do
-              echo waiting for tigergraph;
-              sleep 1;
-            done;
-          done;
-          sleep 15;
+          kubectl rollout status --watch --timeout=2h statefulset ${POD_PREFIX};
+          sleep 5;
       containers:
       - name: cluster-installer
-        image: docker.tigergraph.com/tigergraph-k8s-installer:3.4.0
+        image: tigergraph/tigergraph-k8s-installer:3.5.0
         env:
+        - name: CLUSTER_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: cluster_size
         - name: LICENSE
           valueFrom:
             configMapKeyRef:
@@ -105,6 +88,13 @@ spec:
               cp --remove-destination /tmp/tg.cfg ~/.tg.cfg;
               gadmin init cluster -y --skip-stop;
               rm /home/tigergraph/tigergraph/data/installation_flag;
+              m1hostname=\$(gadmin config get System.HostList | jq -r '.[0].Hostname');
+              if [[ ${CLUSTER_SIZE} -eq 1 ]] && [[ \${m1hostname} = \"127.0.0.1\" ]]; then
+                newhostlist=\$(gadmin config get System.HostList | jq \".[0].Hostname = \\\"${POD_PREFIX}-0.tigergraph\\\"\");
+                gadmin config set System.HostList \"\${newhostlist}\";
+                gadmin config apply -y;
+                gadmin restart all -y
+              fi
             fi
           ";
       restartPolicy: OnFailure
