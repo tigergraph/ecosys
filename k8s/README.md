@@ -30,6 +30,8 @@ ebs-csi-node-x2t22                    3/3     Running   0               3d4h
 ```
 ### Deployment Steps
    ```bash
+   #create cluster namespace
+   kubectl create ns tigergraph
    # deploy in EKS
    kubectl apply -k ./eks
 
@@ -41,8 +43,6 @@ ebs-csi-node-x2t22                    3/3     Running   0               3d4h
 
    # use tg script with eks in tigergraph namespace 
    ./tg eks create -n tigergraph --size 3 
-   # or use kubectl
-   kubectl create ns tigergraph
    ```
 ### Verify the Tigergraph Status
    ```bash
