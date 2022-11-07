@@ -7,9 +7,31 @@
     - A running ```EKS/GKE/AKS``` cluster
     - The ```kubectl``` command-line tool **(v1.18.0+)**
     - AWS/GCP/Azure account to manage kubernetes resource
+    - AWS EBS CSI driver
+### Verify EBS_CSI_ADDON Installation Status
+Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
 
+Following the instructions on AWS documentation to add EBS CSI add-on before proceed.
+https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+
+Use ```kubectl get pods -n kube-system``` to check if EBS CSI driver is running. An example output is
+```
+NAME                                  READY   STATUS    RESTARTS        AGE
+...
+coredns-5948f55769-kcnvx              1/1     Running   0               3d6h
+coredns-5948f55769-z7mbr              1/1     Running   0               3d6h
+ebs-csi-controller-75598cd6f4-48dp8   6/6     Running   0               3d4h
+ebs-csi-controller-75598cd6f4-sqbhw   6/6     Running   4 (2d11h ago)   3d4h
+ebs-csi-node-9cmbj                    3/3     Running   0               3d4h
+ebs-csi-node-g65ns                    3/3     Running   0               3d4h
+ebs-csi-node-qzflk                    3/3     Running   0               3d4h
+ebs-csi-node-x2t22                    3/3     Running   0               3d4h
+...
+```
 ### Deployment Steps
    ```bash
+   #create cluster namespace
+   kubectl create ns tigergraph
    # deploy in EKS
    kubectl apply -k ./eks
 
@@ -24,7 +46,7 @@
    ```
 ### Verify the Tigergraph Status
    ```bash
-      kubectl get all -l app=tigergraph
+      kubectl get all -l app=tigergraph -n tigergraph
    ```
    Response similar as below :
    ```
@@ -37,7 +59,7 @@
    Login to the instances
    ```bash
    # use kubectl
-   kubectl exec -it tigergraph-0 -- /bin/bash
+   kubectl exec -it tigergraph-0 -n tigergraph -- /bin/bash
    # use ssh
    ip_m1=$(kubectl get pod -o wide |grep tigergraph-0| awk '{print $6}')
    ssh tigergraph@ip_m1
