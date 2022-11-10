@@ -183,7 +183,7 @@ Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. T
 ```
 The hostname verification will be enabled by default to prevent man-in-the-middle attack. You can disable it by `properties.put("sslHostnameVerification", "false")`.
 
-Detailed example can be found at [GraphQuery.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/GraphQuery.java).
+Detailed example can be found at [GraphQuery.java](https://github.com/tigergraph/ecosys/blob/master/tools/etl/tg-jdbc-driver/tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/GraphQuery.java).
 
 ## Connection Pool
 This JDBC driver could be used in together with third party connection pools. For instance, [HikariCP](https://github.com/brettwooldridge/HikariCP).
@@ -230,7 +230,7 @@ config.addDataSourceProperty("trustStorePassword", "password");
 config.addDataSourceProperty("trustStoreType", "JKS");
 ```
 
-Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/ConnectionPool.java).
+Detailed example can be found at [ConnectionPool.java](https://github.com/tigergraph/ecosys/blob/master/tools/etl/tg-jdbc-driver/tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/ConnectionPool.java).
 
 ## Supported Queries and Syntax
 - `builtins`: run a built-in function
