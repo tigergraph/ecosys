@@ -6,7 +6,7 @@ ARG APP_URL=https://dl.tigergraph.com/enterprise-edition/tigergraph-${APP_VERSIO
 
 RUN apt-get -qq update && apt-get install -y --no-install-recommends \
     sudo curl iproute2 net-tools iptables iptables-persistent \
-    sshpass cron ntp locales vim tar jq uuid-runtime openssh-client openssh-server dnsutils iputils-ping > /dev/null && \
+    sshpass cron ntp locales vim tar jq uuid-runtime openssh-client openssh-server dnsutils iputils-ping ca-certificates > /dev/null && \
     apt-get autoremove && apt-get clean && \
     # Set up default account
     useradd -ms /bin/bash tigergraph && \
@@ -30,7 +30,7 @@ RUN apt-get -qq update && apt-get install -y --no-install-recommends \
     rm -rf /home/tigergraph/tigergraph-* && \
     # Setup Enviroments setting
     echo "export USER=tigergraph" >> /home/tigergraph/.bash_tigergraph && \
-    chown -R tigergraph:tigergraph /home/tigergraph
+    chown -R tigergraph:tigergraph /home/tigergraph 
 
 WORKDIR /home/tigergraph
 USER tigergraph

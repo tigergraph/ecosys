@@ -59,9 +59,10 @@ spec:
           for i in `seq 0 $(($CLUSTER_SIZE-1))`
           do
             sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-${i}.${SERVICE_NAME}.${NAMESPACE} "
+              set -e;
               export PATH=$PATH:/home/tigergraph/tigergraph/app/cmd:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
               find /home/tigergraph/tigergraph/data -regex \"/home/tigergraph/tigergraph/data/expansion-export-.*\" -delete;
-              find /home/tigergraph/tigergraph/data -regex \"/home/tigergraph/tigergraph/data/gstore/.*-pre-expand-backup-.*\" -delete
+              find /home/tigergraph/tigergraph/data -regex \"/home/tigergraph/tigergraph/data/.*-pre-expand-backup-.*\" -delete
             "
           done
       restartPolicy: Never

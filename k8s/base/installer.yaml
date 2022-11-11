@@ -69,6 +69,7 @@ spec:
           set -e;
           export SSHPASS='tigergraph';
           sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-0.${SERVICE_NAME}.${NAMESPACE} "
+            set -e;
             if [[ ! -f /home/tigergraph/tigergraph/data/installation_flag ]] && [[ \$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1) ]]; then
               echo 'found lagacy data, skip installation'
             else

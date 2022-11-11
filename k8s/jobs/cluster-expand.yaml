@@ -71,6 +71,7 @@ spec:
           do
             tg_cfg=$(kubectl exec -n ${NAMESPACE} -i ${POD_PREFIX}-${i} -- /bin/bash -c "/usr/bin/find /home/tigergraph/tigergraph/app -name .tg.cfg|head -n 1");
             sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-${i}.${SERVICE_NAME}.${NAMESPACE} "
+              set -e;
               export PATH=$PATH:/home/tigergraph/tigergraph/app/cmd:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
               ln -sf \"$tg_cfg\" /home/tigergraph/.tg.cfg;
               gadmin init cluster -y --skip-stop;

@@ -52,9 +52,9 @@ spec:
         - "/bin/sh"
         - "-c"
         - |
-          set -e;
           export SSHPASS='tigergraph';
           sshpass -e ssh -o StrictHostKeyChecking=no tigergraph@${POD_PREFIX}-0.${SERVICE_NAME}.${NAMESPACE} "
+            set -e;
             export PATH=$PATH:/home/tigergraph/tigergraph/app/cmd:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
             gadmin config set GUI.BasicConfig.Nodes '[{\"HostID\":\"m1\",\"Partition\":0,\"Replica\":1}]' 
             gadmin config apply -y;
