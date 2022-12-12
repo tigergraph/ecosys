@@ -27,7 +27,9 @@ else
   echo "unsupported os"
 fi
 
-config_file=/etc/krb5.conf
+krb5_config_file=/etc/krb5.conf
+kadm5_acl_file=/var/kerberos/krb5kdc/kadm5.acl
+kdc_conf_file=/var/kerberos/krb5kdc/kdc.conf
 realm_lower=`echo $realm | awk '{print tolower($0)}'`
 if [ ! -f ${config_file} ]; then
   echo "${config_file} not found."
@@ -61,7 +63,10 @@ else
 [domain_realm]
  .${realm_lower} = ${realm}
  ${realm_lower} = ${realm}
-\" > ${config_file}"
+\" > ${krb5_config_file}"
+
+  sudo sed -i "s/EXAMPLE.COM/${realm}/g" $kadm5_acl_file
+  sudo sed -i "s/EXAMPLE.COM/${realm}/g" $kdc_conf_file
 
   # delete old Kerberos database password
   cd /var/kerberos/krb5kdc
