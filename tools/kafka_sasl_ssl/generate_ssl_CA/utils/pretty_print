@@ -1,0 +1,52 @@
+#!/bin/bash
+
+txtbld=$(tput bold)
+bldblk=${txtbld}$(tput setaf 0) # black
+bldred=${txtbld}$(tput setaf 1) # red
+bldgre=${txtbld}$(tput setaf 2) # green
+bldyel=${txtbld}$(tput setaf 3) # yellow
+bldblu=${txtbld}$(tput setaf 4) # blue
+bldmag=${txtbld}$(tput setaf 5) # magenta
+bldcya=${txtbld}$(tput setaf 6) # cyan
+bldwhi=${txtbld}$(tput setaf 7) # white
+txtrst=$(tput sgr0)             # Reset
+
+error(){
+  echo "${bldred}[ERROR   ]: $* $txtrst"
+}
+
+warn(){
+  echo "${bldyel}[WARNING ]: $* $txtrst"
+}
+
+note(){
+  echo "${bldcya}[NOTE    ]: $* $txtrst"
+}
+
+prog(){
+  echo "${bldgre}[PROGRESS]: $(date +"%T") $* $txtrst"
+}
+
+mesg_red(){
+  echo "${bldred}$* $txtrst"
+}
+
+mesg_green(){
+  echo "${bldgre}$* $txtrst"
+}
+
+mesg_yellow(){
+  echo "${bldyel}$* $txtrst"
+}
+
+mesg_blue(){
+  echo "${bldblu}$* $txtrst"
+}
+
+mesg_cyan(){
+  echo "${bldcya}$* $txtrst"
+}
+
+mesg_mag(){
+  echo "${bldmag}$* $txtrst"
+}
