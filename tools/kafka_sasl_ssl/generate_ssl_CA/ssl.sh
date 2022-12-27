@@ -94,9 +94,12 @@ install_openJDK
 # install openssl
 install_openssl
 # ca generation
-rm -rf $generate_root
 if [[ "$ssl_type" == "ssl_one_way" ]]; then
+  generate_root=$generate_root/ssl_one_way
+  rm -rf $generate_root
   ssl_oneway_ca_generate
 else
+  generate_root=$generate_root/ssl_two_way
+  rm -rf $generate_root
   ssl_twoway_ca_generate
 fi
