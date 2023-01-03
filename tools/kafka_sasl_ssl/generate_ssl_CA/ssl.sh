@@ -41,7 +41,7 @@ pass=tiger123
 ssl_type=ssl_one_way
 client_hostname=
 
-opt_string=":ho:s:t:p:ic:"
+opt_string=":ht:s:d:p:ic:"
 incompatible_opt=""
 while getopts $opt_string opt; do
   case $opt in
@@ -51,7 +51,7 @@ while getopts $opt_string opt; do
     s)
       server_hostname=$OPTARG
       ;;
-    o)
+    t)
       if [[ "$OPTARG" == "ssl_two_way" ]]; then
         ssl_type=$OPTARG
         two_way=true
@@ -59,11 +59,11 @@ while getopts $opt_string opt; do
         ssl_type=$OPTARG
         two_way=false
       else
-        error "\"-o\" only supports \"ssl_one_way\" or \"ssl_two_way\""
+        error "\"-t\" only supports \"ssl_one_way\" or \"ssl_two_way\""
         exit 1
       fi
       ;;
-    t)
+    d)
       generate_root=$OPTARG
       ;;
     c)
@@ -75,6 +75,7 @@ while getopts $opt_string opt; do
       ;;
     i)
       SETUP_JDK=true
+      SETUP_OPENSSL=true
       ;;
     *)
       error "${bldred}Invalid option, the correct usage is described below: $txtrst"
@@ -84,12 +85,12 @@ while getopts $opt_string opt; do
 done
 
 if [[ "$two_way" == "true" ]] && [[ -z $incompatible_opt ]]; then
-   echo "${bldred}Option '-o ssl_two_way' needs to be used together with option '-c', the correct usage is described below: $txtrst"
+   echo "${bldred}Option '-t ssl_two_way' needs to be used together with option '-c', the correct usage is described below: $txtrst"
    help
 fi
 
+# Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed
 # install openJDK
-# Using option '-i' will install openjdk-1.8.0, otherwise openjdk-1.8.0 will not be installed
 install_openJDK
 # install openssl
 install_openssl

@@ -107,37 +107,25 @@ install_openJDK(){
 }
 
 install_openssl(){
-  if ! openssl version > /dev/null 2>&1;then
-    prog "start install openssl..."
-    yum -y install openssl > /dev/null 2>&1
-  fi
+  if [[ "${SETUP_OPENSSL}" == "true" ]]; then
+    if ! openssl version > /dev/null 2>&1;then
+      prog "start install openssl..."
+      yum -y install openssl > /dev/null 2>&1
+    else
+      prog "Openssl is installed, skip installation."
+    fi
 
-  if [ $? != 0 ]; then
-    error "Failed to install openssl."
-    exit 1
-  fi
-}
-
-ssl_oneway_ca_generate(){
-  if [ ! -d ${generate_root} ]; then
-    mkdir -p ${generate_root}
-  fi
-
-  cd $generate_root
-  prog "start create certificates..."
-  keytool -keystore server.keystore.jks -alias ${server_hostname} -validity 365 -genkey -keyalg RSA -dname "cn=${server_hostname}" -storepass ${pass} -keypass ${pass}
-  openssl req -nodes -new -x509 -keyout ca-root.key -out ca-root.crt -days 365 -subj "/C=US/ST=CA/L=Palo Alto/O=Tigergraph/CN=Tigergraph"
-  echo ${pass} | keytool -keystore server.keystore.jks -alias ${server_hostname} -certreq -file ${server_hostname}_server.csr
-  openssl x509 -req -CA ca-root.crt -CAkey ca-root.key -in ${server_hostname}_server.csr -out ${server_hostname}_server.crt -days 365 -CAcreateserial
-  echo ${pass} | keytool -keystore server.keystore.jks -alias CARoot -import -noprompt -file ca-root.crt
-  echo ${pass} | keytool -keystore server.keystore.jks -alias ${server_hostname} -import -file ${server_hostname}_server.crt
-  echo -e "${pass}\n${pass}\ny" | keytool -keystore server.truststore.jks -alias CARoot -import -file ca-root.crt
-
-  if [ $? != 0 ]; then
-    error "Failed to generate certificates."
-    exit 1
+    if [ $? != 0 ]; then
+      error "Failed to install openssl."
+      exit 1
+    fi
   else
-    prog "Certificates generated successfully."
+    if ! openssl version > /dev/null 2>&1;then
+      error "Openssl is not installed. You can choose option \"-i\" to install openssl."
+      exit 1
+    else
+      prog "Openssl is installed."
+    fi
   fi
 }
 
@@ -194,22 +182,22 @@ ssl_twoway_ca_generate(){
 help(){
   echo
   echo "Usage:"
-  mesg_green "./`basename $0` [-o ssl_two_way] [-c <tigergraph_client_name>] [-s <broker_host_name>] [-t <ssl_file_path>] [-p <password>] [-i]"
-  mesg_green "./`basename $0` [-o ssl_two_way] [-c <tigergraph_client_name>] [-s <broker_host_name>] [-t <ssl_file_path>] [-p <password>]"
-  mesg_green "./`basename $0` [-o ssl_one_way] [-s <broker_host_name>] [-t <ssl_file_path>] [-p <password>] [-i]"
-  mesg_green "./`basename $0` [-o ssl_one_way] [-s <broker_host_name>] [-t <ssl_file_path>] [-p <password>]"
+  mesg_green "./`basename $0` [-t ssl_two_way] [-c <tigergraph_client_name>] [-s <broker_host_name>] [-d <ssl_file_path>] [-p <password>] [-i]"
+  mesg_green "./`basename $0` [-t ssl_two_way] [-c <tigergraph_client_name>] [-s <broker_host_name>] [-d <ssl_file_path>] [-p <password>]"
+  mesg_green "./`basename $0` [-t ssl_one_way] [-s <broker_host_name>] [-d <ssl_file_path>] [-p <password>] [-i]"
+  mesg_green "./`basename $0` [-t ssl_one_way] [-s <broker_host_name>] [-d <ssl_file_path>] [-p <password>]"
   mesg_green "./`basename $0` -h"
   echo "Options:"
   echo "  -h  --  Show the help"
-  echo "  -o  --  SSL certificate type: ssl_one_way or ssl_two_way [default: ssl_one_way]"
+  echo "  -t  --  SSL certificate type: ssl_one_way or ssl_two_way [default: ssl_one_way]"
   echo "  -s  --  Kafka broker host name [default: kafka-0.tigergraph.com]"
-  echo "  -t  --  Certificate Generation Path [default: ~/SSL_files]"
-  echo "  -c  --  Tigergraph Client host name"
+  echo "  -d  --  Certificate Generation Path [default: ~/SSL_files]"
+  echo "  -c  --  TigerGraph Client host name"
   echo "  -p  --  Password [default: tiger123]"
-  echo "  -i  --  Install openjdk-1.8.0"
+  echo "  -i  --  Install openjdk-1.8.0 and openssl"
   echo
-  warn "Using option '-i' will install openjdk-1.8.0, otherwise openjdk-1.8.0 will not be installed.
+  warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
 Please note that if the local machine does not have a java environment, some certificates generation will fail."
-  warn "If the option '-o' value is 'ssl_two_way', we should use the '-c' option at the same time."
+  warn "If the option '-t' value is 'ssl_two_way', we should use the '-c' option at the same time."
   exit 0
 }
