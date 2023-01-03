@@ -71,7 +71,12 @@ while getopts $opt_string opt; do
       incompatible_opt+=" -c"
       ;;
     p)
-      pass=$OPTARG
+      if [ ${#OPTARG} -lt 6 ];then
+        error "Password is too short - must be at least 6 characters."
+        exit 1
+      else
+      	pass=$OPTARG
+      fi
       ;;
     i)
       SETUP_JDK=true
