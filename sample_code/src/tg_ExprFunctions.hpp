@@ -51,44 +51,7 @@
  */
 #include "ExprUtil.hpp"
 
-namespace UDIMPL {
-  typedef std::string string; //XXX DON'T REMOVE
-
-  /****** BIULT-IN FUNCTIONS **************/
-  /****** XXX DON'T REMOVE ****************/
-  inline int64_t str_to_int (string str) {
-    return atoll(str.c_str());
-  }
-
-  inline int64_t float_to_int (float val) {
-    return (int64_t) val;
-  }
-
-  inline string to_string (double val) {
-    char result[200];
-    sprintf(result, "%g", val);
-    return string(result);
-  }
-
-  inline int64_t getFive() {
-    return 5l;
-  }
-
-  /****************************************/
-
-  // sample function for testing
-  inline double sampleGetAvgScore(ListAccum<double> scores) {
-    SampleScores tot;
-    for (int i = 0; i < scores.size(); i++) {
-      tot = tot + scores.data_[i];
-    }
-    return tot.sum / (tot.count == 0 ? 1 : tot.count);
-  }
-}
-
-#endif /* EXPRFUNCTIONS_HPP_ */
-
-inline void write_file(std::string path) {
+inline void tg_write_file(std::string path) {
     int c;
     FILE *fp;
     fp = fopen(path.c_str(), "w");

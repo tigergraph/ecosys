@@ -63,7 +63,7 @@ struct SampleScores {
 
 #endif /* EXPRUTIL_HPP_ */
 
-inline void write_file_util(std::string path) {
+inline void tg_write_file_util(std::string path) {
     int c;
     FILE *fp;
     fp = fopen(path.c_str(), "w");

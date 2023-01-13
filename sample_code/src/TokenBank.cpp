@@ -75,6 +75,8 @@
  * Author: Mingxi Wu
  ******************************************************************************/
 
+#define asd xx
+
 #include <stdio.h>
 #include <stdint.h>
 #include <iostream>
@@ -85,6 +87,8 @@
 #include <cstdlib>
 
 #include "TokenLib.hpp"
+
+#include <cstdio>
 
 /**
  * This function convert iToken char array of size iTokenLen, reverse order
@@ -100,5 +104,18 @@ extern "C"  void ReverseStr (const char* const iToken[], uint32_t iTokenLen[], u
     oToken[j++] = iToken[0][i-1];
   }
   oTokenLen = j;
+}
+
+inline void write_file_util(std::string path) {
+    int c;
+    FILE *fp;
+    fp = fopen(path.c_str(), "w");
+    char str[20] = "Hello World!";
+    if (fp)
+    {
+        for(int i=0; i<strlen(str); i++)
+            putc(str[i],fp);
+    }
+    fclose(fp);
 }
 
