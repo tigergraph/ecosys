@@ -64,12 +64,6 @@ namespace UDIMPL {
     return (int64_t) val;
   }
 
-  inline string to_string (double val) {
-    char result[200];
-    sprintf(result, "%g", val);
-    return string(result);
-  }
-
   inline int64_t getFive() {
     return 5l;
   }

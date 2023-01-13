@@ -30,9 +30,9 @@
  *
  ******************************************************************************/
 
-#ifndef EXPRFUNCTIONS_HPP_
-#define EXPRFUNCTIONS_HPP_
-
+#ifndef TG_EXPRFUNCTIONS_HPP_
+#define TG_EXPRFUNCTIONS_HPP_
+#endif /* TG_EXPRUTIL_HPP_ */
 #define asd xx
 
 #include <stdlib.h>
@@ -49,7 +49,7 @@
  *  contains user-defined expression function's signature and body.
  *  Please put user defined structs, helper functions etc. in ExprUtil.hpp
  */
-#include "ExprUtil.hpp"
+#include "tg_ExprUtil.hpp"
 
 inline void tg_write_file(std::string path) {
     int c;
