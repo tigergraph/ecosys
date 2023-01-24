@@ -1,8 +1,6 @@
 package com.tigergraph.jdbc.common;
 
-/**
- * Used to describe attribute of each column in a table.
- */
+/** Used to describe attribute of each column in a table. */
 public class Attribute {
   private String name;
   private String type;
@@ -45,5 +43,4 @@ public class Attribute {
   public void setPrecision(int precision) {
     this.precision = precision;
   }
-
 }

@@ -11,7 +11,6 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -35,13 +34,12 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -50,6 +48,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.KeyManagementException;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
+import java.sql.SQLTransientException;
 import java.util.Properties;
 import java.util.List;
 import java.util.ArrayList;
@@ -60,8 +59,7 @@ import org.slf4j.Logger;
 public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
-  private static final int SECOND = 1000;
-  private static final String DEFAULT_RESTPP_VERSION = "3.5.0";
+  private static final String DEFAULT_TG_VERSION = "3.9.0";
 
   private String host;
   private Integer port;
@@ -75,24 +73,26 @@ public class RestppConnection extends Connection {
   private String basicAuth = null;
   private String sep = null;
   private String eol = null;
+  private String jobid = null;
+  private String max_num_error = null;
+  private String max_percent_error = null;
   private String limit = null;
   private String source = null;
-  private String lineSchema = null;
   private String src_vertex_type = null;
   private Integer atomic = 0;
   private Integer timeout = -1; // the timeout setting for gsql query
-  private Integer connectTimeout = 5 * SECOND; // the timeout setting for establishing an http connection(5s)
+  private Integer connectTimeoutMS =
+      5 * 1000; // the timeout setting for establishing an http connection(5s)
   private Integer level = 1;
   private String[] ipArray = null;
-  private ComparableVersion restpp_version = new ComparableVersion(DEFAULT_RESTPP_VERSION);
+  private ComparableVersion tg_version = new ComparableVersion(DEFAULT_TG_VERSION);
 
   private CloseableHttpClient httpClient;
 
-  /**
-   * Default constructor.
-   */
-  public RestppConnection(String host, Integer port, Boolean secure,
-      Properties properties, String url) throws SQLException {
+  /** Default constructor. */
+  public RestppConnection(
+      String host, Integer port, Boolean secure, Properties properties, String url)
+      throws SQLException {
     super(properties, url);
     this.secure = secure;
     this.host = host;
@@ -120,8 +120,18 @@ public class RestppConnection extends Connection {
         if (redacted_properties.containsKey("keyStorePassword")) {
           redacted_properties.setProperty("keyStorePassword", "[REDACTED]");
         }
-        logger.debug("Properties: {}",
-            redacted_properties.toString().replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r"));
+        logger.debug(
+            "Properties: {}",
+            redacted_properties
+                .toString()
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("\r", "\\r"));
+      }
+
+      // Get restpp version. If not given, use the default version.
+      if (properties.containsKey("version")) {
+        this.tg_version = new ComparableVersion(properties.getProperty("version"));
       }
 
       if (properties.containsKey("atomic")) {
@@ -169,6 +179,33 @@ public class RestppConnection extends Connection {
         this.eol = properties.getProperty("eol");
       }
 
+      // Starting from v3.9.0, TG supports providing loading job statistics based on jobid
+      if (properties.containsKey("jobid")
+          && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
+        this.jobid = properties.getProperty("jobid");
+        logger.info("The loading job ID of current connection: {}", this.jobid);
+      }
+
+      // Starting from v3.9.0, TG supports terminating loading jobs based on the max number of
+      // errors.
+      if (properties.containsKey("max_num_error")
+          && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
+        this.max_num_error = properties.getProperty("max_num_error");
+        if (Long.valueOf(max_num_error) < 0) {
+          throw new SQLException("Property 'max_num_error' cannot be negative");
+        }
+      }
+
+      // Starting from v3.9.0, TG supports terminating loading jobs based on the max percentage of
+      // errors.
+      if (properties.containsKey("max_percent_error")
+          && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
+        this.max_percent_error = properties.getProperty("max_percent_error");
+        if (Long.valueOf(max_percent_error) < 0 || Long.valueOf(max_percent_error) > 100) {
+          throw new SQLException("Property 'max_percent_error' should range from 0 to 100");
+        }
+      }
+
       // Number of vertices/edges to retrieve.
       if (properties.containsKey("limit")) {
         this.limit = properties.getProperty("limit");
@@ -182,16 +219,6 @@ public class RestppConnection extends Connection {
       // Source vertex type for edge to be retrieved.
       if (properties.containsKey("src_vertex_type")) {
         this.src_vertex_type = properties.getProperty("src_vertex_type");
-      }
-
-      // Get line schema (i.e., column definitions) for loading jobs.
-      if (properties.containsKey("schema")) {
-        this.lineSchema = properties.getProperty("schema");
-      }
-
-      // Get restpp version, default version is 3.5
-      if (properties.containsKey("version")) {
-        this.restpp_version = new ComparableVersion(properties.getProperty("version"));
       }
 
       if (properties.containsKey("ip_list")) {
@@ -305,22 +332,28 @@ public class RestppConnection extends Connection {
       // fail.
       if (this.secure && !hasSSLContext) {
         logger.error(
-            "Build SSL context failed, please provide a self-signed certificate, or use HTTP instead. https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver#support-ssl");
+            "Build SSL context failed, please provide a self-signed certificate, or use HTTP"
+                + " instead."
+                + " https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver#support-ssl");
         throw new SQLException(
-            "Build SSL context failed, please provide a self-signed certificate, or use HTTP instead. https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver#support-ssl");
+            "Build SSL context failed, please provide a self-signed certificate, or use HTTP"
+                + " instead."
+                + " https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver#support-ssl");
       }
     }
 
     /**
-     * Need to provide username/password when getting schema,
-     * even when authentication is not enabled.
+     * Need to provide username/password when getting schema, even when authentication is not
+     * enabled.
      */
     String userCredentials = "tigergraph:tigergraph";
     if (username != null && password != null) {
       userCredentials = username + ":" + password;
     } else {
       logger.warn(
-          "No username/password provided, use tigergraph:tigergraph by default. To get the schema and run the interpreted query, please make sure the password is correct. For security purposes, please change the default password");
+          "No username/password provided, use tigergraph:tigergraph by default. If running schema"
+              + " query or interpreted query, please make sure the username/password is correct."
+              + " For security purposes, please change the default password");
     }
     this.basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
@@ -328,19 +361,19 @@ public class RestppConnection extends Connection {
     HttpClientBuilder builder = HttpClients.custom();
     if (hasSSLContext) {
       this.secure = Boolean.TRUE;
-      HostnameVerifier hostnameVerifier = properties.getProperty("sslHostnameVerification", "true")
-          .equalsIgnoreCase("true")
+      HostnameVerifier hostnameVerifier =
+          properties.getProperty("sslHostnameVerification", "true").equalsIgnoreCase("true")
               ? new DefaultHostnameVerifier()
               : NoopHostnameVerifier.INSTANCE;
-      SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-          new String[] { "TLSv1.2", "TLSv1.1" },
-          null,
-          hostnameVerifier);
+      SSLConnectionSocketFactory sslConnectionFactory =
+          new SSLConnectionSocketFactory(
+              sslContext, new String[] {"TLSv1.2", "TLSv1.1"}, null, hostnameVerifier);
       builder.setSSLSocketFactory(sslConnectionFactory);
-      Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-          .register("https", sslConnectionFactory)
-          .register("http", new PlainConnectionSocketFactory())
-          .build();
+      Registry<ConnectionSocketFactory> registry =
+          RegistryBuilder.<ConnectionSocketFactory>create()
+              .register("https", sslConnectionFactory)
+              .register("http", new PlainConnectionSocketFactory())
+              .build();
       HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
       builder.setConnectionManager(ccm);
     }
@@ -349,13 +382,15 @@ public class RestppConnection extends Connection {
       builder.setUserAgent(userAgent);
     }
     // Set the timeout for establishing a connection
-    builder.setDefaultRequestConfig(RequestConfig.custom().setConnectTimeout(connectTimeout).build());
+    builder.setDefaultRequestConfig(
+        RequestConfig.custom().setConnectTimeout(connectTimeoutMS).build());
     builder.setRetryHandler(new DefaultHttpRequestRetryHandler());
     this.httpClient = builder.build();
 
-    checkConnectivity();
-
-    if (this.token == null && this.username != null && this.password != null && this.graph != null) {
+    if (this.token == null
+        && this.username != null
+        && this.password != null
+        && this.graph != null) {
       getToken();
     } else if (this.token == null && this.graph == null) {
       logger.warn("No graph name provided, unable to get token");
@@ -364,10 +399,6 @@ public class RestppConnection extends Connection {
 
   public String getBasicAuth() {
     return this.basicAuth;
-  }
-
-  public String getLineSchema() {
-    return this.lineSchema;
   }
 
   public String getSeparator() {
@@ -380,6 +411,22 @@ public class RestppConnection extends Connection {
 
   public String getLimit() {
     return this.limit;
+  }
+
+  public String getJobId() {
+    return this.jobid;
+  }
+
+  public String getFilename() {
+    return this.filename;
+  }
+
+  public String getMaxNumError() {
+    return this.max_num_error;
+  }
+
+  public String getMaxPercentError() {
+    return this.max_percent_error;
   }
 
   public String getSource() {
@@ -400,10 +447,7 @@ public class RestppConnection extends Connection {
 
     result = executeQuery(queries.get(0), "");
 
-    /**
-     * Execute the queries one by one,
-     * and append their results to the firt RestppResponse.
-     */
+    /** Execute the queries one by one, and append their results to the firt RestppResponse. */
     for (int i = 1; i < queries.size(); i++) {
       RestppResponse newResult = executeQuery(queries.get(i), "");
       result.addResults(newResult.getResults());
@@ -413,14 +457,13 @@ public class RestppConnection extends Connection {
   }
 
   /**
-   * Get token. e.g.,
-   * curl --user tigergraph:tigergraph -X POST \
+   * Get token. e.g., curl --user tigergraph:tigergraph -X POST \
    * 'http://localhost:14240/restpp/requesttoken' -d '{"graph": "example_graph"}'
    */
   private void getToken() throws SQLException {
     StringBuilder urlSb = new StringBuilder();
     // If restpp version is under 3.5, pass graph name as a parameter
-    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) < 0) {
+    if (this.tg_version.compareTo(new ComparableVersion("3.5.0")) < 0) {
       // /gsqlserver/gsql/authtoken is deprecated, it won't return error messages when
       // password is wrong
       urlSb.append("/gsqlserver/gsql/authtoken");
@@ -431,10 +474,8 @@ public class RestppConnection extends Connection {
     }
     String url = "";
     try {
-      if (this.secure)
-        url = new URL("https", host, port, urlSb.toString()).toString();
-      else
-        url = new URL("http", host, port, urlSb.toString()).toString();
+      if (this.secure) url = new URL("https", host, port, urlSb.toString()).toString();
+      else url = new URL("http", host, port, urlSb.toString()).toString();
     } catch (MalformedURLException e) {
       logger.error("Invalid server URL", e);
       throw new SQLException("Invalid server URL", e);
@@ -445,7 +486,7 @@ public class RestppConnection extends Connection {
     request.addHeader("Accept", ContentType.APPLICATION_JSON.toString());
 
     // If restpp version is no less than 3.5, pass graph name as payload
-    if (this.restpp_version.compareTo(new ComparableVersion("3.5.0")) >= 0) {
+    if (this.tg_version.compareTo(new ComparableVersion("3.5.0")) >= 0) {
       StringBuilder payloadSb = new StringBuilder();
       payloadSb.append("{\"graph\":\"");
       payloadSb.append(this.graph);
@@ -460,16 +501,18 @@ public class RestppConnection extends Connection {
      */
     try (CloseableHttpResponse response = httpClient.execute(request)) {
       /**
-       * When authentication is turned off, the token request will fail.
-       * In this case, just do not use token and print warning instead of panic.
+       * When authentication is turned off, the token request will fail. In this case, just do not
+       * use token and print warning instead of panic.
        */
       RestppResponse result = new RestppResponse(response, Boolean.FALSE);
       if (result.hasError() != null && result.hasError()) {
         if (result.getErrCode() != null && result.getErrCode().equals("REST-1000")) {
           logger.warn(
-              "RESTPP authentication is not enabled: https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
+              "RESTPP authentication is not enabled:"
+                  + " https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
         } else {
-          logger.warn("Failed to get token: {}", result.getErrMsg());
+          logger.error(
+              "Failed to get token: {} The following requests may fail.", result.getErrMsg());
         }
       } else {
         List<JSONObject> jsonList = result.getResults();
@@ -488,8 +531,7 @@ public class RestppConnection extends Connection {
     }
   }
 
-  public RestppResponse executeQuery(QueryParser parser,
-      String json) throws SQLException {
+  public RestppResponse executeQuery(QueryParser parser, String json) throws SQLException {
     RestppResponse result = null;
     Integer retry = 0;
     Integer max_retry = 10;
@@ -501,90 +543,76 @@ public class RestppConnection extends Connection {
         int index = rand.nextInt(this.ipArray.length);
         host = this.ipArray[index];
       }
-      HttpRequestBase request = parser.buildQuery(host, port, secure,
-          graph, token, json, filename, sep, eol);
+      HttpRequestBase request =
+          parser.buildQuery(
+              host,
+              port,
+              secure,
+              graph,
+              token,
+              json,
+              filename,
+              sep,
+              eol,
+              jobid,
+              max_num_error,
+              max_percent_error);
+      logger.debug("Send request: {}", request.toString());
       try (CloseableHttpResponse response = httpClient.execute(request)) {
         result = new RestppResponse(response, Boolean.TRUE);
         break;
-      } catch (Exception e) {
+        // The following won't be retried:
+        // 401: Unauthorized;
+        // 400: Bad Request. The plain HTTP request was sent to HTTPS port;
+        // 404: graph schema not found.
+        // The transient failures that worth retrying are only 408, 502, and SocketTimeoutException.
+        // Also add 500, 503 and 504 to make it more bulletproof.
+      } catch (SQLTransientException | SocketTimeoutException e) {
         if (retry >= max_retry - 1) {
-          logger.error("Failed to execute query: request: " + request +
-              ", payload size: " + json.length(), e);
-          throw new SQLException("Failed to execute query: request: " + request +
-              ", payload size: " + json.length(), e);
+          logger.error(
+              "Failed to execute query after retries: request: "
+                  + request
+                  + ", payload size: "
+                  + json.length(),
+              e);
+          throw new SQLException(
+              "Failed to execute query after retries: request: "
+                  + request
+                  + ", payload size: "
+                  + json.length(),
+              e);
         } else {
           // Exponential Backoff
-          logger.info("Retrying in {} seconds......", (long) (Math.pow(2, retry) * 5));
+          long backOffSeconds = (long) (Math.pow(2, retry) * 5);
+          logger.error(
+              "RESTPP busy, failed to execute query. Retrying in {} seconds...... {}",
+              backOffSeconds,
+              e.getMessage());
           try {
-            Thread.sleep((long) (Math.pow(2, retry) * 5 * SECOND));
+            Thread.sleep(backOffSeconds * 1000);
           } catch (InterruptedException ex) {
             // Nothing to do
           }
         }
+      } catch (Exception e) {
+        logger.error(
+            "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
+        throw new SQLException(
+            "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
       }
     }
     if (retry > 0) {
-      logger.debug("Rest request succeeded after {} times retry.", retry);
+      logger.debug("Rest request succeeded after {} times retries.", retry);
     }
     return result;
   }
 
   /**
-   * Check the connectivity to TG server before any requests.
+   * Create an Array object which can be used with <code>
+   * public void setArray(int parameterIndex, Array val)</code>
    *
-   * @throws SQLException if jks certificate is invalid
-   * @throws SQLException if use http while TG server has SSL enabled
-   * @throws SQLException if use https while TG server has SSL disabled
-   * @throws SQLException if connection fail (timeout, wrong ip address, wrong
-   *                      port, firewall, etc.)
-   *
-   *
-   */
-  private void checkConnectivity() throws SQLException {
-    String healthCheckEndpoint = "/api/ping";
-    String url = "";
-    try {
-      if (this.secure)
-        url = new URL("https", host, port, healthCheckEndpoint).toString();
-      else
-        url = new URL("http", host, port, healthCheckEndpoint).toString();
-    } catch (MalformedURLException e) {
-      logger.error("Invalid server URL", e);
-      throw new SQLException("Invalid server URL", e);
-    }
-    HttpRequestBase request = new HttpGet(url);
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      RestppResponse result = new RestppResponse(response, Boolean.FALSE);
-
-      if (result.hasError() != null && result.hasError()) {
-        throw new SQLException("Error response message: " + result.getErrMsg());
-      }
-
-      // No error code or error msgs provided here
-      if (result.getContent().contains("The plain HTTP request was sent to HTTPS port")) {
-        throw new SQLException(
-            "Tigergraph server has SSL enabled, please use HTTPS instead. https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver#support-ssl");
-      }
-
-    } catch (SSLHandshakeException e) {
-      logger.error("Invalid TigerGraph server certificate", e);
-      throw new SQLException("Invalid TigerGraph server certificate", e);
-    } catch (SSLException e) {
-      logger.error("Build SSL connection failed", e);
-      throw new SQLException("Build SSL connection failed", e);
-    } catch (Exception e) {
-      logger.error("Failed to connect to TigerGraph server", e);
-      throw new SQLException("Failed to connect to TigerGraph server", e);
-    }
-  }
-
-  /**
-   * Create an Array object which can be used with
-   * <code>public void setArray(int parameterIndex, Array val)</code>
-   *
-   * @param typeName the SQL name of the type the elements of the array
-   *                 map to. Should be one of
-   *                 SHORT,INTEGER,BYTE,LONG,DOUBLE,FLOAT,BOOLEAN,TIMESTAMP,DATE,DECIMAL,BINARY,ANY.
+   * @param typeName the SQL name of the type the elements of the array map to. Should be one of
+   *     SHORT,INTEGER,BYTE,LONG,DOUBLE,FLOAT,BOOLEAN,TIMESTAMP,DATE,DECIMAL,BINARY,ANY.
    */
   @Override
   public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
@@ -608,20 +636,20 @@ public class RestppConnection extends Connection {
 
   @Override
   public PreparedStatement prepareStatement(String query) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
   }
 
   @Override
-  public PreparedStatement prepareStatement(String query,
-      int resultSetType, int resultSetConcurrency) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
+  public PreparedStatement prepareStatement(
+      String query, int resultSetType, int resultSetConcurrency) throws SQLException {
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
   }
 
   @Override
-  public PreparedStatement prepareStatement(String query,
-      int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+  public PreparedStatement prepareStatement(
+      String query, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic);
+    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
   }
 
   @Override
@@ -671,10 +699,7 @@ public class RestppConnection extends Connection {
     return Boolean.TRUE;
   }
 
-  /**
-   * Methods not implemented yet.
-   */
-
+  /** Methods not implemented yet. */
   @Override
   public void setHoldability(int holdability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
@@ -686,15 +711,14 @@ public class RestppConnection extends Connection {
   }
 
   @Override
-  public java.sql.Statement createStatement(int resultSetType,
-      int resultSetConcurrency) throws SQLException {
+  public java.sql.Statement createStatement(int resultSetType, int resultSetConcurrency)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public java.sql.Statement createStatement(int resultSetType,
-      int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+  public java.sql.Statement createStatement(
+      int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
 }

@@ -11,17 +11,13 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 
-/**
- * JDBC Driver class for the Restpp connector.
- */
+/** JDBC Driver class for the Restpp connector. */
 public class RestppDriver extends BaseDriver {
 
-  public final static String JDBC_RESTPP_PREFIX = "http(s)?";
+  public static final String JDBC_RESTPP_PREFIX = "http(s)?";
   private static final Logger logger = TGLoggerFactory.getLogger(RestppDriver.class);
 
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public RestppDriver() throws SQLException {
     super(JDBC_RESTPP_PREFIX);
   }
@@ -31,7 +27,10 @@ public class RestppDriver extends BaseDriver {
     Connection connection = null;
     try {
       if (acceptsURL(url)) {
-        URL tgUrl = new URL(url.replace("jdbc:tg:", "").replaceAll("^(" + JDBC_RESTPP_PREFIX + ":)([^/])", "$1//$2"));
+        URL tgUrl =
+            new URL(
+                url.replace("jdbc:tg:", "")
+                    .replaceAll("^(" + JDBC_RESTPP_PREFIX + ":)([^/])", "$1//$2"));
         String host = tgUrl.getHost();
         Boolean secure = tgUrl.getProtocol().equals("https");
         int port = tgUrl.getPort();
@@ -40,9 +39,12 @@ public class RestppDriver extends BaseDriver {
         }
         connection = new RestppConnection(host, port, secure, params, url);
       } else {
-        logger.error("The URL is invalid. A valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
+        logger.error(
+            "The URL is invalid. A valid URL is a string like this:"
+                + " 'jdbc:tg:http[s]://<host>:<port>'");
         throw new SQLException(
-            "The URL is invalid. A valid URL is a string like this: 'jdbc:tg:http[s]://<host>:<port>'");
+            "The URL is invalid. A valid URL is a string like this:"
+                + " 'jdbc:tg:http[s]://<host>:<port>'");
       }
     } catch (MalformedURLException e) {
       logger.error("The URL is invalid", e);
@@ -51,5 +53,4 @@ public class RestppDriver extends BaseDriver {
 
     return connection;
   }
-
 }

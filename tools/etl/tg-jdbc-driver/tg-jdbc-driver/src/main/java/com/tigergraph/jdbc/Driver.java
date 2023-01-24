@@ -13,14 +13,13 @@ import java.util.Properties;
 
 public class Driver extends BaseDriver {
 
-  /**
-   * Hash map of all available drivers.
-   */
-  private final Map<String, Class> DRIVERS = new HashMap<String, Class>() {
-    {
-      put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
-    }
-  };
+  /** Hash map of all available drivers. */
+  private final Map<String, Class> DRIVERS =
+      new HashMap<String, Class>() {
+        {
+          put(RestppDriver.JDBC_RESTPP_PREFIX, RestppDriver.class);
+        }
+      };
 
   public Driver() throws SQLException {
     super(null);
@@ -38,9 +37,7 @@ public class Driver extends BaseDriver {
     return getDriver(url).connect(url, info);
   }
 
-  /**
-   * Retrieve the corresponding driver according to url.
-   */
+  /** Retrieve the corresponding driver according to url. */
   private BaseDriver getDriver(String url) throws SQLException {
     BaseDriver driver = null;
 

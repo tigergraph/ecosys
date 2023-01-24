@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.*;
@@ -43,9 +42,13 @@ public class RestppResultSet extends ResultSet {
   private boolean isGettingEdge_ = false;
   private QueryType query_type_ = QueryType.QUERY_TYPE_UNKNOWN;
 
-  public RestppResultSet(Statement statement,
-      List<JSONObject> resultList, List<String> field_list, QueryType query_type,
-      boolean isGettingEdge) throws SQLException {
+  public RestppResultSet(
+      Statement statement,
+      List<JSONObject> resultList,
+      List<String> field_list,
+      QueryType query_type,
+      boolean isGettingEdge)
+      throws SQLException {
     this.statement_ = statement;
     this.query_type_ = query_type;
     this.isGettingEdge_ = isGettingEdge;
@@ -64,11 +67,10 @@ public class RestppResultSet extends ResultSet {
   }
 
   /**
-   * For Spark to get schema for a loading job.
-   * lineSchema is the definition of each column of the data file.
+   * For Spark to get schema for a loading job. lineSchema is the definition of each column of the
+   * data file.
    */
-  public RestppResultSet(Statement statement,
-      String lineSchema) {
+  public RestppResultSet(Statement statement, String lineSchema) {
     this.statement_ = statement;
     this.resultSets_ = new ArrayList<>();
     this.attribute_list_ = new ArrayList<>();
@@ -78,9 +80,7 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  /**
-   * Parse a vertex's schema definition.
-   */
+  /** Parse a vertex's schema definition. */
   private void parseSchemaVertex(JSONObject obj) {
     this.table_name_ = obj.getString("Name");
     // Get primary id.
@@ -91,10 +91,9 @@ public class RestppResultSet extends ResultSet {
     if (value instanceof JSONObject) {
       attr_type = ((JSONObject) value).getString("Name");
       /**
-       * When retrieving vertex schema, the primary_id is denoted as the name defined
-       * in schema.
-       * While in the query results, primary_id is denoted as "v_id".
-       * So "v_id" is used for both cases for consistency.
+       * When retrieving vertex schema, the primary_id is denoted as the name defined in schema.
+       * While in the query results, primary_id is denoted as "v_id". So "v_id" is used for both
+       * cases for consistency.
        */
       this.attribute_list_.add(new Attribute("v_id", attr_type, Boolean.TRUE));
     }
@@ -107,8 +106,7 @@ public class RestppResultSet extends ResultSet {
         attr_type = ((JSONObject) value).getString("Name");
         /**
          * For Spark getting CatalystType of LIST/SET
-         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} =>
-         * attr_type = LIST.INT
+         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} => attr_type = LIST.INT
          */
         if (((JSONObject) value).has("ValueTypeName")) {
           attr_type = attr_type + "." + ((JSONObject) value).getString("ValueTypeName");
@@ -118,18 +116,14 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  /**
-   * Parse a edge's schema definition.
-   */
+  /** Parse a edge's schema definition. */
   private void parseSchemaEdge(JSONObject obj) {
     this.table_name_ = obj.getString("Name");
     String from_vertex_type = obj.getString("FromVertexTypeName");
     String to_vertex_type = obj.getString("ToVertexTypeName");
     /**
-     * Spark will raise exception when found duplicate column names,
-     * but TigerGraph edges' source vertex and target vertex can be of the same
-     * type.
-     * So prefix was added here.
+     * Spark will raise exception when found duplicate column names, but TigerGraph edges' source
+     * vertex and target vertex can be of the same type. So prefix was added here.
      */
     if (from_vertex_type.equals(to_vertex_type) && this.isGettingEdge_) {
       this.attribute_list_.add(new Attribute("from." + from_vertex_type, "STRING", Boolean.TRUE));
@@ -147,8 +141,7 @@ public class RestppResultSet extends ResultSet {
         attr_type = ((JSONObject) value).getString("Name");
         /**
          * For Spark getting CatalystType of LIST/SET
-         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} =>
-         * attr_type = LIST.INT
+         * {"AttributeType":{"ValueTypeName":"INT","Name":"LIST"} => attr_type = LIST.INT
          */
         if (((JSONObject) value).has("ValueTypeName")) {
           attr_type = attr_type + "." + ((JSONObject) value).getString("ValueTypeName");
@@ -158,16 +151,35 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  private void parseKeyValue(ArrayList<Attribute> attribute_list,
-      String key, Object value, List<Integer> scale_list, List<Integer> precision_list) {
+  private void parseStatistics(JSONObject obj) {
+    Map<String, Object> map = new HashMap<String, Object>();
+    ArrayList<Attribute> attribute_list = new ArrayList<>();
+    ArrayList<Integer> scale_list = new ArrayList<>();
+    ArrayList<Integer> precision_list = new ArrayList<>();
+    Set<String> key_set = new HashSet<String>();
+    // Since the statistics json object has many levels of nested objects,
+    // so we simply convert it to String and save to a single column.
+    map.put("statistics", obj.toString());
+    attribute_list.add(new Attribute("statistics", "STRING", Boolean.FALSE));
+    key_set.add("statistics");
+    scale_list.add(0);
+    precision_list.add(0);
+    addToTable(map, attribute_list, key_set, "statistics", scale_list, precision_list);
+  }
+
+  private void parseKeyValue(
+      ArrayList<Attribute> attribute_list,
+      String key,
+      Object value,
+      List<Integer> scale_list,
+      List<Integer> precision_list) {
     String str = String.valueOf(value);
     int length = str.length();
     precision_list.add(length);
     /**
-     * An attribute's values could be int for some vertices,
-     * and float for others (e.g., pagerank score).
-     * As a workaround, all integers are treated as float.
-     * Will change it back after supporting retrieving query schema.
+     * An attribute's values could be int for some vertices, and float for others (e.g., pagerank
+     * score). As a workaround, all integers are treated as float. Will change it back after
+     * supporting retrieving query schema.
      */
     if (value instanceof Number) {
       int index = str.indexOf('.');
@@ -183,9 +195,7 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  /**
-   * Parse a JSONObject that represents a vertex.
-   */
+  /** Parse a JSONObject that represents a vertex. */
   private void parseVertex(JSONObject obj) {
     Map<String, Object> map = new HashMap<String, Object>();
     ArrayList<Attribute> attribute_list = new ArrayList<>();
@@ -212,9 +222,7 @@ public class RestppResultSet extends ResultSet {
     addToTable(map, attribute_list, key_set, table_name, scale_list, precision_list);
   }
 
-  /**
-   * Parse a JSONObject that represents an edge.
-   */
+  /** Parse a JSONObject that represents an edge. */
   private void parseEdge(JSONObject obj) {
     Map<String, Object> map = new HashMap<String, Object>();
     ArrayList<Attribute> attribute_list = new ArrayList<>();
@@ -255,11 +263,14 @@ public class RestppResultSet extends ResultSet {
     addToTable(map, attribute_list, key_set, table_name, scale_list, precision_list);
   }
 
-  /**
-   * Add current result (a row) to a table.
-   */
-  private void addToTable(Map<String, Object> map, ArrayList<Attribute> attribute_list,
-      Set<String> key_set, String table_name, List<Integer> scale_list, List<Integer> precision_list) {
+  /** Add current result (a row) to a table. */
+  private void addToTable(
+      Map<String, Object> map,
+      ArrayList<Attribute> attribute_list,
+      Set<String> key_set,
+      String table_name,
+      List<Integer> scale_list,
+      List<Integer> precision_list) {
     if (this.key_set_.size() == 0) { // It is the first table.
       this.attribute_list_ = attribute_list;
       this.key_set_ = key_set;
@@ -270,27 +281,23 @@ public class RestppResultSet extends ResultSet {
     } else {
       if (this.key_set_.equals(key_set)) {
         /**
-         * If the schema of current result is the same as current table,
-         * just add the result to this table.
+         * If the schema of current result is the same as current table, just add the result to this
+         * table.
          */
         this.resultSets_.add(map);
         if (this.scale_list_.size() == scale_list.size()) {
           for (int i = 0; i < scale_list.size(); ++i) {
-            this.scale_list_.set(i,
-                Math.max(this.scale_list_.get(i), scale_list.get(i)));
+            this.scale_list_.set(i, Math.max(this.scale_list_.get(i), scale_list.get(i)));
           }
         }
         if (this.precision_list_.size() == precision_list.size()) {
           for (int i = 0; i < precision_list.size(); ++i) {
-            this.precision_list_.set(i,
-                Math.max(this.precision_list_.get(i), precision_list.get(i)));
+            this.precision_list_.set(
+                i, Math.max(this.precision_list_.get(i), precision_list.get(i)));
           }
         }
       } else {
-        /**
-         * Otherwise, we need to store the current table,
-         * and switch to a new table.
-         */
+        /** Otherwise, we need to store the current table, and switch to a new table. */
         updateTableResults();
         this.attribute_list_ = attribute_list;
         this.precision_list_ = precision_list;
@@ -303,12 +310,10 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  /**
-   * Add current ResultSet to table list.
-   */
+  /** Add current ResultSet to table list. */
   private void updateTableResults() {
-    this.tableResults_.add(new TableResults(this.resultSets_,
-        this.attribute_list_, this.table_name_));
+    this.tableResults_.add(
+        new TableResults(this.resultSets_, this.attribute_list_, this.table_name_));
     if ((this.scale_list_ == null) || (this.precision_list_ == null)) {
       // No result.
       return;
@@ -326,8 +331,7 @@ public class RestppResultSet extends ResultSet {
   }
 
   /**
-   * Parse an arbitrary JSONObject, which could be a vertex, an edge,
-   * JSONArray, or key/value pairs.
+   * Parse an arbitrary JSONObject, which could be a vertex, an edge, JSONArray, or key/value pairs.
    */
   private void parseJSONObject(JSONObject obj) {
     Map<String, Object> map = new HashMap<String, Object>();
@@ -369,9 +373,7 @@ public class RestppResultSet extends ResultSet {
     }
   }
 
-  /**
-   * Parse a JSONObject based on query type.
-   */
+  /** Parse a JSONObject based on query type. */
   private void parseResult(JSONObject obj, QueryType query_type) throws SQLException {
     switch (query_type) {
       case QUERY_TYPE_GRAPH_GET_VERTEX:
@@ -385,6 +387,9 @@ public class RestppResultSet extends ResultSet {
         break;
       case QUERY_TYPE_SCHEMA_VERTEX:
         parseSchemaVertex(obj);
+        break;
+      case QUERY_TYPE_JOBID_STATS:
+        parseStatistics(obj);
         break;
       case QUERY_TYPE_BUILTIN:
       case QUERY_TYPE_INSTALLED:
@@ -440,8 +445,10 @@ public class RestppResultSet extends ResultSet {
 
   public Object get(int columnIndex) throws SQLException {
     if (columnIndex > this.attribute_list_.size()) {
-      logger.error("Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
-      throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
+      logger.error(
+          "Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
+      throw new SQLException(
+          "Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
     }
     Object value = this.resultSets_.get(columnIndex - 1);
 
@@ -454,15 +461,19 @@ public class RestppResultSet extends ResultSet {
     // Attributes reordering for Spark
     if (this.field_list_.size() > 0) {
       if (columnIndex > this.field_list_.size()) {
-        logger.error("Column index out of range. {} out of {}.", columnIndex, this.field_list_.size());
-        throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.field_list_.size());
+        logger.error(
+            "Column index out of range. {} out of {}.", columnIndex, this.field_list_.size());
+        throw new SQLException(
+            "Column index out of range. " + columnIndex + " out of " + this.field_list_.size());
       }
       return getObject(this.field_list_.get(columnIndex - 1));
     }
 
     if (columnIndex > this.attribute_list_.size()) {
-      logger.error("Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
-      throw new SQLException("Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
+      logger.error(
+          "Column index out of range. {} out of {}.", columnIndex, this.attribute_list_.size());
+      throw new SQLException(
+          "Column index out of range. " + columnIndex + " out of " + this.attribute_list_.size());
     }
     String name = this.attribute_list_.get(columnIndex - 1).getName();
     return getObject(name);
@@ -624,10 +635,7 @@ public class RestppResultSet extends ResultSet {
     return new com.tigergraph.jdbc.common.ResultSetMetaData(this.table_name_, this.attribute_list_);
   }
 
-  /**
-   * Methods not implemented yet.
-   */
-
+  /** Methods not implemented yet. */
   @Override
   public int getType() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");

@@ -10,9 +10,7 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
   private List<Attribute> attributeList;
   private int column_size;
 
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public ResultSetMetaData(String table_name, List<Attribute> attributeList) {
     this.table_name = table_name;
     this.attributeList = attributeList;
@@ -28,63 +26,75 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
     return index;
   }
 
-  @Override public int getColumnCount() throws SQLException {
+  @Override
+  public int getColumnCount() throws SQLException {
     return this.column_size;
   }
 
-  @Override public String getColumnLabel(int column) throws SQLException {
+  @Override
+  public String getColumnLabel(int column) throws SQLException {
     int index = getValidColumnIndex(column);
 
     return this.attributeList.get(index).getName();
   }
 
-  @Override public String getColumnName(int column) throws SQLException {
+  @Override
+  public String getColumnName(int column) throws SQLException {
     int index = getValidColumnIndex(column);
 
     return this.attributeList.get(index).getName();
   }
 
-  @Override public String getCatalogName(int column) throws SQLException {
+  @Override
+  public String getCatalogName(int column) throws SQLException {
     int index = getValidColumnIndex(column);
 
     return this.table_name;
   }
 
-  @Override public boolean isAutoIncrement(int column) throws SQLException {
+  @Override
+  public boolean isAutoIncrement(int column) throws SQLException {
     return Boolean.FALSE;
   }
 
-  @Override public boolean isSearchable(int column) throws SQLException {
+  @Override
+  public boolean isSearchable(int column) throws SQLException {
     return Boolean.FALSE;
   }
 
-  @Override public boolean isCurrency(int column) throws SQLException {
+  @Override
+  public boolean isCurrency(int column) throws SQLException {
     return Boolean.FALSE;
   }
 
-  @Override public int isNullable(int column) throws SQLException {
+  @Override
+  public int isNullable(int column) throws SQLException {
     return java.sql.ResultSetMetaData.columnNoNulls;
   }
 
   // Spark determines to convert Types.BIGINT to LongType or DecimalType(20,0) base on 'isSigned'
-  @Override public boolean isSigned(int column) throws SQLException {
-    if(this.getColumnTypeName(column).toLowerCase().equals("uint")){
+  @Override
+  public boolean isSigned(int column) throws SQLException {
+    if (this.getColumnTypeName(column).toLowerCase().equals("uint")) {
       return Boolean.FALSE;
     }
     return Boolean.TRUE;
   }
 
-  @Override public int getPrecision(int column) throws SQLException {
+  @Override
+  public int getPrecision(int column) throws SQLException {
     int index = getValidColumnIndex(column);
     return this.attributeList.get(index).getPrecision();
   }
 
-  @Override public int getScale(int column) throws SQLException {
+  @Override
+  public int getScale(int column) throws SQLException {
     int index = getValidColumnIndex(column);
     return this.attributeList.get(index).getScale();
   }
 
-  @Override public int getColumnType(int column) throws SQLException {
+  @Override
+  public int getColumnType(int column) throws SQLException {
     int index = getValidColumnIndex(column);
     String type = this.attributeList.get(index).getType().toLowerCase();
     if (type.equals("string") || type.equals("string compress")) {
@@ -105,7 +115,7 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
     if (type.equals("float")) {
       return Types.FLOAT;
     }
-    if (type.startsWith("list")||type.startsWith("set")){
+    if (type.startsWith("list") || type.startsWith("set")) {
       return Types.ARRAY;
     }
     /*
@@ -115,54 +125,61 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
     return Types.VARCHAR;
   }
 
-  @Override public String getColumnTypeName(int column) throws SQLException {
+  @Override
+  public String getColumnTypeName(int column) throws SQLException {
     int index = getValidColumnIndex(column);
 
     return this.attributeList.get(index).getType();
   }
 
-  /**
-   * Methods not implemented yet.
-   */
-
-  @Override public boolean isWritable(int column) throws SQLException {
+  /** Methods not implemented yet. */
+  @Override
+  public boolean isWritable(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isDefinitelyWritable(int column) throws SQLException {
+  @Override
+  public boolean isDefinitelyWritable(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public <T> T unwrap(Class<T> iface) throws SQLException {
+  @Override
+  public <T> T unwrap(Class<T> iface) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isWrapperFor(Class<?> iface) throws SQLException {
+  @Override
+  public boolean isWrapperFor(Class<?> iface) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getColumnClassName(int column) throws SQLException {
+  @Override
+  public String getColumnClassName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getTableName(int column) throws SQLException {
+  @Override
+  public String getTableName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getSchemaName(int column) throws SQLException {
+  @Override
+  public String getSchemaName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isCaseSensitive(int column) throws SQLException {
+  @Override
+  public boolean isCaseSensitive(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isReadOnly(int column) throws SQLException {
+  @Override
+  public boolean isReadOnly(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getColumnDisplaySize(int column) throws SQLException {
+  @Override
+  public int getColumnDisplaySize(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
 }

@@ -2,20 +2,17 @@ package com.tigergraph.jdbc.examples;
 
 import com.tigergraph.jdbc.*;
 import com.tigergraph.jdbc.restpp.*;
-import java.sql.DriverManager;
 import java.util.Properties;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.Statement;
 
 /**
- * Example code to demonstrate how to query certain vertices & edges.
- * The corresponding TigerGraph demo could be found at:
- * data socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
- * query ref: https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_list_vertices
+ * Example code to demonstrate how to query certain vertices & edges. The corresponding TigerGraph
+ * demo could be found at: data socailNet:
+ * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs query ref:
+ * https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_list_vertices
  */
-public class GraphQuery
-{
+public class GraphQuery {
   public static void main(String[] args) throws SQLException {
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
@@ -23,8 +20,8 @@ public class GraphQuery
     Integer port = 14240;
 
     /**
-     * Only accept 4 parameters: IP address, port, debug and graph name.
-     * Enable debug when the third parameter's value is larger than 0.
+     * Only accept 4 parameters: IP address, port, debug and graph name. Enable debug when the third
+     * parameter's value is larger than 0.
      */
     if (args.length == 4) {
       ipAddr = args[0];
@@ -36,15 +33,11 @@ public class GraphQuery
       properties.put("graph", args[3]);
     }
 
-    /**
-     * Need to specify username and password once REST++ authentication is enabled.
-     */
+    /** Need to specify username and password once REST++ authentication is enabled. */
     properties.put("username", "tigergraph");
     properties.put("password", "tigergraph");
 
-    /**
-     * Specify SSL certificate
-     */
+    /** Specify SSL certificate */
     properties.put("trustStore", "/tmp/trust.jks");
     properties.put("trustStorePassword", "password");
     properties.put("trustStoreType", "JKS");
@@ -53,10 +46,9 @@ public class GraphQuery
     properties.put("keyStorePassword", "password");
     properties.put("keyStoreType", "JKS");
 
-
     /**
-     * Specify ip address and port of the TigerGraph server.
-     * Please use 'https' instead once ssl is enabled.
+     * Specify ip address and port of the TigerGraph server. Please use 'https' instead once ssl is
+     * enabled.
      */
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:https://").append(ipAddr).append(":").append(port);
@@ -66,8 +58,8 @@ public class GraphQuery
 
       try (Connection con = driver.connect(sb.toString(), properties)) {
         /**
-         * To get vertices of person type whose 'gender' is Female.
-         * If the value on the right side of a filter is a string literal, it should be enclosed in double-quotes.
+         * To get vertices of person type whose 'gender' is Female. If the value on the right side
+         * of a filter is a string literal, it should be enclosed in double-quotes.
          */
         String query = "get vertex(person) params(filter=?)";
         System.out.println("Running \"get vertex(person) params(filter=?)\"...");
@@ -93,12 +85,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * To get a person which has the given id
-         */
+        /** To get a person which has the given id */
         System.out.println();
         query = "get vertex(person,?)";
         System.out.println("Running \"get vertex(person,?)\"...");
@@ -124,12 +114,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * To get all edges from a given vertex
-         */
+        /** To get all edges from a given vertex */
         System.out.println();
         query = "get edge(person, ?)";
         System.out.println("Running \"get edge(person, ?)\"...");
@@ -155,12 +143,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * To get all edges from a given vertex and edge type
-         */
+        /** To get all edges from a given vertex and edge type */
         System.out.println();
         query = "get edge(person, ?, posted)";
         System.out.println("Running \"get edge(person, ?, posted)\"...");
@@ -186,12 +172,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * To get all edges from a given vertex, edge type and target vertex type
-         */
+        /** To get all edges from a given vertex, edge type and target vertex type */
         System.out.println();
         query = "get edge(person, ?, posted, post)";
         System.out.println("Running \"get edge(person, ?, posted, post)\"...");
@@ -217,12 +201,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * To get a specific edge from a given vertex to another specific vertex
-         */
+        /** To get a specific edge from a given vertex to another specific vertex */
         System.out.println();
         query = "get edge(person, ?, friend, person, ?)";
         System.out.println("Running \"get edge(person, ?, friend, person, ?)\"...");
@@ -249,14 +231,14 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * Delete edges with PreparedStatement.
-         */
+        /** Delete edges with PreparedStatement. */
         System.out.println("");
-        System.out.println("Running \"DELETE edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id)\"...");
+        System.out.println(
+            "Running \"DELETE edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type,"
+                + " tgt_vertex_id)\"...");
         query = "DELETE edge(person, ?, liked, post, ?)";
         try {
           java.sql.PreparedStatement pstmt = con.prepareStatement(query);
@@ -282,12 +264,10 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * Delete vertices with PreparedStatement.
-         */
+        /** Delete vertices with PreparedStatement. */
         System.out.println("");
         System.out.println("Running \"DELETE vertex(person, ?)\"...");
         query = "DELETE vertex(person, ?)";
@@ -314,14 +294,14 @@ public class GraphQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
       } catch (SQLException e) {
-          System.out.println( "Failed to getConnection: " + e);
+        System.out.println("Failed to getConnection: " + e);
       }
     } catch (SQLException e) {
-        System.out.println( "Failed to init Driver: " + e);
+      System.out.println("Failed to init Driver: " + e);
     }
   }
 }

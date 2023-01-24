@@ -15,29 +15,36 @@ public abstract class BaseDriver implements java.sql.Driver {
     DriverManager.registerDriver(this);
   }
 
-  @Override public abstract Connection connect(String url, Properties info) throws SQLException;
+  @Override
+  public abstract Connection connect(String url, Properties info) throws SQLException;
 
-	@Override public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-		return new DriverPropertyInfo[0];
-	}
+  @Override
+  public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+    return new DriverPropertyInfo[0];
+  }
 
-	@Override public int getMajorVersion() {
-		return 1;
-	}
+  @Override
+  public int getMajorVersion() {
+    return 1;
+  }
 
-	@Override public int getMinorVersion() {
-		return 0;
-	}
+  @Override
+  public int getMinorVersion() {
+    return 0;
+  }
 
-	@Override public boolean jdbcCompliant() {
-		return false;
-	}
+  @Override
+  public boolean jdbcCompliant() {
+    return false;
+  }
 
-	@Override public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+  @Override
+  public Logger getParentLogger() throws SQLFeatureNotSupportedException {
     throw new UnsupportedOperationException("Not implemented yet.");
-	}
+  }
 
-  @Override public boolean acceptsURL(String url) throws SQLException {
+  @Override
+  public boolean acceptsURL(String url) throws SQLException {
     if (null == url) {
       throw new SQLException("url is invalid.");
     }
@@ -52,5 +59,4 @@ public abstract class BaseDriver implements java.sql.Driver {
     }
     return false;
   }
-
 }

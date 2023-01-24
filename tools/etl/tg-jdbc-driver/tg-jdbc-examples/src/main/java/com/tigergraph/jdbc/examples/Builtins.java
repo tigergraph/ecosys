@@ -8,10 +8,10 @@ import java.sql.Statement;
 import java.util.Properties;
 
 /**
- * Example code to demonstrate how to invoke TigerGraph builtin queries
- * The corresponding TigerGraph demo could be found at:
- * https://docs.tigergraph.com/gsql-ref/3.2/tutorials/gsql-101/built-in-select-queries
- * data socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
+ * Example code to demonstrate how to invoke TigerGraph builtin queries The corresponding TigerGraph
+ * demo could be found at:
+ * https://docs.tigergraph.com/gsql-ref/3.2/tutorials/gsql-101/built-in-select-queries data
+ * socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
  */
 public class Builtins {
   public static void main(String[] args) throws SQLException {
@@ -20,15 +20,13 @@ public class Builtins {
     // port of GraphStudio
     Integer port = 14240;
 
-    /**
-     * Need to specify username and password once REST++ authentication is enabled.
-     */
+    /** Need to specify username and password once REST++ authentication is enabled. */
     properties.put("username", "tigergraph");
     properties.put("password", "tigergraph");
 
     /**
-     * Only accept 4 parameters: IP address, port, debug and graph name.
-     * Enable debug when the third parameter's value is larger than 0.
+     * Only accept 4 parameters: IP address, port, debug and graph name. Enable debug when the third
+     * parameter's value is larger than 0.
      */
     if (args.length == 4) {
       ipAddr = args[0];
@@ -41,8 +39,8 @@ public class Builtins {
     }
 
     /**
-     * Specify ip address and port of the TigerGraph server.
-     * Please use 'https' instead once ssl is enabled.
+     * Specify ip address and port of the TigerGraph server. Please use 'https' instead once ssl is
+     * enabled.
      */
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
@@ -51,9 +49,7 @@ public class Builtins {
       com.tigergraph.jdbc.Driver driver = new Driver();
       try (Connection con = driver.connect(sb.toString(), properties)) {
         try (Statement stmt = con.createStatement()) {
-          /**
-           * Run a builtin query without any parameter.
-           */
+          /** Run a builtin query without any parameter. */
           String query = "builtins stat_vertex_number";
           System.out.println("Running \"builtins stat_vertex_number\"...");
           try (java.sql.ResultSet rs = stmt.executeQuery(query)) {
@@ -75,9 +71,7 @@ public class Builtins {
             } while (!rs.isLast());
           }
 
-          /**
-           * Run a builtin query with a parameter.
-           */
+          /** Run a builtin query with a parameter. */
           System.out.println();
           System.out.println("Running \"builtins stat_vertex_number(type=?)\"...");
           query = "builtins stat_vertex_number(type=?)";
@@ -103,9 +97,7 @@ public class Builtins {
             }
           }
 
-          /**
-           * Get edge number statistics.
-           */
+          /** Get edge number statistics. */
           System.out.println();
           System.out.println("Running \"builtins stat_edge_number\"...");
           query = "builtins stat_edge_number";
@@ -128,9 +120,7 @@ public class Builtins {
             } while (!rs.isLast());
           }
 
-          /**
-           * Get total number of a specific edge type.
-           */
+          /** Get total number of a specific edge type. */
           System.out.println();
           System.out.println("Running \"builtins stat_edge_number(type=?)\"...");
           query = "builtins stat_edge_number(type=?)";
@@ -156,14 +146,13 @@ public class Builtins {
             }
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
       } catch (SQLException e) {
-          System.out.println( "Failed to getConnection: " + e);
+        System.out.println("Failed to getConnection: " + e);
       }
     } catch (SQLException e) {
-        System.out.println( "Failed to init Driver: " + e);
+      System.out.println("Failed to init Driver: " + e);
     }
   }
 }
-

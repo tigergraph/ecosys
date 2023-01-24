@@ -2,34 +2,29 @@ package com.tigergraph.jdbc.examples;
 
 import com.tigergraph.jdbc.*;
 import com.tigergraph.jdbc.restpp.*;
-import java.sql.DriverManager;
 import java.util.Properties;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.Statement;
 
 /**
- * Example code to demonstrate how to invoke TigerGraph pre-installed queries
- * The corresponding TigerGraph demo could be found at:
- * data socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
+ * Example code to demonstrate how to invoke TigerGraph pre-installed queries The corresponding
+ * TigerGraph demo could be found at: data socailNet:
+ * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
  */
-public class RunQuery
-{
+public class RunQuery {
   public static void main(String[] args) throws SQLException {
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
     // port of GraphStudio
     Integer port = 14240;
 
-    /**
-     * Need to specify username and password once REST++ authentication is enabled.
-     */
+    /** Need to specify username and password once REST++ authentication is enabled. */
     properties.put("username", "tigergraph");
     properties.put("password", "tigergraph");
 
     /**
-     * Only accept 4 parameters: IP address, port, debug and graph name.
-     * Enable debug when the third parameter's value is larger than 0.
+     * Only accept 4 parameters: IP address, port, debug and graph name. Enable debug when the third
+     * parameter's value is larger than 0.
      */
     if (args.length == 4) {
       ipAddr = args[0];
@@ -42,8 +37,8 @@ public class RunQuery
     }
 
     /**
-     * Specify ip address and port of the TigerGraph server.
-     * Please use 'https' instead once ssl is enabled.
+     * Specify ip address and port of the TigerGraph server. Please use 'https' instead once ssl is
+     * enabled.
      */
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
@@ -52,15 +47,12 @@ public class RunQuery
       com.tigergraph.jdbc.Driver driver = new Driver();
 
       try (Connection con = driver.connect(sb.toString(), properties)) {
-        /**
-         * Run an interpreted query with parameters.
-         */
+        /** Run an interpreted query with parameters. */
         System.out.println("");
         System.out.println("Running interpreted query \"run interpreted(a=?, b=?)\"...");
         String query = "run interpreted(a=?, b=?)";
-        String query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH socialNet {\n"
-                     + "PRINT a, b;\n"
-                     + "}\n";
+        String query_body =
+            "INTERPRET QUERY (int a, int b) FOR GRAPH socialNet {\n" + "PRINT a, b;\n" + "}\n";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "10");
           pstmt.setString(2, "20");
@@ -84,13 +76,13 @@ public class RunQuery
             } while (!rs.isLast());
           }
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
       } catch (SQLException e) {
-          System.out.println( "Failed to getConnection: " + e);
+        System.out.println("Failed to getConnection: " + e);
       }
     } catch (SQLException e) {
-        System.out.println( "Failed to init Driver: " + e);
+      System.out.println("Failed to init Driver: " + e);
     }
   }
 }

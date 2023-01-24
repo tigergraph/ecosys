@@ -10,19 +10,21 @@ import java.sql.PreparedStatement;
 import java.util.Base64;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-
 import java.sql.SQLException;
 
 // ###################################################
 // #     test request url, type and paload           #
 // ###################################################
-// get expected request from https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints
+// get expected request from
+// https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints
 // convert json payload to string by https://jsontostring.com
 
 public class RequestTest {
   static WireMockServer wireMockServer;
   static Connection con;
   static Properties properties;
+  static String url;
+  static com.tigergraph.jdbc.Driver driver;
 
   @BeforeAll
   static void prepare() throws Exception {
@@ -31,10 +33,12 @@ public class RequestTest {
     wireMockServer = new WireMockServer(options().dynamicPort());
     wireMockServer.start();
     // always return a correct response to avoid exceptions
-    wireMockServer.stubFor(any(anyUrl())
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withBody("{\"error\":false,\"results\":[{\"vertexName\":\"Person\"}]}")));
+    wireMockServer.stubFor(
+        any(anyUrl())
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withBody("{\"error\":false,\"results\":[{\"vertexName\":\"Person\"}]}")));
 
     // Connection to tg
     properties = new Properties();
@@ -49,10 +53,11 @@ public class RequestTest {
     properties.put("eol", "\n");
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
+    url = sb.toString();
+    driver = new Driver();
 
-    com.tigergraph.jdbc.Driver driver = new Driver();
     try {
-      con = driver.connect(sb.toString(), properties);
+      con = driver.connect(url, properties);
     } catch (Exception e) {
       // ignore response error info
     }
@@ -66,11 +71,16 @@ public class RequestTest {
   @Test
   @DisplayName("Should get token")
   void sendAuthRequest() throws SQLException, InterruptedException {
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/restpp/requesttoken"))
-        .withHeader("Authorization",
-            equalTo("Basic " + new String(Base64.getEncoder()
-                .encode(("tigergraph:tigergraph").getBytes()))))
-        .withRequestBody(equalToJson("{\"graph\":\"social\"}")));
+    wireMockServer.verify(
+        2,
+        postRequestedFor(urlEqualTo("/restpp/requesttoken"))
+            .withHeader(
+                "Authorization",
+                equalTo(
+                    "Basic "
+                        + new String(
+                            Base64.getEncoder().encode(("tigergraph:tigergraph").getBytes()))))
+            .withRequestBody(equalToJson("{\"graph\":\"social\"}")));
   }
 
   @Test
@@ -89,17 +99,19 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(2, postRequestedFor(urlEqualTo("/restpp/builtins/social"))
-        .withRequestBody(equalToJson("{\"function\":\"stat_vertex_number\",\"type\":\"Linkto\"}")));
+    wireMockServer.verify(
+        2,
+        postRequestedFor(urlEqualTo("/restpp/builtins/social"))
+            .withRequestBody(
+                equalToJson("{\"function\":\"stat_vertex_number\",\"type\":\"Linkto\"}")));
   }
 
   @Test
   @DisplayName("Should be interpreted requests")
   void sendInterpretedRequest() throws SQLException, InterruptedException {
     String query = "run interpreted(a=?, b=?)";
-    String query_body = "INTERPRET QUERY (int a, int b) FOR GRAPH social {\n"
-        + "PRINT a, b;\n"
-        + "}\n";
+    String query_body =
+        "INTERPRET QUERY (int a, int b) FOR GRAPH social {\n" + "PRINT a, b;\n" + "}\n";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "10");
     pstmt.setString(2, "20");
@@ -110,18 +122,23 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/gsqlserver/interpreted_query?a=10&b=20"))
-        .withRequestBody(equalTo("INTERPRET QUERY (int a, int b) FOR GRAPH social {\n"
-            + "PRINT a, b;\n"
-            + "}\n")));
+    wireMockServer.verify(
+        1,
+        postRequestedFor(urlEqualTo("/gsqlserver/interpreted_query?a=10&b=20"))
+            .withRequestBody(
+                equalTo(
+                    "INTERPRET QUERY (int a, int b) FOR GRAPH social {\n"
+                        + "PRINT a, b;\n"
+                        + "}\n")));
   }
 
   @Test
   @DisplayName("Should be pre-installed requests")
   void sendInstalledRequest() throws SQLException, InterruptedException {
-    String query = "RUN tg_pagerank(v_type=?, e_type=? max_change=?," +
-        "max_iter=?, damping=?, top_k=?, print_accum=?," +
-        "result_attr=?, file_path=?, display_edges=?)";
+    String query =
+        "RUN tg_pagerank(v_type=?, e_type=? max_change=?,"
+            + "max_iter=?, damping=?, top_k=?, print_accum=?,"
+            + "result_attr=?, file_path=?, display_edges=?)";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "person");
     pstmt.setString(2, "friendship");
@@ -139,8 +156,11 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(1, getRequestedFor(urlEqualTo(
-        "/restpp/query/social/tg_pagerank?v_type=person&e_type=friendship&max_change=0.001&max_iter=25&damping=0.85&top_k=3&print_accum=true&result_attr=&file_path=&display_edges=false")));
+    wireMockServer.verify(
+        1,
+        getRequestedFor(
+            urlEqualTo(
+                "/restpp/query/social/tg_pagerank?v_type=person&e_type=friendship&max_change=0.001&max_iter=25&damping=0.85&top_k=3&print_accum=true&result_attr=&file_path=&display_edges=false")));
   }
 
   @Test
@@ -160,9 +180,40 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(1,
-        postRequestedFor(urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
+    wireMockServer.verify(
+        1,
+        postRequestedFor(
+                urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
             .withRequestBody(equalTo("a1,b,c\na2,b,c\na3,b,c")));
+  }
+
+  @Test
+  @DisplayName("Should be loading job requests with jobid")
+  void sendLoadingRequestWithJobId() throws SQLException, InterruptedException {
+    Connection connection = con;
+    properties.put("jobid", new JobIdGenerator("social", "load_social").getJobId());
+    try {
+      connection = driver.connect(url, properties);
+    } catch (Exception e) {
+      // ignore response
+    }
+    String query = "INSERT INTO job load_social(line) VALUES(?)";
+    PreparedStatement pstmt = connection.prepareStatement(query);
+    pstmt.setString(1, "a,b,c");
+    pstmt.addBatch();
+    try {
+      pstmt.executeBatch();
+    } catch (Exception e) {
+      // ignore response
+    }
+
+    wireMockServer.verify(
+        1,
+        postRequestedFor(
+                urlEqualTo(
+                    "/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A&jobid="
+                        + properties.getProperty("jobid")))
+            .withRequestBody(equalTo("a,b,c")));
   }
 
   // For spark data frame with null fields, it will invoke setNull to send null value to jdbc
@@ -183,8 +234,10 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(1,
-        postRequestedFor(urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
+    wireMockServer.verify(
+        1,
+        postRequestedFor(
+                urlEqualTo("/restpp/ddl/social?tag=load_social&filename=file1&sep=%2C&eol=%0A"))
             .withRequestBody(equalTo(",,,")));
   }
 
@@ -201,8 +254,10 @@ public class RequestTest {
       // ignore response error info
     }
 
-    wireMockServer.verify(1,
-        getRequestedFor(urlEqualTo("/restpp/graph/social/edges/person/Jerry/friendship/person/Tom")));
+    wireMockServer.verify(
+        1,
+        getRequestedFor(
+            urlEqualTo("/restpp/graph/social/edges/person/Jerry/friendship/person/Tom")));
   }
 
   @Test
@@ -216,7 +271,8 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1, getRequestedFor(urlEqualTo("/restpp/graph/social/edges/Page/50/Linkto/Page")));
+    wireMockServer.verify(
+        1, getRequestedFor(urlEqualTo("/restpp/graph/social/edges/Page/50/Linkto/Page")));
   }
 
   @Test
@@ -230,13 +286,15 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1, getRequestedFor(urlEqualTo("/restpp/graph/social/vertices/Person?limit=50")));
+    wireMockServer.verify(
+        1, getRequestedFor(urlEqualTo("/restpp/graph/social/vertices/Person?limit=50")));
   }
 
   @Test
   @DisplayName("Should be insert vertex requests")
   void sendInsertRequest() throws SQLException, InterruptedException {
-    String query = "INSERT INTO vertex person(name, name, age, gender, state ) VALUES(?, ?, ?, ?, ?)";
+    String query =
+        "INSERT INTO vertex person(name, name, age, gender, state ) VALUES(?, ?, ?, ?, ?)";
     PreparedStatement pstmt = con.prepareStatement(query);
     pstmt.setString(1, "tom");
     pstmt.setString(2, "tom");
@@ -255,9 +313,12 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/restpp/graph/social"))
-        .withRequestBody(equalToJson(
-            "{\"vertices\":{\"person\":{\"tom\":{\"name\":{\"value\":\"tom\"},\"age\":{\"value\":1},\"gender\":{\"value\":\"Female\"},\"state\":{\"value\":\"ny\"}}},\"person\":{\"jerry\":{\"name\":{\"value\":\"jerry\"},\"age\":{\"value\":1},\"gender\":{\"value\":\"Male\"},\"state\":{\"value\":\"la\"}}}}}")));
+    wireMockServer.verify(
+        1,
+        postRequestedFor(urlEqualTo("/restpp/graph/social"))
+            .withRequestBody(
+                equalToJson(
+                    "{\"vertices\":{\"person\":{\"tom\":{\"name\":{\"value\":\"tom\"},\"age\":{\"value\":1},\"gender\":{\"value\":\"Female\"},\"state\":{\"value\":\"ny\"}}},\"person\":{\"jerry\":{\"name\":{\"value\":\"jerry\"},\"age\":{\"value\":1},\"gender\":{\"value\":\"Male\"},\"state\":{\"value\":\"la\"}}}}}")));
   }
 
   @Test
@@ -279,9 +340,12 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1, postRequestedFor(urlEqualTo("/restpp/graph/social"))
-        .withRequestBody(equalToJson(
-            "{\"edges\":{\"Page\":{\"10\":{\"Linkto\":{\"Page\":{\"20\":{\"Attr\":{\"value\":\"red\"}}}}}},\"Page\":{\"20\":{\"Linkto\":{\"Page\":{\"30\":{\"Attr\":{\"value\":\"black\"}}}}}}}}")));
+    wireMockServer.verify(
+        1,
+        postRequestedFor(urlEqualTo("/restpp/graph/social"))
+            .withRequestBody(
+                equalToJson(
+                    "{\"edges\":{\"Page\":{\"10\":{\"Linkto\":{\"Page\":{\"20\":{\"Attr\":{\"value\":\"red\"}}}}}},\"Page\":{\"20\":{\"Linkto\":{\"Page\":{\"30\":{\"Attr\":{\"value\":\"black\"}}}}}}}}")));
   }
 
   @Test
@@ -295,7 +359,8 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1, deleteRequestedFor(urlEqualTo("/restpp/graph/social/vertices/person/Tom")));
+    wireMockServer.verify(
+        1, deleteRequestedFor(urlEqualTo("/restpp/graph/social/vertices/person/Tom")));
   }
 
   @Test
@@ -310,7 +375,9 @@ public class RequestTest {
     } catch (Exception e) {
       // ignore response error info
     }
-    wireMockServer.verify(1,
-        deleteRequestedFor(urlEqualTo("/restpp/graph/social/edges/person/Bob/friendship/person/Tom")));
+    wireMockServer.verify(
+        1,
+        deleteRequestedFor(
+            urlEqualTo("/restpp/graph/social/edges/person/Bob/friendship/person/Tom")));
   }
 }
