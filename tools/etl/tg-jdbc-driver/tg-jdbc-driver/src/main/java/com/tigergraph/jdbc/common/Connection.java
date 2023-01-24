@@ -12,178 +12,207 @@ public abstract class Connection implements java.sql.Connection {
   private String url;
   private Properties properties;
 
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   protected Connection(Properties properties, String url) {
     this.url = url;
     this.properties = properties;
   }
 
-  /**
-   * Get the connection url.
-   */
+  /** Get the connection url. */
   public String getUrl() {
     return url;
   }
 
-  /**
-   * Get the properties for this connection.
-   */
+  /** Get the properties for this connection. */
   public Properties getProperties() {
     return properties;
   }
 
-  @Override public boolean isReadOnly() throws SQLException {
+  @Override
+  public boolean isReadOnly() throws SQLException {
     return Boolean.FALSE;
   }
 
-  @Override public void clearWarnings() throws SQLException {
+  @Override
+  public void clearWarnings() throws SQLException {
     return;
   }
 
-  /**
-   * Abstract Methods.
-   */
+  /** Abstract Methods. */
+  @Override
+  public abstract DatabaseMetaData getMetaData() throws SQLException;
 
-  @Override public abstract DatabaseMetaData getMetaData() throws SQLException;
+  @Override
+  public abstract void setAutoCommit(boolean autoCommit) throws SQLException;
 
-  @Override public abstract void setAutoCommit(boolean autoCommit) throws SQLException;
+  @Override
+  public abstract boolean getAutoCommit() throws SQLException;
 
-  @Override public abstract boolean getAutoCommit() throws SQLException;
+  @Override
+  public abstract void commit() throws SQLException;
 
-  @Override abstract public void commit() throws SQLException;
+  @Override
+  public abstract void rollback() throws SQLException;
 
-  @Override abstract public void rollback() throws SQLException;
+  @Override
+  public abstract void setTransactionIsolation(int level) throws SQLException;
 
-  @Override abstract public void setTransactionIsolation(int level) throws SQLException;
+  @Override
+  public abstract int getTransactionIsolation() throws SQLException;
 
-  @Override abstract public int getTransactionIsolation() throws SQLException;
+  @Override
+  public abstract Statement createStatement() throws SQLException;
 
-  @Override public abstract Statement createStatement() throws SQLException;
-
-  @Override public abstract Statement createStatement(int resultSetType,
-    int resultSetConcurrency) throws SQLException;
-
-  @Override public abstract Statement createStatement(int resultSetType,
-    int resultSetConcurrency, int resultSetHoldability) throws SQLException;
-
-  @Override public abstract PreparedStatement prepareStatement(String sql) throws SQLException;
-
-  @Override public abstract PreparedStatement prepareStatement(String sql,
-    int resultSetType, int resultSetConcurrency) throws SQLException;
-
-  @Override public abstract PreparedStatement prepareStatement(String sql,
-    int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+  @Override
+  public abstract Statement createStatement(int resultSetType, int resultSetConcurrency)
       throws SQLException;
 
-  @Override public abstract void close() throws SQLException;
+  @Override
+  public abstract Statement createStatement(
+      int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
-  @Override public abstract boolean isClosed() throws SQLException;
+  @Override
+  public abstract PreparedStatement prepareStatement(String sql) throws SQLException;
 
-  @Override public abstract boolean isValid(int timeout) throws SQLException;
+  @Override
+  public abstract PreparedStatement prepareStatement(
+      String sql, int resultSetType, int resultSetConcurrency) throws SQLException;
 
-  /**
-   * Methods not implemented yet.
-   */
+  @Override
+  public abstract PreparedStatement prepareStatement(
+      String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+      throws SQLException;
 
-  @Override public CallableStatement prepareCall(String sql) throws SQLException {
+  @Override
+  public abstract void close() throws SQLException;
+
+  @Override
+  public abstract boolean isClosed() throws SQLException;
+
+  @Override
+  public abstract boolean isValid(int timeout) throws SQLException;
+
+  /** Methods not implemented yet. */
+  @Override
+  public CallableStatement prepareCall(String sql) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public CallableStatement prepareCall(String sql,
-    int resultSetType, int resultSetConcurrency) throws SQLException {
+  @Override
+  public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Map<String, Class<?>> getTypeMap() throws SQLException {
+  @Override
+  public Map<String, Class<?>> getTypeMap() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
+  @Override
+  public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Savepoint setSavepoint() throws SQLException {
+  @Override
+  public Savepoint setSavepoint() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Savepoint setSavepoint(String name) throws SQLException {
+  @Override
+  public Savepoint setSavepoint(String name) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void rollback(Savepoint savepoint) throws SQLException {
+  @Override
+  public void rollback(Savepoint savepoint) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+  @Override
+  public void releaseSavepoint(Savepoint savepoint) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public CallableStatement prepareCall(String sql, int resultSetType,
-    int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+  @Override
+  public CallableStatement prepareCall(
+      String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public PreparedStatement prepareStatement(String sql,
-    int[] columnIndexes) throws SQLException {
+  @Override
+  public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public PreparedStatement prepareStatement(String sql,
-    String[] columnNames) throws SQLException {
+  @Override
+  public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Clob createClob() throws SQLException {
+  @Override
+  public Clob createClob() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Blob createBlob() throws SQLException {
+  @Override
+  public Blob createBlob() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public NClob createNClob() throws SQLException {
+  @Override
+  public NClob createNClob() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public SQLXML createSQLXML() throws SQLException {
+  @Override
+  public SQLXML createSQLXML() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setClientInfo(String name, String value) throws SQLClientInfoException {
+  @Override
+  public void setClientInfo(String name, String value) throws SQLClientInfoException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setClientInfo(Properties properties) throws SQLClientInfoException {
+  @Override
+  public void setClientInfo(Properties properties) throws SQLClientInfoException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getClientInfo(String name) throws SQLException {
+  @Override
+  public String getClientInfo(String name) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Properties getClientInfo() throws SQLException {
+  @Override
+  public Properties getClientInfo() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+  @Override
+  public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setSchema(String schema) throws SQLException {
+  @Override
+  public void setSchema(String schema) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void abort(Executor executor) throws SQLException {
+  @Override
+  public void abort(Executor executor) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+  @Override
+  public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getNetworkTimeout() throws SQLException {
+  @Override
+  public int getNetworkTimeout() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -195,49 +224,58 @@ public abstract class Connection implements java.sql.Connection {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setReadOnly(boolean readOnly) throws SQLException {
+  @Override
+  public void setReadOnly(boolean readOnly) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setHoldability(int holdability) throws SQLException {
+  @Override
+  public void setHoldability(int holdability) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public int getHoldability() throws SQLException {
+  @Override
+  public int getHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public void setCatalog(String catalog) throws SQLException {
+  @Override
+  public void setCatalog(String catalog) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getCatalog() throws SQLException {
+  @Override
+  public String getCatalog() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public PreparedStatement prepareStatement(String sql,
-    int autoGeneratedKeys) throws SQLException {
+  @Override
+  public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String nativeSQL(String sql) throws SQLException {
+  @Override
+  public String nativeSQL(String sql) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public <T> T unwrap(Class<T> iface) throws SQLException {
+  @Override
+  public <T> T unwrap(Class<T> iface) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public boolean isWrapperFor(Class<?> iface) throws SQLException {
+  @Override
+  public boolean isWrapperFor(Class<?> iface) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public SQLWarning getWarnings() throws SQLException {
+  @Override
+  public SQLWarning getWarnings() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
-  @Override public String getSchema() throws SQLException {
+  @Override
+  public String getSchema() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
 }

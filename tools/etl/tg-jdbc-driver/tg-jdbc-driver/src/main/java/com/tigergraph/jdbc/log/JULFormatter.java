@@ -9,10 +9,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.io.*;
 
-/**
- * Default formatter for JUL, e.g. 05-09 02:37:53 [SEVERE] Default JUL Format
- */
-
+/** Default formatter for JUL, e.g. 05-09 02:37:53 [SEVERE] Default JUL Format */
 public class JULFormatter extends Formatter {
   private static final DateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
 
@@ -63,34 +60,34 @@ public class JULFormatter extends Formatter {
 
   private String getLocalizedLevel(int level) {
     switch (level) {
-      // SEVERE
+        // SEVERE
       case 1000:
         return "ERROR";
-      // WARNING
+        // WARNING
       case 900:
         return "WARN";
-      // INFO
+        // INFO
       case 800:
         return "INFO";
-      // FINE
+        // FINE
       case 500:
       default:
         return "DEBUG";
     }
   }
 
-  private String getColor(int level){
+  private String getColor(int level) {
     switch (level) {
-      // ERROR
+        // ERROR
       case 1000:
         return ANSI_RED;
-      // WARN
+        // WARN
       case 900:
         return ANSI_YELLOW;
-      // INFO
+        // INFO
       case 800:
         return ANSI_WHITE;
-      // DEBUG
+        // DEBUG
       case 500:
       default:
         return ANSI_BLUE;

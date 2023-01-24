@@ -5,20 +5,17 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import com.tigergraph.jdbc.*;
 import com.tigergraph.jdbc.restpp.*;
-import java.sql.DriverManager;
-import java.util.Properties;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.Statement;
 
 /**
  * Example code to demonstrate how to use it with a connection pool
- * https://github.com/brettwooldridge/HikariCP
- * data socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
- * Pagerank need installed first. https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/Centrality/pagerank/global/unweighted/tg_pagerank.gsql
+ * https://github.com/brettwooldridge/HikariCP data socailNet:
+ * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs Pagerank need
+ * installed first.
+ * https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/Centrality/pagerank/global/unweighted/tg_pagerank.gsql
  */
-public class ConnectionPool
-{
+public class ConnectionPool {
   public static void main(String[] args) throws SQLException {
     HikariConfig config = new HikariConfig();
 
@@ -27,8 +24,8 @@ public class ConnectionPool
     Integer port = 14240;
 
     /**
-     * Only accept 4 parameters: IP address, port, debug and graph name.
-     * Enable debug when the third parameter's value is larger than 0.
+     * Only accept 4 parameters: IP address, port, debug and graph name. Enable debug when the third
+     * parameter's value is larger than 0.
      */
     if (args.length == 4) {
       ipAddr = args[0];
@@ -44,7 +41,7 @@ public class ConnectionPool
     config.setUsername("tigergraph");
     config.setPassword("tigergraph");
 
-    if (! config.getDataSourceProperties().containsKey("graph")) {
+    if (!config.getDataSourceProperties().containsKey("graph")) {
       config.addDataSourceProperty("graph", "socail");
     }
     config.addDataSourceProperty("filename", "f");
@@ -52,8 +49,8 @@ public class ConnectionPool
     config.addDataSourceProperty("eol", ";");
 
     /**
-     * Specify ip address and port of the TigerGraph server.
-     * Please use 'https' instead once ssl is enabled.
+     * Specify ip address and port of the TigerGraph server. Please use 'https' instead once ssl is
+     * enabled.
      */
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
@@ -61,15 +58,15 @@ public class ConnectionPool
     HikariDataSource ds = new HikariDataSource(config);
 
     try (Connection con = ds.getConnection()) {
-      /**
-       * Run a pre-installed query with parameters.
-       */
-      System.out.println("Running \"RUN QUERY tg_pageRank(v_type=?, e_type=? max_change=?, " +
-              "max_iter=?, damping=?, top_k=?, print_accum=?, " +
-              "result_attr=?, file_path=?, display_edges=?)\"...");
-      String query = "RUN tg_pagerank(v_type=?, e_type=? max_change=?," +
-              "max_iter=?, damping=?, top_k=?, print_accum=?," +
-              "result_attr=?, file_path=?, display_edges=?)";
+      /** Run a pre-installed query with parameters. */
+      System.out.println(
+          "Running \"RUN QUERY tg_pageRank(v_type=?, e_type=? max_change=?, "
+              + "max_iter=?, damping=?, top_k=?, print_accum=?, "
+              + "result_attr=?, file_path=?, display_edges=?)\"...");
+      String query =
+          "RUN tg_pagerank(v_type=?, e_type=? max_change=?,"
+              + "max_iter=?, damping=?, top_k=?, print_accum=?,"
+              + "result_attr=?, file_path=?, display_edges=?)";
       try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
         // Set timeout (in seconds).
         pstmt.setQueryTimeout(60);
@@ -107,10 +104,10 @@ public class ConnectionPool
           } while (!rs.isLast());
         }
       } catch (SQLException e) {
-        System.out.println( "Failed to createStatement: " + e);
+        System.out.println("Failed to createStatement: " + e);
       }
     } catch (SQLException e) {
-        System.out.println( "Failed to getConnection: " + e);
+      System.out.println("Failed to getConnection: " + e);
     }
     ds.close();
   }

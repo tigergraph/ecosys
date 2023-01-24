@@ -3,32 +3,28 @@ package com.tigergraph.jdbc.examples;
 import com.tigergraph.jdbc.Driver;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Example code to demonstrate how to invoke TigerGraph pre-installed queries
- * The corresponding TigerGraph demo could be found at:
- * data socailNet and loading job : https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
+ * Example code to demonstrate how to invoke TigerGraph pre-installed queries The corresponding
+ * TigerGraph demo could be found at: data socailNet and loading job :
+ * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
  */
-public class UpsertQuery
-{
+public class UpsertQuery {
   public static void main(String[] args) throws SQLException {
     Properties properties = new Properties();
     String ipAddr = "127.0.0.1";
     // port of GraphStudio
     Integer port = 14240;
 
-    /**
-     * Need to specify username and password once REST++ authentication is enabled.
-     */
+    /** Need to specify username and password once REST++ authentication is enabled. */
     properties.put("username", "tigergraph");
     properties.put("password", "tigergraph");
 
     /**
-     * Only accept 4 parameters: IP address, port, debug and graph name.
-     * Enable debug when the third parameter's value is larger than 0.
+     * Only accept 4 parameters: IP address, port, debug and graph name. Enable debug when the third
+     * parameter's value is larger than 0.
      */
     if (args.length == 4) {
       ipAddr = args[0];
@@ -49,16 +45,14 @@ public class UpsertQuery
     // For load balancing
     // properties.put("ip_list", "172.30.2.20,172.30.2.21");
 
-    /**
-     * For loading job
-     */
+    /** For loading job */
     properties.put("filename", "f");
     properties.put("sep", ",");
     properties.put("eol", ";");
 
     /**
-     * Specify ip address and port of the TigerGraph server.
-     * Please use 'https' instead once ssl is enabled.
+     * Specify ip address and port of the TigerGraph server. Please use 'https' instead once ssl is
+     * enabled.
      */
     StringBuilder sb = new StringBuilder();
     sb.append("jdbc:tg:http://").append(ipAddr).append(":").append(port);
@@ -67,26 +61,24 @@ public class UpsertQuery
       com.tigergraph.jdbc.Driver driver = new Driver();
 
       try (Connection con = driver.connect(sb.toString(), properties)) {
-        /**
-         * Upsert vertices and edges with Statement.
-         */
+        /** Upsert vertices and edges with Statement. */
         System.out.println("Running Statement to insert person and edge.");
         try (java.sql.Statement stmt = con.createStatement()) {
-          String query = "INSERT INTO vertex person(id, gender, id) VALUES('person9', 'Male', 'person0')";
+          String query =
+              "INSERT INTO vertex person(id, gender, id) VALUES('person9', 'Male', 'person0')";
           stmt.addBatch(query);
           query = "INSERT INTO edge friend(person, person) VALUES('person9', 'person4')";
           stmt.addBatch(query);
           int[] count = stmt.executeBatch();
           System.out.println("Upsert'ed " + count[0] + " vertices, " + count[1] + " edges.");
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * Upsert vertices and edges with PreparedStatement.
-         */
+        /** Upsert vertices and edges with PreparedStatement. */
         System.out.println("");
-        System.out.println("Running \"INSERT INTO vertex person(id, gender, id) VALUES(?, ?, ?)\"...");
+        System.out.println(
+            "Running \"INSERT INTO vertex person(id, gender, id) VALUES(?, ?, ?)\"...");
         String query = "INSERT INTO vertex person(id, gender, id) VALUES(?, ?, ?)";
         try {
           java.sql.PreparedStatement pstmt = con.prepareStatement(query);
@@ -105,7 +97,7 @@ public class UpsertQuery
           int[] count = pstmt.executeBatch();
           System.out.println("Upsert'ed " + count[0] + " vertices.");
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
         System.out.println("");
@@ -119,12 +111,10 @@ public class UpsertQuery
           int[] count = pstmt.executeBatch();
           System.out.println("Upsert'ed " + count[1] + " edges.");
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
-        /**
-         * Invoke a loading job
-         */
+        /** Invoke a loading job */
         System.out.println("");
         System.out.println("Running \"INSERT INTO job loadPost(line) VALUES(?)\"...");
         query = "INSERT INTO job loadPost(line) VALUES(?)";
@@ -138,14 +128,14 @@ public class UpsertQuery
           int[] count = pstmt.executeBatch();
           System.out.println("Accepted " + count[0] + " lines, rejected " + count[1] + " lines.");
         } catch (SQLException e) {
-          System.out.println( "Failed to createStatement: " + e);
+          System.out.println("Failed to createStatement: " + e);
         }
 
       } catch (SQLException e) {
-          System.out.println( "Failed to getConnection: " + e);
+        System.out.println("Failed to getConnection: " + e);
       }
     } catch (SQLException e) {
-        System.out.println( "Failed to init Driver: " + e);
+      System.out.println("Failed to init Driver: " + e);
     }
   }
 }

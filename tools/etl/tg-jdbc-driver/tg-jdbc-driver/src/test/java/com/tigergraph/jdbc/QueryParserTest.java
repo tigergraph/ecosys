@@ -4,15 +4,12 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.shaded.org.apache.commons.configuration2.tree.TreeUtils;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Unit test for QueryParser
- */
+/** Unit test for QueryParser */
 public class QueryParserTest extends TestCase {
 
   public QueryParserTest(String name) {
@@ -24,7 +21,7 @@ public class QueryParserTest extends TestCase {
 
     String query = "get vertex(person) params(filter='gender=\"female\",age<27', select=?)";
     Map<Integer, Object> parameters = new HashMap<>(10);
-    parameters.put(1,"name,age,gender");
+    parameters.put(1, "name,age,gender");
     StringBuilder sb = new StringBuilder();
     QueryParser parser = new QueryParser(null, query, parameters, 0, 0, true);
     sb.append(parser.getEndpoint()).append(System.lineSeparator());
@@ -74,11 +71,28 @@ public class QueryParserTest extends TestCase {
     parser = new QueryParser(null, query, parameters, 0, 0, true);
     sb.append(parser.getEndpoint()).append(System.lineSeparator());
 
-    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id, is_active) VALUES('1000', 'new page', 0.8, 1000, TRue)";
+    query = "status jobid(jdbc.local.12345.aaa)";
+    parser = new QueryParser(null, query, null, 0, 0, true);
+    sb.append(parser.getEndpoint()).append(System.lineSeparator());
+
+    query = "status jobid(?)";
+    parameters.clear();
+    parameters.put(1, "jdbc.local.12345.aaa");
+    parser = new QueryParser(null, query, parameters, 0, 0, true);
+    sb.append(parser.getEndpoint()).append(System.lineSeparator());
+
+    query = "select * from jobid jdbc.local.12345.aaa where xxx";
+    parser = new QueryParser(null, query, null, 0, 0, true);
+    sb.append(parser.getEndpoint()).append(System.lineSeparator());
+
+    query =
+        "INSERT INTO vertex Page(id, name, 'page rank', page_id, is_active) VALUES('1000', 'new"
+            + " page', 0.8, 1000, TRue)";
     parser = new QueryParser(null, query, null, 0, 0, true);
     sb.append(parser.getVertexJson()).append(System.lineSeparator());
 
-    query = "INSERT INTO vertex Page(id, name, 'page rank', page_id, is_active) VALUES(?, ?, ?, ?, ?)";
+    query =
+        "INSERT INTO vertex Page(id, name, 'page rank', page_id, is_active) VALUES(?, ?, ?, ?, ?)";
     parameters.clear();
     parameters.put(1, "1000");
     parameters.put(2, "new page");
@@ -88,7 +102,9 @@ public class QueryParserTest extends TestCase {
     parser = new QueryParser(null, query, parameters, 0, 0, true);
     sb.append(parser.getVertexJson()).append(System.lineSeparator());
 
-    query = "INSERT INTO edge Linkto(Page, Page, weight, is_active) VALUES('1000', '1001', 10.7, FaLse)";
+    query =
+        "INSERT INTO edge Linkto(Page, Page, weight, is_active) VALUES('1000', '1001', 10.7,"
+            + " FaLse)";
     parser = new QueryParser(null, query, null, 0, 1, true);
     sb.append(parser.getEdgeJson()).append(System.lineSeparator());
 
@@ -126,7 +142,8 @@ public class QueryParserTest extends TestCase {
 
     String formattedResult = sb.toString();
     InputStream expected = getClass().getClassLoader().getResourceAsStream("endpoint-expected.dat");
-    String expectedString = IOUtils.toString(expected).replaceAll("\\n|\\r\\n", System.lineSeparator());
+    String expectedString =
+        IOUtils.toString(expected).replaceAll("\\n|\\r\\n", System.lineSeparator());
     assertEquals(expectedString, formattedResult);
   }
 }

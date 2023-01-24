@@ -27,18 +27,14 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   protected HashMap<Integer, Object> parameters;
   protected String statement;
 
-  /**
-   * Default constructor
-   */
+  /** Default constructor */
   protected PreparedStatement(Connection connection, String preparedStatement) {
     super(connection);
     this.statement = preparedStatement;
     this.parameters = new HashMap<>();
   }
 
-  /**
-   * Insert a parameter into the map.
-   */
+  /** Insert a parameter into the map. */
   private void insertParameter(int index, Object obj) {
     this.parameters.put(index, obj);
   }
@@ -85,8 +81,8 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   /**
-   * TigerGraph will convert decimal to double which can cause precision loss
-   * For spark DecimalType, it can represent a UINT64 or a decimal
+   * TigerGraph will convert decimal to double which can cause precision loss For spark DecimalType,
+   * it can represent a UINT64 or a decimal
    */
   @Override
   public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
@@ -115,9 +111,7 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
     this.insertParameter(parameterIndex, val);
   }
 
-  /**
-   * Only for UTF-8 encoding
-   */
+  /** Only for UTF-8 encoding */
   @Override
   public void setBytes(int parameterIndex, byte[] x) throws SQLException {
     // Default value of String in TG is ""
@@ -127,10 +121,7 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
     setString(parameterIndex, new String(x, StandardCharsets.UTF_8));
   }
 
-  /**
-   * TigerGraph will drop fractional digits (YYYY-MM-DD hh:mm:ss.fffff -->
-   * YYYY-MM-DD hh:mm:ss)
-   */
+  /** TigerGraph will drop fractional digits (YYYY-MM-DD hh:mm:ss.fffff --> YYYY-MM-DD hh:mm:ss) */
   @Override
   public void setTimestamp(int parameterIndex, Timestamp val) throws SQLException {
     // Default value of Datetime in TG is "1970-01-01 00:00:00"
@@ -140,9 +131,7 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
     setString(parameterIndex, val.toString().split("\\.")[0]);
   }
 
-  /**
-   * TigerGraph will add time automatically (YYYY-MM-DD --> YYYY-MM-DD 00:00:00)
-   */
+  /** TigerGraph will add time automatically (YYYY-MM-DD --> YYYY-MM-DD 00:00:00) */
   @Override
   public void setDate(int parameterIndex, Date val) throws SQLException {
     // Default value of Datetime in TG is "1970-01-01 00:00:00"
@@ -154,10 +143,9 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
 
   /**
    * Insert the attributes of the LIST/SET type.
-   * <p>
-   * Use
-   * <code>public Array createArrayOf(String typeName, Object[] elements)</code>
-   * to create an Array.
+   *
+   * <p>Use <code>public Array createArrayOf(String typeName, Object[] elements)</code> to create an
+   * Array.
    */
   @Override
   public void setArray(int parameterIndex, Array val) throws SQLException {
@@ -202,8 +190,8 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
    */
 
   @Override
-  public void setUnicodeStream(int parameterIndex,
-      InputStream val, int length) throws SQLException {
+  public void setUnicodeStream(int parameterIndex, InputStream val, int length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -263,26 +251,23 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   @Override
-  public void setAsciiStream(int parameterIndex,
-      InputStream val, int length) throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream val, int length) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setBinaryStream(int parameterIndex,
-      InputStream val, int length) throws SQLException {
+  public void setBinaryStream(int parameterIndex, InputStream val, int length) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setObject(int parameterIndex,
-      Object val, int targetSqlType) throws SQLException {
+  public void setObject(int parameterIndex, Object val, int targetSqlType) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setCharacterStream(int parameterIndex,
-      Reader reader, int length) throws SQLException {
+  public void setCharacterStream(int parameterIndex, Reader reader, int length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -312,14 +297,12 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   @Override
-  public void setTimestamp(int parameterIndex,
-      Timestamp val, Calendar cal) throws SQLException {
+  public void setTimestamp(int parameterIndex, Timestamp val, Calendar cal) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setNull(int parameterIndex,
-      int sqlType, String typeName) throws SQLException {
+  public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -339,8 +322,8 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   @Override
-  public void setNCharacterStream(int parameterIndex,
-      Reader value, long length) throws SQLException {
+  public void setNCharacterStream(int parameterIndex, Reader value, long length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -350,20 +333,18 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   @Override
-  public void setClob(int parameterIndex,
-      Reader reader, long length) throws SQLException {
+  public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setBlob(int parameterIndex,
-      InputStream inputStream, long length) throws SQLException {
+  public void setBlob(int parameterIndex, InputStream inputStream, long length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setNClob(int parameterIndex,
-      Reader reader, long length) throws SQLException {
+  public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -373,32 +354,30 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   }
 
   @Override
-  public void setObject(int parameterIndex,
-      Object val, int targetSqlType, int scaleOrLength) throws SQLException {
+  public void setObject(int parameterIndex, Object val, int targetSqlType, int scaleOrLength)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setAsciiStream(int parameterIndex,
-      InputStream val, long length) throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream val, long length) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setBinaryStream(int parameterIndex,
-      InputStream val, long length) throws SQLException {
+  public void setBinaryStream(int parameterIndex, InputStream val, long length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setCharacterStream(int parameterIndex,
-      Reader reader, long length) throws SQLException {
+  public void setCharacterStream(int parameterIndex, Reader reader, long length)
+      throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
   @Override
-  public void setAsciiStream(int parameterIndex,
-      InputStream val) throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream val) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 
@@ -441,5 +420,4 @@ public abstract class PreparedStatement extends Statement implements java.sql.Pr
   public void addBatch(String sql) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
 }
