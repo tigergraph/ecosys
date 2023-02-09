@@ -2,7 +2,7 @@
 
 # TigerGraph 108 TB Soical Network Graph 
 To get started with LDBC SNB benchmarks, check out the introductory presentation: [The LDBC Social Network Benchmark](https://docs.google.com/presentation/d/1p-nuHarSOKCldZ9iEz__6_V3sJ5kbGWlzZHusudW_Cc/) ([PDF](https://ldbcouncil.org/docs/presentations/ldbc-snb-2021-12.pdf)).
-
+The official LDBC SNB benchmarks Github repository can be found here: [ldbc/ldbc_snb_bi](https://github.com/ldbc/ldbc_snb_bi)
 The following numerical novelties are highlighted in this summary:
 
 * The full source dataset comprises 108TB, encompassing `1.619 trillion relationships and 218 billion vertices`.
