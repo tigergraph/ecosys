@@ -1,4 +1,0 @@
-{"from_type":"person","to_type":"person","directed":false,"from_id":"person2","to_id":"person1","attributes":{},"e_type":"friend"}
-{"from_type":"person","to_type":"person","directed":false,"from_id":"person2","to_id":"person3","attributes":{},"e_type":"friend"}
-{"from_type":"person","to_type":"post","directed":true,"from_id":"person2","to_id":"1","attributes":{},"e_type":"posted"}
-{"from_type":"person","to_type":"post","directed":true,"from_id":"person2","to_id":"3","attributes":{"actionTime":"2010-01-11 16:02:26"},"e_type":"liked"}

@@ -1,2 +1,0 @@
-cd /usr/local/spark
-./sbin/start-slave.sh spark://172.31.16.78:7077

@@ -1,0 +1,20 @@
+/*
+CREATE GLOBAL SCHEMA_CHANGE JOB add4 {
+  ALTER vertex Forum add attribute (maxMember UINT);
+}
+RUN GLOBAL SCHEMA_CHANGE JOB add4
+*/
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi4() SYNTAX v2 {
+  MapAccum<VERTEX<Country>, UINT> @memberCount;
+  MaxAccum<UINT> @maxMember;
+  MinAccum<VERTEX<Country>> @country;
+  tmp = SELECT p FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- (Person1|Person2|Person3):p 
+    ACCUM p.@country = c;
+  popularForums = SELECT f FROM Forum1|Forum2|Forum3:f -(HAS_MEMBER>)- (Person1|Person2|Person3):p
+    ACCUM f.@memberCount += (p.@country -> 1)
+    POST-ACCUM
+      FOREACH (country, num) IN f.@memberCount DO
+        f.@maxMember += num
+      END,
+      f.maxMember = f.@maxMember;
+}

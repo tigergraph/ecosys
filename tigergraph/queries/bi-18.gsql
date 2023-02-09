@@ -1,0 +1,29 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi18(STRING tag) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id, UINT mutualFriendCount> RESULT;
+  HeapAccum<RESULT>(20, mutualFriendCount DESC, person1Id ASC, person2Id ASC) @@result;
+  SetAccum<VERTEX> @exclude;
+  MapAccum<VERTEX<Person1>, SumAccum<UINT>> @mutualFriendCount;
+  OrAccum<BOOL> @hasInterest;
+  person1 =
+    SELECT p
+    FROM Tag:t -(<HAS_INTEREST)- Person1:p
+    WHERE t.name == tag
+    ACCUM p.@hasInterest += TRUE, p.@exclude += p;
+  tmp =
+    SELECT p2
+    FROM person1:p1 -(KNOWS)- Person1:p2
+    WHERE p2.@hasInterest
+    ACCUM p2.@exclude += p1;
+
+  person2 =
+    SELECT p2
+    FROM person1:p1 -(KNOWS)- Person1 -(KNOWS)- Person1:p2
+    WHERE p2.@hasInterest AND NOT p2.@exclude.contains(p1)
+    ACCUM p2.@mutualFriendCount += (p1 -> 1)
+    POST-ACCUM 
+      FOREACH (p,num) IN p2.@mutualFriendCount DO
+        @@result += RESULT(p.id, p2.id, num)
+      END;
+
+  PRINT @@result as result;
+}

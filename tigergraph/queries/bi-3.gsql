@@ -1,0 +1,33 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT forumId, STRING forumTitle, STRING forumCreationDate, UINT personId, UINT messageCount> RESULT;
+  HeapAccum<RESULT>(20, messageCount DESC, forumId ASC) @@result;
+  SumAccum<UINT> @messageCount;
+  MinAccum<UINT> @personId;
+  OrAccum <BOOL> @selected;
+  forums =
+    SELECT f
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- (Person1|Person2|Person3):p -(<HAS_MODERATOR)- (Forum1|Forum2|Forum3):f
+    WHERE cn.name == country
+    ACCUM f.@personId = p.id, f.@selected += true;
+  messages =
+    SELECT m
+    FROM TagClass:t -(<HAS_TYPE.<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m
+    WHERE t.name == tagClass;
+  posts1 = 
+    SELECT p
+    FROM messages:m -(ROOT_POST>)- (Post1|Post2|Post3):p
+    ACCUM p.@messageCount += 1;
+  posts2 =
+    SELECT p FROM messages:p
+    WHERE p.type == "Post1" OR p.type == "Post2" OR p.type == "Post3"
+    ACCUM p.@messageCount += 1;
+  posts = posts1 UNION posts2; 
+  tmp =
+    SELECT f
+    FROM posts:p -(<CONTAINER_OF)- (Forum1|Forum2|Forum3):f
+    WHERE f.@selected
+    ACCUM f.@messageCount += p.@messageCount
+    POST-ACCUM @@result += RESULT(f.id, f.title, ms_to_string(f.creationDate), f.@personId, f.@messageCount);
+
+  PRINT @@result as result;
+}

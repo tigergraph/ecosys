@@ -1,0 +1,36 @@
+
+CREATE LOADING JOB load_static FOR GRAPH ldbc_snb {
+  //static vertex and edge
+  DEFINE FILENAME file_Organisation;
+  DEFINE FILENAME file_Organisation_isLocatedIn_Place;
+  DEFINE FILENAME file_Place;
+  DEFINE FILENAME file_Place_isPartOf_Place;
+  DEFINE FILENAME file_Tag;
+  DEFINE FILENAME file_TagClass;
+  DEFINE FILENAME file_TagClass_isSubclassOf_TagClass;
+  DEFINE FILENAME file_Tag_hasType_TagClass;
+  // load static vertex
+  LOAD file_Organisation
+    TO VERTEX Company VALUES ($0, $2, $3) WHERE $1=="Company" OR $1=="company",
+    TO VERTEX University VALUES ($0, $2, $3) WHERE $1=="University" OR $1=="university" USING header="true", separator="|";
+  LOAD file_Place
+    TO VERTEX City VALUES ($0, $1, $2) WHERE $3=="City" OR $3=="city",
+    TO VERTEX Country VALUES ($0, $1, $2) WHERE $3=="Country" OR $3=="country",
+    TO VERTEX Continent VALUES ($0, $1, $2) WHERE $3=="Continent" OR $3=="continent" USING header="true", separator="|";
+  LOAD file_Tag
+    TO VERTEX Tag VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD file_TagClass
+    TO VERTEX TagClass VALUES ($0, $1, $2) USING header="true", separator="|";
+  
+  // load static edge
+  LOAD file_Tag_hasType_TagClass
+    TO EDGE HAS_TYPE VALUES ($0, $1) USING header="true", separator="|";
+  LOAD file_Organisation_isLocatedIn_Place
+    TO EDGE IS_LOCATED_IN VALUES ($0 Company, $1 Country) WHERE to_int($1) < 111, 
+    TO EDGE IS_LOCATED_IN VALUES ($0 University, $1 City) WHERE to_int($1) > 110 USING header="true", separator="|";
+  LOAD file_Place_isPartOf_Place
+    TO EDGE IS_PART_OF VALUES ($0 Country, $1 Continent) WHERE to_int($0) < 111,
+    TO EDGE IS_PART_OF VALUES ($0 City, $1 Country) WHERE to_int($0) > 110 USING header="true", separator="|";
+  LOAD file_TagClass_isSubclassOf_TagClass
+    TO EDGE IS_SUBCLASS_OF VALUES ($0, $1) USING header="true", separator="|";
+}

@@ -1,0 +1,55 @@
+//USE GRAPH ldbc_snb
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person1> person1Id, VERTEX<Person1> person2Id, DATETIME startDate, DATETIME endDate) syntax v2 {
+  MinAccum<DOUBLE> @@result, @dis;
+  OrAccum @next;
+  SetAccum<VERTEX> @creator;
+  MapAccum<VERTEX, SumAccum<UINT>> @replyCount;
+  OrAccum @visited;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
+  F = SELECT f FROM (Forum1|Forum2|Forum3):f WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
+  P = SELECT p FROM F -(CONTAINER_OF>)- (Post1|Post2|Post3):p;
+  M = SELECT m FROM P -(<ROOT_POST)- (Comment1|Comment2|Comment3):m ACCUM m.@visited += true;
+  M = M UNION P;
+  tmp = SELECT p FROM M:m -(HAS_CREATOR>)- (Person1|Person2|Person3):p ACCUM m.@creator += p;
+  M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- (Comment1|Comment2|Comment3):m2
+    WHERE m2.@visited
+    ACCUM 
+      UINT w = 1,
+      CASE m1.type
+        WHEN "Post1" THEN w = 2
+        WHEN "Post2" THEN w = 2
+        WHEN "Post3" THEN w = 2
+      END,
+      //IF (m1.type == "Post3" OR m1.type == "Post2" OR m1.type == "Post1") THEN w = 2 END,
+      FOREACH p1 IN m1.@creator DO 
+        FOREACH p2 IN m2.@creator DO
+          p1.@replyCount += (p2 -> w)
+        END
+      END;
+  P = {Person1.*,Person2.*,Person3.*};
+  @@result = P.size();
+  S = {person1Id};
+  S = SELECT s FROM S:s ACCUM s.@dis = 0; 
+  WHILE S.size()>0 DO
+    S = SELECT t FROM S:s-(KNOWS:e)- (Person1):t
+      ACCUM
+        DOUBLE t_dis = s.@dis + 2.0/(2 + s.@replyCount.get(t) + t.@replyCount.get(s)),
+        IF t_dis < @@result AND t_dis < t.@dis THEN
+          t.@dis += t_dis,
+          t.@next += true,
+          IF t == person2Id THEN
+            @@result += t_dis
+          END
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s ACCUM s.@next = false;
+  END;
+
+  IF ABS(@@result - P.size()) < 1 THEN
+    PRINT -1 as result;
+  ELSE
+    PRINT @@result as result;
+  END;
+}

@@ -1,128 +1,52 @@
-![TigerGraph Banner](docs/images/github/tgcloudbanner.png)
+![TG_LOGO](https://github.com/trumanWangtg/ecosys/blob/master/docs/images/github/tgcloudbanner.png)
 
-[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![GitHub issues](https://img.shields.io/github/issues-raw/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/issues)
-[![Contributors](https://img.shields.io/github/contributors/tigergraph/ecosys)](https://github.com/tigergraph/ecosys/graphs/contributors)
-[![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat)](https://discordapp.com/channels/640707678297128980)
-[![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=flat)](https://www.reddit.com/r/tigergraph/)
+# TigerGraph 108 TB Soical Network Graph 
+To get started with LDBC SNB benchmarks, check out the introductory presentation: [The LDBC Social Network Benchmark](https://docs.google.com/presentation/d/1p-nuHarSOKCldZ9iEz__6_V3sJ5kbGWlzZHusudW_Cc/) ([PDF](https://ldbcouncil.org/docs/presentations/ldbc-snb-2021-12.pdf)).
 
-## Getting Started
-* [**Intro to Graph Fundamentals**](https://tigergraph-academy.teachable.com/courses/intro-to-graph-fundamentals/lectures/17671231)
-  * Understanding the Basics
-  * TigerGraph Building Basics
-* [**Intro to TigerGraph Products**](https://tigergraph-academy.teachable.com/courses/intro-to-tigergraph-products/lectures/26625628)
-  * Intro to Cloud
-  * Intro to GraphStudio
-* [**Intro to GSQL**](https://tigergraph-academy.teachable.com/courses/tigergraph-gsql/lectures/26896321)
-  * Graph Structure Query Language (GSQL) Basics
-  * GSQL Writing Best Practices
+The following numerical novelties are highlighted in this summary:
+
+* The full source dataset comprises 108TB, encompassing `1.619 trillion relationships and 218 billion vertices`.
+* The benchmarking process, which includes an initial data loading, one power batch run, and one throughput batch run (with each batch running all BI queries five times), took a total of `35.4 hours`.
+* The hardware cost for the benchmarking was `$843/hr, utilizing 72 AWS r6a.48xlarge machines and 432T GP3 SSD volumes`.
+* The 108TB data is an inflation of the LDBC SNB official SF-30000 dataset. The LDBC SNB schema and BI workload queries were altered to ensure that most queries `activate the entire 108TB data set`.
+
+ This experiment was carried out with TigerGraph Version 3.7.0 and not using any containerization/virtualization technology.  Full Disclosure Report of the [108T Social Network Benchmark](https://docs.google.com/document/d/1h4PnZGpg8-HYBvIHjjgdeonchZo7hSHfEK8IsTrTZN0/edit). (document to be replaced) 
 
 
-## TigerGraph's Ecosys
+## Methodology
+The LDBC_SNB SF-30k data generator produces 44TB of raw data, consisting of 36.5TB in the initial snapshot and 7TB in the form of inserts and deletes. The initial snapshot includes 36TB of dynamic data, which can be altered through daily batch updates, and less than 1TB of static data, which remains unchanged.
 
-[TigerGraph](https://www.tigergraph.com) is dedicated to building the world's fastest and most scalable graph platform. We also know that a product is nothing without its community. This repository is dedicated to providing TigerGraph's community with all the essential in-house and community-developed tools to get the most value out of your TigerGraph solutions. 
+To increase the volume of data, the 36TB of dynamic vertex and edge types were replicated three times, including Comment, Person, Post, Forum, and their associated edges. This resulted in `a total of more than 108TB of raw data loaded into TigerGraph`. For instance, the new graph schema includes Comment1, Comment2, and Comment3. All dynamic vertex types are connected to the original static vertex types, forming a single, cohesive graph. 
 
-    .
-    ├── graph_algorithms        # Deprecated (Moved to https://github.com/tigergraph/gsql-graph-algorithms)
-    ├── UDF                     # User Defined Functions Library (alternatively `UDF`)
-    ├── cloud                   # Cloud tools (Scripts for cloud utils)
-    ├── demos                   # Sample Graph Use Cases (designed for Graph Gurus or by community)
-    ├── docs                    # Documentation files
-    ├── tools                   # Tools and utilities (clients, etls, widgets, sample code)
-    ├── LICENSE
-    └── README.md
+![Schema_change_diagram](https://github.com/trumanWangtg/108TB_trillion_graph_SNB/blob/main/common/schema_diagram.png)
 
-## I don't want to read this whole thing -- I just have a question!!!
+There are no subgraphs or disconnected elements, allowing for BI queries to traverse the entire 108TB of data. Accordingly, it is necessary to substitute the original dynamic vertex types with the tripled dynamic vertex types in BI queries to ensure proper functioning.
+## Implementations
 
-* [Ask Questions, Get Answers](https://community.tigergraph.com)
-* [TigerGraph FAQ](https://www.tigergraph.com/developerfaq/)
+The repository contains the following implementations:
 
-If chat is more your speed, you can join the TigerGraph Community Chat:
+* [`Trillion Graph Schema Setup`](tigergraph/ddl/schema.gsql): an implementation about the 108T graph schema setup demonstrating how to triple the LDBC SNB SF30k dataset
+* [`Loading job`](tigergraph/ddl/load_dynamic.gsql): an implementation about loading jobs demonstrating how the graph loads 108T raw data. 
+* [`Queries`](tigergraph/queries):  queries expressed in the [GSQL language](https://www.tigergraph.com/gsql/) with modification to ensure that most queries can activate the whole 108TB dataset
+* [`Reproducing 108T SNB BI Experiment`](tigergraph/benchmark_on_cluster/README.md): step-by-step instructions of how to reproduce the 108T SNB BI experiment
 
-* [Join the TigerGraph Community Chat](https://discord.gg/F2c9b9v)
-    * Use the `#general` channel for casual conversations around TigerGraph
-    * Use the `#support` channel for general questions or discussion about TigerGraph
-    * Use the `#gsql` channel for questions about the GSQL language
-    * Use the `#app-showcase` channel for showing the things you build
-    * Use the `#articles-blogs-news` channel for posting interesting things you find on the web
-    * There are many other channels available, check the channel list
+ ## Query Modifications 
+All the `original dynamic vertex types are replaced with tripled vertex types`. For example, in bi-11:
+```
+#Original FROM clause
+FROM persons:p1 -(KNOWS:e)- (Person):p2 
 
-## What should I know before I get started?
+#Modified FROM clause
+FROM persons:p1 -(KNOWS:e)- (Person1|Person2|Person3):p2 
+```
+Dynamic vertex involved in edge definition are duplicated and indexed. Therefore, the `edge name can remain the same` in queries. For example, here are how we define modifed edge CONTAINE_OF and REPLYP_OF.
+```
+CREATE DIRECTED EDGE CONTAINER_OF (FROM Forum1, TO Post1 | FROM Forum2, TO Post2 | FROM Forum3, TO Post3) WITH REVERSE_EDGE="CONTAINER_OF_REVERSE"
 
-Browse the section below & quickly navigate one that interests you! 
+CREATE DIRECTED EDGE REPLY_OF (FROM Comment1, TO Comment1 | FROM Comment2, TO Comment2 | FROM Comment3, TO Comment3 | FROM Comment1, TO Post1 | FROM Comment2, TO Post2 | FROM Comment3, TO Post3) WITH REVERSE_EDGE="REPLY_OF_REVERSE"
+```
+Most bi queries are modified based on the above implementation and can touch the whole 108TB dataset except 4 querie. Queries bi-14, bi-15, bi-17, and bi-18 only activate 36T data due to a limitation in TigerGraph v3.7.0 where the VERTEX<> clause does not support multiple vertex type specifications. These queries only feature one singular dynamic seed vertex in parameter field and do not traverse to the joint static vertex, thus leaving other duplicated dynamic vertices untraversed.
 
-* [Awesome Resource List](#awesome-resource)
-* [Connect with Community](#connecting)
-* [Getting Started](#getting-started)
-* [Certifications](#certifications)
-* [TigerGraph Developer Portal](https://dev.tigergraph.com/)
-* [Contributing](#contributing)
-* [Talk to Developers](#talk-with-tigergraph-developers)
-* [Reporting Issues](#reporting-issues)
-* [License](#license)
 
-## Awesome Resource
-For a complete list of all TigerGraph's tools, patterns, guides, and much more! Check out TigerGraph's [Developer Portal](https://dev.tigergraph.com/awesome/)
 
-## Certifications
 
-![TigerGraph Badges](docs/images/github/badgesSmall.png)
-
-[**Graph Fundamentals**](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
-
-[**GSQL 101**](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution.
-
-[**Graph Algorithms for Machine Learning**](https://www.tigergraph.com/certification/graph-algorithms-for-machine-learning/), examines five different categories of graph algorithms and how they improve the accuracy of machine learning algorithms.
-
-## TigerGraph's Developer Resources
-
-- A [Documentation](https://docs.tigergraph.com/) place that contains patterns, code snippets, and all of TigerGraph's functionality.
-- A [YouTube channel](https://youtube.com/TigerGraph) with recorded guru sessions, starter kit demos, and GSQL functions.
-- A [Blog](https://www.tigergraph.com/blog/) with technology insights and inspiring stories from developers.
-- A [Developer FAQ](https://www.tigergraph.com/developerfaq/) to answer common questions.
-
-## Community
-
-<a href="https://github.com/tigergraph/ecosys/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
-
-### Connecting
-
-Join the TG community chat ![Discord](https://img.shields.io/discord/640707678297128980?label=Community%20Chat&logo=discord&style=social) 
-
-Share the latest news or your thoughts ![Reddit](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=social)
-
-Watch and follow the community growth in Github ![GitHub](https://img.shields.io/github/stars/tigergraph/ecosys?style=social)
-
-Keep up-to-date on TigerGraph's latest news ![Twitter](https://img.shields.io/twitter/follow/TigerGraphDB?style=social)
-
-### Contributing
-
-[Please follow these steps to contribute.](CONTRIBUTING.md)
-
-## Talk with TigerGraph Developers
-
-[Open Office Hours: Ask Our Engineers Questions](https://info.tigergraph.com/officehours)
-
-[Developer Forum](https://community.tigergraph.com)
-
-## Reporting Issues
-
-### Bug Issue?
-
-If you think you've found a bug, first ask the community at [https://community.tigergraph.com](https://community.tigergraph.com) to see if other users are also experincing the same issue. 
-
-If you're confident it's a new bug and have confirmed that someone else is facing the same issue, go ahead and create a [Bug Report](https://docs.google.com/forms/d/e/1FAIpQLSdvORzX-8-ee8jHG9K1ztxn9US-JAps2SMKm5Xvcrv6VDPhIA/viewform). Be sure to include as much information as possible so we can reproduce the bug.
-
-### Security Issue?
-
-If you think you have found a vulnerability, please report responsibly. Don't create GitHub issues for security issues. Instead, please send us more info [here](https://docs.google.com/forms/d/e/1FAIpQLSdvORzX-8-ee8jHG9K1ztxn9US-JAps2SMKm5Xvcrv6VDPhIA/viewform) and we'll look into it immediately.
-
-## License
-
-Copyright © 2021 TigerGraph
-
-The content of this repository is bound by the following licenses:
-
-- The computer software is licensed under the [Apache License 2.0](./LICENSE) license.
-
-[![ForTheBadge built-with-love](http://ForTheBadge.com/images/badges/built-with-love.svg)](https://tigergraph.com)

@@ -1,0 +1,51 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTAX v2 {
+
+  TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;
+  HeapAccum<RESULT>(100, zombieScore DESC, zombieId ASC) @@result;
+  OrAccum<BOOL> @selected; 
+  SumAccum<UINT> @messageCount;
+  SumAccum<UINT> @totalLikeCount;
+  SumAccum<UINT> @zombieLikeCount;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
+  zombieCandidates =
+    SELECT p
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- (Person1|Person2|Person3):p
+    WHERE cn.name == country AND p.creationDate < endEpoch;
+
+  tmp =
+    SELECT p
+    FROM zombieCandidates:p -(<HAS_CREATOR)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m
+    WHERE m.creationDate < endEpoch
+    ACCUM p.@messageCount += 1;
+
+  zombies =
+    SELECT p
+    FROM zombieCandidates:p
+    WHERE p.@messageCount < (year(endDate) - year(epoch_to_datetime(p.creationDate/1000))) * 12 + 
+        (month(endDate) - month(epoch_to_datetime(p.creationDate/1000))) + 1
+    ACCUM p.@selected += true;
+
+  M = SELECT m FROM zombies:z -(<HAS_CREATOR)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m;
+  tmp = SELECT p FROM M:m -(<LIKES)- (Person1|Person2|Person3):p
+    WHERE p.creationDate < endEpoch
+    ACCUM
+      m.@totalLikeCount += 1,
+      IF p.@selected THEN
+        m.@zombieLikeCount += 1
+      END;
+  tmp = SELECT m FROM M:m -(HAS_CREATOR>)- (Person1|Person2|Person3):p 
+    ACCUM p.@totalLikeCount += m.@totalLikeCount, p.@zombieLikeCount += m.@zombieLikeCount;
+  
+  zombies =
+    SELECT z
+    FROM zombies:z
+    POST-ACCUM
+      IF z.@totalLikeCount > 0 THEN
+        @@result += RESULT(z.id, z.@zombieLikeCount, z.@totalLikeCount, 1.0 * z.@zombieLikeCount / z.@totalLikeCount)
+      ELSE
+        @@result += RESULT(z.id, 0, 0, 0.0)
+      END;
+
+  PRINT @@result as result;
+}

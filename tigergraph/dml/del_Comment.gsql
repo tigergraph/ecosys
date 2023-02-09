@@ -1,0 +1,22 @@
+CREATE OR REPLACE QUERY del_Comment(STRING file, BOOL header=TRUE) syntax v2 {
+  SetAccum<VERTEX<Comment1>> @@comments1;
+  SetAccum<VERTEX<Comment2>> @@comments2;
+  SetAccum<VERTEX<Comment3>> @@comments3;
+  @@comments1 = { LoadAccum(file, $1, "|", header)}; 
+  @@comments2 = { LoadAccum(file, $1, "|", header)};
+  @@comments3 = { LoadAccum(file, $1, "|", header)};
+  
+  comments1 = {@@comments1};
+  comments2 = {@@comments2};
+  comments3 = {@@comments3};
+  
+  replies1 = SELECT c FROM comments1 -(<REPLY_OF*)- (Comment1):c;
+  replies2 = SELECT c FROM comments2 -(<REPLY_OF*)- (Comment2):c;
+  replies3 = SELECT c FROM comments3 -(<REPLY_OF*)- (Comment3):c;
+
+  replies = replies1 UNION replies2 UNION replies3;
+
+
+  DELETE r FROM replies:r;
+  print replies.size() as result;
+}

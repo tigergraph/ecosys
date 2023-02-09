@@ -1,0 +1,81 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTAX _v2 {
+  TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
+  TYPEDEF TUPLE <UINT pid, UINT score> ps;
+
+  HeapAccum<ps>(1, score DESC, pid ASC) @pScore;
+  MapAccum<VERTEX<Person3>, UINT> @score;
+  MinAccum<VERTEX<Person3>> @person2;
+  SetAccum<VERTEX<Person3>> @knows, @p2s1, @p2s2, @p2s3, @p2s4;
+  OrAccum @valid, @selected, @select1;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults;
+  HeapAccum<pairScore>(100, score DESC, person1Id ASC, person2Id ASC) @@result;
+  MinAccum<UINT> @min_pid2;
+  
+  P1candidate = SELECT p 
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)-Person3:p 
+    WHERE cn.name == country1;
+
+  P2candidate = 
+    SELECT p2
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)-Person3:p2
+    WHERE cn.name == country2
+    ACCUM p2.@selected += true;
+  
+  P2 = 
+    SELECT p2
+    FROM P1candidate:p1 -(KNOWS)- Person3:p2
+    WHERE p2.@selected
+    ACCUM p1.@valid += True, 
+      p1.@knows += p2,
+      p1.@min_pid2 += p2.id;
+
+  P1(Person3) = SELECT p FROM Person3:p WHERE p.@valid ACCUM p.@select1 += TRUE;
+  # Case 1
+  tmp = SELECT p1 FROM P1:p1 -(REPLY_COUNT>:e)- Person3:p2
+    WHERE p2.@selected AND e.cnt > 0
+    ACCUM p1.@score += (p2 -> 4);
+  # Case 2
+  tmp = SELECT p1 FROM Person3:p2 -(REPLY_COUNT>:e)- Person3:p1
+  #tmp = SELECT p1 FROM Person3:p2 -(REPLY_COUNT>:e)- P1:p1
+    WHERE p2.@selected AND e.cnt > 0 AND p1.@select1
+    ACCUM p1.@score += (p2 -> 1);
+  # Case 3
+  M2 = SELECT m2 FROM P2:p -(<HAS_CREATOR)- _:m2
+    ACCUM m2.@p2s3 += p;
+  tmp = SELECT p1 FROM M2:m2 -(<LIKES)- Person3:p1
+    WHERE p1.@valid
+    ACCUM p1.@p2s3 += m2.@p2s3
+    POST-ACCUM p1.@p2s3 = (p1.@p2s3 INTERSECT p1.@knows);
+  # Case 4
+  M2 = SELECT m2 FROM P2:p2 -(LIKES>)- _:m2
+    ACCUM m2.@p2s4 += p2;
+  tmp = SELECT p1 FROM M2:m2 -(HAS_CREATOR>)- Person3:p1
+    WHERE p1.@valid
+    ACCUM p1.@p2s4 += m2.@p2s4
+    POST-ACCUM p1.@p2s4 = (p1.@p2s4 INTERSECT p1.@knows);
+  
+  P1 = SELECT p1 FROM P1:p1
+    ACCUM
+      FOREACH p2 IN p1.@p2s3 DO
+        p1.@score += (p2 -> 10)
+      END,
+      FOREACH p2 IN p1.@p2s4 DO
+        p1.@score += (p2 -> 1)
+      END
+    POST-ACCUM
+      FOREACH (p2,score) IN p1.@score DO
+        p1.@pScore += ps(p2.id,score)
+      END;
+
+  City1 = SELECT c1 FROM P1:p1 -(IS_LOCATED_IN>)- City:c1
+    ACCUM 
+      IF p1.@pScore.size() > 0 THEN
+        c1.@cityresults += pairScore(p1.id, p1.@pScore.top().pid, c1.name, p1.@pScore.top().score)
+      ELSE
+        c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0)
+      END; 
+  
+  City1 = SELECT c1 FROM City1:c1
+    ACCUM @@result += c1.@cityresults.top();
+  PRINT @@result as result;
+}

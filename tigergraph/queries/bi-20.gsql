@@ -1,0 +1,42 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person1> person2Id) syntax v2 {
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
+  OrAccum @visited, @next, @inCompany;
+  MinAccum<UINT> @dist;
+  MapAccum<UINT, SetAccum<UINT>> @@paths;
+  SetAccum<UINT> @@shortest;
+  MinAccum<UINT> @@threshold;
+  @@threshold = 40;
+  S1 =
+    SELECT p
+    FROM Company:c -(<WORK_AT)- (Person1|Person2|Person3):p
+    WHERE c.name == company AND p != person2Id
+    ACCUM p.@inCompany += true;
+  
+  S = {person2Id};
+  S = Select s FROM S:s ACCUM s.@visited += true, s.@dist += 0;
+  WHILE S.size()>0 DO
+    S = SELECT t FROM S:s-(KNOWS:e)- (Person1):t 
+      WHERE e.weight20 < 10000
+      ACCUM 
+        UINT t_dis = s.@dist + e.weight20,
+        IF t_dis < t.@dist AND t_dis <= @@threshold THEN
+          t.@dist += t_dis,
+          t.@next += true
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s  
+      ACCUM s.@next = false,
+        IF s.@inCompany THEN @@paths += (s.@dist -> s.id), @@threshold += s.@dist END;
+    # Update the threshold
+
+    @@shortest.clear();
+    @@shortest += @@paths.get(@@threshold);
+    @@paths.clear();
+    @@paths += (@@threshold -> @@shortest); 
+  END; # WHILE 
+  FOREACH p IN @@shortest DO
+    @@result += RESULT(p, @@threshold);
+  END;
+  PRINT @@result as result;
+}

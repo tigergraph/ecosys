@@ -1,0 +1,28 @@
+// this solution uses less memory but is slower
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19(DATETIME startDate, DATETIME endDate, STRING file) syntax v2 {
+  FILE file1 (file);
+  MinAccum<UINT> @creator, @replyto;
+  SetAccum<UINT> @neighbor;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
+  P = SELECT p FROM Person1|Person2|Person3:p
+    WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
+  tmp = SELECT p FROM (Person1|Person2|Person3):p -(KNOWS)- (Person1|Person2|Person3):p2
+    WHERE p2.creationDate BETWEEN startEpoch AND endEpoch
+    ACCUM p.@neighbor += p2.id;
+  M1 = SELECT m1 FROM P:p -(<HAS_CREATOR)- _:m1
+    ACCUM m1.@creator += p.id;
+  M2 = SELECT m2 FROM M1:m1 -(<REPLY_OF)- _:m2
+    ACCUM m2.@replyto += m1.@creator;
+  PersonReplied = SELECT p FROM M2:m2 -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    WHERE m2.@replyto IN p.@neighbor
+    ACCUM file1.println(p.id, m2.@replyto);
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi19() syntax v2 {
+  tmp = SELECT p1 FROM (Person1|Person2|Person3):p1 -(KNOWS:e)- (Person1|Person2|Person3):p2
+      ACCUM e.weight19 = 0;
+  tmp = SELECT p1 FROM (Person1|Person2|Person3):p1 -(REPLY_COUNT>:e)- (Person1|Person2|Person3):p2
+      ACCUM e.cnt = 0;
+}

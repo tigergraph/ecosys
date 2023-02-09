@@ -1,9 +1,0 @@
-DROP ALL
-CREATE VERTEX account (PRIMARY_ID pid string, exid string, flag int, idtype int, idnum uint)
-CREATE VERTEX transaction (PRIMARY_ID pid string, from_id string, to_id string, amount double, date_time datetime)
-CREATE VERTEX oneDay (PRIMARY_ID pid uint, exid uint)
-CREATE DIRECTED EDGE send (from *, to *) with reverse_edge = "rev_send"
-CREATE UNDIRECTED EDGE oneDay_trans (from oneDay, to transaction, date_time datetime)
-CREATE GRAPH poc_graph (*)
-EXPORT SCHEMA poc_graph
-#INIT GRAPH STORE FOR GRAPH poc_graph

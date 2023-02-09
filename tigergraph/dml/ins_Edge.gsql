@@ -1,0 +1,121 @@
+CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_Comment_hasCreator_Person;
+  DEFINE FILENAME file_Comment_hasTag_Tag;
+  DEFINE FILENAME file_Comment_isLocatedIn_Country;
+  DEFINE FILENAME file_Comment_replyOf_Comment;
+  DEFINE FILENAME file_Comment_replyOf_Post;
+  DEFINE FILENAME file_Forum_containerOf_Post;
+  DEFINE FILENAME file_Forum_hasMember_Person;
+  DEFINE FILENAME file_Forum_hasModerator_Person;
+  DEFINE FILENAME file_Forum_hasTag_Tag;
+  DEFINE FILENAME file_Person_hasInterest_Tag;
+  DEFINE FILENAME file_Person_isLocatedIn_City;
+  DEFINE FILENAME file_Person_knows_Person;
+  DEFINE FILENAME file_Person_likes_Comment;
+  DEFINE FILENAME file_Person_likes_Post;
+  DEFINE FILENAME file_Person_studyAt_University;
+  DEFINE FILENAME file_Person_workAt_Company;
+  DEFINE FILENAME file_Post_hasCreator_Person;
+  DEFINE FILENAME file_Post_hasTag_Tag;
+  DEFINE FILENAME file_Post_isLocatedIn_Country;
+
+  // load edge
+  LOAD file_Forum_containerOf_Post
+   TO EDGE CONTAINER_OF VALUES ($1 Forum1, $2 Post1) ,
+   TO EDGE CONTAINER_OF VALUES ($1 Forum2, $2 Post2) ,
+    TO EDGE CONTAINER_OF VALUES ($1 Forum3, $2 Post3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_hasCreator_Person
+  TO EDGE HAS_CREATOR VALUES ($1 Comment1, $2 Person1) ,
+    TO EDGE HAS_CREATOR VALUES ($1 Comment2, $2 Person2) ,
+    TO EDGE HAS_CREATOR VALUES ($1 Comment3, $2 Person3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Post_hasCreator_Person
+    TO EDGE HAS_CREATOR VALUES ($1 Post1, $2 Person1) ,
+    TO EDGE HAS_CREATOR VALUES ($1 Post2, $2 Person2) ,
+    TO EDGE HAS_CREATOR VALUES ($1 Post3, $2 Person3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_hasInterest_Tag
+    TO EDGE HAS_INTEREST VALUES ($1 Person1, $2) ,
+    TO EDGE HAS_INTEREST VALUES ($1 Person2, $2) ,
+    TO EDGE HAS_INTEREST VALUES ($1 Person3, $2)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasMember_Person
+   TO EDGE HAS_MEMBER VALUES ($1 Forum1, $2 Person1, ToMiliSeconds($0)) ,
+    TO EDGE HAS_MEMBER VALUES ($1 Forum2, $2 Person2, ToMiliSeconds($0)) ,
+    TO EDGE HAS_MEMBER VALUES ($1 Forum3, $2 Person3, ToMiliSeconds($0)) 
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasModerator_Person
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum1, $2 Person1) ,
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum2, $2 Person2) ,
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum3, $2 Person3) 
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Comment1, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Comment2, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Comment3, $2)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Post_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Post1, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Post2, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Post3, $2) 
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Forum_hasTag_Tag
+    TO EDGE HAS_TAG VALUES ($1 Forum1, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Forum2, $2) ,
+    TO EDGE HAS_TAG VALUES ($1 Forum3, $2)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_isLocatedIn_Country
+   TO EDGE MESG_LOCATED_IN VALUES ($1 Comment1, $2 Country) ,
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment2, $2 Country) ,
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment3, $2 Country) 
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Post_isLocatedIn_Country
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post1, $2 Country) ,
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post2, $2 Country) ,
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post3, $2 Country) 
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_isLocatedIn_City
+   TO EDGE IS_LOCATED_IN VALUES ($1 Person1, $2 City) ,
+    TO EDGE IS_LOCATED_IN VALUES ($1 Person2, $2 City) ,
+    TO EDGE IS_LOCATED_IN VALUES ($1 Person3, $2 City)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_knows_Person
+    TO EDGE KNOWS VALUES ($1 Person1, $2 Person1, ToMiliSeconds($0), _, _) ,
+    TO EDGE KNOWS VALUES ($1 Person2, $2 Person2, ToMiliSeconds($0), _, _) ,
+    TO EDGE KNOWS VALUES ($1 Person3, $2 Person3, ToMiliSeconds($0), _, _)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_likes_Comment
+    TO EDGE LIKES VALUES ($1 Person1, $2 Comment1, ToMiliSeconds($0)) ,
+    TO EDGE LIKES VALUES ($1 Person2, $2 Comment2, ToMiliSeconds($0)) ,
+    TO EDGE LIKES VALUES ($1 Person3, $2 Comment3, ToMiliSeconds($0))
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_likes_Post
+ TO EDGE LIKES VALUES ($1 Person1, $2 Post1, ToMiliSeconds($0)) ,
+    TO EDGE LIKES VALUES ($1 Person2, $2 Post2, ToMiliSeconds($0)) ,
+    TO EDGE LIKES VALUES ($1 Person3, $2 Post3, ToMiliSeconds($0))
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_replyOf_Comment
+    TO EDGE REPLY_OF VALUES ($1 Comment1, $2 Comment1) ,
+    TO EDGE REPLY_OF VALUES ($1 Comment2, $2 Comment2) ,
+    TO EDGE REPLY_OF VALUES ($1 Comment3, $2 Comment3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Comment_replyOf_Post
+   TO EDGE REPLY_OF VALUES ($1 Comment1, $2 Post1),
+    TO EDGE ROOT_POST VALUES ($1 Comment1, $2 Post1) ,
+    TO EDGE REPLY_OF VALUES ($1 Comment2, $2 Post2),
+    TO EDGE ROOT_POST VALUES ($1 Comment2, $2 Post2) ,
+    TO EDGE REPLY_OF VALUES ($1 Comment3, $2 Post3),
+    TO EDGE ROOT_POST VALUES ($1 Comment3, $2 Post3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_studyAt_University
+    TO EDGE STUDY_AT VALUES ($1 Person1, $2, $3) ,
+    TO EDGE STUDY_AT VALUES ($1 Person2, $2, $3) ,
+    TO EDGE STUDY_AT VALUES ($1 Person3, $2, $3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+  LOAD file_Person_workAt_Company
+    TO EDGE WORK_AT VALUES ($1 Person1, $2, $3) ,
+    TO EDGE WORK_AT VALUES ($1 Person2, $2, $3) ,
+    TO EDGE WORK_AT VALUES ($1 Person3, $2, $3)
+    USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+}

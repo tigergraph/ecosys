@@ -1,5 +1,0 @@
-country:
-Germany
-
-blackList:
-one;has;David

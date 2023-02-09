@@ -1,0 +1,20 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
+  HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
+  SumAccum<UINT> @authorityScore;
+  MapAccum<VERTEX, MinAccum<UINT>> @pScore;
+  message1 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m WHERE t.name == tag;
+  tmp = SELECT m FROM message1:m -(<LIKES)- (Person1|Person2|Person3):p2
+    ACCUM m.@pScore += (p2->p2.popularityScore);
+    
+  person1 =
+    SELECT p1
+    FROM message1:m -(HAS_CREATOR>)- (Person1|Person2|Person3):p1
+    ACCUM p1.@pScore += m.@pScore
+    POST-ACCUM 
+      FOREACH (p,score) IN p1.@pScore DO
+        p1.@authorityScore += score
+      END,
+      @@result += RESULT(p1.id, p1.@authorityScore), p1.@pScore.clear();
+  PRINT @@result as result;
+}

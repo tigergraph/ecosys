@@ -1,0 +1,62 @@
+## Message
+CREATE VERTEX Comment1 (PRIMARY_ID id UINT, creationDate INT, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Comment2 (PRIMARY_ID id UINT, creationDate INT, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Comment3 (PRIMARY_ID id UINT, creationDate INT, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post1 (PRIMARY_ID id UINT, imageFile STRING, creationDate INT, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post2 (PRIMARY_ID id UINT, imageFile STRING, creationDate INT, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post3 (PRIMARY_ID id UINT, imageFile STRING, creationDate INT, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+## organisation
+CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX University (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+## place
+CREATE VERTEX City (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+## etc
+CREATE VERTEX Forum1 (PRIMARY_ID id UINT, title STRING, creationDate INT, 
+    maxMember UINT) WITH primary_id_as_attribute="TRUE" // maxMember is for precompute in BI-4
+CREATE VERTEX Forum2 (PRIMARY_ID id UINT, title STRING, creationDate INT, 
+    maxMember UINT) WITH primary_id_as_attribute="TRUE" // maxMember is for precompute in BI-4
+CREATE VERTEX Forum3 (PRIMARY_ID id UINT, title STRING, creationDate INT, 
+    maxMember UINT) WITH primary_id_as_attribute="TRUE" // maxMember is for precompute in BI-4
+CREATE VERTEX Person1 (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>,
+    popularityScore UINT) WITH primary_id_as_attribute="TRUE" // popularityScore is for precompute in BI-6
+CREATE VERTEX Person2 (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>,
+    popularityScore UINT) WITH primary_id_as_attribute="TRUE" // popularityScore is for precompute in BI-6
+CREATE VERTEX Person3 (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>,
+    popularityScore UINT) WITH primary_id_as_attribute="TRUE" // popularityScore is for precompute in BI-6
+CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+
+
+# create edge
+CREATE DIRECTED EDGE CONTAINER_OF (FROM Forum1, TO Post1 | FROM Forum2, TO Post2 | FROM Forum3, TO Post3) WITH REVERSE_EDGE="CONTAINER_OF_REVERSE"
+CREATE DIRECTED EDGE HAS_CREATOR (FROM Comment1, TO Person1 | FROM Comment2, TO Person2 | FROM Comment3, TO Person3 | FROM Post1, TO Person1 | FROM Post2, TO Person2 | FROM Post3, TO Person3 ) WITH REVERSE_EDGE="HAS_CREATOR_REVERSE"
+CREATE DIRECTED EDGE HAS_INTEREST (FROM Person1|Person2|Person3, TO Tag) WITH REVERSE_EDGE="HAS_INTEREST_REVERSE"
+CREATE DIRECTED EDGE HAS_MEMBER (FROM Forum1, TO Person1 | FROM Forum2, TO Person2 | FROM Forum3, TO Person3, creationDate INT) WITH REVERSE_EDGE="HAS_MEMBER_REVERSE"
+CREATE DIRECTED EDGE HAS_MODERATOR (FROM Forum1, TO Person1 | FROM Forum2, TO Person2 | FROM Forum3, TO Person3) WITH REVERSE_EDGE="HAS_MODERATOR_REVERSE"
+CREATE DIRECTED EDGE HAS_TAG (FROM Comment1|Comment2|Comment3|Post1|Post2|Post3|Forum1|Forum2|Forum3, TO Tag) WITH REVERSE_EDGE="HAS_TAG_REVERSE"
+CREATE DIRECTED EDGE HAS_TYPE (FROM Tag, TO TagClass) WITH REVERSE_EDGE="HAS_TYPE_REVERSE"
+CREATE DIRECTED EDGE IS_LOCATED_IN (FROM Company, TO Country | FROM Person1, TO City | FROM Person2, TO City | FROM Person3, TO City | FROM University, TO City) WITH REVERSE_EDGE="IS_LOCATED_IN_REVERSE"
+CREATE DIRECTED EDGE MESG_LOCATED_IN (FROM Comment1|Comment2|Comment3|Post1|Post2|Post3, TO Country) // Reverse edge of Comment1|Comment2|Comment3/Post1|Post2|Post3 -IS_Located_IN-> Country will cause Country connected by too many edges, which makes loading slow
+CREATE DIRECTED EDGE IS_PART_OF (FROM City, TO Country | FROM Country, TO Continent) WITH REVERSE_EDGE="IS_PART_OF_REVERSE"
+CREATE DIRECTED EDGE IS_SUBCLASS_OF (FROM TagClass, TO TagClass) WITH REVERSE_EDGE="IS_SUBCLASS_OF_REVERSE"
+CREATE UNDIRECTED EDGE KNOWS (FROM Person1, TO Person1 | FROM Person2, TO Person2 | FROM Person3, TO Person3, creationDate INT, weight19 UINT, weight20 UINT DEFAULT 10000)
+CREATE DIRECTED EDGE LIKES (FROM Person1, TO Comment1| FROM Person2, TO Comment2 | FROM Person3, TO Comment3 | FROM Person1, TO Post1 | FROM Person2, TO Post2 | FROM Person3, TO Post3, creationDate INT) WITH REVERSE_EDGE="LIKES_REVERSE"
+CREATE DIRECTED EDGE REPLY_OF (FROM Comment1, TO Comment1 | FROM Comment2, TO Comment2 | FROM Comment3, TO Comment3 | FROM Comment1, TO Post1 | FROM Comment2, TO Post2 | FROM Comment3, TO Post3) WITH REVERSE_EDGE="REPLY_OF_REVERSE"
+CREATE DIRECTED EDGE STUDY_AT (FROM Person1|Person2|Person3, TO University, classYear INT) WITH REVERSE_EDGE="STUDY_AT_REVERSE"
+CREATE DIRECTED EDGE WORK_AT (FROM Person1|Person2|Person3, TO Company, workFrom INT) WITH REVERSE_EDGE="WORK_AT_REVERSE"
+
+CREATE DIRECTED EDGE ROOT_POST (FROM Comment1, TO Post1 | FROM Comment2, TO Post2 | FROM Comment3, TO Post3) WITH REVERSE_EDGE="ROOT_POST_REVERSE" //FOR BI-3,9,17
+CREATE DIRECTED EDGE REPLY_COUNT (FROM Person1, TO Person1 | FROM Person2, To Person2 | FROM Person3, To Person3, cnt UINT)
+
+CREATE GLOBAL SCHEMA_CHANGE JOB addIndex {
+  ALTER VERTEX Country ADD INDEX country_name ON (name);
+  ALTER VERTEX Company ADD INDEX company_name ON (name);
+  ALTER VERTEX University ADD INDEX university_name ON (name);
+  ALTER VERTEX Tag ADD INDEX tag_name ON (name);
+  ALTER VERTEX TagClass ADD INDEX tagclass_name ON (name);
+}
+
+RUN GLOBAL SCHEMA_CHANGE JOB addIndex
+CREATE GRAPH ldbc_snb (*)
