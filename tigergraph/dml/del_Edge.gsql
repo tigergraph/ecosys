@@ -1,0 +1,34 @@
+CREATE LOADING JOB delete_edge FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_Person_likes_Post; // del 2
+  DEFINE FILENAME file_Person_likes_Comment; // del 3
+  DEFINE FILENAME file_Forum_hasMember_Person; // del 5
+  DEFINE FILENAME file_Person_knows_Person; // del 8
+  // delete edge
+  DELETE EDGE LIKES
+    (FROM $1 Person1, TO $2 Post1) from file_Person_likes_Post  USING header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person2, TO $2 Post2) from file_Person_likes_Post  USING header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person3, TO $2 Post3) from file_Person_likes_Post  USING header="true", separator = "|";
+    
+  DELETE EDGE LIKES
+    (FROM $1 Person1, TO $2 Comment1) from file_Person_likes_Comment USING header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person2, TO $2 Comment2) from file_Person_likes_Comment USING header="true", separator = "|";
+  DELETE EDGE LIKES
+    (FROM $1 Person3, TO $2 Comment3) from file_Person_likes_Comment USING header="true", separator = "|";
+
+  DELETE EDGE HAS_MEMBER
+    (FROM $1 Forum1, TO $2 Person1) from file_Forum_hasMember_Person USING header="true", separator = "|";
+  DELETE EDGE HAS_MEMBER
+    (FROM $1 Forum2, TO $2 Person2) from file_Forum_hasMember_Person USING header="true", separator = "|";
+  DELETE EDGE HAS_MEMBER
+    (FROM $1 Forum3, TO $2 Person3) from file_Forum_hasMember_Person USING header="true", separator = "|";
+
+  DELETE EDGE KNOWS
+    (FROM $1 Person1, TO $2 Person1) from file_Person_knows_Person USING header="true", separator = "|";
+  DELETE EDGE KNOWS
+    (FROM $1 Person2, TO $2 Person2) from file_Person_knows_Person USING header="true", separator = "|";
+  DELETE EDGE KNOWS
+    (FROM $1 Person3, TO $2 Person3) from file_Person_knows_Person USING header="true", separator = "|";
+}

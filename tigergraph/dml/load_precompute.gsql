@@ -1,0 +1,26 @@
+CREATE LOADING JOB load_root_post FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_root_post = "ANY:/home/tigergraph/root_post.csv";
+  LOAD file_root_post
+    TO EDGE ROOT_POST VALUES ($0 Comment1, $1 Post1), 
+    TO EDGE ROOT_POST VALUES ($0 Comment2, $1 Post2), 
+    TO EDGE ROOT_POST VALUES ($0 Comment3, $1 Post3) 
+    USING header="false";
+}
+
+CREATE LOADING JOB load_precompute FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_reply_count = "ANY:/home/tigergraph/reply_count/";
+  DEFINE FILENAME file_knows20 = "ANY:/home/tigergraph/knows20.csv";
+  LOAD file_reply_count
+    TO EDGE REPLY_COUNT VALUES ($0 Person1, $1 Person1, REDUCE(add(1))),
+    TO EDGE REPLY_COUNT VALUES ($0 Person2, $1 Person2, REDUCE(add(1))),
+    TO EDGE REPLY_COUNT VALUES ($0 Person3, $1 Person3, REDUCE(add(1))),
+    TO EDGE KNOWS VALUES ($0 Person1, $1 Person1, _, REDUCE(add(1)), _), 
+    TO EDGE KNOWS VALUES ($0 Person2, $1 Person2, _, REDUCE(add(1)), _), 
+    TO EDGE KNOWS VALUES ($0 Person3, $1 Person3, _, REDUCE(add(1)), _)    
+    USING header="false";
+  LOAD file_knows20
+    TO EDGE KNOWS VALUES ($0 Person1, $1 Person1, _, _, $2), 
+    TO EDGE KNOWS VALUES ($0 Person2, $1 Person2, _, _, $2), 
+    TO EDGE KNOWS VALUES ($0 Person3, $1 Person3, _, _, $2)
+    USING header="false";
+}

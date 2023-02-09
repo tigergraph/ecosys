@@ -1,0 +1,50 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person1> personId, STRING country, STRING tagClass) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT personId, STRING tagName, UINT messageCount> RESULT;
+  OrAccum @visited, @selected;
+  SetAccum<VERTEX<Tag>> @tags;
+  MapAccum<VERTEX<Tag>, SumAccum<UINT>> @messageCount;
+  HeapAccum<RESULT> (100, messageCount DESC, tagName ASC, personId ASC) @@result;
+  candidates = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- (Person1|Person2|Person3):p
+    WHERE cn.name == country;
+
+  S = {personId};
+  UINT pathLength = 0;
+  S = SELECT s FROM S:s ACCUM s.@visited = TRUE;
+  WHILE pathLength < 3 DO
+    S =
+      SELECT t
+      FROM S:s -(KNOWS)- (Person1):t
+      WHERE NOT t.@visited
+      POST-ACCUM t.@visited = TRUE;
+    pathLength += 1;
+  END;
+  # Here, S is the Person1|Person2|Person3 with shortest length of 3
+  persons = SELECT t
+    FROM S:s -(KNOWS)- (Person1|Person2|Person3):t
+    WHERE NOT t.@visited;
+  persons = (persons UNION S) INTERSECT candidates;
+
+  messages = SELECT m
+    FROM persons:p -(<HAS_CREATOR)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m
+    ACCUM m.@selected += TRUE;
+
+  messages = SELECT m
+    FROM TagClass:tc -(<HAS_TYPE)- Tag:t -(<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m
+    WHERE tc.name == tagClass AND m.@selected;
+
+  messages = SELECT m
+    FROM messages:m -(HAS_TAG>)- Tag:t
+    ACCUM m.@tags += t;
+
+  persons = SELECT p
+    FROM messages:m -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    ACCUM
+      FOREACH t IN m.@tags DO
+        p.@messageCount += (t -> 1)
+      END
+    POST-ACCUM
+      FOREACH (t,cnt) IN p.@messageCount DO
+        @@result += RESULT(p.id, t.name, cnt)
+      END;
+  PRINT @@result as result;
+}

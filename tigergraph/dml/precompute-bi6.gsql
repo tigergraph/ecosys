@@ -1,0 +1,13 @@
+/*
+CREATE GLOBAL SCHEMA_CHANGE JOB add6 {
+  ALTER vertex Person add attribute (popularityScore UINT);
+}
+RUN GLOBAL SCHEMA_CHANGE JOB add6
+*/
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi6() syntax v2 {
+  SumAccum<UINT> @score;
+  M = SELECT m FROM (Comment1|Comment2|Comment3|Post1|Post2|Post3):m -(<LIKES)- _ ACCUM m.@score += 1;
+  tmp = SELECT p FROM (Person1|Person2|Person3):p -(<HAS_CREATOR)- _:m
+    ACCUM p.@score += m.@score
+    POST-ACCUM p.popularityScore = p.@score;
+}

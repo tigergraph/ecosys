@@ -1,0 +1,25 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) SYNTAX v2 {
+
+  # count is a reserved keyword.
+  TYPEDEF TUPLE <STRING relatedTagName, UINT replyCount> RESULT;
+
+  HeapAccum<RESULT>(100, replyCount DESC, relatedTagName ASC) @@result;
+
+  SumAccum<UINT> @count;
+
+  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
+  replies = SELECT c FROM tagWithName -(<HAS_TAG.<REPLY_OF)- (Comment1|Comment2|Comment3):c;
+  repliesWithTag =
+    SELECT r
+    FROM tagWithName -(<HAS_TAG)- replies:r;
+
+  repliesWithoutTag = replies MINUS repliesWithTag;
+
+  tmp =
+    SELECT t
+    FROM repliesWithoutTag:r -(HAS_TAG>)- Tag:t
+    ACCUM t.@count += 1
+    POST-ACCUM @@result += RESULT(t.name, t.@count);
+
+  PRINT @@result as result;
+}

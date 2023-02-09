@@ -1,5 +1,0 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE QUERY ins8(UINT person1Id, UINT person2Id, DATETIME creationDate) {
-  INSERT INTO KNOWS (FROM, TO, creationDate) VALUES(person1Id, person2Id, creationDate);
-}

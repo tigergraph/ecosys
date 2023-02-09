@@ -1,0 +1,36 @@
+set syntax_version="v2"
+CREATE OR REPLACE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClass) SYNTAX v2 {
+
+  TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow2, INT diff> RESULT;
+  HeapAccum<RESULT>(100, diff DESC, tagName ASC) @@result;
+  SumAccum<INT> @countWindow1;
+  SumAccum<INT> @countWindow2;
+  INT dateEpoch = datetime_to_epoch(date) * 1000;
+  INT dateEnd1 = datetime_to_epoch(datetime_add(date, INTERVAL 100 DAY)) * 1000;
+  INT dateEnd2 = datetime_to_epoch(datetime_add(date, INTERVAL 200 DAY)) * 1000;
+
+  tagsUnderTagClass = SELECT t 
+    FROM TagClass:tc -(<HAS_TYPE)- Tag:t
+    WHERE tc.name == tagClass;
+
+  tmp =
+    SELECT m
+    FROM tagsUnderTagClass:t -(<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m
+    WHERE dateEpoch <= m.creationDate AND m.creationDate < dateEnd2 
+    ACCUM
+      IF m.creationDate < dateEnd1 THEN 
+        t.@countWindow1 += 1
+      ELSE 
+        t.@countWindow2 += 1
+      END
+    POST-ACCUM
+      @@result += RESULT(t.name, t.@countWindow1, t.@countWindow2, abs(t.@countWindow1 - t.@countWindow2));
+
+  tmp =
+    SELECT t
+    FROM tagsUnderTagClass:t 
+    WHERE t.@countWindow1 == 0 AND t.@countWindow2 == 0 
+    ACCUM @@result += RESULT(t.name, 0,0,0);
+
+  PRINT @@result as result;
+}

@@ -1,0 +1,50 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v2 {
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id, UINT totalWeight> RESULT;
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id> PAIR;
+  HeapAccum<RESULT>(1, person1Id ASC, person2Id ASC) @@result;
+  MapAccum<UINT, SetAccum<PAIR>> @@pairs;
+  SetAccum<PAIR> @@shortest;
+  MapAccum<UINT, MinAccum<UINT>> @dist1;
+  SumAccum<UINT> @creatorId; 
+  OrAccum @next, @isTarget;
+  MinAccum<UINT> @@threshold;
+  P = {Person1.*,Person2.*,Person3.*};
+  @@threshold += P.size() * 40;
+
+  city1 = {city1Id};
+  city2 = {city2Id};
+  S = SELECT p FROM city1:c -(<IS_LOCATED_IN)- (Person1|Person2|Person3):p ACCUM p.@dist1 += (p.id->0);
+  S2 = SELECT p FROM city2:c -(<IS_LOCATED_IN)- (Person1|Person2|Person3):p ACCUM p.@isTarget += True;
+  
+  WHILE S.size()>0 DO
+    # Expand the know map, we also neglect the distances larger than threshold
+    S = SELECT t FROM S:s-(KNOWS:e)- (Person1|Person2|Person3):t
+      WHERE e.weight19 > 0
+      ACCUM
+        FOREACH (p,dis) IN s.@dist1 DO
+          INT weight = round (40 - sqrt(e.weight19)),
+          IF weight <= 1 THEN weight = 1 END,
+          UINT t_dis = dis + weight,
+          IF t_dis <= @@threshold AND t_dis < t.@dist1.get(p) THEN
+            t.@dist1 += (p -> t_dis),
+            t.@next += true,
+            IF t.@isTarget THEN
+              @@threshold += t_dis,
+              @@pairs += (t_dis -> PAIR(p, t.id))
+            END 
+          END
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s ACCUM s.@next = false;
+
+    @@shortest.clear();
+    @@shortest += @@pairs.get(@@threshold);
+    @@pairs.clear();
+    @@pairs += (@@threshold -> @@shortest); 
+  END;
+  @@result.resize(@@shortest.size());
+  FOREACH pp IN @@shortest DO
+    @@result += RESULT(pp.person1Id, pp.person2Id, @@threshold);
+  END;
+  PRINT @@result as result;
+}

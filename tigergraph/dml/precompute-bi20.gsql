@@ -1,0 +1,17 @@
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi20() syntax v2 {
+  FILE file1 ("/home/tigergraph/knows20.csv");
+  SetAccum<VERTEX<University>> @univ;
+  MapAccum<VERTEX<University>, INT> @univYear;
+  P = SELECT p FROM University:u -(<STUDY_AT:e)- (Person1|Person2|Person3):p
+    ACCUM p.@univ += u,
+      p.@univYear += (u -> e.classYear);
+  tmp = SELECT p2 FROM Person1|Person2|Person3:p1 -(KNOWS:e)- (Person1|Person2|Person3):p2
+    WHERE p1.id < p2.id AND p1.@univ.size() > 0 AND p2.@univ.size() > 0
+    ACCUM 
+      UINT weight = 10000,
+      FOREACH u IN (p1.@univ INTERSECT p2.@univ) DO
+        UINT w = abs(p2.@univYear.get(u)-p1.@univYear.get(u)) + 1,
+        IF w < weight THEN weight = w END
+      END,
+      file1.println(p1.id, p2.id, weight);
+}

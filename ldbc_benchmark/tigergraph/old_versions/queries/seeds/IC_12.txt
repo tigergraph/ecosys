@@ -1,5 +1,0 @@
-personId:
-17592186052613
-
-tagClassName:
-BasketballPlayer

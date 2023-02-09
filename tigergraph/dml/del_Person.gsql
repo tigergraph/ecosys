@@ -1,0 +1,24 @@
+CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header=TRUE) syntax v2 {
+  SetAccum<VERTEX<Person1>> @@person1;
+  SetAccum<VERTEX<Person2>> @@person2;
+  SetAccum<VERTEX<Person3>> @@person3;
+
+  @@person1 = { LoadAccum(file, $1, "|", header)}; 
+  @@person2 = { LoadAccum(file, $1, "|", header)}; 
+  @@person3 = { LoadAccum(file, $1, "|", header)}; 
+  person = {@@person1,@@person2, @@person3};
+
+  # del 6 7
+  replies1 = SELECT c FROM person:p -(<HAS_CREATOR)- (Post1|Post2|Post3|Comment1|Comment2|Comment3):c;
+  
+  # del 4
+  F = SELECT f FROM person:p -(<HAS_MODERATOR)- (Forum1|Forum2|Forum3):f
+    WHERE f.title LIKE "Album %" OR f.title LIKE "Wall %";
+  replies2 = SELECT p FROM F -(CONTAINER_OF>)- (Post1|Post2|Post3):p;
+  
+  replies = replies1 UNION replies2;
+  comments = SELECT c FROM replies -(<REPLY_OF*)- (Comment1|Comment2|Comment3):c;
+  allv = comments UNION F UNION person;
+  DELETE v FROM allv:v;
+  PRINT allv.size() as result;
+}

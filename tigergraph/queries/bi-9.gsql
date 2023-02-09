@@ -1,0 +1,22 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName, UINT threadCount, UINT messageCount> RESULT;
+  HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
+  SumAccum<UINT> @messageCount;
+  SumAccum<UINT> @threadCount;
+
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
+  threads = SELECT s FROM Post1|Post2|Post3:s WHERE s.creationDate BETWEEN startEpoch AND endEpoch;
+  tmp = SELECT s FROM threads:s -(<ROOT_POST)- (Comment1|Comment2|Comment3):t
+    WHERE t.creationDate BETWEEN startEpoch AND endEpoch
+    ACCUM s.@messageCount += 1;
+  persons = SELECT p FROM threads:t -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    ACCUM
+      p.@threadCount += 1,
+      p.@messageCount += t.@messageCount + 1
+    POST-ACCUM
+      @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
+
+  PRINT @@result as result;
+}

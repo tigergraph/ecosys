@@ -1,0 +1,36 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold, SET<STRING> languages) SYNTAX v2 {
+
+  TYPEDEF TUPLE <UINT messageCount, UINT personCount> RESULT;
+  MapAccum<UINT, UINT> @@personCount;
+  HeapAccum<RESULT>(0, personCount DESC, messageCount DESC) @@result;
+  SumAccum<UINT> @messageCount;
+  INT diff;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+
+  posts = SELECT p FROM (Post1|Post2|Post3):p WHERE p.language IN languages;
+  M = SELECT m FROM posts:p-(<ROOT_POST)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m;
+  M = M UNION posts;
+  M = SELECT m FROM M:m 
+    WHERE m.length > 0 
+      AND m.length < lengthThreshold 
+      AND m.creationDate > startEpoch;
+
+  persons =
+    SELECT p
+    FROM M -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    ACCUM p.@messageCount += 1
+    POST-ACCUM @@personCount += (p.@messageCount -> 1);
+
+  allPersons = {Person1.*, Person2.*, Person3.*};
+  diff = allPersons.size() - persons.size();
+  IF diff > 0 THEN
+    @@personCount += (0 -> diff);
+  END;
+
+  @@result.resize(@@personCount.size());
+  FOREACH (messageCount, personCount) IN @@personCount DO
+    @@result += RESULT(messageCount, personCount);
+  END;
+
+  PRINT @@result as result;
+}

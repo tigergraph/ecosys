@@ -1,0 +1,16 @@
+CREATE OR REPLACE QUERY del_Post(STRING file, BOOL header=TRUE) syntax v2 {
+  SetAccum<VERTEX<Post1>> @@posts1;
+  SetAccum<VERTEX<Post2>> @@posts2;
+  SetAccum<VERTEX<Post3>> @@posts3;
+
+  @@posts1 = { LoadAccum(file, $1, "|", header)};
+  @@posts2 = { LoadAccum(file, $1, "|", header)};
+  @@posts3 = { LoadAccum(file, $1, "|", header)};
+
+  posts = {@@posts1, @@posts2, @@posts3};
+  # del 6 7
+  replies = SELECT c FROM posts -(<ROOT_POST)- (Comment1|Comment2|Comment3):c;
+  allv = posts UNION replies;
+  DELETE v FROM allv:v;
+  print allv.size() as result;
+}

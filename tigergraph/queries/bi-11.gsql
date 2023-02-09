@@ -1,0 +1,26 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+  SumAccum<UINT> @@result;
+  OrAccum<BOOL> @selected;
+  SetAccum<VERTEX> @oneHopNeighbor;
+  persons = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- (Person1|Person2|Person3):p  
+    WHERE cn.name == country
+    ACCUM p.@selected += True;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+  
+  P2 = SELECT p2
+    FROM persons:p1 -(KNOWS:e)- (Person1|Person2|Person3):p2 
+    WHERE p2.@selected AND (e.creationDate BETWEEN startEpoch AND endEpoch) AND p1.id < p2.id
+    ACCUM p2.@oneHopNeighbor += p1; 
+
+  P3 = SELECT p3
+    FROM P2:p2 -(KNOWS:e)- (Person1|Person2|Person3):p3 
+    WHERE p3.@selected AND (e.creationDate BETWEEN startEpoch AND endEpoch) AND p2.id < p3.id
+    ACCUM FOREACH p1 IN p2.@oneHopNeighbor DO
+        IF p1 IN p3.@oneHopNeighbor THEN
+          @@result += 1
+        END
+      END; 
+  
+  PRINT @@result as result;
+}

@@ -1,1 +1,0 @@
-creationDate:DATETIME|id:ID(Person)|firstName:STRING|lastName:STRING|gender:STRING|birthday:DATE|locationIP:STRING|browserUsed:STRING|speaks:STRING[]|email:STRING[]

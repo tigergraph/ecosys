@@ -1,0 +1,54 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, 
+    STRING tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v2 {
+
+  TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
+  HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
+
+  SumAccum<UINT> @knowsCountA, @messageCountA;
+  SumAccum<UINT> @knowsCountB, @messageCountB;
+  INT yearA, monthA, dayA;
+  INT yearB, monthB, dayB;
+  yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
+  yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
+
+  personsA =
+    SELECT p
+    FROM Tag:t -(<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    WHERE
+      t.name == tagA AND
+      year(epoch_to_datetime(m.creationDate/1000)) == yearA AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthA AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayA
+    ACCUM p.@messageCountA += 1;
+  tmp = SELECT p
+    FROM personsA:f -(KNOWS)- personsA:p
+    ACCUM p.@knowsCountA += 1;
+  # need to include person without any friends
+  personsA = SELECT p FROM personsA:p WHERE p.@knowsCountA <= maxKnowsLimit;
+
+  personsB =
+    SELECT p
+    FROM Tag:t -(<HAS_TAG)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):m -(HAS_CREATOR>)- (Person1|Person2|Person3):p
+    WHERE
+      t.name == tagB AND
+      year(epoch_to_datetime(m.creationDate/1000)) == yearB AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthB AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayB
+    ACCUM p.@messageCountB += 1;
+  tmp = SELECT p
+    FROM personsB:f -(KNOWS)- personsB:p
+    ACCUM p.@knowsCountB += 1;
+  # need to include person without any friends
+  personsB = SELECT p FROM personsB:p WHERE p.@knowsCountB <= maxKnowsLimit;
+
+  persons = personsA INTERSECT personsB;
+  persons =
+    SELECT p
+    FROM persons:p
+    POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
+
+  PRINT @@result as result;
+}
+
+#INTERPRET QUERY bi16 ("Imelda_Marcos", "2012-05-08T13:59:11", "Imelda_Marcos", "2012-05-08T13:59:11", 5) 
+#INTERPRET query bi16("Rocket_88", "2012-09-06T00:00:00", "Upside_Down", "2012-05-12T00:00:00",4)

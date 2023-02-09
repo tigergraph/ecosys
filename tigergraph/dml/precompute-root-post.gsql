@@ -1,0 +1,34 @@
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
+  MinAccum<UINT> @postId;
+  FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
+  M = SELECT t FROM (Post1|Post2|Post3):s -(<REPLY_OF)- (Comment1|Comment2|Comment3):t ACCUM t.@postId += s.id;
+  WHILE M.size() > 0 DO
+    M = SELECT t FROM M:s -(<REPLY_OF)- (Comment1|Comment2|Comment3):t
+    ACCUM t.@postId += s.@postId,
+      file1.println(t.id, s.@postId);
+  END;
+}
+
+// insert the ROOT_POST edges for one batch
+CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME endDate) syntax v2 {
+  SetAccum<VERTEX> @sources;
+  MaxAccum<UINT> @postId;
+  FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+  S0 = SELECT m FROM Comment1|Comment2|Comment3:m 
+    WHERE m.creationDate BETWEEN startEpoch AND endEpoch 
+      AND m.outdegree("ROOT_POST") == 0;
+  S = SELECT s FROM S0:s ACCUM s.@sources += s;
+  WHILE S.size() > 0 DO
+    S = SELECT t FROM S:s -(REPLY_OF>|ROOT_POST>)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):t
+      ACCUM
+        CASE WHEN (t.type == "Post1" OR t.type == "Post2" OR t.type == "Post3") THEN
+          FOREACH ss IN s.@sources DO ss.@postId += t.id END
+        WHEN (t.type == "Comment1" OR t.type == "Comment2" OR t.type == "Comment3") THEN
+          t.@sources += s.@sources
+        END
+      HAVING  (t.type == "Comment1" OR t.type == "Comment2" OR t.type == "Comment3") ;
+  END;
+  M = SELECT s FROM S0:s ACCUM file1.println(s.id, s.@postId);
+}
