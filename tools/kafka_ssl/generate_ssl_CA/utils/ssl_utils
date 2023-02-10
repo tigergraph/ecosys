@@ -1,0 +1,164 @@
+#!/bin/bash
+
+generate_CARoot(){
+  local generate_root=$1
+  local CN=$2
+
+  if [ ! -d ${generate_root} ]; then
+    mkdir -p ${generate_root}
+  fi
+
+  cd $generate_root
+  if [ -z "$CN" ]; then
+    error "subject CN is empty"
+    exit 1
+  fi
+
+  prog "start creating certificate authority(CA) for signing..."
+  prog "CARoot path: ${generate_root}/ca-root.crt"
+  prog "private_key path: ${generate_root}/ca-root.key"
+  openssl req -nodes -new -x509 -keyout ca-root.key -out ca-root.crt -days 365 -subj "/CN=$CN"
+}
+
+check_CARoot(){
+  local CA_Crt=$1
+  local privateKey=$2
+
+  if [ ! -f $CA_Crt ];then
+    error "CA certificate does not exist."
+    exit 1
+  elif [ ! -f $privateKey ];then
+    error "CA key file does not exist."
+    exit 1
+  fi
+
+  prog "Start checking certificate validity..."
+  if openssl verify -CApath CApath $CA_Crt | grep "OK" > /dev/null;then
+    prog "CA certificate validation passed."
+  else
+    error "Non-valid CA certificate:$CA_Crt"
+    exit 1
+  fi
+
+  # Verify whether the CARoot matches the private_key file
+  # Calculate the md5 value
+  crtMD5=$(openssl x509 -noout -modulus -in $CA_Crt | openssl md5 | awk -F"=" '{print $NF}')
+  privateKeyMD5=$(openssl rsa -noout -modulus -in $privateKey | openssl md5 | awk -F"=" '{print $NF}')
+
+  if [ "$crtMD5" = "$privateKeyMD5" ]; then
+    prog "CA certificate and private key match successfully."
+  else
+    error "CA certificate($CA_Crt) and private key($privateKey) do not match."
+    exit 1
+  fi
+}
+
+### generate an empty keystore
+# 1. default storetype is JKS
+# 2. validity is 365
+generate_keystore(){
+  local genRoot=$1
+  local pass=$2
+  local CN=$3
+  local storetype=$4
+  local keystoreName=$5
+
+  if [ ! -d ${genRoot} ]; then
+    mkdir -p ${genRoot}
+  fi
+
+  cd $genRoot
+  prog "start creating keystore..."
+  case $storetype in
+  pkcs12|PKCS12|pk12|PK12|p12|P12)
+    prog "The storetype of keystore is pkcs12."
+    keytool -genkey -keystore ${keystoreName}.keystore.p12 -validity 365 -storepass $pass -keypass $pass -dname "CN=$CN" -storetype pkcs12
+    # delete default Key-pair, the alias is 'mykey'
+    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.p12 -storepass ${pass}
+    ;;
+  JKS|jks)
+    prog "The storetype of keystore is JKS."
+    keytool -keystore ${keystoreName}.keystore.jks -validity 365 -genkey -keyalg RSA -dname "CN=$CN" -storepass ${pass} -keypass ${pass} -storetype jks
+    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.jks -storepass ${pass}
+    ;;
+  *)
+    prog "The default storetype of keystore is JKS."
+    keytool -keystore ${keystoreName}.keystore.jks -validity 365 -genkey -keyalg RSA -dname "CN=$CN" -storepass ${pass} -keypass ${pass}
+    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.jks -storepass ${pass}
+    ;;
+  esac
+}
+
+generate_subCA(){
+  local generate_root=$1
+  local keystore=$2
+  local CA_root=$3
+  local CA_key=$4
+  local subCA_name=$5
+  local pass=$6
+
+  if [ ! -d ${generate_root} ]; then
+    mkdir -p ${generate_root}
+  fi
+
+  cd $generate_root
+  prog "start creating certificate signing request (CSR)..."
+  keytool -keystore ${keystore} -certreq -file ${subCA_name}.csr -storepass ${pass} -keypass ${pass}
+
+  prog "sign sub-certificate through ca-root..."
+  openssl x509 -req -CA ${CA_root} -CAkey ${CA_key} -in ${subCA_name}.csr -out ${subCA_name}.crt -days 365 -CAcreateserial
+}
+
+import_to_keystore(){
+  local keystore=$1
+  local import_file=$2
+  local alias=$3
+  local pass=$4
+
+  prog "import ${import_file} to keystore: ${keystore}"
+  keytool -keystore ${keystore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
+}
+
+# at least one CA file is required to generate truststore
+generate_truststore(){
+  local generate_root=$1
+  local truststoreName=$2
+  local pass=$3
+  local storetype=$4
+  local firstFile=${generate_root}/firstCA.crt
+
+  if [ ! -d ${generate_root} ]; then
+    mkdir -p ${generate_root}
+  fi
+
+  cd $generate_root
+  if [ ! -f "$firstFile" ]; then
+    openssl req -nodes -new -x509 -keyout firstCA.key -out firstCA.crt -days 365 -subj "/CN=myFirstCA"
+  fi
+
+  prog "start creating truststore and import one CA..."
+  case $storetype in
+  pkcs12|PKCS12|pk12|PK12|p12|P12)
+    prog "The storetype of keystore is pkcs12."
+    prog "import ${firstFile} to truststore ${generate_root}/${truststoreName}.truststore.p12"
+    keytool -keystore ${truststoreName}.truststore.p12 -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype pkcs12 -noprompt
+    ;;
+  *)
+    prog "The default storetype of keystore is JKS."
+    prog "import ${firstFile} to truststore ${generate_root}/${truststoreName}.truststore.jks"
+    keytool -keystore ${truststoreName}.truststore.jks -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype jks -noprompt
+    ;;
+  esac
+
+  rm -rf firstCA*
+}
+
+import_to_truststore(){
+  local truststore=$1
+  local import_file=$2
+  local alias=$3
+  local pass=$4
+
+  prog "import ${import_file} to truststore: ${truststore}"
+  keytool -keystore ${truststore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
+}

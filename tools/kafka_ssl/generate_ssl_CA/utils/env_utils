@@ -1,0 +1,306 @@
+#!/bin/bash
+
+get_os(){
+  if [ -f "/etc/apt/sources.list" ]; then
+    if [ -f "/etc/linx-release" ]; then
+      os_version=$(cat /etc/linx-release | grep -o '[0-9]\.[0-9]\.[0-9]\{1,3\}' )
+      echo "ROCKY $os_version"
+    elif [ -f "/etc/lsb-release" ]; then
+      os_version=$(cat /etc/lsb-release | grep  "DISTRIB_RELEASE" | cut -d= -f2)
+      echo "UBUNTU $os_version"
+    elif [ -f "/etc/os-release" ]; then
+      os_version=$(cat /etc/os-release | grep  "VERSION_ID" | cut -d= -f2)
+      os_version=${os_version//\"}  # remove all double quotes
+      echo "DEBIAN $os_version"
+    fi
+  elif [ -d "/etc/yum.repos.d" ]; then
+    # Centos and RedHat are treated equally
+    if grep "Amazon Linux" /etc/system-release &>/dev/null; then
+      os_version=" 7.0"
+    else
+      variant="$(cat /etc/system-release | cut -d ' ' -f2)"
+      if [ "$variant" = "Stream" ]; then
+          os_version=" $(cat /etc/os-release | grep 'VERSION_ID=' | cut -d'"' -f 2)"
+      else
+          os_version="$(cat /etc/system-release | grep -o ' [0-9]\.[0-9]\{1,3\}')"
+      fi
+    fi
+    echo "RHEL$os_version"
+  elif [ -d "/etc/zypp/repos.d" ]; then
+    os_version=$(cat /etc/os-release | grep  "VERSION_ID" | cut -d= -f2)
+    os_version=${os_version//\"}  # remove all double quotes
+    echo "SUSE $os_version"
+  else
+    echo "UNKOWN OS"
+  fi
+}
+
+check_os(){
+  OS=$1
+  version=$2
+  note "OS obtained: $OS $version"
+  local error_msg="Unsupported OS. Current support CentOS 6.5 to 8.0; RedHat 6.5 to 9.0;"
+  if [ -z "$version" ]; then
+    error "Unknown OS version. $error_msg"
+    exit 1
+  fi
+
+  if [ "$OS" = "RHEL" ]; then
+   # the following one will end with one item array on docker centos 7.3, i.e. "${ver_arr[0]}" is "7 3"
+   # local ver_arr=(${version//./ })
+    IFS='.' read -r -a ver_arr <<< "$version"
+    if [[ "${ver_arr[0]}" -lt "6" || "${ver_arr[0]}" -eq "6" && "${ver_arr[1]}" -lt "5" ]]; then
+      error "$error_msg"
+      exit 1
+    else
+      note "OS check passed [OK]"
+    fi
+  else
+    error "$error_msg"
+    exit 1
+  fi
+}
+
+check_root(){
+  if [[ $EUID -ne 0 ]]; then
+    error "Sudo or root rights are required."
+    exit 1
+  fi
+}
+
+install_openJDK(){
+  if [[ "${SETUP_JDK}" == "true" ]]; then
+    if ! which java > /dev/null 2>&1; then
+      prog "start install openjdk-1.8.0."
+      yum install -y java-1.8.0-openjdk > /dev/null 2>&1
+    else
+    java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
+      if [[ $java_version != "1.8.0" ]];then
+        prog "start update to openjdk-1.8.0."
+        rpm -qa | grep java | xargs rpm -e --nodeps
+        yum install -y java-1.8.0-openjdk > /dev/null 2>&1
+      else
+        prog "The java version is openjdk-1.8.0 now."
+      fi
+    fi
+    # check install
+    if command -v java &> /dev/null;then
+      prog "JDK Install Success..."
+    else
+      error "JDK Install Fail..." && exit 1
+    fi
+
+  else
+    if ! which java > /dev/null 2>&1; then
+      error "Java environment not detected. You can choose option \"-i\" to install openjdk-1.8.0."
+      exit 1
+    else
+      java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
+      if [[ $java_version != "1.8.0" ]];then
+        error "This script currently only supports openjdk-1.8.0."
+        exit 1
+      else
+        prog "The java version is openjdk-1.8.0 now."
+      fi
+    fi
+  fi
+}
+
+install_openssl(){
+  if [[ "${SETUP_OPENSSL}" == "true" ]]; then
+    if ! openssl version > /dev/null 2>&1;then
+      prog "start install openssl..."
+      yum -y install openssl > /dev/null 2>&1
+    else
+      prog "Openssl is installed, skip installation."
+    fi
+
+    if [ $? != 0 ]; then
+      error "Failed to install openssl."
+      exit 1
+    fi
+  else
+    if ! openssl version > /dev/null 2>&1;then
+      error "Openssl is not installed. You can choose option \"-i\" to install openssl."
+      exit 1
+    else
+      prog "Openssl is installed."
+    fi
+  fi
+}
+
+path_conver(){
+  relativePath=$1
+  firstChar=${relativePath: 0: 1}
+
+  if [[ "$firstChar" == "" ]]; then
+	  echo "relative-path(\$1) is null"
+	  exit 1
+  elif [[ "$firstChar" == "/" ]]; then
+	  echo $relativePath
+	  exit 0
+  fi
+
+  tmpPath1=`dirname $relativePath`
+  tmpFullpath1=`cd $tmpPath1 && pwd`
+  tmpPath2=`basename $relativePath`
+
+  echo ${tmpFullpath1}/${tmpPath2}
+}
+
+check_file(){
+  file=$1
+  type=$2
+  if [ -f "$file" ];then
+    if [[ "${type}" == "0" ]]; then
+      error "$file already exists, exit."
+      exit 1
+    fi
+  elif [[ "${type}" == "1" || "${type}" == "" ]]; then
+    error "$file not exist, exit."
+    exit 1
+  fi
+}
+
+help(){
+  echo
+  echo "Usage:"
+  mesg_green "./`basename $0`  [-d <ssl_file_path>] [-c <subject_DN>][-p <passphrase>] [-s <storetype>] [-i]"
+  mesg_green "./`basename $0`  [-d <ssl_file_path>] [-c <subject_DN>][-p <passphrase>] [-s <storetype>]"
+  mesg_green "./`basename $0` -h"
+  mesg_green "./`basename $0` -u"
+  echo "Options:"
+  echo "  -h,-help        --  Show the help"
+  echo "  -u,-usage       --  Usage example"
+  echo "  -d,-directory   --  Certificate Generation Path [default: ./SSL_files]"
+  echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+  echo "  -p,-passphrase  --  PASSPHRASE [default: tiger123]"
+  echo "  -s,-storetype   --  Keystore/Truststore storetype, e.g. jks, pkcs12 [default: jks]"
+  echo "  -i,-install     --  Install openjdk-1.8.0 and openssl"
+  echo
+  warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
+Please note that if the local machine does not have a java environment, some certificates generation will fail."
+  exit 0
+}
+
+usage(){
+  echo "${bldblu}./`basename $0` -d ./SSL_files -p tiger123 -c kafka-0.tigergraph.com -s pkcs12 -i $txtrst"
+  echo "${bldblu}./`basename $0` -d ./SSL_files -p tiger123 -c kafka-0.tigergraph.com -s jks $txtrst"
+  echo "${bldblu}./`basename $0` -directory ./SSL_files -passphrase tiger123 -CN kafka-0.tigergraph.com -storetype pkcs12 -install $txtrst"
+  echo "${bldblu}./`basename $0` -i"
+  echo "${bldblu}./`basename $0` $txtrst"
+}
+
+general_help(){
+    echo
+    echo "Commands:"
+    echo "  -h,-help               --  Show the help"
+    echo "  -gen_CARoot            --  Generate root CA and private_key"
+    echo "  -gen_keystore          --  Generate an empty keystore"
+    echo "  -gen_truststore        --  Generate truststore"
+    echo "  -gen_subCA             --  Generate subordinate CA through root CA"
+    echo "  -import_to_keystore    --  Import CA to keystore"
+    echo "  -import_to_truststore  --  Import CA to truststore"
+    echo
+    warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
+  Please note that if the local machine does not have a java environment, some certificates generation will fail."
+    echo
+    warn "Use './`basename $0` -command_name -help' for usage of command_name"
+    exit 0
+}
+
+general_usage(){
+  usage_flag=$1
+  case $usage_flag in
+  gen_CARoot)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_CARoot] [-d <ssl_file_path>] [-c <subject_DN>]"
+    mesg_green "./`basename $0` --gen_CARoot -d ./SSL_file -c kafka-0.tigergraph.com"
+    mesg_green "./`basename $0` --gen_CARoot -c kafka-0.tigergraph.com"
+    echo "Options:"
+    echo "  -d,-directory   --  Certificate Generation Path [default: ./SSL_files]"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    exit 0
+    ;;
+  gen_keystore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_keystore] [-d <ssl_file_path>] [-p <passphrase>] [-s <storetype>]"
+    echo "Example:"
+    mesg_green "./`basename $0` --gen_keystore -d ./SSL_files -p tiger123 -s pkcs12"
+    mesg_green "./`basename $0` --gen_keystore -p tiger123"
+    mesg_green "./`basename $0` --gen_keystore -s jks"
+    mesg_green "./`basename $0` --gen_keystore"
+    echo
+    echo "Options:"
+    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
+    echo "  -p,-passphrase  --  PASSPHRASE [default: tiger123]"
+    echo "  -s,-storetype   --  Keystore storetype, e.g. jks, pkcs12 [default: jks]"
+    echo
+    exit 0
+    ;;
+  gen_subCA)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_subCA] [-d <ssl_file_path>] [-cer <rootCA_file_path>] [-cerKey <privateKey_file_path>] [-keystore <keystore_path>] [-c <subject_DN>] [-p <passphrase>]"
+    mesg_green "./`basename $0` [--gen_subCA] [-d <ssl_file_path>] [-cer <rootCA_file_path>] [-cerKey <privateKey_file_path>] [-c <subject_DN>] [-p <passphrase>]"
+    mesg_green "./`basename $0` --gen_subCA -cer ./SSL_files/ca-root.crt -cerKey ./SSL_files/ca-key.pem -keystore ./SSL_files/server.keystore.jks -c kafka-0.tigergraph.com -p tiger123"
+    mesg_green "./`basename $0` --gen_subCA -cer ./SSL_files/ca-root.crt -cerKey ./SSL_files/ca-key.pem -c kafka-0.tigergraph.com -p tiger123"
+    echo "Options:"
+    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
+    echo "  -cer,--cer      --  Root-CA used to sign subordinate certificate"
+    echo "  -cerKey         --  Root-CA key file"
+    echo "  -keystore       --  Keystore path, if you have a keystore, you can ignore this option"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo "  -p,-passphrase  --  PASSPHRASE [default: tiger123]"
+    exit 0
+    ;;
+  gen_truststore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_truststore] [-d <ssl_file_path>] [-c <subject_DN>] [-p <passphrase>] [-s <storetype>]"
+    mesg_green "./`basename $0` --gen_truststore -d ./SSL_file -c kafka-0.tigergraph.com -p tiger123 -s pkcs12"
+    mesg_green "./`basename $0` --gen_truststore -c kafka-0.tigergraph.com -p tiger123"
+    echo "Options:"
+    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo "  -p,-passphrase  --  PASSPHRASE [default: tiger123]"
+    echo "  -s,-storetype   --  Truststore storetype, e.g. jks, pkcs12 [default: jks]"
+    exit 0
+    ;;
+  import_to_keystore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-import <import_CA>] [-p <passphrase>]"
+    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-import <import_CA>] [-p <passphrase>]"
+    echo "Example:"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore.jks -import ca-root.crt -p tiger123"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore.jks -import kafka-0.tigergraph.com.crt -passphrase tiger123"
+    echo
+    echo "Options:"
+    echo "  -keystore        --  Keystore path"
+    echo "  -import          --  Certificate to import"
+    echo "  -p,-passphrase   --  Keystore storepass and keypass [default: tiger123]"
+    echo
+    exit 0
+    ;;
+  import_to_truststore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-import <import_CA>] [-p <passphrase>]"
+    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-import <import_CA>] [-p <passphrase>]"
+    echo "Example:"
+    mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_files/server.truststore.jks -import ca-root.crt -p tiger123"
+    mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_files/server.truststore.jks -import client.crt -passphrase tiger123"
+    echo
+    echo "Options:"
+    echo "  -truststore        --  Truststore path"
+    echo "  -import            --  Certificate to import"
+    echo "  -p,-passphrase     --  Truststore storepass and keypass [default: tiger123]"
+    echo
+    exit 0
+    ;;
+  esac
+
+}
