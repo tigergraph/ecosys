@@ -526,12 +526,17 @@ df2.write.mode("overwrite").format("jdbc").options(
     "filename" -> "f", // filename defined in the loading job
     "sep" -> ",", // separator between columns
     "eol" -> ";", // End Of Line
-    "schema" -> colArray2.mkString(","), // column definitions
     "batchsize" -> "100",
     "debug" -> "0")).save()
 ```
 
 ### To load data from files
+**Warning:** TigerGraph JDBC connector is streaming in data via REST endpoints. No data throttle mechanism is in place yet. When the incoming concurrent JDBC connection number exceeds the configured hardware capacity limit, the overload may cause the system to stop responding.
+If you use spark job to connect TigerGraph via JDBC, we recommend your concurrent spark loading jobs be capped at 10 with the following per job configuration. This limits the concurrent JDBC connections to 40.
+```
+/* 2 executors per job and each executor takes 2 cores */
+/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar -—num-executors 2 —-executor-cores 2 -i test.scala
+```
 ```
 val df = sc.textFile("/path/to/your_file", 100).toDF()
 
@@ -547,7 +552,6 @@ df.write.mode("append").format("jdbc").options(
     "filename" -> "v_comment_file", // filename defined in the loading job
     "sep" -> "|", // separator between columns
     "eol" -> "\n", // End Of Line
-    "schema" -> "value", // column definition, each line only has one column
     "batchsize" -> "10000",
     "debug" -> "0")).save()
 
@@ -621,7 +625,7 @@ val jdbcDF3 = spark.read.format("jdbc").options(
 jdbcDF3.show
 ```
 
-**"username"** and **"password"** need to be provided if authentication is enabled. **"schema"** (i.e., column definitions) needs to be specified when invoking loading jobs.
+**"username"** and **"password"** need to be provided if authentication is enabled.
 
 For compiled and interpreted queries that need to be invoked by Spark, it is better to have a parameter named **"topK"** to limit the number of results returned, as the example shown above. As Spark will call the queries twice, firstly it will invoke the queries to get the results' schema, then it will call the queries again to retrieve data. We are working on a feature to retrieve queries' output schema without running them, which is more efficient and is supposed to be available on TigerGraph v3.0. We will update this driver accordingly in the near future.
 
@@ -809,7 +813,6 @@ jdbcDF.write \
   .option("filename", "f") \
   .option("sep", ",") \
   .option("eol", ";") \
-  .option("schema", "Person,Person,weight") \
   .option("batchsize", "100") \
   .option("debug", "1") \
   .save()

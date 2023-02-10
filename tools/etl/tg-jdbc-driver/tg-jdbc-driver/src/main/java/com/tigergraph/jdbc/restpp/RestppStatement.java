@@ -25,8 +25,7 @@ public class RestppStatement extends Statement {
   private QueryParser parser;
   private QueryType query_type;
 
-  public RestppStatement(RestppConnection restppConnection,
-      Integer timeout, Integer atomic) {
+  public RestppStatement(RestppConnection restppConnection, Integer timeout, Integer atomic) {
     super(restppConnection);
     this.timeout = timeout;
     this.atomic = atomic;
@@ -43,25 +42,26 @@ public class RestppStatement extends Statement {
   @Override
   public boolean execute(String query) throws SQLException {
     // execute the query
-    this.parser = new QueryParser((RestppConnection) getConnection(), query,
-        null, this.timeout, this.atomic, true);
+    this.parser =
+        new QueryParser(
+            (RestppConnection) getConnection(), query, null, this.timeout, this.atomic, true);
     this.query_type = parser.getQueryType();
 
     String json = "";
-    if(!this.parser.getEdgeJson().equals("")){
+    if (!this.parser.getEdgeJson().equals("")) {
       StringBuilder sb = new StringBuilder();
       sb.append("{\"edges\": {");
       sb.append(this.parser.getEdgeJson());
       sb.append("}}");
       json = sb.toString();
-    } else if(!this.parser.getVertexJson().equals("")){
+    } else if (!this.parser.getVertexJson().equals("")) {
       StringBuilder sb = new StringBuilder();
       sb.append("{\"vertices\": {");
       sb.append(this.parser.getVertexJson());
       sb.append("}}");
       json = sb.toString();
     }
-    
+
     RestppResponse response = ((RestppConnection) getConnection()).executeQuery(parser, json);
 
     if (response.hasError()) {
@@ -74,16 +74,20 @@ public class RestppStatement extends Statement {
 
     // If source vertex id is not null, Spark is trying to retrieve edge.
     boolean isGettingEdge = ((RestppConnection) getConnection()).getSource() != null;
-    this.currentResultSet = hasResultSets ? new RestppResultSet(this,
-        response.getResults(), parser.getFieldList(), this.query_type, isGettingEdge) : null;
+    this.currentResultSet =
+        hasResultSets
+            ? new RestppResultSet(
+                this, response.getResults(), parser.getFieldList(), this.query_type, isGettingEdge)
+            : null;
 
     return hasResultSets;
   }
 
   @Override
   public void addBatch(String sql) throws SQLException {
-    this.parser = new QueryParser((RestppConnection) getConnection(), sql,
-        null, this.timeout, this.atomic, false);
+    this.parser =
+        new QueryParser(
+            (RestppConnection) getConnection(), sql, null, this.timeout, this.atomic, false);
     String vertex_json = parser.getVertexJson();
     String edge_json = parser.getEdgeJson();
     if (vertex_json != "") {
@@ -133,7 +137,8 @@ public class RestppStatement extends Statement {
     }
     sb.append("}");
     String payload = sb.toString();
-    RestppResponse response = ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
+    RestppResponse response =
+        ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
 
     if (response.hasError()) {
       logger.error(response.getErrMsg());
@@ -157,10 +162,7 @@ public class RestppStatement extends Statement {
     return 0;
   }
 
-  /**
-   * Methods not implemented yet.
-   */
-
+  /** Methods not implemented yet. */
   @Override
   public int getResultSetConcurrency() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
@@ -175,5 +177,4 @@ public class RestppStatement extends Statement {
   public int getResultSetHoldability() throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
-
 }
