@@ -283,7 +283,6 @@ general_usage(){
     echo
     echo "Usage:"
     mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-import <import_CA>] [-p <passphrase>]"
-    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-import <import_CA>] [-p <passphrase>]"
     echo "Example:"
     mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore -import ./SSL_files/ca-root.crt -p tiger123"
     mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore -import ./SSL_files/kafka-0.tigergraph.com.crt -passphrase tiger123"
@@ -298,7 +297,6 @@ general_usage(){
   import_to_truststore)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-import <import_CA>] [-p <passphrase>]"
     mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-import <import_CA>] [-p <passphrase>]"
     echo "Example:"
     mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_files/server.truststore -import ./SSL_files/ca-root.crt -p tiger123"
