@@ -226,13 +226,13 @@ else
 
   # generate truststore
   if [[ ! -z ${genTruststore_flag:-} ]]; then
-    local truststore="${generate_root}/server.truststore"
+    truststore="${generate_root}/server.truststore"
     if [ ! -f "${truststore}" ]; then
-      prog "truststore generate directory: ${generate_root}"
+      prog "generate truststore: ${truststore}"
       generate_truststore "${generate_root}" "server.truststore" "${pass}" "${storetype}"
     fi
-    prog "generate truststore: ${truststore}"
-    note "View truststore: keytool -list -v -keystore ${truststore} -storepass ${pass}"
+    warn "${truststore} already exists, skipping generation!"
+    note "View truststore: keytool -list -v -keystore ${truststore} -storepass '<storepass>'"
   fi
 
   # import CA to keystore
