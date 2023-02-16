@@ -114,8 +114,8 @@ CA_key=${generate_root}/ca-root.key
 check_CARoot ${CARoot} ${CA_key}
 
 # 3. generate keystore
-generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server"
-keystore=`find ${generate_root} -type f -name "server.keystore*" | head -1`
+generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server.keystore"
+keystore=server.keystore
 
 # 4. generate sub-certificate
 generate_subCA ${generate_root} ${keystore} ${CARoot} ${CA_key} ${CN} ${pass}
@@ -128,8 +128,8 @@ import_to_keystore ${keystore} ${CARoot} "CARoot" ${pass}
 import_to_keystore ${keystore} ${subCA} ${CN} ${pass}
 
 # 7. generate truststore
-generate_truststore ${generate_root} "server" ${pass} ${storetype}
-truststore=`find ${generate_root} -type f -name "server.truststore*" | head -1`
+generate_truststore ${generate_root} "server.truststore" ${pass} ${storetype}
+truststore=server.truststore
 
 # 8. import CARoot to truststore
 import_to_truststore ${truststore} ${CARoot} "CARoot" ${pass}

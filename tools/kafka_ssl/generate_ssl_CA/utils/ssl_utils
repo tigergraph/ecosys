@@ -14,7 +14,7 @@ generate_CARoot(){
     exit 1
   fi
 
-  prog "start creating certificate authority(CA) for signing..."
+  prog "Start creating certificate authority(CA) for signing..."
   prog "CARoot path: ${generate_root}/ca-root.crt"
   prog "private_key path: ${generate_root}/ca-root.key"
   openssl req -nodes -new -x509 -keyout ca-root.key -out ca-root.crt -days 365 -subj "/CN=$CN"
@@ -68,25 +68,39 @@ generate_keystore(){
   fi
 
   cd $genRoot
-  prog "start creating keystore..."
+  prog "Start creating keystore..."
   case $storetype in
   pkcs12|PKCS12|pk12|PK12|p12|P12)
     prog "The storetype of keystore is pkcs12."
-    keytool -genkey -keystore ${keystoreName}.keystore.p12 -validity 365 -storepass $pass -keypass $pass -dname "CN=$CN" -storetype pkcs12
-    # delete default Key-pair, the alias is 'mykey'
-    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.p12 -storepass ${pass}
-    ;;
-  JKS|jks)
-    prog "The storetype of keystore is JKS."
-    keytool -keystore ${keystoreName}.keystore.jks -validity 365 -genkey -keyalg RSA -dname "CN=$CN" -storepass ${pass} -keypass ${pass} -storetype jks
-    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.jks -storepass ${pass}
+    keytool -genkey -keystore ${keystoreName} -validity 365 -storepass $pass -keypass $pass -dname "CN=$CN" -alias $CN -storetype pkcs12
     ;;
   *)
     prog "The default storetype of keystore is JKS."
-    keytool -keystore ${keystoreName}.keystore.jks -validity 365 -genkey -keyalg RSA -dname "CN=$CN" -storepass ${pass} -keypass ${pass}
-    keytool -delete -alias mykey -keystore ${keystoreName}.keystore.jks -storepass ${pass}
+    keytool -keystore ${keystoreName} -validity 365 -genkey -keyalg RSA -dname "CN=$CN" -alias $CN -storepass ${pass} -keypass ${pass} -storetype jks
     ;;
   esac
+
+  if [ $? -ne 0 ]; then
+    exit 1
+  fi
+}
+
+check_keystore(){
+  local keystore=$1
+  local pass=$2
+  local keystoreType=""
+
+  if [ -f "$keystore" ]; then
+    keystoreType=$(keytool -list -v -keystore $keystore -storepass $pass |& awk '/Keystore type/{print $NF}')
+  else
+    error "$keystore does not exist"
+    exit 1
+  fi
+
+  if [[ $keystoreType != "jks" && $keystoreType != "PKCS12" ]]; then
+    error "$keystore is not a supported keystore type (JKS or PKCS12)"
+    exit 1
+  fi
 }
 
 generate_subCA(){
@@ -102,8 +116,8 @@ generate_subCA(){
   fi
 
   cd $generate_root
-  prog "start creating certificate signing request (CSR)..."
-  keytool -keystore ${keystore} -certreq -file ${subCA_name}.csr -storepass ${pass} -keypass ${pass}
+  prog "Start creating certificate signing request (CSR)..."
+  keytool -keystore ${keystore} -alias ${subCA_name} -certreq -file ${subCA_name}.csr -storepass ${pass} -keypass ${pass}
 
   prog "sign sub-certificate through ca-root..."
   openssl x509 -req -CA ${CA_root} -CAkey ${CA_key} -in ${subCA_name}.csr -out ${subCA_name}.crt -days 365 -CAcreateserial
@@ -116,6 +130,7 @@ import_to_keystore(){
   local pass=$4
 
   prog "import ${import_file} to keystore: ${keystore}"
+  note "How to check whether the certificate already exists: keytool -list -v -keystore ${keystore} -storepass ${pass}"
   keytool -keystore ${keystore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
 }
 
@@ -136,19 +151,22 @@ generate_truststore(){
     openssl req -nodes -new -x509 -keyout firstCA.key -out firstCA.crt -days 365 -subj "/CN=myFirstCA"
   fi
 
-  prog "start creating truststore and import one CA..."
+  prog "Start creating truststore and import one CA..."
   case $storetype in
   pkcs12|PKCS12|pk12|PK12|p12|P12)
     prog "The storetype of keystore is pkcs12."
-    prog "import ${firstFile} to truststore ${generate_root}/${truststoreName}.truststore.p12"
-    keytool -keystore ${truststoreName}.truststore.p12 -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype pkcs12 -noprompt
+    keytool -keystore ${truststoreName} -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype pkcs12 -noprompt
     ;;
   *)
     prog "The default storetype of keystore is JKS."
-    prog "import ${firstFile} to truststore ${generate_root}/${truststoreName}.truststore.jks"
-    keytool -keystore ${truststoreName}.truststore.jks -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype jks -noprompt
+    keytool -keystore ${truststoreName} -alias myfirstCA -import -file ${firstFile} -storepass ${pass} -keypass ${pass} -storetype jks -noprompt
     ;;
   esac
+
+  if [ $? -ne 0 ]; then
+    rm -rf firstCA*
+    exit 1
+  fi
 
   rm -rf firstCA*
 }
@@ -160,5 +178,6 @@ import_to_truststore(){
   local pass=$4
 
   prog "import ${import_file} to truststore: ${truststore}"
+  note "How to check whether the certificate already exists: keytool -list -v -keystore ${truststore} -storepass ${pass}"
   keytool -keystore ${truststore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
 }

@@ -45,8 +45,8 @@ importToKeystore_flag=""
 importToTruststore_flag=""
 help_flag=""
 
-opt_string="hip:c:s:"
-opt_long_string="help,gen_CARoot,gen_subCA,gen_keystore,gen_truststore,passphrase:,import:,import_to_keystore,import_to_truststore,storetype:,keystore:,truststore:,cer:,cerKey:,CN:"
+opt_string="hip:c:s:d:"
+opt_long_string="help,gen_CARoot,gen_subCA,gen_keystore,gen_truststore,passphrase:,directory:,import:,import_to_keystore,import_to_truststore,storetype:,keystore:,truststore:,cer:,cerKey:,CN:"
 ARGS=`getopt -a -o $opt_string --long $opt_long_string -- "$@"`
 
 if [ $? != 0 ] ; then exit 1 ; fi
@@ -169,6 +169,7 @@ else
   # install openssl
   install_openssl
 
+  # generate root CA
   if [[ ! -z $CARoot_flag ]]; then
     prog "root-CA generate directory: $generate_root"
     prog "root-CA subject CN: $CN"
@@ -180,72 +181,85 @@ else
     generate_CARoot ${generate_root} $CN
   fi
 
+  # generate keystore
   if [[ ! -z $genKeystore_flag ]]; then
     prog "keystore generate directory: $generate_root"
-    prog "keystore -Dname CN: $CN"
-
-    generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server"
-    keystore=`ls -rt $(find ${generate_root} -type f -name "server.keystore*") | head -1`
-    prog "generate keystore: $keystore"
+    prog "Keystore -Dname CN: $CN"
+    generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server.keystore"
+    keystore=${generate_root}/server.keystore
+    prog "Generate keystore: $keystore"
+    note "View keystore: keytool -list -v -keystore $keystore -storepass $pass"
   fi
 
+  # generate a sub-certificate using the keytool
   if [[ ! -z $subCA_flag ]]; then
-    prog "subordinate-CA generate directory: $generate_root"
-    if [ -z "${CARoot}" -o -z "${CA_key}" ]; then
-       error "Missing options: '-cer' or '-cerKey', exiting..."
-       general_usage gen_CARoot
-       exit 1
+    prog "Subordinate-CA generate directory: $generate_root"
+    if [[ -z "$CARoot" || -z "$CA_key" ]]; then
+      error "Missing options: '-cer' or '-cerKey', exiting..."
+      general_usage gen_subCA
+      exit 1
+    fi
+
+    check_CARoot $CARoot $CA_key
+
+    # Generate keystore
+    if [[ -z "$keystore" ]]; then
+      keystore=${generate_root}/server.keystore
+      note "Use keytool to generate CRS: If no keystore is provided, a new keystore will be created, CN=${CN}"
+      note "Default keystore: $keystore"
+      if [ -f "$keystore" ];then
+        check_keystore $keystore $pass
+        keystoreType=$(keytool -list -v -keystore $keystore -storepass $pass |& awk '/Keystore type/{print $NF}')
+      else
+        keystoreType=$storetype
+      fi
+      generate_keystore $generate_root $pass $CN $keystoreType "server.keystore"
     else
-       check_CARoot ${CARoot} ${CA_key}
+      check_keystore $keystore $pass
+      keystoreType=$(keytool -list -v -keystore $keystore -storepass $pass |& awk '/Keystore type/{print $NF}')
+      keystoreName=${keystore##*/}
+      generate_keystore $generate_root $pass $CN $keystoreType $keystoreName
     fi
-
-    if [ -z "${keystore}" ]; then
-      generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server"
-      keystore=`find ${generate_root} -type f -name "server.keystore*" | head -1`
-    fi
-
-    # generate sub-certificate
-    generate_subCA ${generate_root} ${keystore} ${CARoot} ${CA_key} ${CN} ${pass}
-    subCA=${CN}.crt
-
-    prog "generate subordinate-CA: $subCA successfully"
+    generate_subCA $generate_root $keystore $CARoot $CA_key $CN $pass
+    prog "Generate subordinate-CA: ${CN}.crt successfully"
   fi
 
-  if [[ ! -z $genTruststore_flag ]]; then
-    prog "truststore generate directory: $generate_root"
-    generate_truststore ${generate_root} "server" ${pass} ${storetype}
-    truststore=`ls -rt $(find ${generate_root} -type f -name "server.truststore*") | head -1`
-    prog "generate truststore: $truststore"
+  # generate truststore
+  if [[ ! -z ${genTruststore_flag:-} ]]; then
+    local truststore="${generate_root}/server.truststore"
+    if [ ! -f "${truststore}" ]; then
+      prog "truststore generate directory: ${generate_root}"
+      generate_truststore "${generate_root}" "server.truststore" "${pass}" "${storetype}"
+    fi
+    prog "generate truststore: ${truststore}"
+    note "View truststore: keytool -list -v -keystore ${truststore} -storepass ${pass}"
   fi
 
+  # import CA to keystore
   if [[ ! -z $importToKeystore_flag ]]; then
-    if [ -z "${keystore}" -o -z "${importCA}" ]; then
-      error "'-keystore' and '-import' are required options"
-      general_usage import_to_keystore
-      exit 1
-    fi
-    alias=${importCA##*/}
-    alias=${alias%.*}
-    prog "import alias is ${alias}"
-    check_file ${keystore} 1
-    check_file ${importCA} 1
-    import_to_keystore ${keystore} ${importCA} ${alias} ${pass}
+      [ -z "${keystore}${importCA}" ] \
+          && { error "'-keystore' and '-import' are required options"; general_usage import_to_keystore; exit 1; }
+      alias=${importCA##*/}
+      alias=${alias%.*}
+      prog "Import alias is ${alias}"
+      check_file ${keystore} 1
+      check_file ${importCA} 1
+      import_to_keystore ${keystore} ${importCA} ${alias} ${pass}
   fi
 
+  # import CA to truststore
   if [[ ! -z $importToTruststore_flag ]]; then
-    if [ -z "${truststore}" -o -z "${importCA}" ]; then
-      error "'-truststore' and '-import' are required options"
-      general_usage import_to_truststore
-      exit 1
-    fi
-    alias=${importCA##*/}
-    alias=${alias%.*}
-    prog "import alias is ${alias}"
-    check_file ${truststore} 1
-    check_file ${importCA} 1
-    import_to_truststore ${truststore} ${importCA} ${alias} ${pass}
+      [ -z "${truststore}${importCA}" ] \
+          && { error "'-truststore' and '-import' are required options"; general_usage import_to_truststore; exit 1; }
+      alias=${importCA##*/}
+      alias=${alias%.*}
+      prog "Import alias is ${alias}"
+      check_file ${truststore} 1
+      check_file ${importCA} 1
+      import_to_truststore ${truststore} ${importCA} ${alias} ${pass}
   fi
 
+  # enter at least one command
   total_flag=($CARoot_flag $genKeystore_flag $subCA_flag $genTruststore_flag $importToKeystore_flag $importToTruststore_flag)
   if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
     error "Please enter at least one Command"
