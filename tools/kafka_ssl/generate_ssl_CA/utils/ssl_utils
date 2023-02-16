@@ -168,6 +168,7 @@ generate_truststore(){
     exit 1
   fi
 
+  keytool -delete -alias myfirstCA -keystore ${truststoreName} -storepass ${pass}
   rm -rf firstCA*
 }
 
