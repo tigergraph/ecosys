@@ -269,7 +269,7 @@ general_usage(){
     mesg_green "./`basename $0` [--gen_truststore] [-d <ssl_file_path>] [-p <passphrase>] [-s <storetype>]"
     echo "Example:"
     mesg_blue "./`basename $0` --gen_truststore -d ./SSL_file -p tiger123 -s pkcs12"
-    mesg_blue "./`basename $0` --gen_truststore -c kafka-0.tigergraph.com -p tiger123"
+    mesg_blue "./`basename $0` --gen_truststore -p tiger123"
     mesg_blue "./`basename $0` --gen_truststore"
     echo
     echo "Options:"
