@@ -31,11 +31,11 @@ generate_root=${BASE_DIR}/SSL_files
 CN=kafka-0.tigergraph.com
 storetype=jks
 pass=tiger123
-CARoot=""
-CA_key=""
+storepass=tiger123
+CA=""
+CAkey=""
 keystore=""
 truststore=""
-importCA=""
 
 CARoot_flag=""
 subCA_flag=""
@@ -46,7 +46,7 @@ importToTruststore_flag=""
 help_flag=""
 
 opt_string="hip:c:s:d:"
-opt_long_string="help,gen_CARoot,gen_subCA,gen_keystore,gen_truststore,passphrase:,directory:,import:,import_to_keystore,import_to_truststore,storetype:,keystore:,truststore:,cer:,cerKey:,CN:"
+opt_long_string="help,gen_CARoot,gen_subCA,gen_keystore,gen_truststore,passphrase:,directory:,import_to_keystore,storepass:,import_to_truststore,storetype:,keystore:,truststore:,cer:,cerKey:,CN:"
 ARGS=`getopt -a -o $opt_string --long $opt_long_string -- "$@"`
 
 if [ $? != 0 ] ; then exit 1 ; fi
@@ -76,11 +76,11 @@ do
             importToTruststore_flag=true
             ;;
         --cer)
-            CARoot=`path_conver $2`
+            CA=`path_conver $2`
             shift
             ;;
         --cerKey)
-            CA_key=`path_conver $2`
+            CAkey=`path_conver $2`
             shift
             ;;
         --keystore)
@@ -89,10 +89,6 @@ do
             ;;
         --truststore)
             truststore=`path_conver $2`
-            shift
-            ;;
-        --import)
-            importCA=`path_conver $2`
             shift
             ;;
         -d|--directory)
@@ -111,6 +107,10 @@ do
               error "Password is too short - must be at least 6 characters."
               exit 1
             fi
+            shift
+            ;;
+        --storepass)
+            storepass=$2
             shift
             ;;
         -c|--CN)
@@ -173,12 +173,12 @@ else
   if [[ ! -z $CARoot_flag ]]; then
     prog "root-CA generate directory: $generate_root"
     prog "root-CA subject CN: $CN"
-    CARoot=${generate_root}/ca-root.crt
-    CA_key=${generate_root}/ca-root.key
+    CA=${generate_root}/ca-root.crt
+    CAkey=${generate_root}/ca-root.key
 
-    check_file ${CARoot} 0
-    check_file ${CA_key} 0
-    generate_CARoot ${generate_root} $CN
+    check_file ${CA} 0
+    check_file ${CAkey} 0
+    generate_CARoot $generate_root $CN $pass
   fi
 
   # generate keystore
@@ -194,33 +194,14 @@ else
   # generate a sub-certificate using the keytool
   if [[ ! -z $subCA_flag ]]; then
     prog "Subordinate-CA generate directory: $generate_root"
-    if [[ -z "$CARoot" || -z "$CA_key" ]]; then
+    if [[ -z "$CA" || -z "$CAkey" ]]; then
       error "Missing options: '-cer' or '-cerKey', exiting..."
       general_usage gen_subCA
       exit 1
     fi
 
-    check_CARoot $CARoot $CA_key
-
-    # Generate keystore
-    if [[ -z "$keystore" ]]; then
-      keystore=${generate_root}/server.keystore
-      note "Use keytool to generate CRS: If no keystore is provided, a new keystore will be created, CN=${CN}"
-      note "Default keystore: $keystore"
-      if [ -f "$keystore" ];then
-        check_keystore $keystore $pass
-        keystoreType=$(keytool -list -v -keystore $keystore -storepass $pass |& awk '/Keystore type/{print $NF}')
-      else
-        keystoreType=$storetype
-      fi
-      generate_keystore $generate_root $pass $CN $keystoreType "server.keystore"
-    else
-      check_keystore $keystore $pass
-      keystoreType=$(keytool -list -v -keystore $keystore -storepass $pass |& awk '/Keystore type/{print $NF}')
-      keystoreName=${keystore##*/}
-      generate_keystore $generate_root $pass $CN $keystoreType $keystoreName
-    fi
-    generate_subCA $generate_root $keystore $CARoot $CA_key $CN $pass
+    check_cert $CA $CAkey $pass
+    generate_sub_cert $generate_root $CA $CAkey $pass $CN
     prog "Generate subordinate-CA: ${CN}.crt successfully"
   fi
 
@@ -229,34 +210,36 @@ else
     truststore="${generate_root}/server.truststore"
     if [ ! -f "${truststore}" ]; then
       prog "generate truststore: ${truststore}"
-      generate_truststore "${generate_root}" "server.truststore" "${pass}" "${storetype}"
+      generate_truststore "${generate_root}" "server.truststore" "${storepass}" "${storetype}"
+    else
+      warn "${truststore} already exists, skipping generation!"
     fi
-    warn "${truststore} already exists, skipping generation!"
-    note "View truststore: keytool -list -v -keystore ${truststore} -storepass '<storepass>'"
+    note "View truststore: keytool -list -v -keystore ${truststore} -storepass ${storepass}"
   fi
 
-  # import CA to keystore
+  # import keycert pair to keystore
   if [[ ! -z $importToKeystore_flag ]]; then
-      [ -z "${keystore}${importCA}" ] \
-          && { error "'-keystore' and '-import' are required options"; general_usage import_to_keystore; exit 1; }
-      alias=${importCA##*/}
+      [[ -z "$CA" || -z "$CAkey" || -z "$keystore" ]] \
+          && { error "'-keystore', '-cer' and '-cerKey' are required options"; general_usage import_to_keystore; exit 1; }
+      alias=${CA##*/}
       alias=${alias%.*}
       prog "Import alias is ${alias}"
       check_file ${keystore} 1
-      check_file ${importCA} 1
-      import_to_keystore ${keystore} ${importCA} ${alias} ${pass}
+      check_file ${CA} 1
+      check_file ${CAkey} 1
+      import_to_keystore ${keystore} ${alias} ${CAkey} ${CA} ${storepass} ${pass}
   fi
 
   # import CA to truststore
   if [[ ! -z $importToTruststore_flag ]]; then
-      [ -z "${truststore}${importCA}" ] \
-          && { error "'-truststore' and '-import' are required options"; general_usage import_to_truststore; exit 1; }
-      alias=${importCA##*/}
+      [[ -z "$CA" || -z "$truststore" ]] \
+          && { error "'-truststore' and '-cer' are required options"; general_usage import_to_truststore; exit 1; }
+      alias=${CA##*/}
       alias=${alias%.*}
       prog "Import alias is ${alias}"
       check_file ${truststore} 1
-      check_file ${importCA} 1
-      import_to_truststore ${truststore} ${importCA} ${alias} ${pass}
+      check_file ${CA} 1
+      import_to_truststore ${truststore} ${CA} ${alias} ${storepass}
   fi
 
   # enter at least one command

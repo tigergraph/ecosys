@@ -1,8 +1,12 @@
 #!/bin/bash
 
-generate_CARoot(){
+generate_CARoot() {
   local generate_root=$1
   local CN=$2
+  local ca_passphrase=$3
+  local ca_key=${generate_root}/ca-root.key
+  local ca_cert=${generate_root}/ca-root.crt
+  local ca_days=365
 
   if [ ! -d ${generate_root} ]; then
     mkdir -p ${generate_root}
@@ -14,10 +18,12 @@ generate_CARoot(){
     exit 1
   fi
 
-  prog "Start creating certificate authority(CA) for signing..."
+  # Generate the private key
+  openssl genrsa -aes256 -passout pass:"$ca_passphrase" -out "$ca_key" 4096
+  # Generate the self-signed certificate
+  openssl req -x509 -new -nodes -key "$ca_key" -sha256 -days "$ca_days" -subj "/CN=$CN" -passin pass:"$ca_passphrase" -out "$ca_cert"
   prog "CARoot path: ${generate_root}/ca-root.crt"
   prog "private_key path: ${generate_root}/ca-root.key"
-  openssl req -nodes -new -x509 -keyout ca-root.key -out ca-root.crt -days 365 -subj "/CN=$CN"
 }
 
 check_CARoot(){
@@ -53,6 +59,45 @@ check_CARoot(){
   fi
 }
 
+check_cert() {
+  local cert_path=$1
+  local key_path=$2
+  local key_pass=$3
+
+  if [ ! -f $cert_path ];then
+    error "Certificate file does not exist."
+    exit 1
+  elif [ ! -f $key_path ];then
+    error "Certificate private-key file does not exist."
+    exit 1
+  fi
+
+  prog "Start checking if the private key can be decrypted with the given password..."
+  if ! openssl rsa -in "${key_path}" -passin "pass:${key_pass}" -check > /dev/null 2>&1; then
+    error "The private key password is incorrect." >&2
+    exit 1
+  fi
+
+  prog "Start checking if the certificate matches the private key..."
+  if ! openssl x509 -noout -modulus -in "${cert_path}" | openssl md5 > /tmp/cert.md5; then
+    error "Failed to compute the certificate md5." >&2
+    exit 1
+  fi
+
+  if ! openssl rsa -noout -modulus -in "${key_path}" -passin "pass:${key_pass}" | openssl md5 > /tmp/key.md5; then
+    error "Failed to compute the private key md5." >&2
+    exit 1
+  fi
+
+  if ! diff /tmp/cert.md5 /tmp/key.md5 > /dev/null; then
+    error "The certificate and private key do not match." >&2
+    exit 1
+  fi
+
+  prog "The certificate, private key, and password are all correct."
+  rm /tmp/cert.md5 /tmp/key.md5
+}
+
 ### generate an empty keystore
 # 1. default storetype is JKS
 # 2. validity is 365
@@ -69,6 +114,7 @@ generate_keystore(){
 
   cd $genRoot
   prog "Start creating keystore..."
+  note "keypass and storepass will use the same password: $pass"
   case $storetype in
   pkcs12|PKCS12|pk12|PK12|p12|P12)
     prog "The storetype of keystore is pkcs12."
@@ -103,38 +149,86 @@ check_keystore(){
   fi
 }
 
-generate_subCA(){
+generate_sub_cert() {
   local generate_root=$1
-  local keystore=$2
-  local CA_root=$3
-  local CA_key=$4
-  local subCA_name=$5
-  local pass=$6
+  local parent_cert=$2      # path to the parent certificate file
+  local parent_key=$3       # path to the parent private key file
+  local parent_key_pass=$4  # password for the parent private key file
+  local sub_name=$5         # name for the sub-certificate
+
+  local sub_key=${sub_name}.key
+  local sub_cert=${sub_name}.crt
 
   if [ ! -d ${generate_root} ]; then
     mkdir -p ${generate_root}
   fi
 
-  cd $generate_root
-  prog "Start creating certificate signing request (CSR)..."
-  keytool -keystore ${keystore} -alias ${subCA_name} -certreq -file ${subCA_name}.csr -storepass ${pass} -keypass ${pass}
+  cd ${generate_root}
+  # Create a new RSA private key for the sub-certificate
+  openssl genrsa -out $sub_key 2048
 
-  prog "sign sub-certificate through ca-root..."
-  openssl x509 -req -CA ${CA_root} -CAkey ${CA_key} -in ${subCA_name}.csr -out ${subCA_name}.crt -days 365 -CAcreateserial
+  # Create a certificate signing request (CSR) for the sub-certificate
+  openssl req -new -key $sub_key -out /tmp/sub.csr -subj "/CN=${sub_name}"
+
+  # Sign the CSR with the parent certificate and private key to generate the sub-certificate
+  prog "sign sub-certificate through $parent_cert..."
+  openssl x509 -req -in /tmp/sub.csr -CA $parent_cert -CAkey $parent_key -passin pass:$parent_key_pass -out $sub_cert -days 365 -sha256 -CAcreateserial
+
+  # Remove the temporary files
+  rm /tmp/sub.csr
 }
 
-import_to_keystore(){
+# import keycert pair to keystore
+import_to_keystore() {
   local keystore=$1
-  local import_file=$2
-  local alias=$3
-  local pass=$4
+  local alias=$2
+  local keyfile=$3
+  local certfile=$4
+  local keystorepass=$5
+  local keypass=$6
+  local password_file="/tmp/password"
 
-  prog "import ${import_file} to keystore: ${keystore}"
-  note "How to check whether the certificate already exists: keytool -list -v -keystore ${keystore} -storepass ${pass}"
-  keytool -keystore ${keystore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
+  # Check if the keystore exists and the keystore password is correct
+  if ! keytool -list -keystore "$keystore" -storepass "$keystorepass" >/dev/null 2>&1; then
+    error "Keystore not found or incorrect keystore password"
+    exit 1
+  fi
+
+  # Check that the key password matches the private key file
+  if [ -n "$keypass" ]; then
+    if ! openssl rsa -in "$keyfile" -passin pass:"$keypass" -noout >/dev/null 2>&1; then
+      error "Incorrect key password"
+      exit 1
+    fi
+  fi
+
+  # Export the key/certificate pair to a PKCS12 file
+  printf "%s" "$keypass" > "$password_file"
+  if openssl pkcs12 -export -in "$certfile" -inkey "$keyfile" -out /tmp/keycert.p12 -name "$alias" -passin file:"$password_file" -passout pass:"$keypass"; then
+    prog "Successfully exported key/certificate pair to PKCS12 file"
+  else
+    error "Error exporting key/certificate pair to PKCS12 file"
+    exit 1
+  fi
+  rm -f "$password_file"
+
+  # Import the key/certificate pair into the keystore
+  printf "%s\n%s\n" "$keypass" "$keystorepass" | keytool -importkeystore -srckeystore /tmp/keycert.p12 -srcstoretype PKCS12 -srcalias "$alias" \
+    -destalias "$alias" -destkeystore "$keystore" -deststoretype JKS -deststorepass "$keystorepass" \
+    -destkeypass "$keypass" -storepass "$keystorepass" -keypass "$keypass" -noprompt
+
+  if [ $? -eq 0 ]; then
+    prog "Successfully imported key/certificate pair to keystore"
+  else
+    error "Error importing key/certificate pair to keystore"
+    exit 1
+  fi
+
+  note "To check whether the certificate already exists, run:"
+  note "keytool -list -v -keystore $keystore -storepass $keystorepass"
 }
 
-# at least one CA file is required to generate truststore
+# generate an empty truststore
 generate_truststore(){
   local generate_root=$1
   local truststoreName=$2
@@ -172,13 +266,26 @@ generate_truststore(){
   rm -rf firstCA*
 }
 
-import_to_truststore(){
-  local truststore=$1
-  local import_file=$2
-  local alias=$3
-  local pass=$4
+import_to_truststore() {
+  local truststore=$1   # path to the truststore file
+  local import_file=$2  # path to the certificate file to be imported
+  local alias=$3        # alias for the certificate entry
+  local storepass=$4    # truststore password
 
-  prog "import ${import_file} to truststore: ${truststore}"
-  note "How to check whether the certificate already exists: keytool -list -v -keystore ${truststore} -storepass ${pass}"
-  keytool -keystore ${truststore} -alias ${alias} -import -file ${import_file} -storepass ${pass} -keypass ${pass} -noprompt
+  # Check if the truststore password is correct
+  keytool -list -keystore "$truststore" -storepass "$storepass" >/dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    error "Incorrect truststore password"
+    exit 1
+  fi
+
+  # Import the certificate into the truststore
+  keytool -import -noprompt -trustcacerts -alias "$alias" -file "$import_file" -keystore "$truststore" -storepass "$storepass"
+  if [ $? -ne 0 ]; then
+    error "Error importing certificate to truststore"
+    exit 1
+  fi
+
+  prog "Certificate successfully imported to truststore"
+  note "How to check whether the certificate already exists: keytool -list -v -keystore ${truststore} -storepass ${storepass}"
 }

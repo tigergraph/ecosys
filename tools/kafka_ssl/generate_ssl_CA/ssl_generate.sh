@@ -106,7 +106,7 @@ install_openssl
 
 # 1. generate CARoot and CA_key
 rm -rf $generate_root
-generate_CARoot ${generate_root} $CN
+generate_CARoot $generate_root $CN $pass
 CARoot=${generate_root}/ca-root.crt
 CA_key=${generate_root}/ca-root.key
 
@@ -122,7 +122,7 @@ generate_subCA ${generate_root} ${keystore} ${CARoot} ${CA_key} ${CN} ${pass}
 subCA=${CN}.crt
 
 # 5. import CARoot to keystore
-import_to_keystore ${keystore} ${CARoot} "CARoot" ${pass}
+import_to_keystore ${keystore} "CARoot" ${CARoot} ${CA_key} ${pass}
 
 # 6. import sub-certificate to keystore
 import_to_keystore ${keystore} ${subCA} ${CN} ${pass}
