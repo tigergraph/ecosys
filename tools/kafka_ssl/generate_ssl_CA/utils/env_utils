@@ -74,7 +74,7 @@ install_openJDK(){
       prog "start install openjdk-1.8.0."
       yum install -y java-1.8.0-openjdk > /dev/null 2>&1
     else
-    java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
+      java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
       if [[ $java_version != "1.8.0" ]];then
         prog "start update to openjdk-1.8.0."
         rpm -qa | grep java | xargs rpm -e --nodeps
@@ -89,7 +89,6 @@ install_openJDK(){
     else
       error "JDK Install Fail..." && exit 1
     fi
-
   else
     if ! which java > /dev/null 2>&1; then
       error "Java environment not detected. You can choose option \"-i\" to install openjdk-1.8.0."
@@ -180,6 +179,7 @@ help(){
   echo
   warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
 Please note that if the local machine does not have a java environment, some certificates generation will fail."
+  echo
   exit 0
 }
 

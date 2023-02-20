@@ -18,9 +18,9 @@ source_file() {
 }
 
 # source all functions
-source_file utils/pretty_print "No miss tools found, utils/pretty_print NOT exist, exit" true
-source_file utils/env_utils "No miss tools found, utils/env_utils NOT exist, exit" true
-source_file utils/ssl_utils "No miss tools found, utils/ssl_utils NOT exist, exit" true
+source_file utils/pretty_print "File utils/pretty_print NOT found, exit" true
+source_file utils/env_utils "File utils/env_utils NOT found, exit" true
+source_file utils/ssl_utils "File utils/ssl_utils NOT found, exit" true
 
 OSG=$(get_os)
 OS=$(echo "$OSG" | cut -d' ' -f1)

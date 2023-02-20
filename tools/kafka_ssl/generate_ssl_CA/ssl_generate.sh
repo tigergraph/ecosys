@@ -18,9 +18,9 @@ source_file() {
 }
 
 # source all functions
-source_file utils/pretty_print "No miss tools found, utils/pretty_print NOT exist, exit" true
-source_file utils/env_utils "No miss tools found, utils/env_utils NOT exist, exit" true
-source_file utils/ssl_utils "No miss tools found, utils/ssl_utils NOT exist, exit" true
+source_file utils/pretty_print "File utils/pretty_print NOT found, exit" true
+source_file utils/env_utils "File utils/env_utils NOT found, exit" true
+source_file utils/ssl_utils "File utils/ssl_utils NOT found, exit" true
 
 OSG=$(get_os)
 OS=$(echo "$OSG" | cut -d' ' -f1)
@@ -107,29 +107,31 @@ install_openssl
 # 1. generate CARoot and CA_key
 rm -rf $generate_root
 generate_CARoot $generate_root $CN $pass
-CARoot=${generate_root}/ca-root.crt
-CA_key=${generate_root}/ca-root.key
+CA=${generate_root}/ca-root.crt
+CAkey=${generate_root}/ca-root.key
 
 # 2. check CARoot and CA_key
-check_CARoot ${CARoot} ${CA_key}
+check_cert $CA $CAkey $pass
 
 # 3. generate keystore
 generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server.keystore"
 keystore=server.keystore
 
 # 4. generate sub-certificate
-generate_subCA ${generate_root} ${keystore} ${CARoot} ${CA_key} ${CN} ${pass}
+generate_sub_cert $generate_root $CA $CAkey $pass $CN
 subCA=${CN}.crt
+subCA_key=${CN}.key
 
 # 5. import CARoot to keystore
-import_to_keystore ${keystore} "CARoot" ${CARoot} ${CA_key} ${pass}
+import_to_keystore ${keystore} "CARoot" ${CAkey} ${CA} ${pass} ${pass}
 
 # 6. import sub-certificate to keystore
-import_to_keystore ${keystore} ${subCA} ${CN} ${pass}
+import_to_keystore ${keystore} "CARoot" ${CAkey} ${CA} ${pass} ${pass}
+import_to_keystore ${keystore} ${CN} ${subCA_key} ${subCA} ${pass} ${pass}
 
 # 7. generate truststore
-generate_truststore ${generate_root} "server.truststore" ${pass} ${storetype}
+generate_truststore ${generate_root} "server.truststore" "${pass}" "${storetype}"
 truststore=server.truststore
 
 # 8. import CARoot to truststore
-import_to_truststore ${truststore} ${CARoot} "CARoot" ${pass}
+import_to_truststore ${truststore} ${CA} "CARoot" ${pass}
