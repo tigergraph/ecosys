@@ -68,23 +68,23 @@ check_root(){
   fi
 }
 
-install_openJDK(){
+install_openJDK() {
   if [[ "${SETUP_JDK}" == "true" ]]; then
     if ! which java > /dev/null 2>&1; then
       prog "start install openjdk-1.8.0."
       yum install -y java-1.8.0-openjdk > /dev/null 2>&1
     else
-      java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
-      if [[ $java_version != "1.8.0" ]];then
+      java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+      if [[ ("$(echo "$java_version" | cut -d'.' -f1)" -ge 1 && "$(echo "$java_version" | cut -d'.' -f2)" -ge 8) || "$(echo "$java_version" | cut -d'.' -f1)" -ge 11 ]]; then
+        prog "The installed Java version is greater than 1.8.0. No update necessary."
+      else
         prog "start update to openjdk-1.8.0."
         rpm -qa | grep java | xargs rpm -e --nodeps
         yum install -y java-1.8.0-openjdk > /dev/null 2>&1
-      else
-        prog "The java version is openjdk-1.8.0 now."
       fi
     fi
     # check install
-    if command -v java &> /dev/null;then
+    if command -v java &> /dev/null; then
       prog "JDK Install Success..."
     else
       error "JDK Install Fail..." && exit 1
@@ -94,12 +94,12 @@ install_openJDK(){
       error "Java environment not detected. You can choose option \"-i\" to install openjdk-1.8.0."
       exit 1
     else
-      java_version=$(java -version 2>&1 | sed '1!d' | sed -e 's/"//g' | awk '{print $3}'| cut -d_ -f1)
-      if [[ $java_version != "1.8.0" ]];then
-        error "This script currently only supports openjdk-1.8.0."
-        exit 1
+      java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+      if [[ ("$(echo "$java_version" | cut -d'.' -f1)" -ge 1 && "$(echo "$java_version" | cut -d'.' -f2)" -ge 8) || "$(echo "$java_version" | cut -d'.' -f1)" -ge 11 ]]; then
+        prog "The java version is openjdk-1.8.0 or later now."
       else
-        prog "The java version is openjdk-1.8.0 now."
+        error "This script currently only supports openjdk-1.8.0 or later."
+        exit 1
       fi
     fi
   fi
@@ -173,12 +173,13 @@ help(){
   echo "  -u,-usage       --  Usage example"
   echo "  -d,-directory   --  Certificate Generation Path [default: ./SSL_files]"
   echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
-  echo "  -p,-passphrase  --  PASSPHRASE [default: tiger123]"
+  echo "  -p,-passphrase  --  Keystore/Truststore password or certificate private key passphrase [default: tiger123]"
   echo "  -s,-storetype   --  Keystore/Truststore storetype, e.g. jks, pkcs12 [default: jks]"
   echo "  -i,-install     --  Install openjdk-1.8.0 and openssl"
   echo
   warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
 Please note that if the local machine does not have a java environment, some certificates generation will fail."
+  warn ""
   echo
   exit 0
 }
