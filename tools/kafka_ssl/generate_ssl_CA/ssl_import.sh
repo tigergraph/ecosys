@@ -27,26 +27,19 @@ OS=$(echo "$OSG" | cut -d' ' -f1)
 version=$(echo "$OSG" | cut -d' ' -f2)
 OSV="$OS$(echo "$version" | cut -d'.' -f1)"
 
-generate_root=${BASE_DIR}/SSL_files
-CN=kafka-0.tigergraph.com
-storetype=jks
-pass=tiger123
 storepass=tiger123
 CA=""
 CAkey=""
+pass=tiger123
 keystore=""
 truststore=""
 
-CARoot_flag=""
-subCA_flag=""
-genKeystore_flag=""
-genTruststore_flag=""
 importToKeystore_flag=""
 importToTruststore_flag=""
 help_flag=""
 
-opt_string="hip:c:s:d:"
-opt_long_string="help,gen_CARoot,gen_subCA,gen_keystore,gen_truststore,passphrase:,directory:,import_to_keystore,storepass:,import_to_truststore,storetype:,keystore:,truststore:,cer:,cerKey:,CN:"
+opt_string="hip:"
+opt_long_string="help,passphrase:,import_to_keystore,storepass:,import_to_truststore,keystore:,truststore:,cer:,cerKey:"
 ARGS=`getopt -a -o $opt_string --long $opt_long_string -- "$@"`
 
 if [ $? != 0 ] ; then exit 1 ; fi
@@ -57,18 +50,6 @@ do
         -h|--help)
             help_flag=true
             ;;
-        --gen_CARoot)
-            CARoot_flag=true
-            ;;
-        --gen_subCA)
-            subCA_flag=true
-            ;;
-        --gen_keystore)
-            genKeystore_flag=true
-            ;;
-        --gen_truststore)
-            genTruststore_flag=true
-            ;;
         --import_to_keystore)
             importToKeystore_flag=true
             ;;
@@ -77,27 +58,33 @@ do
             ;;
         --cer)
             CA=`path_conver $2`
+            if [ $? -ne 0 ]; then
+              error "$CA"
+              exit 1
+            fi
             shift
             ;;
         --cerKey)
             CAkey=`path_conver $2`
+            if [ $? -ne 0 ]; then
+              error "$CAkey"
+              exit 1
+            fi
             shift
             ;;
         --keystore)
             keystore=`path_conver $2`
+            if [ $? -ne 0 ]; then
+              error "$keystore"
+              exit 1
+            fi
             shift
             ;;
         --truststore)
             truststore=`path_conver $2`
-            shift
-            ;;
-        -d|--directory)
-            generate_root=$2
-            if [ ! -d ${generate_root} ]; then
-              error "The path '$generate_root' does not exist"
+            if [ $? -ne 0 ]; then
+              error "$truststore"
               exit 1
-            else
-              generate_root=`path_conver $generate_root`/SSL_files
             fi
             shift
             ;;
@@ -113,14 +100,6 @@ do
             storepass=$2
             shift
             ;;
-        -c|--CN)
-            CN=$2
-            shift
-            ;;
-        -s|--storetype)
-            storetype=$2
-            shift
-            ;;
         -i|--install)
             SETUP_JDK=true
             SETUP_OPENSSL=true
@@ -131,27 +110,19 @@ do
             ;;
         *)
             error "${bldred}Invalid option, the correct usage is described below: $txtrst"
-            general_help
+            import_help
             ;;
     esac
 shift
 done
 
 if [[ ! -z $help_flag ]]; then
-  if [[ ! -z $CARoot_flag ]]; then
-    general_usage gen_CARoot
-  elif [[ ! -z $subCA_flag ]]; then
-    general_usage gen_subCA
-  elif [[ ! -z $genKeystore_flag ]]; then
-    general_usage gen_keystore
-  elif [[ ! -z $genTruststore_flag ]]; then
-    general_usage gen_truststore
-  elif [[ ! -z $importToKeystore_flag ]]; then
+  if [[ ! -z $importToKeystore_flag ]]; then
     general_usage import_to_keystore
   elif [[ ! -z $importToTruststore_flag ]]; then
     general_usage import_to_truststore
   else
-    general_help
+    import_help
   fi
   exit 0
 else
@@ -169,55 +140,7 @@ else
   # install openssl
   install_openssl
 
-  # generate root CA
-  if [[ ! -z $CARoot_flag ]]; then
-    prog "root-CA generate directory: $generate_root"
-    prog "root-CA subject CN: $CN"
-    CA=${generate_root}/ca-root.crt
-    CAkey=${generate_root}/ca-root.key
-
-    check_file ${CA} 0
-    check_file ${CAkey} 0
-    generate_CARoot $generate_root $CN $pass
-  fi
-
-  # generate keystore
-  if [[ ! -z $genKeystore_flag ]]; then
-    prog "keystore generate directory: $generate_root"
-    prog "Keystore -Dname CN: $CN"
-    generate_keystore ${generate_root} ${pass} ${CN} ${storetype} "server.keystore"
-    keystore=${generate_root}/server.keystore
-    prog "Generate keystore: $keystore"
-    note "View keystore: keytool -list -v -keystore $keystore -storepass $pass"
-  fi
-
-  # generate a sub-certificate using the keytool
-  if [[ ! -z $subCA_flag ]]; then
-    prog "Subordinate-CA generate directory: $generate_root"
-    if [[ -z "$CA" || -z "$CAkey" ]]; then
-      error "Missing options: '-cer' or '-cerKey', exiting..."
-      general_usage gen_subCA
-      exit 1
-    fi
-
-    check_cert $CA $CAkey $pass
-    generate_sub_cert $generate_root $CA $CAkey $pass $CN
-    prog "Generate subordinate-CA: ${CN}.crt successfully"
-  fi
-
-  # generate truststore
-  if [[ ! -z ${genTruststore_flag:-} ]]; then
-    truststore="${generate_root}/server.truststore"
-    if [ ! -f "${truststore}" ]; then
-      prog "generate truststore: ${truststore}"
-      generate_truststore "${generate_root}" "server.truststore" "${storepass}" "${storetype}"
-    else
-      warn "${truststore} already exists, skipping generation!"
-    fi
-    note "View truststore: keytool -list -v -keystore ${truststore} -storepass ${storepass}"
-  fi
-
-  # import keycert pair to keystore
+  # import key-cert pair to keystore
   if [[ ! -z $importToKeystore_flag ]]; then
       [[ -z "$CA" || -z "$CAkey" || -z "$keystore" ]] \
           && { error "'-keystore', '-cer' and '-cerKey' are required options"; general_usage import_to_keystore; exit 1; }
@@ -230,7 +153,7 @@ else
       import_to_keystore ${keystore} ${alias} ${CAkey} ${CA} ${storepass} ${pass}
   fi
 
-  # import CA to truststore
+  # import certificate to truststore
   if [[ ! -z $importToTruststore_flag ]]; then
       [[ -z "$CA" || -z "$truststore" ]] \
           && { error "'-truststore' and '-cer' are required options"; general_usage import_to_truststore; exit 1; }
@@ -243,10 +166,10 @@ else
   fi
 
   # enter at least one command
-  total_flag=($CARoot_flag $genKeystore_flag $subCA_flag $genTruststore_flag $importToKeystore_flag $importToTruststore_flag)
+  total_flag=($importToKeystore_flag $importToTruststore_flag)
   if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
     error "Please enter at least one Command"
-    general_help
+    import_help
     exit 1
   fi
 fi

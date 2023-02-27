@@ -24,39 +24,7 @@ generate_CARoot() {
   openssl req -x509 -new -nodes -key "$ca_key" -sha256 -days "$ca_days" -subj "/CN=$CN" -passin pass:"$ca_passphrase" -out "$ca_cert"
   prog "CARoot path: ${generate_root}/ca-root.crt"
   prog "private_key path: ${generate_root}/ca-root.key"
-}
-
-check_CARoot(){
-  local CA_Crt=$1
-  local privateKey=$2
-
-  if [ ! -f $CA_Crt ];then
-    error "CA certificate does not exist."
-    exit 1
-  elif [ ! -f $privateKey ];then
-    error "CA key file does not exist."
-    exit 1
-  fi
-
-  prog "Start checking certificate validity..."
-  if openssl verify -CApath CApath $CA_Crt | grep "OK" > /dev/null;then
-    prog "CA certificate validation passed."
-  else
-    error "Non-valid CA certificate:$CA_Crt"
-    exit 1
-  fi
-
-  # Verify whether the CARoot matches the private_key file
-  # Calculate the md5 value
-  crtMD5=$(openssl x509 -noout -modulus -in $CA_Crt | openssl md5 | awk -F"=" '{print $NF}')
-  privateKeyMD5=$(openssl rsa -noout -modulus -in $privateKey | openssl md5 | awk -F"=" '{print $NF}')
-
-  if [ "$crtMD5" = "$privateKeyMD5" ]; then
-    prog "CA certificate and private key match successfully."
-  else
-    error "CA certificate($CA_Crt) and private key($privateKey) do not match."
-    exit 1
-  fi
+  prog "passphrase for private_key: ${ca_passphrase}"
 }
 
 check_cert() {
@@ -65,16 +33,18 @@ check_cert() {
   local key_pass=$3
 
   if [ ! -f $cert_path ];then
-    error "Certificate file does not exist."
+    error "Certificate file $cert_path does not exist."
     exit 1
   elif [ ! -f $key_path ];then
-    error "Certificate private-key file does not exist."
+    error "Certificate private-key file $key_path does not exist."
     exit 1
   fi
 
   prog "Start checking if the private key can be decrypted with the given password..."
   if ! openssl rsa -in "${key_path}" -passin "pass:${key_pass}" -check > /dev/null 2>&1; then
-    error "The private key password is incorrect." >&2
+    error "The private key is incorrect."
+    error "Certificate private-key file: $key_path"
+    error "private-key passphrase: ${key_pass}"
     exit 1
   fi
 
@@ -90,7 +60,9 @@ check_cert() {
   fi
 
   if ! diff /tmp/cert.md5 /tmp/key.md5 > /dev/null; then
-    error "The certificate and private key do not match." >&2
+    error "The certificate and private key do not match."
+    error "Certificate file: ${cert_path}"
+    error "Certificate private-key file: ${key_path}"
     exit 1
   fi
 
@@ -114,7 +86,6 @@ generate_keystore(){
 
   cd $genRoot
   prog "Start creating keystore..."
-  note "keypass and storepass will use the same password: $pass"
   case $storetype in
   pkcs12|PKCS12|pk12|PK12|p12|P12)
     prog "The storetype of keystore is pkcs12."
@@ -164,6 +135,11 @@ generate_sub_cert() {
   fi
 
   cd ${generate_root}
+  if [ -f ${sub_cert} -o -f ${sub_key} ]; then
+    error "${sub_cert} or ${sub_key} already exists"
+    exit 1
+  fi
+
   # Create a new RSA private key for the sub-certificate
   openssl genrsa -out $sub_key 2048
 
@@ -283,6 +259,7 @@ import_to_truststore() {
   keytool -import -noprompt -trustcacerts -alias "$alias" -file "$import_file" -keystore "$truststore" -storepass "$storepass"
   if [ $? -ne 0 ]; then
     error "Error importing certificate to truststore"
+    warn "If alias already exists, you can rename the import-certificate name and import it again."
     exit 1
   fi
 

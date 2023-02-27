@@ -129,22 +129,26 @@ install_openssl(){
 }
 
 path_conver(){
-  relativePath=$1
-  firstChar=${relativePath: 0: 1}
+  local rel_path="$1"
+  local abs_path
 
-  if [[ "$firstChar" == "" ]]; then
-	  echo "relative-path(\$1) is null"
-	  exit 1
-  elif [[ "$firstChar" == "/" ]]; then
-	  echo $relativePath
-	  exit 0
+  # If the path is already absolute, return it as-is
+  if [[ "$rel_path" == /* ]]; then
+    abs_path="$rel_path"
+  else
+    abs_path="$(pwd)/$rel_path"
   fi
 
-  tmpPath1=`dirname $relativePath`
-  tmpFullpath1=`cd $tmpPath1 && pwd`
-  tmpPath2=`basename $relativePath`
+  # Check if the path exists before calling realpath
+  if [[ ! -e "$abs_path" ]]; then
+    echo "Path $abs_path does not exist"
+    return 1
+  fi
 
-  echo ${tmpFullpath1}/${tmpPath2}
+  # Canonicalize the path to remove any redundant elements
+  abs_path="$(realpath "$abs_path")"
+
+  echo "$abs_path"
 }
 
 check_file(){
@@ -161,50 +165,32 @@ check_file(){
   fi
 }
 
-help(){
-  echo
-  echo "Usage:"
-  mesg_green "./`basename $0`  [-d <ssl_file_path>] [-c <subject_DN>][-p <passphrase>] [-s <storetype>] [-i]"
-  mesg_green "./`basename $0`  [-d <ssl_file_path>] [-c <subject_DN>][-p <passphrase>] [-s <storetype>]"
-  mesg_green "./`basename $0` -h"
-  mesg_green "./`basename $0` -u"
-  echo "Options:"
-  echo "  -h,-help        --  Show the help"
-  echo "  -u,-usage       --  Usage example"
-  echo "  -d,-directory   --  Certificate Generation Path [default: ./SSL_files]"
-  echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
-  echo "  -p,-passphrase  --  Keystore/Truststore password or certificate private key passphrase [default: tiger123]"
-  echo "  -s,-storetype   --  Keystore/Truststore storetype, e.g. jks, pkcs12 [default: jks]"
-  echo "  -i,-install     --  Install openjdk-1.8.0 and openssl"
-  echo
-  warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
-Please note that if the local machine does not have a java environment, some certificates generation will fail."
-  warn ""
-  echo
-  exit 0
-}
-
-usage(){
-  echo "${bldblu}./`basename $0` -d ./SSL_files -p tiger123 -c kafka-0.tigergraph.com -s pkcs12 -i $txtrst"
-  echo "${bldblu}./`basename $0` -d ./SSL_files -p tiger123 -c kafka-0.tigergraph.com -s jks $txtrst"
-  echo "${bldblu}./`basename $0` -directory ./SSL_files -passphrase tiger123 -CN kafka-0.tigergraph.com -storetype pkcs12 -install $txtrst"
-  echo "${bldblu}./`basename $0` -i"
-  echo "${bldblu}./`basename $0` $txtrst"
-}
-
-general_help(){
+generate_help(){
     echo
     echo "Commands:"
     echo "  -h,-help               --  Show the help"
-    echo "  -gen_CARoot            --  Generate root CA and private_key"
+    echo "  -gen_CARoot            --  Generate root-CA and private_key"
     echo "  -gen_keystore          --  Generate keystore"
     echo "  -gen_truststore        --  Generate an empty truststore"
-    echo "  -gen_subCA             --  Generate subordinate CA through parent CA"
-    echo "  -import_to_keystore    --  import certificate and certificate_private_key pair to keystore"
+    echo "  -gen_subCA             --  Generate subordinate CA through superior certificate"
+    echo
+    warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
+  Please note that if the local machine does not have a java environment, some operations will fail."
+    echo
+    note "Use './`basename $0` -command_name -help' for usage of command_name"
+    echo
+    exit 0
+}
+
+import_help(){
+    echo
+    echo "Commands:"
+    echo "  -h,-help               --  Show the help"
+    echo "  -import_to_keystore    --  Import certificate and certificate_private_key pair to keystore"
     echo "  -import_to_truststore  --  Import certificate to truststore"
     echo
     warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
-  Please note that if the local machine does not have a java environment, some certificates generation will fail."
+  Please note that if the local machine does not have a java environment, some operations will fail."
     echo
     note "Use './`basename $0` -command_name -help' for usage of command_name"
     echo
@@ -217,13 +203,13 @@ general_usage(){
   gen_CARoot)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--gen_CARoot] [-d <ssl_file_path>] [-c <subject_DN>] [-p <passphrase>]"
+    mesg_green "./`basename $0` [--gen_CARoot] [-o <file_output_path>] [-c <subject_DN>] [-p <passphrase>]"
     echo "Example:"
-    mesg_blue "./`basename $0` --gen_CARoot -d ./SSL_files -c kafka-0.tigergraph.com -p tiger123"
+    mesg_blue "./`basename $0` --gen_CARoot -o ./SSL_OUTPUT -c kafka-0.tigergraph.com -p tiger123"
     mesg_blue "./`basename $0` --gen_CARoot -c kafka-0.tigergraph.com"
     echo
     echo "Options:"
-    echo "  -d,-directory   --  Certificate Generation Path [default: ./SSL_files]"
+    echo "  -o,-output      --  Certificate file output Path [default: ./SSL_OUTPUT]"
     echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
     echo "  -p,-passphrase  --  PASSPHRASE of CA private key (optional) [default: tiger123]"
     echo
@@ -232,37 +218,37 @@ general_usage(){
   gen_keystore)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--gen_keystore] [-d <ssl_file_path>] [-p <passphrase>] [-s <storetype>] [-c <CN>]"
+    mesg_green "./`basename $0` [--gen_keystore] [-o <keystore_output_path>] [-s <storetype>] [-storepass <keystore_pass>] [-c <CN>] [-n <keystore_name>]"
     echo "Example:"
-    mesg_blue "./`basename $0` --gen_keystore -d ./SSL_files -p tiger123 -s pkcs12 -c kafka-0.tigergraph.com"
-    mesg_blue "./`basename $0` --gen_keystore -p tiger123 -c kafka-0.tigergraph.com"
-    mesg_blue "./`basename $0` --gen_keystore -s jks"
+    mesg_blue "./`basename $0` --gen_keystore -o ./SSL_OUTPUT -s pkcs12 -storepass tiger123 -c kafka-0.tigergraph.com -n server.keystore.pk12"
+    mesg_blue "./`basename $0` --gen_keystore -storepass tiger123 -c kafka-0.tigergraph.com"
+    mesg_blue "./`basename $0` --gen_keystore -s jks -n server.keystore.jks"
     mesg_blue "./`basename $0` --gen_keystore"
     echo
     echo "Options:"
-    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
-    echo "  -p,-passphrase  --  The 'keypass' and 'storepass' of keystore [default: tiger123]"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
     echo "  -s,-storetype   --  Keystore storetype, e.g. jks, pkcs12 [default: jks]"
     echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo "  -storepass      --  Keystore password [default: tiger123]"
+    echo "  -n,-name        --  Keystore file name, e.g. server.keystore.jks [default: server.keystore]"
     echo
-    note "'keypass' is the password used to secure the private key that is associated with a particular entry in the keystore."
     note "'storepass' is the password used to secure the keystore as a whole. "
-    warn "When the keystore is generated for the first time in this script, both use the same password '-p'."
     echo
     exit 0
     ;;
   gen_subCA)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--gen_subCA] [-d <ssl_file_path>] [-cer <rootCA_file_path>] [-cerKey <privateKey_file_path>] [-p <passphrase>] [-c <subject_DN>]"
+    mesg_green "./`basename $0` [--gen_subCA] [-o <subCA_output_path>] [-cer <SuperiorCA_file_path>] [-cerKey <SuperiorCA_privateKey_file_path>] [-p <passphrase>] [-c <subject_DN>]"
     echo "Example:"
-    mesg_blue "./`basename $0` --gen_subCA -cer ./SSL_files/tigergraph.com.crt -cerKey ./SSL_files/tigergraph.com.key -p tiger123 -c kafka-0.tigergraph.com"
+    mesg_blue "./`basename $0` --gen_subCA -o ./SSL_OUTPUT -cer ./SSL_OUTPUT/tigergraph.com.crt -cerKey ./SSL_OUTPUT/tigergraph.com.key -p tiger123 -c kafka-0.tigergraph.com"
+    mesg_blue "./`basename $0` --gen_subCA -cer ./SSL_OUTPUT/tigergraph.com.crt -cerKey ./SSL_OUTPUT/tigergraph.com.key -c kafka-0.tigergraph.com"
     echo
     echo "Options:"
-    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
-    echo "  -cer,--cer      --  Parent certificate used to sign subordinate certificate"
-    echo "  -cerKey         --  Parent certificate private key file"
-    echo "  -p,-passphrase  --  Passphrase of parent certificate private key [default: tiger123]"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
+    echo "  -cer,--cer      --  Superior certificate used to sign subordinate certificate"
+    echo "  -cerKey         --  Superior certificate private key file"
+    echo "  -p,-passphrase  --  Passphrase of superior certificate private key [default: tiger123]"
     echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
     echo
     exit 0
@@ -270,32 +256,33 @@ general_usage(){
   gen_truststore)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--gen_truststore] [-d <ssl_file_path>] [-storepass <storepass>] [-s <storetype>]"
+    mesg_green "./`basename $0` [--gen_truststore] [-o <truststore_output_path>] [-storepass <storepass>] [-s <storetype>] [-n <truststore_name>]"
     echo "Example:"
-    mesg_blue "./`basename $0` --gen_truststore -d ./SSL_file -storepass tiger123 -s pkcs12"
+    mesg_blue "./`basename $0` --gen_truststore -o ./SSL_OUTPUT -storepass tiger123 -s pkcs12 -n server.truststore.pk12"
     mesg_blue "./`basename $0` --gen_truststore -storepass tiger123"
     mesg_blue "./`basename $0` --gen_truststore"
     echo
     echo "Options:"
-    echo "  -d,-directory   --  Generation Path [default: ./SSL_files]"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
     echo "  -storepass      --  Truststore password [default: tiger123]"
     echo "  -s,-storetype   --  Truststore storetype, e.g. jks, pkcs12 [default: jks]"
+    echo "  -n,-name        --  Truststore file name, e.g. server.truststore.jks [default: server.truststore]"
     echo
     exit 0
     ;;
   import_to_keystore)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-cer <import_CA>] [-cerKey <import_CA_privateKey>] [-storepass <keystore_pass>] [-p <privateKey_passphrase>]"
+    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-cer <import_CA_path>] [-cerKey <import_CA_privateKey_path>] [-storepass <keystore_pass>] [-p <privateKey_passphrase>]"
     echo "Example:"
-    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore -cer ./SSL_files/ca-root.crt -cerKey ./SSL_files/ca-root.key -storepass 123456 -p tiger123"
-    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_files/server.keystore -cer ./SSL_files/ca-root.crt -cerKey ./SSL_files/ca-root.key -storepass 123456"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_OUTPUT/server.keystore -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -storepass 123456 -p tiger123"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_OUTPUT/server.keystore -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -storepass 123456"
     echo
     echo "Options:"
     echo "  -keystore          --  Keystore path"
     echo "  -cer,--cer         --  Certificate file path"
     echo "  -cerKey            --  Certificate private key file path"
-    echo "  -storepass         --  keystore password [default: tiger123]"
+    echo "  -storepass         --  Keystore password [default: tiger123]"
     echo "  -p,-passphrase     --  Passphrase for the certificate private key [default: tiger123]"
     echo
     exit 0
@@ -303,13 +290,13 @@ general_usage(){
   import_to_truststore)
     echo
     echo "Usage:"
-    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-cer <import_CA>] [-storepass <storepass>]"
+    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-cer <import_CA_path>] [-storepass <storepass>]"
     echo "Example:"
-    mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_files/server.truststore -cer ./SSL_files/ca-root.crt -storepass tiger123"
+    mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_OUTPUT/server.truststore -cer ./SSL_OUTPUT/ca-root.crt -storepass tiger123"
     echo
     echo "Options:"
     echo "  -truststore        --  Truststore path"
-    echo "  -cer               --  Certificate to import"
+    echo "  -cer               --  Certificate file path"
     echo "  -storepass         --  Truststore password [default: tiger123]"
     echo
     exit 0
