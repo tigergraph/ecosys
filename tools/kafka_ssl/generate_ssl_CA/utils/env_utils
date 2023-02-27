@@ -169,7 +169,7 @@ generate_help(){
     echo
     echo "Commands:"
     echo "  -h,-help               --  Show the help"
-    echo "  -gen_CARoot            --  Generate root-CA and private_key"
+    echo "  -gen_CARoot            --  Generate root-CA and root-CA private_key"
     echo "  -gen_keystore          --  Generate keystore"
     echo "  -gen_truststore        --  Generate an empty truststore"
     echo "  -gen_subCA             --  Generate subordinate CA through superior certificate"
