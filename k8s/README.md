@@ -1,3 +1,4 @@
+# This project has been deprecated. Please use [Tigergraph Kubernetes Operator](https://docs.tigergraph.com/tigergraph-server/current/kubernetes/k8s-operator/) to create managed Tigergraph cluster instances on Kubernetes(GKE/EKS/OpenShift).
 # Run Tigergraph in EKS/GKE/AKS
 
 ## Getting Started
