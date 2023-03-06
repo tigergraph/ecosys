@@ -140,6 +140,15 @@ else
   # install openssl
   install_openssl
 
+  # enter at least one command
+  total_flag=($importToKeystore_flag $importToTruststore_flag)
+  if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
+    importToKeystore_flag=true
+    importToTruststore_flag=true
+    note "The input command is empty."
+    note "'--import_to_keystore' and '--import_to_truststore' are executed by default."
+  fi
+
   # import key-cert pair to keystore
   if [[ ! -z $importToKeystore_flag ]]; then
       [[ -z "$CA" || -z "$CAkey" || -z "$keystore" ]] \
@@ -163,13 +172,5 @@ else
       check_file ${truststore} 1
       check_file ${CA} 1
       import_to_truststore ${truststore} ${CA} ${alias} ${storepass}
-  fi
-
-  # enter at least one command
-  total_flag=($importToKeystore_flag $importToTruststore_flag)
-  if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
-    error "Please enter at least one Command"
-    import_help
-    exit 1
   fi
 fi

@@ -177,6 +177,8 @@ generate_help(){
     warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
   Please note that if the local machine does not have a java environment, some operations will fail."
     echo
+    warn "If the command is empty, '--gen_CARoot', '--gen_keystore', and '--gen_truststore' are executed by default."
+    echo
     note "Use './`basename $0` -command_name -help' for usage of command_name"
     echo
     exit 0

@@ -152,6 +152,16 @@ else
   # install openssl
   install_openssl
 
+  # If the command is empty, --gen_CARoot, --gen_keystore, and --gen_truststore are executed by default
+  total_flag=($CARoot_flag $genKeystore_flag $subCA_flag $genTruststore_flag)
+  if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
+    CARoot_flag=true
+    genKeystore_flag=true
+    genTruststore_flag=true
+    note "The input command is empty."
+    note "'--gen_CARoot', '--gen_keystore', and '--gen_truststore' are executed by default."
+  fi
+
   # generate root CA
   if [[ ! -z $CARoot_flag ]]; then
     prog "root-CA output directory: $generate_root"
@@ -167,13 +177,15 @@ else
   # generate keystore
   if [[ ! -z $genKeystore_flag ]]; then
     if [[ -z $storeName ]]; then
-      storeName=server.keystore
+      keystoreName=server.keystore
+    else
+      keystoreName=${storeName}.keystore
     fi
     prog "keystore output directory: $generate_root"
     prog "Keystore -Dname CN: $CN"
-    prog "keystore name: $storeName"
-    generate_keystore ${generate_root} ${pass} ${CN} ${storetype} ${storeName}
-    keystore=${generate_root}/${storeName}
+    prog "keystore name: $keystoreName"
+    generate_keystore ${generate_root} ${storepass} ${CN} ${storetype} ${keystoreName}
+    keystore=${generate_root}/${keystoreName}
     prog "Generate keystore: $keystore"
     note "View keystore: keytool -list -v -keystore $keystore -storepass $pass"
   fi
@@ -195,23 +207,17 @@ else
   # generate truststore
   if [[ ! -z ${genTruststore_flag:-} ]]; then
     if [[ -z $storeName ]]; then
-      storeName=server.truststore
+      truststoreName=server.truststore
+    else
+      truststoreName=${storeName}.truststore
     fi
-    truststore="${generate_root}/${storeName}"
+    truststore="${generate_root}/${truststoreName}"
     if [ ! -f "${truststore}" ]; then
       prog "Generate truststore: ${truststore}"
-      generate_truststore "${generate_root}" "${storeName}" "${storepass}" "${storetype}"
+      generate_truststore "${generate_root}" "${truststoreName}" "${storepass}" "${storetype}"
     else
       warn "${truststore} already exists, skipping generation!"
     fi
     note "View truststore: keytool -list -v -keystore ${truststore} -storepass ${storepass}"
-  fi
-
-  # enter at least one command
-  total_flag=($CARoot_flag $genKeystore_flag $subCA_flag $genTruststore_flag)
-  if [[ -z $(IFS=,; echo "${total_flag[*]}") ]]; then
-    error "Please enter at least one Command"
-    generate_help
-    exit 1
   fi
 fi
