@@ -36,10 +36,11 @@
 
     
 5. Sign sub-certificates with an existing certificate (CARoot or other Superior certificate)
-  - `bash ssl_generate.sh -gen_subCA -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -p 123456`
+  - `bash ssl_generate.sh -gen_subCA -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -p 123456` -c tigergraph
     - './SSL_OUTPUT/ca-root.crt' is the path of higher-level CA
     - './SSL_OUTPUT/ca-root.key' is the path of higher-level CA private_key
     - '123456' is the passphrase of higher-level CA private_key
+    - 'tigergraph' is the CN of your sub-certificate
     
     
 6. Import key/certificate pairs into an existing keystore
