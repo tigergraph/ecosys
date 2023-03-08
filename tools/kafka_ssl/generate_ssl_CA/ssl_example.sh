@@ -3,8 +3,8 @@
 cd $(dirname $0)
 BASE_DIR=$(pwd)
 
-broker_hostname=kafka-0.tigergraph.com
-client_hostname=tigergraph
+broker_hostname=${1:-kafka-0.tigergraph.com}
+client_hostname=${2:-tigergraph}
 output_path=./SSL_OUTPUT
 
 cleanup() {
