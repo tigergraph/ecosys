@@ -1,15 +1,18 @@
 package com.tigergraph.jdbc.examples;
 
 import com.tigergraph.jdbc.*;
-import com.tigergraph.jdbc.restpp.*;
-import java.util.Properties;
-import java.sql.SQLException;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
-/**
- * Example code to demonstrate how to invoke TigerGraph pre-installed queries The corresponding
- * TigerGraph demo could be found at: data socailNet:
- * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
+/*
+ * Example code to demonstrate how to invoke TigerGraph pre-installed queries and interpreted queries.
+ * The graph `Social_Net` and query `page_rank` should be installed first:
+ *   https://docs.tigergraph.com/gsql-ref/current/appendix/example-graphs
+ *   https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/Centrality/pagerank/global/unweighted/tg_pagerank.gsql
+ * Ref:
+ *   https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_an_installed_query_get
+ *   https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_an_interpreted_query
  */
 public class RunQuery {
   public static void main(String[] args) throws SQLException {
@@ -45,44 +48,82 @@ public class RunQuery {
 
     try {
       com.tigergraph.jdbc.Driver driver = new Driver();
-
       try (Connection con = driver.connect(sb.toString(), properties)) {
-        /** Run an interpreted query with parameters. */
-        System.out.println("");
-        System.out.println("Running interpreted query \"run interpreted(a=?, b=?)\"...");
-        String query = "run interpreted(a=?, b=?)";
+        /*******************************************************************************
+         *                         INVOKE PRE-INSTALLED QUERY                          *
+         *******************************************************************************/
+        System.out.println(
+            ">>> Running \"RUN QUERY tg_pageRank(v_type=?, e_type=? max_change=?, "
+                + "max_iter=?, damping=?, top_k=?, print_accum=?, "
+                + "result_attr=?, file_path=?, display_edges=?)\"...");
+        String query =
+            "RUN tg_pagerank(v_type=?, e_type=? max_change=?,"
+                + "max_iter=?, damping=?, top_k=?, print_accum=?,"
+                + "result_attr=?, file_path=?, display_edges=?)";
+        try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
+          // Set timeout (in seconds).
+          pstmt.setQueryTimeout(60);
+          pstmt.setString(1, "Person");
+          pstmt.setString(2, "Friend");
+          pstmt.setString(3, "0.001");
+          pstmt.setInt(4, 25);
+          pstmt.setString(5, "0.85");
+          pstmt.setInt(6, 100);
+          pstmt.setBoolean(7, true);
+          pstmt.setString(8, "");
+          pstmt.setString(9, "");
+          pstmt.setBoolean(10, false);
+          try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+            printResultSet(rs);
+          }
+        } catch (SQLException e) {
+          System.out.println("Failed to createStatement: " + e);
+        }
+
+        /*******************************************************************************
+         *                          INVOKE INTERPRETED QUERY                           *
+         *******************************************************************************/
+        System.out.println("\n>>> Running interpreted query \"run interpreted(a=?, b=?)\"...");
+        query = "run interpreted(a=?, b=?)";
         String query_body =
-            "INTERPRET QUERY (int a, int b) FOR GRAPH socialNet {\n" + "PRINT a, b;\n" + "}\n";
+            "INTERPRET QUERY (int a, int b) FOR GRAPH Social_Net {\n" + "PRINT a, b;\n" + "}\n";
         try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
           pstmt.setString(1, "10");
           pstmt.setString(2, "20");
           pstmt.setString(3, query_body); // The query body is passed as a parameter.
           try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-            do {
-              java.sql.ResultSetMetaData metaData = rs.getMetaData();
-              System.out.println("Table: " + metaData.getCatalogName(1));
-              System.out.print(metaData.getColumnName(1));
-              for (int i = 2; i <= metaData.getColumnCount(); ++i) {
-                System.out.print("\t" + metaData.getColumnName(i));
-              }
-              System.out.println("");
-              while (rs.next()) {
-                System.out.print(rs.getObject(1));
-                for (int i = 2; i <= metaData.getColumnCount(); ++i) {
-                  Object obj = rs.getObject(i);
-                  System.out.println("\t" + String.valueOf(obj));
-                }
-              }
-            } while (!rs.isLast());
+            printResultSet(rs);
           }
         } catch (SQLException e) {
           System.out.println("Failed to createStatement: " + e);
         }
+
       } catch (SQLException e) {
         System.out.println("Failed to getConnection: " + e);
       }
     } catch (SQLException e) {
       System.out.println("Failed to init Driver: " + e);
     }
+  }
+
+  private static void printResultSet(java.sql.ResultSet rs) throws SQLException {
+    do {
+      System.out.println("");
+      java.sql.ResultSetMetaData metaData = rs.getMetaData();
+      System.out.println("Table: " + metaData.getCatalogName(1));
+      System.out.print(metaData.getColumnName(1));
+      for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+        System.out.print("\t" + metaData.getColumnName(i));
+      }
+      System.out.println("");
+      while (rs.next()) {
+        System.out.print(rs.getObject(1));
+        for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+          Object obj = rs.getObject(i);
+          System.out.print("\t" + String.valueOf(obj));
+        }
+        System.out.println("");
+      }
+    } while (!rs.isLast());
   }
 }

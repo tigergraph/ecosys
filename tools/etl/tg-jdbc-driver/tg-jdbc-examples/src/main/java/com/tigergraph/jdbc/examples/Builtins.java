@@ -1,17 +1,18 @@
 package com.tigergraph.jdbc.examples;
 
 import com.tigergraph.jdbc.Driver;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-/**
- * Example code to demonstrate how to invoke TigerGraph builtin queries The corresponding TigerGraph
- * demo could be found at:
- * https://docs.tigergraph.com/gsql-ref/3.2/tutorials/gsql-101/built-in-select-queries data
- * socailNet: https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs
+/*
+ * Example code to demonstrate how to invoke TigerGraph builtin queries.
+ * The corresponding TigerGraph demo could be found at:
+ * data Social_Net:
+ *   https://docs.tigergraph.com/gsql-ref/current/appendix/example-graphs
+ * query ref:
+ *   https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_built_in_functions_on_graph
  */
 public class Builtins {
   public static void main(String[] args) throws SQLException {
@@ -51,7 +52,7 @@ public class Builtins {
         try (Statement stmt = con.createStatement()) {
           /** Run a builtin query without any parameter. */
           String query = "builtins stat_vertex_number";
-          System.out.println("Running \"builtins stat_vertex_number\"...");
+          System.out.println("Getting stats of all vertices");
           try (java.sql.ResultSet rs = stmt.executeQuery(query)) {
             do {
               java.sql.ResultSetMetaData metaData = rs.getMetaData();
@@ -73,10 +74,10 @@ public class Builtins {
 
           /** Run a builtin query with a parameter. */
           System.out.println();
-          System.out.println("Running \"builtins stat_vertex_number(type=?)\"...");
+          System.out.println("Getting stats of vertex Person");
           query = "builtins stat_vertex_number(type=?)";
           try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(1, "person");
+            pstmt.setString(1, "Person");
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
               do {
                 java.sql.ResultSetMetaData metaData = rs.getMetaData();
@@ -99,7 +100,7 @@ public class Builtins {
 
           /** Get edge number statistics. */
           System.out.println();
-          System.out.println("Running \"builtins stat_edge_number\"...");
+          System.out.println("Getting stats of all edges");
           query = "builtins stat_edge_number";
           try (java.sql.ResultSet rs = stmt.executeQuery(query)) {
             do {
@@ -122,10 +123,10 @@ public class Builtins {
 
           /** Get total number of a specific edge type. */
           System.out.println();
-          System.out.println("Running \"builtins stat_edge_number(type=?)\"...");
+          System.out.println("Getting stats of edge Liked");
           query = "builtins stat_edge_number(type=?)";
           try (java.sql.PreparedStatement pstmt = con.prepareStatement(query)) {
-            pstmt.setString(1, "Linkto");
+            pstmt.setString(1, "Liked");
             try (java.sql.ResultSet rs = pstmt.executeQuery()) {
               do {
                 java.sql.ResultSetMetaData metaData = rs.getMetaData();
