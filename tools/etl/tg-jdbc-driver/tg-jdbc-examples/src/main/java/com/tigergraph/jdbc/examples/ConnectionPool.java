@@ -2,18 +2,16 @@ package com.tigergraph.jdbc.examples;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
-import com.tigergraph.jdbc.*;
-import com.tigergraph.jdbc.restpp.*;
-import java.sql.SQLException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
-/**
+/*
  * Example code to demonstrate how to use it with a connection pool
- * https://github.com/brettwooldridge/HikariCP data socailNet:
- * https://docs.tigergraph.com/gsql-ref/3.4/querying/appendix-query/example-graphs Pagerank need
- * installed first.
- * https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/Centrality/pagerank/global/unweighted/tg_pagerank.gsql
+ *    https://github.com/brettwooldridge/HikariCP
+ * data Social_Net:
+ *    https://docs.tigergraph.com/gsql-ref/current/appendix/example-graphs
+ * Pagerank need to be installed first.
+ *    https://github.com/tigergraph/gsql-graph-algorithms/blob/master/algorithms/Centrality/pagerank/global/unweighted/tg_pagerank.gsql
  */
 public class ConnectionPool {
   public static void main(String[] args) throws SQLException {

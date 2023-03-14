@@ -3,16 +3,20 @@
 The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly into TigerGraph database commands. This driver supports TigerGraph builtin queries, loading jobs, compiled queries (i.e., queries which has been installed to the GSQL server) and interpreted queries (i.e., ad hoc queries, without needing to compile and install the queries beforehand). The driver will then talk to TigerGraph's REST++ server to run queries and get their results.
 
 ## Table of Contents
-- [Versions compatibility](#versions-compatibility)
-- [Dependency list](#dependency-list)
+- [Versions](#versions)
 - [Download from Maven Central Repository](#download-from-maven-central-repository)
 - [Minimum viable snippet](#minimum-viable-snippet)
+- [Quick Start](#quick-start)
+  * [Prerequisite](#prerequisite)
+  * [Examples](#examples)
 - [Authentication](#authentication)
   * [Authentication for Tigergraph Cloud](#authentication-for-tigergraph-cloud)
 - [Support SSL](#support-ssl)
+  * [Certificate Format](#certificate-format)
+  * [Server Authentication](#server-authentication)
+  * [Client Authentication](#client-authentication)
 - [Connection Pool](#connection-pool)
 - [Supported Queries and Syntax](#supported-queries-and-syntax)
-- [Run examples](#run-examples)
 - [How to use in Apache Spark](#how-to-use-in-apache-spark)
   * [To read from TigerGraph](#to-read-from-tigergraph)
   * [To write to TigerGraph](#to-write-to-tigergraph)
@@ -29,45 +33,16 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
 - [Limitation of ResultSet](#limitation-of-resultset)
 - [Logging Configuration](#logging-configuration)
 - [Password Sealing](#password-sealing)
+- [Connection Properties](#connection-properties)
 - [FAQ](#faq)
-
-## Versions compatibility
-
-| JDBC Version | TigerGraph Version | Java | New Features |
-| --- | --- | --- | --- |
-| 1.2.1 | 2.4.1~3.4 | 1.8 | Support interpreted queries and Spark partitioning |
-| 1.2.2 | 2.4.1~3.4 | 1.8 | Bug fix |
-| 1.2.3 | 2.4.1~3.4 | 1.8 | Bug fix |
-| 1.2.4 | 2.4.1~3.4 | 1.8 | Add vulnerability check plugin |
-| 1.2.5 | 3.5+ | 1.8 | Fix restpp authentication incompatibility |
-| 1.2.6 | 2.4.1+ | 1.8 | Bug fix && support version selection, JUL and SLF4J |
-| 1.3.0 | 2.4.1+ | 1.8 | Bug fix && support path-finding algorithms && support full Spark datatypes |
-| 1.3.1 | 2.4.1+ | 1.8 | Fix loading job statistics |
-| 1.3.2 | 2.4.1+ | 1.8 | Fix compatibility issue and add exponential backoff |
-| 1.3.3 | 2.4.1+ | 1.8 | Print restpp responses in ERROR logs when there's any error |
-| 1.3.4 | 2.4.1+ | 1.8 | Fix the "notEnoughToken" error |
-| 1.3.5 | 2.4.1+ | 1.8 | Add property `sslHostnameVerification` |
-| 1.3.6 | 2.4.1+ | 1.8 | Bug fix for null field |
-
-## Dependency list
-| groupId | artifactId | version |
-| --- | --- | --- |
-| org.apache.commons | commons-io | 2.7 |
-| org.apache.httpcomponents | httpclient | 4.5.13 |
-| org.json | json | 20220320 |
-| org.glassfish | javax.json | 1.1.4 |
-| org.junit.jupiter         | junit-jupiter-engine | 5.8.2 |
-| org.junit.vintage | junit-vintage-engine | 5.8.2 |
-| com.github.tomakehurst | wiremock | 2.27.2 |
-| org.apache.spark | spark-core_2.12(provided) | 3.2.1 |
-| org.apache.spark | spark-sql_2.12(provided) | 3.2.1 |
-| org.apache.maven | maven-artifact | 3.8.5 |
+## Versions
+Please refer to [CHANGELOG](CHANGELOG.md)
 
 ## Download from Maven Central Repository
 
 Tigergraph JDBC Driver can be found at [maven.org](https://search.maven.org/artifact/com.tigergraph/tigergraph-jdbc-driver).
 
-Please refer to [Versions compatibility](#versions-compatibility) to find the **suitable version**.
+Please refer to [Versions](#versions) to find the **suitable version**.
 
 * Use it in your java code:
 
@@ -87,9 +62,9 @@ Please refer to [Versions compatibility](#versions-compatibility) to find the **
     implementation 'com.tigergraph:tigergraph-jdbc-driver:{SUITABLE_VERSION}'
     ```
 
-  Your build automation tool will download it autometically from maven central repository.
+  Your build automation tool will download it automatically from maven central repository.
 
-* Use the jar file directly (e.g. Spark):
+* Use the jar file directly (e.g. include the JDBC driver for Spark):
 
     Go to [maven.org](https://search.maven.org/artifact/com.tigergraph/tigergraph-jdbc-driver) to get the jar file.
 
@@ -97,9 +72,9 @@ Please refer to [Versions compatibility](#versions-compatibility) to find the **
 
 Parameters are passed as properties when creating a connection, such as username, password and graph name. Once REST++ authentication is enabled, username and password is mandatory. Graph name is required when MultiGraph is enabled.
 
-You may specify IP address and port as needed, and the port is the one used by GraphStudio.
+You may specify IP address and port as needed, and the port is the one used by GraphStudio. For the other connection properties, please refer to [Connection Properties](#connection-properties).
 
-Please specify your tigergraph version if it's earlier than v3.5.0.
+Please make sure the tigergraph version is specified.
 
 For each ResultSet, there might be several tables with different tabular formats. **'isLast()' could be used to switch to the next table.**
 
@@ -139,8 +114,45 @@ try {
 }
 ```
 
+## Quick Start
+### Prerequisite
+Please [download the example graphs](https://docs.tigergraph.com/gsql-ref/current/appendix/_attachments/example_graphs.tar.gz), go into the folder `social_net` and run the following command: 
+```
+gsql graph_create.gsql
+```
+This creates the graph `Social_Net` with vertex `Person`, vertex `Post`, edge `Friend`, edge `Posted` and edge `Liked`, and loads sample data.
+### Examples
+The [tg-jdbc-examples](tg-jdbc-examples) demonstrate some common uses of tigergraph-jdbc-driver:
+* Builtin Fuctions([JAVA](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/Builtins.java)): TigerGraph builtin queries to get the stats of vertices/edges.
+* Retrieve/Upsert/Delete vertices/edges([JAVA](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/CRUD.java)): basic ways you can operate on the graph data. Currently it's not supported to retrieve data larger than 2GB. **It's recommended to use a loading job instead directly upserting for large amounts of data.**
+* Interpreted/Installed GSQL Query([JAVA](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/RunQuery.java))
+* Loading Job([JAVA](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/LoadingJob.java) and [Spark](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/SparkLoadingJob.scala)): ingest data using TigerGraph [loading job](https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/creating-a-loading-job). When loading large amounts of data, it is better to use Spark to utilize its parallel processing capability.
+
+All of the JAVA examples take 4 parameters: IP address, port, debug and graph name. The default IP address is 127.0.0.1, and the default port is 14240. Other values can be specified as needed.
+
+Debug mode:
+> 0: print error messages
+
+> 1: print warning messages
+
+> 2: print basic information (e.g., request received, request sent to TigerGraph, response gotten from TigerGraph)
+
+> 3: print detailed debug information
+
+To run the examples, first clone the repository, then compile and run the examples like the following:
+
+```
+cd tg-jdbc-driver
+mvn clean && mvn install
+cd ../tg-jdbc-examples
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 2 Social_Net"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.CRUD -Dexec.args="127.0.0.1 14240 2 Social_Net"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 2 Social_Net"
+mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.LoadingJob -Dexec.args="127.0.0.1 14240 2 Social_Net"
+```
+
 ## Authentication
-Please specify `username` and `password` in connection properties for requesting a authentication token, you can directly specify the `token` in connection properties if you already have it.
+Please specify `username` and `password` in connection properties for [requesting a authentication token](https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_request_a_token), you can directly specify the `token` in connection properties if you already have it.
 ### Authentication for Tigergraph Cloud
 With the release to TigerGraph Cloud (3.6.1), there's a new security standard of identification of secrets as a part of the integrated login between TigerGraph Cloud Console and GraphStudio. With existing TigerGraph Cloud instances users access via REST++ you can continue to access via `username` and `password`. For all **new TigerGraph Cloud instances** you will need to enter username: `__GSQL__secret` and the password will be your generated secret.
 
@@ -159,15 +171,17 @@ Known Limitations:
 - Requires Graph being created
 
 ## Support SSL
-To support SSL, please config TigerGraph first according to [Encrypting Connections](https://docs.tigergraph.com/admin/admin-guide/data-encryption/encrypting-connections). Then specify your SSL certificate like this:
+To support SSL, please configure TigerGraph first according to [Encrypting Connections](https://docs.tigergraph.com/admin/admin-guide/data-encryption/encrypting-connections) to apply the server certificate. Then specify your SSL materials in JDBC connection properties as follows:
 ```
+// SSL server certificate
 properties.put("trustStore", "/path/to/trust.jks");
 properties.put("trustStorePassword", "password");
 properties.put("trustStoreType", "JKS");
-
+// SSL client certificate
 properties.put("keyStore", "/path/to/identity.jks");
 properties.put("keyStorePassword", "password");
 properties.put("keyStoreType", "JKS");
+// the url prefix should be https instead of http
 try {
   com.tigergraph.jdbc.Driver driver = new Driver();
   try (Connection con =
@@ -176,14 +190,17 @@ try {
   }
 }
 ```
-
-Don't forget to use `jdbc:tg:https:` as its prefix instead of `jdbc:tg:http:`. The certificate needs to be converted to JKS format. The certificate can be converted to JKS format by `keytool`:
+### Certificate Format
+The certificate needs to be converted to JKS format by `keytool`, a built-in key and certificate management utility of Java:
 ```
-/path/to/jre/bin/keytool -import -alias alias -file cert_file.crt -keystore yourkeystore.jks -storepass yourpass
+/path/to/jre/bin/keytool -import -alias alias -file cert_file.crt -keystore keystorefile.jks -storepass password
 ```
-The hostname verification will be enabled by default to prevent man-in-the-middle attack. You can disable it by `properties.put("sslHostnameVerification", "false")`.
-
-Detailed example can be found at [GraphQuery.java](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/GraphQuery.java).
+### Server Authentication
+For server authentication, the client needs to verify whether the server certificate is issued by the given `trustStore`, the `trustStore` should contain the certificate of CA who issued the server certificate, or the server certificate itself if it's self-signed.
+* The hostname verification is enabled by default to prevent man-in-the-middle attack. You can disable it by `properties.put("sslHostnameVerification", "false")`.
+* **Note:** if you are connecting to TigerGraph using a proxy server, it's recommanded to configure the server policy to **pass through** the certificate in case of the compromised proxy. Otherwise, please update the `trustStore` to the CA certificate of the proxy accordingly.
+### Client Authentication
+For Client Authentication, the `keyStore` should contain the certificate issued by the server certificate. By default TigerGraph server doesn't require client authentication.
 
 ## Connection Pool
 This JDBC driver could be used in together with third party connection pools. For instance, [HikariCP](https://github.com/brettwooldridge/HikariCP).
@@ -247,7 +264,7 @@ Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main
     // Get the number of edges of a specific type
     builtins stat_edge_number(type=?)
     ```
-  - ResultSet schema: `v_type/e_type | attr`
+  - ResultSet schema: `count | v_type/e_type`
 - `get vertex`: get a vertex/vertices
   - Syntax:
     - `get vertex(vertex_type) [params(select=?,filter=?,limit=?,sort=?)]`
@@ -307,7 +324,7 @@ Detailed example can be found at [ConnectionPool.java](tg-jdbc-examples/src/main
 
 - `delete edge`: delete an edge
   - Syntax:
-    - `delete edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id) [params(select=?)]`
+    - `delete edge(src_vertex_type, src_vertex_id, edge_type, tgt_vertex_type, tgt_vertex_id)`
   - Description: delete an edge by its source vertex type and ID, target vertex type and ID, as well as edge type.
   - Example:
     ```
@@ -392,33 +409,9 @@ The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds
 
 Detailed examples can be found at [tg-jdbc-examples](tg-jdbc-examples).
 
-## Run examples
-There are 4 demo applications. All of them take 4 parameters: IP address, port, debug and graph name. The default IP address is 127.0.0.1, and the default port is 14240. Other values can be specified as needed.
-
-Debug mode:
-> 0: print error messages
-
-> 1: print warning messages
-
-> 2: print basic information (e.g., request received, request sent to TigerGraph, response gotten from TigerGraph)
-
-> 3: print detailed debug information
-
-To run the examples, first clone the repository, then compile and run the examples like the following:
-
-```
-cd tg-jdbc-driver
-mvn clean && mvn install
-cd ../tg-jdbc-examples
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.Builtins -Dexec.args="127.0.0.1 14240 2 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.GraphQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.RunQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
-mvn exec:java -Dexec.mainClass=com.tigergraph.jdbc.examples.UpsertQuery -Dexec.args="127.0.0.1 14240 2 socialNet"
-```
-
 ## How to use in Apache Spark
 
-If your vertex/edge attributes have LIST/SET type, please register TigergraphDialect, which can convert TG LIST/SET to Spark ArrayType when retrieving vertices/edges, or convert Spark ArrayType to TG LIST/SET when inserting vertices/edges.
+If your vertex/edge attributes have LIST/SET type, please register TigergraphDialect, which can convert TG LIST/SET to Spark ArrayType when [retrieving vertices/edges](#to-read-from-tigergraph), or convert Spark ArrayType to TG LIST/SET when [inserting vertices/edges](#to-write-to-tigergraph). **This doesn't work for [loading jobs](#to-load-data-from-files)**.
 ```
 import org.apache.spark.sql.jdbc.JdbcDialects
 JdbcDialects.registerDialect(new com.tigergraph.jdbc.TigergraphDialect())
@@ -529,13 +522,14 @@ df2.write.mode("overwrite").format("jdbc").options(
     "batchsize" -> "100",
     "debug" -> "0")).save()
 ```
+**NOTE:** use loading job instead of writing to vertex/edge directly for large DataFrame for better performance, as the latter will force JDBC to generate JSON payload, which will be much bigger than the raw data.
 
 ### To load data from files
 **Warning:** TigerGraph JDBC connector is streaming in data via REST endpoints. No data throttle mechanism is in place yet. When the incoming concurrent JDBC connection number exceeds the configured hardware capacity limit, the overload may cause the system to stop responding.
-If you use spark job to connect TigerGraph via JDBC, we recommend your concurrent spark loading jobs be capped at 10 with the following per job configuration. This limits the concurrent JDBC connections to 40.
+If you use a Spark job to connect TigerGraph via JDBC, we recommend your concurrent Spark loading jobs be capped at 10 with the following per job configuration. This limits the concurrent JDBC connections to 40.
 ```
 /* 2 executors per job and each executor takes 2 cores */
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar -—num-executors 2 —-executor-cores 2 -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar -—num-executors 2 —-executor-cores 2 -i test.scala
 ```
 ```
 val df = sc.textFile("/path/to/your_file", 100).toDF()
@@ -556,7 +550,13 @@ df.write.mode("append").format("jdbc").options(
     "debug" -> "0")).save()
 
 ```
-**For the sake of performance, please do NOT split columns when loading from files.**
+**If your TG version is 3.9.0 or higher, please use the following new features:**
+* `jobid`: since the Spark loading is sending data in multiple batches, it's hard to collect the loading stats of all the batches. The `jobid` is a new connection property that helps aggregate the stats of each batch loading, so the overall loading stats can be easily acquired.
+* `max_num_error`: the threshold of the error objects count within the `jobid`. The loading job will be aborted when reaching the limit. `jobid` is required.
+* `max_percent_error`: the threshold of the error objects percentage within the `jobid`. The loading job will be aborted when reaching the limit. `jobid` is required.
+
+Please refer to [SparkLoadingJob.scala](tg-jdbc-examples/src/main/java/com/tigergraph/jdbc/examples/SparkLoadingJob.scala) for detailed usage.
+
 For the **"batchsize"** option, if it is set too small, lots of time will be spent on setting up connections; if it is too large, the http payload may exceed limit (the default TigerGraph restpp maximum payload size is 128MB). Furthermore, large "batchsize" may result in high jitter performance.
 
 To bypass the disk IO limitation, it is better to put the raw data file on a different disk other than the one used by TigerGraph.
@@ -644,7 +644,7 @@ val dbtable2 = """interpreted INTERPRET QUERY (int lowerBound = 0, int upperBoun
 
 Save any piece of the above script in a file (e.g., test.scala), and run it like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar -i test.scala
 ```
 
 **Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your query if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
@@ -659,10 +659,12 @@ Please add the following options to your scala script:
 
 And run it with **"--files"** option like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tg-jdbc-driver-1.3.0.jar --files /path/to/trust.jks -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar --files /path/to/trust.jks -i test.scala
 ```
+The `--files` should be provided the JKS file path, while the `"trustStore" -> "trust.jks"` should be the JKS filename only.
+
 ### Load balancing
-For TigerGraph clusters, all the machines' ip addresses (separated by a comma) could be passed via option **"ip_list"** to the driver, and the driver will pick one ip randomly to issue the query.
+For TigerGraph clusters, all the machines' ip addresses (separated by a comma) could be passed via option **"ip_list"** to the driver, and the driver will pick one ip randomly to issue the query. Please don't enable this feature when m1 has a heavy load.
 
 ### Supported dbTable format when used in Spark
 | Operator | Parameters |
@@ -695,7 +697,7 @@ from py4j.java_gateway import java_import
 
 spark = SparkSession.builder \
   .appName("TigerGraphAnalysis") \
-  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.3.0.jar") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tigergraph-jdbc-driver-${VERSION}.jar") \
   .getOrCreate()
 
 gw = spark.sparkContext._gateway
@@ -711,7 +713,7 @@ from pyspark.sql.types import StringType, IntegerType
 
 spark = SparkSession.builder \
   .appName("TigerGraphAnalysis") \
-  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tg-jdbc-driver-1.3.0.jar") \
+  .config("spark.driver.extraClassPath", "/path/to/spark-2.x.x-bin-hadoop2.x/jars/*:/path/to/tigergraph-jdbc-driver-${VERSION}.jar") \
   .getOrCreate()
 
 # read vertex
@@ -934,6 +936,35 @@ It could be insecure to type in some sensitive properties like `password`, `toke
     InputStream encrypted_properties_file = new FileInputStream("path/to/encrypted/properties/file");
     properties.load(encrypted_properties_file);
     ```
+
+## Connection Properties
+| **Property Name**         | **Default** | **Meaning**                                                  | **Required**                                                 | **Scope**         |
+| :------------------------ | :---------- | :----------------------------------------------------------- | :----------------------------------------------------------- | :---------------- |
+| `driver`                  | (none)      | Fully qualified domain name(FQCN) of the JDBC driver: `com.tigergraph.jdbc.Driver`. | Yes                                                          | all               |
+| `url`                     | (none)      | The JDBC URL to connect to: `jdbc:tg:http(s)://ip:port`, the port is the one used by GraphStudio. | Yes                                                          | all               |
+| `graph`                   | (none)      | The graph name.                                              | Yes                  | all      |
+| `version`                 | 3.9.0       | The TigerGraph version.                                      | Yes                  | all      |
+| `username`                | tigergraph  | TigerGraph username.                                         | If [RESTPP authentication](https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication) is enabled, one of `username/password` and `token` is required. | all               |
+| `password`                | tigergraph  | TigerGraph password.                                         | If [RESTPP authentication](https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication) is enabled, one of `username/password` and `token` is required. | all               |
+| `token`                   | (none)      | A token used to authenticate RESTPP requests. [Request a token](https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_request_a_token) | If [RESTPP authentication](https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication) is enabled, one of `username/password` and `token` is required. | all               |
+| `jobid` (TG version >= 3.9.0)                 | (none)      | A unique ID for tracing aggregated loading statistics.       | No                                                           | loading job       |
+| `max_num_error` (TG version >= 3.9.0)         | (none)      | The threshold of the error objects count within the `jobid`. The loading job will be aborted when reaching the limit. `jobid` is required. | No | loading job |
+| `max_percent_error` (TG version >= 3.9.0)     | (none)      | The threshold of the error objects percentage within the `jobid`. The loading job will be aborted when reaching the limit. `jobid` is required. | No | loading job |
+| `filename`                | (none)      | The filename defined in the loading job.                     | Yes                                                          | loading job       |
+| `sep`                     | (none)      | Column separator. E.g., `,`.                                 | Yes                                                          | loading job       |
+| `eol`                     | (none)      | Line separator. E.g., `\n`.                                  | Yes                                                          | loading job       |
+| `dbtable`                 | (none)      | The specification of the operation of the form: `operation_type operation_object`.  For loading job: `job JOB_NAME`; E.g. for querying loading statistics: `jobid JOB_ID`. | Yes                                                          | Spark             |
+| `batchsize`               | 1000        | Maximum number of lines per POST request.                    | Yes                                                          | Spark loading job |
+| `partitionColumn`         | (none)      | The column used for partitioning, it has to be numeric or date or timestamp column. | No | Spark partitioning query |
+| `lowerBound`              | (none)      | The minimum value in the partition column. | No | Spark partitioning query |
+| `upperBound`              | (none)      | The maximum value in the partition column. | No | Spark partitioning query |
+| `numPartitions`           | (none)      | The maximum number of partitions that can be used for parallel processing in table reading and writing. | No | Spark partitioning query |
+| `debug`                   | 2           | Log level:0 → ERROR, 1 → WARN, 2 → INFO, 3 → DEBUG                 | Yes                                                          | all               |
+| `ip_list`                 | (none)      | A string that contains IP addresses of TigerGraph nodes separated by a comma, which can be used for load balancing. E.g., `192.168.0.50,192.168.0.51,192.168.0.52` | No                                                           | all               |
+| `trustStore`              | (none)      | Filename of the truststore which stores the SSL certificate. Please add `--files /path/to/trust.jks` when submitting the Spark job. | No                                                           | all               |
+| `trustStorePassword`      | (none)      | Password of the truststore.                                  | No                                                           | all               |
+| `trustStoreType`          | (none)      | Truststore type, e.g., `jks`.                                | No                                                           | all               |
+| `sslHostnameVerification` | true        | Whether to verify the host name in the `url` matches the host name in the certificate. | No                                                           | all               |
 
 ## FAQ
 - Q: Is the JDBC driver able to load a `LIST` or `SET` attribute?
