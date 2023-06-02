@@ -10,6 +10,7 @@ public class TableResults {
    * stored in a map. So the list of map represents a table.
    */
   private List<Map<String, Object>> results;
+
   // List of column attributes.
   private List<Attribute> attributeList;
   private String table_name;
