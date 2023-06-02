@@ -81,8 +81,8 @@ public class RestppConnection extends Connection {
   private String src_vertex_type = null;
   private Integer atomic = 0;
   private Integer timeout = -1; // the timeout setting for gsql query
-  private Integer connectTimeoutMS =
-      5 * 1000; // the timeout setting for establishing an http connection(5s)
+  private Integer connectTimeoutMS = 30 * 1000;
+  private Integer socketTimeoutMS = 60 * 1000;
   private Integer level = 1;
   private String[] ipArray = null;
   private ComparableVersion tg_version = new ComparableVersion(DEFAULT_TG_VERSION);
@@ -140,6 +140,14 @@ public class RestppConnection extends Connection {
 
       if (properties.containsKey("timeout")) {
         this.timeout = Integer.valueOf(properties.getProperty("timeout"));
+      }
+
+      if (System.getProperty("jdbc.connectTimeout") != null) {
+        this.connectTimeoutMS = Integer.valueOf(System.getProperty("jdbc.connectTimeout"));
+      }
+
+      if (System.getProperty("jdbc.socketTimeout") != null) {
+        this.socketTimeoutMS = Integer.valueOf(System.getProperty("jdbc.socketTimeout"));
       }
 
       // Get token for authentication.
@@ -383,7 +391,10 @@ public class RestppConnection extends Connection {
     }
     // Set the timeout for establishing a connection
     builder.setDefaultRequestConfig(
-        RequestConfig.custom().setConnectTimeout(connectTimeoutMS).build());
+        RequestConfig.custom()
+            .setConnectTimeout(connectTimeoutMS)
+            .setSocketTimeout(socketTimeoutMS)
+            .build());
     builder.setRetryHandler(new DefaultHttpRequestRetryHandler());
     this.httpClient = builder.build();
 

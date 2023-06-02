@@ -1,3 +1,8 @@
+## Release 1.3.8
+* Supported TG Version: 2.4.1+
+* Bugfixes:
+    1. Increase the default connectTimeout to 30s and socketTimeout to 60s
+
 ## Release 1.3.7
 * Supported TG Version: 2.4.1+
 * New Features:
