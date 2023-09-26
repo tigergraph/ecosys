@@ -29,7 +29,7 @@ The TigerGraph JDBC Driver is a Type 4 driver, converting JDBC calls directly in
   * [Supported dbTable format when used in Spark](#supported-dbtable-format-when-used-in-spark)
   * [Supported SaveMode when used in Spark](#supported-savemode-when-used-in-spark)
 - [How to use it in Python](#how-to-use-it-in-python)
-- [How to improve loading speed](#how-to-improve-loading-speed)
+- [Optimizations](#optimizations)
 - [Limitation of ResultSet](#limitation-of-resultset)
 - [Logging Configuration](#logging-configuration)
 - [Password Sealing](#password-sealing)
@@ -403,9 +403,16 @@ See [RESTPP API User Guide: Built-in Endpoints](https://docs.tigergraph.com/dev/
 
 The default timeout for TigerGraph is 16s, you can use **setQueryTimeout(seconds)** of java.sql.Statement to change timeout for any specific query.
 
-**If any parameter or attribute name has spaces, tabs or other special characters, please enclose it in single quotation marks.**
-
-**If you pass the value directly in the query string instead of using the placeholder '?' , please enclose the string value in single quotation marks, e.g. `get vertex(person) params(filter='gender=\"male\"')`, `insert into person(name, age) values('tom', 5)`.**
+**For the query string that contains special charaters: spaces, tabs, \', \", (, ), and ?, please wrap it by two single quotes, or use parameterized query instead. The single quote enclosed by two single quotes should be escaped by two single quotes**
+```
+// run a pre-installed query giving content = "content has ? ' and \""
+// method 1: quote the the content by single quotation, and escape the original single quote charactor
+String query = "run content_query(content = 'content has ? '' and \"')";
+// method 2: use parameterized query with placeholder ?
+String query = "run content_query(content = ?)";
+PreparedStatement pstmt = con.prepareStatement(query);
+pstmt.setString(1, "content has ? ' and \"");
+```
 
 Detailed examples can be found at [tg-jdbc-examples](tg-jdbc-examples).
 
@@ -829,10 +836,22 @@ Sometimes it may complain that "Incompatible Jackson version: 2.x.x". You may ad
   </dependency>
 ```
 
-## How to improve loading speed
+## Optimizations
 * use loading job instead of inserting vertex/edge directly, as the latter will force JDBC to generate JSON payload, which will be much bigger than the raw data
 * don’t split the raw data into different columns, i.e., each row should only have one column, so that JDBC can simply pass along the raw data and won’t need to re-org the data. If a data frame is being used, you can merge different columns into one column
 * choose `batchsize` carefully according to your average data size of each line/row, the idea payload size is 2-6MB.
+* when running compiled or interpreted query via Spark, you can have a parameter named "topK" to limit the number of results returned, and improve the speed of the schema query which appends a query paramter "topK=0" automatically:
+    ```
+    val dbtable2 = """interpreted INTERPRET QUERY (int lowerBound = 0, int upperBound = 100, int topK = 9999999999) FOR GRAPH gsql_demo {
+      V0 = {Person.*};
+      V1 = SELECT s FROM V0:s
+          WHERE s.account >= lowerBound and s.account < upperBound
+          LIMIT topK;
+      PRINT V1;
+    }"""
+    ```
+* when running loading job via Spark, better to use `token` instead of `username/password` to avoid repeatedly generating too many tokens.
+
 
 Here's a demo:
 https://tigergraph-misc.s3.amazonaws.com/jdbc-demo.tar.gz
@@ -960,16 +979,21 @@ It could be insecure to type in some sensitive properties like `password`, `toke
 | `upperBound`              | (none)      | The maximum value in the partition column. | No | Spark partitioning query |
 | `numPartitions`           | (none)      | The maximum number of partitions that can be used for parallel processing in table reading and writing. | No | Spark partitioning query |
 | `debug`                   | 2           | Log level:0 → ERROR, 1 → WARN, 2 → INFO, 3 → DEBUG                 | Yes                                                          | all               |
+| `logFilePattern`          | (none)      | The log file name pattern, e.g., "/tmp/tigergraph-jdbc-driver.log", the log will be printed to stderr when it is not given        | all               |
 | `ip_list`                 | (none)      | A string that contains IP addresses of TigerGraph nodes separated by a comma, which can be used for load balancing. E.g., `192.168.0.50,192.168.0.51,192.168.0.52` | No                                                           | all               |
 | `trustStore`              | (none)      | Filename of the truststore which stores the SSL certificate. Please add `--files /path/to/trust.jks` when submitting the Spark job. | No                                                           | all               |
 | `trustStorePassword`      | (none)      | Password of the truststore.                                  | No                                                           | all               |
 | `trustStoreType`          | (none)      | Truststore type, e.g., `jks`.                                | No                                                           | all               |
 | `sslHostnameVerification` | true        | Whether to verify the host name in the `url` matches the host name in the certificate. | No                                                           | all               |
+| `queryTimeout`   | RESTPP.Factory.DefaultQueryTimeoutSec        | The timeout (s) for RESTPP request.      | No                                                           | all               |
+| `connectTimeout` | 30                                           | The connect timeout (s) for HTTP client. | No                                                           | all               |
 
 ## FAQ
 - Q: Is the JDBC driver able to load a `LIST` or `SET` attribute?
 
   A: Yes, this can be done with a loading job, but you should ensure the [loading job and data format](https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/creating-a-loading-job#_loading_a_list_or_set_attribute) are correct.
+  
+  When the vertex or edge already exists, loading the `LIST` attribute will be in appending manner. To overwrite it, please refer to the reducer function [overwrite(arg)](https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/functions/reducer/#_table_of_reducer_functions).
 
 - Q: How can I run my own queries?
 

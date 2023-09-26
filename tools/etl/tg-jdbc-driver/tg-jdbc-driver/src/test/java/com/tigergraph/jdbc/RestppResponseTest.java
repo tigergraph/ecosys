@@ -18,7 +18,7 @@ public class RestppResponseTest extends TestCase {
   }
 
   public void testFormat() throws Exception {
-    TGLoggerFactory.initializeLogger(1);
+    TGLoggerFactory.initializeLogger(1, null);
     InputStream inputStream = getClass().getClassLoader().getResourceAsStream("response.xml");
     String content = IOUtils.toString(inputStream, "utf-8");
     RestppResponse restpp = new RestppResponse();

@@ -28,7 +28,7 @@ public class RequestTest {
 
   @BeforeAll
   static void prepare() throws Exception {
-    TGLoggerFactory.initializeLogger(1);
+    TGLoggerFactory.initializeLogger(1, null);
     // Mock server for RESTPP
     wireMockServer = new WireMockServer(options().dynamicPort());
     wireMockServer.start();

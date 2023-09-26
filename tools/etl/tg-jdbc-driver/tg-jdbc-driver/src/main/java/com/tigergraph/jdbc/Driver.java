@@ -28,11 +28,9 @@ public class Driver extends BaseDriver {
   @Override
   public Connection connect(String url, Properties info) throws SQLException {
     // Get logging level.
-    Integer logLevel = 2;
-    if (info.containsKey("debug")) {
-      logLevel = Integer.valueOf(info.getProperty("debug"));
-    }
-    TGLoggerFactory.initializeLogger(logLevel);
+    Integer logLevel = Integer.valueOf(info.getProperty("debug", "2"));
+    String pattern = info.getProperty("logFilePattern", "");
+    TGLoggerFactory.initializeLogger(logLevel, pattern);
 
     return getDriver(url).connect(url, info);
   }

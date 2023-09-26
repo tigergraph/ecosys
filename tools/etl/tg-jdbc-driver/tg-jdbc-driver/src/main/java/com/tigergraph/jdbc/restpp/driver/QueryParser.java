@@ -63,7 +63,7 @@ public class QueryParser {
   private boolean
       isLoggable; // Disable logging in batch mode, whose logs will be printed in `executeBatch()`
 
-  private static final Integer MAX_PAYLOAD_LOG_SIZE = 64;
+  private static final Integer MAX_PAYLOAD_LOG_SIZE = 8;
 
   // get index of a specified String (first occurrence) in an array,
   // return array length when not found.
@@ -78,8 +78,11 @@ public class QueryParser {
 
   private String urlEncode(String s) throws SQLException {
     try {
-      // Remove single-quoted strings in url query parameters
-      return URLEncoder.encode(s.replace("\'", ""), "UTF-8");
+      // For space encoding:
+      //   * application/x-www-form-urlencoded: " " -> "+"
+      //   * rfc3986: " " -> "%20"
+      // URLEncoder performs the first one, while tg accept the second one.
+      return URLEncoder.encode(s, "UTF-8").replace("+", "%20");
     } catch (UnsupportedEncodingException e) {
       logger.error("Failed to encode URL", e);
       throw new SQLException("Failed to encode URL", e);
@@ -107,25 +110,31 @@ public class QueryParser {
     for (int i = token_begin; i < token_end; i += 2) {
       if (isFirst) {
         isFirst = Boolean.FALSE;
-        sb.append("?").append(tokens[i]).append("=");
+        sb.append("?").append(urlEncode(tokens[i])).append("=");
       } else {
-        sb.append("&").append(tokens[i]).append("=");
+        sb.append("&").append(urlEncode(tokens[i])).append("=");
       }
       if (tokens[i + 1].equals("?")) {
         sb.append(urlEncode(getObjectStr(this.paramArray[params_begin])));
         params_begin++;
       } else {
-        sb.append(urlEncode(tokens[i + 1]));
+        // The param value of parameterized query will be kept as it is,
+        // while the outer single quotes of the value from tokenized query will be removed.
+        sb.append(urlEncode(removeSingleQuote(tokens[i + 1])));
       }
     }
     return sb.toString();
   }
 
+  // Remove the single quotation if it starts and ends with it.
+  private String removeSingleQuote(String s) {
+    if (s.startsWith("'") && s.endsWith("'")) s = s.substring(1, s.length() - 1);
+    return s;
+  }
+
   private String getObjectStr(Object o) {
     if (o instanceof String) {
       return (String) o;
-    } else if (o instanceof Integer) {
-      return String.valueOf(o);
     } else {
       return String.valueOf(o);
     }
@@ -157,8 +166,12 @@ public class QueryParser {
     }
   }
 
-  /** Tokenize a query string */
-  private String[] tokenize(String query) {
+  /**
+   * Tokenize a query string For value containing [\'|=| |,|\\|(|)|?], it should be enclosed by
+   * single quotation, and the single quotation inside should be escaped by double-single
+   * quotation(''). Otherwise, use parameterized query.
+   */
+  public static String[] tokenize(String query) throws SQLException {
     char code = '$';
     String codeStr = Character.toString(code);
     char[] encoded = query.toCharArray();
@@ -171,13 +184,20 @@ public class QueryParser {
     /** Replace string with '$' first to prevent strings from being tokenized. */
     for (int i = 0; i < encoded.length; ++i) {
       if (encoded[i] == '\'') {
-        inStr = !inStr;
         if (!inStr) {
-          encoded[j++] = code;
-          sb.append('\'');
-          strList.add(sb.toString());
-          sb.setLength(0);
-          sb.append('\'');
+          inStr = !inStr;
+        } else {
+          if (i < encoded.length - 1 && encoded[i + 1] == '\'') {
+            sb.append('\'');
+            i++;
+          } else {
+            inStr = !inStr;
+            encoded[j++] = code;
+            sb.append('\'');
+            strList.add(sb.toString());
+            sb.setLength(0);
+            sb.append('\'');
+          }
         }
       } else if (inStr) {
         sb.append(encoded[i]);
@@ -187,6 +207,10 @@ public class QueryParser {
         }
         ++j;
       }
+    }
+    if (inStr) {
+      throw new SQLException(
+          String.format("Failed to tokenize query: %s. Can't find closing single quote.", query));
     }
     query = String.valueOf(encoded).substring(0, j);
     String[] strArray = query.replaceAll("\"", "").trim().split(" |,|\\(|\\)|=");
@@ -360,8 +384,7 @@ public class QueryParser {
     // restpp.
     sb.append(getUrlQueryString(tokens, params_index + 1, tokens.length, paramArray_index));
 
-    // Remove the single-quoted strings in REST part
-    this.endpoint = sb.toString().replace("\'", "");
+    this.endpoint = sb.toString();
     return ret;
   }
 
@@ -907,7 +930,7 @@ public class QueryParser {
           } else {
             sb.append("&");
           }
-          sb.append(tokens[i]).append("=").append(tokens[i + 1]);
+          sb.append(tokens[i]).append("=").append(urlEncode(removeSingleQuote(tokens[i + 1])));
         }
         if (lowerBound != null) {
           if (isFirst) {
@@ -1061,11 +1084,11 @@ public class QueryParser {
       }
       if (max_num_error != null) {
         sb.append("&max_num_error=");
-        sb.append(urlEncode(max_num_error));
+        sb.append(max_num_error);
       }
       if (max_percent_error != null) {
         sb.append("&max_percent_error=");
-        sb.append(urlEncode(max_percent_error));
+        sb.append(max_percent_error);
       }
       if (this.atomic > 0) {
         sb.append("&atomic_post=true");
@@ -1107,25 +1130,6 @@ public class QueryParser {
           post.setEntity(this.payload);
         }
         request = post;
-
-        if (logger.isDebugEnabled()) {
-          try {
-            if (!"".equals(json)) {
-              // Loading job payload is extreamly large, so limit the length.
-              if (this.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB
-                  && json.length() > MAX_PAYLOAD_LOG_SIZE) {
-                logger.debug("Part of payload: {}......", json.substring(0, MAX_PAYLOAD_LOG_SIZE));
-              } else {
-                logger.debug("Payload: {}", json);
-              }
-            } else {
-              logger.debug("Payload: {}", EntityUtils.toString(this.payload));
-            }
-          } catch (IOException e) {
-            logger.error("Failed to convert EntityUtils to string", e);
-            throw new SQLException("Failed to convert EntityUtils to string", e);
-          }
-        }
         break;
       case HttpDelete:
         request = new HttpDelete(url);

@@ -1,3 +1,18 @@
+## Release 1.3.10
+* Supported TG Version: 2.4.1+
+* Bugfixes:
+    1. Remove single quote from Spark query string
+
+## Release 1.3.9
+* Supported TG Version: 2.4.1+
+* Bugfixes:
+    1. Increase the default socketTimeout to 1 hour
+    2. Improve error handling and reporting
+    3. Fix vulnerabilities
+    4. Support connection property `logFilePattern`
+    5. Fix wrong url encoding for spaces
+    6. Fix query tokenizer to support escaping single quote
+
 ## Release 1.3.8
 * Supported TG Version: 2.4.1+
 * Bugfixes:

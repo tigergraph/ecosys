@@ -85,9 +85,10 @@ public class RestppResponse {
       }
     }
 
-    // Some responses' status codes are not 200, but still have entities.
-    if (this.code != HttpStatus.SC_OK) {
+    // Check both of HTTP code and RESTPP code
+    if (this.code != HttpStatus.SC_OK || has_error) {
       if (panic_on_fail) {
+        String restResp = has_error ? (errCode == null ? "" : errCode + ":") + errMsg : content;
         if (TRANSIENT_FAILURE_CODE.contains(this.code)) {
           throw new SQLTransientException(
               "Failed to send request: "
@@ -95,7 +96,7 @@ public class RestppResponse {
                   + ": "
                   + this.reason_phase
                   + ". "
-                  + content);
+                  + restResp);
         } else {
           throw new SQLNonTransientException(
               "Failed to send request: "
@@ -103,7 +104,7 @@ public class RestppResponse {
                   + ": "
                   + this.reason_phase
                   + ". "
-                  + content);
+                  + restResp);
         }
       }
     }
@@ -112,7 +113,7 @@ public class RestppResponse {
   public void parse(String content) {
     JSONObject obj;
     obj = new JSONObject(content);
-    this.has_error = obj.getBoolean("error");
+    this.has_error = obj.optBoolean("error", false);
     if (this.has_error) {
       this.errMsg = obj.getString("message");
       /** Some queries' response do not have "error code". */
