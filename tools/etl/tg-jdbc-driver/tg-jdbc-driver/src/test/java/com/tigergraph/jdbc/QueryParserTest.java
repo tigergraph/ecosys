@@ -2,22 +2,51 @@ package com.tigergraph.jdbc;
 
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.*;
 
 /** Unit test for QueryParser */
-public class QueryParserTest extends TestCase {
+public class QueryParserTest {
 
-  public QueryParserTest(String name) {
-    super(name);
+  @Test
+  public void testTokenize() throws Exception {
+    TGLoggerFactory.initializeLogger(1, null);
+    List<String> positiveCases = new ArrayList<>();
+    positiveCases.add("run query(a='a',b=1)");
+    positiveCases.add("run query(a='a''\"b''',b=1)");
+    positiveCases.add("run query(a='',b='')");
+    positiveCases.add("run query(a=,b=)");
+    positiveCases.add("get vertex(id=?) params (filter='age>1,gender=\"ma '' le\"')");
+    positiveCases.add("run query(a=?,b='?')");
+    List<String> expected = new ArrayList<>();
+    expected.add("[run, query, a, 'a', b, 1]");
+    expected.add("[run, query, a, 'a'\"b'', b, 1]");
+    expected.add("[run, query, a, '', b, '']");
+    expected.add("[run, query, a, b]");
+    expected.add("[get, vertex, id, ?, params, filter, 'age>1,gender=\"ma ' le\"']");
+    expected.add("[run, query, a, ?, b, '?']");
+    for (int i = 0; i < positiveCases.size(); i++) {
+      assertEquals(expected.get(i), Arrays.toString(QueryParser.tokenize(positiveCases.get(i))));
+    }
+
+    List<String> negativeCases = new ArrayList<>();
+    negativeCases.add("run query(a=''a',b=1)");
+    negativeCases.add("run query(a='a''\"b'',b=1)");
+    negativeCases.add("run query(a='a ' c=1 ',b=1)");
+    for (int i = 0; i < negativeCases.size(); i++) {
+      final int idx = i;
+      assertThrows(SQLException.class, () -> QueryParser.tokenize(negativeCases.get(idx)));
+    }
   }
 
+  @Test
   public void testFormat() throws Exception {
-    TGLoggerFactory.initializeLogger(1);
+    TGLoggerFactory.initializeLogger(1, null);
 
     String query = "get vertex(person) params(filter='gender=\"female\",age<27', select=?)";
     Map<Integer, Object> parameters = new HashMap<>(10);
@@ -68,6 +97,12 @@ public class QueryParserTest extends TestCase {
     parameters.put(1, "0.001");
     parameters.put(2, 10);
     parameters.put(3, "0.15");
+    parser = new QueryParser(null, query, parameters, 0, 0, true);
+    sb.append(parser.getEndpoint()).append(System.lineSeparator());
+
+    query = "run hello(str1='abc +''def', str2='?', str3=?)";
+    parameters.clear();
+    parameters.put(1, "''");
     parser = new QueryParser(null, query, parameters, 0, 0, true);
     sb.append(parser.getEndpoint()).append(System.lineSeparator());
 

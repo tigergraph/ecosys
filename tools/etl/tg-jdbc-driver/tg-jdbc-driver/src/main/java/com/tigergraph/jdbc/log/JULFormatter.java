@@ -23,6 +23,13 @@ public class JULFormatter extends Formatter {
   public static final String ANSI_BLUE = "\u001B[34m";
   public static final String ANSI_WHITE = "\u001B[37m";
 
+  private final boolean isConsole;
+
+  JULFormatter(boolean isConsole) {
+    super();
+    this.isConsole = isConsole;
+  }
+
   @Override
   public String format(LogRecord record) {
     String throwable = "";
@@ -38,12 +45,16 @@ public class JULFormatter extends Formatter {
 
     StringBuilder builder = new StringBuilder(256);
     // Set color for console output
-    builder.append(getColor(level));
+    if (isConsole) {
+      builder.append(getColor(level));
+    }
     builder.append(df.format(new Date(record.getMillis()))).append(" [");
     builder.append(getLocalizedLevel(level)).append("] ");
     builder.append(formatMessage(record));
     builder.append(throwable);
-    builder.append(ANSI_RESET);
+    if (isConsole) {
+      builder.append(ANSI_RESET);
+    }
     builder.append("\n");
     return builder.toString();
   }

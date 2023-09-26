@@ -189,6 +189,9 @@ public class RestppResultSet extends ResultSet {
         scale_list.add(length - index - 1);
       }
       attribute_list.add(new Attribute(key, "DOUBLE", Boolean.FALSE));
+    } else if (value instanceof JSONArray || value instanceof Object[]) {
+      scale_list.add(0);
+      attribute_list.add(new Attribute(key, "LIST", Boolean.FALSE));
     } else {
       scale_list.add(0);
       attribute_list.add(new Attribute(key, "STRING", Boolean.FALSE));
@@ -352,7 +355,9 @@ public class RestppResultSet extends ResultSet {
         Object value = obj.get(key);
         if (value instanceof JSONObject) {
           parseJSONObject((JSONObject) value);
-        } else if (value instanceof JSONArray) {
+        } else if (value instanceof JSONArray
+            && ((JSONArray) value).length() > 0
+            && ((JSONArray) value).get(0) instanceof JSONObject) {
           for (int i = 0; i < ((JSONArray) value).length(); i++) {
             parseJSONObject(((JSONArray) value).getJSONObject(i));
           }
@@ -577,13 +582,6 @@ public class RestppResultSet extends ResultSet {
     Object[] arrayObj;
     if (obj instanceof JSONArray) {
       arrayObj = ((JSONArray) obj).toList().toArray();
-      // TG INT/DOUBLE can be parsed to Integer/Long/BigDecimal/BigInteger by json parser.
-      // Convert them all to Double
-      if (arrayObj.length != 0 && (arrayObj[0] instanceof Number)) {
-        for (int i = 0; i < arrayObj.length; i++) {
-          arrayObj[i] = Double.valueOf(arrayObj[i].toString());
-        }
-      }
     } else if (obj instanceof Object[]) {
       arrayObj = (Object[]) obj;
     } else {

@@ -19,7 +19,7 @@ public class RestppResultSetTest extends TestCase {
   }
 
   public void testParseResult() throws Exception {
-    TGLoggerFactory.initializeLogger(1);
+    TGLoggerFactory.initializeLogger(1, null);
     List<JSONObject> resultList = new ArrayList<>();
     List<String> field_list = new ArrayList<>();
 
@@ -149,5 +149,35 @@ public class RestppResultSetTest extends TestCase {
     assertEquals(expectedPathStr, pathStrBuiler.toString());
 
     inExpectedPath.close();
+
+    // Parse array
+    InputStream inArray = getClass().getClassLoader().getResourceAsStream("resultset-array.dat");
+    String arrStr = IOUtils.toString(inArray);
+    inArray.close();
+    resultList.clear();
+    resultList.add(new JSONObject(arrStr));
+
+    RestppResultSet arrRs =
+        new RestppResultSet(null, resultList, field_list, QueryType.QUERY_TYPE_INSTALLED, false);
+    StringBuilder arrStrBuiler = new StringBuilder();
+
+    java.sql.ResultSetMetaData metaData = arrRs.getMetaData();
+    arrStrBuiler.append("Table: " + metaData.getCatalogName(1)).append(System.lineSeparator());
+    arrStrBuiler.append(metaData.getColumnName(1));
+    for (int i = 2; i <= metaData.getColumnCount(); ++i) {
+      arrStrBuiler.append("\t" + metaData.getColumnName(i));
+    }
+    arrStrBuiler.append(System.lineSeparator());
+    arrRs.next();
+    arrStrBuiler.append(arrRs.getArray(1).toString());
+
+    InputStream inExpectedArr =
+        getClass().getClassLoader().getResourceAsStream("resultset-array-expected.dat");
+    String expectedArrStr =
+        IOUtils.toString(inExpectedArr).replaceAll("\\n|\\r\\n", System.lineSeparator());
+    assertEquals(expectedArrStr, arrStrBuiler.toString());
+
+    inExpectedArr.close();
+    resultList.clear();
   }
 }

@@ -11,6 +11,7 @@ import com.tigergraph.jdbc.log.TGLoggerFactory;
 import org.json.JSONObject;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.slf4j.Logger;
 
 import java.sql.ResultSet;
@@ -33,6 +34,8 @@ public class RestppPreparedStatement extends PreparedStatement {
     "incorrectFixedBinaryLength",
     "invalidPrimaryId"
   };
+  private static final int PREFERED_BATCH_LIMIT =
+      10 * 1024 * 1024; // Warns when 10MB < batchsize <= 50MB
 
   private String query;
   private List<String> edge_list;
@@ -41,6 +44,7 @@ public class RestppPreparedStatement extends PreparedStatement {
   private QueryType query_type;
   private String eol = null;
   private String sep = null;
+  private int maxBatchInBytes;
   private int timeout;
   private int atomic;
   private ComparableVersion tg_version;
@@ -120,6 +124,15 @@ public class RestppPreparedStatement extends PreparedStatement {
         this.stringBuilder.append(sep);
         this.stringBuilder.append(Objects.toString(this.parameters.get(i + 1), ""));
       }
+      if (this.stringBuilder.length() > this.maxBatchInBytes) {
+        String errMsg =
+            String.format(
+                "The current batch size %d bytes exceeds the upper limit %d,"
+                    + " please lower down the property 'batchsize' for less rows.",
+                this.stringBuilder.length(), this.maxBatchInBytes);
+        logger.error(errMsg);
+        throw new SQLException(errMsg);
+      }
       return;
     }
 
@@ -136,6 +149,7 @@ public class RestppPreparedStatement extends PreparedStatement {
       this.query_type = this.parser.getQueryType();
       this.eol = ((RestppConnection) getConnection()).getEol();
       this.sep = ((RestppConnection) getConnection()).getSeparator();
+      this.maxBatchInBytes = ((RestppConnection) getConnection()).getBatchsizeInBytes();
       this.stringBuilder = new StringBuilder();
       this.stringBuilder.append(this.parser.getLine());
       return;
@@ -197,6 +211,15 @@ public class RestppPreparedStatement extends PreparedStatement {
         return count;
       }
       String payload = this.stringBuilder.toString();
+      if (payload.length() > PREFERED_BATCH_LIMIT) {
+        String warnMsg =
+            String.format(
+                "Current payload size is %d bytes, "
+                    + "performance could be better when payload size is less than 10MB. "
+                    + "Try lowering down the 'batchsize' property.",
+                payload.length());
+        logger.warn(warnMsg);
+      }
       RestppResponse response =
           ((RestppConnection) getConnection()).executeQuery(this.parser, payload);
       if (response.hasError()) {
@@ -211,9 +234,12 @@ public class RestppPreparedStatement extends PreparedStatement {
       }
       List<JSONObject> results = response.getResults();
       if (results.size() > 0) {
-        if (this.tg_version.compareTo(new ComparableVersion("3.9.0")) < 0)
+        if (results.get(0).getJSONObject("statistics").has("parsingStatistics")) {
+          // TG version >= 3.9.0
+          return parseStatsV2(results);
+        } else {
           return parseStatsV1(results);
-        else return parseStatsV2(results);
+        }
       } else {
         StringBuilder errMsgSb = new StringBuilder();
         errMsgSb.append("Failed to run loading job, empty response.");
@@ -356,6 +382,9 @@ public class RestppPreparedStatement extends PreparedStatement {
     count[1] = invalidLines;
 
     if (invalidLines > 0 || errors > 0) {
+      if (!logger.isDebugEnabled()) {
+        removeFieldsWithKey(obj, "invalidAttributeLinesData");
+      }
       logger.warn("Found rejected line(s)/object(s): {}", results.get(0));
     } else {
       logger.info("Loading Statistics: {}", results.get(0));
@@ -377,6 +406,9 @@ public class RestppPreparedStatement extends PreparedStatement {
 
     // Only failed line/object will have sample data in stats
     if (obj.toString().contains("sample\":{")) {
+      if (!logger.isDebugEnabled()) {
+        removeFieldsWithKey(obj, "lineData");
+      }
       logger.warn("Found rejected line(s)/object(s): {}", obj.toString());
     } else {
       logger.info("Loading Statistics: {}", results.get(0));
@@ -384,6 +416,28 @@ public class RestppPreparedStatement extends PreparedStatement {
 
     this.stringBuilder = new StringBuilder();
     return count;
+  }
+
+  public static void removeFieldsWithKey(JSONObject jsonObject, String key) throws JSONException {
+    for (String jsonKey : jsonObject.keySet()) {
+      Object value = jsonObject.get(jsonKey);
+      if (value instanceof JSONObject) {
+        removeFieldsWithKey((JSONObject) value, key); // Recursively process nested JSON objects
+      } else if (value instanceof JSONArray) {
+        JSONArray jsonArray = (JSONArray) value;
+        for (int i = 0; i < jsonArray.length(); i++) {
+          Object arrayValue = jsonArray.get(i);
+          if (arrayValue instanceof JSONObject) {
+            removeFieldsWithKey(
+                (JSONObject) arrayValue,
+                key); // Recursively process nested JSON objects within arrays
+          }
+        }
+      }
+      if (key.equals(jsonKey)) {
+        jsonObject.remove(jsonKey); // Remove the field with the specified key
+      }
+    }
   }
 
   private String loadingJobPostAction(String errCode) throws SQLException {

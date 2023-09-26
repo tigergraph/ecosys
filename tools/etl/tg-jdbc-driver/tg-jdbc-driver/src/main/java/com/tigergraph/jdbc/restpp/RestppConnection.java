@@ -8,6 +8,7 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.common.Array;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -60,6 +61,7 @@ public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
   private static final String DEFAULT_TG_VERSION = "3.9.0";
+  private static final long MAX_BACKOFF_MS = 5 * 60 * 1000; // 5 minutes
 
   private String host;
   private Integer port;
@@ -80,9 +82,10 @@ public class RestppConnection extends Connection {
   private String source = null;
   private String src_vertex_type = null;
   private Integer atomic = 0;
-  private Integer timeout = -1; // the timeout setting for gsql query
-  private Integer connectTimeoutMS = 30 * 1000;
-  private Integer socketTimeoutMS = 60 * 1000;
+  private Integer queryTimeout = -1; // the timeout setting for gsql query
+  private Integer connectTimeout = 30;
+  private Integer socketTimeout = 3600; // 1h by default
+  private Integer batchsizeInBytes = 50 * 1024 * 1024; // 50M by default
   private Integer level = 1;
   private String[] ipArray = null;
   private ComparableVersion tg_version = new ComparableVersion(DEFAULT_TG_VERSION);
@@ -138,16 +141,12 @@ public class RestppConnection extends Connection {
         this.atomic = Integer.valueOf(properties.getProperty("atomic"));
       }
 
-      if (properties.containsKey("timeout")) {
-        this.timeout = Integer.valueOf(properties.getProperty("timeout"));
+      if (properties.containsKey("queryTimeout")) {
+        this.queryTimeout = Integer.valueOf(properties.getProperty("queryTimeout"));
       }
 
-      if (System.getProperty("jdbc.connectTimeout") != null) {
-        this.connectTimeoutMS = Integer.valueOf(System.getProperty("jdbc.connectTimeout"));
-      }
-
-      if (System.getProperty("jdbc.socketTimeout") != null) {
-        this.socketTimeoutMS = Integer.valueOf(System.getProperty("jdbc.socketTimeout"));
+      if (properties.containsKey("connectTimeout")) {
+        this.connectTimeout = Integer.valueOf(properties.getProperty("connectTimeout"));
       }
 
       // Get token for authentication.
@@ -185,6 +184,11 @@ public class RestppConnection extends Connection {
       // Get eol (i.e., End of Line) for loading jobs.
       if (properties.containsKey("eol")) {
         this.eol = properties.getProperty("eol");
+      }
+
+      // Get max batch size for loading job, i.e., max payload size for /ddl request
+      if (properties.containsKey("batchsizeInBytes")) {
+        this.batchsizeInBytes = Integer.valueOf(properties.getProperty("batchsizeInBytes"));
       }
 
       // Starting from v3.9.0, TG supports providing loading job statistics based on jobid
@@ -390,10 +394,12 @@ public class RestppConnection extends Connection {
       builder.setUserAgent(userAgent);
     }
     // Set the timeout for establishing a connection
+    // The socketTimeout should be longer then queryTimeout to avoid timeout before query finishes
+    this.socketTimeout = Math.max(this.socketTimeout, this.queryTimeout + 5 * 60);
     builder.setDefaultRequestConfig(
         RequestConfig.custom()
-            .setConnectTimeout(connectTimeoutMS)
-            .setSocketTimeout(socketTimeoutMS)
+            .setConnectTimeout(connectTimeout * 1000)
+            .setSocketTimeout(socketTimeout * 1000)
             .build());
     builder.setRetryHandler(new DefaultHttpRequestRetryHandler());
     this.httpClient = builder.build();
@@ -418,6 +424,10 @@ public class RestppConnection extends Connection {
 
   public String getEol() {
     return this.eol;
+  }
+
+  public Integer getBatchsizeInBytes() {
+    return this.batchsizeInBytes;
   }
 
   public String getLimit() {
@@ -510,35 +520,48 @@ public class RestppConnection extends Connection {
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}
      */
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      /**
-       * When authentication is turned off, the token request will fail. In this case, just do not
-       * use token and print warning instead of panic.
-       */
-      RestppResponse result = new RestppResponse(response, Boolean.FALSE);
-      if (result.hasError() != null && result.hasError()) {
-        if (result.getErrCode() != null && result.getErrCode().equals("REST-1000")) {
-          logger.warn(
-              "RESTPP authentication is not enabled:"
-                  + " https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
+    int max_retry = 3;
+    long retry_backoff = 3 * 1000;
+    for (int retry = 0; retry < max_retry; retry++) {
+      try (CloseableHttpResponse response = httpClient.execute(request)) {
+        /**
+         * When authentication is turned off, the token request will fail. In this case, just do not
+         * use token and print warning instead of panic.
+         */
+        RestppResponse result = new RestppResponse(response, Boolean.FALSE);
+        if (result.hasError() != null && result.hasError()) {
+          if (result.getErrCode() != null && result.getErrCode().equals("REST-1000")) {
+            logger.warn(
+                "RESTPP authentication is not enabled:"
+                    + " https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
+          } else {
+            logger.error(
+                "Failed to get token: {} The following requests may fail.", result.getErrMsg());
+          }
         } else {
-          logger.error(
-              "Failed to get token: {} The following requests may fail.", result.getErrMsg());
-        }
-      } else {
-        List<JSONObject> jsonList = result.getResults();
-        for (int i = 0; i < jsonList.size(); i++) {
-          JSONObject obj = jsonList.get(i);
-          if (obj.has("token")) {
-            this.token = obj.getString("token");
-            logger.debug("Got token: [REDACTED]");
-            return;
+          List<JSONObject> jsonList = result.getResults();
+          for (int i = 0; i < jsonList.size(); i++) {
+            JSONObject obj = jsonList.get(i);
+            if (obj.has("token")) {
+              this.token = obj.getString("token");
+              logger.debug("Got token: [REDACTED]");
+              return;
+            }
           }
         }
+      } catch (Exception e) {
+        if (retry < max_retry - 1) {
+          logger.warn("Failed to get token, retrying in " + retry_backoff + " ms.");
+          try {
+            Thread.sleep(retry_backoff);
+          } catch (InterruptedException ex) {
+            // Nothing to do
+          }
+        } else {
+          logger.error("Failed to get token", e);
+          throw new SQLException("Failed to get token", e);
+        }
       }
-    } catch (Exception e) {
-      logger.error("Failed to get token", e);
-      throw new SQLException("Failed to get token", e);
     }
   }
 
@@ -571,6 +594,9 @@ public class RestppConnection extends Connection {
       logger.debug("Send request: {}", request.toString());
       try (CloseableHttpResponse response = httpClient.execute(request)) {
         result = new RestppResponse(response, Boolean.TRUE);
+        if (retry > 0) {
+          logger.info("The query was successfully executed after {} retries.", retry);
+        }
         break;
         // The following won't be retried:
         // 401: Unauthorized;
@@ -578,7 +604,7 @@ public class RestppConnection extends Connection {
         // 404: graph schema not found.
         // The transient failures that worth retrying are only 408, 502, and SocketTimeoutException.
         // Also add 500, 503 and 504 to make it more bulletproof.
-      } catch (SQLTransientException | SocketTimeoutException e) {
+      } catch (SQLTransientException | SocketTimeoutException | NoHttpResponseException e) {
         if (retry >= max_retry - 1) {
           logger.error(
               "Failed to execute query after retries: request: "
@@ -600,7 +626,7 @@ public class RestppConnection extends Connection {
               backOffSeconds,
               e.getMessage());
           try {
-            Thread.sleep(backOffSeconds * 1000);
+            Thread.sleep(Math.min(backOffSeconds * 1000, MAX_BACKOFF_MS));
           } catch (InterruptedException ex) {
             // Nothing to do
           }
@@ -647,20 +673,23 @@ public class RestppConnection extends Connection {
 
   @Override
   public PreparedStatement prepareStatement(String query) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
+    return new RestppPreparedStatement(
+        this, query, this.queryTimeout, this.atomic, this.tg_version);
   }
 
   @Override
   public PreparedStatement prepareStatement(
       String query, int resultSetType, int resultSetConcurrency) throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
+    return new RestppPreparedStatement(
+        this, query, this.queryTimeout, this.atomic, this.tg_version);
   }
 
   @Override
   public PreparedStatement prepareStatement(
       String query, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
       throws SQLException {
-    return new RestppPreparedStatement(this, query, this.timeout, this.atomic, this.tg_version);
+    return new RestppPreparedStatement(
+        this, query, this.queryTimeout, this.atomic, this.tg_version);
   }
 
   @Override
@@ -680,7 +709,7 @@ public class RestppConnection extends Connection {
 
   @Override
   public java.sql.Statement createStatement() throws SQLException {
-    return new RestppStatement(this, this.timeout, this.atomic);
+    return new RestppStatement(this, this.queryTimeout, this.atomic);
   }
 
   @Override

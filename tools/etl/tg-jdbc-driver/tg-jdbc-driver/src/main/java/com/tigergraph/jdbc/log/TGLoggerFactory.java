@@ -3,7 +3,9 @@ package com.tigergraph.jdbc.log;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import java.util.logging.Level;
+import java.sql.SQLException;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 
 /** create logger according to specified logger implementation */
 public class TGLoggerFactory {
@@ -43,7 +45,8 @@ public class TGLoggerFactory {
    *
    * @param level debug level passed in by properties
    */
-  public static void initializeLogger(Integer level) {
+  public static synchronized void initializeLogger(Integer level, String pattern)
+      throws SQLException {
     loggerType = setLoggerType();
     switch (loggerType) {
       case JUL_WITH_CONFIG:
@@ -54,22 +57,32 @@ public class TGLoggerFactory {
         java.util.logging.Logger jdbcRootLogger =
             java.util.logging.Logger.getLogger(DEFAULT_ROOT_LOGGER_NAME);
         // Do not forward any log messages to the logger parent handlers.
-        jdbcRootLogger.setUseParentHandlers(false);
-        jdbcRootLogger.setLevel(Level.ALL);
-        // Only need 1 handler when connecting multiple times.
         if (jdbcRootLogger.getHandlers().length == 0) {
-          jdbcRootLogger.addHandler(new ConsoleHandler());
+          jdbcRootLogger.setUseParentHandlers(false);
+          try {
+            if (pattern != null && !pattern.isEmpty()) {
+              jdbcRootLogger.addHandler(new FileHandler(pattern, 1024 * 1024 * 100, 100, true));
+              jdbcRootLogger.getHandlers()[0].setFormatter(new JULFormatter(false));
+            } else {
+              jdbcRootLogger.addHandler(new ConsoleHandler());
+              jdbcRootLogger.getHandlers()[0].setFormatter(new JULFormatter(true));
+            }
+          } catch (Exception e) {
+            throw new SQLException("Failed to initialize JDBC log handler", e);
+          }
+
+          if (level < 0 || level > 3) {
+            jdbcRootLogger.setLevel(Level.INFO);
+            jdbcRootLogger.getHandlers()[0].setLevel(Level.INFO);
+            jdbcRootLogger.log(
+                Level.WARNING,
+                "Debug Level should between 0 and 3 but got {0}. Use 2(INFO) by default",
+                level);
+          } else {
+            jdbcRootLogger.setLevel(levelMapping[level]);
+            jdbcRootLogger.getHandlers()[0].setLevel(levelMapping[level]);
+          }
         }
-        if (level < 0 || level > 3) {
-          jdbcRootLogger.getHandlers()[0].setLevel(Level.INFO);
-          jdbcRootLogger.log(
-              Level.WARNING,
-              "Debug Level should between 0 and 3 but got {0}. Use 2(INFO) by default",
-              level);
-        } else {
-          jdbcRootLogger.getHandlers()[0].setLevel(levelMapping[level]);
-        }
-        jdbcRootLogger.getHandlers()[0].setFormatter(new JULFormatter());
     }
   }
 
