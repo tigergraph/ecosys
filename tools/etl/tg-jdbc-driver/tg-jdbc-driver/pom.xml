@@ -4,7 +4,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.3.10</version>
+    <version>1.3.11</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -205,6 +205,23 @@
                             <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>src/assembly/package.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

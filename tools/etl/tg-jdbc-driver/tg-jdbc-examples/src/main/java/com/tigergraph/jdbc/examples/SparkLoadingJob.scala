@@ -49,7 +49,8 @@ df.write.mode("overwrite").format("jdbc").options(
     "sep" -> "|", // separator used to concat the columns of the dataframe
     "eol" -> "\n",  // end-of-line charactor used to concat rows from the dataframe
     "batchsize" -> "1000",
-    "debug" -> "2")).save()
+    "debug" -> "2",
+    "logFilePattern" -> "/tmp/jdbc.log")).save()
 
 /*******************************************************************************
  *                              TG VERSION >= 3.9                              *
@@ -79,7 +80,8 @@ df.write.mode("overwrite").format("jdbc").options(
     "sep" -> "|",                              // separator used to concat the columns of the dataframe
     "eol" -> "\n",                             // end-of-line charactor used to concat rows from the dataframe
     "batchsize" -> "1000",
-    "debug" -> "2")).save()
+    "debug" -> "2",
+    "logFilePattern" -> "/tmp/jdbc.log")).save()
 
 // Step3: query the aggregated loading stats
 var statistics = spark.read.format("jdbc").options(
