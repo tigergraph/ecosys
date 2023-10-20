@@ -8,13 +8,16 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.common.Array;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.http.NoHttpResponseException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -23,10 +26,10 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.entity.StringEntity;
@@ -35,21 +38,19 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.KeyStoreException;
-import java.security.UnrecoverableKeyException;
-import java.security.KeyManagementException;
-import java.security.cert.CertificateException;
 import java.sql.SQLException;
-import java.sql.SQLTransientException;
 import java.util.Properties;
 import java.util.List;
 import java.util.ArrayList;
@@ -61,7 +62,6 @@ public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
   private static final String DEFAULT_TG_VERSION = "3.9.0";
-  private static final long MAX_BACKOFF_MS = 5 * 60 * 1000; // 5 minutes
 
   private String host;
   private Integer port;
@@ -86,6 +86,7 @@ public class RestppConnection extends Connection {
   private Integer connectTimeout = 30;
   private Integer socketTimeout = 3600; // 1h by default
   private Integer batchsizeInBytes = 50 * 1024 * 1024; // 50M by default
+  private Integer maxRetryCount = 10;
   private Integer level = 1;
   private String[] ipArray = null;
   private ComparableVersion tg_version = new ComparableVersion(DEFAULT_TG_VERSION);
@@ -189,6 +190,11 @@ public class RestppConnection extends Connection {
       // Get max batch size for loading job, i.e., max payload size for /ddl request
       if (properties.containsKey("batchsizeInBytes")) {
         this.batchsizeInBytes = Integer.valueOf(properties.getProperty("batchsizeInBytes"));
+      }
+
+      // Get max retry count for loading job when hitting timeout or Kafka protection
+      if (properties.containsKey("maxRetryCount")) {
+        this.maxRetryCount = Integer.valueOf(properties.getProperty("maxRetryCount"));
       }
 
       // Starting from v3.9.0, TG supports providing loading job statistics based on jobid
@@ -317,25 +323,7 @@ public class RestppConnection extends Connection {
         if (hasSSLContext) {
           sslContext = sslBuilder.build();
         }
-      } catch (MalformedURLException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (IOException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (NoSuchAlgorithmException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (KeyStoreException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (CertificateException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (UnrecoverableKeyException e) {
-        logger.error("Failed to build SSL context", e);
-        throw new SQLException(e);
-      } catch (KeyManagementException e) {
+      } catch (Exception e) {
         logger.error("Failed to build SSL context", e);
         throw new SQLException(e);
       }
@@ -401,7 +389,86 @@ public class RestppConnection extends Connection {
             .setConnectTimeout(connectTimeout * 1000)
             .setSocketTimeout(socketTimeout * 1000)
             .build());
-    builder.setRetryHandler(new DefaultHttpRequestRetryHandler());
+
+    // Http Client retry handler for transport exceptions:
+    // - retry 5 times, with 5s backoff
+    // - exclude some unretriable exceptions, e.g., connection refused
+    // - all requests are considered idempotent
+    HttpRequestRetryHandler transportRetryHandler =
+        (exception, executionCount, context) -> {
+          if (executionCount >= 5) {
+            return false;
+          }
+          if (exception instanceof InterruptedIOException
+              && !(exception instanceof SocketTimeoutException)
+              && !(exception instanceof ConnectTimeoutException)) {
+            // Connection interrupted except for connect/read timeout
+            return false;
+          }
+          if (exception instanceof ConnectException) {
+            // Connection refused
+            return false;
+          }
+          if (exception instanceof UnknownHostException) {
+            // Unknown host
+            return false;
+          }
+          if (exception instanceof SSLException) {
+            // SSL handshake exception
+            return false;
+          }
+          try {
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          logger.debug("Retry for exception: {}, retry count: {}", exception, executionCount);
+          return true;
+        };
+
+    // Http Client retry handler for protocol exceptions:
+    // - retry 10 times, with exponential backoffs
+    // - status code 408, 500, 502, 503, 504 are retriable
+    // - all requests are considered idempotent
+    ServiceUnavailableRetryStrategy protocolRetryStrategy =
+        new ServiceUnavailableRetryStrategy() {
+          private long retryInterval = 5000; // 5s
+          private int count = 1;
+          private String cause;
+          private static final long maxRetryInterval = 10 * 60 * 1000; // 10min
+          private final List<Integer> retriableCode = List.of(408, 500, 502, 503, 504);
+
+          @Override
+          public boolean retryRequest(
+              HttpResponse response, int executionCount, HttpContext context) {
+            count = executionCount;
+            cause =
+                response.getStatusLine().getStatusCode()
+                    + " - "
+                    + response.getStatusLine().getReasonPhrase();
+            return retriableCode.contains(response.getStatusLine().getStatusCode())
+                && executionCount <= maxRetryCount;
+          }
+
+          @Override
+          public long getRetryInterval() {
+            long interval = retryInterval + jitter(retryInterval);
+            retryInterval = Math.min(retryInterval * 2, maxRetryInterval);
+            logger.error(
+                "Retrying for the failed request: {}. Retry count: {}, retry interval: {}"
+                    + " milliseconds",
+                cause,
+                count,
+                interval);
+            return interval;
+          }
+
+          private long jitter(long i) {
+            return (long) Math.round(i * Math.random() / 5);
+          }
+        };
+    builder.setRetryHandler(transportRetryHandler);
+    builder.setServiceUnavailableRetryStrategy(protocolRetryStrategy);
     this.httpClient = builder.build();
 
     if (this.token == null
@@ -520,128 +587,69 @@ public class RestppConnection extends Connection {
      * Response example:
      * {"error":false,"message":"","results":{"token":"5r6scnj83963gnfjqtvico1hf2hn394o"}}
      */
-    int max_retry = 3;
-    long retry_backoff = 3 * 1000;
-    for (int retry = 0; retry < max_retry; retry++) {
-      try (CloseableHttpResponse response = httpClient.execute(request)) {
-        /**
-         * When authentication is turned off, the token request will fail. In this case, just do not
-         * use token and print warning instead of panic.
-         */
-        RestppResponse result = new RestppResponse(response, Boolean.FALSE);
-        if (result.hasError() != null && result.hasError()) {
-          if (result.getErrCode() != null && result.getErrCode().equals("REST-1000")) {
-            logger.warn(
-                "RESTPP authentication is not enabled:"
-                    + " https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
-          } else {
-            logger.error(
-                "Failed to get token: {} The following requests may fail.", result.getErrMsg());
-          }
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
+      /**
+       * When authentication is turned off, the token request will fail. In this case, just do not
+       * use token and print warning instead of panic.
+       */
+      RestppResponse result = new RestppResponse(response, Boolean.FALSE);
+      if (result.hasError() != null && result.hasError()) {
+        if (result.getErrCode() != null && result.getErrCode().equals("REST-1000")) {
+          logger.warn(
+              "RESTPP authentication is not enabled:"
+                  + " https://docs.tigergraph.com/tigergraph-server/current/user-access/enabling-user-authentication#_enable_restpp_authentication");
         } else {
-          List<JSONObject> jsonList = result.getResults();
-          for (int i = 0; i < jsonList.size(); i++) {
-            JSONObject obj = jsonList.get(i);
-            if (obj.has("token")) {
-              this.token = obj.getString("token");
-              logger.debug("Got token: [REDACTED]");
-              return;
-            }
-          }
+          logger.error(
+              "Failed to get token: {} The following requests may fail.", result.getErrMsg());
         }
-      } catch (Exception e) {
-        if (retry < max_retry - 1) {
-          logger.warn("Failed to get token, retrying in " + retry_backoff + " ms.");
-          try {
-            Thread.sleep(retry_backoff);
-          } catch (InterruptedException ex) {
-            // Nothing to do
+      } else {
+        List<JSONObject> jsonList = result.getResults();
+        for (int i = 0; i < jsonList.size(); i++) {
+          JSONObject obj = jsonList.get(i);
+          if (obj.has("token")) {
+            this.token = obj.getString("token");
+            logger.debug("Got token: [REDACTED]");
+            return;
           }
-        } else {
-          logger.error("Failed to get token", e);
-          throw new SQLException("Failed to get token", e);
         }
       }
+    } catch (Exception e) {
+      logger.error("Failed to get token", e);
+      throw new SQLException("Failed to get token", e);
     }
   }
 
   public RestppResponse executeQuery(QueryParser parser, String json) throws SQLException {
-    RestppResponse result = null;
-    Integer retry = 0;
-    Integer max_retry = 10;
-    for (retry = 0; retry < max_retry; ++retry) {
-      String host = this.host;
-      // Load balancing
-      if (this.ipArray != null && this.ipArray.length > 1) {
-        Random rand = new Random();
-        int index = rand.nextInt(this.ipArray.length);
-        host = this.ipArray[index];
-      }
-      HttpRequestBase request =
-          parser.buildQuery(
-              host,
-              port,
-              secure,
-              graph,
-              token,
-              json,
-              filename,
-              sep,
-              eol,
-              jobid,
-              max_num_error,
-              max_percent_error);
-      logger.debug("Send request: {}", request.toString());
-      try (CloseableHttpResponse response = httpClient.execute(request)) {
-        result = new RestppResponse(response, Boolean.TRUE);
-        if (retry > 0) {
-          logger.info("The query was successfully executed after {} retries.", retry);
-        }
-        break;
-        // The following won't be retried:
-        // 401: Unauthorized;
-        // 400: Bad Request. The plain HTTP request was sent to HTTPS port;
-        // 404: graph schema not found.
-        // The transient failures that worth retrying are only 408, 502, and SocketTimeoutException.
-        // Also add 500, 503 and 504 to make it more bulletproof.
-      } catch (SQLTransientException | SocketTimeoutException | NoHttpResponseException e) {
-        if (retry >= max_retry - 1) {
-          logger.error(
-              "Failed to execute query after retries: request: "
-                  + request
-                  + ", payload size: "
-                  + json.length(),
-              e);
-          throw new SQLException(
-              "Failed to execute query after retries: request: "
-                  + request
-                  + ", payload size: "
-                  + json.length(),
-              e);
-        } else {
-          // Exponential Backoff
-          long backOffSeconds = (long) (Math.pow(2, retry) * 5);
-          logger.error(
-              "RESTPP busy, failed to execute query. Retrying in {} seconds...... {}",
-              backOffSeconds,
-              e.getMessage());
-          try {
-            Thread.sleep(Math.min(backOffSeconds * 1000, MAX_BACKOFF_MS));
-          } catch (InterruptedException ex) {
-            // Nothing to do
-          }
-        }
-      } catch (Exception e) {
-        logger.error(
-            "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
-        throw new SQLException(
-            "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
-      }
+    String host = this.host;
+    // Load balancing
+    if (this.ipArray != null && this.ipArray.length > 1) {
+      Random rand = new Random();
+      int index = rand.nextInt(this.ipArray.length);
+      host = this.ipArray[index];
     }
-    if (retry > 0) {
-      logger.debug("Rest request succeeded after {} times retries.", retry);
+    HttpRequestBase request =
+        parser.buildQuery(
+            host,
+            port,
+            secure,
+            graph,
+            token,
+            json,
+            filename,
+            sep,
+            eol,
+            jobid,
+            max_num_error,
+            max_percent_error);
+    logger.debug("Send request: {}", request.toString());
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
+      return new RestppResponse(response, Boolean.TRUE);
+    } catch (Exception e) {
+      logger.error(
+          "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
+      throw new SQLException(
+          "Failed to execute query: request: " + request + ", payload size: " + json.length(), e);
     }
-    return result;
   }
 
   /**

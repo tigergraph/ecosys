@@ -24,7 +24,8 @@ public class TigergraphDialect extends JdbcDialect {
       int sqlType, String typeName, int size, MetadataBuilder md) {
     if (sqlType == Types.ARRAY) {
       // LIST.ELEMENT_TYPE => ELEMENT_TYPE
-      Option<DataType> elementType = toCatalystType(typeName.split("\\.")[1]);
+      String[] tokens = typeName.split("\\.");
+      Option<DataType> elementType = toCatalystType(tokens.length > 1 ? tokens[1] : "");
       if (!elementType.isEmpty()) {
         return Option.apply(new ArrayType(elementType.get(), false));
       }

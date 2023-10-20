@@ -12,26 +12,13 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.SQLNonTransientException;
-import java.sql.SQLTransientException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.HashSet;
 
 /** Parse response from TigerGraph server, and return a JSONObject List. */
 public class RestppResponse {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppResponse.class);
-  private static final Set<Integer> TRANSIENT_FAILURE_CODE =
-      new HashSet<Integer>(
-          Arrays.asList(
-              HttpStatus.SC_REQUEST_TIMEOUT,
-              HttpStatus.SC_INTERNAL_SERVER_ERROR,
-              HttpStatus.SC_BAD_GATEWAY,
-              HttpStatus.SC_SERVICE_UNAVAILABLE,
-              HttpStatus.SC_GATEWAY_TIMEOUT));
 
   private Integer code;
   private String reason_phase;
@@ -88,24 +75,14 @@ public class RestppResponse {
     // Check both of HTTP code and RESTPP code
     if (this.code != HttpStatus.SC_OK || has_error) {
       if (panic_on_fail) {
-        String restResp = has_error ? (errCode == null ? "" : errCode + ":") + errMsg : content;
-        if (TRANSIENT_FAILURE_CODE.contains(this.code)) {
-          throw new SQLTransientException(
-              "Failed to send request: "
-                  + String.valueOf(this.code)
-                  + ": "
-                  + this.reason_phase
-                  + ". "
-                  + restResp);
-        } else {
-          throw new SQLNonTransientException(
-              "Failed to send request: "
-                  + String.valueOf(this.code)
-                  + ": "
-                  + this.reason_phase
-                  + ". "
-                  + restResp);
-        }
+        String restResp = has_error ? (errCode == null ? "" : errCode + ": ") + errMsg : content;
+        throw new SQLException(
+            "Failed to send request: "
+                + String.valueOf(this.code)
+                + " - "
+                + this.reason_phase
+                + ". "
+                + restResp);
       }
     }
   }

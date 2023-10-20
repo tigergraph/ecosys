@@ -1,7 +1,15 @@
+## Release 1.3.11
+* Supported TG Version: 2.4.1+
+* Bugfixes:
+    1. Refine the retry mechanism for connection errors.
+    2. Set default array element type to string for Spark query.
+* Features:
+    2. Provide release package with separated dependency jars.
+
 ## Release 1.3.10
 * Supported TG Version: 2.4.1+
 * Bugfixes:
-    1. Remove single quote from Spark query string
+    1. Remove single quote from Spark query string.
 
 ## Release 1.3.9
 * Supported TG Version: 2.4.1+

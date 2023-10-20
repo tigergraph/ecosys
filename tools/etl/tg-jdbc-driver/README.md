@@ -67,6 +67,7 @@ Please refer to [Versions](#versions) to find the **suitable version**.
 * Use the jar file directly (e.g. include the JDBC driver for Spark):
 
     Go to [maven.org](https://search.maven.org/artifact/com.tigergraph/tigergraph-jdbc-driver) to get the jar file.
+    The `tigergraph-jdbc-driver-<version>.jar` is the uber jar containing all the runtime dependencies, and the `tigergraph-jdbc-driver-<version>.tar.gz` packs all jars together separately.
 
 ## Minimum viable snippet
 
@@ -554,7 +555,8 @@ df.write.mode("append").format("jdbc").options(
     "sep" -> "|", // separator between columns
     "eol" -> "\n", // End Of Line
     "batchsize" -> "10000",
-    "debug" -> "0")).save()
+    "debug" -> "0",
+    "logFilePattern" -> "/tmp/jdbc.log")).save()
 
 ```
 **If your TG version is 3.9.0 or higher, please use the following new features:**
@@ -872,6 +874,7 @@ Tigergraph JDBC Driver supports 4 logging levels: 0 -> ERROR, 1 -> WARN, 2 -> IN
 It supports two logging frameworks:
 - java.util.logging (JUL)
   - To use logger, only need to pass in logging level by `properties.put("debug", "0|1|2|3");`, it will initialize with default logging handler and formatter, which only print logs to console.
+  - To print logs to file, need to explicitly specify the log file path by `properties.put("logFilePattern", "/path/to/log/file");`
   - To customize the JUL configuration, please provide your logging configuration file `logging.properties` and specify the JVM system property **explicitly**: `-Djava.util.logging.config.file=path_to_logging.properties`. Reference: [JUL Documentation](https://docs.oracle.com/javase/7/docs/api/java/util/logging/package-summary.html).
 
     For example, create a logging configuration file `logging.properties` with following contents:
@@ -972,6 +975,7 @@ It could be insecure to type in some sensitive properties like `password`, `toke
 | `filename`                | (none)      | The filename defined in the loading job.                     | Yes                                                          | loading job       |
 | `sep`                     | (none)      | Column separator. E.g., `,`.                                 | Yes                                                          | loading job       |
 | `eol`                     | (none)      | Line separator. E.g., `\n`.                                  | Yes                                                          | loading job       |
+| `maxRetryCount`           | 10          | Max retry count for transient loading failures               | Yes                                                          | loading job       |
 | `dbtable`                 | (none)      | The specification of the operation of the form: `operation_type operation_object`.  For loading job: `job JOB_NAME`; E.g. for querying loading statistics: `jobid JOB_ID`. | Yes                                                          | Spark             |
 | `batchsize`               | 1000        | Maximum number of lines per POST request.                    | Yes                                                          | Spark loading job |
 | `partitionColumn`         | (none)      | The column used for partitioning, it has to be numeric or date or timestamp column. | No | Spark partitioning query |
