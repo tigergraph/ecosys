@@ -1,0 +1,565 @@
+# TigerGraph Cluster Deployment Troubleshooting
+
+This document provides guidance on troubleshooting common issues encountered during the deployment of a TigerGraph cluster in Kubernetes.
+
+## Troubleshoot Steps
+
+In the following steps, it is assumed that the operator has already been successfully installed within the `tigergraph` namespace, and that the cluster has been named `test-cluster`. However, please ensure to make appropriate adjustments based on your specific circumstances and environment.
+
+### Check the pods of the TG Cluster
+
+Ensure that all the pods of the cluster are running, and the READY figure is 1/1. Starting from Operator version 0.0.7, sidecarContainers are supported. If you have X sideContainers, the READY figure should be (1+X)/(1+X).
+
+```bash
+kubectl get pod -l tigergraph.com/cluster-name=test-cluster,tigergraph.com/cluster-pod=test-cluster -n tigergraph
+
+NAME             READY   STATUS    RESTARTS   AGE
+test-cluster-0   1/1     Running   0          11h
+test-cluster-1   1/1     Running   0          11h
+test-cluster-2   1/1     Running   0          11h
+```
+
+If the status of a Pod is not `Running`, it might be in `Pending` or `PullImageError` state. In such cases, you can check detailed information about the specific pod using:
+
+```bash
+kubectl describe pod test-cluster-0 -n tigergraph
+```
+
+- Insufficient CPU or Memory
+
+  If a pod is in a `Pending` state, it might be due to insufficient CPU or memory resources. You can identify this issue by checking the pod's status:
+  
+  ```bash
+  kubectl get pod -l app=test-cluster,tigergraph.com/cluster-pod=test-cluster -n tigergraph
+
+  NAME             READY   STATUS    RESTARTS   AGE
+  test-cluster-0   0/1     Pending   0          58s
+  test-cluster-1   0/1     Pending   0          58s
+  test-cluster-2   0/1     Pending   0          58s
+  ```
+
+  Inspect the details of the pending pod to find the root cause at the bottom of the output:
+
+  ```bash
+  kubectl describe pod test-cluster-0 -n tigergraph
+
+  Name:           test-cluster-0
+  Namespace:      tigergraph
+  Priority:       0
+  Node:           <none>
+  Labels:         app=test-cluster
+                  controller-revision-hash=test-cluster-6c8cc9c557
+                  statefulset.kubernetes.io/pod-name=test-cluster-0
+                  tigergraph.com/cluster-pod=test-cluster
+  Annotations:    openshift.io/scc: privileged
+  Status:         Pending
+  IP:             
+  IPs:            <none>
+  Controlled By:  StatefulSet/test-cluster
+  Containers:
+    tg:
+      Image:       docker.io/tigergrah/tigergraph-k8s:3.8.0
+      Ports:       9000/TCP, 14240/TCP, 22/TCP
+      Host Ports:  0/TCP, 0/TCP, 0/TCP
+      Requests:
+        cpu:      16
+        memory:   32Gi
+        ......
+      Medium:     
+      SizeLimit:  <unset>
+    kube-api-access-mnsw5:
+      Type:                    Projected (a volume that contains injected data from multiple sources)
+      TokenExpirationSeconds:  3607
+      ConfigMapName:           kube-root-ca.crt
+      ConfigMapOptional:       <nil>
+      DownwardAPI:             true
+      ConfigMapName:           openshift-service-ca.crt
+      ConfigMapOptional:       <nil>
+  QoS Class:                   Burstable
+  Node-Selectors:              <none>
+  Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                              node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason            Age                  From               Message
+    ----     ------            ----                 ----               -------
+    Warning  FailedScheduling  65s (x3 over 2m23s)  default-scheduler  0/4 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate, 3 Insufficient cpu, 3 Insufficient memory. 
+  ```
+
+  You may encounter messages like `Insufficient CPU` or `Insufficient memory`. In this case, you should adjust the resource allocation for the cluster using the following command:
+
+  ```bash
+  kubectl tg update --cluster-name test-cluster --cpu 4 --memory 8Gi -n tigergraph
+  ```
+
+- Nodes don’t match nodeSelector/affinity
+
+  Starting from Operator version 0.0.7, nodeSelector, affinity, and tolerations are supported. If you provide rules in the Custom Resource (CR), and your pod is in a `Pending` state, you can check for the following events:
+
+  ```bash
+  kubectl describe pod test-cluster-0 -n tigergraph
+  ```
+
+  Look for events like:
+
+  ```bash
+  Events:
+    Type     Reason             Age                   From                Message
+    ----     ------             ----                  ----                -------
+    Warning  FailedScheduling   101s (x2 over 2m17s)  default-scheduler   0/6 nodes are available: 1 Insufficient cpu, 5 node(s) didn't match Pod's node affinity/selector. preemption: 0/6 nodes are available: 1 No preemption victims found for incoming pod, 5 Preemption is not helpful for scheduling.
+  ```
+
+  This indicates that the nodes cannot meet your affinity or nodeSelector rules. You can update your rules using the following command:
+
+  ```bash
+  kubectl tg update --cluster-name test-cluster -n tigergraph --affinity affinity-config.yaml
+  ```
+
+- Incorrect docker image
+
+  If the TigerGraph Docker image version is incorrect, the pod status may be `ErrImagePull` or `ImagePullBackOff`. You can identify this issue by checking the pod status:
+
+  ```bash
+  kubectl get pod -l tigergraph.com/cluster-pod=test-cluster -n tigergraph
+  
+  NAME             READY   STATUS             RESTARTS   AGE
+  test-cluster-0   0/1     ErrImagePull       0          63s
+  test-cluster-1   0/1     ImagePullBackOff   0          63s
+  test-cluster-2   0/1     ImagePullBackOff   0          63s
+  ```
+
+  Check the detailed error by examining the pod's events:
+
+  ```bash
+  kubectl describe pod test-cluster-0 -n tigergraph
+  
+  Name:         test-cluster-0
+  Namespace:    tigergraph
+  Priority:     0
+  Node:         tg-k8s-openshift-777-rdj74-worker-d-pvrm2/10.0.128.2
+  Start Time:   Mon, 27 Feb 2023 03:15:39 +0000
+  Labels:       app=test-cluster
+                controller-revision-hash=test-cluster-598bdbb6cb
+                statefulset.kubernetes.io/pod-name=test-cluster-0
+                tigergraph.com/cluster-pod=test-cluster
+  .......
+  Controlled By:  StatefulSet/test-cluster
+  Containers:
+    tg:
+      Container ID:   
+      Image:          docker.io/tigergrah/tigergraph-k8s:3.8.5
+      Image ID:       
+      Ports:          9000/TCP, 14240/TCP, 22/TCP
+      Host Ports:     0/TCP, 0/TCP, 0/TCP
+      State:          Waiting
+        Reason:       ImagePullBackOff
+      Ready:          False
+      Restart Count:  0
+      Requests:
+        cpu:      2
+        memory:   8Gi
+        ......
+      Environment:
+        SERVICE_NAME:  <set to the key 'service.headless.name' of config map 'test-cluster-env-config'>  Optional: false
+        POD_PREFIX:    <set to the key 'pod.prefix' of config map 'test-cluster-env-config'>             Optional: false
+        NAMESPACE:     <set to the key 'namespace' of config map 'test-cluster-env-config'>              Optional: false
+        CLUSTER_SIZE:  <set to the key 'cluster_size' of config map 'test-cluster-env-config'>           Optional: false
+      Mounts:
+        /home/tigergraph/tigergraph/data from tg-data (rw)
+        /tmp/init_tg_cfg from config-volume (rw,path="init_tg_cfg")
+        /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vskns (ro)
+  Conditions:
+    Type              Status
+    Initialized       True 
+    Ready             False 
+    ContainersReady   False 
+    PodScheduled      True 
+  Volumes:
+    tg-data:
+      Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+      ClaimName:  tg-data-test-cluster-0
+      ReadOnly:   false
+    config-volume:
+      Type:      ConfigMap (a volume populated by a ConfigMap)
+      Name:      test-cluster-init-config
+      Optional:  false
+    probe-data:
+      Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+      Medium:     
+      SizeLimit:  <unset>
+    kube-api-access-vskns:
+      Type:                    Projected (a volume that contains injected data from multiple sources)
+      TokenExpirationSeconds:  3607
+      ConfigMapName:           kube-root-ca.crt
+      ConfigMapOptional:       <nil>
+      DownwardAPI:             true
+      ConfigMapName:           openshift-service-ca.crt
+      ConfigMapOptional:       <nil>
+  QoS Class:                   Burstable
+  Node-Selectors:              <none>
+  Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                              node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason                  Age                  From                     Message
+    ----     ------                  ----                 ----                     -------
+    Normal   Scheduled               2m38s                default-scheduler        Successfully assigned tigergraph/test-cluster-0 to tg-k8s-openshift-777-rdj74-worker-d-pvrm2
+    Normal   SuccessfulAttachVolume  2m34s                attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-96c90faf-3019-416a-ace9-200502f67b65"
+    Normal   AddedInterface          2m30s                multus                   Add eth0 [10.130.0.33/23] from openshift-sdn
+    Normal   Pulling                 71s (x4 over 2m29s)  kubelet                  Pulling image "docker.io/tigergrah/tigergraph-k8s:3.8.5"
+    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Failed to pull image "docker.io/tigergrah/tigergraph-k8s:3.8.5": rpc error: code = Unknown desc = reading manifest 3.8.5 in docker.io/tigergrah/tigergraph-k8s: manifest unknown: manifest unknown
+    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Error: ErrImagePull
+    Warning  Failed                  59s (x6 over 2m29s)  kubelet                  Error: ImagePullBackOff
+    Normal   BackOff                 44s (x7 over 2m29s)  kubelet                  Back-off pulling image "docker.io/tigergrah/tigergraph-k8s:3.8.5"
+  ```
+
+  Look for messages indicating issues with the image, such as `Error: ErrImagePull` You should correct the image version using the following command:
+
+  ```bash
+  kubectl tg update --cluster-name test-cluster --version 3.9.0 -n tigergraph
+  ```
+
+- Incorrect PVC with non-existent StorageClass
+
+  If you specified a non-existent or unusable StorageClass when creating a cluster, the cluster's pods may be stuck in a `Pending` state. To diagnose the issue, first check the pod statuses:
+
+  ```bash
+  kubectl get pod -l app=test-cluster,tigergraph.com/cluster-pod=test-cluster -n tigergraph
+
+  NAME             READY   STATUS    RESTARTS   AGE
+  test-cluster-0   0/1     Pending   0          2m16s
+  test-cluster-1   0/1     Pending   0          2m16s
+  test-cluster-2   0/1     Pending   0          2m16s
+  ```
+
+  If the pods are in a `Pending` state, inspect the details of one of the pods to find the root cause:
+
+  ```bash
+  kubectl describe pod test-cluster-0 -n tigergraph
+
+  Name:           test-cluster-0
+  Namespace:      tigergraph
+  Priority:       0
+  Node:           <none>
+  Labels:         app=test-cluster
+                  controller-revision-hash=test-cluster-598bdbb6cb
+                  statefulset.kubernetes.io/pod-name=test-cluster-0
+                  tigergraph.com/cluster-pod=test-cluster
+  Annotations:    openshift.io/scc: privileged
+  Status:         Pending
+  IP:             
+  IPs:            <none>
+  Controlled By:  StatefulSet/test-cluster
+  Containers:
+    tg:
+      Image:       docker.io/tigergrah/tigergraph-k8s:3.8.5
+      Ports:       9000/TCP, 14240/TCP, 22/TCP
+      Host Ports:  0/TCP, 0/TCP, 0/TCP
+      Requests:
+        cpu:      2
+        memory:   8Gi
+        ......
+      Environment:
+        SERVICE_NAME:  <set to the key 'service.headless.name' of config map 'test-cluster-env-config'>  Optional: false
+        POD_PREFIX:    <set to the key 'pod.prefix' of config map 'test-cluster-env-config'>             Optional: false
+        NAMESPACE:     <set to the key 'namespace' of config map 'test-cluster-env-config'>              Optional: false
+        CLUSTER_SIZE:  <set to the key 'cluster_size' of config map 'test-cluster-env-config'>           Optional: false
+      Mounts:
+        /home/tigergraph/tigergraph/data from tg-data (rw)
+        /tmp/init_tg_cfg from config-volume (rw,path="init_tg_cfg")
+        /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8zb5z (ro)
+  Conditions:
+    Type           Status
+    PodScheduled   False 
+  Volumes:
+    tg-data:
+      Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+      ClaimName:  tg-data-test-cluster-0
+      ReadOnly:   false
+    config-volume:
+      Type:      ConfigMap (a volume populated by a ConfigMap)
+      Name:      test-cluster-init-config
+      Optional:  false
+    probe-data:
+      Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+      Medium:     
+      SizeLimit:  <unset>
+    kube-api-access-8zb5z:
+      Type:                    Projected (a volume that contains injected data from multiple sources)
+      TokenExpirationSeconds:  3607
+      ConfigMapName:           kube-root-ca.crt
+      ConfigMapOptional:       <nil>
+      DownwardAPI:             true
+      ConfigMapName:           openshift-service-ca.crt
+      ConfigMapOptional:       <nil>
+  QoS Class:                   Burstable
+  Node-Selectors:              <none>
+  Tolerations:                 node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                              node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason            Age                 From               Message
+    ----     ------            ----                ----               -------
+    Warning  FailedScheduling  58s (x4 over 3m8s)  default-scheduler  0/4 nodes are available: 4 pod has unbound immediate PersistentVolumeClaims.
+  ```
+
+  From the events of the pod, you can find out that the root cause is 0/4 nodes are available: 4 pod has unbound immediate PersistentVolumeClaims , this error indicates that the StorageClass is not existed or the capacity of PV is insufficient.
+
+  Check the storage configuration of the cluster.
+
+  ```bash
+  kubectl get tg test-cluster -n tigergraph -o json|jq .spec.storage
+
+  {
+    "type": "persistent-claim",
+    "volumeClaimTemplate": {
+      "accessModes": [
+        "ReadWriteOnce"
+      ],
+      "resources": {
+        "requests": {
+          "storage": "10G"
+        }
+      },
+      "storageClassName": "test-storage-class",
+      "volumeMode": "Filesystem"
+    }
+  }
+  ```
+
+  Check the PVC status of the cluster
+
+  ```bash
+  kubectl get pvc -l tigergraph.com/cluster-name=test-cluster -n tigergraph
+  ```
+
+  Ensure the STORAGECLASS exists and the capacity of PV is insufficient
+
+  ```bash
+  kubectl get STORAGECLASS
+
+  NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  standard (default)   kubernetes.io/gce-pd    Delete          WaitForFirstConsumer   true                   34m
+  standard-csi         pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true
+  ```
+
+  For this test case, the STORAGECLASS test-storage-class does not exist, you should recreate the cluster with a certain STORAGECLASS name in the above list.
+
+  If there are not any pods in the above step, you can check the status of StatefulSet:
+
+  ```bash
+  kubectl get statefulset test-cluster -n tigergraph
+
+  NAME           READY   AGE
+  test-cluster   3/3     11h
+  ```
+
+- ebs csi driver not installed (only on EKS)
+
+  Since some EKS versions do not install aws-ebs-csi-driver plugin by default, if you encounter the following issue when creating TigerGraph cluster with the dynamic persistent volume, you need to check it first.
+
+  After deploying the TigerGraph cluster, all of the TigerGraph pods are in Pending status, and all of the PVC attached to the StatefulSet of TigerGraph are also in Pending status.
+
+  ```bash
+  # please replace the cluster name and namespace with yours.
+  kubectl get pods -l tigergraph.com/cluster-name=test-cluster --namespace tigergraph
+
+  NAME                                                      READY   STATUS    RESTARTS   AGE
+  test-cluster-0                                            0/1     Pending   0          32s
+  test-cluster-1                                            0/1     Pending   0          32s
+  test-cluster-2                                            0/1     Pending   0          32s
+
+  kubectl get pvc -l tigergraph.com/cluster-name=test-cluster --namespace tigergraph
+
+  NAME                     STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  tg-data-test-cluster-0   Pending                                      gp2            37s
+  tg-data-test-cluster-1   Pending                                      gp2            37s
+  tg-data-test-cluster-2   Pending                                      gp2            37s
+
+  kubectl describe pvc -l tigergraph.com/cluster-name=test-cluster --namespace tigergraph
+
+  Name:          tg-data-test-cluster-0
+  Namespace:     tigergraph
+  StorageClass:  gp2
+  Status:        Pending
+  Volume:
+  Labels:        tigergraph.com/cluster-name=test-cluster
+                tigergraph.com/cluster-pod=test-cluster
+  Annotations:   volume.beta.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+                volume.kubernetes.io/selected-node: ip-172-31-20-181.us-west-1.compute.internal
+                volume.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+  Finalizers:    [kubernetes.io/pvc-protection]
+  Capacity:
+  Access Modes:
+  VolumeMode:    Filesystem
+  Used By:       test-cluster-0
+  Events:
+    Type    Reason                Age                    From                         Message
+    ----    ------                ----                   ----                         -------
+    Normal  WaitForFirstConsumer  8m9s                   persistentvolume-controller  waiting for first consumer to be created before binding
+    Normal  ExternalProvisioning  2m35s (x25 over 8m9s)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "ebs.csi.aws.com" or manually created by system administrator
+  ```
+
+  check and install aws-ebs-csi-driver with following commands:
+
+  > [!WARNING]
+  > Please ensure that the IAM role for the Amazon EBS CSI driver has been created. You can refer to the official AWS documentation [Creating the Amazon EBS CSI driver IAM role](https://docs.aws.amazon.com/eks/latest/userguide/csi-iam-role.html) for detailed instructions.
+
+  ```bash
+  kubectl get deployment ebs-csi-controller -n kube-system
+
+  aws eks create-addon --cluster-name ${YOUR_K8S_CLUSTER_NAME} --addon-name aws-ebs-csi-driver
+  ```
+
+### Check the initialize job of TG Cluster
+
+If you've successfully created the StatefulSet and cluster pods for your TigerGraph cluster but encounter anomalies in the cluster's status, such as liveness and readiness staying unready for an extended period, you can follow these steps to troubleshoot the issue.
+
+- Ensure initialize job has been created
+
+  ```bash
+  kubectl get job -l tigergraph.com/cluster-job=test-cluster-init-job -n tigergraph
+  ```
+
+- If initialize job is exist and the COMPLETIONS of the job are not 1/1, you need to check the pod status of the job
+
+  ```bash
+  kubectl get pod -l job-name=test-cluster-init-job -n tigergraph
+
+  NAME                          READY   STATUS      RESTARTS   AGE
+  test-cluster-init-job-p9lqr   0/1     Completed   0          12h
+  ```
+
+  If the pod status is incomplete, investigate further by checking the logs of the error pod (if it exists) to identify the root cause of the initialization job failure:
+
+  ```bash
+  # It equals kubectl logs test-cluster-init-job -n tigergraph
+  kubectl logs -l job-name=test-cluster-init-job -n tigergraph
+
+  Defaulted container "cluster-installer" out of: cluster-installer, init-tigergraph (init)
+  [   Info] Generating config files to all machines
+  [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
+  [   Info] Initializing KAFKA
+  [   Info] Starting EXE
+  [   Info] Starting CTRL
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Applying config
+  [Warning] No difference from staging config, config apply is skipped.
+  [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
+  [   Info] Cluster is initialized successfully
+  ```
+
+  Examine the logs for any error messages that might provide insights into the failure. It's essential to address these issues to ensure a successful initialization.
+
+- Check the cluster status by logging into a pod
+
+  If all the previous steps have been completed successfully, you can log into one of the cluster pods to check the detailed errors of the cluster using the `gadmin status -v` command. This can help identify any ongoing issues with the cluster:
+
+  ```bash
+  kubectl tg connect --cluster-name test-cluster -n tigergraph
+
+  tigergraph@test-cluster-0:~$ gadmin status
+  +--------------------+-------------------------+-------------------------+
+  |    Service Name    |     Service Status      |      Process State      |
+  +--------------------+-------------------------+-------------------------+
+  |       ADMIN        |         Online          |         Running         |
+  |        CTRL        |         Online          |         Running         |
+  |        DICT        |         Online          |         Running         |
+  |        ETCD        |         Online          |         Running         |
+  |        EXE         |         Online          |         Running         |
+  |        GPE         |         Warmup          |         Running         |
+  |        GSE         |         Warmup          |         Running         |
+  |        GSQL        |         Online          |         Running         |
+  |        GUI         |         Online          |         Running         |
+  |        IFM         |         Online          |         Running         |
+  |       KAFKA        |         Online          |         Running         |
+  |     KAFKACONN      |         Online          |         Running         |
+  |    KAFKASTRM-LL    |         Online          |         Running         |
+  |       NGINX        |         Online          |         Running         |
+  |       RESTPP       |         Online          |         Running         |
+  |        TS3         |         Online          |         Running         |
+  |      TS3SERV       |         Online          |         Running         |
+  |         ZK         |         Online          |         Running         |
+  +--------------------+-------------------------+-------------------------+
+  ```
+
+  The gadmin status command provides detailed information about the status of various TigerGraph services and processes. Review the output to check for any services or processes that are not running correctly.
+
+  If the liveness check of the pod continues to fail, you can use a single command to get the cluster status:
+
+  ```bash
+  kubectl exec -it test-cluster-0 -n tigergraph -- /home/tigergraph/tigergraph/app/cmd/gadmin status -v
+
+  +--------------------+-------------------------+-------------------------+-------------------------+
+  |    Service Name    |     Service Status      |      Process State      |       Process ID        |
+  +--------------------+-------------------------+-------------------------+-------------------------+
+  |      ADMIN#1       |         Online          |         Running         |          44484          |
+  |      ADMIN#2       |         Online          |         Running         |          9536           |
+  |      ADMIN#3       |         Online          |         Running         |          3099           |
+  |       CTRL#1       |         Online          |         Running         |           79            |
+  |       CTRL#2       |         Online          |         Running         |           637           |
+  |       CTRL#3       |         Online          |         Running         |           74            |
+  |       DICT#1       |         Online          |         Running         |          43741          |
+  |       DICT#2       |         Online          |         Running         |          8504           |
+  |       DICT#3       |         Online          |         Running         |          2347           |
+  |       ETCD#1       |         Online          |         Running         |          43731          |
+  |       ETCD#2       |         Online          |         Running         |          8494           |
+  |       ETCD#3       |         Online          |         Running         |          2337           |
+  |       EXE_1        |         Online          |         Running         |           59            |
+  |       EXE_2        |         Online          |         Running         |           512           |
+  |       EXE_3        |         Online          |         Running         |           56            |
+  |      GPE_1#1       |         Warmup          |         Running         |          44534          |
+  |      GPE_1#2       |         Warmup          |         Running         |          9586           |
+  |      GSE_1#1       |         Warmup          |         Running         |          44495          |
+  |      GSE_1#2       |         Warmup          |         Running         |          9547           |
+  |       GSQL#1       |         Online          |         Running         |          44802          |
+  |       GSQL#2       |         Online          |         Running         |          9756           |
+  |       GSQL#3       |         Online          |         Running         |          3385           |
+  |       GUI#1        |         Online          |         Running         |          45096          |
+  |       GUI#2        |         Online          |         Running         |          9919           |
+  |       GUI#3        |         Online          |         Running         |          3698           |
+  |       IFM#1        |         Online          |         Running         |          44997          |
+  |       IFM#2        |         Online          |         Running         |          9874           |
+  |       IFM#3        |         Online          |         Running         |          3573           |
+  |      KAFKA#1       |         Online          |         Running         |           240           |
+  |      KAFKA#2       |         Online          |         Running         |          1097           |
+  |      KAFKA#3       |         Online          |         Running         |           238           |
+  |    KAFKACONN#1     |         Online          |         Running         |          44615          |
+  |    KAFKACONN#2     |         Online          |         Running         |          9663           |
+  |    KAFKACONN#3     |         Online          |         Running         |          3196           |
+  |   KAFKASTRM-LL_1   |         Online          |         Running         |          44562          |
+  |   KAFKASTRM-LL_2   |         Online          |         Running         |          9611           |
+  |   KAFKASTRM-LL_3   |         Online          |         Running         |          3142           |
+  |      NGINX#1       |         Online          |         Running         |          44499          |
+  |      NGINX#2       |         Online          |         Running         |          9553           |
+  |      NGINX#3       |         Online          |         Running         |          3110           |
+  |      RESTPP#1      |         Online          |         Running         |          44540          |
+  |      RESTPP#2      |         Online          |         Running         |          9596           |
+  |      RESTPP#3      |         Online          |         Running         |          3127           |
+  |     TS3SERV#1      |         Online          |         Running         |          44721          |
+  |       TS3_1        |         Online          |         Running         |          44875          |
+  |       TS3_2        |         Online          |         Running         |          9793           |
+  |       TS3_3        |         Online          |         Running         |          3466           |
+  |        ZK#1        |         Online          |         Running         |           108           |
+  |        ZK#2        |         Online          |         Running         |           729           |
+  |        ZK#3        |         Online          |         Running         |           103           |
+  +--------------------+-------------------------+-------------------------+-------------------------+
+  ```
+
+### Conflict port for NodePort Listener type
+
+If you encounter conflicts with port allocation when creating or updating a cluster with `LISTENER_TYPE=NodePort` and specified `rest-node-port` or `gui-node-port` values that conflict with in-use ports, you will receive an error message. To resolve this issue, specify available ports for these services:
+
+```bash
+# Create a cluster with --listener-type NodePort, and there is a tg cluster using the default port 30090, 30240
+kubectl tg create --cluster-name tg-cluster-2 --listener-type NodePort --rest-node-port 30092 --gui-node-port 30242
+
+# Check the CR, it indicates the provided port is already allocated. 
+kubectl describe tigergraph.graphdb.tigergraph.com/tg-cluster-2 
+Events:
+  Type     Reason                                  Age                 From        Message
+  ----     ------                                  ----                ----        -------
+  Normal   Create init ConfigMap                   20s                 TigerGraph  Create a new init ConfigMap success
+  Normal   Create env ConfigMap                    20s                 TigerGraph  Create a new env ConfigMap success
+  Warning  Failed to create external rest service  10s (x11 over 20s)  TigerGraph  Failed to create external service: Service "tg-cluster-2-rest-external-service" is invalid: spec.ports[0].nodePort: Invalid value: 30090: provided port is already allocated  
+```

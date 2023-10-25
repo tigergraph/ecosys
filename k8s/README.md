@@ -1,106 +1,62 @@
-# This project has been deprecated. Please use [Tigergraph Kubernetes Operator](https://docs.tigergraph.com/tigergraph-server/current/kubernetes/k8s-operator/) to create managed Tigergraph cluster instances on Kubernetes(GKE/EKS/OpenShift).
+# TigerGraph Operator
 
-# Run Tigergraph in EKS/GKE/AKS
+TigerGraph Operator stands as an automated operations system meticulously designed to streamline the management of TigerGraph clusters within Kubernetes environments.
+Its comprehensive suite of functionalities encompasses every aspect of the TigerGraph lifecycle, spanning deployment, upgrades, scaling, backups, restoration, and fail-over processes.
+Whether you're operating in a public cloud setting or within a self-hosted environment, TigerGraph Operator ensures that your TigerGraph instances function seamlessly within Kubernetes clusters.
 
-## Getting Started
+> [!IMPORTANT]
+> Kubernetes Operator support is currently a Preview Feature. Preview Features give users an early look at future production-level features. Preview Features should not be used for production deployments.
 
-### Prerequisites
-    Please ensure the following dependencies are already fulfilled before starting
-    - A running ```EKS/GKE/AKS``` cluster
-    - The ```kubectl``` command-line tool **(v1.18.0+)**
-    - AWS/GCP/Azure account to manage kubernetes resource
-    - AWS EBS CSI driver
-### Verify EBS_CSI_ADDON Installation Status
-Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
+Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
-Following the instructions on AWS documentation to add EBS CSI add-on before proceed.
-https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+| TigerGraph Operator version | TigerGraph version  | Kubernetes version |
+|----------|----------|----------|
+| 0.0.9 | TigerGraph >= 3.6.0 |1.23, 1.24, 1.25, 1.26, **1.27**|
+| 0.0.7 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.2|1.22, 1.23, 1.24, 1.25, 1.26|
+| 0.0.6 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
+| 0.0.5 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
+| 0.0.4 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.0|1.22, 1.23, 1.24, 1.25, 1.26|
+| 0.0.3 | TigerGraph >= 3.6.0 && TigerGraph <= 3.8.0|1.22, 1.23, 1.24, 1.25, 1.26|
+| 0.0.2 | TigerGraph >= 3.6.0 && TigerGraph <= 3.7.0|1.22, 1.23, 1.24, 1.25, 1.26|
 
-Use ```kubectl get pods -n kube-system``` to check if EBS CSI driver is running. An example output is
-```
-NAME                                  READY   STATUS    RESTARTS        AGE
-...
-coredns-5948f55769-kcnvx              1/1     Running   0               3d6h
-coredns-5948f55769-z7mbr              1/1     Running   0               3d6h
-ebs-csi-controller-75598cd6f4-48dp8   6/6     Running   0               3d4h
-ebs-csi-controller-75598cd6f4-sqbhw   6/6     Running   4 (2d11h ago)   3d4h
-ebs-csi-node-9cmbj                    3/3     Running   0               3d4h
-ebs-csi-node-g65ns                    3/3     Running   0               3d4h
-ebs-csi-node-qzflk                    3/3     Running   0               3d4h
-ebs-csi-node-x2t22                    3/3     Running   0               3d4h
-...
-```
-### Deployment Steps
-   ```bash
-   #create cluster namespace
-   kubectl create ns tigergraph
-   # deploy in EKS
-   kubectl apply -k ./eks
+## Manage TigerGraph clusters using TigerGraph Operator
 
-   # deploy in GKE
-   kubectl apply -k ./gke
+TigerGraph Operator offers several deployment options for TigerGraph clusters on Kubernetes, catering to both test and production environments:
 
-   # deploy in AKS
-   kubectl apply -k ./aks
+- For test environment
 
-   # use tg script with eks in tigergraph namespace 
-   ./tg eks create -n tigergraph --size 3 
-   ```
-### Verify the Tigergraph Status
-   ```bash
-      kubectl get all -l app=tigergraph -n tigergraph
-   ```
-   Response similar as below :
-   ```
-   NAME               READY   STATUS    RESTARTS   AGE
-   pod/tigergraph-0   1/1     Running   0          6d20h
+  - [Getting started using Kind](docs/02-get-started/get_started.md)
 
-   NAME                         TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                          AGE
-   service/tigergraph-service   LoadBalancer   10.100.214.243   a0ae52e0e62e54bf9b5c07d97deec5e2-982033604.us-east-1.elb.amazonaws.com   9000:30541/TCP,14240:31525/TCP   6d20h
-   ```
-   Login to the instances
-   ```bash
-   # use kubectl
-   kubectl exec -it tigergraph-0 -n tigergraph -- /bin/bash
-   # use ssh
-   ip_m1=$(kubectl get pod -o wide |grep tigergraph-0| awk '{print $6}')
-   ssh tigergraph@ip_m1
-   # verify the cluster status
-   source ~/.bashrc
-   gadmin status -v
-   # verify gsql
-   gsql ls
-   ```
-   Try GraphStudio UI, change the url accordingly as upper output ```EXTERNAL-IP``` 
-   ```
-   http://a0ae52e0e62e54bf9b5c07d97deec5e2-982033604.us-east-1.elb.amazonaws.com:14240
-   ```
+- For production environment
 
-   Try Tigergraph Rest API, change the url accordingly as upper output ```EXTERNAL-IP```
-   ```bash
-   curl http://a0ae52e0e62e54bf9b5c07d97deec5e2-982033604.us-east-1.elb.amazonaws.com:9000/echo
-   ```
-### Kustomize the TG setting
-   You can use adjust the kustomize yaml file to change the TG setting. For regular minor changes, strongly recommend to customize them with ```tg``` script as below.
-   ```bash
-   USAGE:
-      $0 K8S_PROVIDER [kustomize|create|delete|list|help] [OPTIONS]
-     -n|--namespace :  set namespace to deploy TG cluster  
-     -s|--size :       set TG cluster size, default 1
-     -v|--version :    set TG cluster version,default as 3.2.0
-     -l|--license :    set TG cluster license, default as free tie
-     --ha :            set TG cluster ha setting, default 1
-     --pv :            set Persistent volume size, default as 50
-     --prefix :        set Pod name with prefix
-   
-   # Examples when working in eks:
-   ## Generate the manifest for deployment
-     ./tg eks kustomize -n tigergraph --size 3 --ha 3
-   ## Create TG cluster:
-     ./tg eks create -n tigergraph -s 2 
-   ## Delete TG cluster: 
-     ./tg eks delete
-   ## List TG cluster:
-     ./tg eks list -n tigergraph
-   ```
-    
+  - On public cloud:
+    - [Deploy TigerGraph on AWS EKS](docs/03-deploy/tigergraph-on-eks.md)
+    - [Deploy TigerGraph on Google Cloud GKE](docs/03-deploy/tigergraph-on-gke.md)
+    - [Deploy TigerGraph on Red Hat OpenShift](docs/03-deploy/tigergraph-on-openshift.md)
+    - [Deploy TigerGraph on K8s without internet access](docs/03-deploy/deploy-without-internet.md)
+
+Once your deployment is complete, refer to the following documents for guidance on using, operating, and maintaining your TigerGraph clusters on Kubernetes:
+
+- [Configuring TigerGraph Clusters on K8s using TigerGraph CR](docs/07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md)
+- [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
+- [Configuring NodeSelectors, Affinities, and Toleration](docs/03-deploy/configure-affinity-by-kubectl-tg.md)
+- [Working with InitContainers, Sidecar Containers, and Custom Volumes](docs/03-deploy/use-custom-containers-by-kubectl-tg.md)
+- [Resizing Persistent Volumes for TigerGraph](docs/07-reference/expand-persistent-volume.md)
+- [Backing Up and Restoring TigerGraph Clusters](docs/04-manage/backup-and-restore/README.md)
+
+Additionally, refer to the following documents for advanced operations and requirements:
+
+- [Expand persistent volume](docs/07-reference/expand-persistent-volume.md)
+- [Using static and dynamic persistent volume](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
+- [Integrate Envoy Sidecar](docs/07-reference/integrate-envoy-sidecar.md)
+- [Labels used by TigerGraph Operator](docs/07-reference/labels-used-by-tg.md)
+
+In case issues arise and your cluster requires diagnosis, you have two valuable resources:
+
+Refer to [TigerGraph FAQs on Kubernetes](docs/06-FAQs/README.md) for potential solutions.
+
+Explore [Troubleshoot TigerGraph on Kubernetes](docs/05-troubleshoot/README.md) to address any challenges.
+
+Lastly, when a new version of TigerGraph Operator becomes available, consult [Upgrade TigerGraph Operator](docs/04-manage/operator-upgrade.md) for a seamless transition to the latest version.
+
+For detailed information about the features, improvements, and bug fixes introduced in a specific Operator version, refer to the [release notes](docs/08-release-notes/README.md).

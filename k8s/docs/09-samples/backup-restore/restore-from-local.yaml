@@ -1,0 +1,18 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphRestore
+metadata:
+  name: restore-from-local
+spec:
+  restoreConfig:
+    # We can use tag to restore from backup in the same cluster
+    tag: local-2023-08-23T061417
+    # optional
+    stagingPath: /home/tigergraph/tigergraph/data/restore-staging
+    # optional: (operator>=0.0.9 and tg>=3.9.3) should be >=0
+    decompressProcessNumber: 2
+  source:
+    storage: local
+    local:
+      path: /home/tigergraph/tigergraph/data/backup
+  # Specify the name of cluster
+  clusterName: test-cluster
