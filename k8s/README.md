@@ -48,7 +48,7 @@ Additionally, refer to the following documents for advanced operations and requi
 
 - [Expand persistent volume](docs/07-reference/expand-persistent-volume.md)
 - [Using static and dynamic persistent volume](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
-- [Integrate Envoy Sidecar](docs/07-reference/integrate-sidecar)
+- [Integrate Envoy Sidecar](docs/07-reference/integrate-envoy-sidecar.md)
 - [Labels used by TigerGraph Operator](docs/07-reference/labels-used-by-tg.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
