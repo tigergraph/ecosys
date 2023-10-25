@@ -1,0 +1,40 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphBackupSchedule
+metadata:
+  name: test-cluster-schedule-daily
+spec:
+  # Cronjob shedule
+  schedule: "0 0 * * *"
+  # Strategies for managing backups
+  # We will delete oldest backups according to the strategies automatically
+  strategy:
+    # We will only retain 20 backups
+    maxBackupFiles: 20
+    # A backup can only exist for 3 days
+    maxReservedDays: 3
+    maxRetry: 10 
+  # optional : is pause is true, the cronjob will be suspended
+  pause: false
+  backupTemplate:
+  # Specify which cluster to backup in the SAME NAMESPACE as the backup job
+    clusterName: test-cluster
+    # Specify where to store the backup data
+    destination:
+      storage: local
+      # Use this field if type is local
+      local:
+        path: /home/tigergraph/tigergraph/data/backup
+    
+    # Configure the name of backup files and the path storing temporary files
+    backupConfig:
+      tag: daily
+      # optional
+      stagingPath: /home/tigergraph/tigergraph/data
+      # optional :if incremental is true, incremental backup will be performed
+      incremental: false
+      # optional
+      timeout: 18000
+      # optional :specify the number of process to do compress
+      compressProcessNumber: 0
+      # optional: (operator>=0.0.9 and tg>=3.9.3) specify the compress level for backup
+      compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression

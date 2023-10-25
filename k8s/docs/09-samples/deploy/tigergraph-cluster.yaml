@@ -1,0 +1,40 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-cluster
+  namespace: tigergraph
+spec:
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: Always
+  imagePullSecrets:
+  - name: tigergraph-image-pull-secret
+  initJob:
+    image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
+    imagePullPolicy: Always
+    imagePullSecrets:
+    - name: tigergraph-image-pull-secret
+  initTGConfig:
+    ha: 2
+    license: xxxxxxxxxxxxxxxxx
+    version: 3.9.2
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 3
+  resources:
+    limits:
+      cpu: "2"
+      memory: 8Gi
+    requests:
+      cpu: "2"
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10G
+      storageClassName: standard
+      volumeMode: Filesystem

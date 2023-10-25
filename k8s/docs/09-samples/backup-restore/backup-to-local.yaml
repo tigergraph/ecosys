@@ -1,0 +1,28 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphBackup
+metadata:
+  name: test-cluster-backup-local
+spec:
+  # Specify which cluster to backup in the SAME NAMESPACE as the backup job
+  clusterName: test-cluster
+  # Specify where to store the backup data
+  destination:
+    storage: local
+    # Use this field if type is local
+    local:
+      path: /home/tigergraph/tigergraph/data/backup
+  
+  # Configure the name of backup files and the path storing temporary files
+  backupConfig:
+    tag: local
+    # Optional: Set the path for temporary staging files
+    stagingPath: /home/tigergraph/tigergraph/data
+    # Optional: If 'incremental' is set to true, incremental backup will be performed
+    incremental: false
+    # Optional: Set the timeout value for the backup process (default is 18000 seconds)
+    timeout: 18000
+    # Optional: Specify the number of processes to use for compression (0 uses the number of CPU cores)
+    compressProcessNumber: 0
+    # Optional: (Requires operator version >= 0.0.9 and TigerGraph version >= 3.9.3)
+    # Choose the compression level for the backup: DefaultCompression/BestSpeed/BestCompression
+    compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression

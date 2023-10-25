@@ -1,0 +1,29 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphBackup
+metadata:
+  name: test-cluster-backup-s3
+spec:
+  clusterName: test-cluster
+  destination:
+    storage: s3Bucket
+    s3Bucket:
+      # Specify the name of the S3 bucket you want to use
+      bucketName: operator-backup
+      # Specify the Secret containing the S3 access key and secret access key
+      secretKey:
+        name: aws-secret
+
+  # Configure the name of backup files and the path storing temporary files
+  backupConfig:
+    tag: s3
+    # Optional: Set the path for temporary staging files
+    stagingPath: /home/tigergraph/tigergraph/data
+    # Optional: If 'incremental' is set to true, incremental backup will be performed
+    incremental: false
+    # Optional: Set the timeout value for the backup process (default is 18000 seconds)
+    timeout: 18000
+    # Optional: Specify the number of processes to use for compression (0 uses the number of CPU cores)
+    compressProcessNumber: 0
+    # Optional: (Requires operator version >= 0.0.9 and TigerGraph version >= 3.9.3)
+    # Choose the compression level for the backup: DefaultCompression/BestSpeed/BestCompression
+    compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
