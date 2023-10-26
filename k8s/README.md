@@ -37,17 +37,15 @@ TigerGraph Operator offers several deployment options for TigerGraph clusters on
 
 Once your deployment is complete, refer to the following documents for guidance on using, operating, and maintaining your TigerGraph clusters on Kubernetes:
 
+- [Backing Up and Restoring TigerGraph Clusters](docs/04-manage/backup-and-restore/README.md)
 - [Configuring TigerGraph Clusters on K8s using TigerGraph CR](docs/07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md)
-- [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
 - [Configuring NodeSelectors, Affinities, and Toleration](docs/03-deploy/configure-affinity-by-kubectl-tg.md)
 - [Working with InitContainers, Sidecar Containers, and Custom Volumes](docs/03-deploy/use-custom-containers-by-kubectl-tg.md)
-- [Resizing Persistent Volumes for TigerGraph](docs/07-reference/expand-persistent-volume.md)
-- [Backing Up and Restoring TigerGraph Clusters](docs/04-manage/backup-and-restore/README.md)
 
 Additionally, refer to the following documents for advanced operations and requirements:
 
-- [Expand persistent volume](docs/07-reference/expand-persistent-volume.md)
-- [Using static and dynamic persistent volume](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
+- [Resizing Persistent Volumes for TigerGraph](docs/07-reference/expand-persistent-volume.md)
+- [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
 - [Integrate Envoy Sidecar](docs/07-reference/integrate-envoy-sidecar.md)
 - [Labels used by TigerGraph Operator](docs/07-reference/labels-used-by-tg.md)
 
