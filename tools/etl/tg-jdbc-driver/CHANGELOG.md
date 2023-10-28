@@ -1,3 +1,7 @@
+## Release 1.3.12
+* Supported TG Version: 2.4.1+
+* Ensuring compatibility with Java 8.
+
 ## Release 1.3.11
 * Supported TG Version: 2.4.1+
 * Bugfixes:
