@@ -4,7 +4,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.3.11</version>
+    <version>1.3.12</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -129,6 +129,32 @@
     <!-- default build plugins -->
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <version>1.19</version>
+                <executions>
+                    <execution>
+                    <id>check-java-8-compatibility</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                    <configuration>
+                        <signature>
+                            <groupId>org.codehaus.mojo.signature</groupId>
+                            <artifactId>java18</artifactId>
+                            <version>1.0</version>
+                        </signature>
+                    </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

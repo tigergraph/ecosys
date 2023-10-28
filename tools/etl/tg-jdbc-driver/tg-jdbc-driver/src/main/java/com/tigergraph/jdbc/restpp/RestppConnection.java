@@ -54,6 +54,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 import org.slf4j.Logger;
@@ -197,14 +198,16 @@ public class RestppConnection extends Connection {
         this.maxRetryCount = Integer.valueOf(properties.getProperty("maxRetryCount"));
       }
 
-      // Starting from v3.9.0, TG supports providing loading job statistics based on jobid
+      // Starting from v3.9.0, TG supports providing loading job statistics based on
+      // jobid
       if (properties.containsKey("jobid")
           && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
         this.jobid = properties.getProperty("jobid");
         logger.info("The loading job ID of current connection: {}", this.jobid);
       }
 
-      // Starting from v3.9.0, TG supports terminating loading jobs based on the max number of
+      // Starting from v3.9.0, TG supports terminating loading jobs based on the max
+      // number of
       // errors.
       if (properties.containsKey("max_num_error")
           && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
@@ -214,7 +217,8 @@ public class RestppConnection extends Connection {
         }
       }
 
-      // Starting from v3.9.0, TG supports terminating loading jobs based on the max percentage of
+      // Starting from v3.9.0, TG supports terminating loading jobs based on the max
+      // percentage of
       // errors.
       if (properties.containsKey("max_percent_error")
           && this.tg_version.compareTo(new ComparableVersion("3.9.0")) >= 0) {
@@ -382,7 +386,8 @@ public class RestppConnection extends Connection {
       builder.setUserAgent(userAgent);
     }
     // Set the timeout for establishing a connection
-    // The socketTimeout should be longer then queryTimeout to avoid timeout before query finishes
+    // The socketTimeout should be longer then queryTimeout to avoid timeout before
+    // query finishes
     this.socketTimeout = Math.max(this.socketTimeout, this.queryTimeout + 5 * 60);
     builder.setDefaultRequestConfig(
         RequestConfig.custom()
@@ -436,7 +441,7 @@ public class RestppConnection extends Connection {
           private int count = 1;
           private String cause;
           private static final long maxRetryInterval = 10 * 60 * 1000; // 10min
-          private final List<Integer> retriableCode = List.of(408, 500, 502, 503, 504);
+          private final List<Integer> retriableCode = Arrays.asList(408, 500, 502, 503, 504);
 
           @Override
           public boolean retryRequest(
