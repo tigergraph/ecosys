@@ -258,7 +258,7 @@ Choose the appropriate StorageClass (e.g., `gp2`) when creating the TigerGraph c
   > Please ensure that the IAM role for the Amazon EBS CSI driver has been created. You can refer to the official AWS documentation [Creating the Amazon EBS CSI driver IAM role](https://docs.aws.amazon.com/eks/latest/userguide/csi-iam-role.html) for detailed instructions.
 
   ```bash
-      aws eks create-addon --cluster-name $YOUR_EKS_CLUSTER_NAME --addon-name aws-ebs-csi-driver
+      aws eks create-addon --cluster-name ${YOUR_CLUSTER_NAME} --addon-name aws-ebs-csi-driver
   ```
 
 ### Create a TigerGraph Cluster with Specific Options
