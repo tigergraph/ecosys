@@ -264,10 +264,10 @@ If you're facing the issues above, please check the following:
 
 You can create a new TigerGraph cluster with specific options, such as size, high availability, version, license, and resource specifications. Here's an example:
 
-- Get and export free license
+- Export license key as an environment variable
 
   ```bash
-  export LICENSE=$(curl -L "ftp://ftp.graphtiger.com/lic/license3.txt" -o "/tmp/license3.txt" 2>/dev/null && cat /tmp/license3.txt)
+  export LICENSE=<LICENSE_KEY>
   ```
 
 - Create TigerGraph cluster with kubectl-tg plugin
