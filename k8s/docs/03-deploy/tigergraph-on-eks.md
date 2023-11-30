@@ -35,7 +35,16 @@ Before proceeding with the deployment, make sure you have the following prerequi
 
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) installed with the latest version. This will be used to install the EBS CSI driver `aws-ebs-csi-driver` if necessary.
 
-- An existing [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html) with admin role permissions.
+- An existing [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html) with appropriate IAM permissions:
+  - The EKS Cluster requires an IAM role with the following AWS-managed IAM policies attached:
+    - `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKSServicePolicy`
+  - The EKS node group requires an IAM role with the following AWS-managed IAM policies attached:
+    - `arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy`
+    - `arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly`
+    - `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKSVPCResourceController`
 
 ## Deploy TigerGraph Operator
 
