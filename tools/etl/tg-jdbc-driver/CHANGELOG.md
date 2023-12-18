@@ -1,3 +1,9 @@
+## Release 1.3.13
+* Supported TG Version: 2.4.1+
+* Bugfixes:
+    1. fix the bug that can't set queryTimeout in Spark
+    2. support getTableName()
+
 ## Release 1.3.12
 * Supported TG Version: 2.4.1+
 * Ensuring compatibility with Java 8.

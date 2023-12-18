@@ -47,8 +47,11 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
 
   @Override
   public String getCatalogName(int column) throws SQLException {
-    int index = getValidColumnIndex(column);
+    return this.table_name;
+  }
 
+  @Override
+  public String getTableName(int column) throws SQLException {
     return this.table_name;
   }
 
@@ -155,11 +158,6 @@ public class ResultSetMetaData implements java.sql.ResultSetMetaData {
 
   @Override
   public String getColumnClassName(int column) throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
-  }
-
-  @Override
-  public String getTableName(int column) throws SQLException {
     throw new UnsupportedOperationException("Not implemented yet.");
   }
 

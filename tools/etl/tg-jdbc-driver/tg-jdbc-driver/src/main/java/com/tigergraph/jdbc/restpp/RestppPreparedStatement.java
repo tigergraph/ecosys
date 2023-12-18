@@ -45,7 +45,6 @@ public class RestppPreparedStatement extends PreparedStatement {
   private String eol = null;
   private String sep = null;
   private int maxBatchInBytes;
-  private int timeout;
   private int atomic;
   private ComparableVersion tg_version;
   private StringBuilder stringBuilder = null;
