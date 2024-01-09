@@ -1,4 +1,4 @@
-## Release 1.3.13
+## Release 1.3.14
 * Supported TG Version: 2.4.1+
 * Bugfixes:
     1. fix the bug that can't set queryTimeout in Spark

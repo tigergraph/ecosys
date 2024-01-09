@@ -46,13 +46,12 @@ public abstract class Statement implements java.sql.Statement {
       throw new SQLException("Timeout should be greater than or equal to 0.");
     }
 
-    // The unit of timeout for TigerGraph is millisecond.
-    timeout = seconds * 1000;
+    timeout = seconds;
   }
 
   @Override
   public int getQueryTimeout() throws SQLException {
-    return timeout / 1000;
+    return timeout;
   }
 
   /*
