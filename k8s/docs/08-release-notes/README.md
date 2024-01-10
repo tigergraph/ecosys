@@ -4,6 +4,7 @@ Those document describes the new features, improvements, bugfixes for all of ope
 
 Please see the detailed documentation of each operator version release notes as follows:
 
+- [Operator 0.1.0](./operator-0.1.0.md)
 - [Operator 0.0.9](./operator-0.0.9.md)
 - [Operator 0.0.7](./operator-0.0.7.md)
 - [Operator 0.0.6](./operator-0.0.6.md)

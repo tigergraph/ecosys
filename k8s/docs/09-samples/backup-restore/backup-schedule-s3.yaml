@@ -22,8 +22,7 @@ spec:
         s3Bucket:
           # specify the bucket you want to use
           bucketName: operator-backup
-          secretKey: 
-            name: s3-secret
+          secretKeyName: s3-secret
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
       tag: s3

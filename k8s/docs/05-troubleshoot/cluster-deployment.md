@@ -548,11 +548,11 @@ If you've successfully created the StatefulSet and cluster pods for your TigerGr
 
 ### Conflict port for NodePort Listener type
 
-If you encounter conflicts with port allocation when creating or updating a cluster with `LISTENER_TYPE=NodePort` and specified `rest-node-port` or `gui-node-port` values that conflict with in-use ports, you will receive an error message. To resolve this issue, specify available ports for these services:
+If you encounter conflicts with port allocation when creating or updating a cluster with `LISTENER_TYPE=NodePort` and specified `nginx-node-port` values that conflict with in-use ports, you will receive an error message. To resolve this issue, specify available ports for these services:
 
 ```bash
 # Create a cluster with --listener-type NodePort, and there is a tg cluster using the default port 30090, 30240
-kubectl tg create --cluster-name tg-cluster-2 --listener-type NodePort --rest-node-port 30092 --gui-node-port 30242
+kubectl tg create --cluster-name tg-cluster-2 --listener-type NodePort --nginx-node-port 30240
 
 # Check the CR, it indicates the provided port is already allocated. 
 kubectl describe tigergraph.graphdb.tigergraph.com/tg-cluster-2 
@@ -561,5 +561,5 @@ Events:
   ----     ------                                  ----                ----        -------
   Normal   Create init ConfigMap                   20s                 TigerGraph  Create a new init ConfigMap success
   Normal   Create env ConfigMap                    20s                 TigerGraph  Create a new env ConfigMap success
-  Warning  Failed to create external rest service  10s (x11 over 20s)  TigerGraph  Failed to create external service: Service "tg-cluster-2-rest-external-service" is invalid: spec.ports[0].nodePort: Invalid value: 30090: provided port is already allocated  
+  Warning  Failed to create external rest service  10s (x11 over 20s)  TigerGraph  Failed to create external service: Service "tg-cluster-2-rest-external-service" is invalid: spec.ports[0].nodePort: Invalid value: 30240: provided port is already allocated  
 ```

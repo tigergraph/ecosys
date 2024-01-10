@@ -6,6 +6,28 @@ This document introduces how to configure the TG cluster using TigerGraph CR. It
 
 - Configure TigerGraph deployment
 
+- [How to configure TG Cluster on K8s using TigerGraph CR](#how-to-configure-tg-cluster-on-k8s-using-tigergraph-cr)
+  - [Configure resources](#configure-resources)
+  - [Configure TG deployment](#configure-tg-deployment)
+    - [Cluster name](#cluster-name)
+    - [TigerGraph cluster version](#tigergraph-cluster-version)
+    - [TigerGraph cluster size and HA factor](#tigergraph-cluster-size-and-ha-factor)
+    - [TigerGraph Cluster license](#tigergraph-cluster-license)
+    - [Service account name of TigerGraph pod(Optional)](#service-account-name-of-tigergraph-podoptional)
+    - [Private ssh key name of TigerGraph Cluster](#private-ssh-key-name-of-tigergraph-cluster)
+    - [Storage volumes of TigerGraph Cluster](#storage-volumes-of-tigergraph-cluster)
+    - [Resource requests and limits of TigerGraph pod](#resource-requests-and-limits-of-tigergraph-pod)
+    - [External access service](#external-access-service)
+    - [Customized labels and annotations for external service](#customized-labels-and-annotations-for-external-service)
+    - [Container Customization of TigerGraph pods](#container-customization-of-tigergraph-pods)
+    - [NodeSelector, Affinity, and Toleration configuration](#nodeselector-affinity-and-toleration-configuration)
+    - [TigerGraph Configurations](#tigergraph-configurations)
+    - [Pod Labels and Annotations](#pod-labels-and-annotations)
+    - [Security Context of TigerGraph Containers](#security-context-of-tigergraph-containers)
+    - [Lifecycle Hooks of TigerGraph](#lifecycle-hooks-of-tigergraph)
+      - [PostInitAction](#postinitaction)
+  - [API reference of TigerGraphSpec](#api-reference-of-tigergraphspec)
+
 ## Configure resources
 
 Before deploying a TG cluster, it is necessary to be familiar with the hardware and software requirements depending on your needs. For details, refer to [Hardware and Software Requirements](https://docs.tigergraph.com/tigergraph-server/current/installation/hw-and-sw-requirements).
@@ -22,14 +44,10 @@ kind: TigerGraph
 metadata:
   name: test-cluster
 spec:
-  image: docker.io/tginternal/tigergraph-k8s:3.9.3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.3
   imagePullPolicy: IfNotPresent
-  initJob:
-    image: docker.io/tginternal/tigergraph-k8s-init:0.0.9
-    imagePullPolicy: IfNotPresent
-  initTGConfig:
-    ha: 2
-    license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  ha: 2
+  license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   listener:
     type: LoadBalancer
   privateKeyName: ssh-key-secret
@@ -61,13 +79,11 @@ Besides, you also need to specify the TG version by changing `spec.initTGConfig.
 
 The TigerGraph cluster version can be configured by changing `spec.replicas` in the `TigerGraph` CR,
 
-and the HA factor can be configured by changing `spec.initTGConfig.ha`, the default value of HA factor is 1.
+and the HA factor can be configured by changing `spec.ha`.
 
 ### TigerGraph Cluster license
 
-The TigerGraph cluster license is required for TigerGraph deployment, and it can be configured by changing `spec.initTGConfig.`license in the `TigerGraph` CR.
-
-A free license is available through this link [ftp://ftp.graphtiger.com/lic/license3.txt](ftp://ftp.graphtiger.com/lic/license3.txt), which has 14 days expiration date.
+The TigerGraph cluster license is required for TigerGraph deployment, and it can be configured by changing `spec.license` in the TigerGraph CR.
 
 ### Service account name of TigerGraph pod(Optional)
 
@@ -97,6 +113,8 @@ Then you can specify the value of `spec.privateKeyName` to the secret name you c
 
 Storage volumes configurations can be configured by changing `spec.storage` , there are two types of storage, `persistent-claim` and `ephemeral`. For production, you should use the `persistent-claim` type to store the data on persistent volumes.
 
+Moreover, since Operator 0.1.0, you can mount multiple PVs for TigerGraph pods.
+
 - persistent-claim
 
 ```yaml
@@ -117,6 +135,116 @@ spec:
   storage:
     type: ephemeral
 ```
+
+- Mounting a dedicated PV for Kafka and TigerGraph logs
+
+```yaml
+spec: 
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: pd-standard
+      volumeMode: Filesystem
+    additionalStorages:
+      - name: tg-kafka
+        storageClassName: pd-ssd
+        storageSize: 10Gi
+      - name: tg-log
+        storageClassName: pd-standard
+        storageSize: 5Gi
+```
+
+- Mounting PVs for custom containers(Init, sidecar containers, and TigerGraph containers)
+
+```yaml
+spec:
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: gp2
+      volumeMode: Filesystem
+    additionalStorages:
+      - name: tg-sidecar
+        storageClassName: efs-sc
+        storageSize: 5Gi
+        accessMode: ReadWriteMany
+        volumeMode: Filesystem
+      - name: tg-backup
+        storageSize: 5Gi
+        mountPath: /home/tigergraph/backup
+        accessMode: ReadWriteOnce
+        volumeMode: Filesystem
+  initContainers:
+    - image: alpine:3.17.2
+      name: init-container
+      args:
+        - /bin/sh
+        - -c
+        - echo hello
+  sidecarContainers:
+      - args: # sidecar will execute this 
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              echo "$(date) INFO hello from main-container" >> /tg-sidecar/myapp.log ;
+              sleep 1;
+            done
+        image: alpine:3.17.2
+        name: sidecar-container # name of sidecar
+        readinessProbe: # check if the sidecar is ready
+          exec:
+            command:
+              - sh
+              - -c
+              - if [[ -f /tg-sidecar/myapp.log ]];then exit 0; else exit 1;fi
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests: # request resouces for sidecar
+            cpu: 500m
+            memory: 512Mi
+          limits: # limit resources
+            cpu: 500m
+            memory: 512Mi
+        env: # inject the environment you need
+          - name: CLUSTER_NAME
+            value: test-cluster
+        volumeMounts:
+          - mountPath: /tg-sidecar
+            name: tg-sidecar
+```
+
+- Mounting Existing PVs to Customize Volume Mounts of TigerGraph Containers
+
+```YAML
+spec:
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: efs-sc
+      volumeMode: Filesystem
+  customVolumes:
+    - name: efs-storage
+      persistentVolumeClaim:
+        claimName: efs-claim
+  customVolumeMounts:
+    - name: efs-storage
+      mountPath: /efs-data
+```
+
+Details on how to mount multiple PVs for TigerGraph Pods, see [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md)
 
 ### Resource requests and limits of TigerGraph pod
 
@@ -151,8 +279,7 @@ spec:
 spec:
   listener:
     type: NodePort
-    restNodePort: 30090
-    studioNodePort: 30240
+    nginxNodePort: 30240
 ```
 
 - Ingress
@@ -160,9 +287,9 @@ spec:
 ```yaml
 spec:
   listener:
+    ingressClassName: INGRESS_CLASS_NAME
     type: Ingress
-    restHost: tigergraph-api.k8s.company.com
-    studioHost: tigergraph-studio.k8s.company.com
+    nginxHost: tigergraph-api.k8s.company.com
     secretName: k8s.company.com
 ```
 
@@ -178,21 +305,6 @@ spec:
     label-key: label-value
   annotations:
     annotation-key: annotation-value
-```
-
-### Initialize Job configuration of TigerGraph cluster
-
-It’s required to run a special job to initialize the TigerGraph cluster when deploying TigerGraph on K8s, you need to specify the image version of the Init Job, usually, the version is the same as the Operator version you installed.
-
-It can be configured by changing `spec.initjob` in the `TigerGraph` CR. imagePullPolicy and imagePullSecrets are optional configurations, you can omit them if you don’t need them.
-
-```yaml
-spec:
-  initJob:
-    image: docker.io/tginternal/tigergraph-k8s-init:${OPERATOR_VERSION}
-    imagePullPolicy: IfNotPresent
-    imagePullSecrets:
-      - name: tigergraph-image-pull-secret
 ```
 
 ### Container Customization of TigerGraph pods
@@ -330,6 +442,64 @@ spec:
           topologyKey: topology.kubernetes.io/zone
 ```
 
+### TigerGraph Configurations
+
+TigerGraph configurations can be adjusted by modifying `spec.tigergraphConfig` in the `TigerGraph` Custom Resource (CR). These configurations will be applied to the TigerGraph (TG) cluster during initialization. If the cluster is already running, you can update the TG cluster configurations by altering `.spec.tigergraphConfig`. This will trigger the creation of a config-update job to apply the new configurations to the TG cluster.
+
+> [!NOTE]
+> The configurations you provide must be compatible with the `gadmin config set` command. All values should be of string type, enclosed in double quotes ("").
+
+```yaml
+spec:
+  tigergraphConfig:
+  # Values must be strings, enclosed in double quotes ("")
+    GSQL.UDF.Policy.Enable: "false"
+    Controller.BasicConfig.LogConfig.LogFileMaxDurationDay: "40"
+```
+
+### Pod Labels and Annotations
+
+You can customize the labels and annotations of the TigerGraph pods by modifying `spec.podLabels` and `spec.podAnnotations` in the `TigerGraph` CR. These labels and annotations will be applied to all TigerGraph pods.
+
+```yaml
+spec:
+  podLabels:
+    key.tg.com: value
+  podAnnotations:
+    key.tg.com: value
+```
+
+### Security Context of TigerGraph Containers
+
+You can customize the security context of the TigerGraph containers by modifying `spec.securityContext` in the `TigerGraph` CR. These security contexts will be applied to all TigerGraph containers. For more information about security context, refer to [Set the security context for a Container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container).
+
+```yaml
+spec:
+  securityContext:
+    capabilities:
+      add:
+        - SYS_PTRACE
+        - SYSLOG
+        - SYS_ADMIN
+```
+
+### Lifecycle Hooks of TigerGraph
+
+You can customize the lifecycle hooks of TigerGraph by modifying `spec.lifecycle` in the `TigerGraph` CR.
+
+#### PostInitAction
+
+You can specify a bash script in `spec.lifecycle.postInitAction`, and the script will be put into the init-job and be executed in the first TigerGraph pod(whose suffix is `-0`) after the TigerGraph system is initialized. For example:
+
+```yaml
+spec:
+  lifecycle:
+    postInitAction: |
+      echo "This is a post init action" >> /tmp/post-init-action.log
+```
+
+For more information about lifecycle hooks, refer to [Configure Lifecycle Hooks in TigerGraph CR](../03-deploy/lifecycle-of-tigergraph.md).
+
 ## API reference of TigerGraphSpec
 
 TigerGraphSpec contains the details of TigerGraph members
@@ -340,23 +510,29 @@ TigerGraphSpec contains the details of TigerGraph members
 | image | The desired TG docker image |
 | imagePullPolicy | (*Optional*)The image pull policy of TG docker image, default is IfNotPresent |
 | imagePullSecrets | (*Optional*)The own keys can access the private registry |
-| initJob.image | The desired TG Init docker image |
-| initJob.imagePullPolicy | (*Optional*)The image pull policy of TG docker image, default is IfNotPresent |
-| initJob.imagePullSecrets | (*Optional*)The own keys can access the private registry |
 | serviceAccountName | (*Optional*)The service account name of pod which is used to acquire special permission |
 | privateKeyName | The secret name of private ssh key files |
-| initTGConfig.ha | The replication factor of TG cluster |
-| initTGConfig.license | The license of TG cluster |
-| initTGConfig.version | The TG cluster version to initialize or upgrade |
+| ha | The replication factor of TG cluster |
+| license | The license of TG cluster |
 | listener.type | The type of external access service, which can be set to LoadBalancer, NodePort, and Ingress |
-| listener.restNodePort | The rest service port which is required when setting listener.type to NodePort |
-| listener.studioNodePort | The gui service port which is required when setting listener.type to NodePort |
-| listener.restHost | The domain name of rest service which is required when setting listener.type to Ingress |
-| listener.studioHost| The domain name of gui service which is required when setting listener.type to Ingress |
+| listener.nginxNodePort | The nginx service port which is required when setting listener.type to NodePort |
+| listener.ingressClassName | (Optional)The ingress class name of nginx service which can be set optionally when setting listener.type to Ingress |
+| listener.nginxHost | The domain name of nginx service which is required when setting listener.type to Ingress |
 | listener.secretName | (*Optional*)The secretName is the name of the secret used to terminate TLS traffic on port 443 when setting listener.type to Ingress |
 | listener.labels | (*Optional*)The customized labels will be added to external service |
 | listener.annotations | (*Optional*)The customized annotations will be added to external service |
 | resources | [The compute resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core) |
+| storage | The persistent volumes for TigerGraph pods |
+| storage.type | The type of persistent volume, which can be set to ephemeral or persistent-claim|
+| storage.volumeClaimTemplate | The persistent volume claim template for TigerGraph main storage. [PersistentVolumeClaimSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#persistentvolumeclaimspec-v1-core)|
+| storage.additionalStorages | (*Optional*)Additional storages for TigerGraph pods, it's an array list of StorageVolume|
+| `StorageVolume`.name | Additional storage name|
+| `StorageVolume`.storageClassName | (*Optional*)The `StorageClassName` of an additional storage|
+| `StorageVolume`.storageSize | The storage size of an additional storage|
+| `StorageVolume`.mountPath | (*Optional*)The mount path of TigerGraph container for an additional storage|
+| `StorageVolume`.accessMode | (*Optional*)The access mode of an additional storage, which can be set to ReadWriteOnce, ReadOnlyMany, ReadWriteMany, or ReadWriteOncePod|
+| `StorageVolume`.volumeMode | (*Optional*) The volume mode of an additional storage, which can be set to Filesystem or Block|
+| customVolumeMounts | (*Optional*)The custom [volume mount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#persistentvolumeclaimspec-v1-core:~:text=error%20was%20encountered.-,VolumeMount%20v1%20core,-Group) of TigerGraph container.|
 | initContainers | The [init containers](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container) run in TigerGraph pods. |
 | sidecarContainers | (*Optional*)The [sidecar containers](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container) run in TG pods |
 | customVolumes | (*Optional*)The custom [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) used in init container and sidecar container |
@@ -364,3 +540,7 @@ TigerGraphSpec contains the details of TigerGraph members
 | affinityConfiguration.nodeSelector | (*Optional*)The configuration of assigning pods to special nodes using [NodeSelector](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/) |
 | affinityConfiguration.tolerations | (*Optional*)The [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) configuration of TigerGraph pod |
 | affinityConfiguration.affinity | (*Optional*)The [affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity) configuration of TigerGraph pod |
+| podLabels | (*Optional*)The customized labels will be added to TigerGraph pods |
+| podAnnotations | (*Optional*)The customized annotations will be added to TigerGraph pods |
+| securityContext | (*Optional*)The [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) of TigerGraph containers |
+| lifecycle.postInitAction | (*Optional*)The bash script will be executed in the first TigerGraph pod whose prefix is `-0` after the TigerGraph system is initialized |

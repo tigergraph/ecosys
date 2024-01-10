@@ -1,28 +1,23 @@
-<h1>Backup & Restore cluster by CR</h1>
+# Backup & Restore cluster by CR
 
-- [Creating an S3 Secret for Backup and Restore](#creating-an-s3-secret-for-backup-and-restore)
-- [TigerGraphBackup](#tigergraphbackup)
-  - [Backup to local storage](#backup-to-local-storage)
-  - [Backup to S3 bucket](#backup-to-s3-bucket)
-- [TigerGraphBackupSchedule](#tigergraphbackupschedule)
-  - [Schedule backup to local storage](#schedule-backup-to-local-storage)
-  - [Schedule backup to S3 bucket](#schedule-backup-to-s3-bucket)
-- [TigerGraphRestore](#tigergraphrestore)
-  - [Restore from local backup](#restore-from-local-backup)
-  - [Restore from backup in S3 bucket](#restore-from-backup-in-s3-bucket)
-  - [Cross-cluster restore in existing cluster](#cross-cluster-restore-in-existing-cluster)
-    - [Cluster version \>=3.9.2](#cluster-version-392)
-  - [Clone a cluster(Create a new cluster and do cross-cluster restore)](#clone-a-clustercreate-a-new-cluster-and-do-cross-cluster-restore)
-    - [Cluster version \>=3.9.2](#cluster-version-392-1)
+- [Backup \& Restore cluster by CR](#backup--restore-cluster-by-cr)
+  - [Creating an S3 Secret for Backup and Restore](#creating-an-s3-secret-for-backup-and-restore)
+  - [TigerGraphBackup](#tigergraphbackup)
+    - [Backup to local storage](#backup-to-local-storage)
+    - [Backup to S3 bucket](#backup-to-s3-bucket)
+  - [TigerGraphBackupSchedule](#tigergraphbackupschedule)
+    - [Schedule backup to local storage](#schedule-backup-to-local-storage)
+    - [Schedule backup to S3 bucket](#schedule-backup-to-s3-bucket)
+  - [TigerGraphRestore](#tigergraphrestore)
+    - [Restore from local backup](#restore-from-local-backup)
+    - [Restore from backup in S3 bucket](#restore-from-backup-in-s3-bucket)
+    - [Cross-cluster restore in existing cluster](#cross-cluster-restore-in-existing-cluster)
+      - [Cluster version \>=3.9.2](#cluster-version-392)
+    - [Clone a cluster(Create a new cluster and do cross-cluster restore)](#clone-a-clustercreate-a-new-cluster-and-do-cross-cluster-restore)
+      - [Clone Cluster version \>=3.9.2](#clone-cluster-version-392)
 
+## Creating an S3 Secret for Backup and Restore
 
-
-
-
-
-
-Creating an S3 Secret for Backup and Restore
-====
 When working with backup and restore operations involving S3 buckets, you need to create a Kubernetes Secret to securely store your AWS access credentials. Here's how you can create an S3 Secret:
 
 1. **Encode AWS Access Key ID and Secret Access Key**:
@@ -66,15 +61,15 @@ When working with backup and restore operations involving S3 buckets, you need t
 
 By creating an S3 Secret in this manner, you ensure that your AWS access credentials are securely stored and can be easily referenced when needed for backup and restore tasks involving S3 buckets.
 
-TigerGraphBackup
-================
+## TigerGraphBackup
+
 > [!NOTE]
 > There are many examples on different conditions of backup and restore. Some fields in the YAML format CR is optional, a mark `# optional` is put above them. All fields without the optional mark is required.
 
 For optimal organization, we recommend using the naming convention `${CLUSTER-NAME}-backup-${TAG}` for your backup CR.
 
-Backup to local storage
------------------------
+### Backup to local storage
+
 Certainly, here's the modified YAML file for performing a backup to local storage. You can save this content to a file (e.g., backup-local.yaml), and then run `kubectl apply -f backup-local.yaml -n YOUR_NAMESPACE` to create the backup.
 
 ```yaml
@@ -108,8 +103,7 @@ spec:
     compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
 ```
 
-Backup to S3 bucket
--------------------
+### Backup to S3 bucket
 
 Certainly, here's the YAML file for performing a backup to an S3 bucket using a previously created Secret named `s3-secret`. You can save this content to a file (e.g., `backup-s3.yaml`), and then run `kubectl apply -f backup-s3.yaml -n YOUR_NAMESPACE` to create the backup.
 
@@ -126,9 +120,7 @@ spec:
       # Specify the name of the S3 bucket you want to use
       bucketName: operator-backup
       # Specify the Secret containing the S3 access key and secret access key
-      secretKey:
-        name: s3-secret
-
+      secretKeyName: s3-secret
   # Configure the name of backup files and the path storing temporary files
   backupConfig:
     tag: s3
@@ -145,17 +137,13 @@ spec:
     compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
 ```
 
-TigerGraphBackupSchedule
-========================
+## TigerGraphBackupSchedule
 
 The field `.spec.schedule` uses the cron schedule expression. You can refer to [https://crontab.guru/](https://crontab.guru/).
 
 The field `.spec.backupTemplate` is the same as the `.spec` of TigerGraphBackup
 
-
-
-Schedule backup to local storage
---------------------------------
+### Schedule backup to local storage
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -200,8 +188,7 @@ spec:
       compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression
 ```
 
-Schedule backup to S3 bucket
-----------------------------
+### Schedule backup to S3 bucket
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -228,8 +215,7 @@ spec:
         s3Bucket:
           # specify the bucket you want to use
           bucketName: operator-backup
-          secretKey: 
-            name: s3-secret
+          secretKeyName: s3-secret
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
       tag: s3-daily
@@ -245,11 +231,9 @@ spec:
       compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression
 ```
 
-TigerGraphRestore
-=================
+## TigerGraphRestore
 
-Restore from local backup
--------------------------
+### Restore from local backup
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -272,8 +256,7 @@ spec:
   clusterName: test-cluster
 ```
 
-Restore from backup in S3 bucket
---------------------------------
+### Restore from backup in S3 bucket
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -292,14 +275,12 @@ spec:
     s3Bucket:
       # specify the bucket you want to use
       bucketName: operator-backup
-      secretKey: 
-        name: s3-secret
+      secretKeyName: s3-secret
   # Specify the name of cluster
   clusterName: test-cluster
 ```
 
-Cross-cluster restore in existing cluster
------------------------------------------
+### Cross-cluster restore in existing cluster
 
 We recommend using `kubectl tg restore` command to do this(See [Cross-Cluster Restore from Backup](./backup-restore-by-kubectl-tg.md#cross-cluster-restore-from-backup)). Since it is complicated to get metadata of backup and put it in CR.
 
@@ -316,8 +297,7 @@ spec:
     storage: s3Bucket
     s3Bucket:
       bucketName: operator-backup
-      secretKey: 
-        name: s3-secret
+      secretKeyName: s3-secret
   restoreConfig:
     meta: |
       {
@@ -367,8 +347,11 @@ spec:
       }
     stagingPath: /home/tigergraph/data
 ```
-### Cluster version >=3.9.2
+
+#### Cluster version >=3.9.2
+
 If you are using a TigerGraph cluster whose version >=3.9.2, the CR could be simplified. You don't need to put the metadata into it, you only need to specify the tag
+
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraphRestore
@@ -386,14 +369,12 @@ spec:
     s3Bucket:
       # specify the bucket you want to use
       bucketName: operator-backup
-      secretKey: 
-        name: s3-secret
+      secretKeyName: s3-secret
   # Specify the name of cluster
   clusterName: test-cluster-new
 ```
 
-Clone a cluster(Create a new cluster and do cross-cluster restore)
--------------------------------------------------
+### Clone a cluster(Create a new cluster and do cross-cluster restore)
 
 We recommend using `kubectl tg restore` command to do this(See [Clone Cluster from Backup](./backup-restore-by-kubectl-tg.md#clone-cluster-from-backup)). Since it is complicated to get metadata of backup , clusterTemplate of the original cluster and put them in CR.
 
@@ -410,8 +391,7 @@ spec:
     storage: s3Bucket
     s3Bucket:
       bucketName: operator-backup
-      secretKey: 
-        name: s3-secret
+      secretKeyName: s3-secret
   restoreConfig:
     meta: |
       {
@@ -477,16 +457,12 @@ spec:
         resources:
           requests:
             storage: 10G
-    initTGConfig:
-      ha: 1
-      license: "YOUR_LICENSE"
-      version: 3.9.3
-    initJob:
-      image: docker.io/tigergraph/tigergraph-k8s-init:0.0.9
-      imagePullPolicy: IfNotPresent
+    ha: 1
+    license: "YOUR_LICENSE"
 ```
 
-### Cluster version >=3.9.2
+#### Clone Cluster version >=3.9.2
+
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraphRestore
@@ -498,8 +474,7 @@ spec:
     storage: s3Bucket
     s3Bucket:
       bucketName: operator-backup
-      secretKey: 
-        name: s3-secret
+      secretKeyName: s3-secret
   restoreConfig:
     tag: daily-2022-10-13T022218
     stagingPath: /home/tigergraph/data
@@ -520,12 +495,6 @@ spec:
         resources:
           requests:
             storage: 10G
-    initTGConfig:
-      ha: 1
-      license: "YOUR_LICENSE"
-      version: 3.9.3
-    initJob:
-      image: docker.io/tigergraph/tigergraph-k8s-init:0.0.9
-      imagePullPolicy: IfNotPresent
+    ha: 1
+    license: "YOUR_LICENSE"
 ```
-
