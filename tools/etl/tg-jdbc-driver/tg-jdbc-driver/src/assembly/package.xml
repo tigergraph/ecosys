@@ -10,7 +10,7 @@
     </formats>
     <files>
         <file>
-            <source>${project.build.directory}/original-${project.artifactId}-${project.version}.jar</source>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}.jar</source>
             <destName>${project.artifactId}-${project.version}.jar</destName>
             <outputDirectory>/</outputDirectory>
         </file>

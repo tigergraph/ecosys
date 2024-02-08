@@ -1,3 +1,7 @@
+## Release 1.3.17
+* Supported TG Version: 2.4.1+
+* Support 3 release types: jar, jar with dependencies, tar.gz
+
 ## Release 1.3.15
 * Supported TG Version: 2.4.1+
 * Bugfixes:
