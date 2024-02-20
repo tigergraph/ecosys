@@ -537,7 +537,7 @@ df2.write.mode("overwrite").format("jdbc").options(
 If you use a Spark job to connect TigerGraph via JDBC, we recommend your concurrent Spark loading jobs be capped at 10 with the following per job configuration. This limits the concurrent JDBC connections to 40.
 ```
 /* 2 executors per job and each executor takes 2 cores */
-/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar -—num-executors 2 —-executor-cores 2 -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}-jar-with-dependencies.jar -—num-executors 2 —-executor-cores 2 -i test.scala
 ```
 ```
 val df = sc.textFile("/path/to/your_file", 100).toDF()
@@ -653,7 +653,7 @@ val dbtable2 = """interpreted INTERPRET QUERY (int lowerBound = 0, int upperBoun
 
 Save any piece of the above script in a file (e.g., test.scala), and run it like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}-jar-with-dependencies.jar -i test.scala
 ```
 
 **Please do NOT print multiple objects (i.e., variable list, vertex set, edge set, etc.) in your query if it needs to be invoked via Spark. Otherwise, only one object could be printed. The output format of TigerGraph is JSON, which is an unordered collection of key/value pairs. So the order could not be guaranteed.**
@@ -668,7 +668,7 @@ Please add the following options to your scala script:
 
 And run it with **"--files"** option like this:
 ```
-/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}.jar --files /path/to/trust.jks -i test.scala
+/path/to/spark/bin/spark-shell --jars /path/to/tigergraph-jdbc-driver-${VERSION}-jar-with-dependencies.jar --files /path/to/trust.jks -i test.scala
 ```
 The `--files` should be provided the JKS file path, while the `"trustStore" -> "trust.jks"` should be the JKS filename only.
 

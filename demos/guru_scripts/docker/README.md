@@ -1,6 +1,6 @@
 Overview 
 =================
-This document provides step-by-step instructions on how to pull the latest TigerGraph Developer Edition docker image to your host machine. You can follow the sections in sequence to setup the TigerGraph docker enviroment. 
+This document provides step-by-step instructions on how to pull the latest TigerGraph Free Trial docker image to your host machine. You can follow the sections in sequence to setup the TigerGraph docker enviroment. 
 
 The latest TigerGraph docker image includes the following content.  
 
@@ -56,12 +56,21 @@ Suppose we mount the host OS ~/data folder to a docker folder /home/tigergraph/m
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
 on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
 
+Getting a License Key
+================================
+
+Please note that this package does not include a license key. 
+
+You may obtain a license key by going to [dl.tigergraph.com](https://dl.tigergraph.com/) and clicking on "**Request Free Dev License**" at the top. Fill out the form to receive a license key. Once you have the key, [follow the directions](https://docs.tigergraph.com/tigergraph-server/current/system-management/management-with-gadmin#_manage_licenses) for applying the key.
+
+Currently, the Free Trial limits your database to **50 GB**, and is valid for **30 days** after the date of issue.
+
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
 One command pull docker image and bind all ports for first time user from the TigerGraph docker registry. 
 This image will start as a daemon, so user can ssh to it. 
 
-1. pull the latesst version, only do this step in shell if you upgrade your docker image
+1. pull the latest version, only do this step in shell if you upgrade your docker image
 
         docker pull tigergraph/tigergraph:latest
         
@@ -109,13 +118,19 @@ After pulling the image and launch the container in the background, you can try 
 
          gadmin start all
 
+1. apply or update the license if necessary, by running the following commands under bash shell. 
+
+         gadmin license set <new_license_key>
+         gadmin config apply -y
+         gadmin restart all -y
+
 1. start gsql shell under bash shell, and you are ready to follow https://docs.tigergraph.com/start/gsql-101
 
          gsql 
 1. start GraphStudio, TigerGraph's visual IDE,  by opening a browser on your laptop (host OS) and access:
 
         http://localhost:14240
-        
+
 Operation Commands Cheat Sheet
 ================================
 
