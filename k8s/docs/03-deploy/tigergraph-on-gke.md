@@ -109,6 +109,9 @@ Now, you can install the TigerGraph Operator based on your requirements:
 
 A namespace-scoped operator watches and manages resources in a single Namespace, whereas a cluster-scoped operator watches and manages resources cluster-wide.
 
+> [!IMPORTANT]
+> Namespace-scoped operators require the same operator version to be installed for different namespaces.
+
 - Install a namespace-scoped Operator:
 
     ```bash
@@ -157,8 +160,8 @@ Starting from Operator version 0.0.4, users are required to provide their privat
 
 - Step 2: create a Secret Object
 
-  > [!IMPORTANT]
-  > The namespace of the Secret object must be the same as that of the TigerGraph cluster.
+> [!IMPORTANT]
+> The namespace of the Secret object must be the same as that of the TigerGraph cluster.
 
   Create a secret object based on the private SSH key file generated in step 1. Ensure that the key name of the secret for the private SSH key is `private-ssh-key`, and the key name for the public SSH key is `public-ssh-key`. Do not alter these key names:
 

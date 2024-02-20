@@ -274,15 +274,15 @@ Starting from Operator version 0.0.4, users are required to provide their privat
 
   Create a secret object based on the private SSH key file generated in Step 1. Ensure that the key name of the secret for the private SSH key is private-ssh-key, and the key name for the public SSH key is public-ssh-key. **Do not modify these key names**.
 
-  > [!IMPORTANT]
-  > The namespace of the Secret object must be the same as that of the TigerGraph cluster.
+> [!IMPORTANT]
+> The namespace of the Secret object must be the same as that of the TigerGraph cluster.
 
   ```bash
   kubectl create secret generic ${YOUR_SSH_KEY_SECRET_NAME} --from-file=private-ssh-key=$HOME/.ssh/tigergraph_rsa --from-file=public-ssh-key=$HOME/.ssh/tigergraph_rsa.pub --namespace ${YOUR_NAMESPACE}
   ```
 
-  > [!IMPORTANT]
-  > For Operator versions 0.0.4 and above, when creating a cluster using the `kubectl tg create command`, you must set the `--private-key-secret` option to `${YOUR_SSH_KEY_SECRET_NAME}`.
+> [!IMPORTANT]
+> For Operator versions 0.0.4 and above, when creating a cluster using the `kubectl tg create command`, you must set the `--private-key-secret` option to `${YOUR_SSH_KEY_SECRET_NAME}`.
 
 These steps enhance the security of your cluster by utilizing your private SSH key pair.
 

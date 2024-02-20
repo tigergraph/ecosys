@@ -563,3 +563,81 @@ Events:
   Normal   Create env ConfigMap                    20s                 TigerGraph  Create a new env ConfigMap success
   Warning  Failed to create external rest service  10s (x11 over 20s)  TigerGraph  Failed to create external service: Service "tg-cluster-2-rest-external-service" is invalid: spec.ports[0].nodePort: Invalid value: 30240: provided port is already allocated  
 ```
+
+### TigerGraph Status is empty and Pods are not created
+
+This issue may happen when:
+
+1. Upgrade operator by `kubectl tg upgrade` command
+2. Resize Node Pool to 0 or delete Node Pool in GKE/EKS clusters
+
+When you create a TigerGraph CR, and run `kubectl get tg -n $NAMESPACE`, you will find that the status of the cluster is empty:
+
+```bash
+$ kubectl get tg -n tigergraph -w
+NAME            REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
+test-cluster                                           docker.io/tginternal/tigergraph-k8s:3.9.3   LoadBalancer                                       1m
+```
+
+And when you run `kubectl get pods -n $NAMESPACE`, no pod has been created for this CR. The possible reason is that the reconcile is not triggered due to an issue of controller-runtime package. The log of operator will be like:
+
+```bash
+I0117 06:53:09.436291       1 request.go:690] Waited for 1.045716414s due to client-side throttling, not priority and fairness, request: GET:https://10.12.0.1:443/apis/autoscaling/v2?timeout=32s
+2024-01-17T06:53:10Z    INFO    controller-runtime.metrics      Metrics server is starting to listen    {"addr": "127.0.0.1:8080"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a mutating webhook  {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph", "path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraph"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraph"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a validating webhook        {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph", "path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a mutating webhook  {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphBackup", "path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphbackup"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphbackup"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a validating webhook        {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphBackup", "path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphbackup"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphbackup"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a mutating webhook  {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphBackupSchedule", "path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphbackupschedule"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphbackupschedule"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a validating webhook        {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphBackupSchedule", "path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphbackupschedule"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphbackupschedule"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a mutating webhook  {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphRestore", "path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphrestore"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraphrestore"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.builder      Registering a validating webhook        {"GVK": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraphRestore", "path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphrestore"}
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Registering webhook     {"path": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraphrestore"}
+2024-01-17T06:53:10Z    INFO    setup   starting manager
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook.webhooks     Starting webhook server
+2024-01-17T06:53:10Z    INFO    Starting server {"path": "/metrics", "kind": "metrics", "addr": "127.0.0.1:8080"}
+2024-01-17T06:53:10Z    INFO    Starting server {"kind": "health probe", "addr": "[::]:8081"}
+I0117 06:53:10.444024       1 leaderelection.go:248] attempting to acquire leader lease tigergraph/9d6fe668.tigergraph.com...
+2024-01-17T06:53:10Z    INFO    controller-runtime.certwatcher  Updated current TLS certificate
+2024-01-17T06:53:10Z    INFO    controller-runtime.webhook      Serving webhook server  {"host": "", "port": 9443}
+2024-01-17T06:53:10Z    INFO    controller-runtime.certwatcher  Starting certificate watcher
+I0117 06:53:28.295175       1 leaderelection.go:258] successfully acquired lease tigergraph/9d6fe668.tigergraph.com
+2024-01-17T06:53:28Z    DEBUG   events  tigergraph-operator-controller-manager-65fbf7689b-zg6h9_301c1e20-6188-46f8-b548-feaeb28e542a became leader      {"type": "Normal", "object": {"kind":"Lease","namespace":"tigergraph","name":"9d6fe668.tigergraph.com","uid":"af0adb63-c1e8-441d-aa81-58507ab90c7f","apiVersion":"coordination.k8s.io/v1","resourceVersion":"1414049"}, "reason": "LeaderElection"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1alpha1.TigerGraph"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphbackupschedule", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackupSchedule", "source": "kind source: *v1alpha1.TigerGraphBackupSchedule"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1.ConfigMap"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1.Service"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1.StatefulSet"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1.Job"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "source": "kind source: *v1.Ingress"}
+2024-01-17T06:53:28Z    INFO    Starting Controller     {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphbackupschedule", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackupSchedule", "source": "kind source: *v1.CronJob"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphbackup", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackup", "source": "kind source: *v1alpha1.TigerGraphBackup"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphbackup", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackup", "source": "kind source: *v1.Job"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphrestore", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphRestore", "source": "kind source: *v1alpha1.TigerGraphRestore"}
+2024-01-17T06:53:28Z    INFO    Starting EventSource    {"controller": "tigergraphrestore", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphRestore", "source": "kind source: *v1.Job"}
+2024-01-17T06:53:28Z    INFO    Starting Controller     {"controller": "tigergraphrestore", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphRestore"}
+2024-01-17T06:53:28Z    INFO    Starting Controller     {"controller": "tigergraphbackupschedule", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackupSchedule"}
+2024-01-17T06:53:28Z    INFO    Starting Controller     {"controller": "tigergraphbackup", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackup"}
+2024-01-17T06:53:28Z    INFO    Starting workers        {"controller": "tigergraphrestore", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphRestore", "worker count": 1}
+2024-01-17T06:53:28Z    INFO    Starting workers        {"controller": "tigergraphbackupschedule", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackupSchedule", "worker count": 1}
+2024-01-17T06:53:28Z    INFO    Starting workers        {"controller": "tigergraph", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraph", "worker count": 1}
+2024-01-17T06:53:28Z    INFO    Starting workers        {"controller": "tigergraphbackup", "controllerGroup": "graphdb.tigergraph.com", "controllerKind": "TigerGraphBackup", "worker count": 1}
+2024-01-17T06:54:19Z    DEBUG   controller-runtime.webhook.webhooks     received request        {"webhook": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph", "UID": "89ee67ac-a8c5-4b8f-b147-eac94380f50c", "kind": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph", "resource": {"group":"graphdb.tigergraph.com","version":"v1alpha1","resource":"tigergraphs"}}
+2024-01-17T06:54:19Z    INFO    tigergraph-resource     validate delete {"name": "test-cluster", "namespace": "tigergraph"}
+2024-01-17T06:54:19Z    DEBUG   controller-runtime.webhook.webhooks     wrote response  {"webhook": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph", "code": 200, "reason": "", "UID": "89ee67ac-a8c5-4b8f-b147-eac94380f50c", "allowed": true}
+2024-01-17T07:16:47Z    DEBUG   controller-runtime.webhook.webhooks     received request        {"webhook": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraph", "UID": "a571285b-c58f-4341-baeb-5a18db28c4a9", "kind": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph", "resource": {"group":"graphdb.tigergraph.com","version":"v1alpha1","resource":"tigergraphs"}}
+2024-01-17T07:16:47Z    DEBUG   controller-runtime.webhook.webhooks     wrote response  {"webhook": "/mutate-graphdb-tigergraph-com-v1alpha1-tigergraph", "code": 200, "reason": "", "UID": "a571285b-c58f-4341-baeb-5a18db28c4a9", "allowed": true}
+2024-01-17T07:16:47Z    DEBUG   controller-runtime.webhook.webhooks     received request        {"webhook": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph", "UID": "744ec62b-fe79-4bf1-868e-bb5946422bae", "kind": "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph", "resource": {"group":"graphdb.tigergraph.com","version":"v1alpha1","resource":"tigergraphs"}}
+2024-01-17T07:16:47Z    INFO    tigergraph-resource     validate create {"name": "test-cluster2", "namespace": "tigergraph"}
+2024-01-17T07:16:47Z    DEBUG   controller-runtime.webhook.webhooks     wrote response  {"webhook": "/validate-graphdb-tigergraph-com-v1alpha1-tigergraph", "code": 200, "reason": "", "UID": "744ec62b-fe79-4bf1-868e-bb5946422bae", "allowed": true}
+```
+
+You can see there are logs output by webhooks, which means webhooks work well. But when webhooks accept creation of TigerGraph CR, the reconcile for TigerGraph CR is not triggered. If you encounter this issue, you can uninstall the running operator by `kubectl tg uninstall --namespace $NAMESPACE`, and install it again. Then the reconcile will be triggered properly.

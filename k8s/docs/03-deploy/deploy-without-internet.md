@@ -38,7 +38,7 @@ For illustrative purposes, we will utilize TG cluster version 3.9.2 and TG K8s O
 
 ```bash
 docker pull tigergraph/tigergraph-k8s:3.9.2
-dokcer pull tigergraph/tigergraph-k8s-operator:0.0.7
+docker pull tigergraph/tigergraph-k8s-operator:0.0.7
 docker pull tigergraph/tigergraph-k8s-init:0.0.7
 
 docker save tigergraph/tigergraph-k8s:3.9.2 tigergraph/tigergraph-k8s-operator:0.0.7 tigergraph/tigergraph-k8s-init:0.0.7  > tigergraph-operator-images.tar
@@ -96,7 +96,7 @@ The following examples suppose you are going to use cert-manager 1.8.0 version
 # quay.io/jetstack/cert-manager-controller:v1.8.0
 # quay.io/jetstack/cert-manager-webhook:v1.8.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.0
-dokcer pull quay.io/jetstack/cert-manager-controller:v1.8.0
+docker pull quay.io/jetstack/cert-manager-controller:v1.8.0
 docker pull quay.io/jetstack/cert-manager-webhook:v1.8.0
 
 docker save quay.io/jetstack/cert-manager-cainjector:v1.8.0 quay.io/jetstack/cert-manager-controller:v1.8.0 quay.io/jetstack/cert-manager-webhook:v1.8.0  > cert-manager-images.tar

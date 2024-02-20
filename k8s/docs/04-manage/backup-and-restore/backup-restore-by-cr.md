@@ -210,12 +210,12 @@ spec:
   pause: false
   backupTemplate:
     clusterName: test-cluster
-      destination:
-        storage: s3Bucket
-        s3Bucket:
-          # specify the bucket you want to use
-          bucketName: operator-backup
-          secretKeyName: s3-secret
+    destination:
+      storage: s3Bucket
+      s3Bucket:
+        # specify the bucket you want to use
+        bucketName: operator-backup
+        secretKeyName: s3-secret
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
       tag: s3-daily
