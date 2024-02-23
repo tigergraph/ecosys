@@ -35,7 +35,16 @@ Before proceeding with the deployment, make sure you have the following prerequi
 
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) installed with the latest version. This will be used to install the EBS CSI driver `aws-ebs-csi-driver` if necessary.
 
-- An existing [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html) with admin role permissions.
+- An existing [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html) with appropriate IAM permissions:
+  - The EKS cluster requires an IAM role with the following AWS-managed IAM policies attached:
+    - `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKSServicePolicy`
+  - The EKS node group requires an IAM role with the following AWS-managed IAM policies attached:
+    - `arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy`
+    - `arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly`
+    - `arn:aws:iam::aws:policy/AmazonEKSClusterPolicy`
+    - `arn:aws:iam::aws:policy/AmazonEKSVPCResourceController`
 
 ## Deploy TigerGraph Operator
 
@@ -138,6 +147,18 @@ To verify the successful deployment of the Operator, use the following command:
   kubectl wait deployment tigergraph-operator-controller-manager --for condition=Available=True --timeout=120s -n ${YOUR_NAMESPACE}
   ```
 
+### Install EBS CSI driver
+The Amazon Elastic Block Store (Amazon EBS) Container Storage Interface (CSI) driver manages the lifecycle of Amazon EBS volumes as storage for the Kubernetes Volumes that you create. [Official AWS Documentation](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html)
+
+  ```bash
+  aws eks create-addon --cluster-name ${YOUR_CLUSTER_NAME} --addon-name aws-ebs-csi-driver
+  ```
+
+#### Wait for the Amazon EBS CSI Driver deployment (ebs-csi-controller) to become available in the EKS cluster
+  ```bash
+  kubectl wait --for=condition=Available=True deployment/ebs-csi-controller -n kube-system
+  ```
+
 ## Deploy a TigerGraph Cluster
 
 This section explains how to deploy a TigerGraph cluster on EKS using the `kubectl-tg` plugin and a CR (Custom Resource) YAML manifest.
@@ -235,31 +256,18 @@ Choose the appropriate StorageClass (e.g., `gp2`) when creating the TigerGraph c
     Normal  ExternalProvisioning  115s (x25 over 7m54s)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "ebs.csi.aws.com" or manually created by system administrator
   ```
 
-  If you encounter the above issues, please resolve it using the following steps:
-
-  1. Make sure that the EKS cluster has been installed EBS CSI driver
-
-      ```bash
-      kubectl get deployment ebs-csi-controller -n kube-system
-      ```
-
-  2. If not, install EBS CSI driver through the following commands
-
-  > [!WARNING]
-  > Please ensure that the IAM role for the Amazon EBS CSI driver has been created. You can refer to the official AWS documentation [Creating the Amazon EBS CSI driver IAM role](https://docs.aws.amazon.com/eks/latest/userguide/csi-iam-role.html) for detailed instructions.
-
-  ```bash
-      aws eks create-addon --cluster-name $YOUR_EKS_CLUSTER_NAME --addon-name aws-ebs-csi-driver
-  ```
+If you're facing the issues above, please check the following:
+  - Confirm that the EKS cluster and EKS node group have the necessary permissions. [See prerequisites](#prerequisites)
+  - Verify if the EBS CSI driver is correctly installed as an EKS add-on. [Installation steps](#install-ebs-csi-driver)
 
 ### Create a TigerGraph Cluster with Specific Options
 
 You can create a new TigerGraph cluster with specific options, such as size, high availability, version, license, and resource specifications. Here's an example:
 
-- Get and export free license
+- Export license key as an environment variable
 
   ```bash
-  export LICENSE=$(curl -L "ftp://ftp.graphtiger.com/lic/license3.txt" -o "/tmp/license3.txt" 2>/dev/null && cat /tmp/license3.txt)
+  export LICENSE=<LICENSE_KEY>
   ```
 
 - Create TigerGraph cluster with kubectl-tg plugin
