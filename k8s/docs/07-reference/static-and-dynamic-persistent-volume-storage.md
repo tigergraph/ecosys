@@ -1,6 +1,21 @@
-# How to use static & dynamic persistent volume storage
+# How to use static and dynamic persistent volume storage
 
 This document describes how to deploy a TigerGraph on K8s with static or dynamic persistent volume storage.
+
+- [How to use static and dynamic persistent volume storage](#how-to-use-static-and-dynamic-persistent-volume-storage)
+  - [GKE](#gke)
+    - [Static persistent volume storage on GKE](#static-persistent-volume-storage-on-gke)
+      - [Creating Persistent Volumes From Existing Google Compute Disks](#creating-persistent-volumes-from-existing-google-compute-disks)
+      - [Create PVs and PVCs for TigerGraph pods on GKE](#create-pvs-and-pvcs-for-tigergraph-pods-on-gke)
+    - [Dynamically persistent volume storage on GKE](#dynamically-persistent-volume-storage-on-gke)
+  - [EKS](#eks)
+    - [Static persistent volume storage on eks](#static-persistent-volume-storage-on-eks)
+      - [Creating ESB Persistent Volumes](#creating-esb-persistent-volumes)
+      - [Create PVs and PVCs for TigerGraph pods on EKS](#create-pvs-and-pvcs-for-tigergraph-pods-on-eks)
+    - [Dynamically persistent volume storage on EKS](#dynamically-persistent-volume-storage-on-eks)
+  - [Creating Persistent Volumes using the local file system of the local node](#creating-persistent-volumes-using-the-local-file-system-of-the-local-node)
+    - [Create a persistent volume with a local filesystem](#create-a-persistent-volume-with-a-local-filesystem)
+    - [Create TG cluster with storage class name pv-local](#create-tg-cluster-with-storage-class-name-pv-local)
 
 ## GKE
 
@@ -11,78 +26,179 @@ You can follow these steps to set up and use static persistent volume storage fo
 1. Provision a Persistent volume using a special storage class name.
 2. Deploy TigerGraph with persistent volume.
 
-### Creating Persistent Volumes From Existing Google Compute Disks
+#### Creating Persistent Volumes From Existing Google Compute Disks
 
 - Create disk
 
-Consider a scenario where you are creating a TigerGraph cluster comprising three nodes. To achieve this, you can create three compute disks named tg-pv-1, tg-pv-2, and tg-pv-3, each with a size of 10GB.
+  Consider a scenario where you are creating a TigerGraph cluster comprising three nodes. To achieve this, you can create three compute disks named tg-pv-1, tg-pv-2, and tg-pv-3, each with a size of 10GB.
 
-```bash
-gcloud compute disks create tg-pv-1 --zone=us-central1-a --size=10GB
-gcloud compute disks create tg-pv-2 --zone=us-central1-a --size=10GB
-gcloud compute disks create tg-pv-3 --zone=us-central1-a --size=10GB
+  ```bash
+  gcloud compute disks create tg-pv-1 --zone=us-central1-a --size=10GB
+  gcloud compute disks create tg-pv-2 --zone=us-central1-a --size=10GB
+  gcloud compute disks create tg-pv-3 --zone=us-central1-a --size=10GB
 
-# delete gcd
-gcloud compute disks delete tg-pv-1 --zone=us-central1-a
-gcloud compute disks delete tg-pv-2 --zone=us-central1-a
-gcloud compute disks delete tg-pv-3 --zone=us-central1-a
-```
+  # delete gcd
+  gcloud compute disks delete tg-pv-1 --zone=us-central1-a
+  gcloud compute disks delete tg-pv-2 --zone=us-central1-a
+  gcloud compute disks delete tg-pv-3 --zone=us-central1-a
+  ```
+
+#### Create PVs and PVCs for TigerGraph pods on GKE
 
 Now you have three disks available to be used as PV (Persistent Volume) in GKE.
 
-- Create static persistent pv
+There are two methods to associate the created PV with the corresponding PVC of the TigerGraph Pod. Please choose the one you prefer and be aware of the warning information.
 
-```java
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage1
-spec:
-  storageClassName: "tg-pv"
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  gcePersistentDisk:
-    pdName: tg-pv-1
-    fsType: ext4
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage2
-spec:
-  storageClassName: "tg-pv"
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  gcePersistentDisk:
-    pdName: tg-pv-2
-    fsType: ext4
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage3
-spec:
-  storageClassName: "tg-pv"
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  gcePersistentDisk:
-    pdName: tg-pv-3
-    fsType: ext4
-```
+- Create static persistent volume; It will be bound to the specific PVC of TigerGraph pod by the Operator automatically.
+
+> [!IMPORTANT]
+> After creating cluster successfully, please don’t delete PVCs when deleting cluster, otherwise, operator will not be able to create PVC and bind it to the existing PV when recreating cluster. More importantly, disk mount order errors may occur when reproducing associated PVCs and PVs.
+
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage1
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    gcePersistentDisk:
+      pdName: tg-pv-1
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage2
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    gcePersistentDisk:
+      pdName: tg-pv-2
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage3
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    gcePersistentDisk:
+      pdName: tg-pv-3
+      fsType: ext4
+  ```
+
+- Create static persistent volumes and persistent volume claims, and bind them together. The name of PersistentVolumeClaim must meet the following rule: `tg-data-<CLUSTER-NAME>-<POD-INDEX>`
+
+> [!IMPORTANT]
+> The persistent volume claim of TigerGraph pod has a specific name, and you must ensure that the PercientVolume's calimRef has the correct namespace and name.
+
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage1
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+      namespace: tigergraph
+      name: tg-data-test-pv-tg-cluster-0
+    gcePersistentDisk:
+      pdName: tg-pv-1
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-0
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage2
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+      namespace: tigergraph
+      name: tg-data-test-pv-tg-cluster-1
+    gcePersistentDisk:
+      pdName: tg-pv-2
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-1
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage3
+  spec:
+    storageClassName: "tg-pv"
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+        namespace: tigergraph
+        name: tg-data-test-pv-tg-cluster-2
+    gcePersistentDisk:
+      pdName: tg-pv-3
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-2
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ```
 
 - Create TG cluster with storage class name tg-pv
 
-```bash
-kubectl tg create --namespace tigergraph --cluster-name test-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 3 --ha 2 --version 3.9.1 --storage-class tg-pv --cpu 2000m --memory 8G --storage-size 10G
-```
+  ```bash
+  kubectl tg create --namespace tigergraph --cluster-name test-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 3 --ha 2 --version 3.9.1 --storage-class tg-pv --cpu 2000m --memory 8G --storage-size 10G
+  ```
 
-### Dynamically persistent volume storage
+### Dynamically persistent volume storage on GKE
 
 To enable and utilize dynamic persistent volume storage for Google Kubernetes Engine (GKE), follow these steps:
 
@@ -105,28 +221,28 @@ By following these steps, you can efficiently configure and leverage dynamic per
 
 - Create a storage class
 
-Save the following manifest as `storage-class.yaml`
+  Save the following manifest as `storage-class.yaml`
 
-```java
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: gold
-provisioner: kubernetes.io/gce-pd
-volumeBindingMode: Immediate
-allowVolumeExpansion: true
-reclaimPolicy: Delete
-parameters:
-  type: pd-ssd
-  fstype: ext4
-  replication-type: none
-```
+  ```yaml
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: gold
+  provisioner: kubernetes.io/gce-pd
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  reclaimPolicy: Delete
+  parameters:
+    type: pd-ssd
+    fstype: ext4
+    replication-type: none
+  ```
 
 - Create the storage class.
 
-```bash
-kubectl apply -f storage-class.yaml
-```
+  ```bash
+  kubectl apply -f storage-class.yaml
+  ```
 
 A little explanation about the parameters.
 
@@ -141,9 +257,9 @@ A little explanation about the parameters.
 
 - Deploy TG with the specific Storage class name
 
-```bash
-kubectl tg create --namespace tigergraph --cluster-name dynamic-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 1 --ha 1 --version 3.9.1 --storage-class gold --cpu 4000m --memory 8G --storage-size 10G
-```
+  ```bash
+  kubectl tg create --namespace tigergraph --cluster-name dynamic-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 1 --ha 1 --version 3.9.1 --storage-class gold --cpu 4000m --memory 8G --storage-size 10G
+  ```
 
 ## EKS
 
@@ -154,141 +270,245 @@ You can follow these steps to set up and use static persistent volume storage fo
 1. Provision a Persistent volume using a special storage class name.
 2. Deploy TG with persistent volume.
 
-### **Creating ESB Persistent Volumes**
+#### Creating ESB Persistent Volumes
 
 - Create ESB volumes  
 
-Consider a scenario where you are creating a TigerGraph cluster comprising three nodes. To achieve this, you can create three compute disks named tg-pv-1, tg-pv-2, and tg-pv-3, each with a size of 10GB.
+  Consider a scenario where you are creating a TigerGraph cluster comprising three nodes. To achieve this, you can create three compute disks named tg-pv-1, tg-pv-2, and tg-pv-3, each with a size of 10GB.
 
-```bash
-$ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
-{
-    "AvailabilityZone": "us-west-1b",
-    "CreateTime": "2023-05-04T09:00:21+00:00",
-    "Encrypted": false,
-    "Size": 10,
-    "SnapshotId": "",
-    "State": "creating",
-    "VolumeId": "vol-01b4da831ee293eb7",
-    "Iops": 100,
-    "Tags": [],
-    "VolumeType": "gp2",
-    "MultiAttachEnabled": false
-}
+  ```bash
+  $ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
+  {
+      "AvailabilityZone": "us-west-1b",
+      "CreateTime": "2023-05-04T09:00:21+00:00",
+      "Encrypted": false,
+      "Size": 10,
+      "SnapshotId": "",
+      "State": "creating",
+      "VolumeId": "vol-01b4da831ee293eb7",
+      "Iops": 100,
+      "Tags": [],
+      "VolumeType": "gp2",
+      "MultiAttachEnabled": false
+  }
 
-$ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
-{
-    "AvailabilityZone": "us-west-1b",
-    "CreateTime": "2023-05-04T09:00:51+00:00",
-    "Encrypted": false,
-    "Size": 10,
-    "SnapshotId": "",
-    "State": "creating",
-    "VolumeId": "vol-0cf5cb04ce0b30eee",
-    "Iops": 100,
-    "Tags": [],
-    "VolumeType": "gp2",
-    "MultiAttachEnabled": false
-}
+  $ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
+  {
+      "AvailabilityZone": "us-west-1b",
+      "CreateTime": "2023-05-04T09:00:51+00:00",
+      "Encrypted": false,
+      "Size": 10,
+      "SnapshotId": "",
+      "State": "creating",
+      "VolumeId": "vol-0cf5cb04ce0b30eee",
+      "Iops": 100,
+      "Tags": [],
+      "VolumeType": "gp2",
+      "MultiAttachEnabled": false
+  }
 
-$ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
-{
-    "AvailabilityZone": "us-west-1b",
-    "CreateTime": "2023-05-04T09:01:18+00:00",
-    "Encrypted": false,
-    "Size": 10,
-    "SnapshotId": "",
-    "State": "creating",
-    "VolumeId": "vol-056ddf237f6bfe122",
-    "Iops": 100,
-    "Tags": [],
-    "VolumeType": "gp2",
-    "MultiAttachEnabled": false
-}
+  $ aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-west-1b
+  {
+      "AvailabilityZone": "us-west-1b",
+      "CreateTime": "2023-05-04T09:01:18+00:00",
+      "Encrypted": false,
+      "Size": 10,
+      "SnapshotId": "",
+      "State": "creating",
+      "VolumeId": "vol-056ddf237f6bfe122",
+      "Iops": 100,
+      "Tags": [],
+      "VolumeType": "gp2",
+      "MultiAttachEnabled": false
+  }
 
-# delete esb volume
-aws ec2 delete-volume --volume-id vol-01b4da831ee293eb7
-aws ec2 delete-volume --volume-id vol-0cf5cb04ce0b30eee
-aws ec2 delete-volume --volume-id vol-056ddf237f6bfe122
-```
+  # delete esb volume
+  aws ec2 delete-volume --volume-id vol-01b4da831ee293eb7
+  aws ec2 delete-volume --volume-id vol-0cf5cb04ce0b30eee
+  aws ec2 delete-volume --volume-id vol-056ddf237f6bfe122
+  ```
 
-Now there are three ESB volumes available to be used as PV in GKE.
+#### Create PVs and PVCs for TigerGraph pods on EKS
 
-- Create static persistent pv  
+Now there are three ESB volumes available to be used as PV in EKS.
 
-```yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage1
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "tg-pv"
-  awsElasticBlockStore:
-    volumeID: vol-01b4da831ee293eb7
-    fsType: ext4
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage2
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "tg-pv"
-  awsElasticBlockStore:
-    volumeID: vol-0cf5cb04ce0b30eee
-    fsType: ext4
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: tg-pv-storage3
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "tg-pv"
-  awsElasticBlockStore:
-    volumeID: vol-056ddf237f6bfe122
-    fsType: ext4
-```
+There are two methods to associate the created PVs with the corresponding PVCs of the TigerGraph Pod. Please choose the one you prefer and be aware of the warning information.
+
+- Create static persistent volume; It will be bound to the specific PVC of TigerGraph pod by the Operator automatically.
+
+> [!IMPORTANT]
+> After creating cluster successfully, please don’t delete PVCs when deleting cluster, otherwise, operator will not be able to create PVC and bind it to the existing PV when recreating cluster. More importantly, disk mount order errors may occur when reproducing associated PVCs and PVs.
+
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage1
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-01b4da831ee293eb7
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage2
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-0cf5cb04ce0b30eee
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage3
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-056ddf237f6bfe122
+      fsType: ext4
+  ```
+
+- Create static persistent volumes and persistent volume claims, and bind them together. The name of PersistentVolumeClaim must meet the following rule: `tg-data-<CLUSTER-NAME>-<POD-INDEX>`.
+
+> [!IMPORTANT]
+> The persistent volume claim of TigerGraph pod has a specific name, and you must ensure that the PercientVolume's calimRef has the correct namespace and name.
+
+  ```yaml
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage1
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+      namespace: tigergraph
+      name: tg-data-test-pv-tg-cluster-0
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-01b4da831ee293eb7
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-0
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage2
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+      namespace: tigergraph
+      name: tg-data-test-pv-tg-cluster-1
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-0cf5cb04ce0b30eee
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-1
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ---
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: tg-pv-storage3
+  spec:
+    capacity:
+      storage: 10Gi
+    accessModes:
+      - ReadWriteOnce
+    claimRef:
+        namespace: tigergraph
+        name: tg-data-test-pv-tg-cluster-2
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: "tg-pv"
+    awsElasticBlockStore:
+      volumeID: vol-056ddf237f6bfe122
+      fsType: ext4
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: tg-data-test-pv-tg-cluster-2
+  spec:
+    storageClassName: "tg-pv"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  ```
 
 - Create TigerGraph cluster with storage class name tg-pv
 
-The ESB volumes are located in zone us-west-1b, configuring the node affinity to ensure the TG pods are scheduled to the nodes of this zone.
+  The ESB volumes are located in zone us-west-1b, configuring the node affinity to ensure the TG pods are scheduled to the nodes of this zone.
 
-creating an affinity configuration file like this:
+  creating an affinity configuration file like this:
 
-tg-affinity.yaml
+  tg-affinity.yaml
 
-```yaml
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: topology.kubernetes.io/zone
-          operator: In
-          values:
-          - us-west-1b
-```
+  ```yaml
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: topology.kubernetes.io/zone
+            operator: In
+            values:
+            - us-west-1b
+  ```
 
-```bash
-kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.9.1 --license ${LICENSE} --service-account-name ${SERVICE_ACCOUNT_NAME} \
- --storage-class pv-local --storage-size 10G --cpu 4000m --memory 8Gi --namespace ${YOUR_NAMESPACE} --affinity tg-affinity.yaml
-```
+  ```bash
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.9.1 --license ${LICENSE} --service-account-name ${SERVICE_ACCOUNT_NAME} \
+  --storage-class pv-local --storage-size 10G --cpu 4000m --memory 8Gi --namespace ${YOUR_NAMESPACE} --affinity tg-affinity.yaml
+  ```
 
-- Dynamically persistent volume storage
+### Dynamically persistent volume storage on EKS
 
 You can follow these steps to set up and use dynamic persistent volume storage for EKS:
 
@@ -310,26 +530,26 @@ These storage class segregations are completely based on the project requirement
 
 - Create a storage class
 
-Save the following manifest as `storage-class.yaml`
+  Save the following manifest as `storage-class.yaml`
 
-```java
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: gold
-parameters:
-  type: gp3
-  fsType: ext4 
-provisioner: ebs.csi.aws.com
-reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
-```
+  ```yaml
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: gold
+  parameters:
+    type: gp3
+    fsType: ext4 
+  provisioner: ebs.csi.aws.com
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+  ```
 
 - Create the storage class.
 
-```bash
-kubectl apply -f storage-class.yaml
-```
+  ```bash
+  kubectl apply -f storage-class.yaml
+  ```
 
 ## Creating Persistent Volumes using the local file system of the local node
 
@@ -344,7 +564,7 @@ TigerGraph container will mount data from the path "/home/tigergraph/tigergraph/
 
 You can set the storageClassName to pv-local, if you modify the name, you should use the same when creating TigerGraph cluster
 
-```java
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:

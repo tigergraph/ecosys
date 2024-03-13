@@ -8,15 +8,8 @@ spec:
   imagePullPolicy: Always
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
-  initJob:
-    image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-    imagePullPolicy: Always
-    imagePullSecrets:
-    - name: tigergraph-image-pull-secret
-  initTGConfig:
-    ha: 2
-    license: xxxxxxxxxxxxxxxxx
-    version: 3.9.2
+  ha: 2
+  license: xxxxxxxxxxxxxxxxx
   listener:
     type: LoadBalancer
   privateKeyName: ssh-key-secret

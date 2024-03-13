@@ -2,6 +2,22 @@
 
 This document provides solutions for common issues that may arise during the management of a TigerGraph cluster in Kubernetes.
 
+- [TigerGraph Cluster management Troubleshooting](#tigergraph-cluster-management-troubleshooting)
+  - [Troubleshooting Steps for updating cluster](#troubleshooting-steps-for-updating-cluster)
+    - [Potential failure of update](#potential-failure-of-update)
+  - [Troubleshooting Steps for upgrading cluster](#troubleshooting-steps-for-upgrading-cluster)
+    - [Potential failure of upgrading](#potential-failure-of-upgrading)
+  - [Troubleshooting Steps for scaling cluster](#troubleshooting-steps-for-scaling-cluster)
+    - [Expansion](#expansion)
+      - [Potential failure of expansion](#potential-failure-of-expansion)
+    - [Shrinking](#shrinking)
+      - [Potential Causes](#potential-causes)
+  - [Troubleshooting Steps for External Service Accessibility](#troubleshooting-steps-for-external-service-accessibility)
+    - [TigerGraph GUI](#tigergraph-gui)
+  - [Troubleshooting Steps for customizing and updating license/TigerGraph configurations](#troubleshooting-steps-for-customizing-and-updating-licensetigergraph-configurations)
+    - [Customizing TigerGraph configurations during initialization](#customizing-tigergraph-configurations-during-initialization)
+    - [Updating TigerGraph configurations and license when cluster is running](#updating-tigergraph-configurations-and-license-when-cluster-is-running)
+
 ## Troubleshooting Steps for updating cluster
 
 - Verify the CPU and memory resources of the cluster Custom Resource (CR) have been updated:
@@ -461,3 +477,108 @@ In TigerGraph 3.6.3, Session Affinity is not supported. Direct external access t
         timeoutSeconds: 1800
 
     ```
+
+## Troubleshooting Steps for customizing and updating license/TigerGraph configurations
+
+### Customizing TigerGraph configurations during initialization
+
+The init-job may fail due to wrong TigerGraph configurations. Check the logs of the init-job to find the root cause.
+
+```bash
+kubectl get pod -l job-name=test-cluster-init-job -n tigergraph
+```
+
+The output should be similar to the following:
+
+```bash
+NAME                         READY   STATUS    RESTARTS   AGE
+test-cluster-init-job-2j4x4   0/1    Error     0          2m
+```
+
+Use `kubectl logs` to check the logs of the init-job:
+
+```bash
+kubectl logs test-cluster-init-job-2j4x4 -n tigergraph
+```
+
+You may see logs like the following:
+
+```bash
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+Name:   test-cluster-0.test-cluster-internal-service.tigergraph.svc.cluster.local
+Address: 10.244.0.36
+
+
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+
+Name:   test-cluster-1.test-cluster-internal-service.tigergraph.svc.cluster.local
+Address: 10.244.0.37
+
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+
+Name:   test-cluster-2.test-cluster-internal-service.tigergraph.svc.cluster.local
+Address: 10.244.0.38
+
+Warning: Permanently added '[test-cluster-0.test-cluster-internal-service.tigergraph]:10022' (ED25519) to the list of known hosts.
+HOST_LIST: [{"Hostname":"test-cluster-0.test-cluster-internal-service","ID":"m1","Region":""},{"Hostname":"test-cluster-1.test-cluster-internal-service","ID":"m2","Region":""},{"Hostname":"test-cluster-2.test-cluster-internal-service","ID":"m3","Region":""}]
+[Warning] For HA setup, there might be some nodes unused since replication factor 2 is not a factor of machine number 3
+the bucket bit is 5
+false
+[Wed Dec 20 06:39:02 UTC 2023] set config entry Controller.ServiceManager.AutoRestart to true
+Log mode is prod
+[Wed Dec 20 06:39:02 UTC 2023] start setting TigerGraph configurations
+[  Error] config entry WRONG_CONFIG not found
+[  Error] ParameterErr (failed to set one or more config entries)
+```
+
+The error message `[  Error] config entry WRONG_CONFIG not found` means that you have set a wrong configuration entry in the CR. Check the CR and make sure the configuration entry is correct according to the [Configuration Parameters](https://docs.tigergraph.com/tigergraph-server/current/reference/configuration-parameters). Once you have corrected the configuration entry, you can update the CR and wait for the init-job to be recreated automatically.
+
+### Updating TigerGraph configurations and license when cluster is running
+
+You can updae TigerGraph configurations and license when the cluster is running. This will trigger a config-update job to update the configurations and license in the cluster. The config-update job may fail if you set a wrong configuration entry or wrong license in the CR. Check the logs of the config-update job to find the root cause.
+
+```bash
+kubectl get pod -l job-name=test-cluster-config-update-job -n tigergraph
+```
+
+The output should be similar to the following:
+
+```bash
+NAME                                   READY   STATUS   RESTARTS   AGE
+test-cluster-config-update-job-9p6bt   0/1     Error    0          18s
+```
+
+Use `kubectl logs` to check the logs of the config-update-job:
+
+```bash
+kubectl logs test-cluster-config-update-job-9p6bt -n tigergraph
+```
+
+If the output is like
+
+```bash
+Warning: Permanently added '[test-cluster-0.test-cluster-internal-service.tigergraph]:10022' (ED25519) to the list of known hosts.
+[Wed Dec 20 07:07:22 UTC 2023] Start updating TigerGraph configurations
+[  Error] config entry WRONG_CONFIG not found
+[  Error] ParameterErr (failed to set one or more config entries)
+```
+
+You need to check the CR and make sure the configuration entry is correct according to the [Configuration Parameters](https://docs.tigergraph.com/tigergraph-server/current/reference/configuration-parameters).
+
+If the output is like
+
+```bash
+Warning: Permanently added '[test-cluster-0.test-cluster-internal-service.tigergraph]:10022' (ED25519) to the list of known hosts.
+[Wed Dec 20 07:12:43 UTC 2023] Start setting license
+[  Error] ExternalError (failed to set license; token contains an invalid number of segments)
+```
+
+You need to check the CR and make sure the license is correct.
+
+Once you correct TigerGraph configurations and license in the CR, the config-update job will be recreated automatically.
