@@ -5,11 +5,35 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <name>TigerGraph Spark Connector</name>
+  <description>TigerGraph Ecosystem - Spark Connector</description>
+  <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-spark-connector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com:tigergraph/ecosys.git</connection>
+    <developerConnection>scm:git:ssh://github.com:tigergraph/ecosys.git</developerConnection>
+    <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Ping Xie</name>
+      <email>ping.xie@tigergraph.com</email>
+      <organization>TigerGraph Inc.</organization>
+      <organizationUrl>http://www.tigergraph.com</organizationUrl>
+    </developer>
+  </developers>
+
   <groupId>com.tigergraph</groupId>
   <artifactId>tigergraph-spark-connector</artifactId>
   <version>0.1.0</version>
-
-  <name>tigergraph-spark-connector</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
