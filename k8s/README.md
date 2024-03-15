@@ -4,9 +4,6 @@ TigerGraph Operator stands as an automated operations system meticulously design
 Its comprehensive suite of functionalities encompasses every aspect of the TigerGraph lifecycle, spanning deployment, upgrades, scaling, backups, restoration, and fail-over processes.
 Whether you're operating in a public cloud setting or within a self-hosted environment, TigerGraph Operator ensures that your TigerGraph instances function seamlessly within Kubernetes clusters.
 
-> [!IMPORTANT]
-> Kubernetes Operator support is currently a Preview Feature. Preview Features give users an early look at future production-level features. Preview Features should not be used for production deployments.
-
 Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
