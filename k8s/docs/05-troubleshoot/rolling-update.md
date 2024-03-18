@@ -276,8 +276,8 @@ Init Containers:
 Containers:
   tigergraph:
     Container ID:   containerd://f47028197d9376f558a088b5b88cb34e0f00f6639a433d115b29b493b54c2e87
-    Image:          docker.io/tginternal/tigergraph-k8s:3.9.2-post-start
-    Image ID:       docker.io/tginternal/tigergraph-k8s@sha256:dd3dd058fbef7eae77cf51e622c467d290ceeaf9644b8392b5b0eec4920b84de
+    Image:          docker.io/tigergraph/tigergraph-k8s:3.9.3
+    Image ID:       docker.io/tigergraph/tigergraph-k8s@sha256:dd3dd058fbef7eae77cf51e622c467d290ceeaf9644b8392b5b0eec4920b84de
     Ports:          9000/TCP, 14240/TCP, 22/TCP
     Host Ports:     0/TCP, 0/TCP, 0/TCP
     State:          Running
@@ -300,8 +300,8 @@ Events:
   Normal   Pulled             34m                kubelet            Container image "alpine:3.17.2" already present on machine
   Normal   Started            34m                kubelet            Started container init-tigergraph
   Normal   Created            34m                kubelet            Created container init-tigergraph
-  Normal   Pulled             34m                kubelet            Successfully pulled image "docker.io/tginternal/tigergraph-k8s:3.9.2-post-start" in 2.034685698s
-  Normal   Pulled             32m                kubelet            Successfully pulled image "docker.io/tginternal/tigergraph-k8s:3.9.2-post-start" in 338.940713ms
+  Normal   Pulled             34m                kubelet            Successfully pulled image "docker.io/tigergraph/tigergraph-k8s:3.9.2" in 2.034685698s
+  Normal   Pulled             32m                kubelet            Successfully pulled image "docker.io/tigergraph/tigergraph-k8s:3.9.2" in 338.940713ms
   Warning  FailedPreStopHook  31m (x2 over 32m)  kubelet            Exec lifecycle hook ([/bin/bash -c 
                   if [ "$(ls -A /home/tigergraph/tigergraph/data/|grep -v lost|tail -1)" ]; then
                     export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH
@@ -318,8 +318,8 @@ Events:
           gadmin stop $PROCESS_ALL -y
                   fi' exited with 1: , message: "ExternalError (Failed to get the APP root from config; The file ~/.tg.cfg either does not exist or is a broken link. Please create a new symlink at this location and point it to the tg.cfg file located in the 'configs' directory of System.DataRoot. This can be done using the following command: ln -s /path/to/System.DataRoot/configs/tg.cfg ~/.tg.cfg; open /home/tigergraph/.tg.cfg: no such file or directory)\n"
   Normal   Killing              31m (x2 over 32m)  kubelet  FailedPostStartHook
-  Normal   Pulling              31m (x3 over 34m)  kubelet  Pulling image "docker.io/tginternal/tigergraph-k8s:3.9.2-post-start"
-  Normal   Pulled               31m                kubelet  Successfully pulled image "docker.io/tginternal/tigergraph-k8s:3.9.2-post-start" in 315.864405ms
+  Normal   Pulling              31m (x3 over 34m)  kubelet  Pulling image "docker.io/tigergraph/tigergraph-k8s:3.9.2"
+  Normal   Pulled               31m                kubelet  Successfully pulled image "docker.io/tigergraph/tigergraph-k8s:3.9.2" in 315.864405ms
   Normal   Created              31m (x3 over 34m)  kubelet  Created container tigergraph
   Normal   Started              31m (x3 over 34m)  kubelet  Started container tigergraph
   Warning  BackOff    18m (x41 over 31m)    kubelet  Back-off restarting failed container

@@ -14,7 +14,6 @@ spec:
     s3Bucket:
       # specify the bucket you want to use
       bucketName: operator-backup
-      secretKey: 
-        name: aws-secret
+      secretKeyName: aws-secret
   # Specify the name of cluster
   clusterName: test-cluster

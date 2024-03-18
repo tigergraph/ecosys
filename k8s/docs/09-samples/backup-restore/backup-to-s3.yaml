@@ -10,8 +10,7 @@ spec:
       # Specify the name of the S3 bucket you want to use
       bucketName: operator-backup
       # Specify the Secret containing the S3 access key and secret access key
-      secretKey:
-        name: aws-secret
+      secretKeyName: aws-secret
 
   # Configure the name of backup files and the path storing temporary files
   backupConfig:

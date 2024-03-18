@@ -1,11 +1,8 @@
-<h1>How to integrate the envoy sidecar with TG Pod</h1>
+# How to integrate the envoy sidecar with TG Pod
 
 Starting from Operator version 0.0.6, we support adding sidecar containers to the TG Pod. This guide is dedicated to the integration process of the envoy sidecar with the TG Pod. To proceed, please ensure that you have Operator version 0.0.6 or a newer version installed. Additionally, please note that this document does not delve into the intricacies of envoy, such as TLS configuration. Instead, its primary focus is to describe the configuration of envoy sidecar containers for accessing TG services.
 
-
-
-Configuration of Envoy sidecar container
-========================================
+## Configuration of Envoy sidecar container
 
 The initial step involves the creation of a ConfigMap resource and its subsequent mounting onto the pod as the Envoy's configuration.
 
@@ -68,17 +65,15 @@ data:
                     port_value: 14240
 ```
 
-*   Add listener to forward the requests to the API gateway of TG
-    
-    *   `listener_1` is listening on port 12000 which is used for routing to the Nginx service, in `rout_config` part, we use cluster nginx\_service as the route.
-        
-*   Add cluster to configure the endpoint for the above listener
-    
-    *   cluster `nginx_service` specifies the `endpoint` to address 127.0.0.1 and port 14240 where the NGINX service will listen.
-        
+* Add listener to forward the requests to the API gateway of TG
 
-Add `sidecarContainers` and `customVolumes` to the TigerGraph CR
-================================================================
+  * `listener_1` is listening on port 12000 which is used for routing to the Nginx service, in `rout_config` part, we use cluster nginx\_service as the route.
+
+* Add cluster to configure the endpoint for the above listener
+
+  * cluster `nginx_service` specifies the `endpoint` to address 127.0.0.1 and port 14240 where the NGINX service will listen.
+
+## Add `sidecarContainers` and `customVolumes` to the TigerGraph CR
 
 ```yaml
   sidecarContainers:
@@ -105,8 +100,7 @@ Add `sidecarContainers` and `customVolumes` to the TigerGraph CR
         name: sidecar-test-configmap
 ```
 
-Validation
-==========
+## Validation
 
 Finally, to ensure the proper functionality of the Envoy sidecar service and its access to the RESTPP and Metric services, we will establish a Kubernetes (K8s) Service. This service will facilitate the verification process.
 
@@ -133,24 +127,21 @@ spec:
       targetPort: 12000
 ```
 
-*   RESTPP
-    
+* RESTPP
 
 ```bash
 curl http://${LBS_EXTERNAL_IP}:12000/restpp/echo
 # it will return {"error":false, "message":"Hello GSQL"} if accessing successfully.
 ```
 
-*   Metric
-    
+* Metric
 
 ```bash
 # it will return the latest metrics of cpu and mem.
 curl http://${LBS_EXTERNAL_IP}:12000/informant/metrics/get/cpu-memory -d '{"ServiceDescriptor":{"ServiceName":"gse","Partition": 1,"Replica":1}}'
 ```
 
-*   WEB API and console
-    
+* WEB API and console
 
 ```bash
 # it will return {"error":false,"message":"pong","results":null} if accessing successfully

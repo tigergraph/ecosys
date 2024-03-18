@@ -14,14 +14,20 @@ This document provides detailed instructions for deploying a TigerGraph cluster 
     - [Acquire special permission](#acquire-special-permission)
     - [Providing a Private SSH Key Pair for Enhanced Security](#providing-a-private-ssh-key-pair-for-enhanced-security)
     - [Specify the StorageClass name](#specify-the-storageclass-name)
+    - [Specify the additional Storage for mounting multiple PVs(Optional)](#specify-the-additional-storage-for-mounting-multiple-pvsoptional)
+    - [Customize configurations for the TigerGraph system (Optional)](#customize-configurations-for-the-tigergraph-system-optional)
     - [Create TG cluster with specific options](#create-tg-cluster-with-specific-options)
   - [Connect to a TigerGraph cluster](#connect-to-a-tigergraph-cluster)
     - [Connecting to a TigerGraph cluster Pod](#connecting-to-a-tigergraph-cluster-pod)
-    - [Access TigerGraph Suite](#access-tigergraph-suite)
-    - [Access RESTPP API Service](#access-restpp-api-service)
+    - [Access TigerGraph Services](#access-tigergraph-services)
+      - [Verify the API service](#verify-the-api-service)
+      - [Verify the RESTPP API service](#verify-the-restpp-api-service)
+      - [Verify the Metrics API service](#verify-the-metrics-api-service)
   - [Upgrade a TigerGraph cluster](#upgrade-a-tigergraph-cluster)
   - [Scale a TigerGraph cluster](#scale-a-tigergraph-cluster)
+    - [Change the HA factor of the TigerGraph cluster](#change-the-ha-factor-of-the-tigergraph-cluster)
   - [Update the resources(CPU and Memory) of the TigerGraph cluster](#update-the-resourcescpu-and-memory-of-the-tigergraph-cluster)
+  - [Update system configurations and license of the TigerGraph cluster](#update-system-configurations-and-license-of-the-tigergraph-cluster)
   - [Destroy the TigerGraph cluster and the Kubernetes Operator](#destroy-the-tigergraph-cluster-and-the-kubernetes-operator)
     - [Destroy the TigerGraph cluster](#destroy-the-tigergraph-cluster)
     - [Uninstall TigerGraph Operator](#uninstall-tigergraph-operator)
@@ -114,6 +120,9 @@ export SERVICE_ACCOUNT_NAME="tg-service-account"
 Install TigerGraph Operator using the following command:
 
 A namespace-scoped operator watches and manages resources in a single Namespace, whereas a cluster-scoped operator watches and manages resources cluster-wide.
+
+> [!IMPORTANT]
+> Namespace-scoped operators require the same operator version to be installed for different namespaces.
 
 - Install a namespace-scoped Operator
 
@@ -357,8 +366,8 @@ Starting from Operator version 0.0.4, users are required to provide their privat
 
 - Step 2: Create a Secret Object
 
-  > [!IMPORTANT]
-  > The namespace of the Secret object must be the same as that of the TigerGraph cluster.
+> [!IMPORTANT]
+> The namespace of the Secret object must be the same as that of the TigerGraph cluster.
 
   Create a secret object based on the private SSH key file generated in step 1. Ensure that the key name of the secret for the private SSH key is `private-ssh-key`, and the key name for the public SSH key is `public-ssh-key`. Do not alter these key names:
 
@@ -388,18 +397,61 @@ With the StorageClass identified, you can proceed to create clusters using the c
 
 This process ensures that the appropriate StorageClass is assigned to your TigerGraph cluster creation, optimizing storage provisioning and management.
 
+### Specify the additional Storage for mounting multiple PVs(Optional)
+
+You can specify multiple PVs for TigerGraph Pods by specifying the `--additional-storages` option. The value of this option is a YAML file configuration. For example:
+
+> [!NOTE]
+> Other parameters required to create a cluster are omitted here.
+
+```bash
+kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --additional-storages additional-storage-tg-logs.yaml
+```
+
+Example additional storage YAML file:
+
+```YAML
+additionalStorages:
+    - name: tg-kafka
+    storageSize: 5Gi
+    - name: tg-log
+    storageSize: 5Gi
+    - name: tg-sidecar
+    storageClassName: efs-sc
+    storageSize: 5Gi
+    accessMode: ReadWriteMany
+    volumeMode: Filesystem
+    - name: tg-backup
+    storageSize: 5Gi
+    mountPath: /home/tigergraph/backup
+    accessMode: ReadWriteOnce
+    volumeMode: Filesystem
+```
+
+You can also specify the multiple PVs using CR configuration, For more information, see [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md)
+
+### Customize configurations for the TigerGraph system (Optional)
+
+You can customize the configurations for the TigerGraph system by specifying the `--tigergraph-config` option. The value of this option should be key-value pairs separated by commas. For example:
+
+```bash
+ --tigergraph-config "System.Backup.TimeoutSec=900,Controller.BasicConfig.LogConfig.LogFileMaxSizeMB=40"
+```
+
+ The key-value pairs are the same as the configurations that can be set by `gadmin config set` command. For more information, see [Configuration Parameters](https://docs.tigergraph.com/tigergraph-server/current/reference/configuration-parameters). All configurations will be applied to the TigerGraph system when the cluster is initializing.
+
 ### Create TG cluster with specific options
 
 To create a new TigerGraph cluster with specific options, use either the kubectl-tg plugin or a CR YAML manifest. Below are examples using the kubectl-tg plugin:
 
 You can get all of the TigerGraph docker image version from [tigergraph-k8s](https://hub.docker.com/r/tigergraph/tigergraph-k8s/tags)
 
-The following command will create a new TigerGraph cluster with a free license:
+You must provide your license key when creating cluster. Contact TigerGraph support for help finding your license key.
 
-- Get and export free license
+- Export license key as an environment variable
 
   ```bash
-  export LICENSE=$(curl -L "ftp://ftp.graphtiger.com/lic/license3.txt" -o "/tmp/license3.txt" 2>/dev/null && cat /tmp/license3.txt)
+  export LICENSE=<LICENSE_KEY>
   ```
 
 - Create TigerGraph cluster with kubectl-tg plugin
@@ -421,13 +473,8 @@ The following command will create a new TigerGraph cluster with a free license:
   spec:
     image: docker.io/tigergraph/tigergraph-k8s:3.9.3
     imagePullPolicy: IfNotPresent
-    initJob:
-      image: docker.io/tigergraph/tigergraph-k8s-init:0.0.9
-      imagePullPolicy: IfNotPresent
-    initTGConfig:
-      ha: 2
-      license: ${LICENSE}
-      version: 3.9.3
+    ha: 2
+    license: ${LICENSE}
     listener:
       type: LoadBalancer
     privateKeyName: ${YOUR_SSH_KEY_SECRET_NAME}
@@ -469,44 +516,38 @@ To log into a single container within the TigerGraph cluster and execute command
 kubectl tg connect --cluster-name ${YOUR_CLUSTER_NAME} --namespace ${YOUR_NAMESPACE}
 ```
 
-### Access TigerGraph Suite
+### Access TigerGraph Services
 
-- Query the external service address.
+Query the external service address:
 
   ```bash
-  export GUI_SERVICE_ADDRESS=$(kubectl get svc/${YOUR_CLUSTER_NAME}-gui-external-service --namespace ${YOUR_NAMESPACE} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-  echo $GUI_SERVICE_ADDRESS
-  35.225.232.251
+  export EXTERNAL_SERVICE_ADDRESS=$(kubectl get svc/${YOUR_CLUSTER_NAME}-nginx-external-service --namespace ${YOUR_NAMESPACE} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
   ```
 
-- Verify the API service
+#### Verify the API service
 
   ```bash
-  curl http://${GUI_SERVICE_ADDRESS}:14240/api/ping
+  curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/api/ping
 
   {"error":false,"message":"pong","results":null}
   ```
 
-Access the TigerGraph Suite in your browser using the URL: http://${GUI_SERVICE_ADDRESS}:14240 (replace `GUI_SERVICE_ADDRESS` with the actual service address).
+To access the TigerGraph Suite, open it in your browser using the following URL: http://${EXTERNAL_SERVICE_ADDRESS}:14240, replacing `EXTERNAL_SERVICE_ADDRESS` with the actual service address.
 
-### Access RESTPP API Service
-
-- Query the external service address.
+#### Verify the RESTPP API service
 
   ```bash
-  export RESTPP_SERVICE_ADDRESS=$(kubectl get svc/${YOUR_CLUSTER_NAME}-rest-external-service --namespace ${YOUR_NAMESPACE} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-  echo $RESTPP_SERVICE_ADDRESS
-  34.173.210.92
-  ```
-
-- Verify the RESTPP API service:
-
-  ```bash
-  curl http://${RESTPP_SERVICE_ADDRESS}:9000/echo
+  curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/restpp/echo
 
   {"error":false, "message":"Hello GSQL"}
+  ```
+
+#### Verify the Metrics API service
+
+  ```bash
+curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"LatestNum":"1"}'
+
+{"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"1ebeaf2a380f4941b371efaaceb3467b","TimestampNS":"1703666521019463773","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1703666521008230613","Network":{"IP":"10.244.0.79","TCPConnectionNum":89,"IncomingBytesNum":"1654215","OutgoingBytesNum":"1466486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"2c54ed5d6ba14e789db03fd9e023219c","TimestampNS":"1703666521020024563","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1703666521011409133","Network":{"IP":"10.244.0.78","TCPConnectionNum":90,"IncomingBytesNum":"1637413","OutgoingBytesNum":"1726712"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"c3478943ca134530bcd3aa439521c626","TimestampNS":"1703666521019483903","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1703666521009116924","Network":{"IP":"10.244.0.77","TCPConnectionNum":107,"IncomingBytesNum":"1298257","OutgoingBytesNum":"1197920"}}]}
   ```
 
 ## Upgrade a TigerGraph cluster
@@ -528,7 +569,7 @@ Assuming the current version of the cluster is 3.9.2, you can upgrade it to vers
 kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 3.9.3  --namespace ${YOUR_NAMESPACE}
 ```
 
-If you prefer using a CR YAML manifest, update the `spec.initTGConfig.version` and `spec.image` field, and then apply it.
+If you prefer using a CR YAML manifest, update the `spec.version` and `spec.image` field, and then apply it.
 
 Ensure the successful upgrade with these commands:
 
@@ -549,7 +590,15 @@ Before scaling the cluster, scale the corresponding node pool to provide suffici
 kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --size 6 --ha 2  --namespace ${YOUR_NAMESPACE}
 ```
 
-The above command scales the cluster to a size of 6 with a high availability factor of 2. If you prefer to use a CR (Custom Resource) YAML manifest for scaling, update the `spec.replicas` and `spec.initTGConfig.ha` fields accordingly.
+The above command scales the cluster to a size of 6 with a high availability factor of 2. If you prefer to use a CR (Custom Resource) YAML manifest for scaling, update the `spec.replicas` and `spec.ha` fields accordingly.
+
+### Change the HA factor of the TigerGraph cluster
+
+From Operator version 1.0.0, you can change the HA factor of the TigerGraph cluster without updating size by using the following command:
+
+```bash
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --ha ${NEW_HA} --namespace ${YOUR_NAMESPACE}
+```
 
 ## Update the resources(CPU and Memory) of the TigerGraph cluster
 
@@ -560,6 +609,26 @@ kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --cpu 8 --memory 16Gi  --c
 ```
 
 For CR YAML manifests, update the `spec.resources.requests` and `spec.resources.limits` fields and apply the changes.
+
+## Update system configurations and license of the TigerGraph cluster
+
+Use the following command to update the system configurations of the TigerGraph cluster:
+
+```bash
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --tigergraph-config "System.Backup.TimeoutSec=900,Controller.BasicConfig.LogConfig.LogFileMaxSizeMB=40"  --namespace ${YOUR_NAMESPACE}
+```
+
+Use the following command to update the license of the TigerGraph cluster:
+
+```bash
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --license ${LICENSE}  --namespace ${YOUR_NAMESPACE}
+```
+
+If you want to update both the system configurations and license of the TigerGraph cluster, please provide these two options together in one command(**recommanded**) instead of two separate commands:
+
+```bash
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --tigergraph-config "System.Backup.TimeoutSec=900,Controller.BasicConfig.LogConfig.LogFileMaxSizeMB=40" --license ${LICENSE}  --namespace ${YOUR_NAMESPACE}
+```
 
 ## Destroy the TigerGraph cluster and the Kubernetes Operator
 

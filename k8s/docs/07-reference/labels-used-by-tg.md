@@ -1,7 +1,8 @@
 # Labels used by TigerGraph Operator
+
 TigerGraph utilizes specific labels for different purposes in Kubernetes:
 
-### TigerGraph Cluster Pods
+## TigerGraph Cluster Pods
 
 | Label                                  | Usage                                                               |
 |----------------------------------------|---------------------------------------------------------------------|
@@ -10,14 +11,14 @@ TigerGraph utilizes specific labels for different purposes in Kubernetes:
 | `tigergraph.com/gui-service=true`         | Labeled on pods running the GUI service.                          |
 | `tigergraph.com/restpp-service=true`      | Labeled on pods running the RESTPP service.                       |
 
-### TigerGraph Job Pods
+## TigerGraph Job Pods
 
 | Label                                           | Usage                                                                        |
 |-------------------------------------------------|------------------------------------------------------------------------------|
 | `tigergraph.com/cluster-name=CLUSTER_NAME`      | Indicates which cluster the job is for.                                     |
-| `tigergraph.com/cluster-job={CLUSTER_NAME}-{JOB_TYPE}-job` | Specifies the type of job and the cluster it's associated with (JOB_TYPE: init, upgrade, expand, shrink-pre, shrink-post). |
+| `tigergraph.com/cluster-job={CLUSTER_NAME}-{JOB_TYPE}-job` | Specifies the type of job and the cluster it's associated with (JOB_TYPE: init, upgrade, expand, shrink-pre, config-update, ha-update). |
 
-### TigerGraph Backup/Restore Job Pods
+## TigerGraph Backup/Restore Job Pods
 
 | Label                                            | Usage                                                                        |
 |--------------------------------------------------|------------------------------------------------------------------------------|

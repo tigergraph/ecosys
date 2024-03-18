@@ -1,36 +1,37 @@
+# NodeSelector, Affinity and Toleration Use Cases>
 
-<h1>NodeSelector, Affinity and Toleration Use Cases</h1>
-
-- [Basic Knowledge](#basic-knowledge)
-  - [Which labels are TG using](#which-labels-are-tg-using)
-    - [TigerGraph Cluster Pods](#tigergraph-cluster-pods)
+- [NodeSelector, Affinity and Toleration Use Cases\>](#nodeselector-affinity-and-toleration-use-cases)
+  - [Basic Knowledge](#basic-knowledge)
+    - [Which labels are TG using](#which-labels-are-tg-using)
+      - [TigerGraph Cluster Pods](#tigergraph-cluster-pods)
     - [TigerGraph Job Pods](#tigergraph-job-pods)
-    - [TigerGraph Backup/Restore Job Pods](#tigergraph-backuprestore-job-pods)
-- [NodeSelector](#nodeselector)
-  - [Example: schedule pods to nodes with disktype=ssd](#example-schedule-pods-to-nodes-with-disktypessd)
-- [Affinity](#affinity)
-  - [NodeAffinity](#nodeaffinity)
-    - [Preferred Node Affinity](#preferred-node-affinity)
-      - [Example: Difference between Preferred Affinity and Required Affinity](#example-difference-between-preferred-affinity-and-required-affinity)
-    - [Weighted Affinity and Logical Operators](#weighted-affinity-and-logical-operators)
-    - [Combining Rules with Logical Operators](#combining-rules-with-logical-operators)
-      - [Examples: Combining Multiple Rules with Different Weights](#examples-combining-multiple-rules-with-different-weights)
-  - [Inter-pod Affinity and Anti-Affinity](#inter-pod-affinity-and-anti-affinity)
-    - [Example: Avoiding Scheduling TigerGraph Pods on the Same VM Instance](#example-avoiding-scheduling-tigergraph-pods-on-the-same-vm-instance)
-    - [Scheduling Pods to Different Zones](#scheduling-pods-to-different-zones)
-- [Toleration](#toleration)
-  - [Example: Implementing User Groups with Taints and Tolerations](#example-implementing-user-groups-with-taints-and-tolerations)
-- [Notice](#notice)
+      - [TigerGraph Backup/Restore Job Pods](#tigergraph-backuprestore-job-pods)
+  - [NodeSelector](#nodeselector)
+    - [Example: schedule pods to nodes with disktype=ssd](#example-schedule-pods-to-nodes-with-disktypessd)
+  - [Affinity](#affinity)
+    - [NodeAffinity](#nodeaffinity)
+      - [Preferred Node Affinity](#preferred-node-affinity)
+        - [Example: Difference between Preferred Affinity and Required Affinity](#example-difference-between-preferred-affinity-and-required-affinity)
+      - [Weighted Affinity and Logical Operators](#weighted-affinity-and-logical-operators)
+      - [Combining Rules with Logical Operators](#combining-rules-with-logical-operators)
+        - [Examples: Combining Multiple Rules with Different Weights](#examples-combining-multiple-rules-with-different-weights)
+    - [Inter-pod Affinity and Anti-Affinity](#inter-pod-affinity-and-anti-affinity)
+      - [Example: Avoiding Scheduling TigerGraph Pods on the Same VM Instance](#example-avoiding-scheduling-tigergraph-pods-on-the-same-vm-instance)
+      - [Scheduling Pods to Different Zones](#scheduling-pods-to-different-zones)
+  - [Toleration](#toleration)
+    - [Example: Implementing User Groups with Taints and Tolerations](#example-implementing-user-groups-with-taints-and-tolerations)
+  - [Notice](#notice)
 
-Basic Knowledge
-===============
+## Basic Knowledge
 
 In a Kubernetes cluster, every node is equipped with labels that provide information about the node's attributes and capabilities. Some labels are automatically assigned by Kubernetes itself, while others can be added manually by administrators. These labels play a crucial role in workload distribution, resource allocation, and overall cluster management.(please refer to [Well-Known Labels, Annotations and Taints](https://kubernetes.io/docs/reference/labels-annotations-taints/) ). You also have the ability to manually assign labels to nodes in your Kubernetes cluster.
 
 To view all labels associated with nodes, you can use the following command:
+
 ```bash
 kubectl get nodes --show-labels
 ```
+
 Here's an example of node labels in a Google Kubernetes Engine (GKE) cluster:
 
 ```bash
@@ -44,15 +45,14 @@ To manually assign labels to nodes, you can use the kubectl label command. For e
 ```bash
 kubectl label nodes NODE_1 NODE_2  LABEL_KEY=LABEL_VALUE
 ```
+
 These labels can then be utilized in affinity rules and other scheduling configurations to ensure that pods are placed on the most suitable nodes based on your specific requirements.
 
-
-Which labels are TG using
--------------------------
+### Which labels are TG using
 
 TigerGraph utilizes specific labels for different purposes in Kubernetes:
 
-### TigerGraph Cluster Pods
+#### TigerGraph Cluster Pods
 
 | Label                                  | Usage                                                               |
 |----------------------------------------|---------------------------------------------------------------------|
@@ -68,7 +68,7 @@ TigerGraph utilizes specific labels for different purposes in Kubernetes:
 | `tigergraph.com/cluster-name=CLUSTER_NAME`      | Indicates which cluster the job is for.                                     |
 | `tigergraph.com/cluster-job={CLUSTER_NAME}-{JOB_TYPE}-job` | Specifies the type of job and the cluster it's associated with (JOB_TYPE: init, upgrade, expand, shrink-pre, shrink-post). |
 
-### TigerGraph Backup/Restore Job Pods
+#### TigerGraph Backup/Restore Job Pods
 
 | Label                                            | Usage                                                                        |
 |--------------------------------------------------|------------------------------------------------------------------------------|
@@ -77,16 +77,13 @@ TigerGraph utilizes specific labels for different purposes in Kubernetes:
 
 These labels help identify the purpose and affiliation of various pods within the Kubernetes environment, making it easier to manage and monitor different components of TigerGraph clusters, jobs, backups, and restores.
 
-NodeSelector
-============
+## NodeSelector
 
 NodeSelector in the TigerGraph Custom Resource (CR) allows you to control the scheduling of pods for the TigerGraph cluster. When you define a NodeSelector, the pods related to the TigerGraph cluster will only be scheduled on nodes that have specific labels matching the NodeSelector criteria. This feature ensures that the TigerGraph cluster pods are placed on nodes that meet your specified requirements.(to know more about NodeSelector: [Assign Pods to Nodes](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/) )
 
 It's important to note that NodeSelector only applies to pods directly associated with the TigerGraph cluster. Other pods running tasks such as init, upgrade, expand, or shrink jobs will not be influenced by the NodeSelector settings.
 
-
-Example: schedule pods to nodes with disktype=ssd
--------------------------------------------------
+### Example: schedule pods to nodes with disktype=ssd
 
 In this example, we will demonstrate how to use the NodeSelector feature to schedule pods to nodes with a specific label, such as disktype=ssd. This example assumes you are using Google Kubernetes Engine (GKE).
 
@@ -112,6 +109,7 @@ kubectl label nodes gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-2p9g \
   gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-9t5m \
   disktype=ssd
 ```
+
 Replace the node names with the actual names of the nodes you want to label as SSD.
 
 First, we try to create a TG cluster without any rules. Use following CR:
@@ -120,34 +118,29 @@ First, we try to create a TG cluster without any rules. Use following CR:
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-cluster
+  name: test-cluster
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 2
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
 ```
+
 Apply the configuration using `kubectl apply -f <filename>.yaml`.
 
 Use `kubectl describe pod` to see which node each pod is scheduled to
@@ -165,52 +158,47 @@ Node:         gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-4z0q/10.128.0.73
 
 Note that the pods are scheduled to three random nodes.
 
-
 Then we create a cluster with NodeSelector:
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-nodeselector
+  name: test-nodeselector
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 2
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   nodeSelector:
-     disktype: ssd
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    nodeSelector:
+      disktype: ssd
 ```
+
 Apply the configuration using `kubectl apply -f <filename>.yaml`.
 
 In this configuration, there is an additional field `.spec.affinityConfiguration`, which is used to define NodeSelector.
 
 ```yaml
- affinityConfiguration:
-   nodeSelector:
-     disktype: ssd
+  affinityConfiguration:
+    nodeSelector:
+      disktype: ssd
 ```
 
 That means the pods can only be scheduled to nodes with label `disktype=ssd`.
@@ -230,16 +218,13 @@ Node:  gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-4z0q/10.128.0.73
 
 Both `gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-4z0q` and `gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-2p9g` possess the specified label.
 
-
-Affinity
-========
+## Affinity
 
 Please note that affinity settings exclusively impact the pods within the TigerGraph cluster. Any other pods executing init/upgrade/expand/shrink tasks will remain unaffected by these affinity configurations.
 
-NodeAffinity
-------------
+### NodeAffinity
 
-Additionally, TigerGraph pods can be strategically allocated to nodes with specific labels through the use of NodeAffinity. To gain a deeper understanding of Node Affinity, you can refer to the official Kubernetes documentation: [Assign Pods to Nodes using Node Affinity](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/) 
+Additionally, TigerGraph pods can be strategically allocated to nodes with specific labels through the use of NodeAffinity. To gain a deeper understanding of Node Affinity, you can refer to the official Kubernetes documentation: [Assign Pods to Nodes using Node Affinity](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/)
 
 Here is an illustrative example of a CR (Custom Resource) configuration implementing NodeAffinity:
 
@@ -247,63 +232,57 @@ Here is an illustrative example of a CR (Custom Resource) configuration implemen
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-nodeaffinity
+  name: test-nodeaffinity
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 2
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   affinity:
-     nodeAffinity:
-       requiredDuringSchedulingIgnoredDuringExecution:
-         nodeSelectorTerms:
-         - matchExpressions:
-           - key: disktype
-             operator: In
-             values:
-             - ssd      
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: disktype
+              operator: In
+              values:
+              - ssd      
 ```
+
 In this example, the nodeAffinity section is utilized within the affinityConfiguration to specify that the pods require nodes with the label disktype=ssd during scheduling, while allowing execution to continue even if the affinity is disregarded.
 
 Certainly, let's take a closer look at the `.spec.affinityConfiguration` section:
 
 ```yaml
 affinityConfiguration:
-   affinity:
-     nodeAffinity:
-       requiredDuringSchedulingIgnoredDuringExecution:
-         nodeSelectorTerms:
-         - matchExpressions:
-           - key: disktype
-             operator: In
-             values:
-             - ssd
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd
 ```
+
 Within the affinityConfiguration, the setting `requiredDuringSchedulingIgnoredDuringExecution` is employed. This signifies that it is mandatory for our pods to be scheduled exclusively on nodes possessing the specified label, ensuring a precise node placement throughout both the scheduling and execution phases.
-
-
 
 You can use the following command to observe the nodes to which the pods are scheduled:
 
@@ -317,15 +296,15 @@ test-nodeaffinity-2                                      0/1     Running     0  
 
 Notice that both gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-2p9g and gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-4z0q nodes possess the specified label, indicating the successful enforcement of node affinity.
 
-### Preferred Node Affinity
+#### Preferred Node Affinity
 
 For a deeper understanding of preferred node affinity, you can explore the document: [Schedule a Pod using preferred node affinity](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/#schedule-a-pod-using-preferred-node-affinity).
 
 It's crucial to differentiate between the `preferredDuringSchedulingIgnoredDuringExecution` and `requiredDuringSchedulingIgnoredDuringExecution` fields. When utilizing `requiredDuringSchedulingIgnoredDuringExecution`, pods will remain **unscheduled** if an insufficient number of nodes adhere to the specified rules. On the other hand, opting for `preferredDuringSchedulingIgnoredDuringExecution` indicates that the Kubernetes scheduler will **attempt** to schedule pods onto nodes aligned with the rules. In cases where no nodes fulfill the criteria, the pods will be scheduled alongside other pods.
 
-#### Example: Difference between Preferred Affinity and Required Affinity
+##### Example: Difference between Preferred Affinity and Required Affinity
 
-To illustrate the contrast between preferred affinity and required affinity, let's consider a scenario where we label only one node and create a TigerGraph cluster with specific resource requirements. 
+To illustrate the contrast between preferred affinity and required affinity, let's consider a scenario where we label only one node and create a TigerGraph cluster with specific resource requirements.
 
 ```yaml
 kubectl label nodes gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-2p9g disktype=ssd
@@ -337,43 +316,37 @@ We create a TigerGraph cluster with resource requests that would limit one pod p
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-nodeaffinity
+  name: test-nodeaffinity
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 4
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   affinity:
-     nodeAffinity:
-       requiredDuringSchedulingIgnoredDuringExecution:
-         nodeSelectorTerms:
-         - matchExpressions:
-           - key: disktype
-             operator: In
-             values:
-             - ssd      
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: disktype
+              operator: In
+              values:
+              - ssd      
 ```
 
 Running kubectl get pods --output=wide provides the following output:
@@ -384,15 +357,19 @@ test-nodeaffinity-0                                      1/1     Running   0    
 test-nodeaffinity-1                                      0/1     Pending   0          107s    <none>       <none>                                           <none>           <none>
 test-nodeaffinity-2                                      0/1     Pending   0          106s    <none>       <none>                                           <none>           <none>
 ```
+
 In this output, you can observe that only one pod has been scheduled to the node labeled with `disktype=ssd`. The remaining two pods are pending due to resource constraints, as there is only one node with the required label and that node does not have sufficient available CPU resources to accommodate all pods.
 
 You can utilize the following command to gain insights into why `test-nodeaffinity-1` is in a pending state:
-```
+
+```bash
 kubectl describe pod test-nodeaffinity-1
 ```
+
 This command will provide detailed information about the pod's status, including any events and messages related to its scheduling and resource allocation. In this specific case, the output will indicate the reason for the pod's pending status, such as insufficient CPU resources and failure to match the pod's node affinity or selector.
 
 Here is an example of the type of information you might encounter:
+
 ```yaml
 Events:
   Type     Reason             Age                   From                Message
@@ -400,6 +377,7 @@ Events:
   Normal   NotTriggerScaleUp  2m16s                 cluster-autoscaler  pod didn't trigger scale-up:
   Warning  FailedScheduling   101s (x2 over 2m17s)  default-scheduler   0/6 nodes are available: 1 Insufficient cpu, 5 node(s) didn't match Pod's node affinity/selector. preemption: 0/6 nodes are available: 1 No preemption victims found for incoming pod, 5 Preemption is not helpful for scheduling.
 ```
+
 This output indicates that the pod is pending due to insufficient CPU resources (`Insufficient cpu`) and the fact that the node affinity or selector criteria are not being met by any available nodes (`node(s) didn't match Pod's node affinity/selector`).
 
 Now we edit the above CR, use `preferredDuringSchedulingIgnoredDuringExecution` instead
@@ -407,19 +385,21 @@ Now we edit the above CR, use `preferredDuringSchedulingIgnoredDuringExecution` 
 ```yaml
 #......
 #The same as above one
- affinityConfiguration:
-   affinity:
-     nodeAffinity:
-       preferredDuringSchedulingIgnoredDuringExecution:
-       - weight: 1
-         preference:
-           matchExpressions:
-           - key: disktype
-             operator: In
-             values:
-             - ssd         
+  affinityConfiguration:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+            - key: disktype
+              operator: In
+              values:
+              - ssd         
 ```
+
 Upon checking pod status with `kubectl get pods --output=wide`, you notice the following:
+
 ```bash
 > kubectl get pods --output=wide
 NAME                                                     READY   STATUS    RESTARTS   AGE     IP           NODE                                             NOMINATED NODE   READINESS GATES
@@ -430,12 +410,11 @@ test-nodeaffinity-2                                      0/1     ContainerCreati
 
  In the provided output, only one pod has been successfully scheduled to a node with the specified label (`disktype=ssd`). The other pods were scheduled to nodes without the specific label, which demonstrates the behavior of `preferredDuringSchedulingIgnoredDuringExecution`. This affinity setting attempts to schedule pods according to the defined preferences, but it is not a strict requirement. If nodes meeting the preferences are unavailable, the pods will still be scheduled on other nodes.
 
-
-### Weighted Affinity and Logical Operators
+#### Weighted Affinity and Logical Operators
 
 The `weight` attribute, ranging from 1 to 100, can be assigned to each instance of the `preferredDuringSchedulingIgnoredDuringExecution` affinity type. This weight represents the preference given to a particular affinity rule. When all other scheduling requirements for a Pod are met, the scheduler calculates a score by summing up the weights of satisfied preferred rules. This score contributes to the overall prioritization of nodes, with higher scores leading to higher scheduling priority for the Pod.
 
-### Combining Rules with Logical Operators
+#### Combining Rules with Logical Operators
 
 The `operator` field allows you to employ logical operators to determine how Kubernetes interprets the affinity rules. Various operators such as `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, and `Lt` can be used. These operators can be combined to craft nuanced rules that guide the scheduling behavior.
 
@@ -445,8 +424,7 @@ In scenarios involving multiple terms associated with `nodeAffinity` types withi
 
 For a single term within `nodeSelectorTerms`, if multiple expressions are present in a single `matchExpressions` field, the Pod can only be scheduled onto a node if all the expressions are satisfied (expressions are ANDed).
 
-
-#### Examples: Combining Multiple Rules with Different Weights
+##### Examples: Combining Multiple Rules with Different Weights
 
 In this scenario, we have labeled nodes, with two labeled as `disktype=ssd` and two as `physical-machine=true`. We assign a weight of 1 to the `disktype=ssd` rule and a weight of 50 to the `physical-machine=true` rule. The objective is to demonstrate how to combine these rules effectively.
 
@@ -496,12 +474,12 @@ test-nodeaffinity-2      0/1     Running   0          19s     10.36.3.12   gke-t
 
 The pods are preferentially scheduled to nodes with the `physical-machine=true` label, as specified by the rule with a weight of 50. Two out of three pods are successfully scheduled on nodes meeting this rule. Additionally, one pod is scheduled to a node with the label `disktype=ssd`.
 
-Inter-pod Affinity and Anti-Affinity
--------------------------------------
+### Inter-pod Affinity and Anti-Affinity
 
 [Inter-pod affinity and anti-affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity) offer the capability to restrict the nodes on which your Pods are scheduled based on the labels of other Pods that are already running on those nodes. This is in contrast to node affinity, which is based on the labels of the nodes themselves.
 
 Similar to node affinity, inter-pod affinity and anti-affinity come in two types:  
+
 - `requiredDuringSchedulingIgnoredDuringExecution`
 - `preferredDuringSchedulingIgnoredDuringExecution`
 
@@ -513,7 +491,7 @@ To define the topology domain (X), a `topologyKey` is used. The `topologyKey` se
 
 If you have specific requirements, such as the need for Pods to be distributed across certain domains, thoughtful selection of the appropriate `topologyKey` ensures that the scheduling behavior aligns with your needs.
 
-### Example: Avoiding Scheduling TigerGraph Pods on the Same VM Instance
+#### Example: Avoiding Scheduling TigerGraph Pods on the Same VM Instance
 
 In this example, we'll explore how to prevent the scheduling of TigerGraph pods on the same virtual machine (VM) instance. Each TigerGraph pod is uniquely labeled with `tigergraph.com/cluster-pod=${CLUSTER_NAME}`, which designates the cluster it belongs to. We will utilize this label to create the scheduling rule.
 
@@ -523,52 +501,45 @@ Consider the following Kubernetes resource definition:
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-cluster
+  name: test-cluster
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 2
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tginternal/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   affinity:
-     podAntiAffinity:
-       preferredDuringSchedulingIgnoredDuringExecution:
-       - weight: 100
-         podAffinityTerm:
-           labelSelector:
-             matchExpressions:
-             - key: tigergraph.com/cluster-pod
-               operator: In
-               values:
-               - test-cluster
-           topologyKey: kubernetes.io/hostname
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: tigergraph.com/cluster-pod
+                operator: In
+                values:
+                - test-cluster
+            topologyKey: kubernetes.io/hostname
 ```
 
 This configuration enforces the rule that TigerGraph pods should not be scheduled on VM instances that are already hosting other TigerGraph pods belonging to the same cluster (`test-cluster`). However, in cases where there are insufficient nodes available, more than one TigerGraph pod may still be scheduled on the same VM instance.
 
 By leveraging the `podAntiAffinity` feature with a preferred scheduling strategy, you ensure that TigerGraph pods are spread across different VM instances within the cluster to enhance fault tolerance and resource distribution.
-
 
 Create TigerGraph with above CR and see which node the pods are scheduled to:
 
@@ -589,42 +560,36 @@ We can also require them to be scheduled on nodes which does not have pods of an
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-cluster
+  name: test-cluster
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 1
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   affinity:
-     podAntiAffinity:
-       requiredDuringSchedulingIgnoredDuringExecution:
-       - labelSelector:
-           matchExpressions:
-           - key: tigergraph.com/cluster-pod
-             operator: Exists
-         topologyKey: kubernetes.io/hostname
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 1
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: tigergraph.com/cluster-pod
+              operator: Exists
+          topologyKey: kubernetes.io/hostname
 ```
 
 This will require the scheduler to schedule pods of test-cluster to nodes that is not running any pods belonging to another TG cluster.
@@ -643,7 +608,7 @@ test-nodeaffinity-1                                      1/1     Running        
 test-nodeaffinity-2                                      1/1     Running             0          85m     10.36.3.12   gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-4z0q   <none>           <none>
 ```
 
-### Scheduling Pods to Different Zones
+#### Scheduling Pods to Different Zones
 
 We create an **OpenShift Cluster** which has one master node and five worker nodes.
 
@@ -659,10 +624,6 @@ tg-k8s-openshift-1024-5jz2w-worker-c-t86pt   Ready    worker   84m   v1.23.5+012
 tg-k8s-openshift-1024-5jz2w-worker-d-7xv82   Ready    worker   84m   v1.23.5+012e945   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=e2-standard-8,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=us-east1,failure-domain.beta.kubernetes.io/zone=us-east1-d,kubernetes.io/arch=amd64,kubernetes.io/hostname=tg-k8s-openshift-1024-5jz2w-worker-d-7xv82,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.kubernetes.io/instance-type=e2-standard-8,node.openshift.io/os_id=rhcos,topology.gke.io/zone=us-east1-d,topology.kubernetes.io/region=us-east1,topology.kubernetes.io/zone=us-east1-d
 qiuyuhan@yuhan-qiu-bot-20220808075602-0:~/product/src/cqrs/k8s-operator$ 
 ```
-
-Certainly, I've polished the provided text for clarity and readability:
-
----
 
 Observing the node configuration, each node is associated with a label: `topology.kubernetes.io/zone=xxx`.
 
@@ -693,14 +654,8 @@ spec:
       resources:
         requests:
           storage: 10G
-  initTGConfig:
-    ha: 1
-    license: YOUR_LICENSE
-    version: 3.9.2
-    hashBucketInBit: 5
-  initJob:
-    image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-    imagePullPolicy: IfNotPresent
+  ha: 1
+  license: YOUR_LICENSE
   affinityConfiguration:
     affinity:
       podAntiAffinity:
@@ -725,12 +680,12 @@ test-cluster-2       0/1     ContainerCreating   0          1s     <none>       
 
 To elaborate, `tg-k8s-openshift-1024-5jz2w-worker-d-7xv82` corresponds to `us-east1-d`, `tg-k8s-openshift-1024-5jz2w-worker-b-w96n6` is positioned in `us-east1-b`, and `tg-k8s-openshift-1024-5jz2w-worker-c-456wl` is situated in `us-east1-c`.
 
-Toleration
-===========
+## Toleration
 
 [Taint and Toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
 
 You can put multiple taints on the same node and multiple tolerations on the same pod. The way Kubernetes processes multiple taints and tolerations is like a filter: start with all of a node's taints, then ignore the ones for which the pod has a matching toleration; the remaining un-ignored taints have the indicated effects on the pod. In particular,  
+
 1. if there is at least one un-ignored taint with effect NoSchedule then Kubernetes will not schedule the pod onto that node  
 2. if there is no un-ignored taint with effect NoSchedule but there is at least one un-ignored taint with effect PreferNoSchedule then Kubernetes will try to not schedule the pod onto the node  
 3. if there is at least one un-ignored taint with effect NoExecute then the pod will be evicted from the node (if it is already running on the node), and will not be scheduled onto the node (if it is not yet running on the node).
@@ -741,8 +696,7 @@ Should we furnish tolerations within the TigerGraph Custom Resource (CR), TigerG
 
 It's important to note that tolerations exclusively affect pods within the TigerGraph cluster. Other pods engaged in init/upgrade/expand/shrink operations will remain unaffected.
 
-Example: Implementing User Groups with Taints and Tolerations
------------------------------------------------------------
+### Example: Implementing User Groups with Taints and Tolerations
 
 A practical application of Taints and Tolerations is the establishment of user groups for the exclusive utilization of designated nodes.
 
@@ -763,33 +717,27 @@ Then create a cluster without toleration:
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-cluster
+  name: test-cluster
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 4
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
 ```
 
 Upon deploying the cluster, it becomes evident that all pods are scheduled to nodes devoid of the applied taints. This aligns with the concept of taints and tolerations, where pods are automatically assigned to nodes that do not possess taints that the pods cannot tolerate.
@@ -807,39 +755,33 @@ Then we  can establish a new cluster configuration with the specified toleration
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
- name: test-toleration
+  name: test-toleration
 spec:
- replicas: 3
- image: docker.io/tigergraph/tigergraph-k8s:3.9.2
- imagePullPolicy: IfNotPresent
- privateKeyName: ssh-key-secret
- listener:
-   type: LoadBalancer
- resources:
-   requests:
-     cpu: 4
-     memory: 8Gi
- storage:
-   type: persistent-claim
-   volumeClaimTemplate:
-     storageClassName: standard
-     resources:
-       requests:
-         storage: 10G
- initTGConfig:
-   ha: 1
-   license: YOUR_LICENSE
-   version: 3.9.2
-   hashBucketInBit: 5
- initJob:
-   image: docker.io/tigergraph/tigergraph-k8s-init:0.0.7
-   imagePullPolicy: IfNotPresent
- affinityConfiguration:
-   tolerations:
-   - key: "userGroup"
-     operator: "Equal"
-     value: "enterprise"
-     effect: "NoExecute"
+  replicas: 3
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.2
+  imagePullPolicy: IfNotPresent
+  privateKeyName: ssh-key-secret
+  listener:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10G
+  ha: 1
+  license: YOUR_LICENSE
+  affinityConfiguration:
+    tolerations:
+    - key: "userGroup"
+      operator: "Equal"
+      value: "enterprise"
+      effect: "NoExecute"
 ```
 
 By integrating tolerations into the configuration, the "test-toleration" cluster is designed to prioritize nodes with the specified taints. In this instance, pods belonging to the "test-toleration" cluster will be exclusively scheduled onto nodes bearing the "userGroup=enterprise" taint with the "NoExecute" effect.
@@ -859,13 +801,12 @@ test-toleration-1                                        0/1     Running     0  
 test-toleration-2                                        1/1     Running     0          55s     10.36.5.23   gke-tg-k8s-gke-1024-default-pool-1e4fbc0f-2p9g   <none>           <none>
 ```
 
-Notice
-=====
+## Notice
 
-*   If the `affinityConfiguration` includes a `NodeSelector`, and the current node does not meet the `NodeSelector` configuration, and the K8S cluster has `auto-scaling` enabled, the K8S cluster will expand more nodes to accommodate the affinityConfiguration, even if the new node cannot accommodate it. This can result in a situation where there are no suitable nodes available for scheduling TigerGraph pods but useless nodes created. Therefore, it is important to configure the affinityConfiguration with the correct node specifications.
-    
-*   If the `affinityConfiguration` includes `pod affinity`, and the current node does not meet the `pod affinity` settings, and the K8S cluster contains `multiple zones` with `auto-scaling` enabled, the automatic scaling of the K8S cluster will be prevented. This can result in a message like "2 node(s) had volume node affinity conflict and 1 node(s) didn't match pod affinity rules" being displayed. The "volume node affinity conflict" message means that the PV requires the current PV to be in the initial zone, which may be the reason why K8S cannot automatically scale. Similarly, there may be no suitable node available for scheduling TigerGraph pods.
-    
+- If the `affinityConfiguration` includes a `NodeSelector`, and the current node does not meet the `NodeSelector` configuration, and the K8S cluster has `auto-scaling` enabled, the K8S cluster will expand more nodes to accommodate the affinityConfiguration, even if the new node cannot accommodate it. This can result in a situation where there are no suitable nodes available for scheduling TigerGraph pods but useless nodes created. Therefore, it is important to configure the affinityConfiguration with the correct node specifications.
+
+- If the `affinityConfiguration` includes `pod affinity`, and the current node does not meet the `pod affinity` settings, and the K8S cluster contains `multiple zones` with `auto-scaling` enabled, the automatic scaling of the K8S cluster will be prevented. This can result in a message like "2 node(s) had volume node affinity conflict and 1 node(s) didn't match pod affinity rules" being displayed. The "volume node affinity conflict" message means that the PV requires the current PV to be in the initial zone, which may be the reason why K8S cannot automatically scale. Similarly, there may be no suitable node available for scheduling TigerGraph pods.
+
     ```bash
     # Pod description
     Events:
@@ -881,19 +822,20 @@ Notice
         Term 0:        topology.kubernetes.io/region in [us-central1]
                        topology.kubernetes.io/zone in [us-central1-a]
     ```
-    
-*   If pod scheduled failed due to limited resource, and got enough resources by expand more nodes, it may cause any pod move to another node, then it may prompt following error.
-    
+
+- If pod scheduled failed due to limited resource, and got enough resources by expand more nodes, it may cause any pod move to another node, then it may prompt following error.
+
     ```bash
     Warning  FailedAttachVolume  45s   attachdetach-controller  Multi-Attach error for volume "pvc-dcdb2953-b50f-45a9-a5c3-7f7752c36698" Volume is already exclusively attached to one node and can't be attached to another
     ```
-    
-*   Based on the factors mentioned, the following conclusions can be drawn:
-    
-    1.  When running creating TG Cluster operations, it is crucial to configure affinityConfiguration based on the correct node resources to ensure successful scaling and operation of the cluster.
-        
-    2.  It is preferred to ensure that there are corresponding nodes to implement HA during the creation TG Cluster phase, rather than updating TG Cluster in the future, because the Node Affinity of the PV may cause failure.
-        
-    3.  Two common scenarios that can lead to failure are:
-        
-        1.  In a K8S cluster with multiple zones, node resources may be insufficient. Since operator using Volume Node Affinity for PV, the pod associated with the PV must be created on the original node, resulting in the pod creation being stuck in the Pending state.
+
+- Based on the factors mentioned, the following conclusions can be drawn:
+
+    1. When running creating TG Cluster operations, it is crucial to configure affinityConfiguration based on the correct node resources to ensure successful scaling and operation of the cluster.
+
+    2. It is preferred to ensure that there are corresponding nodes to implement HA during the creation TG Cluster phase, rather than updating TG Cluster in the future, because the Node Affinity of the PV may cause failure.
+
+    3. Two common scenarios that can lead to failure are:
+  
+        1. In a K8S cluster with multiple zones, node resources may be insufficient. Since operator using Volume Node Affinity for PV, the pod associated with the PV must be created on the original node, resulting in the pod creation being stuck in the Pending state.
+        2. When updating the affinity or adjusting the size of a TG Cluster that already has affinity, conflicts may occur due to the presence of Volume Node Affinity for PV. This is also because the pod associated with the PV must be created on the original node, but the new affinity may require the pod to be scheduled on other nodes, resulting in conflicts and potential failures.
