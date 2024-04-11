@@ -112,7 +112,7 @@ public class RestppRetryer implements Retryer {
     String reason;
     if (e.getCause() instanceof IOException) {
       retryType = TYPE_IO;
-      reason = e.getMessage();
+      reason = e.getCause().toString();
     } else if (e.status() == HttpStatus.SC_FORBIDDEN) {
       retryType = TYPE_AUTH;
       reason =
@@ -120,7 +120,7 @@ public class RestppRetryer implements Retryer {
               "Token %s expired, attempt to retry after refresh", Utils.maskString(token, 2));
     } else {
       retryType = TYPE_SERVER;
-      reason = e.getMessage();
+      reason = String.valueOf(e.status());
     }
     if (attempts[retryType]++ >= maxAttempts[retryType]) {
       throw e;

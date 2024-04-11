@@ -13,21 +13,42 @@
  */
 package com.tigergraph.spark.write;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.connector.write.DataWriter;
-import org.apache.spark.sql.types.StructType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.Write;
 import com.tigergraph.spark.client.Write.LoadingResponse;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
+import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.write.DataWriter;
+import org.apache.spark.sql.types.BooleanType;
+import org.apache.spark.sql.types.ByteType;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DateType;
+import org.apache.spark.sql.types.DecimalType;
+import org.apache.spark.sql.types.DoubleType;
+import org.apache.spark.sql.types.FloatType;
+import org.apache.spark.sql.types.IntegerType;
+import org.apache.spark.sql.types.LongType;
+import org.apache.spark.sql.types.ShortType;
+import org.apache.spark.sql.types.StringType;
+import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.types.TimestampNTZType;
+import org.apache.spark.sql.types.TimestampType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** The data writer of an executor responsible for writing data for an input RDD partition. */
 public class TigerGraphDataWriter implements DataWriter<InternalRow> {
@@ -46,6 +67,7 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   private final String eol;
   private final int maxBatchSizeInBytes;
   private final Map<String, Object> queryMap;
+  private final List<BiFunction<InternalRow, Integer, String>> converters;
 
   private final StringBuilder sb = new StringBuilder();
   private int sbOffset = 0;
@@ -84,6 +106,8 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
         queryMap.put("max_percent_error", opts.getInt(Options.LOADING_MAX_PERCENT_ERROR));
       }
     }
+    // Set converters for each field according to the data type
+    converters = getConverters(schema);
     logger.info(
         "Created data writer for partition {}, task {}, epochId {}", partitionId, taskId, epochId);
   }
@@ -102,7 +126,7 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   public void write(InternalRow record) throws IOException {
     String line =
         IntStream.range(0, record.numFields())
-            .mapToObj(i -> record.isNullAt(i) ? "" : record.getString(i))
+            .mapToObj(i -> record.isNullAt(i) ? "" : converters.get(i).apply(record, i))
             .collect(Collectors.joining(sep));
     if (sb.length() + line.length() + eol.length() > maxBatchSizeInBytes) {
       postToDDL();
@@ -150,5 +174,59 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
         partitionId,
         taskId,
         epochId);
+  }
+
+  /** Pre-generate the converter for each field of the source dataframe's schema */
+  protected static List<BiFunction<InternalRow, Integer, String>> getConverters(StructType schema) {
+    return Stream.of(schema.fields())
+        .map((f) -> getConverter(f.dataType()))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Get converter for the specific Spark type for converting it to string, which then can be used
+   * to build delimited data for loading job
+   */
+  private static BiFunction<InternalRow, Integer, String> getConverter(DataType dt) {
+    if (dt instanceof IntegerType) {
+      return (row, idx) -> String.valueOf(row.getInt(idx));
+    } else if (dt instanceof LongType) {
+      return (row, idx) -> String.valueOf(row.getLong(idx));
+    } else if (dt instanceof DoubleType) {
+      return (row, idx) -> String.valueOf(row.getDouble(idx));
+    } else if (dt instanceof FloatType) {
+      return (row, idx) -> String.valueOf(row.getFloat(idx));
+    } else if (dt instanceof ShortType) {
+      return (row, idx) -> String.valueOf(row.getShort(idx));
+    } else if (dt instanceof ByteType) {
+      return (row, idx) -> String.valueOf(row.getByte(idx));
+    } else if (dt instanceof BooleanType) {
+      return (row, idx) -> String.valueOf(row.getBoolean(idx));
+    } else if (dt instanceof StringType) {
+      return (row, idx) -> row.getString(idx);
+    } else if (dt instanceof TimestampType || dt instanceof TimestampNTZType) {
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+      // TG DATETIME is essentially a timestamp_ntz, need to format the time in UTC
+      dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+      // Spark timestamp is stored as the number of microseconds
+      return (row, idx) -> dateFormat.format(new Timestamp(row.getLong(idx) / 1000));
+    } else if (dt instanceof DateType) {
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      // TG DATETIME is essentially a timestamp_ntz, need to format the time in UTC
+      dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+      // Spark date is stored as the number of days counting from 1970-01-01
+      return (row, idx) -> dateFormat.format(new Date(row.getInt(idx) * 24 * 60 * 60 * 1000L));
+    } else if (dt instanceof DecimalType) {
+      return (row, idx) ->
+          row.getDecimal(idx, ((DecimalType) dt).precision(), ((DecimalType) dt).scale())
+              .toString();
+    } else {
+      throw new UnsupportedOperationException(
+          "Unsupported Spark type: "
+              + dt.typeName()
+              + ", please convert it to a string that matches the LOAD statement defined in the"
+              + " loading job:"
+              + " https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/creating-a-loading-job#_more_complex_attribute_expressions");
+    }
   }
 }

@@ -20,10 +20,14 @@ import feign.codec.Decoder;
 import feign.jackson.JacksonDecoder;
 
 public class RestppDecoder {
-  public static final Decoder INSTANCE =
-      new JacksonDecoder(
-          new ObjectMapper()
-              // restpp can respond newline-delimited json
-              .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true)
-              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false));
+  // restpp can respond newline-delimited json
+  public static final ObjectMapper MAPPER =
+      new ObjectMapper()
+          .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true)
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  public static final Decoder INSTANCE = new JacksonDecoder(MAPPER);
+
+  private RestppDecoder() {
+    // Private constructor to prevent direct instantiation
+  }
 }

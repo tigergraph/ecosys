@@ -18,7 +18,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppResponse;
 
-/** Write service delaration used for data loading. */
+/** Write endpoint declaration used for data loading. */
 public interface Write {
   @RequestLine("POST /restpp/ddl/{graph}")
   @Headers({"Content-Type: text/plain"})
