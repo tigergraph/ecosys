@@ -19,9 +19,11 @@ import java.util.Base64;
 import com.tigergraph.spark.client.Builder;
 import com.tigergraph.spark.client.Auth;
 import com.tigergraph.spark.client.Misc;
+import com.tigergraph.spark.client.Query;
 import com.tigergraph.spark.client.Write;
 import com.tigergraph.spark.client.Auth.AuthResponse;
 import com.tigergraph.spark.client.common.RestppResponse;
+import com.tigergraph.spark.client.common.RestppStreamDecoder;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
 import feign.FeignException;
@@ -61,6 +63,9 @@ public class TigerGraphConnection implements Serializable {
   static final String JOB_MACHINE = "all";
   private String loadingJobId = null;
   private transient Write write;
+  // Query variables
+  private transient Query query;
+  private static final int DEFAULT_QUERY_READ_TIMEOUT_MS = 1800000; // 30 min
 
   /**
    * Only be called in driver, serialized and sent to executors. <br>
@@ -206,7 +211,7 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
-              .setRequestInterceptor(basicAuth, token, restAuthEnabled);
+              .setAuthInterceptor(basicAuth, token, restAuthEnabled);
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -247,7 +252,7 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.LOADING_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_ATTEMPTS))
-              .setRequestInterceptor(basicAuth, token, restAuthEnabled);
+              .setAuthInterceptor(basicAuth, token, restAuthEnabled);
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -258,6 +263,56 @@ public class TigerGraphConnection implements Serializable {
       write = builder.build(Write.class, url);
     }
     return write;
+  }
+
+  /** Get query client (restpp built-in queries) */
+  public Query getQuery() {
+    if (!Options.OptionType.READ.equals(opts.getOptionType())) {
+      throw new UnsupportedOperationException(
+          "Can't build query client for OptionType " + opts.getOptionType());
+    }
+
+    if (!restAuthInited) {
+      initAuth();
+    }
+
+    if (query == null) {
+      int readTimeout =
+          Math.max(DEFAULT_QUERY_READ_TIMEOUT_MS, opts.getInt(Options.IO_READ_TIMEOUT_MS));
+      // The read timeout should be a bit longer(5 min) than the GSQL query timeout;
+      if (opts.containsOption(Options.QUERY_TIMEOUT_MS)) {
+        readTimeout = Math.max(readTimeout, opts.getInt(Options.QUERY_TIMEOUT_MS) + 300000);
+      }
+      Builder builder =
+          new Builder()
+              .setDecoder(new RestppStreamDecoder())
+              .setRequestOptions(opts.getInt(Options.IO_CONNECT_TIMEOUT_MS), readTimeout)
+              .setRetryer(
+                  getAuth(),
+                  basicAuth,
+                  secret,
+                  token,
+                  opts.getInt(Options.IO_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
+                  opts.getInt(Options.IO_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
+              .setAuthInterceptor(basicAuth, token, restAuthEnabled)
+              .setRetryableCode(502, 503, 504)
+              .setQueryInterceptor(
+                  opts.getInt(Options.QUERY_TIMEOUT_MS),
+                  opts.getLong(Options.QUERY_MAX_RESPONSE_BYTES));
+      if (url.trim().toLowerCase().startsWith("https://")) {
+        builder.setSSL(
+            opts.getString(Options.SSL_MODE),
+            opts.getString(Options.SSL_TRUSTSTORE),
+            opts.getString(Options.SSL_TRUSTSTORE_TYPE),
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+      }
+      query = builder.build(Query.class, url);
+    }
+    return query;
   }
 
   /**

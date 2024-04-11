@@ -5,11 +5,35 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <name>TigerGraph Spark Connector</name>
+  <description>TigerGraph Ecosystem - Spark Connector</description>
+  <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-spark-connector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com:tigergraph/ecosys.git</connection>
+    <developerConnection>scm:git:ssh://github.com:tigergraph/ecosys.git</developerConnection>
+    <url>https://github.com/tigergraph/ecosys/tree/master/tools/etl/tg-jdbc-driver</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Ping Xie</name>
+      <email>ping.xie@tigergraph.com</email>
+      <organization>TigerGraph Inc.</organization>
+      <organizationUrl>http://www.tigergraph.com</organizationUrl>
+    </developer>
+  </developers>
+
   <groupId>com.tigergraph</groupId>
   <artifactId>tigergraph-spark-connector</artifactId>
-  <version>0.1.0</version>
-
-  <name>tigergraph-spark-connector</name>
+  <version>0.1.1</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -44,10 +68,23 @@
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-hc5</artifactId>
     </dependency>
+    <!-- Testing Frameworks -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>5.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.24.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>3.3.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -57,7 +94,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.19</version>
+        <version>1.23</version>
         <executions>
           <execution>
             <id>check-java-8-compatibility</id>

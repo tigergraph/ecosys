@@ -14,6 +14,7 @@
 package com.tigergraph.spark.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -99,5 +100,22 @@ public class Utils {
     // after v3.9.0
     List<JsonNode> badDataV2 = in.findParents("lineData");
     badDataV2.forEach(json -> ((ObjectNode) json).remove("lineData"));
+  }
+
+  /**
+   * The query type of vertex/edge query is determined by the field count: query.vertex = Comment.1
+   * It has two fields: Comment and 1, separated by dot
+   */
+  public static int countQueryFields(String query) {
+    return extractQueryFields(query).size();
+  }
+
+  /**
+   * The query type of vertex/edge query is determined by the field count: query.vertex = Comment.1
+   * It has two fields: Comment and 1, return ["Comment", "1"] TODO: should be able to quote field
+   * which contain '.'
+   */
+  public static List<String> extractQueryFields(String query) {
+    return Arrays.stream(query.trim().split("\\.")).map(String::trim).collect(Collectors.toList());
   }
 }

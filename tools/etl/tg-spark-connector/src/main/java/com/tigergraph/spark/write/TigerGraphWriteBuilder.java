@@ -31,8 +31,8 @@ public class TigerGraphWriteBuilder implements WriteBuilder {
   public TigerGraphWriteBuilder(LogicalWriteInfo info, long creationTime) {
     logger.info("Start to build TigerGraph data writer with queryId {}", info.queryId());
     schema = info.schema();
-    Options opts = new Options(info.options().asCaseSensitiveMap(), Options.OptionType.WRITE);
-    opts.validate();
+    Options opts =
+        new Options(info.options().asCaseSensitiveMap(), Options.OptionType.WRITE, false);
     conn = new TigerGraphConnection(opts, creationTime);
     if (conn.getLoadingJobId() != null) {
       logger.info("Loading job ID: {}", conn.getLoadingJobId());

@@ -13,13 +13,14 @@
  */
 package com.tigergraph.spark.util;
 
+import com.tigergraph.spark.util.OptionDef.OptionKey;
+import com.tigergraph.spark.util.OptionDef.Type;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.tigergraph.spark.util.OptionDef.OptionKey;
-import com.tigergraph.spark.util.OptionDef.Type;
 
 /** Validate and transform Spark DataFrame options(configurations) */
 public class Options implements Serializable {
@@ -29,7 +30,20 @@ public class Options implements Serializable {
     READ
   }
 
+  /** Refer to {@link com.tigergraph.spark.client.Query} */
+  public static enum QueryType {
+    GET_VERTICES,
+    GET_VERTEX,
+    GET_EDGES_BY_SRC_VERTEX,
+    GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE,
+    GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE,
+    GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX,
+    INSTALLED,
+    INTERPRETED
+  }
+
   private final OptionType optionType;
+  private QueryType queryType;
 
   public static final String GRAPH = "graph";
   public static final String URL = "url";
@@ -79,6 +93,18 @@ public class Options implements Serializable {
   public static final String SSL_TRUSTSTORE_TYPE = "ssl.truststore.type";
   public static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
   public static final String SSL_TRUSTSTORE_TYPE_DEFAULT = "JKS";
+  // Query
+  public static final String QUERY_VERTEX = "query.vertex";
+  public static final String QUERY_OP_SELECT = "query.op.select";
+  public static final String QUERY_OP_FILTER = "query.op.filter";
+  public static final String QUERY_OP_LIMIT = "query.op.limit";
+  public static final String QUERY_OP_SORT = "query.op.sort";
+  public static final String QUERY_TIMEOUT_MS = "query.timeout.ms";
+  public static final String QUERY_MAX_RESPONSE_BYTES = "query.max.response.bytes";
+  public static final String QUERY_PARTITION_KEY = "query.partition.key";
+  public static final String QUERY_PARTITION_NUM = "query.partition.num";
+  public static final String QUERY_PARTITION_UPPER_BOUND = "query.partition.upper.bound";
+  public static final String QUERY_PARTITION_LOWER_BOUND = "query.partition.lower.bound";
 
   // Options' group name
   public static final String GROUP_GENERAL = "general";
@@ -86,12 +112,13 @@ public class Options implements Serializable {
   public static final String GROUP_LOADING_JOB = "loading.job";
   public static final String GROUP_TRANSPORT_TIMEOUT = "transport.timeout";
   public static final String GROUP_SSL = "ssl";
+  public static final String GROUP_QUERY = "query";
 
   private final Map<String, String> originals;
   private final Map<String, Serializable> transformed = new HashMap<>();
   private final OptionDef definition;
 
-  public Options(Map<String, String> originals, OptionType ot) {
+  public Options(Map<String, String> originals, OptionType ot, boolean skipValidate) {
     this.optionType = ot;
     this.originals = originals != null ? originals : new HashMap<>();
     this.definition =
@@ -205,6 +232,27 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB);
+    } else if (OptionType.READ.equals(ot)) {
+      this.definition
+          .define(QUERY_VERTEX, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_OP_SELECT, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_OP_FILTER, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_OP_LIMIT, Type.LONG, false, GROUP_QUERY)
+          .define(QUERY_OP_SORT, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_TIMEOUT_MS, Type.INT, 0, true, null, GROUP_QUERY)
+          .define(QUERY_MAX_RESPONSE_BYTES, Type.LONG, 0L, true, null, GROUP_QUERY)
+          .define(QUERY_PARTITION_KEY, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_PARTITION_NUM, Type.INT, false, GROUP_QUERY)
+          .define(QUERY_PARTITION_UPPER_BOUND, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_PARTITION_LOWER_BOUND, Type.STRING, false, GROUP_QUERY);
+    }
+
+    if (!skipValidate) {
+      this.validate();
+    }
+
+    if (OptionType.READ.equals(ot)) {
+      this.parseQueryType();
     }
   }
 
@@ -257,6 +305,8 @@ public class Options implements Serializable {
           "Invalid input options: "
               + errors.stream().map(e -> e.toString()).reduce(". ", String::concat));
     }
+
+    sanityCheck();
   }
 
   /**
@@ -273,6 +323,57 @@ public class Options implements Serializable {
       return false;
     }
     return true;
+  }
+
+  private void sanityCheck() {
+    if (OptionType.READ.equals(optionType)) {
+      sanityCheckPartitionQueryOpts();
+    }
+  }
+
+  private void sanityCheckPartitionQueryOpts() {
+    // all those options are required for partitioned query
+    if ((containsOption(QUERY_PARTITION_KEY)
+            || containsOption(QUERY_PARTITION_NUM)
+            || containsOption(QUERY_PARTITION_LOWER_BOUND)
+            || containsOption(QUERY_PARTITION_UPPER_BOUND))
+        && !(containsOption(QUERY_PARTITION_KEY)
+            && containsOption(QUERY_PARTITION_NUM)
+            && containsOption(QUERY_PARTITION_LOWER_BOUND)
+            && containsOption(QUERY_PARTITION_UPPER_BOUND))) {
+      throw new IllegalArgumentException(
+          "To run partitioned queries, option "
+              + QUERY_PARTITION_KEY
+              + ", "
+              + QUERY_PARTITION_NUM
+              + ", "
+              + QUERY_PARTITION_LOWER_BOUND
+              + "and "
+              + QUERY_PARTITION_UPPER_BOUND
+              + " are all required");
+    }
+
+    if (containsOption(QUERY_PARTITION_KEY)) {
+      BigInteger lower;
+      try {
+        lower = new BigInteger(getString(QUERY_PARTITION_LOWER_BOUND));
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException(
+            "Please provide an integer for " + QUERY_PARTITION_LOWER_BOUND);
+      }
+      BigInteger upper;
+      try {
+        upper = new BigInteger(getString(QUERY_PARTITION_UPPER_BOUND));
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException(
+            "Please provide an integer value for " + QUERY_PARTITION_UPPER_BOUND);
+      }
+
+      if (lower.compareTo(upper) >= 0) {
+        throw new IllegalArgumentException(
+            QUERY_PARTITION_LOWER_BOUND + " should be less than " + QUERY_PARTITION_UPPER_BOUND);
+      }
+    }
   }
 
   /**
@@ -333,6 +434,23 @@ public class Options implements Serializable {
     }
   }
 
+  private void parseQueryType() {
+    if (containsOption(QUERY_VERTEX)) {
+      switch (Utils.countQueryFields(getString(QUERY_VERTEX))) {
+        case 1:
+          queryType = QueryType.GET_VERTICES;
+          break;
+        case 2:
+          queryType = QueryType.GET_VERTEX;
+          break;
+        default:
+          throw new IllegalArgumentException(
+              "Invalid read option: " + QUERY_VERTEX + " -> " + getString(QUERY_VERTEX));
+      }
+    }
+    // TODO: parse edge/installed/interpreted query
+  }
+
   /**
    * Retrive the value from transformed option map. Retrive it from the original options if not in
    * transformed map.
@@ -371,5 +489,9 @@ public class Options implements Serializable {
 
   public OptionType getOptionType() {
     return this.optionType;
+  }
+
+  public QueryType getQueryType() {
+    return this.queryType;
   }
 }
