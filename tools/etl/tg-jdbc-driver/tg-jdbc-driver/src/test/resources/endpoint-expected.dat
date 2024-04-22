@@ -11,10 +11,10 @@ gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
 gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
 gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
 "Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":true}}}
-"Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":false}}}
+"Page":{"1000'":{"name":{"value":"new' page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":false}}}
 "Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7},"is_active":{"value":false}}}}}}
-"Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7},"is_active":{"value":true}}}}}}
+"Page":{"1'000":{"Linkto":{"Page":{"1'001":{"weight":{"value":10.7},"is_active":{"value":true}}}}}}
 {"function":"stat_vertex_number", "type":"Page"}
 {"function":"stat_edge_number", "type":"Linkto"}
-{"source":{"type":"person","id":"Tom"},"target":{"type":"post","id":"112"}}
+{"source":{"type":"person","id":"T'om"},"target":{"type":"post","id":"112"}}
 {"source":{"type":"person","id":"Jack"},"target":{"type":"post","id":"345"},"maxLength":5}

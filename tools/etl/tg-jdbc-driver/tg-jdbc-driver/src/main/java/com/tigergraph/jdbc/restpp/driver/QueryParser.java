@@ -1,8 +1,26 @@
 package com.tigergraph.jdbc.restpp.driver;
 
-import com.tigergraph.jdbc.restpp.RestppConnection;
 import com.tigergraph.jdbc.JobIdGenerator;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
+import com.tigergraph.jdbc.restpp.RestppConnection;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.sql.Array;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.Map.Entry;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -12,26 +30,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
-
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.json.JsonArrayBuilder;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.sql.Array;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.Map.Entry;
-import java.nio.charset.StandardCharsets;
 
 /** Parse the raw query, and build a http request. */
 public class QueryParser {
@@ -110,9 +108,9 @@ public class QueryParser {
     for (int i = token_begin; i < token_end; i += 2) {
       if (isFirst) {
         isFirst = Boolean.FALSE;
-        sb.append("?").append(urlEncode(tokens[i])).append("=");
+        sb.append("?").append(urlEncode(removeSingleQuote(tokens[i]))).append("=");
       } else {
-        sb.append("&").append(urlEncode(tokens[i])).append("=");
+        sb.append("&").append(urlEncode(removeSingleQuote(tokens[i]))).append("=");
       }
       if (tokens[i + 1].equals("?")) {
         sb.append(urlEncode(getObjectStr(this.paramArray[params_begin])));
@@ -128,7 +126,9 @@ public class QueryParser {
 
   // Remove the single quotation if it starts and ends with it.
   private String removeSingleQuote(String s) {
-    if (s.startsWith("'") && s.endsWith("'")) s = s.substring(1, s.length() - 1);
+    if (s.startsWith("'") && s.length() > 1 && s.endsWith("'")) {
+      s = s.substring(1, s.length() - 1);
+    }
     return s;
   }
 
@@ -242,7 +242,7 @@ public class QueryParser {
   /** Parse value and convert to corresponding data type to build json object. */
   private Object parseValueType(String value) {
     if (value.indexOf('\'') >= 0) { // it's a string
-      return value;
+      return removeSingleQuote(value);
     } else if (value.indexOf('.') >= 0) { // it's a double
       return Double.parseDouble(value);
     } else if (value.toLowerCase().equals("true")
@@ -375,7 +375,7 @@ public class QueryParser {
         sb.append("/").append(getObjectStr(this.paramArray[paramArray_index]));
         paramArray_index++;
       } else {
-        sb.append("/").append(tokens[i]);
+        sb.append("/").append(removeSingleQuote(tokens[i]));
       }
     }
 
@@ -464,7 +464,7 @@ public class QueryParser {
       // Parse attributes if any
       for (Integer i = 0; i < count - 2; ++i) {
         attrObj.add(
-            tokens[param_offset + 2 + i],
+            removeSingleQuote(tokens[param_offset + 2 + i]),
             addValue(
                 Json.createObjectBuilder(),
                 "value",
@@ -474,23 +474,23 @@ public class QueryParser {
       }
 
       obj.add(
-          tokens[param_offset], // src vertex type
+          removeSingleQuote(tokens[param_offset]), // src vertex type
           Json.createObjectBuilder()
               .add(
-                  tokens[values_index + 1], // src vertex id
+                  removeSingleQuote(tokens[values_index + 1]), // src vertex id
                   Json.createObjectBuilder()
                       .add(
-                          tokens[3], // edge type
+                          removeSingleQuote(tokens[3]), // edge type
                           Json.createObjectBuilder()
                               .add(
-                                  tokens[param_offset + 1], // tgt vertex type
+                                  removeSingleQuote(tokens[param_offset + 1]), // tgt vertex type
                                   Json.createObjectBuilder()
                                       .add(
-                                          tokens[values_index + 2], // tgt vertex id
+                                          removeSingleQuote(
+                                              tokens[values_index + 2]), // tgt vertex id
                                           attrObj))))); // attributes
 
-      // someone may use single-quoted strings
-      edge_json = obj.build().toString().replace("\'", "");
+      edge_json = obj.build().toString();
       // remove the outmost "{}"
       edge_json = edge_json.substring(1, edge_json.length() - 1);
     } else if (tokens[2].toLowerCase().equals("vertex")) {
@@ -516,7 +516,7 @@ public class QueryParser {
       // Parse attributes if any
       for (Integer i = 0; i < count - 1; ++i) {
         attrObj.add(
-            tokens[param_offset + 1 + i],
+            removeSingleQuote(tokens[param_offset + 1 + i]),
             addValue(
                 Json.createObjectBuilder(),
                 "value",
@@ -529,11 +529,10 @@ public class QueryParser {
           tokens[3], // vertex type
           Json.createObjectBuilder()
               .add(
-                  tokens[values_index + 1], // vertex id
+                  removeSingleQuote(tokens[values_index + 1]), // vertex id
                   attrObj)); // attributes
 
-      // someone may use single-quoted strings
-      vertex_json = obj.build().toString().replace("\'", "");
+      vertex_json = obj.build().toString();
       // remove the outmost "{}"
       vertex_json = vertex_json.substring(1, vertex_json.length() - 1);
     } else {
@@ -590,7 +589,7 @@ public class QueryParser {
       obj.add("maxLength", Integer.parseInt(tokens[6]));
     }
 
-    this.payload = new StringEntity(obj.build().toString().replace("\'", ""), "UTF-8");
+    this.payload = new StringEntity(obj.build().toString(), "UTF-8");
     this.payload.setContentType("application/json");
   }
 
@@ -694,7 +693,7 @@ public class QueryParser {
           sb.append(getObjectStr(this.paramArray[0]));
           sb.append("\"");
         } else {
-          sb.append(tokens[3]);
+          sb.append(removeSingleQuote(tokens[3]));
           sb.append("\"");
         }
       } else {
@@ -750,7 +749,7 @@ public class QueryParser {
           }
           sb.append(getObjectStr(this.paramArray[0]));
         } else {
-          sb.append(tokens[2]);
+          sb.append(removeSingleQuote(tokens[2]));
         }
         this.query_type = QueryType.QUERY_TYPE_JOBID_STATS;
         this.httpType = HttpTypes.HttpGet;
