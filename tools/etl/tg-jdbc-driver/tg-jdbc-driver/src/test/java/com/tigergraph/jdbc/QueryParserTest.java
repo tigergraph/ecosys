@@ -129,8 +129,8 @@ public class QueryParserTest {
     query =
         "INSERT INTO vertex Page(id, name, 'page rank', page_id, is_active) VALUES(?, ?, ?, ?, ?)";
     parameters.clear();
-    parameters.put(1, "1000");
-    parameters.put(2, "new page");
+    parameters.put(1, "1000'");
+    parameters.put(2, "new' page");
     parameters.put(3, 0.8);
     parameters.put(4, 1000);
     parameters.put(5, Boolean.FALSE);
@@ -145,8 +145,8 @@ public class QueryParserTest {
 
     query = "INSERT INTO edge Linkto(Page, Page, weight, is_active) VALUES(?, ?, ?, ?)";
     parameters.clear();
-    parameters.put(1, "1000");
-    parameters.put(2, "1001");
+    parameters.put(1, "1'000");
+    parameters.put(2, "1'001");
     parameters.put(3, 10.7);
     parameters.put(4, Boolean.TRUE);
     parser = new QueryParser(null, query, parameters, 0, 0, true);
@@ -166,7 +166,7 @@ public class QueryParserTest {
 
     query = "find shortestpath(person,?,post,?)";
     parameters.clear();
-    parameters.put(1, "Tom");
+    parameters.put(1, "T'om");
     parameters.put(2, 112);
     parser = new QueryParser(null, query, parameters, 0, 0, true);
     sb.append(parser.getPayload()).append(System.lineSeparator());

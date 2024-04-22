@@ -246,7 +246,7 @@ public abstract class Connection implements java.sql.Connection {
 
   @Override
   public String getCatalog() throws SQLException {
-    throw new UnsupportedOperationException("Not implemented yet.");
+    return properties.getProperty("graph", "");
   }
 
   @Override

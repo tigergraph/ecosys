@@ -1,3 +1,8 @@
+## Release 1.3.18
+* Supported TG Version: 2.4.1+
+* Fixed the bug that single quotes in the attribute string are removed when upserting vertex or edge.
+* Support `getCatalog()` which returns the graph name specified in the connection properties.
+
 ## Release 1.3.17
 * Supported TG Version: 2.4.1+
 * Support 3 release types: jar, jar with dependencies, tar.gz
