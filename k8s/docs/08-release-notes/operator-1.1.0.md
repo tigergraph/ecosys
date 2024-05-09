@@ -70,8 +70,8 @@ Extract parameters from the backup YAML resource file generated in step 1, or mo
 ```bash
 # You can get the following parameters from the backup yaml resoure file in step 1
 kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} -n ${NAMESPACE_OF_CLUSTER} \
---size ${CLUSTER_size} --ha ${CLUSTER_HA} --private-key-secret ${YOUR_PRIVATE_KEY_SECRET} \
---version ${TG_VERSION} --storage-class ${YOUR_STORAGE_CLASS} --storage-size ${YOUR_STORAGE_SIZE} --cpu 3000m --memory 6Gi
+--size ${CLUSTER_SIZE} --ha ${CLUSTER_HA} --private-key-secret ${YOUR_PRIVATE_KEY_SECRET} \
+--version ${TG_VERSION} --storage-class ${YOUR_STORAGE_CLASS} --storage-size ${YOUR_STORAGE_SIZE} --cpu 6000m --memory 10Gi
 ```
 
 ## Improvements
