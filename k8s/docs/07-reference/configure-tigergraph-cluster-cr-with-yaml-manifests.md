@@ -2,10 +2,6 @@
 
 This document introduces how to configure the TG cluster using TigerGraph CR. It covers the following content:
 
-- Configure resources
-
-- Configure TigerGraph deployment
-
 - [How to configure TG Cluster on K8s using TigerGraph CR](#how-to-configure-tg-cluster-on-k8s-using-tigergraph-cr)
   - [Configure resources](#configure-resources)
   - [Configure TG deployment](#configure-tg-deployment)

@@ -1,14 +1,17 @@
 # TigerGraph Operator
 
-TigerGraph Operator stands as an automated operations system meticulously designed to streamline the management of TigerGraph clusters within Kubernetes environments.
-Its comprehensive suite of functionalities encompasses every aspect of the TigerGraph lifecycle, spanning deployment, upgrades, scaling, backups, restoration, and fail-over processes.
-Whether you're operating in a public cloud setting or within a self-hosted environment, TigerGraph Operator ensures that your TigerGraph instances function seamlessly within Kubernetes clusters.
+TigerGraph Operator stands as an automated operations system meticulously designed to streamline the management of TigerGraph clusters within Kubernetes environments. Its comprehensive suite of functionalities encompasses every aspect of the TigerGraph lifecycle, spanning deployment, upgrades, scaling, backups, restoration, and fail-over processes. Whether you're operating in a public cloud setting or within a self-hosted environment, TigerGraph Operator ensures that your TigerGraph instances function seamlessly within Kubernetes clusters.
+
+> [!NOTE]
+> Kubernetes Operator support is currently general availability in Operator version 1.1.0, which can be used for production deployments.
 
 Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
-| 0.0.9 | TigerGraph >= 3.6.0 |1.23, 1.24, 1.25, 1.26, **1.27**|
+| 1.1.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.0.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
+| 0.0.9 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.3|1.23, 1.24, 1.25, 1.26, 1.27|
 | 0.0.7 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.2|1.22, 1.23, 1.24, 1.25, 1.26|
 | 0.0.6 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
 | 0.0.5 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
@@ -34,17 +37,17 @@ TigerGraph Operator offers several deployment options for TigerGraph clusters on
 
 Once your deployment is complete, refer to the following documents for guidance on using, operating, and maintaining your TigerGraph clusters on Kubernetes:
 
-- [Backing Up and Restoring TigerGraph Clusters](docs/04-manage/backup-and-restore/README.md)
 - [Configuring TigerGraph Clusters on K8s using TigerGraph CR](docs/07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md)
+- [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
 - [Configuring NodeSelectors, Affinities, and Toleration](docs/03-deploy/configure-affinity-by-kubectl-tg.md)
 - [Working with InitContainers, Sidecar Containers, and Custom Volumes](docs/03-deploy/use-custom-containers-by-kubectl-tg.md)
-
-Additionally, refer to the following documents for advanced operations and requirements:
-
 - [Resizing Persistent Volumes for TigerGraph](docs/07-reference/expand-persistent-volume.md)
-- [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
-- [Integrate Envoy Sidecar](docs/07-reference/integrate-envoy-sidecar.md)
-- [Labels used by TigerGraph Operator](docs/07-reference/labels-used-by-tg.md)
+- [Backing Up and Restoring TigerGraph Clusters](docs/04-manage/backup-and-restore/README.md)
+- [Pause and Resume TigerGraph Clusters](docs/04-manage/pause-and-resume.md)
+- [Customize TigerGraph Pods and Containers](docs/03-deploy/customize-tigergraph-pod.md)
+- [Lifecycle of TigerGraph](docs/03-deploy/lifecycle-of-tigergraph.md)
+- [Multiple persistent volumes mounting](docs/03-deploy/multiple-persistent-volumes-mounting.md)
+- [Cluster status of TigerGraph on K8s](docs/07-reference/cluster-status-of-tigergraph.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 
