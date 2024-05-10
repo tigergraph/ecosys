@@ -48,7 +48,6 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Lifecycle of TigerGraph](../03-deploy/lifecycle-of-tigergraph.md)
 - [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md)
 - [Cluster status of TigerGraph on K8s](../07-reference/cluster-status-of-tigergraph.md)
-- [High availability of rolling upgrade for TigerGraph on K8s](../07-reference/high-availability-of-rolling-upgrade.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 
