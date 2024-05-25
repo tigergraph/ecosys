@@ -1,13 +1,33 @@
 package com.tigergraph.jdbc.restpp;
 
+import com.tigergraph.jdbc.common.Array;
 import com.tigergraph.jdbc.common.Connection;
 import com.tigergraph.jdbc.common.DatabaseMetaData;
 import com.tigergraph.jdbc.common.PreparedStatement;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
 import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
-import com.tigergraph.jdbc.common.Array;
-import org.apache.maven.artifact.versioning.ComparableVersion;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
@@ -25,44 +45,24 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.http.entity.StringEntity;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.spark.SparkFiles;
 import org.json.JSONObject;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.sql.SQLException;
-import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Random;
 import org.slf4j.Logger;
 
 public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
-  private static final String DEFAULT_TG_VERSION = "3.9.0";
+  private static final String DEFAULT_TG_VERSION = "99.99.99"; // latest
 
   private String host;
   private Integer port;
@@ -474,6 +474,22 @@ public class RestppConnection extends Connection {
         };
     builder.setRetryHandler(transportRetryHandler);
     builder.setServiceUnavailableRetryStrategy(protocolRetryStrategy);
+
+    // Set UA header
+    Properties pomProperties = new Properties();
+    try {
+      InputStream stream =
+          RestppConnection.class.getResourceAsStream(
+              "/META-INF/maven/com.tigergraph/tigergraph-jdbc-driver/pom.properties");
+      pomProperties.load(stream);
+    } catch (Exception e) {
+      // no-op
+    }
+    String driverVersion = pomProperties.getProperty("version", "");
+    BasicHeader userAgentHeader =
+        new BasicHeader("User-Agent", "tigergraph-jdbc-driver/".concat(driverVersion));
+    builder.setDefaultHeaders(Arrays.asList(userAgentHeader));
+
     this.httpClient = builder.build();
 
     if (this.token == null
@@ -608,15 +624,24 @@ public class RestppConnection extends Connection {
               "Failed to get token: {} The following requests may fail.", result.getErrMsg());
         }
       } else {
-        List<JSONObject> jsonList = result.getResults();
-        for (int i = 0; i < jsonList.size(); i++) {
-          JSONObject obj = jsonList.get(i);
-          if (obj.has("token")) {
-            this.token = obj.getString("token");
-            logger.debug("Got token: [REDACTED]");
-            return;
+        // Start from 4.1.0(JWT), /requesttoken response: {"error":false, "token": "blahblah"}
+        if (result.getToken() != null && !result.getToken().isEmpty()) {
+          this.token = result.getToken();
+          return;
+        } else {
+          // Prior to 4.1.0, /requesttoken response: {"error":false, "results": {"token":
+          // "blahblah"}}
+          List<JSONObject> jsonList = result.getResults();
+          for (int i = 0; i < jsonList.size(); i++) {
+            JSONObject obj = jsonList.get(i);
+            if (obj.has("token")) {
+              this.token = obj.getString("token");
+              return;
+            }
           }
         }
+        logger.error(
+            "Failed to parse token from /requesttoken endpoint. The following requests may fail.");
       }
     } catch (Exception e) {
       logger.error("Failed to get token", e);

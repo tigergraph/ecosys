@@ -1,3 +1,8 @@
+## Release 1.3.19
+* Supported TG Version: 2.4.1+
+* Support JSON Web Token (JWT)
+* **Note:** TigerGraph 4.1.0 is not backward compatible with tigergraph-jdbc-driver v1.3.18 and prior.
+
 ## Release 1.3.18
 * Supported TG Version: 2.4.1+
 * Fixed the bug that single quotes in the attribute string are removed when upserting vertex or edge.
