@@ -6,7 +6,7 @@
 
     <groupId>com.tigergraph</groupId>
     <artifactId>tigergraph-jdbc-driver</artifactId>
-    <version>1.3.18</version>
+    <version>1.3.19</version>
     <packaging>jar</packaging>
 
     <name>TigerGraph JDBC Driver Parent</name>
@@ -197,7 +197,6 @@
                                         <exclude>META-INF/NOTICE*</exclude>
                                         <exclude>META-INF/ASL2.0</exclude>
                                         <exclude>META-INF/LICENSE*</exclude>
-                                        <exclude>META-INF/maven/*/*/*</exclude>
                                         <exclude>META-INF/services/*</exclude>
                                     </excludes>
                                 </filter>
