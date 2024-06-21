@@ -15,6 +15,7 @@ package com.tigergraph.spark.read;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.util.Options.QueryType;
+import java.util.HashSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -47,6 +48,19 @@ import org.apache.spark.unsafe.types.UTF8String;
  * schema.
  */
 public class TigerGraphJsonConverter {
+  // The fields of RESTPP built-in edge query JSON response
+  private static final HashSet<String> RESERVED_EDGE_FIELD =
+      new HashSet<String>() {
+        {
+          add("e_type");
+          add("from_id");
+          add("from_type");
+          add("to_id");
+          add("to_type");
+          add("attributes");
+        }
+      };
+
   private final StructField[] fields;
   private final Object[] values;
   // the converters for each field according to the data types
@@ -64,7 +78,7 @@ public class TigerGraphJsonConverter {
     for (int i = 0; i < fields.length; i++) {
       fieldConverter[i] = getConverter(fields[i].dataType());
     }
-    nodeSearcher = getNodeSearcher(queryType);
+    nodeSearcher = getNodeSearcher(queryType, fields.length);
   }
 
   /**
@@ -147,14 +161,22 @@ public class TigerGraphJsonConverter {
    *
    * @param qt the query type
    */
-  private static BiFunction<JsonNode, String, JsonNode> getNodeSearcher(QueryType qt) {
+  private static BiFunction<JsonNode, String, JsonNode> getNodeSearcher(
+      QueryType qt, int fieldCount) {
     switch (qt) {
       case GET_VERTEX:
       case GET_VERTICES:
         return (obj, key) -> "v_id".equals(key) ? obj.get(key) : obj.path("attributes").get(key);
-        // TODO: edge type and query type
+      case GET_EDGES_BY_SRC_VERTEX:
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE:
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE:
+      case GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX:
+        return (obj, key) ->
+            RESERVED_EDGE_FIELD.contains(key) ? obj.get(key) : obj.path("attributes").get(key);
+      case INSTALLED:
+      case INTERPRETED:
       default:
-        return (obj, key) -> obj.get(key);
+        return (obj, key) -> "results".equals(key) && fieldCount == 1 ? obj : obj.get(key);
     }
   }
 }

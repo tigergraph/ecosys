@@ -15,6 +15,7 @@ package com.tigergraph.spark.client;
 
 import feign.*;
 import com.tigergraph.spark.client.common.RestppResponse;
+import com.tigergraph.spark.util.Utils;
 
 /** APIs for RESTPP authentication */
 public interface Auth {
@@ -58,7 +59,21 @@ public interface Auth {
       @Param("lifetime") long lifetime);
 
   public class AuthResponse extends RestppResponse {
-    public long expiration;
+    public String expiration;
     public String token;
+
+    /**
+     * RESTPP has different response format in different versions, we need to try to parse token
+     * from different places.
+     */
+    public String getToken() {
+      if (!Utils.isEmpty(token)) {
+        return token;
+      } else if (results != null) {
+        return results.path("token").asText();
+      } else {
+        return "";
+      }
+    }
   }
 }

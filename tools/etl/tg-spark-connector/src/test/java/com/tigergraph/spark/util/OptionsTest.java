@@ -21,17 +21,10 @@ public class OptionsTest {
   }
 
   @Test
-  public void shouldHasMultipleErrorsCauseByNoSettings() {
-    Options options = new Options(null, Options.OptionType.WRITE, true);
-    List<OptionError> errors = options.validateOpts();
-    assertEquals(4, errors.size());
-  }
-
-  @Test
   public void shouldSslModeError() {
     Map<String, String> originals = new HashMap<>(defaultOptions);
     originals.put(Options.SSL_MODE, "ssl_mode_test");
-    Options options = new Options(originals, Options.OptionType.WRITE, true);
+    Options options = new Options(originals, true);
     List<OptionError> errors = options.validateOpts();
     assertEquals(1, errors.size());
     assertEquals(
@@ -43,7 +36,7 @@ public class OptionsTest {
   public void shouldTypeConversionError() {
     Map<String, String> originals = new HashMap<>(defaultOptions);
     originals.put(Options.IO_CONNECT_TIMEOUT_MS, "not_integer");
-    Options options = new Options(originals, Options.OptionType.WRITE, true);
+    Options options = new Options(originals, true);
     List<OptionError> errors = options.validateOpts();
     assertEquals(1, errors.size());
     assertEquals(
@@ -54,7 +47,7 @@ public class OptionsTest {
 
   @Test
   public void shouldPassValidation() {
-    Options options = new Options(defaultOptions, Options.OptionType.WRITE, true);
+    Options options = new Options(defaultOptions, true);
     List<OptionError> errors = options.validateOpts();
     assertEquals(0, errors.size());
   }
@@ -67,14 +60,13 @@ public class OptionsTest {
           {
             put(Options.GRAPH, "graph_test");
             put(Options.URL, "url_test");
+            put(Options.QUERY_VERTEX, "Person");
             put(Options.QUERY_PARTITION_KEY, "length");
             put(Options.QUERY_PARTITION_NUM, "5");
           }
         };
 
-    assertThrowsExactly(
-        IllegalArgumentException.class,
-        () -> new Options(originals_1, Options.OptionType.READ, false));
+    assertThrowsExactly(IllegalArgumentException.class, () -> new Options(originals_1, false));
 
     // 2. non-numeric range value
     Map<String, String> originals_2 =
@@ -82,15 +74,14 @@ public class OptionsTest {
           {
             put(Options.GRAPH, "graph_test");
             put(Options.URL, "url_test");
+            put(Options.QUERY_VERTEX, "Person");
             put(Options.QUERY_PARTITION_KEY, "length");
             put(Options.QUERY_PARTITION_NUM, "5");
             put(Options.QUERY_PARTITION_LOWER_BOUND, "not a number");
             put(Options.QUERY_PARTITION_UPPER_BOUND, "123");
           }
         };
-    assertThrowsExactly(
-        IllegalArgumentException.class,
-        () -> new Options(originals_2, Options.OptionType.READ, false));
+    assertThrowsExactly(IllegalArgumentException.class, () -> new Options(originals_2, false));
 
     // 3. lower >= upper
     Map<String, String> originals_3 =
@@ -98,15 +89,14 @@ public class OptionsTest {
           {
             put(Options.GRAPH, "graph_test");
             put(Options.URL, "url_test");
+            put(Options.QUERY_VERTEX, "Person");
             put(Options.QUERY_PARTITION_KEY, "length");
             put(Options.QUERY_PARTITION_NUM, "5");
             put(Options.QUERY_PARTITION_LOWER_BOUND, "12345");
             put(Options.QUERY_PARTITION_UPPER_BOUND, "12345");
           }
         };
-    assertThrowsExactly(
-        IllegalArgumentException.class,
-        () -> new Options(originals_3, Options.OptionType.READ, false));
+    assertThrowsExactly(IllegalArgumentException.class, () -> new Options(originals_3, false));
 
     // 4. correct options
     Map<String, String> originals_4 =
@@ -114,12 +104,13 @@ public class OptionsTest {
           {
             put(Options.URL, "url_test");
             put(Options.GRAPH, "graph_test");
+            put(Options.QUERY_VERTEX, "Person");
             put(Options.QUERY_PARTITION_KEY, "length");
             put(Options.QUERY_PARTITION_NUM, "5");
             put(Options.QUERY_PARTITION_LOWER_BOUND, "100");
             put(Options.QUERY_PARTITION_UPPER_BOUND, "1000");
           }
         };
-    assertDoesNotThrow(() -> new Options(originals_4, Options.OptionType.READ, false));
+    assertDoesNotThrow(() -> new Options(originals_4, false));
   }
 }

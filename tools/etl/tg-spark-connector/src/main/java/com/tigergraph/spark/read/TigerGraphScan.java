@@ -40,7 +40,6 @@ public class TigerGraphScan implements Scan {
   /** Get the processed schema after column pruning (select) */
   @Override
   public StructType readSchema() {
-    // todo: with schema inference
     return schema;
   }
 

@@ -110,4 +110,32 @@ public class TigerGraphJsonConverterTest {
     TigerGraphJsonConverter converter = new TigerGraphJsonConverter(schema, QueryType.GET_VERTICES);
     assertEquals("[1,Tom]", converter.convert(node).toString());
   }
+
+  @Test
+  public void testParsingEdgeFields() throws JsonMappingException, JsonProcessingException {
+    // Flattened attributes
+    StructType schema =
+        StructType.fromDDL(
+            "e_type STRING, from_type STRING, from_id INT, to_type STRING, to_id INT, meta STRING");
+    JsonNode node =
+        mapper.readTree(
+            "{\"e_type\": \"Posts\", \"from_id\": \"3\", \"from_type\": \"Person\", \"to_id\":"
+                + " \"999\", \"to_type\": \"Post\", \"attributes\": {\"meta\": \"abcd\"}}");
+    TigerGraphJsonConverter converter =
+        new TigerGraphJsonConverter(schema, QueryType.GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE);
+    assertEquals("[Posts,Person,3,Post,999,abcd]", converter.convert(node).toString());
+
+    // Unflattened attributes
+    schema =
+        StructType.fromDDL(
+            "e_type STRING, from_type STRING, from_id INT, to_type STRING, to_id INT, attributes"
+                + " STRING");
+    node =
+        mapper.readTree(
+            "{\"e_type\": \"Posts\", \"from_id\": \"3\", \"from_type\": \"Person\", \"to_id\":"
+                + " \"999\", \"to_type\": \"Post\", \"attributes\": {\"meta\": \"abcd\"}}");
+    converter = new TigerGraphJsonConverter(schema, QueryType.GET_EDGES_BY_SRC_VERTEX);
+    assertEquals(
+        "[Posts,Person,3,Post,999,{\"meta\":\"abcd\"}]", converter.convert(node).toString());
+  }
 }

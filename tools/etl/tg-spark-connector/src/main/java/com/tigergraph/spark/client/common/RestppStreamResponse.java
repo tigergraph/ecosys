@@ -18,11 +18,16 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TG RESTPP response with streaming reader. Support reading from large 'results' array row by row
  */
 public class RestppStreamResponse {
+
+  private static final Logger logger = LoggerFactory.getLogger(RestppStreamResponse.class);
+
   public String code;
   public boolean error;
   public String message;
@@ -53,6 +58,7 @@ public class RestppStreamResponse {
         // It's likely the response is too large and RESTPP truncate it
         // then the JSON structure is incomplete and invalid.
         // We stop here and tell it reaches the end.
+        logger.warn("Failed to parse the next row", e);
         results.close();
         return false;
       }

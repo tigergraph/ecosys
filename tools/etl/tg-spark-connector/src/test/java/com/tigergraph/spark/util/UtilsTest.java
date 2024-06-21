@@ -1,10 +1,13 @@
 package com.tigergraph.spark.util;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class UtilsTest {
 
@@ -104,6 +107,28 @@ public class UtilsTest {
       Utils.removeUserData(original);
       // System.out.println(original.toPrettyString());
       assertTrue(original.equals(mapper.readTree(transformed.get(i))));
+    }
+  }
+
+  @Test
+  public void testExtractQueryFields() {
+    // Test some special characters
+    List<String> inputs =
+        Arrays.asList(
+            "A. 234]", "B/89#", "  x[hello", "1 ->2 ->3 ->4 ", "Comment|a.b|c)d| e$g", "abc", "");
+    List<String> seps = Arrays.asList(".", "/", "[", "->", "|", ":", ")");
+    List<String> expected =
+        Arrays.asList(
+            "[A,  234]]",
+            "[B, 89#]",
+            "[  x, hello]",
+            "[1 , 2 , 3 , 4 ]",
+            "[Comment, a.b, c)d,  e$g]",
+            "[abc]",
+            "[]");
+    for (int i = 0; i < inputs.size(); i++) {
+      assertEquals(
+          expected.get(i), Utils.extractQueryFields(inputs.get(i), seps.get(i)).toString());
     }
   }
 }

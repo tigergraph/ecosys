@@ -13,8 +13,10 @@
  */
 package com.tigergraph.spark.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppResponse;
 import feign.*;
+import java.util.List;
 
 /**
  * Restpp API delaration used for connectivity check, token request and cluster basic info
@@ -27,4 +29,18 @@ public interface Misc {
   @RequestLine("GET /gsqlserver/gsql/loading-jobs?action={action}&graph={graph}&jobId={jobId}")
   RestppResponse loadingAction(
       @Param("action") String action, @Param("graph") String graph, @Param("jobId") String jobId);
+
+  @RequestLine("GET /gsqlserver/gsql/schema?graph={graph}&type={type}")
+  RestppResponse graphSchema(@Param("graph") String graph, @Param("type") String type);
+
+  @RequestLine("GET /gsqlserver/gsql/queryinfo?graph={graph}&query={query}")
+  QueryMetaResponse queryMeta(@Param("graph") String graph, @Param("query") String query);
+
+  /**
+   * GET /gsqlserver/gsql/queryinfo <br>
+   * The output contains the schema of each row
+   */
+  public class QueryMetaResponse extends RestppResponse {
+    public List<JsonNode> output;
+  }
 }

@@ -93,14 +93,23 @@ public class Options implements Serializable {
   public static final String SSL_TRUSTSTORE_TYPE = "ssl.truststore.type";
   public static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
   public static final String SSL_TRUSTSTORE_TYPE_DEFAULT = "JKS";
+
   // Query
   public static final String QUERY_VERTEX = "query.vertex";
+  public static final String QUERY_EDGE = "query.edge";
+  public static final String QUERY_FIELD_SEPARATOR = "query.field.separator";
+  public static final String QUERY_INSTALLED = "query.installed";
+  public static final String QUERY_INTERPRETED = "query.interpreted";
+  public static final String QUERY_PARAMS = "query.params";
+  // Query - operator
   public static final String QUERY_OP_SELECT = "query.op.select";
   public static final String QUERY_OP_FILTER = "query.op.filter";
   public static final String QUERY_OP_LIMIT = "query.op.limit";
   public static final String QUERY_OP_SORT = "query.op.sort";
+  // Query - request setting
   public static final String QUERY_TIMEOUT_MS = "query.timeout.ms";
   public static final String QUERY_MAX_RESPONSE_BYTES = "query.max.response.bytes";
+  // Query - partitioning
   public static final String QUERY_PARTITION_KEY = "query.partition.key";
   public static final String QUERY_PARTITION_NUM = "query.partition.num";
   public static final String QUERY_PARTITION_UPPER_BOUND = "query.partition.upper.bound";
@@ -118,8 +127,13 @@ public class Options implements Serializable {
   private final Map<String, Serializable> transformed = new HashMap<>();
   private final OptionDef definition;
 
-  public Options(Map<String, String> originals, OptionType ot, boolean skipValidate) {
-    this.optionType = ot;
+  public Options(Map<String, String> originals, boolean skipValidate) {
+    if (originals == null) throw new IllegalArgumentException("Original option map can't be null.");
+    if (originals.containsKey(LOADING_JOB)) {
+      this.optionType = OptionType.WRITE;
+    } else {
+      this.optionType = OptionType.READ;
+    }
     this.originals = originals != null ? originals : new HashMap<>();
     this.definition =
         new OptionDef()
@@ -183,7 +197,7 @@ public class Options implements Serializable {
                 GROUP_SSL)
             .define(SSL_TRUSTSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL);
 
-    if (OptionType.WRITE.equals(ot)) {
+    if (OptionType.WRITE.equals(this.optionType)) {
       this.definition
           .define(LOADING_JOB, Type.STRING, true, GROUP_LOADING_JOB)
           .define(LOADING_FILENAME, Type.STRING, true, GROUP_LOADING_JOB)
@@ -232,9 +246,14 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB);
-    } else if (OptionType.READ.equals(ot)) {
+    } else if (OptionType.READ.equals(this.optionType)) {
       this.definition
           .define(QUERY_VERTEX, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_EDGE, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_FIELD_SEPARATOR, Type.STRING, ".", false, null, GROUP_QUERY)
+          .define(QUERY_INSTALLED, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_INTERPRETED, Type.STRING, false, GROUP_QUERY)
+          .define(QUERY_PARAMS, Type.STRING, "", false, null, GROUP_QUERY)
           .define(QUERY_OP_SELECT, Type.STRING, false, GROUP_QUERY)
           .define(QUERY_OP_FILTER, Type.STRING, false, GROUP_QUERY)
           .define(QUERY_OP_LIMIT, Type.LONG, false, GROUP_QUERY)
@@ -251,7 +270,7 @@ public class Options implements Serializable {
       this.validate();
     }
 
-    if (OptionType.READ.equals(ot)) {
+    if (OptionType.READ.equals(this.optionType)) {
       this.parseQueryType();
     }
   }
@@ -436,7 +455,8 @@ public class Options implements Serializable {
 
   private void parseQueryType() {
     if (containsOption(QUERY_VERTEX)) {
-      switch (Utils.countQueryFields(getString(QUERY_VERTEX))) {
+      switch (Utils.countQueryFields(
+          getString(QUERY_VERTEX), getString(Options.QUERY_FIELD_SEPARATOR))) {
         case 1:
           queryType = QueryType.GET_VERTICES;
           break;
@@ -447,12 +467,39 @@ public class Options implements Serializable {
           throw new IllegalArgumentException(
               "Invalid read option: " + QUERY_VERTEX + " -> " + getString(QUERY_VERTEX));
       }
+    } else if (containsOption(QUERY_EDGE)) {
+      switch (Utils.countQueryFields(
+          getString(QUERY_EDGE), getString(Options.QUERY_FIELD_SEPARATOR))) {
+        case 2:
+          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX;
+          break;
+        case 3:
+          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE;
+          break;
+        case 4:
+          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE;
+          break;
+        case 5:
+          queryType = QueryType.GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX;
+          break;
+        default:
+          throw new IllegalArgumentException(
+              "Invalid read option: " + QUERY_EDGE + " -> " + getString(QUERY_EDGE));
+      }
+    } else if (containsOption(QUERY_INSTALLED)) {
+      queryType = QueryType.INSTALLED;
+    } else if (containsOption(QUERY_INTERPRETED)) {
+      queryType = QueryType.INTERPRETED;
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "Unknown query type, please provide a valid value from %s, %s, %s or %s.",
+              QUERY_VERTEX, QUERY_EDGE, QUERY_INSTALLED, QUERY_INTERPRETED));
     }
-    // TODO: parse edge/installed/interpreted query
   }
 
   /**
-   * Retrive the value from transformed option map. Retrive it from the original options if not in
+   * Retrieve the value from transformed option map. Retrieve it from the original options if not in
    * transformed map.
    *
    * @param key

@@ -62,7 +62,7 @@ public class TigerGraphBatch implements Batch {
       List<BigInteger> splitPoints =
           TigerGraphRangeInputPartition.calculatePartitions(partitionNum, lo, up);
       logger.info(
-          "Partition number: {}, splits on partitioning key {}: {}",
+          "Partition number: {}, split on partitioning key '{}': {}",
           splitPoints.size() + 1,
           partitionKey,
           splitPoints);

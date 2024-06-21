@@ -13,6 +13,9 @@
  */
 package com.tigergraph.spark.read;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.Query;
 import com.tigergraph.spark.client.common.RestppStreamResponse;
@@ -72,15 +75,91 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
 
     long startTime = System.currentTimeMillis();
     logger.info("Start executing the query.");
+    List<String> fields;
     switch (opts.getQueryType()) {
+        // Vertex query
       case GET_VERTICES:
         resp = query.getVertices(conn.getGraph(), opts.getString(Options.QUERY_VERTEX), queryOps);
         break;
       case GET_VERTEX:
-        List<String> fields = Utils.extractQueryFields(opts.getString(Options.QUERY_VERTEX));
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_VERTEX),
+                opts.getString(Options.QUERY_FIELD_SEPARATOR));
         resp = query.getVertex(conn.getGraph(), fields.get(0), fields.get(1), queryOps);
         break;
-        // TODO: support edge/install/interpreted query
+        // Edge query
+      case GET_EDGES_BY_SRC_VERTEX:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp = query.getEdgesBySrcVertex(conn.getGraph(), fields.get(0), fields.get(1), queryOps);
+        break;
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgesBySrcVertexEdgeType(
+                conn.getGraph(), fields.get(0), fields.get(1), fields.get(2), queryOps);
+        break;
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgesBySrcVertexEdgeTypeTgtType(
+                conn.getGraph(),
+                fields.get(0),
+                fields.get(1),
+                fields.get(2),
+                fields.get(3),
+                queryOps);
+        break;
+      case GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgeBySrcVertexEdgeTypeTgtVertex(
+                conn.getGraph(),
+                fields.get(0),
+                fields.get(1),
+                fields.get(2),
+                fields.get(3),
+                fields.get(4),
+                queryOps);
+        break;
+      case INSTALLED:
+        // precheck
+        try {
+          ObjectMapper mapper = new ObjectMapper();
+          mapper.readTree(opts.getString(Options.QUERY_PARAMS));
+        } catch (JsonProcessingException e) {
+          throw new IllegalArgumentException(
+              "Failed to parse 'query.params', please check if it is a valid JSON.", e);
+        }
+        resp =
+            query.installedQuery(
+                conn.getGraph(),
+                opts.getString(Options.QUERY_INSTALLED),
+                opts.getString(Options.QUERY_PARAMS),
+                null);
+        break;
+      case INTERPRETED:
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> queryParams;
+        try {
+          queryParams =
+              mapper.readValue(
+                  opts.getString(Options.QUERY_PARAMS),
+                  new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+          throw new IllegalArgumentException(
+              "Failed to parse query.params, please check if it is a valid JSON.", e);
+        }
+        resp = query.interpretedQuery(opts.getString(Options.QUERY_INTERPRETED), queryParams);
+        break;
       default:
         throw new IllegalArgumentException("Invalid query type: " + opts.getQueryType());
     }
@@ -91,7 +170,7 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
 
   @Override
   public void close() throws IOException {
-    logger.info("Closing partition reader {}", partition.toString());
+    logger.info("Closing partition reader of {}", partition.toString());
     resp.close();
   }
 

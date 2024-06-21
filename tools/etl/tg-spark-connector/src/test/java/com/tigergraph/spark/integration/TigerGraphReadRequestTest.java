@@ -18,6 +18,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.tigergraph.spark.TigerGraphTable;
+import com.tigergraph.spark.TigerGraphTableProvider;
 import com.tigergraph.spark.read.TigerGraphBatch;
 import com.tigergraph.spark.read.TigerGraphPartitionReaderFactory;
 import com.tigergraph.spark.read.TigerGraphScan;
@@ -35,7 +36,7 @@ import org.junit.jupiter.api.Test;
  * operator options.
  */
 @WireMockTest
-public class TigerGraphReadRequestIT {
+public class TigerGraphReadRequestTest {
   /**
    * Set stubs with hard-coded response since here we are only verifying the request correctness.
    */
@@ -62,7 +63,8 @@ public class TigerGraphReadRequestIT {
    * @param opts Spark read options
    */
   static void mockSparkExecution(Map<String, String> opts, StructType schema) {
-    TigerGraphTable table = new TigerGraphTable(schema);
+    TigerGraphTableProvider provider = new TigerGraphTableProvider();
+    TigerGraphTable table = provider.getTable(schema, null, opts);
     TigerGraphScanBuilder scanBuilder = table.newScanBuilder(new CaseInsensitiveStringMap(opts));
     TigerGraphScan scan = scanBuilder.build();
     TigerGraphBatch batchRead = scan.toBatch();
@@ -170,5 +172,116 @@ public class TigerGraphReadRequestIT {
     for (int i = 0; i < 4; i++) {
       verify(exactly(1), getRequestedFor(urlEqualTo(expected[i])));
     }
+  }
+
+  @Test
+  void testListEdgesOfAVertex(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put("query.edge", "Person.tom");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(exactly(1), getRequestedFor(urlEqualTo("/restpp/graph/Social_Net/edges/Person/tom")));
+  }
+
+  @Test
+  void testListEdgesOfAVertexByEdgeType(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put("query.edge", "Person.tom.Friendship");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(
+        exactly(1),
+        getRequestedFor(urlEqualTo("/restpp/graph/Social_Net/edges/Person/tom/Friendship")));
+  }
+
+  @Test
+  void testListEdgesOfAVertexByEdgeTypeAndTargetType(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put("query.edge", "Person.tom.Friendship.Person");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(
+        exactly(1),
+        getRequestedFor(urlEqualTo("/restpp/graph/Social_Net/edges/Person/tom/Friendship/Person")));
+  }
+
+  @Test
+  void testRetrieveEdgeBySourceTargetAndEdgeType(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put("query.edge", "Person.tom.Friendship.Person.jack");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(
+        exactly(1),
+        getRequestedFor(
+            urlEqualTo("/restpp/graph/Social_Net/edges/Person/tom/Friendship/Person/jack")));
+  }
+
+  @Test
+  void testInstalledQuery(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put("query.installed", "queryA");
+            put("query.params", "{\"a\":\"v1\", \"b\": 999}");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(
+        exactly(1),
+        postRequestedFor(urlEqualTo("/restpp/query/Social_Net/queryA"))
+            .withHeader("Content-Type", equalTo("application/json"))
+            .withRequestBody(equalTo("{\"a\":\"v1\", \"b\": 999}")));
+  }
+
+  @Test
+  void testInterpretedQuery(WireMockRuntimeInfo wmRuntimeInfo) {
+    Map<String, String> opts =
+        new HashMap<String, String>() {
+          {
+            put("url", wmRuntimeInfo.getHttpBaseUrl());
+            put("graph", "Social_Net");
+            put(
+                "query.interpreted",
+                "INTERPRET QUERY (STRING a, INT b) FOR GRAPH gsql_demo {PRINT a,b;}");
+            put("query.params", "{\"a\":\"v1\", \"b\": [999,1,2]}");
+            put("username", "tigergraph");
+            put("password", "tigergraph");
+          }
+        };
+
+    mockSparkExecution(opts, StructType.fromDDL("a String"));
+    verify(
+        exactly(1),
+        postRequestedFor(urlEqualTo("/gsqlserver/interpreted_query?a=v1&b=999&b=1&b=2"))
+            .withRequestBody(
+                equalTo("INTERPRET QUERY (STRING a, INT b) FOR GRAPH gsql_demo {PRINT a,b;}")));
   }
 }
