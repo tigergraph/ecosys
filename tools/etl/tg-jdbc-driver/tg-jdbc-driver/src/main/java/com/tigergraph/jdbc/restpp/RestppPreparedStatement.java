@@ -404,7 +404,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     count[0] = Integer.valueOf(String.valueOf(validLine));
 
     // Only failed line/object will have sample data in stats
-    if (obj.toString().contains("sample\":{")) {
+    if (obj.toString().contains("\"lineData\"")) {
       if (!logger.isDebugEnabled()) {
         removeFieldsWithKey(obj, "lineData");
       }
