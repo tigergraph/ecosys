@@ -1,3 +1,7 @@
+## Release 1.3.20
+* Supported TG Version: 2.4.1+
+* Show error loading data when debug level is less than 3.
+
 ## Release 1.3.19
 * Supported TG Version: 2.4.1+
 * Support JSON Web Token (JWT)
