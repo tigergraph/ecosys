@@ -1,0 +1,103 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-tg-cluster1
+  namespace: tigergraph
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: tigergraph-image-pull-secret
+  license: ${YOUR_LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+  podLabels:
+    tigergraph.com/across-cluster-pod: across-tg-cluster
+  regionAware:
+    enable: true
+  topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            tigergraph.com/across-cluster-pod: across-tg-cluster
+        matchLabelKeys:
+          - pod-template-hash
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            tigergraph.com/across-cluster-pod: across-tg-cluster
+        matchLabelKeys:
+          - pod-template-hash
+---
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-tg-cluster2
+  namespace: tigergraph
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: tigergraph-image-pull-secret
+  license: ${YOUR_LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+  podLabels:
+    tigergraph.com/across-cluster-pod: across-tg-cluster
+  regionAware:
+    enable: true
+  topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            tigergraph.com/across-cluster-pod: across-tg-cluster
+        matchLabelKeys:
+          - pod-template-hash
+      - maxSkew: 1
+        topologyKey: "kubernetes.io/hostname"
+        whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            tigergraph.com/across-cluster-pod: across-tg-cluster
+        matchLabelKeys:
+          - pod-template-hash

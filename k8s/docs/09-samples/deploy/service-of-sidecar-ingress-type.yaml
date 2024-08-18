@@ -1,0 +1,52 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: ingress-type-service-of-sidecar
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: tigergraph-image-pull-secret
+  license: ${YOUR_LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+  sidecarListener:
+    type: Ingress
+    IngressClassName: ${YourIngressClassName}
+    labels:
+      key1: value1
+    annotations:
+      key2: value2
+    listenerPorts:
+    - name: httpd80
+      port: 80
+      ingressRule:
+        host: your.domain.hostname
+        path: /
+        pathType: Prefix
+  sidecarContainers:
+      - image: httpd:2.4
+        name: httpd80
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits: 
+            cpu: 500m
+            memory: 512Mi
+

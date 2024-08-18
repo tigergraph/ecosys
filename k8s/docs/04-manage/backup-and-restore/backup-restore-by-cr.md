@@ -1,24 +1,38 @@
 # Backup & Restore cluster by CR
 
+> [!IMPORTANT]
+> There are many examples on different conditions of backup and restore. Some fields in the YAML format CR is optional, a mark `# Optional` is put above them. All fields without the optional mark is required.
+
 - [Backup \& Restore cluster by CR](#backup--restore-cluster-by-cr)
-  - [Creating an S3 Secret for Backup and Restore](#creating-an-s3-secret-for-backup-and-restore)
+  - [Guarantee the access to S3 Bucket](#guarantee-the-access-to-s3-bucket)
+    - [Use AWS Access Key and Secret Access Key](#use-aws-access-key-and-secret-access-key)
+    - [Create a cluster with access to S3 (Supported from Operator version 1.2.0 and TigerGraph 4.1.0)](#create-a-cluster-with-access-to-s3-supported-from-operator-version-120-and-tigergraph-410)
   - [TigerGraphBackup](#tigergraphbackup)
     - [Backup to local storage](#backup-to-local-storage)
     - [Backup to S3 bucket](#backup-to-s3-bucket)
+      - [Use RoleARN instead of access key to access S3 Bucket](#use-rolearn-instead-of-access-key-to-access-s3-bucket)
+    - [About cleanPolicy](#about-cleanpolicy)
+    - [About backoffRetryPolicy](#about-backoffretrypolicy)
   - [TigerGraphBackupSchedule](#tigergraphbackupschedule)
     - [Schedule backup to local storage](#schedule-backup-to-local-storage)
     - [Schedule backup to S3 bucket](#schedule-backup-to-s3-bucket)
+      - [Use RoleARN instead of access key to access S3 Bucket in TigerGraphBackupSchedule](#use-rolearn-instead-of-access-key-to-access-s3-bucket-in-tigergraphbackupschedule)
   - [TigerGraphRestore](#tigergraphrestore)
     - [Restore from local backup](#restore-from-local-backup)
     - [Restore from backup in S3 bucket](#restore-from-backup-in-s3-bucket)
+      - [Use RoleARN instead of access key to access S3 Bucket in TigerGraphRestore](#use-rolearn-instead-of-access-key-to-access-s3-bucket-in-tigergraphrestore)
     - [Cross-cluster restore in existing cluster](#cross-cluster-restore-in-existing-cluster)
       - [Cluster version \>=3.9.2](#cluster-version-392)
     - [Clone a cluster(Create a new cluster and do cross-cluster restore)](#clone-a-clustercreate-a-new-cluster-and-do-cross-cluster-restore)
       - [Clone Cluster version \>=3.9.2](#clone-cluster-version-392)
 
-## Creating an S3 Secret for Backup and Restore
+## Guarantee the access to S3 Bucket
 
-When working with backup and restore operations involving S3 buckets, you need to create a Kubernetes Secret to securely store your AWS access credentials. Here's how you can create an S3 Secret:
+When working with backup and restore operations involving S3 buckets, you need to guarantee the access to the S3 bucket. Currently we support two ways to achieve this:
+
+### Use AWS Access Key and Secret Access Key
+
+Create a Kubernetes Secret to securely store your AWS access credentials. Here's how you can create an S3 Secret:
 
 1. **Encode AWS Access Key ID and Secret Access Key**:
 
@@ -61,10 +75,11 @@ When working with backup and restore operations involving S3 buckets, you need t
 
 By creating an S3 Secret in this manner, you ensure that your AWS access credentials are securely stored and can be easily referenced when needed for backup and restore tasks involving S3 buckets.
 
-## TigerGraphBackup
+### Create a cluster with access to S3 (Supported from Operator version 1.2.0 and TigerGraph 4.1.0)
 
-> [!NOTE]
-> There are many examples on different conditions of backup and restore. Some fields in the YAML format CR is optional, a mark `# optional` is put above them. All fields without the optional mark is required.
+If you want to use RoleARN instead of access key in TigerGraphBackup/TigerGraphRestore CR, you can create a cluster with access to S3. You can refer to [Create a TigerGraph cluster with access to S3](./create-tg-with-access-to-s3.md).
+
+## TigerGraphBackup
 
 For optimal organization, we recommend using the naming convention `${CLUSTER-NAME}-backup-${TAG}` for your backup CR.
 
@@ -89,6 +104,8 @@ spec:
   
   # Configure the name of backup files and the path storing temporary files
   backupConfig:
+    # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+    # Note: this field is Required for TigerGraph Operator < 1.1.0
     tag: local
     # Optional: Set the path for temporary staging files
     stagingPath: /home/tigergraph/tigergraph/data
@@ -98,12 +115,39 @@ spec:
     timeout: 18000
     # Optional: Specify the number of processes to use for compression (0 uses the number of CPU cores)
     compressProcessNumber: 0
-    # Optional: (Requires operator version >= 0.0.9 and TigerGraph version >= 3.9.3)
+    # Optional: (Requires TigerGraph Operator >= 0.0.9 and TigerGraph >= 3.9.3)
     # Choose the compression level for the backup: DefaultCompression/BestSpeed/BestCompression
     compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
+  
+  # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+  # Choose from Delete/Retain
+  # The default behavior is to retain the backup package.
+  # If you want to delete the backup package when deleting the backup CR, 
+  # you can set the cleanPolicy to Delete. 
+  # With Delete policy, 
+  # TigerGraph Operator will create a backup-clean-job when the backup CR is deleted, 
+  # to make sure that the backup package is removed before deleting the backup CR.
+  cleanPolicy: Delete
+
+  # Optional: Set the retry policy for backup CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for backup CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
+    # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+    # that means, when backup-clean-job exceeds the maxRetryTimes
+    # the backup CR will be deleted directly, the backup package still exists in cluster
+    forceDeleteAfterMaxRetries: false
 ```
 
 ### Backup to S3 bucket
+
+Assume that you have already created an S3 Secret named `s3-secret` containing your AWS access credentials following the instructions in the previous section [Use AWS Access Key and Secret Access Key](#use-aws-access-key-and-secret-access-key).
 
 Certainly, here's the YAML file for performing a backup to an S3 bucket using a previously created Secret named `s3-secret`. You can save this content to a file (e.g., `backup-s3.yaml`), and then run `kubectl apply -f backup-s3.yaml -n YOUR_NAMESPACE` to create the backup.
 
@@ -113,6 +157,7 @@ kind: TigerGraphBackup
 metadata:
   name: test-cluster-backup-s3
 spec:
+  # Specify which cluster to backup in the SAME NAMESPACE as the backup job
   clusterName: test-cluster
   destination:
     storage: s3Bucket
@@ -121,8 +166,11 @@ spec:
       bucketName: operator-backup
       # Specify the Secret containing the S3 access key and secret access key
       secretKeyName: s3-secret
+
   # Configure the name of backup files and the path storing temporary files
   backupConfig:
+    # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+    # Note: this field is Required for TigerGraph Operator < 1.1.0
     tag: s3
     # Optional: Set the path for temporary staging files
     stagingPath: /home/tigergraph/tigergraph/data
@@ -132,12 +180,78 @@ spec:
     timeout: 18000
     # Optional: Specify the number of processes to use for compression (0 uses the number of CPU cores)
     compressProcessNumber: 0
-    # Optional: (Requires operator version >= 0.0.9 and TigerGraph version >= 3.9.3)
+    # Optional: (Requires TigerGraph Operator >= 0.0.9 and TigerGraph >= 3.9.3)
     # Choose the compression level for the backup: DefaultCompression/BestSpeed/BestCompression
     compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
+
+  # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+  # Choose from Delete/Retain
+  # The default behavior is to retain the backup package.
+  # If you want to delete the backup package when deleting the backup CR, 
+  # you can set the cleanPolicy to Delete. 
+  # With Delete policy, 
+  # TigerGraph Operator will create a backup-clean-job when the backup CR is deleted, 
+  # to make sure that the backup package is removed before deleting the backup CR.
+  cleanPolicy: Delete
+
+  # Optional: Set the retry policy for backup CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for backup CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
+    # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+    # that means, when backup-clean-job exceeds the maxRetryTimes
+    # the backup CR will be deleted directly, the backup package still exists in cluster
+    forceDeleteAfterMaxRetries: false
 ```
 
+#### Use RoleARN instead of access key to access S3 Bucket
+
+Assume that you have already created a cluster with access to S3 following the instructions in the previous section [Create a cluster with access to S3](#create-a-cluster-with-access-to-s3-supported-from-operator-version-120-and-tigergraph-410).
+
+Then you can replace the `.spec.destination` field with the following content:
+
+```yaml
+spec:
+  destination:
+    storage: s3Bucket
+    s3Bucket:
+      bucketName: operator-backup
+      roleARN: arn:aws:iam::123456789012:role/role-name
+```
+
+> [!NOTE]
+> In TigerGraph Operator 1.2.0, you are allowed to set `roleARN` and `secretKeyName` at the same time.
+> If you set both of them, TigerGraph will only use `roleARN` and ignore the `secretKeyName`.
+> So we highly recommend you to use just one of them.
+
+### About cleanPolicy
+
+> [!IMPORTANT]
+> If you want to delete a backup CR whose cleanPolicy is Delete, you should make sure that
+> the cluster is running and the backup package is not used by any other incremental backup CR. Otherwise, the `backup-clean-job` will fail and the deletion of the backup CR will be blocked,
+> because when you set the clean policy to Delete, TigerGraph Operator will make sure that the backup package is removed before deleting the backup CR.
+>
+> If for some reason, the backup package cannot be deleted, and you do not want the deletion of backup CR to be blocked, you can configure `forceDeleteAfterMaxRetries: true` when creating the backup CR. Or update the `cleanPolicy` to `Retain`. When the backup CR is successfully deleted, you need to manually clear the backup package yourself.
+
+### About backoffRetryPolicy
+
+> [!NOTE]
+> When backup job failed, the backup CR will perform exponential backoff retry. The duration between two retries will start from `minRetryDuration` and double every time until it reaches `maxRetryDuration`.
+> The backup CR will retry util exceeding `maxRetryTimes`. If the backup job is still failed after exceeding `maxRetryTimes`, the backup CR will be marked as failed.
+
 ## TigerGraphBackupSchedule
+
+Since Operator version 1.1.0, the backup schedule CRs will create TigerGraphBackup CR at scheduled time to achieve creating backup periodically. The backup schedule CRs will manage the backup CRs created by the schedule according to the strategies. The backup schedule CRs will delete the oldest backup CRs when the number of backup CRs exceeds the `maxBackupFiles` or the backup CRs exist for more than `maxReservedDays` days. The backup schedule CRs will also retry the backup CRs when the backup CRs failed according to the `backoffRetryPolicy`
+
+> [!WARNING]
+> When a backup schedule is deleted, the backup CRs created by the schedule will also be deleted. If you want to keep the backup CRs, you should update the backup clean policy to Retain for all backup CRs
+> created by the schedule before deleting the schedule. Or you can pause the backup schedule instead of deleting it.
 
 The field `.spec.schedule` uses the cron schedule expression. You can refer to [https://crontab.guru/](https://crontab.guru/).
 
@@ -161,7 +275,7 @@ spec:
     # A backup can only exist for 3 days
     maxReservedDays: 3
     maxRetry: 10 
-  # optional : is pause is true, the cronjob will be suspended
+  # Optional : is pause is true, the cronjob will be suspended
   pause: false
   backupTemplate:
   # Specify which cluster to backup in the SAME NAMESPACE as the backup job
@@ -175,20 +289,49 @@ spec:
     
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
+      # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+      # Note: this field is Required for TigerGraph Operator < 1.1.0
       tag: daily
-      # optional
+      # Optional
       stagingPath: /home/tigergraph/tigergraph/data
-      # optional :if incremental is true, incremental backup will be performed
+      # Optional :if incremental is true, incremental backup will be performed
       incremental: false
-      # optional
+      # Optional
       timeout: 18000
-      # optional :specify the number of process to do compress
+      # Optional :specify the number of process to do compress
       compressProcessNumber: 0
-      # optional: (operator>=0.0.9 and tg>=3.9.3) specify the compress level for backup
+      # Optional: (TigerGraph Operator >=0.0.9 and TigerGraph >=3.9.3) specify the compress level for backup
       compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression
+      
+    # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+    # Choose from Delete/Retain
+    # For backup CR created by backup schedule, 
+    # the default behavior is to delete the backup package. 
+    # The backup schedule CR use this feature to keep maxBackupFiles.
+    # If you want to keep all backup packages created by backup schedule,
+    # you can set the cleanPolicy to Retain. 
+    # But at the same time, the maxBackupFiles and maxReservedDays won't work properly.
+    cleanPolicy: Delete
+
+    # Optional: Set the retry policy for backup CR
+    backoffRetryPolicy:
+      # set maxRetryTimes for backup CR
+      maxRetryTimes: 3
+      # set the min duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      minRetryDuration: 5s
+      # set the max duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      maxRetryDuration: 10s
+      # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+      # that means, when backup-clean-job exceeds the maxRetryTimes
+      # the backup CR will be deleted directly, the backup package still exists in cluster
+      forceDeleteAfterMaxRetries: false
 ```
 
 ### Schedule backup to S3 bucket
+
+Assume that you have already created an S3 Secret named `s3-secret` containing your AWS access credentials following the instructions in the previous section [Use AWS Access Key and Secret Access Key](#use-aws-access-key-and-secret-access-key).
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -206,7 +349,7 @@ spec:
     # A backup can only exist for 3 days
     maxReservedDays: 3
     maxRetry: 10 
-  # optional : is pause is true, the cronjob will be suspended
+  # Optional : is pause is true, the cronjob will be suspended
   pause: false
   backupTemplate:
     clusterName: test-cluster
@@ -218,18 +361,66 @@ spec:
         secretKeyName: s3-secret
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
+      # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+      # Note: this field is Required for TigerGraph Operator < 1.1.0
       tag: s3-daily
-      # optional
+      # Optional
       stagingPath: /home/tigergraph/tigergraph/data/backup-staging
-      # optional :if incremental is true, incremental backup will be performed
+      # Optional :if incremental is true, incremental backup will be performed
       incremental: false
-      # optional
+      # Optional
       timeout: 18000
-      # optional :specify the number of process to do compress
+      # Optional :specify the number of process to do compress
       compressProcessNumber: 0
-      # optional: (operator>=0.0.9 and tg>=3.9.3) specify the compress level for backup
+      # Optional: (TigerGraph Operator>=0.0.9 and TigerGraph>=3.9.3) specify the compress level for backup
       compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression
+
+    # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+    # Choose from Delete/Retain
+    # For backup CR created by backup schedule, 
+    # the default behavior is to delete the backup package. 
+    # The backup schedule CR use this feature to keep maxBackupFiles.
+    # If you want to keep all backup packages created by backup schedule,
+    # you can set the cleanPolicy to Retain. 
+    # But at the same time, the maxBackupFiles and maxReservedDays won't work properly.
+    cleanPolicy: Delete
+
+    # Optional: Set the retry policy for backup CR
+    backoffRetryPolicy:
+      # set maxRetryTimes for backup CR
+      maxRetryTimes: 3
+      # set the min duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      minRetryDuration: 5s
+      # set the max duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      maxRetryDuration: 10s
+      # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+      # that means, when backup-clean-job exceeds the maxRetryTimes
+      # the backup CR will be deleted directly, the backup package still exists in cluster
+      forceDeleteAfterMaxRetries: false
 ```
+
+#### Use RoleARN instead of access key to access S3 Bucket in TigerGraphBackupSchedule
+
+Assume that you have already created a cluster with access to S3 following the instructions in the previous section [Create a cluster with access to S3](#create-a-cluster-with-access-to-s3-supported-from-operator-version-120-and-tigergraph-410).
+
+Then you can replace the `.spec.backupTemplate.destination` field with the following content:
+
+```yaml
+spec:
+  backupTemplate:
+    destination:
+      storage: s3Bucket
+      s3Bucket:
+        bucketName: operator-backup
+        roleARN: arn:aws:iam::123456789012:role/role-name
+```
+
+> [!NOTE]
+> In TigerGraph Operator 1.2.0, you are allowed to set `roleARN` and `secretKeyName` at the same time.
+> If you set both of them, TigerGraph will only use `roleARN` and ignore the `secretKeyName`.
+> So we highly recommend you to use just one of them.
 
 ## TigerGraphRestore
 
@@ -244,9 +435,9 @@ spec:
   restoreConfig:
     # We can use tag to restore from backup in the same cluster
     tag: daily-2021-11-04T120000
-    # optional
+    # Optional
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
-    # optional: (operator>=0.0.9 and tg>=3.9.3) should be >=0
+    # Optional: (TigerGraph Operator>=0.0.9 and TigerGraph>=3.9.3) should be >=0
     decompressProcessNumber: 2
   source:
     storage: local
@@ -254,9 +445,22 @@ spec:
       path: /home/tigergraph/tigergraph/data/backup
   # Specify the name of cluster
   clusterName: test-cluster
+
+  # Optional: Set the retry policy for restore CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for restore CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
 ```
 
 ### Restore from backup in S3 bucket
+
+Assume that you have already created an S3 Secret named `s3-secret` containing your AWS access credentials following the instructions in the previous section [Use AWS Access Key and Secret Access Key](#use-aws-access-key-and-secret-access-key).
 
 ```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
@@ -266,9 +470,9 @@ metadata:
 spec:
   restoreConfig:
     tag: daily-2021-11-04T120000
-    # optional
+    # Optional
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
-    # optional: (operator>=0.0.9 and tg>=3.9.3) should be >=0
+    # Optional: (TigerGraph Operator>=0.0.9 and TigerGraph>=3.9.3) should be >=0
     decompressProcessNumber: 2
   source:
     storage: s3Bucket 
@@ -278,6 +482,32 @@ spec:
       secretKeyName: s3-secret
   # Specify the name of cluster
   clusterName: test-cluster
+
+  # Optional: Set the retry policy for restore CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for restore CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
+```
+
+#### Use RoleARN instead of access key to access S3 Bucket in TigerGraphRestore
+
+Assume that you have already created a cluster with access to S3 following the instructions in the previous section [Create a cluster with access to S3](#create-a-cluster-with-access-to-s3-supported-from-operator-version-120-and-tigergraph-410).
+
+Then you can replace the `.spec.source` field with the following content:
+
+```yaml
+spec:
+  source:
+    storage: s3Bucket
+    s3Bucket:
+      bucketName: operator-backup
+      roleARN: arn:aws:iam::123456789012:role/role-name
 ```
 
 ### Cross-cluster restore in existing cluster
@@ -360,9 +590,9 @@ metadata:
 spec:
   restoreConfig:
     tag: daily-2022-10-13T022218
-    # optional
+    # Optional
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
-    # optional: (operator>=0.0.9 and tg>=3.9.3) should be >=0
+    # Optional: (TigerGraph Operator>=0.0.9 and TigerGraph>=3.9.3) should be >=0
     decompressProcessNumber: 2
   source:
     storage: s3Bucket 

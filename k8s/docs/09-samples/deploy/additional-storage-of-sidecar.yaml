@@ -1,0 +1,68 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: additional-storage-of-sidecar
+  namespace: tigergraph
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: tigergraph-image-pull-secret
+  license: ${YOUR_LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+    additionalStorages:
+      - name: tg-sidecar
+        storageClassName: standard
+        storageSize: 5Gi
+        accessMode: ReadWriteMany
+        volumeMode: Filesystem
+  sidecarContainers:
+      - args: # sidecar will execute this 
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              echo "$(date) INFO hello from main-container" >> /tg-sidecar/myapp.log ;
+              sleep 1;
+            done
+        image: alpine:3.17.2
+        name: sidecar-container # name of sidecar
+        readinessProbe: # check if the sidecar is ready
+          exec:
+            command:
+              - sh
+              - -c
+              - if [[ -f /tg-sidecar/myapp.log ]];then exit 0; else exit 1;fi
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests: # request resouces for sidecar
+            cpu: 500m
+            memory: 512Mi
+          limits: # limit resources
+            cpu: 500m
+            memory: 512Mi
+        env: # inject the environment you need
+          - name: CLUSTER_NAME
+            value: test-cluster
+        volumeMounts:
+          - mountPath: /tg-sidecar
+            name: tg-sidecar

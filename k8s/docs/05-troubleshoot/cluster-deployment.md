@@ -442,7 +442,7 @@ If you've successfully created the StatefulSet and cluster pods for your TigerGr
   [   Info] Initializing KAFKA
   [   Info] Starting EXE
   [   Info] Starting CTRL
-  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   [   Info] Applying config
   [Warning] No difference from staging config, config apply is skipped.
   [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
@@ -477,8 +477,6 @@ If you've successfully created the StatefulSet and cluster pods for your TigerGr
   |    KAFKASTRM-LL    |         Online          |         Running         |
   |       NGINX        |         Online          |         Running         |
   |       RESTPP       |         Online          |         Running         |
-  |        TS3         |         Online          |         Running         |
-  |      TS3SERV       |         Online          |         Running         |
   |         ZK         |         Online          |         Running         |
   +--------------------+-------------------------+-------------------------+
   ```
@@ -536,10 +534,6 @@ If you've successfully created the StatefulSet and cluster pods for your TigerGr
   |      RESTPP#1      |         Online          |         Running         |          44540          |
   |      RESTPP#2      |         Online          |         Running         |          9596           |
   |      RESTPP#3      |         Online          |         Running         |          3127           |
-  |     TS3SERV#1      |         Online          |         Running         |          44721          |
-  |       TS3_1        |         Online          |         Running         |          44875          |
-  |       TS3_2        |         Online          |         Running         |          9793           |
-  |       TS3_3        |         Online          |         Running         |          3466           |
   |        ZK#1        |         Online          |         Running         |           108           |
   |        ZK#2        |         Online          |         Running         |           729           |
   |        ZK#3        |         Online          |         Running         |           103           |

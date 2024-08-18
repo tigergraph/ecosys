@@ -204,7 +204,7 @@ metadata:
 spec:
   ha: 1
   image: docker.io/tigergraph/tigergraph-k8s:3.9.3
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret
   license: YOUR_LICENSE

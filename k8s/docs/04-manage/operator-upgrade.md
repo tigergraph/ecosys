@@ -3,253 +3,327 @@
 This document provides step-by-step instructions for upgrading the TigerGraph Kubernetes Operator using the kubectl-tg plugin.
 
 - [How to upgrade TigerGraph Kubernetes Operator](#how-to-upgrade-tigergraph-kubernetes-operator)
-  - [Install Operator 0.0.7 and TigerGraph 3.9.2](#install-operator-007-and-tigergraph-392)
-    - [Install Operator 0.0.7](#install-operator-007)
-    - [Install TigerGraph 3.9.2](#install-tigergraph-392)
-  - [Upgrade Operator and CRD](#upgrade-operator-and-crd)
-    - [Install the latest kubectl-tg plugin](#install-the-latest-kubectl-tg-plugin)
-    - [Upgrade CRD to the latest version](#upgrade-crd-to-the-latest-version)
-    - [Upgrade Operator to the latest version](#upgrade-operator-to-the-latest-version)
-  - [How to upgrade for mandatory change](#how-to-upgrade-for-mandatory-change)
+  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.2.0](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-120)
+    - [Upgrading kubectl-tg plugin](#upgrading-kubectl-tg-plugin)
+      - [Upgrading TigerGraph Operator](#upgrading-tigergraph-operator)
+  - [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above)
+    - [Backup the TigerGraph CR for an Old TigerGraph Cluster Version](#backup-the-tigergraph-cr-for-an-old-tigergraph-cluster-version)
+    - [Delete the TigerGraph cluster but retain the PVC of the TigerGraph Pods](#delete-the-tigergraph-cluster-but-retain-the-pvc-of-the-tigergraph-pods)
+    - [Ensure that the PVC of the TigerGraph cluster still exists](#ensure-that-the-pvc-of-the-tigergraph-cluster-still-exists)
+    - [Install the latest or target version of `kubectl-tg`](#install-the-latest-or-target-version-of-kubectl-tg)
+    - [Uninstall the old version of TigerGraph Operator and TigerGraph CRDs](#uninstall-the-old-version-of-tigergraph-operator-and-tigergraph-crds)
+      - [Uninstall the old version of TigerGraph Operator](#uninstall-the-old-version-of-tigergraph-operator)
+      - [Delete the old version of TigerGraph CRDs](#delete-the-old-version-of-tigergraph-crds)
+    - [Install the new version of TigerGraph Operator](#install-the-new-version-of-tigergraph-operator)
+    - [Deploy TigerGraph cluster with the same cluster configuration](#deploy-tigergraph-cluster-with-the-same-cluster-configuration)
   - [How to upgrade for optional change](#how-to-upgrade-for-optional-change)
   - [How to upgrade for a specific breaking change](#how-to-upgrade-for-a-specific-breaking-change)
-    - [Key considerations for upgrading Operator to 1.0.0 and TigerGraph to 3.10.0](#key-considerations-for-upgrading-operator-to-100-and-tigergraph-to-3100)
-      - [Exposing Nginx Service Instead of Exposing RESTPP and GST (Tools,GUI) Services](#exposing-nginx-service-instead-of-exposing-restpp-and-gst-toolsgui-services)
-      - [Performing a Full Backup Before Running HA, Shrink, and Expand Operations](#performing-a-full-backup-before-running-ha-shrink-and-expand-operations)
-      - [Upgrade TG Cluster](#upgrade-tg-cluster)
-        - [Upgrading a legacy TG Cluster](#upgrading-a-legacy-tg-cluster)
-        - [Upgrading to a TG Cluster with Multiple PVCs](#upgrading-to-a-tg-cluster-with-multiple-pvcs)
+    - [Key considerations for upgrading to TigerGraph Operator 1.0.0 or above and TigerGraph 3.10.0 or above](#key-considerations-for-upgrading-to-tigergraph-operator-100-or-above-and-tigergraph-3100-or-above)
+      - [Exposing Nginx Service Instead of Exposing RESTPP and GST (Tools and GUI) Services](#exposing-nginx-service-instead-of-exposing-restpp-and-gst-tools-and-gui-services)
+      - [Performing a Full Backup Before Running HA Update, Shrink, and Expand Operations](#performing-a-full-backup-before-running-ha-update-shrink-and-expand-operations)
+      - [Upgrading a TigerGraph Cluster to Use Multiple PVCs](#upgrading-a-tigergraph-cluster-to-use-multiple-pvcs)
 
-## Install Operator 0.0.7 and TigerGraph 3.9.2
+## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.2.0
 
-If you have previously installed an older version of the Operator and TigerGraph cluster, you can skip this section. This section is only for verifying operator upgrading.
+### Upgrading kubectl-tg plugin
 
-### Install Operator 0.0.7
+To upgrade the kubectl-tg plugin for TigerGraph Operator 1.2.0, execute the following command:
 
 ```bash
-curl https://dl.tigergraph.com/k8s/0.0.7/kubectl-tg -o kubectl-tg
-sudo install kubectl-tg /usr/local/bin/
-
-kubectl tg init --operator-size 1 --operator-cpu 1000m  --operator-memory 1024Mi -n tigergraph
-```
-
-### Install TigerGraph 3.9.2
-
-- Create private ssh key name of TigerGraph pod
-
-```bash
-# create a new private keys
-echo -e 'y\\n' | ssh-keygen -b 4096 -t rsa -f $HOME/.ssh/tigergraph_rsa -q -N ''
-
-# Create a Secret of K8s with above ssh key files
-kubectl create secret generic ssh-key-secret --from-file=private-ssh-key=$HOME/.ssh/tigergraph_rsa --from-file=public-ssh-key=$HOME/.ssh/tigergraph_rsa.pub --namespace YOUR_NAME_SPACE
-```
-
-- Create TG cluster with the above secret name
-
-```bash
-kubectl tg create --cluster-name test-cluster --private-key-secret ssh-key-secret --license xxxxxxxxxxxxxxxxxxxxxxxxx \
---size 3 --ha 2 --version 3.9.2 \
---storage-class standard --storage-size 100G --cpu 4000m --memory 8Gi -n tigergraph
-```
-
-You can also load graph data and verify it after upgrading the Operator.
-
-## Upgrade Operator and CRD
-
-Starting from Operator version 0.0.4, you can upgrade the Operator. The latest available Operator version is 0.0.7; please update it according to your requirements.
-
-### Install the latest kubectl-tg plugin
-
-```bash
-curl https://dl.tigergraph.com/k8s/latest/kubectl-tg -o kubectl-tg
+curl https://dl.tigergraph.com/k8s/1.2.0/kubectl-tg  -o kubectl-tg
 sudo install kubectl-tg /usr/local/bin/
 ```
 
-### Upgrade CRD to the latest version
-
-Use the following command to upgrade the Custom Resource Definition (CRD) to version latest:
+Ensure you have installed the correct version of kubectl-tg:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl tg version
+
+Version: 1.2.0
+Default version of TigerGraph cluster: 4.1.0
 ```
-
-### Upgrade Operator to the latest version
-
-The following command will upgrade the operator version to 0.0.9:
-
-```bash
-kubectl tg upgrade --namespace ${YOUR_NAMESPACE} --operator-version 0.0.9
-```
-
-If you only need to update the Operator's configuration without changing its version, use the following command:
-
-```bash
-kubectl tg upgrade --version ${OPERATOR_VERSION} --operator-size 3 --operator-watch-namespace ${YOUR_NAMESPACE} --operator-cpu 1000m  --operator-memory 1024Mi --namespace ${YOUR_NAMESPACE}
-```
-
-## How to upgrade for mandatory change
-
-In case of mandatory changes, such as adding a new mandatory option for the secret name of the private SSH key in Operator 0.0.4,
-After upgrading the operator from 0.0.3 to 0.0.4, it will throw the following error if you do some update operation.
-
-```bash
-kubectl tg update --cluster-name test-cluster --memory 5Gi -n tigergraph
-The CR of cluster test-cluster is exported to /home/graphsql/e2e/test-cluster_backup_1679469286.yaml before update cluster, you can use this file for recovery
-Warning: resource tigergraphs/test-cluster is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-Error from server (the secret name of private ssh key is required for TG version 3.8.0): error when applying patch:
-.......
-to:
-Resource: "graphdb.tigergraph.com/v1alpha1, Resource=tigergraphs", GroupVersionKind: "graphdb.tigergraph.com/v1alpha1, Kind=TigerGraph"
-Name: "test-cluster", Namespace: "tigergraph"
-for: "STDIN": admission webhook "vtigergraph.kb.io" denied the request: the secret name of private ssh key is required for TG version 3.8.0
-```
-
-Follow these steps after upgrading from  Operator 0.0.3 to 0.0.4 for mandatory changes:
-
-- Delete cluster
 
 > [!WARNING]
-> Don't delete the pvc of the cluster manually.
+> If you have upgraded to the new version of kubectl-tg, you must also upgrade the TigerGraph Operator and TigerGraph CRDs. Otherwise, you may encounter unexpected errors when operating the cluster with `kubectl-tg`.
+
+#### Upgrading TigerGraph Operator
+
+There are no breaking changes in the TigerGraph CRDs for version 1.2.0. You can upgrade the TigerGraph Operator by following these steps if you have an older version 1.0.0 or above installed.
+
+> [!IMPORTANT]
+> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade or delete TigerGraph CRDs manually.
+
+- Upgrade the TigerGraph CRDs to version 1.2.0
+
+  ```bash
+  kubectl apply -f https://dl.tigergraph.com/k8s/1.2.0/tg-operator-crd.yaml
+  ```
+
+- Upgrade the TigerGraph Operator to version 1.2.0 using the `kubectl-tg` plugin
+
+  ```bash
+  kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-version 1.2.0
+  ```
+  
+  Ensure TigerGraph Operator has been upgraded successfully:
+
+  ```bash
+  helm list -n ${YOUR_NAMESPACE_OF_OPERATOR}
+  
+  NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
+  tg-operator     tigergraph      2               2024-06-24 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.2.0                1.2.0
+  ```
+
+## Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above
+
+Starting with TigerGraph Operator 1.0.0, the fields `spec.initTGConfig.license` and `spec.initTGConfig.ha` have been moved to `spec.license` and `spec.ha`, respectively. Additionally, `the spec.initTGConfig` field has been removed. You may encounter the error below if you only upgrade kubectl-tg to the latest version without upgrading TigerGraph Operator and CRDs.
+
+```bash
+kubectl tg create --namespace tigergraph --cluster-name test-cluster --license  ${YOUR_LICENSE} \ 
+-k ssh-key-secret --size 3 --ha 2  --storage-class standard --storage-size 100G --cpu 6000m --memory 12Gi
+
+Error from server (BadRequest): error when creating "STDIN": TigerGraph in version "v1alpha1" cannot be handled as a TigerGraph: strict decoding error: unknown field "spec.ha", unknown field "spec.license"
+```
+
+> [!WARNING]
+> To ensure a successful upgrade, it is essential to upgrade the TigerGraph Operator, TigerGraph CRDs, and `kubectl-tg` simultaneously. Failing to do so may result in the upgrade process failing entirely.
+
+For breaking changes, such as upgrading the TigerGraph Operator from version 0.0.9 to 1.0.0 or above, you need to upgrade the TigerGraph Operator, CRDs, and the TigerGraph cluster by following the steps below.
+
+> [!NOTE]
+> In the following examples, we assume that the TigerGraph Operator and a TigerGraph cluster named `test-cluster` are installed in the `tigergraph` namespace. Please update these names according to your needs.
+
+### Backup the TigerGraph CR for an Old TigerGraph Cluster Version
+
+If you are using a YAML CR to deploy a TigerGraph cluster, please keep the old version before you upgrade. Here, we use `kubectl-tg` for cluster deployment as an example.
+
+Back up the TigerGraph CR for the old cluster version using `kubectl-tg`; it can be used for recreating the cluster after upgrading the TigerGraph Operator to the new version:
+
+```bash
+kubectl tg export --cluster-name test-cluster -n tigergraph
+
+The CR of cluster test-cluster is exported to test-cluster_backup_1719223812.yaml
+```
+
+### Delete the TigerGraph cluster but retain the PVC of the TigerGraph Pods
+
+> [!WARNING]
+> You must not delete the PVC of the TigerGraph cluster Pods; otherwise, you will be unable to recreate the cluster with the existing graph data.
 
 ```bash
 kubectl tg delete --cluster-name test-cluster -n tigergraph
+
+tigergraph.graphdb.tigergraph.com "test-cluster" deleted
+you can delete all related backup/restore/backup-schedule resources by:
+  kubectl tg delete --cluster-name test-cluster --namespace tigergraph --cascade
+or you can delete them by running:
+  kubectl delete tgbackup --namespace tigergraph -l tigergraph.com/backup-cluster=test-cluster
+  kubectl delete tgbackupsch --namespace tigergraph -l tigergraph.com/backup-cluster=test-cluster
+  kubectl delete tgrestore --namespace tigergraph -l tigergraph.com/restore-cluster=test-cluster
+Notice: you can delete all pvc of this cluster by running:
+  kubectl delete pvc --namespace tigergraph -l tigergraph.com/cluster-name=test-cluster
 ```
 
-- Create a private ssh key secret
+### Ensure that the PVC of the TigerGraph cluster still exists
 
 ```bash
-echo -e 'y\\n' | ssh-keygen -b 4096 -t rsa -f $HOME/.ssh/tigergraph_rsa -q -N ''
+kubectl get pvc -l tigergraph.com/cluster-name=test-cluster -n tigergraph
 
-kubectl create secret generic ssh-key-secret --from-file=private-ssh-key=$HOME/.ssh/tigergraph_rsa --from-file=public-ssh-key=$HOME/.ssh/tigergraph_rsa.pub --namespace tigergraph
+NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+tg-data-test-cluster-0   Bound    pvc-b60a11ce-da18-45ca-8f9d-721dda07fdef   10G        RWO            standard       <unset>                 11m
+tg-data-test-cluster-1   Bound    pvc-1f0ea4f4-94f0-4169-9101-29aa7ed640a5   10G        RWO            standard       <unset>                 11m
+tg-data-test-cluster-2   Bound    pvc-73d58df7-206e-4c58-aa91-702df9761fac   10G        RWO            standard       <unset>                 11m
 ```
 
-- Recreate the cluster with the created private ssh key
-
-> [!WARNING]
-> Cluster size, ha and name must be the same.
+### Install the latest or target version of `kubectl-tg`
 
 ```bash
-kubectl tg create --cluster-name test-cluster --license xxxxxxxxxxxxxxxxxxxxxxxxx \
---size 3 --ha 2 --version 3.8.0 \
---storage-class standard --storage-size 10G --cpu 2000m --memory 6Gi -n tigergraph --private-key-secret ssh-key-secret
+curl https://dl.tigergraph.com/k8s/1.2.0/kubectl-tg  -o kubectl-tg
+sudo install kubectl-tg /usr/local/bin/
 ```
 
-## How to upgrade for optional change
+Ensure you have installed the correct version of kubectl-tg:
 
-If you don't require the new optional configuration of the CRD, no extra steps are needed. However,
-if you wish to use the new optional configuration, you can simply update the cluster as needed.
+```bash
+kubectl tg version
 
-## How to upgrade for a specific breaking change
+Version: 1.2.0
+Default version of TigerGraph cluster: 4.1.0
+```
 
-In order to optimize the user experience of the operator, such as improving ease of use and removing some configurations that are no longer used, Operator upgrading and TigerGraph upgrading may bring breaking changes. If you have an old version of Operator and TigerGraph, please follow the key considerations and upgrading steps carefully.
+### Uninstall the old version of TigerGraph Operator and TigerGraph CRDs
 
-### Key considerations for upgrading Operator to 1.0.0 and TigerGraph to 3.10.0
-
-#### Exposing Nginx Service Instead of Exposing RESTPP and GST (Tools,GUI) Services
-
-- The new Custom Resource Definition (CRD) is applicable starting from TigerGraph 3.9.2. In the TigerGraph Cluster before 3.9.2, after the CRD is updated, the image must be upgraded to 3.9.2 or later.
-
- ```bash
-    kubectl tg update --cluster-name ${cluster_name} --version 3.9.2 -n ${NAMESPACE_OF_YOUR_CLUSTER}
-  ```
-
-- If using the new CRD (1.0.0) with the old version TG image, the NGINX service cannot serve correctly on Tools, RESTPP, and informant services.
-- If using the old CRD (<=0.0.9), the Tools (GUI), RESTPP, and informant services cannot serve on 3.6.3 but can serve on 3.7.0, 3.8.0, 3.9.1, 3.9.2, and 3.9.3.
-
-#### Performing a Full Backup Before Running HA, Shrink, and Expand Operations
-
-If the HA Update process is broken by an interrupter operation such as the update pod being killed or the update job being killed, then the TG Cluster may be damaged and unrecoverable automatically, even if the HA update pod is recreated and reruns the HA update job. As a customer, it is necessary to prepare a full backup before running the HA update.
-
-> [!WARNING]
-> If the license is expired, the shrink/expand process will be stuck for a long time at exporting/importing graph data and will finally fail.
-
-#### Upgrade TG Cluster
-
-##### Upgrading a legacy TG Cluster
-
-- The best and fastest way to upgrade from an old operator + CRD to a new operator + CRD is:
+#### Uninstall the old version of TigerGraph Operator
   
-  - Uninstall operator
-  
-    ```bash
-    kubectl tg uninstall
-    ```
-
-  - Delete all CRDs
-
-    ```bash
-    kubectl delete crd tigergraphbackups.graphdb.tigergraph.com
-    kubectl delete crd tigergraphbackupschedules.graphdb.tigergraph.com
-    kubectl delete crd tigergraphrestores.graphdb.tigergraph.com
-    kubectl delete crd tigergraphs.graphdb.tigergraph.com
-    ```
-
-  - **DO NOT** delete PVCs of the TigerGraph Cluster
-  - Install the new operator, it applies the new CRD
-  - Upgrade the TigerGraph version before uninstalling the legacy operator or after installing the new operator.
-
-##### Upgrading to a TG Cluster with Multiple PVCs
-
-Best Practice for Upgrading TigerGraph <=3.9.3 with only one PVC and Operator <=0.0.9 to TigerGraph 3.10.0 with multiple PVCs and Operator 1.0.0:
-
-- In the environment of TigerGraph <=3.9.3 and Operator <=0.0.9, perform a backup of TigerGraph to S3 or local storage.
-
 ```bash
-kubectl tg backup create
-          --namespace $ns \
-          --name $name \
-          --cluster-name $YOUR_CLUSTER_NAME \
-          --destination s3Bucket \
-          --s3-bucket $bucket \
-          --tag $tag \
-          --timeout $time_out \
-          --aws-secret $aws_secret
+kubectl tg uninstall -n tigergraph
 ```
 
-- If using local backup, ensure the local backup is stored outside the Pod for persistent storage.
-- Remove the legacy TG and delete TigerGraph's PVC.
+Ensure TigerGraph Operator has been uninstalled:
 
 ```bash
-kubectl tg delete --cluster-name $YOUR_CLUSTER_NAME --namespace $YOUR_NAMESPACE --cascade
-kubectl delete pvc --namespace default -l tigergraph.com/cluster-name=$YOUR_CLUSTER_NAME
+helm list -n tigergraph
 ```
 
-- Uninstall the legacy Operator and delete all TigerGraph CRDs.
+#### Delete the old version of TigerGraph CRDs
+
+> [!IMPORTANT]
+> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade or delete TigerGraph CRDs manually.
 
 ```bash
-kubectl tg uninstall
 kubectl delete crd tigergraphbackups.graphdb.tigergraph.com
 kubectl delete crd tigergraphbackupschedules.graphdb.tigergraph.com
 kubectl delete crd tigergraphrestores.graphdb.tigergraph.com
 kubectl delete crd tigergraphs.graphdb.tigergraph.com
 ```
 
-- Install the new Operator 1.0.0, which will concurrently install new CRDs.
+### Install the new version of TigerGraph Operator
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.0.0/kubectl-tg  -o kubectl-tg
-sudo install kubectl-tg /usr/local/bin/
-
-kubectl tg init --namespace $YOUR_NAMESPACE --docker-registry docker.io --docker-image-repo tigergraph --image-pull-policy Always \
---operator-version 1.0.0 --operator-size 3 --cluster-scope true
+kubectl tg init --namespace tigergraph
 ```
 
-- Create a new TG with the same version as before and customize by adding `additionalStorage` and `customVolume`.
+Ensure TigerGraph Operator has been installed successfully:
+
+```bash
+helm list -n tigergraph
+
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
+tg-operator     tigergraph      1               2024-06-24 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.2.0                1.2.0
+```
+
+```bash
+kubectl wait deployment tigergraph-operator-controller-manager --for condition=Available=True --timeout=120s -n tigergraph
+
+deployment.apps/tigergraph-operator-controller-manager condition met
+```
+
+### Deploy TigerGraph cluster with the same cluster configuration
+
+If you don't remember the cluster configuration, you can check the previously saved TigerGraph CR. You must ensure the configurations below are the same as before
+
+If you want to use the TigerGraph CR YAML file to deploy the cluster, you need to check the new version [TigerGraph cluster CR sample example](../09-samples/deploy/tigergraph-cluster.yaml) and update the cluster configuration according to your old version TigerGraph CR.
+
+- Create a private ssh key secret if necessary
+
+  ```bash
+  echo -e 'y\\n' | ssh-keygen -b 4096 -t rsa -f $HOME/.ssh/tigergraph_rsa -q -N ''
+
+  kubectl create secret generic ssh-key-secret --from-file=private-ssh-key=$HOME/.ssh/tigergraph_rsa --from-file=public-ssh-key=$HOME/.ssh/tigergraph_rsa.pub --namespace tigergraph
+  ```
+
+- Recreate the cluster with the created private ssh key
+
+> [!WARNING]
+> Cluster name, size, ha, and storage configuration must be the same.
+
+  ```bash
+  kubectl tg create --namespace tigergraph --cluster-name test-cluster --version 3.9.3 --license ${YOUR_LICENSE} \
+  -k ssh-key-secret --size 3 --ha 2  --storage-class standard --storage-size 100G --cpu 6000m --memory 12Gi
+  ```
+
+  Ensure TigerGraph cluster version and status:
+
+  ```bash
+  kubectl get tg test-cluster -n tigergraph
+
+  NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                                             SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE   CONDITION-STATUS   AGE
+  test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:3.9.3                   LoadBalancer                      Normal           True               15m
+  ```
+
+  Then, you can upgrade the TigerGraph cluster to a new version, here we upgrade the cluster version to 4.1.0
+
+  ```bash
+  kubectl tg update  --cluster-name test-cluster --version 4.1.0 --namespace tigergraph
+  ```
+
+## How to upgrade for optional change
+
+If you don't require the new optional configuration of the TigerGraph CRD, no extra steps are needed. However, if you wish to use the new optional configuration, you can simply update the cluster as needed.
+
+## How to upgrade for a specific breaking change
+
+In order to optimize the user experience of the TigerGraph Operator, such as improving ease of use and removing some configurations that are no longer used, upgrading the TigerGraph Operator and TigerGraph cluster may introduce breaking changes. If you have an older version of the TigerGraph Operator and TigerGraph cluster, please follow the key considerations and upgrade steps carefully.
+
+### Key considerations for upgrading to TigerGraph Operator 1.0.0 or above and TigerGraph 3.10.0 or above
+
+#### Exposing Nginx Service Instead of Exposing RESTPP and GST (Tools and GUI) Services
+
+- The new TigerGraph cluster CRD is applicable starting from TigerGraph 3.9.2. In TigerGraph clusters before 3.9.2, after the CRD is updated, the image must be upgraded to 3.9.2 or above.
+
+  ```bash
+    kubectl tg update --cluster-name ${cluster_name} --version 4.1.0 -n ${NAMESPACE_OF_YOUR_CLUSTER}
+  ```
+
+- If using the new TigerGraph cluster CRD (1.0.0 and above) with an older version of the TigerGraph image, the NGINX service cannot serve correctly on the Tools, RESTPP, and Informant services.
+- If using the old TigerGraph CRDs (<=0.0.9), the Tools (GUI), RESTPP, and Informant services cannot serve on 3.6.3 but can serve on 3.7.0 and above.
+
+#### Performing a Full Backup Before Running HA Update, Shrink, and Expand Operations
+
+If the HA update process is interrupted by an operation such as the update pod being killed or the update job being terminated, the TigerGraph cluster may be damaged and unrecoverable automatically, even if the HA update pod is recreated and the HA update job is rerun. Therefore, it is necessary to prepare a full backup before running the HA update.
+
+> [!WARNING]
+> If the license has expired, the shrink/expand process will be stuck for a long time at exporting/importing graph data and will eventually fail.
+
+#### Upgrading a TigerGraph Cluster to Use Multiple PVCs
+
+Best practice for upgrading TigerGraph <=3.9.3 with a single PVC and TigerGraph Operator <=0.0.9 to TigerGraph 3.10.0 or above with Multiple PVCs and TigerGraph Operator 1.0.0 or Above:
+
+- In an environment with TigerGraph <=3.9.3 and TigerGraph Operator <=0.0.9, perform a backup of TigerGraph to S3 or local storage first.
+
+> [!WARNING]
+> If you use local backup, ensure it is stored outside the Pod for persistent storage.
+
+  For instructions on how to perform a backup of TigerGraph to S3 or local storage, please refer to the following documents for details:
+
+> [!IMPORTANT]
+> Please set `cleanPolicy` to `Retain` when performing a backup of TigerGraph to S3 or local storage,
+> otherwise, the backup package will be deleted when deleting TigerGraph CRDs or TigerGraph cluster with `--cascade` option.
+
+  [Backup & Restore cluster by CR](../04-manage/backup-and-restore/backup-restore-by-cr.md)
+
+  [Backup & Restore cluster kubectl-tg plugin](../04-manage/backup-and-restore/backup-restore-by-kubectl-tg.md)
+
+- Remove the legacy TigerGraph Cluster and delete TigerGraph's Persistent Volume Claims (PVC).
+
+  ```bash
+  kubectl tg delete --cluster-name $YOUR_CLUSTER_NAME --namespace $YOUR_NAMESPACE --cascade
+  kubectl delete pvc --namespace default -l tigergraph.com/cluster-name=$YOUR_CLUSTER_NAME
+  ```
+
+- Uninstall the legacy TigerGraph Operator and delete all TigerGraph CRDs.
+
+  ```bash
+  kubectl tg uninstall
+  kubectl delete crd tigergraphbackups.graphdb.tigergraph.com
+  kubectl delete crd tigergraphbackupschedules.graphdb.tigergraph.com
+  kubectl delete crd tigergraphrestores.graphdb.tigergraph.com
+  kubectl delete crd tigergraphs.graphdb.tigergraph.com
+  ```
+
+- Install the new TigerGraph Operator 1.0.0 or above, which will simultaneously install the new CRDs.
+
+  ```bash
+  curl https://dl.tigergraph.com/k8s/1.2.0/kubectl-tg  -o kubectl-tg
+  sudo install kubectl-tg /usr/local/bin/
+
+  kubectl tg init --namespace $YOUR_NAMESPACE
+  ```
+
+- Create a new TigerGraph Cluster with the same version as before and customize it by adding `additionalStorage` and `customVolume`.
+
+  Refer to the documentation [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md) for details.
   
-```bash
-kubectl tg restore \
-          --namespace $ns \
-          --name "${name}-restore" \
-          --cluster-name $YOUR_CLUSTER_NAME \
-          --source s3Bucket \
-          --s3-bucket $bucket \
-          --tag $tag \
-          --aws-secret $aws_secret
-```
+- Restore the old TigerGraph cluster using the backup package you created previously.
 
-- Upon completion of the restore process, upgrade the TigerGraph to 3.10.0 using the appropriate command.
+  For instructions on how to restore a TigerGraph cluster from S3 or local storage, please refer to the following documents for details:
+
+  [Backup & Restore cluster by CR](../04-manage/backup-and-restore/backup-restore-by-cr.md)
+
+  [Backup & Restore cluster kubectl-tg plugin](../04-manage/backup-and-restore/backup-restore-by-kubectl-tg.md)
+
+- After completing the restore process, upgrade the TigerGraph cluster to version 4.1.0 using the appropriate command.
   
-```bash
-kubectl tg update --cluster-name $YOUR_CLUSTER_NAME --version 3.10.0 --namespace $YOUR_NAMESPACE
-```
+  ```bash
+  kubectl tg update --cluster-name $YOUR_CLUSTER_NAME --version 4.1.0 --namespace $YOUR_NAMESPACE
+  ```

@@ -5,12 +5,16 @@ TigerGraph Operator stands as an automated operations system meticulously design
 > [!NOTE]
 > Kubernetes Operator support is currently general availability in Operator version 1.1.0, which can be used for production deployments.
 
+> [!IMPORTANT]
+> TigerGraph Operator has had a breaking change since version 1.0.0. If you are still using a version older than 1.0.0, it is strongly recommended that you upgrade to version 1.2.0. Versions older than 1.0.0 have been deprecated.
+
 Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
-| 1.1.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
-| 1.0.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.2.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.0|1.25, 1.26, 1.27, 1.28, 1.29|
+| 1.1.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.1|1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.0.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.0|1.24, 1.25, 1.26, 1.27, 1.28|
 | 0.0.9 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.3|1.23, 1.24, 1.25, 1.26, 1.27|
 | 0.0.7 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.2|1.22, 1.23, 1.24, 1.25, 1.26|
 | 0.0.6 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
@@ -48,6 +52,10 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Lifecycle of TigerGraph](../03-deploy/lifecycle-of-tigergraph.md)
 - [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md)
 - [Cluster status of TigerGraph on K8s](../07-reference/cluster-status-of-tigergraph.md)
+- [Enable Region Awareness with Pod Topology Spread Constraints](../03-deploy/region-awareness-with-pod-topology-spread-constraints.md)
+- [Configuring Services of Sidecar Containers](../03-deploy/configure-services-of-sidecar-containers.md)
+- [Enable debug mode of TigerGraph cluster](../04-manage/debug-mode.md)
+- [Expand Storage of TigerGraph Cluster](../04-manage/expand-storage.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 

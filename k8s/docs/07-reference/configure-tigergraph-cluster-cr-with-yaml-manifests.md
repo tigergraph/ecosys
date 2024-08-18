@@ -49,9 +49,12 @@ spec:
   privateKeyName: ssh-key-secret
   replicas: 6
   resources:
+    limits:
+      cpu: "6"
+      memory: 12Gi
     requests:
-      cpu: "4"
-      memory: 8Gi
+      cpu: "6"
+      memory: 12Gi
   storage:
     type: persistent-claim
     volumeClaimTemplate:
@@ -120,7 +123,7 @@ spec:
     volumeClaimTemplate:
       resources:
         requests:
-          storage: 10G
+          storage: 100G
       storageClassName: standard
 ```
 
@@ -246,15 +249,24 @@ Details on how to mount multiple PVs for TigerGraph Pods, see [Multiple persiste
 
 The Resource requests and limits of TG Cluster pod can be configured by changing `spec.resources.requests` and `spec.resources.limits` in the `TigerGraph` CR.
 
+To ensure the stable operation of a TigerGraph cluster, it is essential to configure the CPU and memory resources appropriately. Set the following parameters for `resources.requests` and `resources.limits`.
+
+The minimum configuration recommended for production environments is：
+
+- CPU: 6 cores
+- Memory: 12 Gi
+
+By configuring these settings, you can help maintain optimal performance and reliability of your TigerGraph cluster.
+
 ```yaml
 spec:
   resources:
     limits:
-      cpu: 8
-      memory: 100Gi
+      cpu: 6
+      memory: 12Gi
     requests:
-      cpu: 8
-      memory: 100Gi
+      cpu: 6
+      memory: 12Gi
 ```
 
 ### External access service
@@ -297,10 +309,10 @@ If you want to add customized labels and annotations for external service, you c
 spec:
   listener:
     type: LoadBalancer
-  labels:
-    label-key: label-value
-  annotations:
-    annotation-key: annotation-value
+    labels:
+      label-key: label-value
+    annotations:
+      annotation-key: annotation-value
 ```
 
 ### Container Customization of TigerGraph pods
@@ -498,45 +510,5 @@ For more information about lifecycle hooks, refer to [Configure Lifecycle Hooks 
 
 ## API reference of TigerGraphSpec
 
-TigerGraphSpec contains the details of TigerGraph members
-
-| Field | Description |
-|----------|----------|
-| replicas | The desired TG cluster size |
-| image | The desired TG docker image |
-| imagePullPolicy | (*Optional*)The image pull policy of TG docker image, default is IfNotPresent |
-| imagePullSecrets | (*Optional*)The own keys can access the private registry |
-| serviceAccountName | (*Optional*)The service account name of pod which is used to acquire special permission |
-| privateKeyName | The secret name of private ssh key files |
-| ha | The replication factor of TG cluster |
-| license | The license of TG cluster |
-| listener.type | The type of external access service, which can be set to LoadBalancer, NodePort, and Ingress |
-| listener.nginxNodePort | The nginx service port which is required when setting listener.type to NodePort |
-| listener.ingressClassName | (Optional)The ingress class name of nginx service which can be set optionally when setting listener.type to Ingress |
-| listener.nginxHost | The domain name of nginx service which is required when setting listener.type to Ingress |
-| listener.secretName | (*Optional*)The secretName is the name of the secret used to terminate TLS traffic on port 443 when setting listener.type to Ingress |
-| listener.labels | (*Optional*)The customized labels will be added to external service |
-| listener.annotations | (*Optional*)The customized annotations will be added to external service |
-| resources | [The compute resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#resourcerequirements-v1-core) |
-| storage | The persistent volumes for TigerGraph pods |
-| storage.type | The type of persistent volume, which can be set to ephemeral or persistent-claim|
-| storage.volumeClaimTemplate | The persistent volume claim template for TigerGraph main storage. [PersistentVolumeClaimSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#persistentvolumeclaimspec-v1-core)|
-| storage.additionalStorages | (*Optional*)Additional storages for TigerGraph pods, it's an array list of StorageVolume|
-| `StorageVolume`.name | Additional storage name|
-| `StorageVolume`.storageClassName | (*Optional*)The `StorageClassName` of an additional storage|
-| `StorageVolume`.storageSize | The storage size of an additional storage|
-| `StorageVolume`.mountPath | (*Optional*)The mount path of TigerGraph container for an additional storage|
-| `StorageVolume`.accessMode | (*Optional*)The access mode of an additional storage, which can be set to ReadWriteOnce, ReadOnlyMany, ReadWriteMany, or ReadWriteOncePod|
-| `StorageVolume`.volumeMode | (*Optional*) The volume mode of an additional storage, which can be set to Filesystem or Block|
-| customVolumeMounts | (*Optional*)The custom [volume mount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#persistentvolumeclaimspec-v1-core:~:text=error%20was%20encountered.-,VolumeMount%20v1%20core,-Group) of TigerGraph container.|
-| initContainers | The [init containers](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container) run in TigerGraph pods. |
-| sidecarContainers | (*Optional*)The [sidecar containers](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container) run in TG pods |
-| customVolumes | (*Optional*)The custom [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) used in init container and sidecar container |
-| affinityConfiguration | (*Optional*)The configurations for NodeSelector, Affinity, and Tolerations |
-| affinityConfiguration.nodeSelector | (*Optional*)The configuration of assigning pods to special nodes using [NodeSelector](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/) |
-| affinityConfiguration.tolerations | (*Optional*)The [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) configuration of TigerGraph pod |
-| affinityConfiguration.affinity | (*Optional*)The [affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity) configuration of TigerGraph pod |
-| podLabels | (*Optional*)The customized labels will be added to TigerGraph pods |
-| podAnnotations | (*Optional*)The customized annotations will be added to TigerGraph pods |
-| securityContext | (*Optional*)The [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) of TigerGraph containers |
-| lifecycle.postInitAction | (*Optional*)The bash script will be executed in the first TigerGraph pod whose prefix is `-0` after the TigerGraph system is initialized |
+If you want to know more about the Custom Resource Definition (CRD) of TigerGraph,
+you can refer to the [API reference](./api-reference.md).

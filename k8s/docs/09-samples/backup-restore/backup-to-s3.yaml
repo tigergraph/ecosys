@@ -3,6 +3,7 @@ kind: TigerGraphBackup
 metadata:
   name: test-cluster-backup-s3
 spec:
+  # Specify which cluster to backup in the SAME NAMESPACE as the backup job
   clusterName: test-cluster
   destination:
     storage: s3Bucket
@@ -10,10 +11,14 @@ spec:
       # Specify the name of the S3 bucket you want to use
       bucketName: operator-backup
       # Specify the Secret containing the S3 access key and secret access key
-      secretKeyName: aws-secret
+      secretKeyName: s3-secret
+      # Optional: use roleARN instead of secretKeyName
+      # roleARN: arn:aws:iam::123456789012:role/role-name
 
   # Configure the name of backup files and the path storing temporary files
   backupConfig:
+    # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+    # Note: this field is Required for TigerGraph Operator < v1.1.0
     tag: s3
     # Optional: Set the path for temporary staging files
     stagingPath: /home/tigergraph/tigergraph/data
@@ -23,6 +28,31 @@ spec:
     timeout: 18000
     # Optional: Specify the number of processes to use for compression (0 uses the number of CPU cores)
     compressProcessNumber: 0
-    # Optional: (Requires operator version >= 0.0.9 and TigerGraph version >= 3.9.3)
+    # Optional: (Requires TigerGraph Operator >= v0.0.9 and TigerGraph >= v3.9.3)
     # Choose the compression level for the backup: DefaultCompression/BestSpeed/BestCompression
     compressLevel: DefaultCompression # Choose from DefaultCompression/BestSpeed/BestCompression
+
+  # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+  # Choose from Delete/Retain
+  # The default behavior is to retain the backup package.
+  # If you want to delete the backup package when deleting the backup CR, 
+  # you can set the cleanPolicy to Delete. 
+  # With Delete policy, 
+  # TigerGraph Operator will create a backup-clean-job when the backup CR is deleted, 
+  # to make sure that the backup package is removed before deleting the backup CR.
+  cleanPolicy: Delete
+
+  # Optional: Set the retry policy for backup CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for backup CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
+    # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+    # that means, when backup-clean-job exceeds the maxRetryTimes
+    # the backup CR will be deleted directly, the backup package still exists in cluster
+    forceDeleteAfterMaxRetries: false

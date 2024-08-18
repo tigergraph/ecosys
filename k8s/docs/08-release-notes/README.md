@@ -1,15 +1,19 @@
-# Release Notes
+# TigerGraph Operator Release Notes
 
-Those document describes the new features, improvements, bugfixes for all of operator version release.
+Those document describes the new features, improvements, bugfixes for all of TigerGraph Operator version release.
 
-Please see the detailed documentation of each operator version release notes as follows:
+> [!IMPORTANT]
+> TigerGraph Operator has had a breaking change since version 1.0.0. If you are still using a version older than 1.0.0, it is strongly recommended that you upgrade to version 1.2.0. Versions older than 1.0.0 have been deprecated.
 
-- [Operator 1.1.0](./operator-1.1.0.md)
-- [Operator 1.0.0](./operator-1.0.0.md)
-- [Operator 0.0.9](./operator-0.0.9.md)
-- [Operator 0.0.7](./operator-0.0.7.md)
-- [Operator 0.0.6](./operator-0.0.6.md)
-- [Operator 0.0.5](./operator-0.0.5.md)
-- [Operator 0.0.4](./operator-0.0.4.md)
-- [Operator 0.0.3](./operator-0.0.3.md)
-- [Operator 0.0.2](./operator-0.0.2.md)
+Please see the detailed documentation of each TigerGraph Operator version release notes as follows:
+
+- [TigerGraph Operator 1.2.0](./operator-1.2.0.md)
+- [TigerGraph Operator 1.1.0](./operator-1.1.0.md)
+- [TigerGraph Operator 1.0.0](./operator-1.0.0.md)
+- [TigerGraph Operator 0.0.9](./operator-0.0.9.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.7](./operator-0.0.7.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.6](./operator-0.0.6.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.5](./operator-0.0.5.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.4](./operator-0.0.4.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.3](./operator-0.0.3.md) **_Deprecated_**
+- [TigerGraph Operator 0.0.2](./operator-0.0.2.md) **_Deprecated_**

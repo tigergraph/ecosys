@@ -1,6 +1,6 @@
-# NodeSelector, Affinity and Toleration Use Cases>
+# NodeSelector, Affinity and Toleration Use Cases
 
-- [NodeSelector, Affinity and Toleration Use Cases\>](#nodeselector-affinity-and-toleration-use-cases)
+- [NodeSelector, Affinity and Toleration Use Cases](#nodeselector-affinity-and-toleration-use-cases)
   - [Basic Knowledge](#basic-knowledge)
     - [Which labels are TG using](#which-labels-are-tg-using)
       - [TigerGraph Cluster Pods](#tigergraph-cluster-pods)

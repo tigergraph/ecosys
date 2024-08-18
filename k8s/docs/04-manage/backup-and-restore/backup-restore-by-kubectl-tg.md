@@ -1,16 +1,19 @@
-# Backup & Restore clustey kubectl-tg plugin
+# Backup & Restore cluster kubectl-tg plugin
 
 If you have experience with Custom Resources in Kubernetes (K8S), you can leverage CRs to initiate backup or restore processes. We provide a dedicated document detailing the steps for performing backup and restore using Custom Resources (CRs). [Backup & restore by CR](backup-restore-by-cr.md)
 
-- [Backup \& Restore clustey kubectl-tg plugin](#backup--restore-clustey-kubectl-tg-plugin)
+- [Backup \& Restore cluster kubectl-tg plugin](#backup--restore-cluster-kubectl-tg-plugin)
   - [Prerequisite](#prerequisite)
   - [Utilizing `kubectl tg` Command for Backup](#utilizing-kubectl-tg-command-for-backup)
     - [Creating and Updating Backups](#creating-and-updating-backups)
       - [Backup to Local Storage](#backup-to-local-storage)
       - [Backup to an S3 Bucket](#backup-to-an-s3-bucket)
+      - [Backup to an S3 Bucket with RoleARN instead of access key](#backup-to-an-s3-bucket-with-rolearn-instead-of-access-key)
+      - [Configure Backup Clean Policy](#configure-backup-clean-policy)
+      - [Control the retry behavior of backup CR](#control-the-retry-behavior-of-backup-cr)
       - [\[Preview\] Performing Incremental Backup](#preview-performing-incremental-backup)
       - [Updating Backup Custom Resources](#updating-backup-custom-resources)
-        - [Changing Backup Types](#changing-backup-types)
+        - [Update the way to access S3 bucket](#update-the-way-to-access-s3-bucket)
       - [Creating Another Backup](#creating-another-backup)
     - [Listing Backup Custom Resources](#listing-backup-custom-resources)
     - [Displaying Backup Process Status](#displaying-backup-process-status)
@@ -22,8 +25,11 @@ If you have experience with Custom Resources in Kubernetes (K8S), you can levera
     - [Creating Backup Schedules](#creating-backup-schedules)
       - [Creating a Local Backup Schedule](#creating-a-local-backup-schedule)
       - [Creating an S3 Backup Schedule](#creating-an-s3-backup-schedule)
+      - [Creating an S3 Backup Schedule with RoleARN instead of access key](#creating-an-s3-backup-schedule-with-rolearn-instead-of-access-key)
+      - [Control the retry behavior of backup CR created by backup schedule](#control-the-retry-behavior-of-backup-cr-created-by-backup-schedule)
     - [Updating a Backup Schedule](#updating-a-backup-schedule)
     - [Listing All Backup Schedules](#listing-all-backup-schedules)
+      - [Update the way to access S3 bucket in Backup Schedule](#update-the-way-to-access-s3-bucket-in-backup-schedule)
     - [Deleting a Backup Schedule](#deleting-a-backup-schedule)
     - [Showing Backup Schedule Status](#showing-backup-schedule-status)
     - [Pausing and Resuming a Backup Schedule](#pausing-and-resuming-a-backup-schedule)
@@ -58,10 +64,11 @@ Options:
   -h|--help :                   Display this message.
   -n|--namespace :              Define the namespace for TG cluster deployment. If not set, the 
                                 default namespace from the context will be used.
-  --name :                      (required) Specify the name of the backup.
+  --name :                      (required) Specify the name of the backup CR.
   -c|--cluster-name :           Define the cluster name for TG cluster deployment. No default value.
   --tag :                       Specify the tag for backup files. For example, if you specify 
                                 --tag daily, the backup file will be named daily-20xx-xx-xxTxxxxxx.
+                                If you do not specify a tag, the tag will be the same as the name of the backup CR. 
   --staging-path :              Specify the location to store temporary files.
   --timeout :                   Set the backup timeout in seconds. Default: 18000.
   --compress-process-number :   Determine the number of concurrent processes used for compression 
@@ -72,6 +79,12 @@ Options:
   --full :                      Perform a full backup (full backup is the default behavior).
   --destination :               Specify the destination for storing backup files. Currently 
                                 supports local and S3 storage.
+  --backup-clean-policy:        set the backup clean policy for backup CR, available policy: Delete, Retain, default is Retain
+  --min-retry-duration:         set the min duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --max-retry-duration:         set the max duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --max-retry :                 set max times of retry for backup job
+  --force-delete-after-max-retries: 
+                                set if the backup CR should be deleted after max retry, default is false
   -y :                          Provide a positive response to all questions.
 
   Configuration details for different destinations:
@@ -81,6 +94,8 @@ Options:
     --s3-bucket :               Specify the name of the S3 Bucket.
     --aws-secret :              Provide the name of the AWS secret. 
                                 The secret should contain accessKeyID and secretAccessKey.
+                                set it to null if you want to remove the secret
+    --role-arn:                 the role arn for the backup job to assume, set it to null if you want to remove the role arn
 ```
 
 #### Backup to Local Storage
@@ -111,10 +126,10 @@ you can also customize timeout, staging path, the compress level and the compres
 
 Follow the steps below to back up a cluster named "test-cluster" and store the backup files in an S3 bucket. Make sure you provide the S3 bucket name, access key ID, and secret key for S3.
 
-1. First, create a Kubernetes secret containing the access key ID and secret key:
+1. First, create a Kubernetes secret containing the access key ID and secret key in the same namespace as the cluster:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
        --from-literal=accessKeyID=AWSACCESSKEY \
        --from-literal=secretAccessKey='AWSSECRETKEY' 
    ```
@@ -142,6 +157,66 @@ kubectl tg backup create --name backup-to-s3  -n tigergraph \
 > [!NOTE]
 > Ensure that you have created the necessary Kubernetes secret containing the access key ID and secret key before initiating the backup process to the S3 bucket.
 
+#### Backup to an S3 Bucket with RoleARN instead of access key
+
+> [!IMPORTANT]
+> This feature is supported from TigerGraph v1.2.0 and TigerGraph v4.1.0
+
+If you want to use RoleARN instead of access key to backup to S3 bucket, you don't have to create a K8s Secret for the backup CR. Instead, you have to make sure that the aws-cli in your TigerGraph cluster can access the S3 bucket with the RoleARN. Please refer to [Create a TigerGraph cluster with access to S3 bucket](./create-tg-with-access-to-s3.md).
+
+If you have a cluster that can access the S3 bucket through aws-cli, you can use the following command to backup to S3 bucket with RoleARN:
+
+```bash
+kubectl tg backup create --name backup-to-s3  -n tigergraph \
+  --cluster-name test-cluster --destination s3Bucket \
+  --s3-bucket tgbackup \
+  --role-arn arn:aws:iam::1234567:role/yourBackupRole
+```
+
+#### Configure Backup Clean Policy
+
+> [!IMPORTANT]
+> This feature is supported from TigerGraph Operator 1.2.0 and TigerGraph 3.9.0
+
+As default, the backup package(backup files stored in local or S3) will be retained after the backup CR is deleted. If you want to delete the backup package after the backup CR is deleted, you can set the backup clean policy to Delete. Use option `--backup-clean-policy` to set the backup clean policy. The available policy is Delete and Retain. The default policy is Retain.
+
+```bash
+kubectl tg backup create --name backup-to-s3  -n tigergraph \
+  --cluster-name test-cluster --destination s3Bucket \
+  --s3-bucket tgbackup \
+  --aws-secret aws-secret \
+  --backup-clean-policy Delete
+```
+
+If you create a backup CR by above command and the backup job is finished successfully, when you delete the backup CR, the operator will create a `backup-clean-job` to remove the backup package.
+The operator use a finalizer to make sure the backup package is removed before the backup CR is deleted. If the backup package is removed successfully, the finalizer will be removed and backup CR will be deleted. If the backup package is not removed successfully, the backup CR will not be deleted.
+
+> [!IMPORTANT]
+> If you want to delete a backup CR whose clean policy is Delete, you should make sure that
+> the cluster is running and the backup package is not used by any other incremental backup CR. Otherwise, the `backup-clean-job` will fail and the deletion of the backup CR will be blocked,
+> because when you set the clean policy to Delete, the operator will make sure that the backup package is removed before deleting the backup CR.
+
+If for some reason, the backup package cannot be deleted, and you do not want the deletion of backup CR to be blocked, you can configure the option `--force-delete-after-max-retry true` when creating the backup. Or update the clean policy to Retain through `kubectl tg backup update`. When the backup CR is successfully deleted, you need to manually clear the backup package yourself.
+
+#### Control the retry behavior of backup CR
+
+As default, the backup CR will retry forever until the backup job is successful. If you want to control the retry behavior of backup CR, you can use the following options:
+
+- `--min-retry-duration`: set the min duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+- `--max-retry-duration`: set the max duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+- `--max-retry`: set max times of retry for backup job
+
+When backup job failed, the backup CR will perform exponential backoff retry. The duration between two retries will start from `min-retry-duration` and double every time until it reaches `max-retry-duration`.
+The backup CR will retry `max-retry` times. If the backup job is still failed after `max-retry` times, the backup CR will be marked as failed.
+
+```bash
+kubectl tg backup create --name backup-to-s3  -n tigergraph \
+  --cluster-name test-cluster --destination s3Bucket \
+  --s3-bucket tgbackup \
+  --aws-secret aws-secret \
+  --min-retry-duration 5m --max-retry-duration 1h --max-retry 5
+```
+
 #### [Preview] Performing Incremental Backup
 
 > [!NOTE]
@@ -158,7 +233,7 @@ kubectl tg backup create --cluster-name test-cluster -n tigergraph --name increm
 
 #### Updating Backup Custom Resources
 
-If you have previously created a backup using the `kubectl tg backup create` command, you can modify the backup configuration by employing the `kubectl tg backup update` command. Once the `update` command is executed, the backup process will be triggered immediately with the updated settings.
+If you have previously created a backup using the `kubectl tg backup create` command, you can modify the backup configuration by employing the `kubectl tg backup update` command. Once the `update` command is executed.
 
 Suppose you've already generated a backup using the following command:
 
@@ -179,23 +254,25 @@ kubectl tg backup update --name backup-to-local -n tigergraph \
 
 Subsequently, the timeout value will be updated to 20000, and a backup process with the revised timeout setting will be immediately initiated.
 
-##### Changing Backup Types
+##### Update the way to access S3 bucket
 
-You have the flexibility to switch between full and incremental backups using the following commands:
+In TigerGraph 4.1.0 and TigerGraph Operator 1.2.0, you are allowed to set AWS access key and RoleARN at the same time.
+If you set both of them, TigerGraph will only use RoleARN to access S3 bucket. So when you have created a backup to s3 using RoleARN, and you want to
+update the backup CR to use access key, you have to clear the RoleARN setting by adding option `--role-arn null`:
 
-- To convert a full backup configuration to an incremental backup, use:
+```bash
+kubectl tg backup update --destination s3Bucket \
+        --aws-secret $AWS_SECRET  \
+        --role-arn null
+```
 
-  ```bash
-  kubectl tg backup update --name backup-to-local --incremental
-  ```
+When you want to update the backup CR to use RoleARN, you can also clear the AWS access key setting by adding option `--aws-secret null`:
 
-- To transform an incremental backup configuration to a full backup, use:
-
-  ```bash
-  kubectl tg backup update --name incremental-backup --full
-  ```
-
-These commands allow you to seamlessly modify the backup type based on your evolving requirements.
+```bash
+kubectl tg backup update --destination s3Bucket \
+        --aws-secret null  \
+        --role-arn arn:aws:iam::1234567:role/yourBackupRole
+```
 
 #### Creating Another Backup
 
@@ -221,6 +298,11 @@ Alternatively, you can employ the `-y` option, indicating "yes to all questions,
 ```bash
 kubectl tg backup update --name backup-to-local -n tigergraph -y
 ```
+
+> [!IMPORTANT]
+> If you configure the clean policy to Delete, when you run the above command, the previous
+> backup package will be removed before the new backup job is started.
+> If you want to keep the previous backup package, you should set the clean policy to Retain.
 
 ### Listing Backup Custom Resources
 
@@ -367,6 +449,10 @@ kubectl tg backup remove --cluster-name test-cluster --namespace tigergraph \
 
 This command enables you to selectively remove backups based on their tags. Please ensure you accurately specify the relevant cluster name, namespace, and backup tag when executing this command.
 
+> [!NOTE]
+> If you have configured `--clean-policy Delete` when you create backup, there is no need to manually remove the backup.
+> The operator will automatically remove the backup package when you delete the backup CR.
+
 ## Creating and Managing Backup Schedules
 
 The `kubectl tg backup-schedule` command enables you to create, update, monitor, list, delete, pause, and resume backup schedules for specific clusters. This comprehensive set of options empowers you to effortlessly manage your backup scheduling requirements.
@@ -390,6 +476,7 @@ Options:
   --name :                      (required)specify name of backup schedule
   -c|--cluster-name :           set cluster-name to deploy TG cluster, no default
   --tag :                       specify the tag of backup files. e.g. if you specify --tag daily, the backup file will be daily-20xx-xx-xxTxxxxxx
+                                If you do not specify a tag, the tag will be the same as the name of the backup CR. 
   --staging-path :              specify where to store the temporary files
   --timeout :                   the backup timeout in seconds,default: 18000
   --compress-process-number :   the number of concurrent process for compression during backup 
@@ -403,6 +490,11 @@ Options:
   --max-retry :                 set max times of retry for each backup
   --max-backup-file :           set the max number of files you want to retain
   --max-reserved-day :          set the max number of days you want to retain these backups
+  --backup-clean-policy:        set the backup clean policy for backup CR, available policy: Delete, Retain, default is Delete for backup schedule
+  --min-retry-duration:         set the min duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --max-retry-duration:         set the max duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --force-delete-after-max-retries: 
+                                set if the backup CR should be deleted after max retry, default is false
   -y :                          yes to all questions
 
   Followings are about the configuration of different destination:
@@ -411,6 +503,7 @@ Options:
   If destination is s3:
     --s3-bucket :               S3 Bucket name
     --aws-secret :              name of secret for aws, the secret should contain  accessKeyID and secretAccessKey
+    --role-arn:                 the role arn for the backup job to assume, set it to null if you want to remove the role arn
 ```
 
 ### Specifying Backup Schedule
@@ -442,10 +535,10 @@ Please ensure to enclose the cron expression in single quotation marks (`'`) to 
 
    For a schedule that conducts hourly backups for the "test-cluster" at minute 0, storing backup files in an S3 bucket, proceed as follows:
 
-   First, create a secret in Kubernetes containing access key id and secret key:
+   First, create a secret containing access key id and secret key in the same namespace as the cluster:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
        --from-literal=accessKeyID=AWSACCESSKEY \
        --from-literal=secretAccessKey='AWSSECRETKEY' 
    ```
@@ -475,6 +568,29 @@ kubectl tg backup-schedule create --cluster-name test-cluster -n tigergraph \
  --destination local --local-path /home/tigergraph/backup
 ```
 -->
+#### Creating an S3 Backup Schedule with RoleARN instead of access key
+
+> [!IMPORTANT]
+> This feature is supported from TigerGraph Operator 1.2.0 and TigerGraph 4.1.0
+
+If you want to use RoleARN instead of access key to backup to S3 bucket, you don't have to create a K8s Secret for the backup CR. Instead, you have to make sure that the aws-cli in your TigerGraph cluster can access the S3 bucket with the RoleARN. Please refer to [Create a TigerGraph cluster with access to S3 bucket](./create-tg-with-access-to-s3.md).
+
+If you have a cluster that can access the S3 bucket through aws-cli, you can use the following command to create a backup schedule to S3 bucket with RoleARN:
+
+```bash
+kubectl tg backup-schedule create --name backupsch-s3 \ 
+ --cluster-name test-cluster -n tigergraph \
+ --tag s3daily --schedule '0 * * * *' --destination s3Bucket\
+ --s3-bucket tgbackup \
+ --role-arn arn:aws:iam::1234567:role/yourBackupRole
+```
+
+#### Control the retry behavior of backup CR created by backup schedule
+
+Since operator 1.1.0, the operator will create backup CR at scheduled instead of utilizing the K8s CronJob. So you are able to control the retry behavior of backup CR created by backup schedule.
+When you configure `--force-delete-after-max-retry`, `--clean-policy`, `--min-retry-duration`, `--max-retry-duration`, `--max-retry` for backup schedule, the operator will set these configurations to the backup CR created by the schedule.
+
+Please refer to [Control the retry behavior of backup CR](#control-the-retry-behavior-of-backup-cr) and [Configure Backup Clean Policy](#configure-backup-clean-policy) if you want to customize the behavior of backup CR created by the backup schedule.
 
 ### Updating a Backup Schedule
 
@@ -497,6 +613,26 @@ To view a comprehensive list of all existing backup schedules within a specific 
 kubectl tg backup-schedule list --namespace tigergraph
 ```
 
+#### Update the way to access S3 bucket in Backup Schedule
+
+In TigerGraph 4.1.0 and TigerGraph Operator 1.2.0, you are allowed to set AWS access key and RoleARN at the same time.
+If you set both of them, TigerGraph will only use RoleARN to access S3 bucket. So when you have created a backup to s3 using RoleARN, and you want to
+update the backup CR to use access key, you have to clear the RoleARN setting by adding option `--role-arn null`:
+
+```bash
+kubectl tg backup-schedule update --destination s3Bucket \
+        --aws-secret $AWS_SECRET  \
+        --role-arn null
+```
+
+When you want to update the backup CR to use RoleARN, you can also clear the AWS access key setting by adding option `--aws-secret null`:
+
+```bash
+kubectl tg backup-schedule update --destination s3Bucket \
+        --aws-secret null  \
+        --role-arn arn:aws:iam::1234567:role/yourBackupRole
+```
+
 ### Deleting a Backup Schedule
 
 To remove a backup schedule, execute the following command:
@@ -505,6 +641,10 @@ To remove a backup schedule, execute the following command:
 kubectl tg backup-schedule delete --name backupsch-local \
   --namespace tigergraph
 ```
+
+> [!WARNING]
+> When a backup schedule is deleted, the backup CRs created by the schedule will also be deleted. If you want to keep the backup CRs, you should update the backup clean policy to Retain for all backup CRs
+> created by the schedule before deleting the schedule. Or you can pause the backup schedule instead of deleting it.
 
 ### Showing Backup Schedule Status
 
@@ -590,9 +730,9 @@ It's important to note that the backup strategy feature is available for cluster
 
 3. **`--max-reserved-day`**: This parameter governs the maximum number of days that backups are retained. If a backup is created more than the defined number of days ago, it will be automatically deleted, thus optimizing storage management.
 
-For example, consider a backup schedule with the tag `daily`. If you set `--max-backup-file 10`, a cleanup process will run after each scheduled backup, ensuring that only the latest 10 backups with the `daily` tag are retained. Backups with different tags will remain unaffected.
+For example, consider a backup schedule with `--max-backup-file 10`, the operator will ensure that only the latest 10 backup CRs created by the backup schedule are retained. If the number of backups exceeds 10, the operator will automatically delete the oldest backup CRs to maintain the specified limit.
 
-Furthermore, with `--max-reserved-day 7`, backups created more than 7 days ago (and possessing the `daily` tag) will be deleted, aligning with your defined retention strategy.
+Furthermore, with `--max-reserved-day 7`, backup CRs created more than 7 days ago will be deleted, aligning with your defined retention strategy.
 
 By leveraging these options, you can meticulously manage your backup jobs and safeguard against excessive disk usage. This proactive approach to backup strategy aids in optimizing storage utilization while preserving the necessary backups for operational needs.
 
@@ -624,38 +764,70 @@ Options:
   --cluster-template :          configure the cluster you want to create from exported CR
   --staging-path :              specify where to store the temporary files
   --source :                    set the source to get backup files, support local and s3 now
+  --min-retry-duration:         set the min duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --max-retry-duration:         set the max duration between two retries, the format is like "5s","10m","1h","1h20m5s"
+  --max-retry :                 set max times of retry for restore job
   Followings are about the configuration of different destination:
   If destination is local,you should provide:
     --local-path :              set the local path where to store backup files
   If destination is s3:
     --s3-bucket :               S3 Bucket name
     --aws-secret :              name of secret for aws, the secret should contain  accessKeyID and secretAccessKey
+    --role-arn:                 the role arn for the backup job to assume, set it to null if you want to remove the role arn
 ```
 
 ### Restore within the Same Cluster
 
 Suppose you have previously created a backup for `test-cluster` using the `kubectl tg backup create` command. To initiate restore within the same cluster, retrieve the tag of all Backups first:
 
-   Execute the following command to retrieve the tags associated with all available backups:
+Execute the following command to retrieve the tags associated with all available backups:
 
-   ```bash
-   kubectl tg backup list --cluster-name test-cluster -n tigergraph
-   ```
+```bash
+kubectl tg backup list --cluster-name test-cluster -n tigergraph
+```
 
-   The output will provide a list of backups along with their respective tags, types, versions, sizes, and creation timestamps. Choose the backup you intend to restore from based on your requirements.
+The output will provide a list of backups along with their respective tags, types, versions, sizes, and creation timestamps. Choose the backup you intend to restore from based on your requirements.
 
-   For instance:
+For instance:
 
-   ```bash
-   +------------------------------+------+---------+--------+---------------------+
-   |             TAG              | TYPE | VERSION |  SIZE  |     CREATED AT      |
-   +------------------------------+------+---------+--------+---------------------+
-   | daily-2022-11-02T103601      | FULL | 3.9.0   | 1.7 MB | 2022-11-02 10:36:02 |
-   | daily-2022-11-02T104925      | FULL | 3.9.0   | 1.7 MB | 2022-11-02 10:49:25 |
-   | daily-2022-11-09T081545      | FULL | 3.9.0   | 1.7 MB | 2022-11-09 08:15:46 |
-   | daily-2022-11-09T081546      | FULL | 3.9.0   | 1.7 MB | 2022-11-09 08:15:53 |
-   +------------------------------+------+---------+--------+---------------------+
-   ```
+```bash
++------------------------------+------+---------+--------+---------------------+
+|             TAG              | TYPE | VERSION |  SIZE  |     CREATED AT      |
++------------------------------+------+---------+--------+---------------------+
+| daily-2022-11-02T103601      | FULL | 3.9.0   | 1.7 MB | 2022-11-02 10:36:02 |
+| daily-2022-11-02T104925      | FULL | 3.9.0   | 1.7 MB | 2022-11-02 10:49:25 |
+| daily-2022-11-09T081545      | FULL | 3.9.0   | 1.7 MB | 2022-11-09 08:15:46 |
+| daily-2022-11-09T081546      | FULL | 3.9.0   | 1.7 MB | 2022-11-09 08:15:53 |
++------------------------------+------+---------+--------+---------------------+
+```
+
+Since Operator 1.1.0, you can also find the backup tags in the status of the backup CR:
+
+```bash
+kubectl tg backup status --name test-cluster-backup \
+ --namespace tigergraph
+```
+
+The output will provide information of backup package in status:
+
+```bash
+ Status:
+   Backup Info:
+     Size Bytes:     1139208
+     Tag:            test-backup-2024-02-06T065203
+     Time:           2024-02-06T06:52:03Z
+     Type:           FULL
+     Version:        3.9.3
+   Completion Time:  2024-02-06T06:52:10Z
+   Conditions:
+     Last Transition Time:  2024-02-06T06:52:10Z
+     Message:               Backup succeed
+     Reason:                BackupSucceed
+     Status:                True
+     Type:                  Succeed
+   Start Time:              2024-02-06T06:52:01Z
+   Target Ready:            true
+```
 
 Using backup in local storage:
 To restore your cluster utilizing a backup stored in local storage, execute the following command:
@@ -670,10 +842,10 @@ Replace  `/home/tigergraph/backup` with the appropriate path to the backup store
 
 Use backup in s3 bucket:
 
-First, create a secret in k8s containing access key id and secret key:
+First, create a secret containing access key id and secret key in the same namespace as the cluster you want to restore:
 
 ```bash
-kubectl create secret generic aws-secret \
+kubectl create secret generic aws-secret --namespace tigergraph \
     --from-literal=accessKeyID=AWSACCESSKEY \
     --from-literal=secretAccessKey='AWSSECRETKEY' 
 ```
@@ -689,6 +861,19 @@ kubectl tg restore --name restore-from-s3 \
 ```
 
 Make sure to replace tests3-2022-10-31T031005 with the desired backup tag and adjust tg-backup to your S3 bucket name. This command will trigger the restore process, bringing your cluster back to the chosen backup's state.
+
+Use backup in s3 bucket with RoleARN (Supported from operator 1.2.0 and TigerGraph 4.1.0):
+
+> [!IMPORTANT]
+> If you want to use RoleARN instead of access key to restore from S3 bucket, you don't have to create a K8s Secret for the backup CR. Instead, you have to make sure that the aws-cli in your TigerGraph cluster can access the S3 bucket with the RoleARN. Please refer to [Create a TigerGraph cluster with access to S3 bucket](./create-tg-with-access-to-s3.md).
+
+```bash
+kubectl tg restore --name restore-from-s3 \
+  --namespace tigergraph --cluster-name test-cluster \
+  --tag tests3-2022-10-31T031005 \
+  --source s3Bucket --s3-bucket tg-backup \
+  --role-arn arn:aws:iam::1234567:role/yourBackupRole
+```
 
 ### Cross-Cluster Restore from Backup
 
@@ -710,7 +895,7 @@ Performing a cross-cluster restore, where you restore an existing cluster (targe
    Create an AWS secret for authentication if you haven't done so already:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
        --from-literal=accessKeyID=AWSACCESSKEY \
        --from-literal=secretAccessKey='AWSSECRETKEY'
    ```
@@ -757,7 +942,7 @@ Creating a new cluster and restoring it from a backup created by another cluster
    Create an AWS secret for authentication if you haven't done so already:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
        --from-literal=accessKeyID=AWSACCESSKEY \
        --from-literal=secretAccessKey='AWSSECRETKEY'
    ```
@@ -796,7 +981,7 @@ Starting from TigerGraph cluster version 3.9.2, the process for cross-cluster re
    If you haven't done so already, create a Kubernetes secret containing your AWS credentials for authentication:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
      --from-literal=accessKeyID=AWSACCESSKEY \
      --from-literal=secretAccessKey='AWSSECRETKEY'
    ```
@@ -848,7 +1033,7 @@ Creating a new cluster and restoring it from a backup created by another cluster
    If you haven't done so already, create a Kubernetes secret containing your AWS credentials for authentication:
 
    ```bash
-   kubectl create secret generic aws-secret \
+   kubectl create secret generic aws-secret --namespace tigergraph \
      --from-literal=accessKeyID=AWSACCESSKEY \
      --from-literal=secretAccessKey='AWSSECRETKEY'
    ```

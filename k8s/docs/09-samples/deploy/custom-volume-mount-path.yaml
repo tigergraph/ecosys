@@ -1,23 +1,20 @@
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraph
 metadata:
-  name: test-cluster
+  name: custom-volume-mount-path1
   namespace: tigergraph
 spec:
+  ha: 2
   image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
-  ha: 2
   license: ${YOUR_LICENSE}
   listener:
     type: LoadBalancer
   privateKeyName: ssh-key-secret
   replicas: 4
   resources:
-    limits:
-      cpu: "6"
-      memory: 12Gi
     requests:
       cpu: "6"
       memory: 12Gi
@@ -31,3 +28,10 @@ spec:
           storage: 100G
       storageClassName: standard
       volumeMode: Filesystem
+  customVolumes:
+    - name: custom-volume
+      persistentVolumeClaim:
+        claimName: efs-claim # the pvc is created by the user
+  customVolumeMounts:
+    - name: custom-volume
+      mountPath: /custom-mount-path # the custom mount path of TigerGraph container

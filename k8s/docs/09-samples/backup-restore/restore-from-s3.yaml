@@ -4,16 +4,29 @@ metadata:
   name: restore-from-s3
 spec:
   restoreConfig:
-    tag: s3-2023-08-23T060851 
-    # optional
+    tag: daily-2021-11-04T120000
+    # Optional
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
-    # optional: (operator>=0.0.9 and tg>=3.9.3) should be >=0
+    # Optional: (TigerGraph Operator>=v0.0.9 and TigerGraph>=v3.9.3) should be >=0
     decompressProcessNumber: 2
   source:
     storage: s3Bucket 
     s3Bucket:
       # specify the bucket you want to use
       bucketName: operator-backup
-      secretKeyName: aws-secret
+      secretKeyName: s3-secret
+      # Optional: use roleARN instead of secretKeyName
+      # roleARN: arn:aws:iam::123456789012:role/role-name
   # Specify the name of cluster
   clusterName: test-cluster
+
+  # Optional: Set the retry policy for restore CR
+  backoffRetryPolicy:
+    # set maxRetryTimes for restore CR
+    maxRetryTimes: 3
+    # set the min duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    minRetryDuration: 5s
+    # set the max duration between two retries, 
+    # the format is like "5s","10m","1h","1h20m5s"
+    maxRetryDuration: 10s
