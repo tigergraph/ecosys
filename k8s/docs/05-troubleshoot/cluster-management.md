@@ -17,6 +17,7 @@ This document provides solutions for common issues that may arise during the man
   - [Troubleshooting Steps for customizing and updating license/TigerGraph configurations](#troubleshooting-steps-for-customizing-and-updating-licensetigergraph-configurations)
     - [Customizing TigerGraph configurations during initialization](#customizing-tigergraph-configurations-during-initialization)
     - [Updating TigerGraph configurations and license when cluster is running](#updating-tigergraph-configurations-and-license-when-cluster-is-running)
+  - [Troubleshooting for expanding storages on EKS](#troubleshooting-for-expanding-storages-on-eks)
 
 ## Troubleshooting Steps for updating cluster
 
@@ -62,12 +63,12 @@ This document provides solutions for common issues that may arise during the man
     ......
   Spec:
     Image:              docker.io/tigergrah/tigergraph-k8s:3.8.0
-    Image Pull Policy:  Always
+    Image Pull Policy:  IfNotPresent
     Image Pull Secrets:
       Name:  tigergraph-image-pull-secret
     Init Job:
       Image:              docker.io/tigergrah/tigergraph-k8s-init:0.0.3
-      Image Pull Policy:  Always
+      Image Pull Policy:  IfNotPresent
       Image Pull Secrets:
         Name:  tigergraph-image-pull-secret
     Init TG Config:
@@ -272,7 +273,7 @@ This document provides solutions for common issues that may arise during the man
   [   Info] Initializing KAFKA
   [   Info] Starting EXE
   [   Info] Starting CTRL
-  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   [   Info] Applying config
   [Warning] No difference from staging config, config apply is skipped.
   [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
@@ -280,12 +281,12 @@ This document provides solutions for common issues that may arise during the man
   [   Info] Configuration has been changed. Please use 'gadmin config apply' to persist the changes.
   [Warning] No difference from staging config, config apply is skipped.
   [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
-  [   Info] Stopping ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Stopping ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   [   Info] Stopping CTRL
   [   Info] Stopping EXE
   [   Info] Starting EXE
   [   Info] Starting CTRL
-  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   Could not create directory '/.ssh' (Permission denied).
   Failed to add the host to the list of known hosts (/.ssh/known_hosts).
   [   Info] Starting EXE
@@ -295,7 +296,7 @@ This document provides solutions for common issues that may arise during the man
   [   Info] Initializing KAFKA
   [   Info] Starting EXE
   [   Info] Starting CTRL
-  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   [   Info] Applying config
   [Warning] No difference from staging config, config apply is skipped.
   [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
@@ -303,12 +304,12 @@ This document provides solutions for common issues that may arise during the man
   [   Info] Configuration has been changed. Please use 'gadmin config apply' to persist the changes.
   [Warning] No difference from staging config, config apply is skipped.
   [   Info] Successfully applied configuration change. Please restart services to make it effective immediately.
-  [   Info] Stopping ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Stopping ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   [   Info] Stopping CTRL
   [   Info] Stopping EXE
   [   Info] Starting EXE
   [   Info] Starting CTRL
-  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+  [   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
   Could not create directory '/.ssh' (Permission denied).
   Failed to add the host to the list of known hosts (/.ssh/known_hosts).
   hostlist is: m4:test-cluster-3.test-cluster-internal-service,m5:test-cluster-4.test-cluster-internal-service
@@ -582,3 +583,9 @@ Warning: Permanently added '[test-cluster-0.test-cluster-internal-service.tigerg
 You need to check the CR and make sure the license is correct.
 
 Once you correct TigerGraph configurations and license in the CR, the config-update job will be recreated automatically.
+
+## Troubleshooting for expanding storages on EKS
+
+Refer to [the limitations of EBS volume modifications](https://docs.aws.amazon.com/ebs/latest/userguide/modify-volume-requirements.html#elastic-volumes-limitations), after modifying a volume, you must wait **at least six hours** and ensure that the volume is in the `in-use` or `available` state before you can modify the same volume.
+
+So when you expand the storage size again less than six hours after the last modification, the cluster will be stuck in the `StorageExpanding,Unknown` status until EBS completes the modification.

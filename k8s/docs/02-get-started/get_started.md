@@ -236,6 +236,9 @@ Examples:
   # install the operator in the specified namespace, with specified operator version, watch name namespace, cpu and memory
   kubectl tg init --version OPERATOR_VERSION --operator-size 3 --operator-watch-namespace tigergraph --operator-cpu 1000m  --operator-memory 1024Mi --namespace tg-tenant1
 
+Usage:
+  kubectl tg init [options]
+
 Options:
   -n, --namespace :            set namespace to deploy TG cluster, if not set, use the default namespace in context
   --helm-repo     :            set the specified helm repo to install operator, default as https://dl.tigergraph.com/charts
@@ -252,6 +255,10 @@ Options:
   --operator-watch-namespace : set watch namespaces of operator, blank string as default indicate all namespace, multiple namespaces are separated by commas, as ns1\,ns2
   --cluster-scope :            set true to deploy operator with ClusterRole, set false to deploy with Role,
                                so that you can deploy mutiple operators in one cluster, default as true
+  --max-tg-concurrent-reconciles : set the max concurrent reconciles of TigerGraph cluster controller, default is 2
+  --max-backup-concurrent-reconciles : set the max concurrent reconciles of TigerGraph backup controller, default is 2
+  --max-backup-schedule-concurrent-reconciles : set the max concurrent reconciles of TigerGraph backup-schedule controller, default is 2
+  --max-restore-concurrent-reconciles : set the max concurrent reconciles of TigerGraph restore controller, default is 2
 ```
 
 ## Step 3: Deploy a TigerGraph Cluster

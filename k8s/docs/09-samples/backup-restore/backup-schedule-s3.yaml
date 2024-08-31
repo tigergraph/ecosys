@@ -13,26 +13,56 @@ spec:
     # A backup can only exist for 3 days
     maxReservedDays: 3
     maxRetry: 10 
-  # optional : is pause is true, the cronjob will be suspended
+  # Optional : is pause is true, the cronjob will be suspended
   pause: false
   backupTemplate:
     clusterName: test-cluster
-      destination:
-        storage: s3Bucket
-        s3Bucket:
-          # specify the bucket you want to use
-          bucketName: operator-backup
-          secretKeyName: s3-secret
+    destination:
+      storage: s3Bucket
+      s3Bucket:
+        # specify the bucket you want to use
+        bucketName: operator-backup
+        secretKeyName: s3-secret
+        # Optional: use roleARN instead of secretKeyName
+        # roleARN: arn:aws:iam::123456789012:role/role-name
+
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
-      tag: s3
-      # optional
+      # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
+      # Note: this field is Required for TigerGraph Operator < v1.1.0
+      tag: s3-daily
+      # Optional
       stagingPath: /home/tigergraph/tigergraph/data/backup-staging
-      # optional :if incremental is true, incremental backup will be performed
+      # Optional :if incremental is true, incremental backup will be performed
       incremental: false
-      # optional
+      # Optional
       timeout: 18000
-      # optional :specify the number of process to do compress
+      # Optional :specify the number of process to do compress
       compressProcessNumber: 0
-      # optional: (operator>=0.0.9 and tg>=3.9.3) specify the compress level for backup
+      # Optional: (TigerGraph Operator>=v0.0.9 and TigerGraph>=v3.9.3) specify the compress level for backup
       compressLevel: DefaultCompression #choose from DefaultCompression/BestSpeed/BestCompression
+
+    # Optional: Set the policy for cleaning up backup package when deleting the backup CR
+    # Choose from Delete/Retain
+    # For backup CR created by backup schedule, 
+    # the default behavior is to delete the backup package. 
+    # The backup schedule CR use this feature to keep maxBackupFiles.
+    # If you want to keep all backup packages created by backup schedule,
+    # you can set the cleanPolicy to Retain. 
+    # But at the same time, the maxBackupFiles and maxReservedDays won't work properly.
+    cleanPolicy: Delete
+
+    # Optional: Set the retry policy for backup CR
+    backoffRetryPolicy:
+      # set maxRetryTimes for backup CR
+      maxRetryTimes: 3
+      # set the min duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      minRetryDuration: 5s
+      # set the max duration between two retries, 
+      # the format is like "5s","10m","1h","1h20m5s"
+      maxRetryDuration: 10s
+      # If the value is true, the deletion of backup CR won't be blocked by failed backup-clean-job
+      # that means, when backup-clean-job exceeds the maxRetryTimes
+      # the backup CR will be deleted directly, the backup package still exists in cluster
+      forceDeleteAfterMaxRetries: false

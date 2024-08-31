@@ -124,11 +124,22 @@ A namespace-scoped operator watches and manages resources in a single Namespace,
     kubectl tg init --cluster-scope true --namespace ${YOUR_NAMESPACE}
     ```
 
-- Install the Operator with specific options (e.g., version, deployment size, CPU, memory, and more):
+- For custom installation options:
 
-  ```bash
-  kubectl tg init --cluster-scope false --version ${OPERATOR_VERSION} --operator-size 3 --operator-watch-namespace ${YOUR_NAMESPACE} --operator-cpu 1000m  --operator-memory 1024Mi --namespace ${YOUR_NAMESPACE}
-  ```
+  You can customize the installation by specifying options like the Operator version, deployment size, CPU, memory, max concurrent reconciles of controller, and the namespace to watch, among others. Here's an example:
+
+    ```bash
+    kubectl tg init --cluster-scope false --version ${OPERATOR_VERSION} --operator-size 3 --operator-watch-namespace ${YOUR_NAMESPACE} \
+    --operator-cpu 1000m  --operator-memory 1024Mi \
+    --max-tg-concurrent-reconciles 4 \
+    --max-backup-concurrent-reconciles 4 \
+    --max-backup-schedule-concurrent-reconciles 4 \
+    --max-restore-concurrent-reconciles 2 \
+    --namespace ${YOUR_NAMESPACE}
+    ```
+
+> [!NOTE]
+> You can set the concurrent reconciliation value to a larger value during installation or update it to a suitable value afterward. The default maximum concurrent reconciliation value of 2 is sufficient for most cases. However, you may need to customize it if you use one operator to manage numerous TigerGraph clusters within a Kubernetes cluster.
 
   For a comprehensive list of options, refer to the output of the `kubectl tg init` --help command.
 

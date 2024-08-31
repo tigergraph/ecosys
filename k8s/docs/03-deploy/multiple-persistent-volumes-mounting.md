@@ -12,6 +12,9 @@
     - [Rules for Mounting Existing PVs](#rules-for-mounting-existing-pvs)
     - [YAML Configuration For Mounting Existing PVs](#yaml-configuration-for-mounting-existing-pvs)
     - [kubectl-tg Operation For Mounting Existing PVs](#kubectl-tg-operation-for-mounting-existing-pvs)
+  - [Mounting Existing ConfigMap to Customize Volume Mounts of TigerGraph Containers](#mounting-existing-configmap-to-customize-volume-mounts-of-tigergraph-containers)
+    - [YAML Configuration For Mounting Existing ConfigMap](#yaml-configuration-for-mounting-existing-configmap)
+    - [kubectl-tg Operation For Mounting Existing ConfigMap](#kubectl-tg-operation-for-mounting-existing-configmap)
   - [See also](#see-also)
 
 The TigerGraph Operator supports the mounting of multiple persistent volumes (PVs) for TigerGraph pods, enabling more efficient data storage for different purposes.
@@ -143,7 +146,7 @@ metadata:
 spec:
   ha: 2
   image: docker.io/tigergraph/tigergraph-k8s:3.9.3
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
   license: xxxxxx
@@ -318,7 +321,7 @@ metadata:
 spec:
   ha: 1
   image: docker.io/tigergraph/tigergraph-k8s:3.9.3
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
   license: xxxxxx
@@ -351,7 +354,7 @@ spec:
 
 ```bash
 
-kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --custom-volumes additional-storage-tg-logs.yaml \
+kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --custom-volumes custom-volumes.yaml \
 --custom-volume-mounts custom-volume-mounts.yaml
 ```
 
@@ -370,6 +373,114 @@ Example custom volume mounts YAML file:
 customVolumeMounts:
 - name: efs-storage
     mountPath: /efs-data
+```
+
+## Mounting Existing ConfigMap to Customize Volume Mounts of TigerGraph Containers
+
+We can also mount a ConfigMap as a custom volume to configure the volume mounts of TigerGraph containers.
+
+> [!IMPORTANT]
+> When mounting a ConfigMap as a read-only file system, you must explicitly set the readOnly option to true. Failing to do so will cause the TigerGraph init container to fail when attempting to change file system permissions.
+
+Before creating the TigerGraph cluster, you need to manually create a ConfigMap. Below is an example of a ConfigMap:
+
+```YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: special-config
+data:
+  special-config.conf: |
+    events {}
+
+    http {
+        server {
+            listen 8080;
+            location / {
+                return 200 'Hello from port 8080';
+                add_header Content-Type text/plain;
+            }
+        }
+
+        server {
+            listen 8081;
+            location / {
+                return 200 'Hello from port 8081';
+                add_header Content-Type text/plain;
+            }
+        }
+    }
+```
+
+### YAML Configuration For Mounting Existing ConfigMap
+
+The example below assumes that you have created a ConfigMap named `special-config`:
+
+```YAML
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-cluster3
+  namespace: tigergraph
+spec:
+  ha: 1
+  image: docker.io/tigergraph/tigergraph-k8s:3.9.3
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: tigergraph-image-pull-secret
+  license: xxxxxx
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 1
+  resources:
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+  customVolumes:
+    - name: special-config-volume
+      configMap:
+        name: special-config
+  customVolumeMounts:
+    - name: special-config-volume
+      mountPath: /etc/config/special-config.conf
+      subPath: special-config.conf
+      readOnly: true
+```
+
+### kubectl-tg Operation For Mounting Existing ConfigMap
+
+```bash
+
+kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --custom-volumes custom-volumes.yaml \
+--custom-volume-mounts custom-volume-mounts.yaml
+```
+
+Example custom volumes YAML file:
+
+```YAML
+customVolumes:
+  - name: special-config-volume
+    configMap:
+      name: special-config
+```
+
+Example custom volume mounts YAML file:
+
+```YAML
+customVolumeMounts:
+  - name: special-config-volume
+    mountPath: /etc/config/special-config.conf
+    subPath: special-config.conf
+    readOnly: true
 ```
 
 ## See also

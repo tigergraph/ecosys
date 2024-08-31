@@ -272,7 +272,7 @@ metadata:
   name: test-cluster
 spec:
   image: ${DOCKER_REGISTRY}/tigergraph-k8s:3.9.2
-  imagePullPolicy: Always
+  imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
   ha: 2

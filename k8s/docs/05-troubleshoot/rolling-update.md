@@ -335,7 +335,7 @@ kubectl exec -it test-cluster-0 -- /home/tigergraph/tigergraph/app/cmd/gadmin st
 Defaulted container "tigergraph" out of: tigergraph, init-tigergraph (init)
 [   Info] Starting EXE
 [   Info] Starting CTRL
-[   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN TS3SERV GSQL TS3 IFM GUI
+[   Info] Starting ZK ETCD DICT KAFKA ADMIN GSE NGINX GPE RESTPP KAFKASTRM-LL KAFKACONN GSQL IFM GUI
 ```
 
 If the above command executes failed due to some other issues, you can rerun it till all service are online.
@@ -389,10 +389,6 @@ Defaulted container "tigergraph" out of: tigergraph, init-tigergraph (init)
 |      RESTPP#1      |         Online          |         Running         |          2169           |
 |      RESTPP#2      |         Online          |         Running         |         380319          |
 |      RESTPP#3      |         Online          |         Running         |          73512          |
-|     TS3SERV#1      |         Online          |         Running         |          2311           |
-|       TS3_1        |         Online          |         Running         |          2441           |
-|       TS3_2        |         Online          |         Running         |          8233           |
-|       TS3_3        |         Online          |         Running         |          73988          |
 |        ZK#1        |         Online          |         Running         |           864           |
 |        ZK#2        |         Online          |         Running         |         376115          |
 |        ZK#3        |         Online          |         Running         |          72166          |

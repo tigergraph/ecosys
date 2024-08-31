@@ -584,5 +584,5 @@ spec:
 ### Create TG cluster with storage class name pv-local
 
 ```bash
-kubectl tg create --namespace tigergraph --cluster-name local-pv-tg-cluster -k ssh-key-secret --size 1 --ha 1 --version 3.9.1 --image-pull-policy Always --storage-class pv-local --cpu 4000m --memory 8G --storage-size 10G --license ${LICENSE}
+kubectl tg create --namespace tigergraph --cluster-name local-pv-tg-cluster -k ssh-key-secret --size 1 --ha 1 --version 3.9.1 --image-pull-policy IfNotPresent --storage-class pv-local --cpu 4000m --memory 8G --storage-size 10G --license ${LICENSE}
 ```
