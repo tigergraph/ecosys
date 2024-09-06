@@ -13,9 +13,14 @@
  */
 package com.tigergraph.spark.read;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.Query;
+import com.tigergraph.spark.client.common.RestppErrorException;
 import com.tigergraph.spark.client.common.RestppStreamResponse;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
 import java.io.IOException;
@@ -29,9 +34,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericInternalRow;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReader;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
-import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A partition reader returned by {@link PartitionReaderFactory#createReader(InputPartition)}. It's
@@ -49,10 +52,12 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
   private InternalRow currentRow = new GenericInternalRow();
 
   public TigerGraphPartitionReader(
-      TigerGraphConnection conn, StructType schema, TigerGraphRangeInputPartition partition) {
+      TigerGraphConnection conn,
+      TigerGraphResultAccessor accessor,
+      TigerGraphRangeInputPartition partition) {
     Query query = conn.getQuery();
     Options opts = conn.getOpts();
-    converter = new TigerGraphJsonConverter(schema, opts.getQueryType());
+    converter = new TigerGraphJsonConverter(accessor, opts.getQueryType());
     this.partition = partition;
     logger.info("Initializing partition reader of query type {}", opts.getQueryType());
 
@@ -72,26 +77,115 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
 
     long startTime = System.currentTimeMillis();
     logger.info("Start executing the query.");
+    List<String> fields;
     switch (opts.getQueryType()) {
+        // Vertex query
       case GET_VERTICES:
         resp = query.getVertices(conn.getGraph(), opts.getString(Options.QUERY_VERTEX), queryOps);
         break;
       case GET_VERTEX:
-        List<String> fields = Utils.extractQueryFields(opts.getString(Options.QUERY_VERTEX));
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_VERTEX),
+                opts.getString(Options.QUERY_FIELD_SEPARATOR));
         resp = query.getVertex(conn.getGraph(), fields.get(0), fields.get(1), queryOps);
         break;
-        // TODO: support edge/install/interpreted query
+        // Edge query
+      case GET_EDGES_BY_SRC_VERTEX:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp = query.getEdgesBySrcVertex(conn.getGraph(), fields.get(0), fields.get(1), queryOps);
+        break;
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgesBySrcVertexEdgeType(
+                conn.getGraph(), fields.get(0), fields.get(1), fields.get(2), queryOps);
+        break;
+      case GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgesBySrcVertexEdgeTypeTgtType(
+                conn.getGraph(),
+                fields.get(0),
+                fields.get(1),
+                fields.get(2),
+                fields.get(3),
+                queryOps);
+        break;
+      case GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX:
+        fields =
+            Utils.extractQueryFields(
+                opts.getString(Options.QUERY_EDGE), opts.getString(Options.QUERY_FIELD_SEPARATOR));
+        resp =
+            query.getEdgeBySrcVertexEdgeTypeTgtVertex(
+                conn.getGraph(),
+                fields.get(0),
+                fields.get(1),
+                fields.get(2),
+                fields.get(3),
+                fields.get(4),
+                queryOps);
+        break;
+      case INSTALLED:
+        // precheck
+        if (!Utils.isEmpty(opts.getString(Options.QUERY_PARAMS))) {
+          try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(opts.getString(Options.QUERY_PARAMS));
+          } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(
+                "Failed to parse 'query.params', please check if it is a valid JSON.", e);
+          }
+        }
+        resp =
+            query.installedQuery(
+                conn.getGraph(),
+                opts.getString(Options.QUERY_INSTALLED),
+                opts.getString(Options.QUERY_PARAMS),
+                null);
+        break;
+      case INTERPRETED:
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> queryParams = new HashMap<>();
+        if (!Utils.isEmpty(opts.getString(Options.QUERY_PARAMS))) {
+          try {
+            queryParams =
+                mapper.readValue(
+                    opts.getString(Options.QUERY_PARAMS),
+                    new TypeReference<Map<String, Object>>() {});
+          } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(
+                "Failed to parse query.params, please check if it is a valid JSON.", e);
+          }
+        }
+        resp =
+            query.interpretedQuery(
+                conn.getVersion(), opts.getString(Options.QUERY_INTERPRETED), queryParams);
+        break;
       default:
         throw new IllegalArgumentException("Invalid query type: " + opts.getQueryType());
     }
     long duration = System.currentTimeMillis() - startTime;
     logger.info("Query finished in {}ms, start to process the results.", duration);
     resp.panicOnFail();
+    if (accessor.extractObj()) {
+      try {
+        resp.reinitCursor(accessor.getRowNumber(), accessor.getObjKey());
+      } catch (IOException e) {
+        throw new RestppErrorException("Failed to extract the first object", e);
+      }
+    }
   }
 
   @Override
   public void close() throws IOException {
-    logger.info("Closing partition reader {}", partition.toString());
+    logger.info("Closing partition reader of {}", partition.toString());
     resp.close();
   }
 

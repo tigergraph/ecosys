@@ -16,21 +16,23 @@ package com.tigergraph.spark.client.common;
 import com.tigergraph.spark.util.Utils;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The request interceptor which is responsible for: <br>
- * 1. attach the basic auth header to the /restpp request 2. attach the bearer auth header to the
- * /gsqlserver request
+ * 1. attach the basic auth header to the /restpp request <br>
+ * 2. attach the bearer auth header to the /gsql request
  */
 public class RestppAuthInterceptor implements RequestInterceptor {
 
-  static final String GSQL_ENDPOINT = "/gsqlserver";
+  static final String GSQL_ENDPOINT = "/gsql/";
 
   private final String basicAuth;
-  private final String token;
+  private final AtomicReference<String> token;
   private final boolean restAuthEnabled;
 
-  public RestppAuthInterceptor(String basicAuth, String token, boolean restAuthEnabled) {
+  public RestppAuthInterceptor(
+      String basicAuth, AtomicReference<String> token, boolean restAuthEnabled) {
     this.basicAuth = basicAuth;
     this.token = token;
     this.restAuthEnabled = restAuthEnabled;
@@ -41,11 +43,13 @@ public class RestppAuthInterceptor implements RequestInterceptor {
     // If rest auth enabled, a token should be provided or requested,
     // any requests should have the auth header.
     if (restAuthEnabled) {
+      // Remove expired token if refreshToken happens
+      template.removeHeader("Authorization");
       template.header("Authorization", "Bearer " + token);
     } else if (template.path().contains(GSQL_ENDPOINT)) {
-      // If restpp auth disabled, /gsqlserver endpoint still need authentication.
+      // If restpp auth disabled, /gsql endpoint still need authentication.
       // user/pass pair and token(requested by user/pass, not system token) are equivalent
-      if (!Utils.isEmpty(token)) {
+      if (!Utils.isEmpty(token.get())) {
         template.header("Authorization", "Bearer " + token);
       } else if (!Utils.isEmpty(basicAuth)) {
         template.header("Authorization", "Basic " + basicAuth);

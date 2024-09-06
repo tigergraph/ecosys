@@ -30,22 +30,21 @@ import com.tigergraph.spark.TigerGraphConnection;
  */
 public class TigerGraphScan implements Scan {
   private final TigerGraphConnection conn;
-  private final StructType schema;
+  private final TigerGraphResultAccessor accessor;
 
-  public TigerGraphScan(TigerGraphConnection connection, StructType schema) {
+  public TigerGraphScan(TigerGraphConnection connection, TigerGraphResultAccessor accessor) {
     this.conn = connection;
-    this.schema = schema;
+    this.accessor = accessor;
   }
 
   /** Get the processed schema after column pruning (select) */
   @Override
   public StructType readSchema() {
-    // todo: with schema inference
-    return schema;
+    return accessor.getSchema();
   }
 
   @Override
   public TigerGraphBatch toBatch() {
-    return new TigerGraphBatch(conn, schema);
+    return new TigerGraphBatch(conn, accessor);
   }
 }

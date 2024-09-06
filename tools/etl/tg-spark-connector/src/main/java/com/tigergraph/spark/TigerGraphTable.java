@@ -19,9 +19,9 @@ import org.apache.spark.sql.connector.catalog.TableCapability;
 import org.apache.spark.sql.connector.write.LogicalWriteInfo;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.util.CaseInsensitiveStringMap;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import com.tigergraph.spark.read.TigerGraphResultAccessor;
 import com.tigergraph.spark.read.TigerGraphScanBuilder;
 import com.tigergraph.spark.write.TigerGraphWriteBuilder;
 
@@ -29,11 +29,12 @@ import com.tigergraph.spark.write.TigerGraphWriteBuilder;
 public class TigerGraphTable implements SupportsWrite, SupportsRead {
 
   private static final String TABLE_NAME = "TigerGraphTable";
-  private final StructType schema;
-  private final long creationTime = Instant.now().toEpochMilli();
+  private final TigerGraphResultAccessor accessor;
+  private final TigerGraphConnection conn;
 
-  public TigerGraphTable(StructType schema) {
-    this.schema = schema;
+  public TigerGraphTable(TigerGraphResultAccessor accessor, TigerGraphConnection conn) {
+    this.accessor = accessor;
+    this.conn = conn;
   }
 
   @Override
@@ -43,7 +44,7 @@ public class TigerGraphTable implements SupportsWrite, SupportsRead {
 
   @Override
   public StructType schema() {
-    return schema;
+    return accessor.getSchema();
   }
 
   @Override
@@ -59,11 +60,11 @@ public class TigerGraphTable implements SupportsWrite, SupportsRead {
 
   @Override
   public TigerGraphWriteBuilder newWriteBuilder(LogicalWriteInfo info) throws RuntimeException {
-    return new TigerGraphWriteBuilder(info, creationTime);
+    return new TigerGraphWriteBuilder(info, conn);
   }
 
   @Override
   public TigerGraphScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
-    return new TigerGraphScanBuilder(options, schema);
+    return new TigerGraphScanBuilder(conn, accessor);
   }
 }

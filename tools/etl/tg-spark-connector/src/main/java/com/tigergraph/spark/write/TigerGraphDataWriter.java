@@ -16,6 +16,7 @@ package com.tigergraph.spark.write;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.Write;
 import com.tigergraph.spark.client.Write.LoadingResponse;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
 import java.io.IOException;
@@ -48,7 +49,6 @@ import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.types.TimestampNTZType;
 import org.apache.spark.sql.types.TimestampType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** The data writer of an executor responsible for writing data for an input RDD partition. */
 public class TigerGraphDataWriter implements DataWriter<InternalRow> {

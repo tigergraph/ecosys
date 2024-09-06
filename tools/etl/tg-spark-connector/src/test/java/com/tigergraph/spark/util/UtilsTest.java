@@ -1,10 +1,13 @@
 package com.tigergraph.spark.util;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class UtilsTest {
 
@@ -47,12 +50,14 @@ public class UtilsTest {
             + " 4fcd48bd393e9c63016e01bc2783da0311ed9b38  2023-10-04 15:20:34 -0700\n";
 
     String input5 = "";
+    String input6 = "3.9_5.1_4.2.2";
 
     assertEquals("3.9.3", Utils.extractVersion(input1));
     assertEquals("3.9.3", Utils.extractVersion(input2));
     assertEquals("3.9.3", Utils.extractVersion(input3));
     assertEquals("3.9.3", Utils.extractVersion(input4));
     assertEquals(Utils.DEFAULT_VERSION, Utils.extractVersion(input5));
+    assertEquals("4.2.2", Utils.extractVersion(input6));
   }
 
   @Test
@@ -104,6 +109,28 @@ public class UtilsTest {
       Utils.removeUserData(original);
       // System.out.println(original.toPrettyString());
       assertTrue(original.equals(mapper.readTree(transformed.get(i))));
+    }
+  }
+
+  @Test
+  public void testExtractQueryFields() {
+    // Test some special characters
+    List<String> inputs =
+        Arrays.asList(
+            "A. 234]", "B/89#", "  x[hello", "1 ->2 ->3 ->4 ", "Comment|a.b|c)d| e$g", "abc", "");
+    List<String> seps = Arrays.asList(".", "/", "[", "->", "|", ":", ")");
+    List<String> expected =
+        Arrays.asList(
+            "[A,  234]]",
+            "[B, 89#]",
+            "[  x, hello]",
+            "[1 , 2 , 3 , 4 ]",
+            "[Comment, a.b, c)d,  e$g]",
+            "[abc]",
+            "[]");
+    for (int i = 0; i < inputs.size(); i++) {
+      assertEquals(
+          expected.get(i), Utils.extractQueryFields(inputs.get(i), seps.get(i)).toString());
     }
   }
 }

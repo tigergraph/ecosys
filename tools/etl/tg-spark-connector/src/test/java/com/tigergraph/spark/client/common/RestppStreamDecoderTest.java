@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import feign.Request;
 import feign.Request.HttpMethod;
 import feign.RequestTemplate;
@@ -70,6 +73,104 @@ public class RestppStreamDecoderTest {
     // parser and reader are closed, subsequent calls should return null/false
     assertFalse(strmResp.next());
     assertNull(strmResp.readRow());
+  }
+
+  @Test
+  @DisplayName("Test all cases of extracting the query results")
+  public void testExtractResults() throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    ObjectNode results = mapper.createObjectNode();
+    ArrayNode resArr =
+        results
+            .put("version", "")
+            .put("error", false)
+            .put("message", "success")
+            .putArray("results");
+    // rXcY: row X column Y
+    resArr.add(mapper.readTree("{\"r0c0\":[0,0], \"r0c1\":[0,1]}"));
+    resArr.add(mapper.readTree("{\"r1c0\": \"hello\", \"r1c1\":[1,1], \"r1c2\":1}"));
+    resArr.add(
+        mapper.readTree("{\"r2c0\":{\"a\":2, \"b\":0}, \"r2c1\":[{\"val\":2},{\"val\":1}]}"));
+    Response resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+
+    RestppStreamResponse strmResp =
+        (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+
+    // Case1: positive, read r1c1
+    strmResp.reinitCursor(1, "r1c1");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse first element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "1");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse second element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "1");
+    // finish
+    assertFalse(strmResp.next());
+
+    // Case2: positive, read r0c0 - empty key(default key)
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    strmResp = (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    strmResp.reinitCursor(0, "");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse first element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "0");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse second element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "0");
+    // finish
+    assertFalse(strmResp.next());
+
+    // Case3: positive, read r2c0 - mapAccum
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    strmResp = (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    strmResp.reinitCursor(2, "r2c0");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse first element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "{\"key\":\"a\",\"value\":2}");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse second element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "{\"key\":\"b\",\"value\":0}");
+    // finish
+    assertFalse(strmResp.next());
+
+    // Case4: positive, read r2c1
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    strmResp = (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    strmResp.reinitCursor(2, "r2c1");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse first element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "{\"val\":2}");
+    // ensure next element exists and move to it
+    assertTrue(strmResp.next());
+    // parse second element as JsonNode
+    assertEquals(strmResp.readRow().toString(), "{\"val\":1}");
+    // finish
+    assertFalse(strmResp.next());
+
+    // Case5: negative, read non-exist key
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    RestppStreamResponse strmResp5 =
+        (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    assertThrows(UnsupportedOperationException.class, () -> strmResp5.reinitCursor(2, "nonExist"));
+
+    // Case6: negative, read non-exist row
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    RestppStreamResponse strmResp6 =
+        (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    assertThrows(UnsupportedOperationException.class, () -> strmResp6.reinitCursor(6, "a"));
+
+    // Case7: negative, read an object that is neither json array nor json object
+    resp = respBuilder.body(results.toString(), StandardCharsets.UTF_8).build();
+    RestppStreamResponse strmResp7 =
+        (RestppStreamResponse) strmDecoder.decode(resp, RestppStreamResponse.class);
+    assertThrows(UnsupportedOperationException.class, () -> strmResp7.reinitCursor(1, "r1c2"));
   }
 
   @Test

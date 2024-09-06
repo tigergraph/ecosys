@@ -13,11 +13,12 @@
  */
 package com.tigergraph.spark.write;
 
+import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options;
 import org.apache.spark.sql.connector.write.DataWriterFactory;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.tigergraph.spark.TigerGraphConnection;
 
 /**
  * A factory of {@link TigerGraphDataWriter} for batch write, which is responsible for creating and
@@ -37,6 +38,11 @@ public class TigerGraphBatchWriterFactory implements DataWriterFactory {
 
   @Override
   public TigerGraphDataWriter createWriter(int partitionId, long taskId) {
+    // re-init logger for spark executors
+    Options opts = conn.getOpts();
+    if (opts.containsOption(Options.LOG_LEVEL)) {
+      LoggerFactory.initJULLogger(opts.getInt(Options.LOG_LEVEL), opts.getString(Options.LOG_FILE));
+    }
     logger.info(
         "Creating TigerGraph batch writer for partitionId {}, taskId {}.", partitionId, taskId);
     return new TigerGraphDataWriter(schema, conn, partitionId, taskId);

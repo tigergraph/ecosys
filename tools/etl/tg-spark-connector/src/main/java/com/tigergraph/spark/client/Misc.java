@@ -13,7 +13,9 @@
  */
 package com.tigergraph.spark.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppResponse;
+import com.tigergraph.spark.util.Utils;
 import feign.*;
 
 /**
@@ -24,7 +26,72 @@ public interface Misc {
   @RequestLine("GET /restpp/version")
   RestppResponse version();
 
-  @RequestLine("GET /gsqlserver/gsql/loading-jobs?action={action}&graph={graph}&jobId={jobId}")
-  RestppResponse loadingAction(
-      @Param("action") String action, @Param("graph") String graph, @Param("jobId") String jobId);
+  /**
+   * @deprecated TG v4.1.0
+   */
+  @RequestLine("GET /gsqlserver/gsql/loading-jobs?action=getprogress&graph={graph}&jobId={jobId}")
+  RestppResponse loadingProgressV0(@Param("graph") String graph, @Param("jobId") String jobId);
+
+  /**
+   * @since TG v4.1.0
+   */
+  @RequestLine("GET /gsql/v1/loading-jobs/status?graph={graph}&jobIds={jobId}")
+  RestppResponse loadingProgressV1(@Param("graph") String graph, @Param("jobId") String jobId);
+
+  default RestppResponse loadingProgress(String version, String graph, String jobId) {
+    if (Utils.versionCmp(version, "4.1.0") >= 0) {
+      return loadingProgressV1(graph, jobId);
+    } else {
+      return loadingProgressV0(graph, jobId);
+    }
+  }
+
+  /**
+   * @deprecated TG v4.1.0
+   */
+  @RequestLine("GET /gsqlserver/gsql/schema?graph={graph}&type={type}")
+  RestppResponse graphSchemaV0(@Param("graph") String graph, @Param("type") String type);
+
+  /**
+   * @since TG v4.1.0
+   */
+  @RequestLine("GET /gsql/v1/schema/graphs/{graph}?type={type}")
+  RestppResponse graphSchemaV1(@Param("graph") String graph, @Param("type") String type);
+
+  default RestppResponse graphSchema(String version, String graph, String type) {
+    if (Utils.versionCmp(version, "4.1.0") >= 0) {
+      return graphSchemaV1(graph, type);
+    } else {
+      return graphSchemaV0(graph, type);
+    }
+  }
+
+  /**
+   * @deprecated TG v4.1.0
+   */
+  @RequestLine("GET /gsqlserver/gsql/queryinfo?graph={graph}&query={query}")
+  QueryMetaResponse queryMetaV0(@Param("graph") String graph, @Param("query") String query);
+
+  /**
+   * @since TG v4.1.0
+   */
+  @RequestLine("POST /gsql/v1/queries/signature?graph={graph}&queryName={query}")
+  @Headers({"Content-Type: text/plain"})
+  QueryMetaResponse queryMetaV1(@Param("graph") String graph, @Param("query") String query);
+
+  default QueryMetaResponse queryMeta(String version, String graph, String query) {
+    if (Utils.versionCmp(version, "4.1.0") >= 0) {
+      return queryMetaV1(graph, query);
+    } else {
+      return queryMetaV0(graph, query);
+    }
+  }
+
+  /**
+   * POST /gsql/v1/queries/signature <br>
+   * The output contains the schema of each row
+   */
+  public class QueryMetaResponse extends RestppResponse {
+    public JsonNode output;
+  }
 }

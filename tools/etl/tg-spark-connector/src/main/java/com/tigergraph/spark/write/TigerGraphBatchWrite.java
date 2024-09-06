@@ -13,16 +13,16 @@
  */
 package com.tigergraph.spark.write;
 
+import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.client.common.RestppResponse;
+import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Utils;
 import org.apache.spark.sql.connector.write.BatchWrite;
 import org.apache.spark.sql.connector.write.DataWriter;
 import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
 import org.apache.spark.sql.connector.write.WriterCommitMessage;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.tigergraph.spark.TigerGraphConnection;
-import com.tigergraph.spark.client.common.RestppResponse;
-import com.tigergraph.spark.util.Utils;
 
 /**
  * Define how to write the data to TG for batch processing.

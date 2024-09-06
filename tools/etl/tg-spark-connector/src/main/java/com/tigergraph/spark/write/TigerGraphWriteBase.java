@@ -13,21 +13,19 @@
  */
 package com.tigergraph.spark.write;
 
-import org.apache.spark.sql.connector.write.WriterCommitMessage;
-import org.apache.spark.sql.types.StructType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.common.RestppResponse;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Utils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.apache.spark.sql.connector.write.WriterCommitMessage;
+import org.apache.spark.sql.types.StructType;
+import org.slf4j.Logger;
 
 /** Base class for {@link TigerGraphBatchWrite} and {@link TigerGraphStreamingWrite}. */
 public class TigerGraphWriteBase {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphWriteBase.class);
-
-  protected static String GSQL_GET_PROGRESS = "getprogress";
 
   protected final StructType schema;
   protected final TigerGraphConnection conn;
@@ -39,21 +37,24 @@ public class TigerGraphWriteBase {
 
   protected RestppResponse getLoadingStatistics() {
     if (Utils.versionCmp(conn.getVersion(), "3.9.4") >= 0) {
+      // HACK: call a restpp endpoint to automatically refresh token if expires
+      try {
+        conn.getMisc().version();
+      } catch (Exception e) {
+        // no-op
+      }
+
       try {
         RestppResponse resp =
             conn.getMisc()
-                .loadingAction(GSQL_GET_PROGRESS, conn.getGraph(), conn.getLoadingJobId());
+                .loadingProgress(conn.getVersion(), conn.getGraph(), conn.getLoadingJobId());
         resp.panicOnFail();
         return resp;
       } catch (Exception e) {
         logger.info(
-            "Failed to query loading statistics of job {}: {}, it won't block the loading"
-                + " and you can manually query it via `curl -X GET -u <username>:<password> "
-                + "\"localhost:8123/gsql/loading-jobs?action=getprogress&jobId={}&graph={}\"",
+            "Failed to query loading statistics of job {}: {}, it won't block the loading",
             conn.getLoadingJobId(),
-            e.getMessage(),
-            conn.getLoadingJobId(),
-            conn.getGraph());
+            e.getMessage());
       }
     }
     return null;

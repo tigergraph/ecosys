@@ -13,11 +13,12 @@
  */
 package com.tigergraph.spark.write;
 
+import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options;
 import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.tigergraph.spark.TigerGraphConnection;
 
 /**
  * A factory of {@link TigerGraphDataWriter} for streaming write, which is responsible for creating
@@ -37,6 +38,11 @@ public class TigerGraphStreamWriterFactory implements StreamingDataWriterFactory
 
   @Override
   public TigerGraphDataWriter createWriter(int partitionId, long taskId, long epochId) {
+    // re-init logger for spark executors
+    Options opts = conn.getOpts();
+    if (opts.containsOption(Options.LOG_LEVEL)) {
+      LoggerFactory.initJULLogger(opts.getInt(Options.LOG_LEVEL), opts.getString(Options.LOG_FILE));
+    }
     logger.info(
         "Create TigerGraph streaming writer for partitionId {}, taskId {}, epochId {}.",
         partitionId,

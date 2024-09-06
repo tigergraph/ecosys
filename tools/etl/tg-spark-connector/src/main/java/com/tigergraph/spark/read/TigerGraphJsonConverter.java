@@ -15,8 +15,9 @@ package com.tigergraph.spark.read;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.util.Options.QueryType;
-import java.util.function.BiFunction;
+
 import java.util.function.Function;
+
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.GenericInternalRow;
 import org.apache.spark.sql.types.BinaryType;
@@ -35,7 +36,6 @@ import org.apache.spark.sql.types.NullType;
 import org.apache.spark.sql.types.ShortType;
 import org.apache.spark.sql.types.StringType;
 import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.types.TimestampNTZType;
 import org.apache.spark.sql.types.TimestampType;
 import org.apache.spark.sql.types.YearMonthIntervalType;
@@ -52,19 +52,20 @@ public class TigerGraphJsonConverter {
   // the converters for each field according to the data types
   private final Function<JsonNode, Object>[] fieldConverter;
   // the searcher that find Spark field name in a nested JSON
-  private final BiFunction<JsonNode, String, JsonNode> nodeSearcher;
+  private final Function<JsonNode, JsonNode>[] fieldAccessor;
 
   @SuppressWarnings("unchecked")
-  public TigerGraphJsonConverter(StructType schema, QueryType queryType) {
-    fields = schema.fields();
+  public TigerGraphJsonConverter(TigerGraphResultAccessor accessor, QueryType queryType) {
+    fields = accessor.getSchema().fields();
     values = new Object[fields.length];
     fieldConverter = new Function[fields.length];
+    fieldAccessor = new Function[fields.length];
     // Predefine the converter of each field so that no
     // need to do type checks for every row
     for (int i = 0; i < fields.length; i++) {
       fieldConverter[i] = getConverter(fields[i].dataType());
+      fieldAccessor[i] = accessor.getFieldMetas().get(i).toAccessor();
     }
-    nodeSearcher = getNodeSearcher(queryType);
   }
 
   /**
@@ -75,7 +76,7 @@ public class TigerGraphJsonConverter {
   public InternalRow convert(JsonNode obj) {
     for (int i = 0; i < values.length; i++) {
       DataType dt = fields[i].dataType();
-      JsonNode rawVal = nodeSearcher.apply(obj, fields[i].name());
+      JsonNode rawVal = fieldAccessor[i].apply(obj);
       if (rawVal != null && !rawVal.isMissingNode() && !(dt instanceof NullType)) {
         values[i] = fieldConverter[i].apply(rawVal);
       } else {
@@ -138,23 +139,6 @@ public class TigerGraphJsonConverter {
       // * MapType
       // * StructType
       throw new UnsupportedOperationException("Unsupported data type " + dt.simpleString());
-    }
-  }
-
-  /**
-   * Get the node searcher that can find a Spark field in nested JSON: E.g., When query type is
-   * "GET_VERTICES", "name" -> "attributes.name"
-   *
-   * @param qt the query type
-   */
-  private static BiFunction<JsonNode, String, JsonNode> getNodeSearcher(QueryType qt) {
-    switch (qt) {
-      case GET_VERTEX:
-      case GET_VERTICES:
-        return (obj, key) -> "v_id".equals(key) ? obj.get(key) : obj.path("attributes").get(key);
-        // TODO: edge type and query type
-      default:
-        return (obj, key) -> obj.get(key);
     }
   }
 }

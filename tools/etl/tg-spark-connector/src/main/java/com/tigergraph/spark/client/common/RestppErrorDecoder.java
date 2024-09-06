@@ -13,16 +13,16 @@
  */
 package com.tigergraph.spark.client.common;
 
-import java.util.Arrays;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.tigergraph.spark.constant.ErrorCode;
+import com.tigergraph.spark.log.LoggerFactory;
 import feign.Response;
 import feign.RetryableException;
 import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.hc.core5.http.HttpStatus;
+import org.slf4j.Logger;
 
 /**
  * Responsible for checking the HTTP status code to determine whether the request is retryable,
