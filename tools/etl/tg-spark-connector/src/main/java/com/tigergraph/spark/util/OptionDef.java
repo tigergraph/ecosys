@@ -13,12 +13,13 @@
  */
 package com.tigergraph.spark.util;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.Serializable;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class OptionDef implements Serializable {
   // A unique Java object which represents the lack of a default value.
@@ -112,6 +113,23 @@ public class OptionDef implements Serializable {
 
   public interface Validator extends Serializable {
     void ensureValid(String name, Serializable value);
+  }
+
+  public static class ValidVersion implements Validator {
+
+    public static ValidVersion INSTANCE = new ValidVersion();
+    private static final String VERSION_PATTERN = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
+
+    @Override
+    public void ensureValid(String name, Serializable value) {
+      if (!Pattern.matches(VERSION_PATTERN, String.valueOf(value))) {
+        throw new IllegalArgumentException(
+            "Option("
+                + name
+                + ") must follow the pattern: MAJOR.MINOR.PATCH, got "
+                + String.valueOf(value));
+      }
+    }
   }
 
   /*

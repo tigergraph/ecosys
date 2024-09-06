@@ -13,22 +13,22 @@
  */
 package com.tigergraph.spark;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.Base64;
-import com.tigergraph.spark.client.Builder;
 import com.tigergraph.spark.client.Auth;
+import com.tigergraph.spark.client.Auth.AuthResponse;
+import com.tigergraph.spark.client.Builder;
 import com.tigergraph.spark.client.Misc;
 import com.tigergraph.spark.client.Query;
 import com.tigergraph.spark.client.Write;
-import com.tigergraph.spark.client.Auth.AuthResponse;
-import com.tigergraph.spark.client.common.RestppResponse;
 import com.tigergraph.spark.client.common.RestppStreamDecoder;
+import com.tigergraph.spark.client.common.RestppTokenManager;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
-import feign.FeignException;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Initalize TG connection including: <br>
@@ -48,7 +48,7 @@ public class TigerGraphConnection implements Serializable {
   private final String graph;
   private final String url;
   private final long creationTime;
-  private String version;
+  private final String version;
   private transient Misc misc;
   // Authentication variables
   private String basicAuth;
@@ -57,6 +57,7 @@ public class TigerGraphConnection implements Serializable {
   private boolean restAuthEnabled;
   private boolean restAuthInited;
   private transient Auth auth;
+  private transient RestppTokenManager tokenMgr;
   // Loading job variables/consts
   // spark job type is supported for [3.10.0,), [3.9.4,)
   static final String JOB_IDENTIFIER = "spark";
@@ -83,19 +84,24 @@ public class TigerGraphConnection implements Serializable {
     this.creationTime = creationTime;
     graph = opts.getString(Options.GRAPH);
     url = opts.getString(Options.URL);
-    initAuth();
-    // get TG version
     version = opts.getString(Options.VERSION);
-    if (Utils.isEmpty(version)) {
-      RestppResponse verResp = getMisc().version();
-      verResp.panicOnFail();
-      version = Utils.extractVersion(verResp.message);
-    }
     if (Utils.versionCmp(version, "3.6.0") <= 0) {
       throw new UnsupportedOperationException(
           "TigerGraph version under 3.6.0 is unsupported, current version: " + version);
     }
     logger.info("TigerGraph version: {}", version);
+
+    initAuth();
+
+    // HACK: gsql endpoints won't tell the error code when token expires
+    // so we can't refresh token based on that.
+    // Hence, everytime the driver start, we call an /restpp endpoint to
+    // automatically refresh token in advance if expires.
+    try {
+      getMisc().version();
+    } catch (Exception e) {
+      // no-op
+    }
 
     if (Options.OptionType.WRITE.equals(opts.getOptionType())
         && Utils.versionCmp(version, "3.9.4") >= 0) {
@@ -124,30 +130,18 @@ public class TigerGraphConnection implements Serializable {
       // 2. init Auth client
       getAuth();
       // 3. check if restpp auth is enabled
-      restAuthEnabled = true;
-      try {
-        auth.checkAuthEnabled();
-      } catch (FeignException e) {
-        if (e.status() == 404) {
-          restAuthEnabled = false;
-          logger.warn(
-              "RESTPP authentication is not enabled, you can enable it via `gadmin config set"
-                  + " RESTPP.Factory.EnableAuth true`");
-        } else {
-          throw e;
-        }
-      }
+      restAuthEnabled = auth.checkAuthEnabled();
       // 4. request token if username/password or secret is provided but token is empty
       if (restAuthEnabled && Utils.isEmpty(token)) {
         AuthResponse resp;
         if (!Utils.isEmpty(basicAuth)) {
-          resp = auth.requestTokenWithUserPass(graph, basicAuth, Auth.TOKEN_LIFETIME_SEC);
+          resp = auth.requestTokenWithUserPass(version, graph, basicAuth, Auth.TOKEN_LIFETIME_SEC);
           resp.panicOnFail();
-          token = resp.results.get("token").asText();
+          token = resp.getToken();
         } else if (!Utils.isEmpty(secret)) {
-          resp = auth.requestTokenWithSecret(secret, Auth.TOKEN_LIFETIME_SEC);
+          resp = auth.requestTokenWithSecret(version, secret, Auth.TOKEN_LIFETIME_SEC);
           resp.panicOnFail();
-          token = resp.token;
+          token = resp.getToken();
         } else {
           throw new IllegalArgumentException(
               "Restpp authentication is enabled, please provide at least one of the 'token',"
@@ -189,6 +183,18 @@ public class TigerGraphConnection implements Serializable {
     return auth;
   }
 
+  private RestppTokenManager getTokenManager() {
+    if (!restAuthInited) {
+      initAuth();
+    }
+    if (tokenMgr == null) {
+      tokenMgr =
+          new RestppTokenManager(
+              getAuth(), graph, version, new AtomicReference<String>(token), secret, basicAuth);
+    }
+    return tokenMgr;
+  }
+
   public Misc getMisc() {
     if (!restAuthInited) {
       initAuth();
@@ -201,17 +207,14 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_CONNECT_TIMEOUT_MS),
                   opts.getInt(Options.IO_READ_TIMEOUT_MS))
               .setRetryer(
-                  getAuth(),
-                  basicAuth,
-                  secret,
-                  token,
+                  getTokenManager(),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, token, restAuthEnabled);
+              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled);
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -242,17 +245,14 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_CONNECT_TIMEOUT_MS),
                   opts.getInt(Options.IO_READ_TIMEOUT_MS))
               .setRetryer(
-                  getAuth(),
-                  basicAuth,
-                  secret,
-                  token,
+                  getTokenManager(),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
                   opts.getInt(Options.LOADING_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, token, restAuthEnabled);
+              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled);
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -288,17 +288,14 @@ public class TigerGraphConnection implements Serializable {
               .setDecoder(new RestppStreamDecoder())
               .setRequestOptions(opts.getInt(Options.IO_CONNECT_TIMEOUT_MS), readTimeout)
               .setRetryer(
-                  getAuth(),
-                  basicAuth,
-                  secret,
-                  token,
+                  getTokenManager(),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, token, restAuthEnabled)
+              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled)
               .setRetryableCode(502, 503, 504)
               .setQueryInterceptor(
                   opts.getInt(Options.QUERY_TIMEOUT_MS),
@@ -350,5 +347,9 @@ public class TigerGraphConnection implements Serializable {
 
   public String getGraph() {
     return this.graph;
+  }
+
+  public String getUrl() {
+    return this.url;
   }
 }

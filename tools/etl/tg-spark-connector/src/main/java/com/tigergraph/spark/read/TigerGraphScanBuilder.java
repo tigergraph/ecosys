@@ -13,11 +13,8 @@
  */
 package com.tigergraph.spark.read;
 
-import org.apache.spark.sql.connector.read.ScanBuilder;
-import org.apache.spark.sql.types.StructType;
-import org.apache.spark.sql.util.CaseInsensitiveStringMap;
 import com.tigergraph.spark.TigerGraphConnection;
-import com.tigergraph.spark.util.Options;
+import org.apache.spark.sql.connector.read.ScanBuilder;
 
 /**
  * An interface for building the {@link TigerGraphScan}. Implementations can mixin
@@ -27,16 +24,15 @@ import com.tigergraph.spark.util.Options;
  */
 public class TigerGraphScanBuilder implements ScanBuilder {
   private final TigerGraphConnection conn;
-  private final StructType schema;
+  private final TigerGraphResultAccessor accessor;
 
-  public TigerGraphScanBuilder(CaseInsensitiveStringMap info, StructType schema) {
-    Options opts = new Options(info.asCaseSensitiveMap(), Options.OptionType.READ, false);
-    this.conn = new TigerGraphConnection(opts);
-    this.schema = schema;
+  public TigerGraphScanBuilder(TigerGraphConnection conn, TigerGraphResultAccessor accessor) {
+    this.conn = conn;
+    this.accessor = accessor;
   }
 
   @Override
   public TigerGraphScan build() {
-    return new TigerGraphScan(conn, schema);
+    return new TigerGraphScan(conn, accessor);
   }
 }

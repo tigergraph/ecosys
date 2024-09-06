@@ -13,12 +13,12 @@
  */
 package com.tigergraph.spark.read;
 
+import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
-import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.tigergraph.spark.TigerGraphConnection;
 
 /**
  * A factory used to create {@link TigerGraphPartitionReader} instances.
@@ -32,16 +32,22 @@ public class TigerGraphPartitionReaderFactory implements PartitionReaderFactory 
       LoggerFactory.getLogger(TigerGraphPartitionReaderFactory.class);
 
   private final TigerGraphConnection conn;
-  private final StructType schema;
+  private final TigerGraphResultAccessor accessor;
 
-  public TigerGraphPartitionReaderFactory(TigerGraphConnection connection, StructType schema) {
+  public TigerGraphPartitionReaderFactory(
+      TigerGraphConnection connection, TigerGraphResultAccessor accessor) {
     this.conn = connection;
-    this.schema = schema;
+    this.accessor = accessor;
   }
 
   @Override
   public TigerGraphPartitionReader createReader(InputPartition partition) {
+    // re-init logger for spark executors
+    Options opts = conn.getOpts();
+    if (opts.containsOption(Options.LOG_LEVEL)) {
+      LoggerFactory.initJULLogger(opts.getInt(Options.LOG_LEVEL), opts.getString(Options.LOG_FILE));
+    }
     logger.info("Creating partition reader for partition: {}", partition.toString());
-    return new TigerGraphPartitionReader(conn, schema, (TigerGraphRangeInputPartition) partition);
+    return new TigerGraphPartitionReader(conn, accessor, (TigerGraphRangeInputPartition) partition);
   }
 }

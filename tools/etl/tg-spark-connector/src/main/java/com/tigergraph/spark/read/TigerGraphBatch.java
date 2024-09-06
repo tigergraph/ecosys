@@ -14,15 +14,14 @@
 package com.tigergraph.spark.read;
 
 import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
 import java.math.BigInteger;
 import java.util.List;
 import org.apache.spark.sql.connector.read.Batch;
 import org.apache.spark.sql.connector.read.InputPartition;
-import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A physical representation of a data source scan for batch queries. This interface is used to
@@ -33,13 +32,13 @@ public class TigerGraphBatch implements Batch {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphBatch.class);
 
   private final TigerGraphConnection conn;
-  private final StructType schema;
+  private final TigerGraphResultAccessor accessor;
 
-  public TigerGraphBatch(TigerGraphConnection connection, StructType schema) {
+  public TigerGraphBatch(TigerGraphConnection connection, TigerGraphResultAccessor accessor) {
     logger.info(
         "Initializing TigerGraph batch query, query type: {}", connection.getOpts().getQueryType());
     this.conn = connection;
-    this.schema = schema;
+    this.accessor = accessor;
   }
 
   @Override
@@ -62,7 +61,7 @@ public class TigerGraphBatch implements Batch {
       List<BigInteger> splitPoints =
           TigerGraphRangeInputPartition.calculatePartitions(partitionNum, lo, up);
       logger.info(
-          "Partition number: {}, splits on partitioning key {}: {}",
+          "Partition number: {}, split on partitioning key '{}': {}",
           splitPoints.size() + 1,
           partitionKey,
           splitPoints);
@@ -85,6 +84,6 @@ public class TigerGraphBatch implements Batch {
 
   @Override
   public TigerGraphPartitionReaderFactory createReaderFactory() {
-    return new TigerGraphPartitionReaderFactory(conn, schema);
+    return new TigerGraphPartitionReaderFactory(conn, accessor);
   }
 }

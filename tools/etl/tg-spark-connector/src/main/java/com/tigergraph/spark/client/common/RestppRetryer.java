@@ -13,15 +13,15 @@
  */
 package com.tigergraph.spark.client.common;
 
-import java.io.IOException;
-import java.util.Random;
 import com.tigergraph.spark.client.Auth;
+import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Utils;
 import feign.RetryableException;
 import feign.Retryer;
+import java.io.IOException;
+import java.util.Random;
 import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A mixed retryer for 3 types of errors: <br>
@@ -42,10 +42,7 @@ public class RestppRetryer implements Retryer {
   // refresh token
   private static final int REFRESH_MAX_ATTEMPTS = 1;
   private static final int REFRESH_PERIOD_MS = 3000; // 3s
-  private final Auth auth;
-  private final String basicAuth;
-  private final String secret;
-  private final String token;
+  private final RestppTokenManager tokenMgr;
   // arrays to record the retry status for different retry types
   private final int[] period = new int[3];
   private final int[] maxPeriod = new int[3];
@@ -54,21 +51,15 @@ public class RestppRetryer implements Retryer {
   private final int[] sleptForMillis = new int[3];
 
   public RestppRetryer(
-      Auth auth,
-      String basicAuth,
-      String secret,
-      String token,
+      RestppTokenManager tokenMgr,
       int ioPeriod,
       int ioMaxPeriod,
       int ioMaxAttempts,
       int serverPeriod,
       int serverMaxPeriod,
       int serverMaxAttempts) {
-    this.auth = auth;
-    this.basicAuth = basicAuth;
-    this.secret = secret;
-    this.token = token;
 
+    this.tokenMgr = tokenMgr;
     period[TYPE_AUTH] = REFRESH_PERIOD_MS;
     maxPeriod[TYPE_AUTH] = REFRESH_PERIOD_MS;
     maxAttempts[TYPE_AUTH] = REFRESH_MAX_ATTEMPTS;
@@ -95,9 +86,6 @@ public class RestppRetryer implements Retryer {
       int serverMaxAttempts) {
     this(
         null,
-        null,
-        null,
-        null,
         ioPeriod,
         ioMaxPeriod,
         ioMaxAttempts,
@@ -117,7 +105,8 @@ public class RestppRetryer implements Retryer {
       retryType = TYPE_AUTH;
       reason =
           String.format(
-              "Token %s expired, attempt to retry after refresh", Utils.maskString(token, 2));
+              "Token %s expired, attempt to retry after refreshing",
+              Utils.maskString(tokenMgr == null ? "" : tokenMgr.getToken(), 2));
     } else {
       retryType = TYPE_SERVER;
       reason = String.valueOf(e.status());
@@ -148,18 +137,11 @@ public class RestppRetryer implements Retryer {
     }
     sleptForMillis[retryType] += interval;
 
-    if (retryType == TYPE_AUTH && auth != null) {
-      if (!Utils.isEmpty(basicAuth)) {
-        auth.refreshTokenWithUserPass(token, basicAuth, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
-      } else if (!Utils.isEmpty(secret)) {
-        auth.refreshTokenWithSecrect(token, secret, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
-      } else {
-        // Don't support refresh token, throw it directly
-        throw e;
-      }
+    if (retryType == TYPE_AUTH && tokenMgr != null) {
+      tokenMgr.refreshToken();
       logger.info(
           "Successfully refreshed token {} for {} seconds",
-          Utils.maskString(token, 2),
+          Utils.maskString(tokenMgr.getToken(), 2),
           Auth.TOKEN_LIFETIME_SEC);
     }
   }
@@ -167,10 +149,7 @@ public class RestppRetryer implements Retryer {
   @Override
   public RestppRetryer clone() {
     return new RestppRetryer(
-        auth,
-        basicAuth,
-        secret,
-        token,
+        tokenMgr,
         period[TYPE_IO],
         maxPeriod[TYPE_IO],
         maxAttempts[TYPE_IO],
