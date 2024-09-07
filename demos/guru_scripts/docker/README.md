@@ -70,8 +70,8 @@ Quick Start
 1. Download docker image from https://dl.tigergraph.com/
 2. Download Dev license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
 3. In Macbook command line (# starts a comment) type the following sequence of commands
-   
-   docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz
+
+       docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz
 
    docker images #find image id
 
