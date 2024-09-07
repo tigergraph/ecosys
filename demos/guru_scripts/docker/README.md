@@ -65,6 +65,22 @@ You may obtain a license key by going to [dl.tigergraph.com](https://dl.tigergra
 
 Currently, the Free Trial limits your database to **50 GB**, and is valid for **30 days** after the date of issue.
 
+Quick Start
+================================
+1. Download docker image from https://dl.tigergraph.com/
+2. Download Dev license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
+3. In Macbook command line (# starts a comment) type the following sequence of commands
+   docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz
+   docker images #find image id
+   docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+   docker exec -it mySandbox /bin/bash #start a shell on this container. 
+   gadmin license set the_license_from_step_2_text #copy the license from step 2 file
+   gadmin config apply #apply the license
+   gadmin start all  #start all tigergraph component services
+   gadmin status #should see all services are up.
+   gsql #start the gsql shell. Congratulations, you have started tigergraph!
+
+
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
 One command pull docker image and bind all ports for first time user from the TigerGraph docker registry. 
