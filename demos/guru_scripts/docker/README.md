@@ -72,22 +72,14 @@ Quick Start
 3. In Macbook command line (# starts a comment) type the following sequence of commands
 
        docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz
-
-   docker images #find image id
-
-   docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
-
-   docker exec -it mySandbox /bin/bash #start a shell on this container. 
-
-   gadmin license set the_license_from_step_2_text #copy the license from step 2 file
-
-   gadmin config apply #apply the license
-
-   gadmin start all  #start all tigergraph component services
-
-   gadmin status #should see all services are up.
-
-   gsql #start the gsql shell. Congratulations, you have started tigergraph!
+       docker images #find image id
+       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+       docker exec -it mySandbox /bin/bash #start a shell on this container. 
+       gadmin license set the_license_from_step_2_text #copy the license from step 2 file
+       gadmin config apply #apply the license
+       gadmin start all  #start all tigergraph component services
+       gadmin status #should see all services are up.
+       gsql #start the gsql shell. Congratulations, you have started tigergraph!
 
 
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
