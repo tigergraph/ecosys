@@ -69,7 +69,7 @@ Quick Start
 ================================
 1. Download docker image from https://dl.tigergraph.com/
 2. Download Dev license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
-3. In Macbook command line (# starts a comment) type the following sequence of commands
+3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands
 
        docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz
        docker images #find image id
@@ -81,6 +81,7 @@ Quick Start
        gadmin status #should see all services are up.
        gsql #start the gsql shell. Congratulations, you have started tigergraph!
 
+   You are ready to go! 
 
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
