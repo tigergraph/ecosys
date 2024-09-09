@@ -1,6 +1,6 @@
 Sample Graph To Start With 
 ==============================
-![Financial Graph](../tutorial/FinancialGraph.jpg)
+![Financial Graph](../FinancialGraph.jpg)
 
 Contents
 ==============
