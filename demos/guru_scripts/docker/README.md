@@ -230,5 +230,5 @@ To customize the Tigergraph Docker image, e.g., integrate another docker images
 
 Toy Graph To Start With
 ================================
-![Financial Graph](./FinancialGraph.jpg)
+![Financial Graph](../docker/tutorial/FinancialGraph.jpg)
 
