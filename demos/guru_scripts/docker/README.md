@@ -228,3 +228,7 @@ To customize the Tigergraph Docker image, e.g., integrate another docker images
 
 - Please note that you may need to change the URL of the TigerGraph developer package to reflect the version you need.
 
+Toy Graph To Start With
+================================
+![Financial Graph](./FinancialGraph.jpg)
+
