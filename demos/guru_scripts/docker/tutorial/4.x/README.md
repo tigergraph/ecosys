@@ -33,7 +33,7 @@ gsql ddl.gsql
 Load Data
 ============
 Copy [load.gsql](./script/load.gsql) to your container. 
-Next, run the following in bash command line. 
+Next, run the following in your container's bash command line. 
 ```
 gsql load.gsql
 ```
