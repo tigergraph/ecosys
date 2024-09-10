@@ -1,0 +1,20 @@
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
+
+  # select from a node pattern-- symbolized by ()
+  # v is a vertex set variable, holding the selected vertex set
+  v = SELECT a
+      FROM (a:Account);
+
+  # output vertex set variable v in json format
+  PRINT v;
+}
+
+#compile and install the query as a stored procedure
+install query q1
+
+#run the query
+run query q1()
