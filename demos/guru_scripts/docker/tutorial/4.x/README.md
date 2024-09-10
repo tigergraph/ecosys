@@ -1,8 +1,8 @@
-Sample Graph To Start With 
+# Sample Graph To Start With 
 ==============================
 ![Financial Graph](./FinancialGraph.jpg)
 
-Content
+# Content
 ==============
 This GSQL tutorial contains 
 
@@ -11,7 +11,7 @@ This GSQL tutorial contains
 - Query Examples
 
 
-Setup Schema
+# Setup Schema
 ===============
 Copy [ddl.gsql](./script/ddl.gsql) to your container. 
 Next, run the following in your container's bash command line. 
@@ -19,7 +19,7 @@ Next, run the following in your container's bash command line.
 gsql ddl.gsql
 ```
 
-Load Data
+# Load Data
 ============
 Copy [load.gsql](./script/load.gsql) to your container. 
 Next, run the following in your container's bash command line. 
@@ -27,8 +27,11 @@ Next, run the following in your container's bash command line.
 gsql load.gsql
 ```
 
-Query
+# Query
 ========
+# Node Pattern
+# Edge Pattern
+# Path Pattern
 
 
 Support
@@ -42,4 +45,4 @@ Or, study our product document at
 https://docs.tigergraph.com/gsql-ref/current/intro/
 
 
-- 
+
