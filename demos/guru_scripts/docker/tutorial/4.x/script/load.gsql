@@ -1,4 +1,4 @@
-use graph financialGraph
+USE GRAPH financialGraph
 
 DROP JOB load_data
 
