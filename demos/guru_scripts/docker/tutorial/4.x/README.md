@@ -18,6 +18,15 @@ gsql ddl.gsql
 
 # Load Data
 Copy [load.gsql](./script/load.gsql) to your container. 
+Copy the files to your container.
+
+- [account.csv](./data/account.csv)
+- [city.csv](./data/city.csv)
+- [phone.csv](./data/phone.csv)
+- [hasPhone.csv](./data/hasPhone.csv)
+- [locate.csv](./data/locate.csv)
+- [transfer.csv](./data/transfer.csv)
+  
 Next, run the following in your container's bash command line. 
 ```
 gsql load.gsql
