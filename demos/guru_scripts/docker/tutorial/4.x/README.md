@@ -21,11 +21,11 @@ Copy [load.gsql](./script/load.gsql) to your container.
 Copy the following data files to your container.
 
 - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
-- [city.csv](./data/city.csv)
-- [phone.csv](./data/phone.csv)
-- [hasPhone.csv](./data/hasPhone.csv)
-- [locate.csv](./data/locate.csv)
-- [transfer.csv](./data/transfer.csv)
+- [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
+- [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
+- [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
+- [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
+- [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
   
 Next, run the following in your container's bash command line. 
 ```
