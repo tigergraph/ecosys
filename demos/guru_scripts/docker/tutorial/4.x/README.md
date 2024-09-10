@@ -13,7 +13,7 @@ This GSQL tutorial contains
 
 Setup Schema
 ===============
-Copy the following DDL in to ddl.gsql. 
+Copy the following DDL statment into a file. E.g., "ddl.gsql". 
 ```
 CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
 CREATE VERTEX City ( name STRING PRIMARY KEY)
@@ -25,7 +25,7 @@ CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
 
 CREATE GRAPH financialGraph (*)
 ```
-In docker command line, type
+In docker container, in bash command line, run the ddl script by typing
 ```
 gsql ddl.gsql
 ```
