@@ -2,27 +2,26 @@ Sample Graph To Start With
 ==============================
 ![Financial Graph](./FinancialGraph.jpg)
 
-Contents
+Content
 ==============
-This GSQL 101 tutorial contains 
+This GSQL tutorial contains 
 
-- friendship.csv: the edge data
-- person.csv: the vertex data
-- gsql101-step1.gsql: the gsql script to setup the schema and load the data
-- gsql101-step2.sh: the bash script to run built-in queries
-- gsql101-step3.gsql: the gsql script to develop parameterized queries
+- Setup schema (model)
+- Load data
+- Query Examples
 
 
-How To Run
+Setup Schema
 ===============
-We recommend you install jq and redirect the REST call result to jq before it is output. 
-# define scheme & load data
-gsql gsql101-step1.gsql
-# run built-in queries
-sh gsql101-step2.sh
-# develop parameterized queries
-gsql gsql101-step3.gsql
+```CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
+CREATE VERTEX City ( name STRING PRIMARY KEY)
+CREATE VERTEX Phone (nmuber STRING PRIMARY KEY, isBlocked BOOL)
 
+CREATE DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATETIME), amount UINT) WITH REVERSE_EDGE="transfer_reverse"
+CREATE UNDIRECTED EDGE hasPhone (FROM Account, TO Phone)
+CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
+
+CREATE GRAPH financialGraph (*)```
 
 Documents
 ==============
