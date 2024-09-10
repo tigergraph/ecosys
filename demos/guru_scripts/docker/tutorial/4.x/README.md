@@ -20,7 +20,7 @@ gsql ddl.gsql
 Copy [load.gsql](./script/load.gsql) to your container. 
 Copy the following data files to your container.
 
-- [account.csv](./data/account.csv)
+- [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
 - [city.csv](./data/city.csv)
 - [phone.csv](./data/phone.csv)
 - [hasPhone.csv](./data/hasPhone.csv)
