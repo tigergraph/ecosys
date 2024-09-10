@@ -32,7 +32,11 @@ gsql ddl.gsql
 
 Load Data
 ============
-
+Copy [load.gsql](./script/load.gsql) to your container. 
+Next, run the following in bash command line. 
+```
+gsql load.gsql
+```
 Documents
 ==============
 https://docs.tigergraph.com/start/gsql-101
