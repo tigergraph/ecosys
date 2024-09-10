@@ -30,6 +30,9 @@ In docker container, in bash command line, run the ddl script by typing
 gsql ddl.gsql
 ```
 
+Load Data
+============
+
 Documents
 ==============
 https://docs.tigergraph.com/start/gsql-101
