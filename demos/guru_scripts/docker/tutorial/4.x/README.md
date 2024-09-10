@@ -13,7 +13,9 @@ This GSQL tutorial contains
 
 Setup Schema
 ===============
-```CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
+Copy the following DDL in to ddl.gsql. 
+```
+CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
 CREATE VERTEX City ( name STRING PRIMARY KEY)
 CREATE VERTEX Phone (nmuber STRING PRIMARY KEY, isBlocked BOOL)
 
@@ -21,7 +23,12 @@ CREATE DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATE
 CREATE UNDIRECTED EDGE hasPhone (FROM Account, TO Phone)
 CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
 
-CREATE GRAPH financialGraph (*)```
+CREATE GRAPH financialGraph (*)
+```
+In docker command line, type
+```
+gsql ddl.gsql
+```
 
 Documents
 ==============
