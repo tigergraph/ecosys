@@ -18,7 +18,7 @@ gsql ddl.gsql
 
 # Load Data
 Copy [load.gsql](./script/load.gsql) to your container. 
-Copy the files to your container.
+Copy the following data files to your container.
 
 - [account.csv](./data/account.csv)
 - [city.csv](./data/city.csv)
