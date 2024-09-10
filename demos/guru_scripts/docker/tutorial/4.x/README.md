@@ -26,9 +26,9 @@ Next, run the following in your container's bash command line.
 ```
 gsql load.gsql
 ```
-Documents
-==============
-https://docs.tigergraph.com/start/gsql-101
+
+Query
+========
 
 
 Support
@@ -36,6 +36,10 @@ Support
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
 https://community.tigergraph.com/
+
+Or, study our product document at
+
+https://docs.tigergraph.com/gsql-ref/current/intro/
 
 
 - 
