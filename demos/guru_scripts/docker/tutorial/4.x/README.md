@@ -14,6 +14,7 @@ This GSQL tutorial contains
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
+    - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
   - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
   
 
@@ -390,6 +391,10 @@ For each matching pattern that satisfies the WHERE clause, the following will oc
 - `@@hasPhoneCnt += 1`
 
 The accumulator will accumulate based on the accumulator type.
+
+[Go back to top](#top)
+
+### ACCUM vs POST-ACCUM
 
 [Go back to top](#top)
 
