@@ -61,6 +61,7 @@ run query q1a()
 ```
 
 You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
+Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
 ```sql
 #enter the graph
