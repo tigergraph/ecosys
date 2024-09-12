@@ -15,7 +15,7 @@ This GSQL tutorial contains
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
-  - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
+  - [Accumulator As A Composition Tool](#accumulator-as-a-composition-tool)  
   
 
 # Setup Enviroment 
