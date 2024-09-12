@@ -171,7 +171,7 @@ run query q2b()
 
 ## Path Pattern 
 
-### Fixed Length Path Pattern
+### Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
 ```sql
@@ -203,7 +203,7 @@ run query q3("2024-01-01", "2024-12-31", "Scott")
 ```
 You can group by on the matched path table, just as you group by a table and aggregate in SQL. 
 
-### Variable Length Path Pattern
+### GroupBy on Path Table
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
 
 ```sql
