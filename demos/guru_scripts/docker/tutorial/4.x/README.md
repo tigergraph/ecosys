@@ -583,7 +583,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
 
     PRINT V_i;
 }
-``
+```
+
 A typical GSQL query follows a top-down sequence of query blocks. Each query block generates a vertex set, which can be used by subsequent query blocks to drive pattern matching. PRINT statement is used to output any query block’s result. A complete query example.
 
 ```sql
