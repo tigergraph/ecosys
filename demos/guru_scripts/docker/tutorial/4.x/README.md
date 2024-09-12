@@ -35,14 +35,14 @@ gsql load.gsql
 # Query Examples
 
 ## Node Pattern
-Copy [q1.gsql](./script/q1.gsql) to your container. 
+Copy [q1a.gsql](./script/q1a.gsql) to your container. 
 
 ```sql
 #enter the graph
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
   # select from a node pattern-- symbolized by ()
   # v is a vertex set variable, holding the selected vertex set
@@ -54,10 +54,10 @@ CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query q1
+install query q1a
 
 #run the query
-run query q1()
+run query q1a()
 ```
 
 You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
@@ -66,7 +66,7 @@ You can group by on the matched node table, just as you group by a table and agg
 #enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
+CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
 
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
@@ -76,10 +76,10 @@ CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query q1a
+install query q1b
 
 #run the query
-run query q1a()
+run query q1b()
 ```
 ## Edge Pattern
 Copy [q2.gsql](./script/q2.gsql) to your container. 
