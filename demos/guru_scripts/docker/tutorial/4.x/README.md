@@ -422,9 +422,11 @@ install query a2
 run query a2()
 ```
 - `FROM-WHERE` Produces a Binding Table
+  
 We can think of the FROM and WHERE clauses specify a binding table, where the FROM clause specifies the pattern, and the WHERE clause does a post-filter of the matched pattern instances-- the result is a table, each row in the table is a pattern instance with the binding variables specified in the FROM clause as columns. In Example 1, the FROM clause produces a result table (a, e, p) where “a” is the Account variable, “e” is the “hasPhone” variable, and “p” is the Phone variable.
 
 - `ACCUM` Loops Each Row in the Binding Table
+
 The ACCUM clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion
 
 Map-Reduce Interpretation: The ACCUM clause uses snapshot semantics, executing in two phases:
