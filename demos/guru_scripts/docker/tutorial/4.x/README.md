@@ -313,7 +313,7 @@ run query q1()
 ```  
 In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain the semantics and usage of them.
 
-- SumAccum<INT> allows user to keep adding INT values
+- `SumAccum<INT>` allows user to keep adding INT values
 
 - MinAccum<INT> keeps the smallest INT number it has seen. As the @@min_accum statements show, we accumulated 1 and 2 to the MinAccum accumulator, and end up with the value 0, as neither of 1 nor 2 is smaller than the initial state value 0.
 
