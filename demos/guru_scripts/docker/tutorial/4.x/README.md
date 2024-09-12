@@ -114,7 +114,7 @@ Copy [q2a.gsql](./script/q2a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2 (string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
   // declare an local sum accumulator; you can keep adding values into it
   // "local accumulator" means each vertex will have an accumulator of
@@ -135,10 +135,10 @@ CREATE OR REPLACE QUERY q2 (string accntName) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query q2
+install query q2a
 
 #run the query
-run query q2("Scott")
+run query q2a("Scott")
 ```
 
 You can group by on the matched edge table, just as you group by a table and aggregate in SQL. 
@@ -179,7 +179,7 @@ Copy [q3a.gsql](./script/q3a.gsql) to your container.
 USE GRAPH financialGraph
 
 // create a query
-CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
   // a path pattern in ascii art () -[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
@@ -198,9 +198,9 @@ CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTA
 
 }
 
-install query q3
+install query q3a
 
-run query q3("2024-01-01", "2024-12-31", "Scott")
+run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
 You can group by on the matched path table, just as you group by a table and aggregate in SQL. 
 
@@ -456,7 +456,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
 
    S = SELECT a
        FROM (a:Account) - [e:hasPhone] - (p:Phone)
-       WHERE a.isBlocked == "yes"
+       WHERE a.isBlocked == TRUE
        //a.@cnt snapshot value is 0
        ACCUM  a.@cnt +=1, //add 1 to a.@cnt
               @@testCnt1+= a.@cnt //access a.@cnt snapshot value 0
@@ -610,7 +610,6 @@ Global variable maintains a global state, it can be accessed within query block,
 For example, in a6 query below, the first query block accumulate 1 into each `y`'s `@cnt` accumulator, and increment the global accumulator `@@cnt`. In the second query block's `WHERE` clause, we use the `@cnt` and `@@cnt` accumulator, thus achieving composition. 
 
 ```sql
-"a5.gsql" 27L, 681C                                                                                             27,12         All
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
