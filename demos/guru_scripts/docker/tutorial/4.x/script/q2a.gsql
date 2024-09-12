@@ -2,13 +2,14 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
-  SumAccum<int> @totalTransfer = 0;
+  //think the FROM clause is a matched table with columns (a, e, b)
+  //you can use SQL syntax to group by the source and target account, and sum the total transfer amount
+  SELECT a, b, sum(e.amount)  INTO T
+  FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+  GROUP BY a, b;
 
-  v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      ACCUM  b.@totalTransfer += e.amount;
-
-  PRINT v;
+  //output the table in JSON format
+  PRINT T;
 
 }
 
@@ -17,4 +18,3 @@ install query q2a
 
 #run the query
 run query q2a("Scott")
-
