@@ -9,7 +9,13 @@ This GSQL tutorial contains
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
-  - [Path Pattern](#path-pattern) 
+  - [Path Pattern](#path-pattern)
+- [Advanced topic](#advanced-topic)
+  - [Accumulators](#accumulators)
+    - [Local Accumulator](#local-accumulator)
+    - [Global Accumulator](#global-accumulator)
+  - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
+  
 
 # Setup Enviroment 
 
@@ -242,6 +248,12 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ```
 
 [Go back to top](#top)
+
+# Advanced Topic
+## Accumulators
+### Local Accumulator
+### Global Accumulator
+## Accumulator As A Composition Tool  
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
