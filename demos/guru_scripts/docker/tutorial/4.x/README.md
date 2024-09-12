@@ -390,6 +390,7 @@ For each matching pattern that satisfies the WHERE clause, the following will oc
 - `@@hasPhoneCnt += 1`
 
 The accumulator will accumulate based on the accumulator type.
+
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
