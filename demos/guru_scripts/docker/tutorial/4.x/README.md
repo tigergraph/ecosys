@@ -456,7 +456,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
 
    S = SELECT a
        FROM (a:Account) - [e:hasPhone] - (p:Phone)
-       WHERE a.isBlocked == "yes"
+       WHERE a.isBlocked == TRUE
        //a.@cnt snapshot value is 0
        ACCUM  a.@cnt +=1, //add 1 to a.@cnt
               @@testCnt1+= a.@cnt //access a.@cnt snapshot value 0
