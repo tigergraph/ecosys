@@ -314,7 +314,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
 install query  a1
 
 //run the query
-run query q1()
+run query a1()
 ```  
 In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain the semantics and usage of them.
 
