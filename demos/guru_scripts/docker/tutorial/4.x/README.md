@@ -1,8 +1,8 @@
-# Sample Graph To Start With 
+# Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](./FinancialGraph.jpg)
 
 # Content
-This GSQL tutorial contains <a name="top"></a>
+This GSQL tutorial contains 
 - [Setup enviroment](#setup-enviroment)
 - [Setup schema (model)](#setup-schema)
 - [Load data](#load-data)
