@@ -396,6 +396,7 @@ The accumulator will accumulate based on the accumulator type.
 
 ### ACCUM vs POST-ACCUM
 
+#### ACCUM
 Running example. 
 ```sql
 USE GRAPH financialGraph
@@ -436,6 +437,13 @@ The ACCUM clause executes its statement(s) once for each row in the result table
 - **Reduce Phase:** These inputs are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
 
 The new snapshot is available for access after the ACCUM clause.
+
+
+#### POST-ACCUM
+
+The optional `POST-ACCUM` clause enables accumulation and other computations across the set of vertices produced by the `FROM-WHERE` binding table. POST-ACCUM can be used without ACCUM. If it is preceded by an `ACCUM` clause, then its statement can access the new snapshot value of accumulators computed by the `ACCUM` clause.
+
+
 
 [Go back to top](#top)
 
