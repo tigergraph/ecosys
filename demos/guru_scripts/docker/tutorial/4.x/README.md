@@ -206,7 +206,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string accntName) SYNT
    // think the FROM clause is a matched table with columns (a, e, b, e2, c)
    // you can use SQL syntax to group by on the matched table
    // Below query find 2-hop reachable account c from a, and group by the path a, b, c
-   // find out how much the mid account b transfer to c.
+   // find out how much each hop's total transfer amount.
    SELECT a, b, c, sum(DISTINCT e.amount) AS hop_1_sum,  sum(DISTINCT e2.amount) AS hop_2_sum INTO T1
    FROM (a:Account)-[e:transfer]->(b)-[e2:transfer]->(c:Account)
    WHERE e.date >= low AND e.date <= high
