@@ -351,6 +351,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
 
+   // -[]- is an undirected edge.
    S = SELECT a
        FROM (a:Account) - [e:hasPhone] - (p:Phone)
        WHERE a.isBlocked == FALSE
