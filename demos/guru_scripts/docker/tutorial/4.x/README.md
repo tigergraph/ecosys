@@ -544,7 +544,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 
 User can use two methods to achieve query composition. 
 
-- 1. Using vertex set variable.
+- (1) Using vertex set variable.
 
 GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
 
@@ -601,7 +601,7 @@ INSTALL QUERY a5
 
 RUN QUERY a5()
 ```
-- 2. Using accumulators.
+- (2) Using accumulators.
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
 each query block will access the latest value of each vertex's local accumulator, thus achieving composition. 
