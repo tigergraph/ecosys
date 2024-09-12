@@ -256,9 +256,9 @@ GSQL is a Turing-complete graph database query language. One of its key advantag
 **Accumulator Supported Operators**
 An accumulator in GSQL supports two operators: assignment (=) and accumulation (+=).
 
-- **=** operator: The assignment operator can be used to reset the state of an accumulator or its current value.
+- `=` operator: The assignment operator can be used to reset the state of an accumulator or its current value.
 
-- **+=** operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
+- `+=` operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
 
 ```sql
 USE GRAPH financialGraph
@@ -268,6 +268,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
     SumAccum<INT> @@sum_accum = 0;
     MinAccum<INT> @@min_accum = 0;
     MaxAccum<INT> @@max_accum = 0;
+    AvgAccum @@avg_accum;
     OrAccum @@or_accum = FALSE;
     AndAccum @@and_accum = TRUE;
     ListAccum<INT> @@list_accum;
@@ -286,6 +287,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
     @@max_accum +=1;
     @@max_accum +=2;
     PRINT @@max_accum;
+
+    @@avg_accum +=1;
+    @@avg_accum +=2;
+    PRINT @@avg_accum;
 
     // @@or_accum will be TRUE when printed
     @@or_accum += TRUE;
@@ -315,15 +320,15 @@ In the above example, six different accumulator variables (those with prefix @@)
 
 - `SumAccum<INT>` allows user to keep adding INT values
 
-- MinAccum<INT> keeps the smallest INT number it has seen. As the @@min_accum statements show, we accumulated 1 and 2 to the MinAccum accumulator, and end up with the value 0, as neither of 1 nor 2 is smaller than the initial state value 0.
+- `MinAccum<INT>` keeps the smallest INT number it has seen. As the @@min_accum statements show, we accumulated 1 and 2 to the MinAccum accumulator, and end up with the value 0, as neither of 1 nor 2 is smaller than the initial state value 0.
 
-- MaxAccum<INT> is the opposite of MinAccum. It returns the MAX INT value it has seen. The max_accum statements accumulate 1 and 2 into it, and end up with the value 2.
+- `MaxAccum<INT>` is the opposite of MinAccum. It returns the MAX INT value it has seen. The max_accum statements accumulate 1 and 2 into it, and end up with the value 2.
 
-- OrAccum keeps OR-ing the internal boolean state variable with new boolean variables that accumulate to it. The initial default value is assigned FALSE. We accumulate TRUE and FALSE into it, and end up with the TRUE value.
+- `OrAccum` keeps OR-ing the internal boolean state variable with new boolean variables that accumulate to it. The initial default value is assigned FALSE. We accumulate TRUE and FALSE into it, and end up with the TRUE value.
 
-- AndAccum is symmetric to OrAccum. Instead of using OR, it uses the AND accumulation semantics. We accumulate TRUE and FALSE into it, and end up with the FALSE value.
+- `AndAccum` is symmetric to OrAccum. Instead of using OR, it uses the AND accumulation semantics. We accumulate TRUE and FALSE into it, and end up with the FALSE value.
 
-- ListAccum<INT> keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
+- `ListAccum<INT>` keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
 
 [Go back to top](#top)
 ### Local Accumulator
