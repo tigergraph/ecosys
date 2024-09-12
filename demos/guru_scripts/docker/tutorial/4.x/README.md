@@ -53,15 +53,15 @@ Copy [q1a.gsql](./script/q1a.gsql) to your container.
 #enter the graph
 USE GRAPH financialGraph
 
-# create a query
+//create a query
 CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
-  # select from a node pattern-- symbolized by ()
-  # v is a vertex set variable, holding the selected vertex set
+  // select from a node pattern-- symbolized by ()
+  // v is a vertex set variable, holding the selected vertex set
   v = SELECT a
       FROM (a:Account);
 
-  # output vertex set variable v in JSON format
+  // output vertex set variable v in JSON format
   PRINT v;
 }
 
