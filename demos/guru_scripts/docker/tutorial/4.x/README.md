@@ -334,6 +334,39 @@ In the above example, six different accumulator variables (those with prefix @@)
 
 [Go back to top](#top)
 ### Global vs Vertex Attached Accumulator
+At this point, we have seen that accumulators are special typed variables in GSQL. We are ready to explain their global and local scopes.
+
+Global accumulators belong to the entire query. They can be updated anywhere within the query, whether inside or outside a query block. Local accumulators belong to each vertex. The term "local" indicates that they are local to the vertex element. These accumulators can only be updated when their owning vertex is accessible within a SELECT-FROM-WHERE-ACCUM query block. To differentiate them, we use specific prefixes in their identifiers when declaring them.
+
+- `@@` is used for declaring global accumulator variables. It is always used stand-alone. E.g @@cnt +=1
+
+- `@` is used for declaring local accumulator variables. It must be used with a vertex variable specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex variable specified in a FROM clause of a SELECT-FROM-WHERE query block.
+
+```sql
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
+
+    SumAccum<INT> @cnt = 0; //local accumulator
+    SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
+
+   S = SELECT a
+       FROM (a:Account) - [hasPhone:e] - (p:Phone)
+       WHERE a.isBlocked == TRUE
+       ACCUM  a.@cnt +=1,
+              p.@cnt +=1,
+              @@hasPhoneCnt +=1;
+
+   PRINT S;
+   PRINT @@hasPhoneCnt;
+
+}
+//install the query
+install query  a2
+
+//run the query
+run query a2()
+```
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
