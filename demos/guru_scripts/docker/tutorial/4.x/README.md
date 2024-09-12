@@ -15,7 +15,7 @@ This GSQL tutorial contains
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
-  - [Vertex Set Varaibles And Accumulator As A Composition Tool](#vertex-set-variables-and-accumulator-as-a-composition-tool)  
+  - [Vertex Set Varaibles And Accumulator As Composition Tools](#vertex-set-varaibles-and-accumulator-as-composition-tools)  
   
 
 # Setup Enviroment 
@@ -538,7 +538,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
-## Vertex Set Varaibles And Accumulator As A Composition Tool
+## Vertex Set Varaibles And Accumulator As Composition Tools
 
 ### Query Signature
 
