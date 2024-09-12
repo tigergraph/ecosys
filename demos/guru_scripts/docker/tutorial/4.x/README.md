@@ -539,8 +539,71 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
-[Go back to top](#top)
 
+### Query Signature
+
+Each GSQL query is defined as a stored procedure and can take in parameters at runtime. The query signature is illustrated below:
+
+```sql
+CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
+    // Query body for V3 syntax
+}
+```
+
+- `CREATE OR REPLACE`: Ensures the new query is created. If a query with the same name already exists, it will be overwritten.
+- `DISTRIBUTED`: Ensures the query can run on both a single machine and a distributed cluster. It is recommended to always use this keyword, although it can be omitted by users working on a single machine.
+- `QUERY`: Followed by a unique name for the query, e.g., q3.
+- Parameters: Listed within parentheses. For example, `(INT cutoff, BOOL flag)`.
+- `SYNTAX`: Specifies the syntax version—V1, V2, or V3.
+- Query Body: Enclosed within `{}`.
+
+This structure allows for flexible and reusable GSQL queries that can be adapted to different runtime parameters and environments.
+
+### Query Body
+
+Within the query body brackets, you can define a sequence of connected or unconnected query blocks to make up the query body. Below is the skeleton of a query body.
+
+```sql
+CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
+    // Query body
+
+    V1= Query_Block_1;
+
+
+    V2= Query_Block_2;
+
+
+    V3= Query_Block_3;
+
+        .
+        .
+        .
+
+    V_n = Query_Block_n;
+
+    PRINT V_i;
+}
+``
+A typical GSQL query follows a top-down sequence of query blocks. Each query block generates a vertex set, which can be used by subsequent query blocks to drive pattern matching. PRINT statement is used to output any query block’s result. A complete query example.
+
+```sql
+CREATE OR REPLACE DISTRIBUTED QUERY q3(BOOL flag) SYNTAX V3 {
+ 
+ tgtAccnts = SELECT y
+             FROM (x:Account)- [e:transfer] - (z:Account) <- [<transfer] - (y:Account)
+             WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
+             ACCUM y.@cnt +=1;
+
+ // tgtAccnts vertex set drive the below query block
+ tgtPhones = SELECT z
+             FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
+             WHERE z.isBlocked == flag
+             ACCUM z.@cnt +=1;
+
+  PRINT tgtPhones;
+}
+```
+[Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
