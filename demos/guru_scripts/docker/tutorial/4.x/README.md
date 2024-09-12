@@ -3,14 +3,14 @@
 
 # Content
 This GSQL tutorial contains 
-- [Setup enviroment](#setup-enviroment)
-- [Setup schema (model)](#setup-schema)
-- [Load data](#load-data)
+- [Setup Enviroment](#setup-enviroment)
+- [Setup Schema (model)](#setup-schema)
+- [Load Data](#load-data)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
-- [Advanced topics](#advanced-topics)
+- [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
