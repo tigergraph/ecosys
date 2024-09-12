@@ -1,7 +1,7 @@
 #enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
   v = SELECT a
       FROM (a:Account);
@@ -10,7 +10,7 @@ CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query q1
+install query q1a
 
 #run the query
-run query q1()
+run query q1a()
