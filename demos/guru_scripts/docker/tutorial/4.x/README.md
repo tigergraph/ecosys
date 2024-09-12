@@ -95,7 +95,7 @@ run query q2("Scott")
 ```
 
 ## Path Pattern
-Copy [q2.gsql](./script/q2.gsql) to your container. 
+Copy [q3.gsql](./script/q3.gsql) to your container. 
 
 ```sql
 USE GRAPH financialGraph
