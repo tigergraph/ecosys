@@ -479,11 +479,45 @@ RUN QUERY a3()
   
 The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex variable defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
 
-Another characteristic of the POST-ACCUM clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
+Another characteristic of the `POST-ACCUM` clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
 
 In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
 
+```sql
+USE GRAPH financialGraph
 
+CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
+
+     SumAccum<int> @@edgeCnt = 0;
+     MaxAccum<int> @maxAmount = 0;
+     MinAccum<int> @minAmount = 100000;
+
+     MaxAccum<int> @@maxSenderAmount = 0;
+     MinAccum<int> @@minReceiverAmount = 100000;
+     SumAccum<int> @@bCnt = 0;
+     SumAccum<int> @@aCnt = 0;
+
+    S = SELECT b
+        FROM (a:Account) - [e:transfer] - (b:Account)
+        WHERE NOT a.isBlocked
+        ACCUM  a.@maxAmount += e.amount, //sender max amount
+               b.@minAmount += e.amount, //receiver min amount
+                @@edgeCnt +=1
+        POST-ACCUM (a) @@maxSenderAmount += a.@maxAmount
+        POST-ACCUM (b) @@minReceiverAmount += b.@minAmount
+        POST-ACCUM (a) @@aCnt +=1
+        POST-ACCUM (b) @@bCnt +=1 ;
+
+  PRINT @@maxSenderAmount,  @@minReceiverAmount;
+  PRINT @@edgeCnt, @@aCnt, @@bCnt;
+
+}
+
+INSTALL QUERY a4
+
+
+RUN QUERY a4()
+```
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
