@@ -81,7 +81,7 @@ Quick Start
        gadmin status #should see all services are up.
        gsql #start the gsql shell. Congratulations, you have started tigergraph!
 
-   You are ready to go! 
+   You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/README.md)
 
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
