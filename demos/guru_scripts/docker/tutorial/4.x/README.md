@@ -12,8 +12,8 @@ This GSQL tutorial contains
   - [Path Pattern](#path-pattern)
 - [Advanced topics](#advanced-topics)
   - [Accumulators](#accumulators)
-    - [Local Accumulator](#local-accumulator)
-    - [Global Accumulator](#global-accumulator)
+    - [Accumulator Operators](#accumulator-operators)
+    - [Global vs. Vertex Attached Accumulator](#global-v.s.-vertex-attached-accumulator)
   - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
   
 
@@ -253,7 +253,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ## Accumulators
 GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. An accumulator is a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
 
-**Accumulator Supported Operators**
+###Accumulator Operators
 An accumulator in GSQL supports two operators: assignment (=) and accumulation (+=).
 
 - `=` operator: The assignment operator can be used to reset the state of an accumulator or its current value.
@@ -333,10 +333,9 @@ In the above example, six different accumulator variables (those with prefix @@)
 - `ListAccum<INT>` keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
 
 [Go back to top](#top)
-### Local Accumulator
+### Global vs. Vertex Attached Accumulator
 [Go back to top](#top)
-### Global Accumulator
-[Go back to top](#top)
+
 ## Accumulator As A Composition Tool  
 [Go back to top](#top)
 
