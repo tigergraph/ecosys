@@ -32,7 +32,7 @@ Next, run the following in your container's bash command line.
 gsql load.gsql
 ```
 
-# Query
+# Query Examples
 
 ## Node Pattern
 Copy [q1.gsql](./script/q1.gsql) to your container. 
