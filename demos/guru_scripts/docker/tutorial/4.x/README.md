@@ -545,6 +545,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 - Using vertex set variable.
 
 GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
+
 High level, within the query body brackets, you can define a sequence of connected or unconnected query blocks to make up the query body. Below is the skeleton of a query body.
 
 ```sql
