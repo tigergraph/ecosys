@@ -10,7 +10,7 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
-- [Advanced topic](#advanced-topic)
+- [Advanced topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Local Accumulator](#local-accumulator)
     - [Global Accumulator](#global-accumulator)
@@ -249,7 +249,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
-# Advanced Topic
+# Advanced Topics
 ## Accumulators
 ### Local Accumulator
 ### Global Accumulator
