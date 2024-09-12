@@ -9,7 +9,7 @@ CREATE OR REPLACE QUERY q1 () SYNTAX v3 {
   v = SELECT a
       FROM (a:Account);
 
-  # output vertex set variable v in json format
+  # output vertex set variable v in JSON format
   PRINT v;
 }
 
