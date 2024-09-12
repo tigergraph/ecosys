@@ -114,7 +114,7 @@ Copy [q2a.gsql](./script/q2a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2 (string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
   // declare an local sum accumulator; you can keep adding values into it
   // "local accumulator" means each vertex will have an accumulator of
@@ -135,10 +135,10 @@ CREATE OR REPLACE QUERY q2 (string accntName) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query q2
+install query q2a
 
 #run the query
-run query q2("Scott")
+run query q2a("Scott")
 ```
 
 You can group by on the matched edge table, just as you group by a table and aggregate in SQL. 
