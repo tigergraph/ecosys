@@ -121,7 +121,7 @@ CREATE OR REPLACE QUERY q2 (string accntName) SYNTAX v3 {
   // FROM clause pattern.
   SumAccum<int> @totalTransfer = 0;
 
-  // match an edge pattern-- symbolized by ()-[]->()
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is an edge
   // v is a vertex set variable holding the selected vertex set
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
@@ -180,7 +180,7 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTAX v3 {
 
-  // a path pattern in ascii art () -[]->()-[]->()
+  // a path pattern in ascii art () -[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
