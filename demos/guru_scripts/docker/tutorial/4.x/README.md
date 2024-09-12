@@ -146,7 +146,7 @@ run query q2b()
 ```
 
 ## Path Pattern
-Copy [q3.gsql](./script/q3.gsql) to your container. 
+Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
 ```sql
 USE GRAPH financialGraph
@@ -174,6 +174,49 @@ CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTA
 install query q3
 
 run query q3("2024-01-01", "2024-12-31", "Scott")
+```
+You can group by on the matched path table, just as you group by a table and aggregate in SQL. 
+
+Copy [q3b.gsql](./script/q3b.gsql) to your container. 
+
+```sql
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string accntName) SYNTAX v3 {
+
+   // a path pattern in ascii art () -[]->()-[]->()
+   // think the FROM clause is a matched table with columns (a, e, b, e2, c)
+   // you can use SQL syntax to group by on the matched table
+   // Below query find 2-hop reachable account c from a, and group by the path a, b, c
+   // find out how much the mid account b transfer to c.
+   SELECT a, b, c, sum(DISTINCT e.amount) AS hop_1_sum,  sum(DISTINCT e2.amount) AS hop_2_sum INTO T1
+   FROM (a:Account)-[e:transfer]->(b)-[e2:transfer]->(c:Account)
+   WHERE e.date >= low AND e.date <= high
+   GROUP BY a, b, c;
+
+   PRINT T1;
+
+   // below we use variable length path.
+   // *1.. means 1 to more steps of the edge type "transfer"
+   // select the reachable end point and bind it to vertex alias "b"
+   // note: 
+   // 1. the path has "shortest path" semantics. If you have a path that is longer than the shortest,
+   // we only count the shortest. E.g., scott to scott shortest path length is 4. Any path greater than 4 will
+   // not be matched.
+   // 2. we can not put an alias to bind the edge in the the variable length part -[:transfer*1..]->, but 
+   // we can bind the end points (a) and (b) in the variable length path, and group by on them.
+   SELECT a, b, count(*) AS path_cnt INTO T2
+   FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
+   GROUP BY a, b;
+
+   PRINT T2;
+
+}
+
+install query q3b
+
+run query q3b("2024-01-01", "2024-12-31", "Scott")
 ```
 
 # Support
