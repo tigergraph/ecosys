@@ -263,6 +263,7 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 ```sql
 USE GRAPH financialGraph
 
+// "distributed" key word means this query can be run both on a single node or a cluster of nodes 
 CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
 
     SumAccum<INT> @@sum_accum = 0;
@@ -351,8 +352,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
 
    S = SELECT a
-       FROM (a:Account) - [hasPhone:e] - (p:Phone)
-       WHERE a.isBlocked == TRUE
+       FROM (a:Account) - [e:hasPhone] - (p:Phone)
+       WHERE a.isBlocked == FALSE
        ACCUM  a.@cnt +=1,
               p.@cnt +=1,
               @@hasPhoneCnt +=1;
@@ -361,10 +362,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
    PRINT @@hasPhoneCnt;
 
 }
-//install the query
-install query  a2
 
-//run the query
+install query a2
 run query a2()
 ```
 [Go back to top](#top)
