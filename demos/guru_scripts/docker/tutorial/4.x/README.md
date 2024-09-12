@@ -58,7 +58,7 @@ install query q1
 run query q1()
 ```
 ## Edge Pattern
-```
+```sql
 USE GRAPH financialGraph
 
 # create a query
