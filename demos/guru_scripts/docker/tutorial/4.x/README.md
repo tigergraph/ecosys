@@ -35,6 +35,8 @@ gsql load.gsql
 # Query
 
 ## Node Pattern
+Copy [q1.gsql](./script/q1.gsql) to your container. 
+
 ```sql
 #enter the graph
 USE GRAPH financialGraph
@@ -58,7 +60,10 @@ install query q1
 run query q1()
 ```
 ## Edge Pattern
+Copy [q2.gsql](./script/q2.gsql) to your container. 
+
 ```sql
+
 USE GRAPH financialGraph
 
 # create a query
