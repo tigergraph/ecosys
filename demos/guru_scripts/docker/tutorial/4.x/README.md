@@ -59,6 +59,28 @@ install query q1
 #run the query
 run query q1()
 ```
+
+You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
+
+```sql
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
+
+  SELECT a.isBlocked, count(*) INTO T
+  FROM (a:Account)
+  GROUP BY a.isBlocked;
+
+  PRINT T;
+}
+
+#compile and install the query as a stored procedure
+install query q1a
+
+#run the query
+run query q1a()
+```
 ## Edge Pattern
 Copy [q2.gsql](./script/q2.gsql) to your container. 
 
