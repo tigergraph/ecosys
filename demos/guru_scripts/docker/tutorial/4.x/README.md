@@ -13,7 +13,7 @@ This GSQL tutorial contains
 - [Advanced topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
-    - [Global vs. Vertex Attached Accumulator](#global-vs.-vertex-attached-accumulator)
+    - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
   - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
   
 
@@ -333,7 +333,7 @@ In the above example, six different accumulator variables (those with prefix @@)
 - `ListAccum<INT>` keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
 
 [Go back to top](#top)
-### Global vs. Vertex Attached Accumulator
+### Global vs Vertex Attached Accumulator
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
