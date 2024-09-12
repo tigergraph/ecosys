@@ -179,7 +179,7 @@ Copy [q3a.gsql](./script/q3a.gsql) to your container.
 USE GRAPH financialGraph
 
 // create a query
-CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
   // a path pattern in ascii art () -[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
@@ -198,9 +198,9 @@ CREATE OR REPLACE QUERY q3 (datetime low, datetime high, string accntName) SYNTA
 
 }
 
-install query q3
+install query q3a
 
-run query q3("2024-01-01", "2024-12-31", "Scott")
+run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
 You can group by on the matched path table, just as you group by a table and aggregate in SQL. 
 
