@@ -3,10 +3,10 @@
 
 # Content
 This GSQL tutorial contains 
-- Setup enviroment 
-- Setup schema (model)
-- Load data
-- Query Examples
+- [Setup enviroment](# Setup Enviroment)
+- [Setup schema (model)](# Setup Schema)
+- [Load data](# Load Data)
+- [Query Examples](# Query Examples)
 
 # Setup Enviroment 
 
