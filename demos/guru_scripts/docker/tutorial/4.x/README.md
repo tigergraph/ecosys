@@ -256,9 +256,9 @@ GSQL is a Turing-complete graph database query language. One of its key advantag
 **Accumulator Supported Operators**
 An accumulator in GSQL supports two operators: assignment (=) and accumulation (+=).
 
-- = operator: The assignment operator can be used to reset the state of an accumulator or its current value.
+- **=** operator: The assignment operator can be used to reset the state of an accumulator or its current value.
 
-- += operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
+- **+=** operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
 
 [Go back to top](#top)
 ### Local Accumulator
