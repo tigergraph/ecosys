@@ -540,6 +540,10 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 
 ## Vertex Set Varaibles And Accumulator As Composition Tools
 
+**Query Composition** means that one query block's computation result can be used as input to another query block. 
+
+- Using vertex set variable: GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
+- Using accumualtors: 
 ### Query Signature
 
 Each GSQL query is defined as a stored procedure and can take in parameters at runtime. The query signature is illustrated below:
