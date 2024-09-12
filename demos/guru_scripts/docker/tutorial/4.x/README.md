@@ -253,7 +253,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ## Accumulators
 GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. An accumulator is a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
 
-###Accumulator Operators
+### Accumulator Operators
 An accumulator in GSQL supports two operators: assignment (=) and accumulation (+=).
 
 - `=` operator: The assignment operator can be used to reset the state of an accumulator or its current value.
