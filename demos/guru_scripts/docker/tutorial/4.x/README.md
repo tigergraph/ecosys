@@ -251,9 +251,13 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 # Advanced Topics
 ## Accumulators
+[Go back to top](#top)
 ### Local Accumulator
+[Go back to top](#top)
 ### Global Accumulator
+[Go back to top](#top)
 ## Accumulator As A Composition Tool  
+[Go back to top](#top)
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
