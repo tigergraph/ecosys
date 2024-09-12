@@ -396,6 +396,45 @@ The accumulator will accumulate based on the accumulator type.
 
 ### ACCUM vs POST-ACCUM
 
+Running example. 
+```sql
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
+
+    SumAccum<INT> @cnt = 0; //local accumulator
+    SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
+
+   // -[]- is an undirected edge.
+   S = SELECT a
+       FROM (a:Account) - [e:hasPhone] - (p:Phone)
+       WHERE a.isBlocked == FALSE
+       ACCUM  a.@cnt +=1,
+              p.@cnt +=1,
+              @@hasPhoneCnt +=1;
+
+   PRINT S;
+   PRINT @@hasPhoneCnt;
+
+}
+
+install query a2
+run query a2()
+```
+- `FROM-WHERE` Produces a Binding Table
+We can think of the FROM and WHERE clauses specify a binding table, where the FROM clause specifies the pattern, and the WHERE clause does a post-filter of the matched pattern instances-- the result is a table, each row in the table is a pattern instance with the binding variables specified in the FROM clause as columns. In Example 1, the FROM clause produces a result table (a, e, p) where “a” is the Account variable, “e” is the “hasPhone” variable, and “p” is the Phone variable.
+
+- `ACCUM` Loops Each Row in the Binding Table
+The ACCUM clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion
+
+Map-Reduce Interpretation: The ACCUM clause uses snapshot semantics, executing in two phases:
+
+- Map Phase: Each row in the binding table is processed in parallel, starting with the same accumulator snapshot to compute inputs. The snapshot of accumulator values is taken before the start of the ACCUM clause.
+
+- Reduce Phase: These inputs are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
+
+The new snapshot is available for access after the ACCUM clause finishes.
+
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
