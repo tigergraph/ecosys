@@ -8,6 +8,8 @@ This GSQL tutorial contains
 - [Load data](#load-data)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
+  - [Edge Pattern](#edge-pattern)
+  - [Path Pattern](#path-pattern) 
 
 # Setup Enviroment 
 
