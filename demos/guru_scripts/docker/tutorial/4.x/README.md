@@ -13,7 +13,7 @@ This GSQL tutorial contains
 - [Advanced topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
-    - [Global vs. Vertex Attached Accumulator](#global-v.s.-vertex-attached-accumulator)
+    - [Global vs. Vertex Attached Accumulator](#global-vs.-vertex-attached-accumulator)
   - [Accumulator As A Composition Tool](#accumulator-as-a-compositio-tool)  
   
 
