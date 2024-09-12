@@ -7,7 +7,7 @@ This GSQL tutorial contains
 - [Setup schema (model)](#setup-schema)
 - [Load data](#load-data)
 - [Query Examples](#query-examples)
-  - [Node Pattern](###node-pattern)
+  - [Node Pattern](##node-pattern)
 
 # Setup Enviroment 
 
