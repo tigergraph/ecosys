@@ -84,7 +84,7 @@ install query q1b
 run query q1b()
 ```
 ## Edge Pattern
-Copy [q2.gsql](./script/q2.gsql) to your container. 
+Copy [q2a.gsql](./script/q2a.gsql) to your container. 
 
 ```sql
 
@@ -116,6 +116,33 @@ install query q2
 
 #run the query
 run query q2("Scott")
+```
+
+You can group by on the matched edge table, just as you group by a table and aggregate in SQL. 
+
+Copy [q2b.gsql](./script/q2b.gsql) to your container. 
+
+```sql
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
+
+  //think the FROM clause is a matched table with columns (a, e, b)
+  //you can use SQL syntax to group by the source and target account, and sum the total transfer amount
+  SELECT a, b, sum(e.amount)  INTO T
+  FROM (a:Account)-[e:transfer]->(b:Account)
+  GROUP BY a, b;
+
+  //output the table in JSON format
+  PRINT T;
+
+}
+
+#compile and install the query as a stored procedure
+install query q2b
+
+#run the query
+run query q2b()
 ```
 
 ## Path Pattern
