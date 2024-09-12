@@ -260,6 +260,58 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 
 - **+=** operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
 
+```sql
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
+
+    SumAccum<INT> @@sum_accum = 0;
+    MinAccum<INT> @@min_accum = 0;
+    MaxAccum<INT> @@max_accum = 0;
+    OrAccum @@or_accum = FALSE;
+    AndAccum @@and_accum = TRUE;
+    ListAccum<INT> @@list_accum;
+
+    // @@sum_accum will be 3 when printed
+    @@sum_accum +=1;
+    @@sum_accum +=2;
+    PRINT @@sum_accum;
+
+    // @@min_accum will be 1 when printed
+    @@min_accum +=1;
+    @@min_accum +=2;
+    PRINT @@min_accum;
+
+    // @@max_accum will be 2 when printed
+    @@max_accum +=1;
+    @@max_accum +=2;
+    PRINT @@max_accum;
+
+    // @@or_accum will be TRUE when printed
+    @@or_accum += TRUE;
+    @@or_accum += FALSE;
+    PRINT @@or_accum;
+
+    // @@and_accum will be FALSE when printed
+    @@and_accum += TRUE;
+    @@and_accum += FALSE;
+    PRINT @@and_accum;
+
+    // @@list_accum will be [1,2,3,4] when printed
+    @@list_accum += 1;
+    @@list_accum += 2;
+    @@list_accum += [3,4];
+    PRINT @@list_accum;
+
+}
+
+//install the query
+install query  a1
+
+//run the query
+run query q1()
+```  
+
 [Go back to top](#top)
 ### Local Accumulator
 [Go back to top](#top)
