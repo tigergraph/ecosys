@@ -367,6 +367,29 @@ CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
 install query a2
 run query a2()
 ```
+
+In the above example:
+
+- `@cnt` is a local accumulator. Once declared, each vertex variable x specified in a FROM clause can access it in the form x.@cnt. The local accumulator state is mutable by any query block.
+
+- `@@hasPhoneCnt` is a global accumulator.
+
+The ACCUM clause will execute its statements for each pattern matched in the FROM clause and evaluated as TRUE by the WHERE clause.
+
+**Detailed Explanation:**
+- The `FROM` clause identifies the edge patterns that match Account -[hasPhone]- Phone.
+
+- The `WHERE` clause filters the edge patterns based on the Account.isBlocked attribute.
+
+- The `ACCUM` clause will execute once for each matched pattern that passes the WHERE clause.
+
+For each matching pattern that satisfies the WHERE clause, the following will occur:
+
+- `a.@cnt += 1`
+- `p.@cnt += 1`
+- `@@hasPhoneCnt += 1`
+
+The accumulator will accumulate based on the accumulator type.
 [Go back to top](#top)
 
 ## Accumulator As A Composition Tool  
