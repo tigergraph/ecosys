@@ -72,7 +72,7 @@ install query q1a
 run query q1a()
 ```
 
-You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
+Think the matched node as a table with column (a). You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
@@ -81,7 +81,8 @@ Copy [q1b.gsql](./script/q1b.gsql) to your container.
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
-
+  //think the FROM clause as a table with column (a)
+  // you can group by using a and its attribute. 
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
