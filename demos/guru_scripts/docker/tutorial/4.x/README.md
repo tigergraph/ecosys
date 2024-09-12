@@ -401,7 +401,7 @@ Running example.
 ```sql
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY a2 () SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
@@ -424,11 +424,11 @@ run query a2()
 ```
 - `FROM-WHERE` Produces a Binding Table
   
-We can think of the FROM and WHERE clauses specify a binding table, where the FROM clause specifies the pattern, and the WHERE clause does a post-filter of the matched pattern instances-- the result is a table, each row in the table is a pattern instance with the binding variables specified in the FROM clause as columns. In the above running example, the FROM clause produces a result table (a, e, p) where “a” is the Account variable, “e” is the “hasPhone” variable, and “p” is the Phone variable.
+We can think of the FROM and WHERE clauses specify a binding table, where the FROM clause specifies the pattern, and the WHERE clause does a post-filter of the matched pattern instances-- the result is a table, each row in the table is a pattern instance with the binding variables specified in the FROM clause as columns. In the above query a2 example, the FROM clause produces a result table (a, e, p) where “a” is the Account variable, “e” is the “hasPhone” variable, and “p” is the Phone variable.
 
 - `ACCUM` Loops Each Row in the Binding Table
 
-The ACCUM clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion.
+The `ACCUM` clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion.
 
 **Map-Reduce Interpretation:** The ACCUM clause uses snapshot semantics, executing in two phases:
 
@@ -443,6 +443,45 @@ The new snapshot is available for access after the ACCUM clause.
 
 The optional `POST-ACCUM` clause enables accumulation and other computations across the set of vertices produced by the `FROM-WHERE` binding table. `POST-ACCUM` can be used without `ACCUM`. If it is preceded by an `ACCUM` clause, then its statement can access the new snapshot value of accumulators computed by the `ACCUM` clause.
 
+Running example. 
+
+```sql
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
+
+    SumAccum<INT> @cnt = 0; //local accumulator
+    SumAccum<INT>  @@testCnt1 = 0; //global accumulator
+    SumAccum<INT>  @@testCnt2 = 0; //global accumulator
+
+   S = SELECT a
+       FROM (a:Account) - [e:hasPhone] - (p:Phone)
+       WHERE a.isBlocked == "yes"
+       //a.@cnt snapshot value is 0
+       ACCUM  a.@cnt +=1, //add 1 to a.@cnt
+              @@testCnt1+= a.@cnt //access a.@cnt snapshot value 0
+       POST-ACCUM (a) //loop vertex “a” set.
+          @@testCnt2 += a.@cnt; //access a.@cnt new snapshot value 1
+
+
+   PRINT @@testCnt1;
+   PRINT @@testCnt2;
+   PRINT S;
+
+}
+
+INSTALL QUERY a3
+
+RUN QUERY a3()
+```
+
+- `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
+  
+The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex variable defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
+
+Another characteristic of the POST-ACCUM clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
+
+In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
 
 
 [Go back to top](#top)
