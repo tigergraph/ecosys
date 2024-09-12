@@ -8,18 +8,22 @@ This GSQL tutorial contains <a name="top"></a>
 - [Load data](#load-data)
 - [Query Examples](#query-examples)
 
-# Setup Enviroment [Go back to top](#top)
+# Setup Enviroment 
 
 Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker enviroment.
 
-# Setup Schema [Go back to top](#top)
+[Go back to top](#top)
+
+# Setup Schema 
 Copy [ddl.gsql](./script/ddl.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql ddl.gsql
 ```
 
-# Load Data [Go back to top](#top)
+[Go back to top](#top)
+
+# Load Data 
 Copy [load.gsql](./script/load.gsql) to your container. 
 Copy the following data files to your container.
 
@@ -35,9 +39,11 @@ Next, run the following in your container's bash command line.
 gsql load.gsql
 ```
 
-# Query Examples [Go back to top](#top)
+[Go back to top](#top)
 
-## Node Pattern [Go back to top](#top)
+# Query Examples 
+
+## Node Pattern
 Copy [q1a.gsql](./script/q1a.gsql) to your container. 
 
 ```sql
@@ -86,7 +92,10 @@ install query q1b
 #run the query
 run query q1b()
 ```
-## Edge Pattern [Go back to top](#top)
+
+[Go back to top](#top)
+
+## Edge Pattern 
 Copy [q2a.gsql](./script/q2a.gsql) to your container. 
 
 ```sql
@@ -148,7 +157,9 @@ install query q2b
 run query q2b()
 ```
 
-## Path Pattern [Go back to top](#top)
+[Go back to top](#top)
+
+## Path Pattern 
 Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
 ```sql
@@ -222,7 +233,9 @@ install query q3b
 run query q3b("2024-01-01", "2024-12-31", "Scott")
 ```
 
-# Support [Go back to top](#top)
+[Go back to top](#top)
+
+# Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
 https://community.tigergraph.com/
@@ -230,6 +243,8 @@ https://community.tigergraph.com/
 Or, study our product document at
 
 https://docs.tigergraph.com/gsql-ref/current/intro/
+
+[Go back to top](#top)
 
 
 
