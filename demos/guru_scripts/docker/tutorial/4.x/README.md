@@ -544,7 +544,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 
 User can use two methods to achieve query composition. 
 
-- 1.  Using vertex set variable.
+- 1. Using vertex set variable.
 
 GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
 
@@ -601,10 +601,44 @@ INSTALL QUERY a5
 
 RUN QUERY a5()
 ```
-- 2.  Using accumulators.
+- 2. Using accumulators.
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
-and any update will be seen by subsequent query block. 
+each query block will access the latest value of each vertex's local accumulator, thus achieving composition. 
+
+Global variable maintains a global state, it can be accessed within query block, or at the same level as a query block. 
+For example, in a6 query below, the first query block accumulate 1 into each `y`'s `@cnt` accumulator, and increment the global accumulator `@@cnt`. In the second query block's `WHERE` clause, we use the `@cnt` and `@@cnt` accumulator, thus achieving composition. 
+
+```sql
+"a5.gsql" 27L, 681C                                                                                             27,12         All
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
+
+ SumAccum<int> @cnt = 0;
+ SumAccum<int> @@cnt = 0;
+
+ //for each blocked account, find its 1-hop-neighbor who has not been blocked.
+ tgtAccnts = SELECT y
+             FROM (x:Account)- [e:transfer] -> (y:Account)
+             WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
+             ACCUM y.@cnt +=1, @@cnt +=1;
+
+ // tgtAccnts vertex set drive the below query block
+ tgtPhones = SELECT z
+             FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
+             WHERE z.isBlocked AND x.@cnt >1 AND @@cnt>0
+             ACCUM z.@cnt +=1;
+
+  PRINT tgtPhones;
+}
+
+
+INSTALL QUERY a6
+
+
+RUN QUERY a6()
+```
 
 [Go back to top](#top)
 # Support 
