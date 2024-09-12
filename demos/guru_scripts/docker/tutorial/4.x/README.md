@@ -3,11 +3,14 @@
 
 # Content
 This GSQL tutorial contains 
-
+- Setup enviroment 
 - Setup schema (model)
 - Load data
 - Query Examples
 
+# Setup Enviroment 
+
+Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker enviroment.
 
 # Setup Schema
 Copy [ddl.gsql](./script/ddl.gsql) to your container. 
