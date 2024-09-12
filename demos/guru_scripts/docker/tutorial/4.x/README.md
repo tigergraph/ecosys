@@ -429,13 +429,13 @@ We can think of the FROM and WHERE clauses specify a binding table, where the FR
 
 The ACCUM clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion
 
-Map-Reduce Interpretation: The ACCUM clause uses snapshot semantics, executing in two phases:
+**Map-Reduce Interpretation:** The ACCUM clause uses snapshot semantics, executing in two phases:
 
-- Map Phase: Each row in the binding table is processed in parallel, starting with the same accumulator snapshot to compute inputs. The snapshot of accumulator values is taken before the start of the ACCUM clause.
+- **Map Phase:** Each row in the binding table is processed in parallel, starting with the same accumulator snapshot as inputs. The snapshot of accumulator values is taken before the start of the ACCUM clause.
 
-- Reduce Phase: These inputs are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
+- **Reduce Phase:** These inputs are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
 
-The new snapshot is available for access after the ACCUM clause finishes.
+The new snapshot is available for access after the ACCUM clause.
 
 [Go back to top](#top)
 
