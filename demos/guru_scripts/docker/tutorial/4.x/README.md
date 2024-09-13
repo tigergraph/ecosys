@@ -21,7 +21,7 @@ This GSQL tutorial contains
 
 # Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker Environment.
+Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
 
 [Go back to top](#top)
 
@@ -36,16 +36,16 @@ gsql ddl.gsql
 
 # Load Data 
 
-You can choose from one of the following methods. 
+You can choose one of the following methods. 
 
-- Load sample data from our public accessible s3 bucket 
+- Load sample data from our publicly accessible s3 bucket 
   
   Copy [load.gsql](./script/load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
      gsql load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste in GSQL shell editor to run.
+  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
@@ -92,7 +92,7 @@ install query q1a
 run query q1a()
 ```
 
-**SQL Interpretation**: If you're familiar with SQL, treat the matched node like a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
+**SQL Interpretation**: If you're familiar with SQL, treat the matched node as a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
@@ -155,7 +155,7 @@ install query q2a
 run query q2a("Scott")
 ```
 
-**SQL Interpretation**: If you're familiar with SQL, treat the matched edge like a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
+**SQL Interpretation**: If you're familiar with SQL, treat the matched edge as a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
 
@@ -216,7 +216,7 @@ install query q3a
 
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
-**SQL Interpretation**:If you're familiar with SQL, treat the matched path like a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
+**SQL Interpretation**:If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
 ### GroupBy on Path Table
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
@@ -603,7 +603,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
              WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
              ACCUM y.@cnt +=1;
 
- // tgtAccnts vertex set drive the below query block
+ // tgtAccnts vertex set drive the query block below
  tgtPhones = SELECT z
              FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
              WHERE z.isBlocked
@@ -638,7 +638,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
              WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
              ACCUM y.@cnt +=1, @@cnt +=1;
 
- // tgtAccnts vertex set drive the below query block
+ // tgtAccnts vertex set drive the query block below
  tgtPhones = SELECT z
              FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
              WHERE z.isBlocked AND x.@cnt >1 AND @@cnt>0
