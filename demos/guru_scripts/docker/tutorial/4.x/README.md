@@ -123,7 +123,8 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
   SumAccum<int> @totalTransfer = 0;
 
   // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
-  // "v" is a vertex set variable holding the selected vertex set
+  // "v" is a vertex set variable holding the selected vertex set.
+  // {name: accntName} is a JSON style filter. It's equivalent to "a.name == accntName"
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
       //for each matched edge, accumulate e.amount into the local accumulator of b.
