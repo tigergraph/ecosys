@@ -3,7 +3,7 @@
 
 # Content
 This GSQL tutorial contains 
-- [Setup Enviroment](#setup-enviroment)
+- [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
 - [Query Examples](#query-examples)
@@ -19,9 +19,9 @@ This GSQL tutorial contains
  - [Support](#support) 
   
 
-# Setup Enviroment 
+# Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker enviroment.
+Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker Environment.
 
 [Go back to top](#top)
 
