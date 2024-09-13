@@ -79,7 +79,7 @@ install query q1a
 run query q1a()
 ```
 
-***SQL Interpretation***: If you're familiar with SQL, treat the matched node like a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
+**SQL Interpretation**: If you're familiar with SQL, treat the matched node like a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
@@ -142,7 +142,7 @@ install query q2a
 run query q2a("Scott")
 ```
 
-***SQL Interpretation***: If you're familiar with SQL, treat the matched edge like a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
+**SQL Interpretation**: If you're familiar with SQL, treat the matched edge like a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
 
@@ -203,7 +203,7 @@ install query q3a
 
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
-***SQL Interpretation***:If you're familiar with SQL, treat the matched path like a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
+**SQL Interpretation**:If you're familiar with SQL, treat the matched path like a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
 ### GroupBy on Path Table
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
