@@ -126,7 +126,7 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
   // "v" is a vertex set variable holding the selected vertex set
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      //for each matched edge, accumulate "e.amount" into the local accumulator belongs to "b". 
+      //for each matched edge, accumulate e.amount into the local accumulator of b.
       ACCUM  b.@totalTransfer += e.amount;
 
   //output each v and their static attribute and runtime accumulators' state
