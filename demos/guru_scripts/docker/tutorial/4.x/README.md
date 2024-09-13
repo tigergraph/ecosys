@@ -433,11 +433,11 @@ The `ACCUM` clause executes its statement(s) once for each row in the `FROM-WHER
 
 **Map-Reduce Interpretation:** The ACCUM clause uses snapshot semantics, executing in two phases:
 
-- **Map Phase:** Each row in the binding table is processed in parallel, starting with the same accumulator snapshot as inputs. The snapshot of accumulator values is taken before the start of the ACCUM clause.
+- **Map Phase:** Each row in the binding table is processed in parallel, applying each statement in the `ACCUM` clause, starting with the same accumulator snapshot as inputs. The snapshot of accumulator values is taken before the start of the ACCUM clause.
 
-- **Reduce Phase:** These inputs are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
+- **Reduce Phase:** At the end of the `ACCUM` clause, these Map Phase effect are aggregated into their respective accumulators, creating a new snapshot of accumulator values.
 
-The new snapshot is available for access after the ACCUM clause.
+The new snapshot of accumulate states is available for access after the ACCUM clause.
 
 
 #### POST-ACCUM
