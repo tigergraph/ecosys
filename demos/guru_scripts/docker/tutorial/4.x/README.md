@@ -45,6 +45,8 @@ You can choose from one of the following methods.
   ```
      gsql load.gsql
   ```
+  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste in GSQL shell editor to run.
+  
 - Load from local file in your container
   - Copy the following data files to your container.
     - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
@@ -58,7 +60,7 @@ You can choose from one of the following methods.
     ```
        gsql load2.gsql
     ``` 
-
+    or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste in GSQL shell editor to run. 
 [Go back to top](#top)
 
 # Query Examples 
