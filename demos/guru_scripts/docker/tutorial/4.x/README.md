@@ -60,7 +60,8 @@ You can choose from one of the following methods.
     ```
        gsql load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run. 
+    or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
+    
 [Go back to top](#top)
 
 # Query Examples 
