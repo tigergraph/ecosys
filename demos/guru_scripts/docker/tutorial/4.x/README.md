@@ -71,7 +71,7 @@ install query q1a
 run query q1a()
 ```
 
-Think the matched node as a table with column (a). You can group by on the matched node table, just as you group by a table and aggregate in SQL. 
+***SQL Interpretation***: If you're familiar with SQL, treat the matched node like a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
@@ -80,8 +80,10 @@ Copy [q1b.gsql](./script/q1b.gsql) to your container.
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
-  //think the FROM clause as a table with column (a)
-  // you can group by using a and its attribute. 
+  //think the FROM clause as a table (a.attr1, a.attr2,...)
+  // you can group by a or its attributes, and do aggregation.
+  // ":Account" is the label of the vertex type, and "a" is the
+  // table alias, and () symbolize a vertex pattern in ASCII art.
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
@@ -108,17 +110,16 @@ USE GRAPH financialGraph
 # create a query
 CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
-  // declare an local sum accumulator; you can keep adding values into it
-  // "local accumulator" means each vertex will have an accumulator of
-  // the declared type and can be accumulated into based on the 
-  // FROM clause pattern.
+  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
+  //The vertex instance is selected based on the FROM clause pattern.
   SumAccum<int> @totalTransfer = 0;
 
-  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is an edge
-  // v is a vertex set variable holding the selected vertex set
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+  // "v" is a vertex set variable holding the selected vertex set.
+  // {name: accntName} is a JSON style filter. It's equivalent to "a.name == accntName"
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      //for each matched row, do the following accumulation
+      //for each matched edge, accumulate e.amount into the local accumulator of b.
       ACCUM  b.@totalTransfer += e.amount;
 
   //output each v and their static attribute and runtime accumulators' state
@@ -133,7 +134,7 @@ install query q2a
 run query q2a("Scott")
 ```
 
-You can group by on the matched edge table, just as you group by a table and aggregate in SQL. 
+***SQL Interpretation***: If you're familiar with SQL, treat the matched edge like a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
 
@@ -173,7 +174,7 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
-  // a path pattern in ascii art () -[]->()-[]->(), where alternating node() and edge -[]->
+  // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
@@ -194,7 +195,7 @@ install query q3a
 
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
-You can group by on the matched path table, just as you group by a table and aggregate in SQL. 
+***SQL Interpretation***:If you're familiar with SQL, treat the matched path like a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
 ### GroupBy on Path Table
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
@@ -334,7 +335,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 
 - `@@` is used for declaring global accumulator variables. It is always used stand-alone. E.g @@cnt +=1
 
-- `@` is used for declaring local accumulator variables. It must be used with a vertex variable specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex variable specified in a FROM clause of a SELECT-FROM-WHERE query block.
+- `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex alias specified in a FROM clause of a SELECT-FROM-WHERE query block.
 
 ```sql
 USE GRAPH financialGraph
@@ -363,7 +364,7 @@ run query a2()
 
 In the above example:
 
-- `@cnt` is a local accumulator. Once declared, each vertex variable x specified in a FROM clause can access it in the form x.@cnt. The local accumulator state is mutable by any query block.
+- `@cnt` is a local accumulator. Once declared, each vertex alias x specified in a FROM clause can access it in the form x.@cnt. The local accumulator state is mutable by any query block.
 
 - `@@hasPhoneCnt` is a global accumulator.
 
@@ -374,7 +375,7 @@ The ACCUM clause will execute its statements for each pattern matched in the FRO
 
 - The `WHERE` clause filters the edge patterns based on the Account.isBlocked attribute.
 
-- The `ACCUM` clause will execute once for each matched pattern that passes the WHERE clause.
+- The `ACCUM` clause will execute once for each matched pattern instance that passes the WHERE clause.
 
 For each matching pattern that satisfies the WHERE clause, the following will occur:
 
@@ -418,7 +419,7 @@ run query a2()
   
 We can think of the FROM and WHERE clauses specify a binding table, where the FROM clause specifies the pattern, and the WHERE clause does a post-filter of the matched pattern instances-- the result is a table, each row in the table is a pattern instance with the binding variables specified in the FROM clause as columns. In the above query a2 example, the FROM clause produces a result table (a, e, p) where “a” is the Account variable, “e” is the “hasPhone” variable, and “p” is the Phone variable.
 
-- `ACCUM` Loops Each Row in the Binding Table
+- `ACCUM` Process each row independently in the Binding Table
 
 The `ACCUM` clause executes its statement(s) once for each row in the result table. The execution is done in a map-reduce fashion.
 
@@ -469,7 +470,7 @@ RUN QUERY a3()
 
 - `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
   
-The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex variable defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
+The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex alias defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
 
 Another characteristic of the `POST-ACCUM` clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
 
