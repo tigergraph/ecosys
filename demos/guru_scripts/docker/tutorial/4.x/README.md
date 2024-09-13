@@ -343,7 +343,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 
 - `@@` is used for declaring global accumulator variables. It is always used stand-alone. E.g @@cnt +=1
 
-- `@` is used for declaring local accumulator variables. It must be used with a vertex variable specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex variable specified in a FROM clause of a SELECT-FROM-WHERE query block.
+- `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex variable specified in a FROM clause of a SELECT-FROM-WHERE query block.
 
 ```sql
 USE GRAPH financialGraph
