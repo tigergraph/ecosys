@@ -79,7 +79,7 @@ install query q1a
 run query q1a()
 ```
 
-If you come from SQL world, think the matched node as a table with table(a) or table(a.attr1, a.attr2...) You can group by on the matched node table, just as you group by a table and aggregate in SQL. You can do SELECT expressions as usual, with the extension of SELECT a (which means select the graph element a)
+***SQL Interpretation***: If you come from SQL world, think the matched node as a table with table(a) or table(a.attr1, a.attr2...) You can group by on the matched node table, just as you group by a table and aggregate in SQL. You can do SELECT expressions as usual, with the extension of SELECT a (which means select the graph element a)
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
