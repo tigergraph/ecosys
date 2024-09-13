@@ -1,13 +1,14 @@
 USE GRAPH financialGraph
 
-DROP JOB load_data
+DROP JOB load_s3_file
 DROP DATA_SOURCE s3_data_source_0
 
+#define a data source from s3
 CREATE DATA_SOURCE s3_data_source_0 = "{\"access.key\":\"none\",\"secret.key\":\"none\",\"file.reader.settings.fs.s3a.aws.credentials.provider\": \"org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider\",\"type\":\"s3\"}" FOR GRAPH financialGraph
 
 
-CREATE LOADING JOB load_data  {
- // define the location of the source files; each file path is assigned a filename variable.
+CREATE LOADING JOB load_s3_file  {
+ // define the s3 location of the source files; each file path is assigned a filename variable.
  DEFINE FILENAME account="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/account.csv"}""";
  DEFINE FILENAME phone="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/phone.csv"}""";
  DEFINE FILENAME city="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/city.csv"}""";
@@ -24,4 +25,4 @@ CREATE LOADING JOB load_data  {
 
 }
 
-run loading job load_data
+run loading job load_s3_file
