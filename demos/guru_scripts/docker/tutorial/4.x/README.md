@@ -129,7 +129,7 @@ Copy [q2a.gsql](./script/q2a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
 
   //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
   //The vertex instance is selected based on the FROM clause pattern.
@@ -137,9 +137,9 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
   // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
   // "v" is a vertex set variable holding the selected vertex set.
-  // {name: accntName} is a JSON style filter. It's equivalent to "a.name == accntName"
+  // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
   v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
       //for each matched edge, accumulate e.amount into the local accumulator of b.
       ACCUM  b.@totalTransfer += e.amount;
 
@@ -193,11 +193,11 @@ Copy [q3a.gsql](./script/q3a.gsql) to your container.
 USE GRAPH financialGraph
 
 // create a query
-CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTAX v3 {
 
   // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
+      FROM (a:Account {name: acctName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
 
       PRINT R;
@@ -206,7 +206,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
   R = SELECT b
-      FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account);
+      FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account);
 
       PRINT R;
 
@@ -225,7 +225,7 @@ Copy [q3b.gsql](./script/q3b.gsql) to your container.
 USE GRAPH financialGraph
 
 // create a query
-CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTAX v3 {
 
    // a path pattern in ascii art () -[]->()-[]->()
    // think the FROM clause is a matched table with columns (a, e, b, e2, c)
@@ -250,7 +250,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string accntName) SYNT
      we can bind the end points (a) and (b) in the variable length path, and group by on them.
    */
    SELECT a, b, count(*) AS path_cnt INTO T2
-   FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
+   FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account)
    GROUP BY a, b;
 
    PRINT T2;
