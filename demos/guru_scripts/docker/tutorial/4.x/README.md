@@ -36,15 +36,6 @@ gsql ddl.gsql
 
 # Load Data 
 Copy [load.gsql](./script/load.gsql) to your container. 
-Copy the following data files to your container.
-
-- [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
-- [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
-- [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
-- [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
-- [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
-- [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
-  
 Next, run the following in your container's bash command line. 
 ```
 gsql load.gsql
@@ -612,7 +603,6 @@ Global variable maintains a global state, it can be accessed within query block,
 For example, in a6 query below, the first query block accumulate 1 into each `y`'s `@cnt` accumulator, and increment the global accumulator `@@cnt`. In the second query block's `WHERE` clause, we use the `@cnt` and `@@cnt` accumulator, thus achieving composition. 
 
 ```sql
-"a5.gsql" 27L, 681C                                                                                             27,12         All
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
