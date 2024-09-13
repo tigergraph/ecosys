@@ -37,6 +37,7 @@ gsql ddl.gsql
 # Load Data 
 
 - Load sample data from our public accessible s3 bucket
+  
 Copy [load.gsql](./script/load.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
