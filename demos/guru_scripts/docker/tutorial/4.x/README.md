@@ -20,8 +20,7 @@ This GSQL tutorial contains
 
 # Setup Enviroment 
 
-1. Use cloud portal to setup your docker enviroment( TODO: wait release URL).
-2. Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker enviroment.
+1. Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to setup your docker enviroment.
 
 [Go back to top](#top)
 
