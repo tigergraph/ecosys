@@ -332,7 +332,7 @@ install query  a1
 //run the query
 run query a1()
 ```  
-In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain the semantics and usage of them.
+In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain their semantics and usage.
 
 - `SumAccum<INT>` allows user to keep adding INT values
 
@@ -442,7 +442,7 @@ We can think of the FROM and WHERE clauses specify a binding table, where the FR
 
 - `ACCUM` Process each row independently in the Binding Table
 
-The `ACCUM` clause executes its statement(s) once for each row in the `FROM-WHERE` binding table. The execution is done in a map-reduce fashion.
+The `ACCUM` clause executes its statements once for each row in the `FROM-WHERE` binding table. The execution is done in a map-reduce fashion.
 
 **Map-Reduce Interpretation:** The ACCUM clause uses snapshot semantics, executing in two phases:
 
@@ -493,7 +493,7 @@ RUN QUERY a3()
   
 The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex alias defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
 
-Another characteristic of the `POST-ACCUM` clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
+Another characteristic of the `POST-ACCUM` clause is that its statements can access the aggregated accumulator value computed in the `ACCUM` clause.
 
 In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
 
