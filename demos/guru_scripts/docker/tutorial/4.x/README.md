@@ -36,7 +36,9 @@ gsql ddl.gsql
 
 # Load Data 
 
-- Load sample data from our public accessible s3 bucket
+You can choose from one of the following methods. 
+
+- Load sample data from our public accessible s3 bucket 
   
   Copy [load.gsql](./script/load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
@@ -46,7 +48,13 @@ gsql ddl.gsql
 - Load from local file in your container
   - Copy the following data files to your container.
     - [account.csv](./data/account.csv)
-  - Copy [load2.gsql](./script/load2.gsql) to your container. Next, run the following in your container's bash command line. 
+    - [phone.csv](./data/phone.csv)
+    - [city.csv](./data/city.csv)
+    - [hasPhone.csv](./data/hasPhone.csv)
+    - [locate.csv](./data/locate.csv)
+    - [transfer.csv](./data/transfer.csv)
+
+  - Copy [load2.gsql](./script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
        gsql load2.gsql
     ``` 
