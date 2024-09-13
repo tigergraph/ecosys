@@ -118,17 +118,15 @@ USE GRAPH financialGraph
 # create a query
 CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
 
-  // declare an local sum accumulator; you can keep adding values into it
-  // "local accumulator" means each vertex will have an accumulator of
-  // the declared type and can be accumulated into based on the 
-  // FROM clause pattern.
+  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
+  //The vertex instance is selected based on the FROM clause pattern.
   SumAccum<int> @totalTransfer = 0;
 
-  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is an edge
-  // v is a vertex set variable holding the selected vertex set
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+  // "v" is a vertex set variable holding the selected vertex set
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      //for each matched row, do the following accumulation
+      //for each matched edge, accumulate "e.amount" into the local accumulator belongs to "b". 
       ACCUM  b.@totalTransfer += e.amount;
 
   //output each v and their static attribute and runtime accumulators' state
