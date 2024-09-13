@@ -383,7 +383,7 @@ The ACCUM clause will execute its statements for each pattern matched in the FRO
 
 - The `WHERE` clause filters the edge patterns based on the Account.isBlocked attribute.
 
-- The `ACCUM` clause will execute once for each matched pattern that passes the WHERE clause.
+- The `ACCUM` clause will execute once for each matched pattern instance that passes the WHERE clause.
 
 For each matching pattern that satisfies the WHERE clause, the following will occur:
 
