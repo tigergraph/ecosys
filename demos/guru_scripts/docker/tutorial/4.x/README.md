@@ -91,7 +91,7 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   //think the FROM clause as a table (a.attr1, a.attr2,...)
   // you can group by a or its attributes, and do aggregation.
   // ":Account" is the label of the vertex type, and "a" is the
-  // table alias.
+  // table alias, and () symbolize a vertex pattern in ASCII art.
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
