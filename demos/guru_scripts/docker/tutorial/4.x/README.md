@@ -548,6 +548,7 @@ In query a4(), we have multiple `POST-ACCUM` clauses, each will be looping one s
 Note that you can only access one vertex alias in a `POST-ACCUM`. Below example is not allowed, as it has two vertex alias (a, b) in `a.@maxAmount` and `b.@maxAmount`, respectively. 
 
 ```sql
+### Example of Incorrect Code ❌
 POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
