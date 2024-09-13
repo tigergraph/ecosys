@@ -141,7 +141,6 @@ install query q2a
 run query q2a("Scott")
 ```
 
-You can group by on the matched edge table, just as you group by a table and aggregate in SQL.
 ***SQL Interpretation***: If you're familiar with SQL, treat the matched edge like a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
