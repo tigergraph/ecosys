@@ -15,7 +15,7 @@ This GSQL tutorial contains
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
-  - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variable-and-accumulator-as-composition-tools)
+  - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
  - [Support](#support) 
   
 
@@ -553,7 +553,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
-## Vertex Set Variable And Accumulator As Composition Tools
+## Vertex Set Variables And Accumulator As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
 
