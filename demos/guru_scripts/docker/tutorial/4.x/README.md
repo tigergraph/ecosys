@@ -181,7 +181,7 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
-  // a path pattern in ascii art () -[]->()-[]->(), where alternating node() and edge -[]->
+  // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->
   R = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
