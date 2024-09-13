@@ -343,7 +343,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 
 - `@@` is used for declaring global accumulator variables. It is always used stand-alone. E.g @@cnt +=1
 
-- `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex variable specified in a FROM clause of a SELECT-FROM-WHERE query block.
+- `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex alias specified in a FROM clause of a SELECT-FROM-WHERE query block.
 
 ```sql
 USE GRAPH financialGraph
@@ -372,7 +372,7 @@ run query a2()
 
 In the above example:
 
-- `@cnt` is a local accumulator. Once declared, each vertex variable x specified in a FROM clause can access it in the form x.@cnt. The local accumulator state is mutable by any query block.
+- `@cnt` is a local accumulator. Once declared, each vertex alias x specified in a FROM clause can access it in the form x.@cnt. The local accumulator state is mutable by any query block.
 
 - `@@hasPhoneCnt` is a global accumulator.
 
@@ -478,7 +478,7 @@ RUN QUERY a3()
 
 - `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
   
-The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex variable defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
+The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex alias defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
 
 Another characteristic of the `POST-ACCUM` clause is that its statement(s) can access the aggregated accumulator value computed in the `ACCUM` clause.
 
