@@ -88,8 +88,8 @@ Copy [q1b.gsql](./script/q1b.gsql) to your container.
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
-  //think the FROM clause as a table with column (a)
-  // you can group by using a and its attribute. 
+  //think the FROM clause as a table (a.attr1, a.attr2,...)
+  // you can group by a or its attributes, and do aggregation
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
