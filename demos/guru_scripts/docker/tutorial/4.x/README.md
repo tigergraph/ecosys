@@ -66,7 +66,15 @@ You can choose one of the following methods.
 
 # Query Examples 
 
+In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
+
+- SELECT A Vertex Set Style: if a query block generates a vertex set, we can use it to drive subsequent query blocks pattern matching.
+- SELECT INTO A Table Style: if a query block generates a table, we can output the table.
+
+We show both styles for each pattern class. 
+
 ## Node Pattern
+### SELECT A Vertex Set Style 
 Copy [q1a.gsql](./script/q1a.gsql) to your container. 
 
 ```sql
@@ -91,8 +99,8 @@ install query q1a
 #run the query
 run query q1a()
 ```
-
-**SQL Interpretation**: If you're familiar with SQL, treat the matched node as a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
+### SELECT INTO A Table Style
+If you're familiar with SQL, treat the matched node as a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
