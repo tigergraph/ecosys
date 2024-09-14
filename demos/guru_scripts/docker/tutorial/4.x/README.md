@@ -196,7 +196,7 @@ run query q2b()
 
 ## Path Pattern 
 
-### SELECT A Vertex Set Style -- Fixed Length vs. Variable Length Path Pattern
+### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
 ```sql
@@ -227,7 +227,7 @@ install query q3a
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
 
-### SELECT INTO A Table Style -- Group By On A Path Table
+### SELECT INTO A Table Style: Group By On A Path Table
 
 If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
