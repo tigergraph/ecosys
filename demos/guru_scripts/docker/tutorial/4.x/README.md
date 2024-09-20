@@ -298,7 +298,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 | *m..    | -[:transfer*1..]->   | m or more repetitions |
 | *m    | -[:transfer*m]->   | equivalent to m..m |
 
-
+[Go back to top](#top)
 
 # Advanced Topics
 ## Accumulators
