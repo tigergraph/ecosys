@@ -288,7 +288,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 | Left or undirected  | <-[e:transfer\|hasPhone]-  | <-[alias:type1\|type2\|..]- |
 | Right or undirected  | -[e:transfer\|hasPhone]->   | -[alias:type1\|type2\|..]-> |
 | Left or right  | <-[e:transfer]->   | <-[alias:type]-> |
-| Left, undirected, or right  | <-[e:transfer\|hasPhone]->   | <-[alias:type1\|type2\|..]-> |
+| Left, undirected, or right  | <-[e:transfer\|hasPhone]->   | <-[alias:type1\|type2\|..]-> or -[alias:type1\|type2\|..]- |
 
 ## Variable Length Pattern Quantifier
 
