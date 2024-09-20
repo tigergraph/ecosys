@@ -281,14 +281,14 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 ## Table of Edge Patterns 
 | Orientation | Example |  Edge Pattern |
-|------------|---------|--------------|
-| Pointing left  | <-[e:transfer]-   | <-[alias:type]- |
-| Pointing right  | -[e:transfer]->   | -[alias:type]-> |
-| undirected  | -[e:hasPhone]-   | -[alias:type]- |
-| Left or undirected  | <-[e:transfer|hasPhone]-   | <-[alias:type1|type2|...]- |
-| Right or undirected  | -[e:transfer|hasPhone]->   | -[alias:type1|type2|...]-> |
+|------------|---------------|----------------------------|
+| Pointing left  | <-[e:transfer]-   | <-[alias:type1|type2|..]- |
+| Pointing right  | -[e:transfer]->   | -[alias:type1|type2|..]-> |
+| undirected  | -[e:hasPhone]-   | -[alias:type1|type2|..]- |
+| Left or undirected  | <-[e:transfer|hasPhone]-   | <-[alias:type1|type2|..]- |
+| Right or undirected  | -[e:transfer|hasPhone]->   | -[alias:type1|type2|..]-> |
 | Left or right  | <-[e:transfer]->   | <-[alias:type]-> |
-| Left, undirected, or right  | <-[e:transfer|hasPhone]->   | <-[alias:type1|type2|...]-> |
+| Left, undirected, or right  | <-[e:transfer|hasPhone]->   | <-[alias:type1|type2|..]-> |
 
 ## Variable Length Pattern Quantifier
 
