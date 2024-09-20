@@ -294,9 +294,9 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
-| m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
-| m..    | -[:transfer*1..]->   | m or more repetitions |
-| *    | -[:transfer*]->   | equivalent to 0.. |
+| *m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
+| *m..    | -[:transfer*1..]->   | m or more repetitions |
+| *m    | -[:transfer*m]->   | equivalent to m..m |
 
 
 
