@@ -276,6 +276,23 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
+## Pattern Form Summary
+
+## Table of Edge Patterns 
+| Orientation | Example |  Edge Pattern |
+|------------|---------|--------------|
+| m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
+
+## Variable Length Pattern Quantifier
+
+| Quantifier | Example |  Description |
+|------------|---------|--------------|
+| m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
+| m..    | -[:transfer*1..]->   | m or more repetitions |
+| *    | -[:transfer*]->   | equivalent to 0.. |
+
+
+
 # Advanced Topics
 ## Accumulators
 GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. An accumulator is a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
