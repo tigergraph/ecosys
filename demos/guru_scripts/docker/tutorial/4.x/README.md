@@ -10,6 +10,7 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
+  - [Pattern Summary](#pattern-summary)
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
@@ -276,12 +277,18 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
-## Pattern Form Summary
+## Pattern Summary
 
 ## Table of Edge Patterns 
 | Orientation | Example |  Edge Pattern |
 |------------|---------|--------------|
-| m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
+| Pointing left  | <-[e:transfer]-   | <-[alias:type]- |
+| Pointing right  | -[e:transfer]->   | -[alias:type]-> |
+| undirected  | -[e:hasPhone]-   | -[alias:type]- |
+| Left or undirected  | <-[e:transfer|hasPhone]-   | <-[alias:type1|type2|...]- |
+| Right or undirected  | -[e:transfer|hasPhone]->   | -[alias:type1|type2|...]-> |
+| Left or right  | <-[e:transfer]->   | <-[alias:type]-> |
+| Left, undirected, or right  | <-[e:transfer|hasPhone]->   | <-[alias:type1|type2|...]-> |
 
 ## Variable Length Pattern Quantifier
 
