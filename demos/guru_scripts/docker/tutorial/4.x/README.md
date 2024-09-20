@@ -280,15 +280,15 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ## Pattern Summary
 
 ## Table of Edge Patterns 
-| Orientation | Example |  Edge Pattern |
-|------------|---------------|----------------------------|
-| Pointing left  | <-[e:transfer]-   | <-[alias:type1\|type2\|..]- |
-| Pointing right  | -[e:transfer]->   | -[alias:type1\|type2\|..]-> |
-| undirected  | -[e:hasPhone]->   |  -[alias:type1\|type2\|..]-> |
-| Left or undirected  | <-[e:transfer\|hasPhone]-  | <-[alias:type1\|type2\|..]- |
-| Right or undirected  | -[e:transfer\|hasPhone]->   | -[alias:type1\|type2\|..]-> |
-| Left or right  | <-[e:transfer]->   | <-[alias:type]-> |
-| Left, undirected, or right  | -[e:transfer\|hasPhone]-   | -[alias:type1\|type2\|..]- |
+| Orientation | Example |  Edge Pattern | GQL Syntx?|
+|------------|---------------|----------------------------|--------------------------|
+| Pointing left  | <-[e:transfer]-   | <-[alias:type1\|type2\|..]- | Y |
+| Pointing right  | -[e:transfer]->   | -[alias:type1\|type2\|..]-> | Y |
+| undirected  | -[e:hasPhone]->   |  -[alias:type1\|type2\|..]-> | N |
+| Left or undirected  | <-[e:transfer\|hasPhone]-  | <-[alias:type1\|type2\|..]- | Y |
+| Right or undirected  | -[e:transfer\|hasPhone]->   | -[alias:type1\|type2\|..]-> | Y |
+| Left or right  | <-[e:transfer]->   | <-[alias:type]-> | Y |
+| Left, undirected, or right  | -[e:transfer\|hasPhone]-   | -[alias:type1\|type2\|..]- | Y |
 
 ## Variable Length Pattern Quantifier
 
