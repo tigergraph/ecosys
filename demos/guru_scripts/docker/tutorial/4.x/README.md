@@ -286,7 +286,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 | Pointing right  | -[e:transfer]->   | -[alias:type1\|type2\|..]-> | Y |
 | undirected  | -[e:hasPhone]->   |  -[alias:type1\|type2\|..]-> | N, \~[]\~ |
 | Left or undirected  | <-[e:transfer\|hasPhone]-  | <-[alias:type1\|type2\|..]- | N, <\~[]\~ |
-| Right or undirected  | -[e:transfer\|hasPhone]->   | -[alias:type1\|type2\|..]-> | N \~[]\~>|
+| Right or undirected  | -[e:transfer\|hasPhone]->   | -[alias:type1\|type2\|..]-> | N, \~[]\~>|
 | Left or right  | <-[e:transfer]->   | <-[alias:type]-> | Y |
 | Left, undirected, or right  | -[e:transfer\|hasPhone]-   | -[alias:type1\|type2\|..]- | Y |
 
