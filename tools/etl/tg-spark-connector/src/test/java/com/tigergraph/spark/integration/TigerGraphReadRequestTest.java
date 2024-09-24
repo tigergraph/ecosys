@@ -14,7 +14,6 @@
 package com.tigergraph.spark.integration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.tigergraph.spark.TigerGraphTable;
@@ -24,8 +23,12 @@ import com.tigergraph.spark.read.TigerGraphPartitionReaderFactory;
 import com.tigergraph.spark.read.TigerGraphScan;
 import com.tigergraph.spark.read.TigerGraphScanBuilder;
 import com.tigergraph.spark.util.Options;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.spark.SparkConf;
+import org.apache.spark.serializer.JavaSerializer;
+import org.apache.spark.serializer.SerializerInstance;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.util.CaseInsensitiveStringMap;
@@ -76,11 +79,25 @@ public class TigerGraphReadRequestTest {
     TigerGraphScan scan = scanBuilder.build();
     TigerGraphBatch batchRead = scan.toBatch();
     InputPartition[] partitions = batchRead.planInputPartitions();
-    TigerGraphPartitionReaderFactory readerFactory = batchRead.createReaderFactory();
+    TigerGraphPartitionReaderFactory readerFactory = serdes(batchRead.createReaderFactory());
     for (int i = 0; i < partitions.length; i++) {
       readerFactory.createReader(partitions[i]);
     }
     // after `createReader`, the RESTPP request is already sent and we can directly verify it
+  }
+
+  // Spark serialize it in driver, and deserialize in executor
+  static TigerGraphPartitionReaderFactory serdes(TigerGraphPartitionReaderFactory factory) {
+    SparkConf conf = new SparkConf().setAppName("TestSerialization").setMaster("local[*]");
+    conf.set("spark.serializer", "org.apache.spark.serializer.JavaSerializer");
+    JavaSerializer javaSerializer = new JavaSerializer(conf);
+    SerializerInstance serializer = javaSerializer.newInstance();
+    ByteBuffer serializedData =
+        serializer.serialize(
+            factory, scala.reflect.ClassTag.apply(TigerGraphPartitionReaderFactory.class));
+    return (TigerGraphPartitionReaderFactory)
+        serializer.deserialize(
+            serializedData, scala.reflect.ClassTag.apply(TigerGraphPartitionReaderFactory.class));
   }
 
   @Test

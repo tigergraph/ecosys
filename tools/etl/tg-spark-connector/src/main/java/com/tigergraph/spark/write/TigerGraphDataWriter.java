@@ -97,6 +97,7 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
     queryMap.put("sep", opts.getString(Options.LOADING_SEPARATOR));
     queryMap.put("eol", opts.getString(Options.LOADING_EOL));
     queryMap.put("timeout", opts.getInt(Options.LOADING_TIMEOUT_MS));
+    queryMap.put("ack", opts.getString(Options.LOADING_ACK));
     if (Utils.versionCmp(version, "3.9.4") >= 0) {
       queryMap.put("jobid", jobId);
       if (opts.containsOption(Options.LOADING_MAX_NUM_ERROR)) {
