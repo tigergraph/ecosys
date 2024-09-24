@@ -18,12 +18,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class OptionDef implements Serializable {
-  // A unique Java object which represents the lack of a default value.
-  public static final Serializable NO_DEFAULT_VALUE = UUID.randomUUID();
+
+  // Identify whether the option has default value
+  public enum DefaultVal {
+    NON_DEFAULT
+  };
 
   // Options' definitions
   private final Map<String, OptionKey> optionKeys = new HashMap<>();
@@ -60,7 +62,7 @@ public class OptionDef implements Serializable {
   }
 
   public OptionDef define(String name, Type type, boolean required, String group) {
-    return define(name, type, NO_DEFAULT_VALUE, required, null, group);
+    return define(name, type, DefaultVal.NON_DEFAULT, required, null, group);
   }
 
   /*
@@ -91,14 +93,15 @@ public class OptionDef implements Serializable {
         String group) {
       this.name = name;
       this.type = type;
-      this.defaultValue = NO_DEFAULT_VALUE.equals(defaultValue) ? NO_DEFAULT_VALUE : defaultValue;
+      this.defaultValue =
+          DefaultVal.NON_DEFAULT.equals(defaultValue) ? DefaultVal.NON_DEFAULT : defaultValue;
       this.required = required;
       this.validator = validator;
       this.group = group;
     }
 
     public boolean hasDefault() {
-      return !NO_DEFAULT_VALUE.equals(this.defaultValue);
+      return !DefaultVal.NON_DEFAULT.equals(this.defaultValue);
     }
   }
 
