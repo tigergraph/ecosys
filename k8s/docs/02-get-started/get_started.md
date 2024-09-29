@@ -152,7 +152,7 @@ TigerGraph Operator leverages the Admission Webhooks feature and relies on [cert
 Admission webhooks are essential components in Kubernetes that receive admission requests and take actions based on them. They are registered with Kubernetes and are called upon to validate or modify a resource before it's stored.
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml 
 # Verify installation of cert-manager 
 kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
 kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
@@ -199,6 +199,8 @@ kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
+
+If you want to install the TigerGraph Operator with Helm, you can refer to [Deploy TigerGraph Operator with Helm](../03-deploy/deploy-operator-with-helm.md).
 
 To streamline the installation of the Operator and the deployment of a TigerGraph cluster, start by defining some environment variables:
 
@@ -253,6 +255,7 @@ Options:
   --operator-memory :          set request memory of operator, default as 1024Mi
   --operator-memory-limit :    limit memory size of operator
   --operator-watch-namespace : set watch namespaces of operator, blank string as default indicate all namespace, multiple namespaces are separated by commas, as ns1\,ns2
+  --operator-node-selector:    set the nodeSelector for operator pods, your input should be like 'k1=v1,k2=v2'
   --cluster-scope :            set true to deploy operator with ClusterRole, set false to deploy with Role,
                                so that you can deploy mutiple operators in one cluster, default as true
   --max-tg-concurrent-reconciles : set the max concurrent reconciles of TigerGraph cluster controller, default is 2
@@ -551,3 +554,4 @@ If you are interested in deploying a TigerGraph cluster in a production environm
 - [Deploy TigerGraph on AWS EKS](../03-deploy/tigergraph-on-eks.md)
 - [Deploy TigerGraph on Google Cloud GKE](../03-deploy/tigergraph-on-gke.md)
 - [Deploy TigerGraph on Red Hat OpenShift](../03-deploy/tigergraph-on-openshift.md)
+- [Deploy TigerGraph on Azure Kubernetes Service (AKS)](../03-deploy/tigergraph-on-aks.md)

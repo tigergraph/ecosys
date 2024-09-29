@@ -105,9 +105,13 @@ The example sidecarListener configuration is below:
     listenerPorts:
     - name: httpd80
       port: 80
+      targetPort: 80
 ```
 
 For a LoadBalancer type of service, you only need to specify the listener port of the sidecar container. The configuration for labels and annotations is the same as for NodePort type services. See the full [example](../09-samples/deploy/service-of-sidecar-loadbanalance-type.yaml).
+
+> [!NOTE]
+> Beginning with TigerGraph Operator 1.3.0, both the LoadBalancer's exposed port and the internal port used by sidecar containers to access pods targeted by the service are fully customizable. Users can adjust these ports as needed to meet their specific requirements.
 
 ### Configure Ingress type service
 

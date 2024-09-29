@@ -62,7 +62,7 @@ Follow these commands to install cert-manager:
 > Please check whether cert-manager has been installed before execute the following command.
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml 
 # Verify installation of cert-manager 
 kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
 kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
@@ -107,6 +107,10 @@ kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
+
+If you want to install the TigerGraph Operator with Helm, you can refer to [Deploy TigerGraph Operator with Helm](./deploy-operator-with-helm.md).
+
+The example below shows how to install the TigerGraph Operator with the `kubectl-tg` plugin.
 
 To simplify the Operator installation and TigerGraph cluster deployment, define environment variables:
 
@@ -471,6 +475,9 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
   ```
 
 - Alternatively, create a TigerGraph cluster with a CR YAML manifest:
+
+> [!NOTE]
+> Please replace the TigerGraph docker image version (e.g., 3.9.3) with your desired version.
 
   ```bash
   cat <<EOF | kubectl apply -f -

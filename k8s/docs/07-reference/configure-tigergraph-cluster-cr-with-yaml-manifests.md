@@ -279,7 +279,11 @@ TigerGraph Operator provides three types of external access services, LoadBalanc
 spec:
   listener:
     type: LoadBalancer
+    port: 14240
 ```
+
+> [!NOTE]
+> Starting with TigerGraph Operator 1.3.0, the port exposed by LoadBalancer is fully customizable. Users can now modify the LoadBalancer port as needed to fit their specific requirements.
 
 - NodePort
 

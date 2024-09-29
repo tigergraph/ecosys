@@ -1,11 +1,11 @@
-# Deploy TigerGraph on Google Cloud GKE
+# Deploy TigerGraph on Azure Kubernetes Service (AKS)
 
-This comprehensive document provides step-by-step instructions on deploying a TigerGraph cluster on Google Kubernetes Engine (GKE) using Kubernetes.
+This comprehensive document provides step-by-step instructions on deploying a TigerGraph cluster on Azure Kubernetes Service (AKS).
 
-- [Deploy TigerGraph on Google Cloud GKE](#deploy-tigergraph-on-google-cloud-gke)
+- [Deploy TigerGraph on Azure Kubernetes Service (AKS)](#deploy-tigergraph-on-azure-kubernetes-service-aks)
   - [Prerequisites](#prerequisites)
   - [Deploy TigerGraph Operator](#deploy-tigergraph-operator)
-    - [Install cert-manager for GKE](#install-cert-manager-for-gke)
+    - [Install cert-manager for AKS](#install-cert-manager-for-aks)
     - [Install kubectl-tg plugin](#install-kubectl-tg-plugin)
     - [Install CustomResourceDefinitions (Optional)](#install-customresourcedefinitions-optional)
     - [Install TigerGraph Operator](#install-tigergraph-operator)
@@ -40,13 +40,13 @@ Before proceeding, ensure you have the following prerequisites in place:
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/): kubectl version >= 1.23. The kubectl-tg plugin relies on kubectl for managing Kubernetes clusters.
 
-- Create [GKE cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster) with admin role permission.
+- Create [AKS cluster](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-portal?tabs=azure-cli) with admin role permission.
 
 ## Deploy TigerGraph Operator
 
 To deploy the TigerGraph Operator, follow these steps:
 
-### Install cert-manager for GKE
+### Install cert-manager for AKS
 
 The TigerGraph Operator uses [cert-manager](https://github.com/jetstack/cert-manager) for provisioning certificates for the webhook server. Cert-manager enables the Admission Webhooks feature.
 
@@ -73,7 +73,7 @@ The `kubectl-tg` plugin simplifies deploying and managing the Operator and Tiger
 - [jq](https://jqlang.github.io/jq/download/): jq version >= 1.6
 - [yq](https://github.com/mikefarah/yq): yq version >= 4.18.1
 
-Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 0.0.9:
+Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.2.0:
 
 ```bash
 wget https://dl.tigergraph.com/k8s/latest/kubectl-tg -O kubectl-tg
@@ -159,7 +159,7 @@ A namespace-scoped operator watches and manages resources in a single Namespace,
 
 ## Deploy a TigerGraph cluster
 
-This section explains how to deploy a TigerGraph cluster on GKE using the kubectl-tg plugin and a Custom Resource (CR) YAML manifest.
+This section explains how to deploy a TigerGraph cluster on AKS using the kubectl-tg plugin and a Custom Resource (CR) YAML manifest.
 
 ### Providing Private SSH Key Pair for Enhanced Security
 
@@ -191,20 +191,26 @@ These steps enhance the security of your cluster by utilizing your private SSH k
 ### Specify the StorageClass name
 
 > [!NOTE]
-> Here the dynamic persistent volume storage is provided by GKE by default, if you want to use static persistent volume or use them from scratch, please refer to [How to use static & dynamic persistent volume storage](../07-reference/static-and-dynamic-persistent-volume-storage.md).
+> Here the dynamic persistent volume storage is provided by AKS by default, if you want to use static persistent volume or use them from scratch, please refer to [How to use static & dynamic persistent volume storage](../07-reference/static-and-dynamic-persistent-volume-storage.md).
 
 Before creating the TigerGraph cluster with the Operator, specify the StorageClass, which defines available storage classes. Identify the name of the StorageClass:
 
 ```bash
-kubectl get storageclass
+$ kubectl get storageclass
 
-NAME                     PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-premium-rwo              pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true                   173m
-standard                 kubernetes.io/gce-pd    Delete          Immediate              true                   173m
-standard-rwo (default)   pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true                   173m
+NAME                    PROVISIONER          RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+azurefile                file.csi.azure.com    Delete          Immediate              true                   6m1s
+azurefile-csi            file.csi.azure.com    Delete          Immediate              true                   6m1s
+azurefile-csi-premium    file.csi.azure.com    Delete          Immediate              true                   6m1s
+azurefile-premium        file.csi.azure.com    Delete          Immediate              true                   6m1s
+default (default)       disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   6m1s
+managed                 disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   6m1s
+managed-csi             disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   6m1s
+managed-csi-premium     disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   6m1s
+managed-premium         disk.csi.azure.com   Delete          WaitForFirstConsumer   true                   6m1s
 ```
 
-Choose the appropriate StorageClass (e.g., `standard`) when creating the TigerGraph cluster, ensuring optimized storage provisioning and management.
+Choose the appropriate StorageClass (e.g., `default`) when creating the TigerGraph cluster, ensuring optimized storage provisioning and management.
 
 ### Specify the additional Storage for mounting multiple PVs(Optional)
 
@@ -266,14 +272,14 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
 - Create TigerGraph cluster with kubectl-tg plugin
 
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.9.3 --license ${LICENSE} \
-  --storage-class standard --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.10.1 --license ${LICENSE} \
+  --storage-class default --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
   ```
 
 - Alternatively, create a TigerGraph cluster with a CR YAML manifest:
 
 > [!NOTE]
-> Please replace the TigerGraph docker image version (e.g., 3.9.3) with your desired version.
+> Please replace the TigerGraph docker image version (e.g., 3.10.1) with your desired version.
 
   ```bash
   cat <<EOF | kubectl apply -f -
@@ -283,7 +289,7 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
     name: ${YOUR_CLUSTER_NAME}
     namespace: ${YOUR_NAMESPACE}
   spec:
-    image: docker.io/tigergraph/tigergraph-k8s:3.9.3
+    image: docker.io/tigergraph/tigergraph-k8s:3.10.1
     imagePullPolicy: IfNotPresent
     ha: 2
     license: ${LICENSE}
@@ -304,7 +310,7 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
         resources:
           requests:
             storage: 100G
-        storageClassName: standard
+        storageClassName: default
   EOF
   ```
 
@@ -375,10 +381,10 @@ Upgrading a TigerGraph cluster is supported from a lower version to a higher ver
 > [!WARNING]
 > Operator 0.0.9 has disabled TG downgrades from a higher version (e.g., 3.9.3) to any lower version (e.g., 3.9.2). Therefore, the upgrade job will fail if you attempt to downgrade.
 
-Assuming the current version of the cluster is 3.9.2, you can upgrade it to version 3.9.3 with the following command:
+Assuming the current version of the cluster is 3.10.0, you can upgrade it to version 3.10.1 with the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 3.9.3  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 3.10.1  --namespace ${YOUR_NAMESPACE}
 ```
 
 If you prefer using a CR YAML manifest, update the `spec.image` field, and then apply it.
