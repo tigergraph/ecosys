@@ -9,8 +9,9 @@ Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
-| 1.1.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
-| 1.0.0 | TigerGraph >= 3.6.0 |1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.1.1 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.2|1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.1.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.1|1.24, 1.25, 1.26, 1.27, 1.28|
+| 1.0.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.0|1.24, 1.25, 1.26, 1.27, 1.28|
 | 0.0.9 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.3|1.23, 1.24, 1.25, 1.26, 1.27|
 | 0.0.7 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.2|1.22, 1.23, 1.24, 1.25, 1.26|
 | 0.0.6 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.1|1.22, 1.23, 1.24, 1.25, 1.26|
