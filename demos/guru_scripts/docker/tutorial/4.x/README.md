@@ -931,6 +931,40 @@ RUN QUERY ForeachTest()
 [Go back to top](#top)
 
 ### CONTINUE and BREAK Statement
+The `CONTINUE` and `BREAK` statements can only be used within a block of a `WHILE` or `FOREACH` statement. The `CONTINUE` statement branches control flow to the end of the loop, skipping any remaining statements in the current iteration, and proceeding to the next iteration. That is, everything in the loop block after the `CONTINUE` statement will be skipped, and then the loop will continue as normal. The `BREAK` statement branches control flow out of the loop, i.e., it will exit the loop and stop iteration.
+
+**Example** 
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY ContinueAndBreakTest ( ) {
+
+   //output: 1, 3
+   INT i = 0;
+   WHILE (i < 3) DO
+      i = i + 1;
+      IF (i == 2) THEN
+         CONTINUE; //go directly to WHILE condition
+      END;
+      PRINT i;
+    END;
+
+    //output: 1
+    i = 0;
+    WHILE (i < 3) DO
+      i = i + 1;
+      IF (i == 2) THEN
+        Break; //jump out of the WHILE loop
+      END;
+      PRINT i;
+    END;
+
+}
+
+INSTALL QUERY ContinueAndBreakTest
+
+RUN QUERY ContinueAndBreakTest()
+```
+[Go back to top](#top)
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
