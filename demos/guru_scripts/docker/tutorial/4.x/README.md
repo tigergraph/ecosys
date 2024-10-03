@@ -1120,6 +1120,7 @@ CREATE OR REPLACE QUERY unionTest () SYNTAX V3 {
 
 ### Intersect
 The `INTERSECT` operator in GSQL is used to return the common vertices between two vertex sets. It only returns the vertices that are present in both vertex sets.
+
 **Example**
 ```python
 USE GRAPH financialGraph
@@ -1149,6 +1150,7 @@ CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
 
 ### Minus
 The `MINUS` operator in GSQL is used to return the difference between two vertex sets. It essentially subtracts one vertex set from the other, returning only the vertices that are present in the first vertex set but not in the second.
+
 **Example**
 ```python
 USE GRAPH financialGraph
