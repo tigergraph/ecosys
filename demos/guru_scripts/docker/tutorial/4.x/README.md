@@ -976,7 +976,7 @@ The `CASE` statement can be used in two different syntaxes: One equivalent to an
 
 The `IF-ELSE` version evaluates the boolean condition within each `WHEN` clause and executes the first block of statements whose condition is true. The optional concluding `ELSE` clause is executed only if all `WHEN` clause conditions are false.
 
-The switch version evaluates the expression following the keyword `WHEN` and compares its value to the expression immediately following the keyword `CASE`. These expressions do not need to be boolean; the `CASE` statement compares pairs of expressions to see if their values are equal. The first `WHEN-THEN` clause to have an expression value equal to the `CASE` expression value is executed; the remaining clauses are skipped. The optional ELSE clause is executed only if no `WHEN` clause expression has a value matching the `CASE` value.
+The switch version evaluates the expression following the keyword `WHEN` and compares its value to the expression immediately following the keyword `CASE`. These expressions do not need to be boolean; the `CASE` statement compares pairs of expressions to see if their values are equal. The first `WHEN-THEN` clause to have an expression value equal to the `CASE` expression value is executed; the remaining clauses are skipped. The optional `ELSE` clause is executed only if no `WHEN` clause expression has a value matching the `CASE` value.
 
 The `CASE` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at a top-statement level — the same level as the `SELECT` query block
 
