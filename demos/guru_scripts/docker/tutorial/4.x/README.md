@@ -17,6 +17,8 @@ This GSQL tutorial contains
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
+    - [Using Vertex Set Variables](#using-vertex-set-variables)
+    - [Using Accumulators](#using-accumulators)
   - [Flow Control](#flow-control)
     - [IF Statement](#if-statement)
     - [WHILE Statement](#while-statement)
@@ -603,7 +605,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 
 User can use two methods to achieve query composition. 
 
-- (1) Using vertex set variable.
+### Using Vertex Set Variables
 
 GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
 
@@ -660,7 +662,8 @@ INSTALL QUERY a5
 
 RUN QUERY a5()
 ```
-- (2) Using accumulators.
+
+ ### Using Accumulators
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
 each query block will access the latest value of each vertex's local accumulator, thus achieving composition. 
