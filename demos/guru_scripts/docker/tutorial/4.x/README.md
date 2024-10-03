@@ -750,6 +750,8 @@ INSTALL QUERY IfElseTest
 
 RUN QUERY IfElseTest()
 ```
+[Go back to top](#top)
+
 ### WHILE Statement
 The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
 
@@ -821,6 +823,110 @@ INSTALL QUERY WhileTest
 
 RUN QUERY WhileTest("Scott")
 ```
+[Go back to top](#top)
+
+### FOREACH Statement
+The `FOREACH` statement provides bounded iteration over a block of statements.
+
+The `FOREACH` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```python
+FOREACH loop_var IN rangeExpr DO
+   statements
+END
+
+//loop_var and rangExpr can be the following forms
+name IN setBagExpr
+(key, value) pair IN setBagExpr // because it’s a Map
+name IN RANGE [ expr, expr ]
+name IN RANGE [ expr, expr ].STEP ( expr )
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
+
+  ListAccum<UINT>  @@listVar = [1, 2, 3];
+  SetAccum<UINT>   @@setVar = (1, 2, 3);
+  BagAccum<UINT>   @@bagVar =  (1, 2, 3);
+
+  SetAccum<UINT> @@set1;
+  SetAccum<UINT> @@set2;
+  SetAccum<UINT> @@set3;
+
+  #FOREACH item in collection accumlators variables
+  S = SELECT tgt
+      FROM (s:Account) -[e:Transfer]-> (tgt)
+      ACCUM
+        @@listVar += e.amount,
+        @@setVar += e.amount,
+        @@bagVar += e.amount;
+
+  PRINT @@listVar, @@setVar, @@bagVar;
+
+  //loop element in a list
+  FOREACH i IN @@listVar DO
+      @@set1 += i;
+  END;
+
+  //loop element in a set
+  FOREACH i IN @@setVar DO
+     @@set2 += i;
+  END;
+
+  //loop element in a bag
+  FOREACH i IN @@bagVar DO
+      @@set3 += i;
+  END;
+
+  PRINT @@set1, @@set2, @@set3;
+
+  //show step of loop var
+  ListAccum<INT> @@st;
+  FOREACH k IN RANGE[-1,4].STEP(2) DO
+      @@st += k;
+  END;
+
+  PRINT @@st;
+
+  ListAccum<INT> @@t;
+
+  //nested loop:
+  // outer loop iterates 0, 1, 2.
+  // inner loop iterates 0 to i
+  FOREACH i IN RANGE[0, 2] DO
+    @@t += i;
+    S = SELECT s
+        FROM (s:Account)
+        WHERE s.name =="Scott"
+        ACCUM
+          FOREACH j IN RANGE[0, i] DO
+            @@t += j
+          END;
+  END;
+  PRINT @@t;
+
+  MapAccum<STRING,STRING> @@mapVar, @@mapVarResult;
+  S = SELECT s
+      FROM (s:Account)
+      WHERE s.name =="Scott" OR s.name == "Jennie"
+      ACCUM @@mapVar += (s.name -> s.isBlocked);
+
+   //loop (k,v) pairs of a map
+   FOREACH (keyI, valueJ) IN @@mapVar DO
+    @@mapVarResult += (keyI -> valueJ);
+   END;
+
+  PRINT  @@mapVar, @@mapVarResult;
+
+}
+
+INSTALL QUERY ForeachTest
+
+RUN QUERY ForeachTest()
+```
+[Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
