@@ -19,7 +19,8 @@ This GSQL tutorial contains
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
   - [Flow Control](#flow-control)
     - [IF Statement](#if-statement)
-    - [WHILE Statement](#while-statement)  
+    - [WHILE Statement](#while-statement)
+    - [FOREACH Statement](#foreach-statement)  
  - [Support](#support) 
   
 
@@ -784,7 +785,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
        //s is all neighbors of visited_vertices
        //which have not been visited
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[transfer]->(s)
+                        FROM (visited_vertices)-[:transfer]->(s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                                 s.@visited = TRUE;
@@ -807,7 +808,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
     // Loop terminates when condition met or reach 2 iterations
   WHILE visited_vertices.size() !=0 LIMIT 2 DO
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[transfer]-> (s)
+                        FROM (visited_vertices)-[:transfer]-> (s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                               s.@visited = TRUE;
