@@ -748,7 +748,77 @@ INSTALL QUERY IfElseTest
 
 RUN QUERY IfElseTest()
 ```
+### WHILE statement
+The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
 
+The `WHILE` statement iterates over its body until the condition evaluates to false or until the iteration limit is met. A condition is any expression that evaluates to a boolean. The condition is evaluated before each iteration. `CONTINUE` statements can be used to change the control flow within the while block. `BREAK` statements can be used to exit the while loop.
+
+A `WHILE` statement may have an optional `LIMIT` clause. The `LIMIT` clauses have a constant positive integer value or integer variable to constrain the maximum number of loop iterations.
+
+The `WHILE` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```python
+WHILE condition (LIMIT maxIter)? DO
+    statement(s)
+END
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices (ANY) = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (visited_vertices)-[transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE;
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+
+  //reset vertex set variables
+  reachable_vertices = {};
+  visited_vertices (ANY) = {seed};
+
+
+     //clear the visited flag
+  S1 = SELECT s
+       FROM  (s:Account)
+       ACCUM s.@visited = FALSE;
+
+    // Loop terminates when condition met or reach 2 iterations
+  WHILE visited_vertices.size() !=0 LIMIT 2 DO
+     visited_vertices = SELECT s
+                        FROM (visited_vertices)-[transfer]-> (s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                              s.@visited = TRUE;
+
+     reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY WhileTest
+
+RUN QUERY WhileTest("Dave")
+```
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
