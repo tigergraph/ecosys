@@ -713,14 +713,14 @@ END
 **Example**
 ```python
 USE GRAPH financialGraph
-CREATE OR REPLACE QUERY IfElseTest () {
+CREATE OR REPLACE QUERY IfElseTest () SYNTAX V3 {
 
   SumAccum<INT> @@isBlocked;
   SumAccum<INT> @@unBlocked;
   SumAccum<INT> @@others;
 
   S1 = SELECT a
-       FROM (Account):a
+       FROM (a:Account)
        ACCUM
              IF a.isBlocked THEN @@isBlocked += 1
               ELSE IF NOT a.isBlocked THEN @@unBlocked += 1
