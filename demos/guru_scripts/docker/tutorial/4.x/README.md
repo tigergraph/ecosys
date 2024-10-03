@@ -25,6 +25,10 @@ This GSQL tutorial contains
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
+  - [Vertex Set Operators](#vertex-set-opertors]
+    - [Union](#union)
+    - [Intersect](#intersect)
+    - [Minus](#minus)
  - [Support](#support) 
   
 
@@ -1072,6 +1076,15 @@ INSTALL QUERY CaseWhenTest
 RUN QUERY CaseWhenTest()
 ```
 
+[Go back to top](#top)
+
+## Vertex Set Operators
+
+### Union
+[Go back to top](#top)
+### Intersect
+[Go back to top](#top)
+### Minus
 [Go back to top](#top)
 
 # Support 
