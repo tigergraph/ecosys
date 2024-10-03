@@ -79,7 +79,7 @@ We show both styles for each pattern class.
 ### SELECT A Vertex Set Style 
 Copy [q1a.gsql](./script/q1a.gsql) to your container. 
 
-```sql
+```python
 #enter the graph
 USE GRAPH financialGraph
 
@@ -106,7 +106,7 @@ If you're familiar with SQL, treat the matched node as a table -- table(a) or ta
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
-```sql
+```python
 #enter the graph
 USE GRAPH financialGraph
 
@@ -135,7 +135,7 @@ run query q1b()
 ### SELECT A Vertex Set Style 
 Copy [q2a.gsql](./script/q2a.gsql) to your container. 
 
-```sql
+```python
 
 USE GRAPH financialGraph
 
@@ -171,7 +171,7 @@ If you're familiar with SQL, treat the matched edge as a table -- table(a, e, b)
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
@@ -201,7 +201,7 @@ run query q2b()
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // create a query
@@ -235,7 +235,7 @@ If you're familiar with SQL, treat the matched path as a table -- table(a, e, b,
 
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // create a query
@@ -314,7 +314,7 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 
 - `+=` operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // "distributed" key word means this query can be run both on a single node or a cluster of nodes 
@@ -397,7 +397,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 
 - `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex alias specified in a FROM clause of a SELECT-FROM-WHERE query block.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
@@ -451,7 +451,7 @@ The accumulator will accumulate based on the accumulator type.
 
 #### ACCUM
 Running example. 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a2 () SYNTAX V3 {
@@ -498,7 +498,7 @@ The optional `POST-ACCUM` clause enables accumulation and other computations acr
 
 Running example. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
@@ -536,7 +536,7 @@ Another characteristic of the `POST-ACCUM` clause is that its statements can acc
 
 In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
@@ -586,7 +586,7 @@ In query a4(), we have multiple `POST-ACCUM` clauses, each will be looping one s
 
 Note that you can only access one vertex alias in a `POST-ACCUM`. Below example is not allowed, as it has two vertex alias (a, b) in `a.@maxAmount` and `b.@maxAmount`, respectively. 
 
-```sql
+```python
 ### Example of Incorrect Code ❌
 POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
@@ -604,7 +604,7 @@ GSQL query consists of a sequence of query blocks. Each query block will produce
 
 High level, within the query body brackets, you can define a sequence of connected or unconnected query blocks to make up the query body. Below is the skeleton of a query body.
 
-```sql
+```python
 CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
     // Query body
 
@@ -629,7 +629,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
 A typical GSQL query follows a top-down sequence of query blocks. Each query block generates a vertex set, which can be used by subsequent query blocks to drive pattern matching. For example, 
 the query a5 below achieve query composition via tgtAccnts vertex set variable, where the first SELECT query block compute this variable, and the second SELECT query block uses the variable in its `FROM` clause. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
