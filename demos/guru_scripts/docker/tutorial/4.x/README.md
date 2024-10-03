@@ -710,6 +710,44 @@ IF condition1 THEN statement(s)
  ELSE statement(s)
 END
 ```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY IfElseTest () {
+
+  SumAccum<INT> @@isBlocked;
+  SumAccum<INT> @@unBlocked;
+  SumAccum<INT> @@others;
+
+  S1 = SELECT a
+       FROM (Account):a
+       ACCUM
+             IF a.isBlocked THEN @@isBlocked += 1
+              ELSE IF NOT a.isBlocked THEN @@unBlocked += 1
+              ELSE  @@others += 1
+             END;
+
+  PRINT @@isBlocked, @@unBlocked, @@others;
+
+  STRING drink = "Juice";
+  SumAccum<INT> @@calories = 0;
+
+ //if-else. Top-statement level. Each statement
+ //needs to end by a semicolon, including the “END”.
+
+  IF drink == "Juice" THEN @@calories += 50;
+   ELSE IF drink == "Soda"  THEN @@calories += 120;
+   ELSE @@calories = 0;   // Optional else-clause
+ END;
+  // Since drink = "Juice", 50 will be added to calories
+
+  PRINT @@calories;
+}
+
+INSTALL QUERY IfElseTest
+
+RUN QUERY IfElseTest()
+```
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
