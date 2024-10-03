@@ -662,8 +662,9 @@ INSTALL QUERY a5
 
 RUN QUERY a5()
 ```
+[Go back to top](#top)
 
- ### Using Accumulators
+### Using Accumulators
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
 each query block will access the latest value of each vertex's local accumulator, thus achieving composition. 
