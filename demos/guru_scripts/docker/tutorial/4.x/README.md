@@ -703,7 +703,7 @@ The `IF` statement provides conditional branching: execute a block of statements
 The `IF` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
 
 **Syntax** 
-```
+```python
 IF condition1 THEN statement(s)
  ELSE IF condition2 THEN statement(s)
   ...
