@@ -694,6 +694,10 @@ RUN QUERY a6()
 [Go back to top](#top)
 
 ## Flow Control
+
+GSQL 
+[Go back to top](#top)
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
