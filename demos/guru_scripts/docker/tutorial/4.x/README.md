@@ -663,7 +663,7 @@ each query block will access the latest value of each vertex's local accumulator
 Global variable maintains a global state, it can be accessed within query block, or at the same level as a query block. 
 For example, in a6 query below, the first query block accumulate 1 into each `y`'s `@cnt` accumulator, and increment the global accumulator `@@cnt`. In the second query block's `WHERE` clause, we use the `@cnt` and `@@cnt` accumulator, thus achieving composition. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
