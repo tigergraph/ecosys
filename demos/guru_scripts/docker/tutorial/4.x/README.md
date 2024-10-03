@@ -19,7 +19,7 @@ This GSQL tutorial contains
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
   - [Flow Control](#flow-control)
     - [IF Statement](#if-statment)
-    - [WHILE statement](#while-statement)  
+    - [WHILE Statement](#while-statement)  
  - [Support](#support) 
   
 
@@ -699,7 +699,7 @@ RUN QUERY a6()
 
 ## Flow Control
 
-### IF statement
+### IF Statement
 The `IF` statement provides conditional branching: execute a block of statements only if a given condition is true. The `IF` statement allows for zero or more `ELSE-IF` clauses, followed by an optional `ELSE` clause. It is always closed by the `END` keyword.
 
 The `IF` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
@@ -750,7 +750,7 @@ INSTALL QUERY IfElseTest
 
 RUN QUERY IfElseTest()
 ```
-### WHILE statement
+### WHILE Statement
 The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
 
 The `WHILE` statement iterates over its body until the condition evaluates to false or until the iteration limit is met. A condition is any expression that evaluates to a boolean. The condition is evaluated before each iteration. `CONTINUE` statements can be used to change the control flow within the while block. `BREAK` statements can be used to exit the while loop.
