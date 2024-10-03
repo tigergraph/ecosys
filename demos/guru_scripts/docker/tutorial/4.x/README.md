@@ -817,7 +817,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
 
 INSTALL QUERY WhileTest
 
-RUN QUERY WhileTest("Dave")
+RUN QUERY WhileTest("Scott")
 ```
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
