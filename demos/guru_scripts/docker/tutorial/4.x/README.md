@@ -25,7 +25,7 @@ This GSQL tutorial contains
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
-  - [Vertex Set Operators](#vertex-set-operators]
+  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
