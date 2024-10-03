@@ -696,6 +696,20 @@ RUN QUERY a6()
 [Go back to top](#top)
 
 ## Flow Control
+
+### IF statement
+The `IF` statement provides conditional branching: execute a block of statements only if a given condition is true. The `IF` statement allows for zero or more `ELSE-IF` clauses, followed by an optional `ELSE` clause. It is always closed by the `END` keyword.
+The `IF` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```
+IF condition1 THEN statement(s)
+ ELSE IF condition2 THEN statement(s)
+  ...
+ ELSE statement(s)
+END
+```
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
