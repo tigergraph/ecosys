@@ -22,6 +22,7 @@ This GSQL tutorial contains
     - [WHILE Statement](#while-statement)
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
+    - [CASE WHEN Statement](#case-when-statement)
  - [Support](#support) 
   
 
@@ -964,6 +965,109 @@ INSTALL QUERY ContinueAndBreakTest
 
 RUN QUERY ContinueAndBreakTest()
 ```
+[Go back to top](#top)
+
+
+### CASE WHEN Statement
+
+One `CASE` statement contains one or more `WHEN-THEN` clauses, each `WHEN` presenting one expression. The `CASE` statement may also have one `ELSE` clause whose statements are executed if none of the preceding conditions are true.
+
+The `CASE` statement can be used in two different syntaxes: One equivalent to an `IF-ELSE` statement, and the other equivalent to a switch statement.
+
+The `IF-ELSE` version evaluates the boolean condition within each `WHEN` clause and executes the first block of statements whose condition is true. The optional concluding `ELSE` clause is executed only if all `WHEN` clause conditions are false.
+
+The switch version evaluates the expression following the keyword `WHEN` and compares its value to the expression immediately following the keyword `CASE`. These expressions do not need to be boolean; the `CASE` statement compares pairs of expressions to see if their values are equal. The first `WHEN-THEN` clause to have an expression value equal to the `CASE` expression value is executed; the remaining clauses are skipped. The optional ELSE clause is executed only if no `WHEN` clause expression has a value matching the `CASE` value.
+
+The `CASE` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at a top-statement level — the same level as the `SELECT` query block
+
+**Syntax** 
+```python
+//if-else semantics
+CASE
+  WHEN condition1 THEN statement(s)
+  WHEN condition2 THEN statement(s)
+  ...
+  ELSE statement(s)
+END
+
+//or switch semantics
+CASE expr
+  WHEN constant1 THEN statement(s)
+  WHEN constant2 THEN statement(s)
+  ...
+  ELSE statement(s)
+END
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY CaseWhenTest () SYNTAX V3{
+
+  SumAccum<INT> @@isBlocked;
+  SumAccum<INT> @@unBlocked;
+  SumAccum<INT> @@others;
+
+  SumAccum<INT> @@isBlocked2;
+  SumAccum<INT> @@unBlocked2;
+  SumAccum<INT> @@others2;
+
+
+  //case-when in a query block
+  S1 = SELECT a
+       FROM (a:Account)
+       ACCUM
+          //if-else semantic: within query block, statement
+          //does not need a semicolon to end.
+          CASE
+            WHEN a.isBlocked THEN @@isBlocked += 1
+            WHEN NOT a.isBlocked THEN @@unBlocked += 1
+            ELSE  @@others += 1
+          END;
+
+
+  PRINT @@isBlocked, @@unBlocked, @@others;
+
+  S2 = SELECT a
+       FROM (a:Account)
+       ACCUM
+          //switch semantic: within query block, statement
+          //does not need a semicolon to end.
+          CASE a.isBlocked
+            WHEN TRUE THEN @@isBlocked2 += 1
+            WHEN FALSE THEN @@unBlocked2 += 1
+            ELSE  @@others2 += 1
+          END;
+
+  PRINT @@isBlocked2, @@unBlocked2, @@others2;
+
+  STRING drink = "Juice";
+  SumAccum<INT> @@calories = 0;
+
+ //if-else version. Top-statement level. Each statement
+ //needs to end by a semicolon, including the “END”.
+  CASE
+    WHEN drink == "Juice" THEN @@calories += 50;
+    WHEN drink == "Soda"  THEN @@calories += 120;
+    ELSE @@calories = 0;       // Optional else-clause
+  END;
+  // Since drink = "Juice", 50 will be added to calories
+
+  //switch version. Top-statement level. Each statement
+  //needs to end by a semicolon, including the “END”.
+  CASE drink
+    WHEN "Juice" THEN @@calories += 50;
+    WHEN "Soda"  THEN @@calories += 120;
+    ELSE  @@calories = 0;    // Optional else-clause
+  END;
+
+  PRINT @@calories;
+}
+
+INSTALL QUERY CaseWhenTest
+
+RUN QUERY CaseWhenTest()
+```
+
 [Go back to top](#top)
 
 # Support 
