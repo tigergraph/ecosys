@@ -1081,10 +1081,100 @@ RUN QUERY CaseWhenTest()
 ## Vertex Set Operators
 
 ### Union
+The `UNION` operator in GSQL is used to combine two or more sets into a single result set. It removes duplicate elements from the input sets. The set could be vertex set or some type set.
+
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY unionTest () SYNTAX V3 {
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 UNION S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+  S4 = SELECT c
+       FROM (c:City);
+
+  S5 = S3 UNION S4;
+
+  //show what's in S5
+  PRINT S5[S5.number];
+
+}
+```
 [Go back to top](#top)
+
 ### Intersect
+The `INTERSECT` operator in GSQL is used to return the common vertices between two vertex sets. It only returns the vertices that are present in both vertex sets.
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 INTERSECT S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+}
+```
 [Go back to top](#top)
+
 ### Minus
+The `MINUS` operator in GSQL is used to return the difference between two vertex sets. It essentially subtracts one vertex set from the other, returning only the vertices that are present in the first vertex set but not in the second.
+**Example**
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 MINUS S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+}
+```
 [Go back to top](#top)
 
 # Support 
