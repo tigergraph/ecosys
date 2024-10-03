@@ -18,7 +18,7 @@ This GSQL tutorial contains
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
   - [Flow Control](#flow-control)
-    - [IF Statement](#if-statment)
+    - [IF Statement](#if-statement)
     - [WHILE Statement](#while-statement)  
  - [Support](#support) 
   
