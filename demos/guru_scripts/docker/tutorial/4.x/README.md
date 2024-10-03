@@ -17,6 +17,7 @@ This GSQL tutorial contains
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
+  - [Flow Control](#flow-control)
  - [Support](#support) 
   
 
@@ -691,6 +692,8 @@ RUN QUERY a6()
 ```
 
 [Go back to top](#top)
+
+## Flow Control
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
