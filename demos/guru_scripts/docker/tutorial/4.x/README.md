@@ -20,7 +20,8 @@ This GSQL tutorial contains
   - [Flow Control](#flow-control)
     - [IF Statement](#if-statement)
     - [WHILE Statement](#while-statement)
-    - [FOREACH Statement](#foreach-statement)  
+    - [FOREACH Statement](#foreach-statement)
+    - [CONTINUE and BREAK Statement](#continue-and-break-statement)
  - [Support](#support) 
   
 
@@ -928,6 +929,9 @@ INSTALL QUERY ForeachTest
 RUN QUERY ForeachTest()
 ```
 [Go back to top](#top)
+
+### CONTINUE and BREAK Statement
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
