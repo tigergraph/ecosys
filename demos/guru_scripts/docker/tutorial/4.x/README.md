@@ -97,7 +97,8 @@ USE GRAPH financialGraph
 //create a query
 CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
-  // select from a node pattern-- symbolized by ()
+  // select from a node pattern-- symbolized by (),
+  //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
   // v is a vertex set variable, holding the selected vertex set
   v = SELECT a
       FROM (a:Account);
@@ -125,7 +126,7 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   //think the FROM clause as a table (a.attr1, a.attr2,...)
   // you can group by a or its attributes, and do aggregation.
   // ":Account" is the label of the vertex type, and "a" is the
-  // table alias, and () symbolize a vertex pattern in ASCII art.
+  // vertex type alias, and () symbolize a vertex pattern in ASCII art.
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
@@ -160,6 +161,7 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
   // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
   // "v" is a vertex set variable holding the selected vertex set.
   // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
+  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
   v = SELECT b
       FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
       //for each matched edge, accumulate e.amount into the local accumulator of b.
