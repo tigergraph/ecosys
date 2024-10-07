@@ -105,6 +105,16 @@ CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
   // output vertex set variable v in JSON format
   PRINT v;
+
+  //we can use vertex set variable in the subsequent query block's node pattern.
+  //v is placed in the node pattern vertex label position. The result is re-assigned to v. 
+  v = SELECT a
+      FROM (a:v)
+      WHERE a.name == "Scott";
+
+  // output vertex set variable v in JSON format
+  PRINT v;
+
 }
 
 #compile and install the query as a stored procedure
