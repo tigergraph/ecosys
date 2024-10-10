@@ -20,6 +20,8 @@ import java.sql.SQLException;
 // convert json payload to string by https://jsontostring.com
 
 public class RequestTest {
+  // Always test the latest
+  private static final String TEST_VERSION = "99.99.99";
   static WireMockServer wireMockServer;
   static Connection con;
   static Properties properties;
@@ -48,6 +50,7 @@ public class RequestTest {
     properties.put("password", "tigergraph");
     properties.put("graph", "social");
     properties.put("debug", "0");
+    properties.put("version", TEST_VERSION);
     properties.put("filename", "file1");
     properties.put("sep", ",");
     properties.put("eol", "\n");
@@ -73,7 +76,7 @@ public class RequestTest {
   void sendAuthRequest() throws SQLException, InterruptedException {
     wireMockServer.verify(
         2,
-        postRequestedFor(urlEqualTo("/restpp/requesttoken"))
+        postRequestedFor(urlEqualTo("/gsql/v1/tokens"))
             .withHeader(
                 "Authorization",
                 equalTo(
@@ -124,7 +127,7 @@ public class RequestTest {
 
     wireMockServer.verify(
         1,
-        postRequestedFor(urlEqualTo("/gsqlserver/interpreted_query?a=10&b=20"))
+        postRequestedFor(urlEqualTo("/gsql/v1/queries/interpret?a=10&b=20"))
             .withRequestBody(
                 equalTo(
                     "INTERPRET QUERY (int a, int b) FOR GRAPH social {\n"

@@ -7,9 +7,9 @@ edges/Page/2/Linkto/Page
 edges/Page/2/Linkto/Page/3
 pageRank?maxChange=0.001&maxIteration=10&dampingFactor=0.15
 hello?str1=abc%20%2B%27def&str2=%3F&str3=%27%27
-gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
-gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
-gsql/loading-jobs?action=getprogress&jobId=jdbc.local.12345.aaa
+gsql/v1/loading-jobs/status?jobIds=jdbc.local.12345.aaa
+gsql/v1/loading-jobs/status?jobIds=jdbc.local.12345.aaa
+gsql/v1/loading-jobs/status?jobIds=jdbc.local.12345.aaa
 "Page":{"1000":{"name":{"value":"new page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":true}}}
 "Page":{"1000'":{"name":{"value":"new' page"},"page rank":{"value":0.8},"page_id":{"value":1000},"is_active":{"value":false}}}
 "Page":{"1000":{"Linkto":{"Page":{"1001":{"weight":{"value":10.7},"is_active":{"value":false}}}}}}

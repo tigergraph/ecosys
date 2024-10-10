@@ -5,7 +5,7 @@ import com.tigergraph.jdbc.restpp.driver.QueryParser;
 import com.tigergraph.jdbc.restpp.driver.QueryType;
 import com.tigergraph.jdbc.restpp.driver.RestppResponse;
 import com.tigergraph.jdbc.log.TGLoggerFactory;
-
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -24,11 +24,17 @@ public class RestppStatement extends Statement {
   private List<String> vertex_list;
   private QueryParser parser;
   private QueryType query_type;
+  private ComparableVersion version;
 
-  public RestppStatement(RestppConnection restppConnection, Integer timeout, Integer atomic) {
+  public RestppStatement(
+      RestppConnection restppConnection,
+      Integer timeout,
+      Integer atomic,
+      ComparableVersion version) {
     super(restppConnection);
     this.timeout = timeout;
     this.atomic = atomic;
+    this.version = version;
     edge_list = new ArrayList<String>();
     vertex_list = new ArrayList<String>();
   }
@@ -44,7 +50,13 @@ public class RestppStatement extends Statement {
     // execute the query
     this.parser =
         new QueryParser(
-            (RestppConnection) getConnection(), query, null, this.timeout, this.atomic, true);
+            (RestppConnection) getConnection(),
+            query,
+            null,
+            this.timeout,
+            this.atomic,
+            this.version,
+            true);
     this.query_type = parser.getQueryType();
 
     String json = "";
@@ -87,7 +99,13 @@ public class RestppStatement extends Statement {
   public void addBatch(String sql) throws SQLException {
     this.parser =
         new QueryParser(
-            (RestppConnection) getConnection(), sql, null, this.timeout, this.atomic, false);
+            (RestppConnection) getConnection(),
+            sql,
+            null,
+            this.timeout,
+            this.atomic,
+            this.version,
+            false);
     String vertex_json = parser.getVertexJson();
     String edge_json = parser.getEdgeJson();
     if (vertex_json != "") {

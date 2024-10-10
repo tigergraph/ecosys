@@ -25,6 +25,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.regex.Pattern;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -62,7 +63,7 @@ import org.slf4j.Logger;
 public class RestppConnection extends Connection {
 
   private static final Logger logger = TGLoggerFactory.getLogger(RestppConnection.class);
-  private static final String DEFAULT_TG_VERSION = "99.99.99"; // latest
+  private static final String VERSION_PATTERN = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
 
   private String host;
   private Integer port;
@@ -90,7 +91,7 @@ public class RestppConnection extends Connection {
   private Integer maxRetryCount = 10;
   private Integer level = 1;
   private String[] ipArray = null;
-  private ComparableVersion tg_version = new ComparableVersion(DEFAULT_TG_VERSION);
+  private ComparableVersion tg_version;
 
   private CloseableHttpClient httpClient;
 
@@ -134,7 +135,17 @@ public class RestppConnection extends Connection {
                 .replace("\r", "\\r"));
       }
 
-      // Get restpp version. If not given, use the default version.
+      // version is required
+      String version = properties.getProperty("version", "");
+      if (!Pattern.matches(VERSION_PATTERN, version)) {
+        throw new SQLException(
+            "Connection property \"version\"(TigerGraph version) is required and should follow the"
+                + " pattern: MAJOR.MINOR.PATCH, got \""
+                + version
+                + "\"");
+      }
+      tg_version = new ComparableVersion(version);
+
       if (properties.containsKey("version")) {
         this.tg_version = new ComparableVersion(properties.getProperty("version"));
       }
@@ -578,8 +589,10 @@ public class RestppConnection extends Connection {
       urlSb.append("/gsqlserver/gsql/authtoken");
       urlSb.append("?graph=");
       urlSb.append(this.graph);
-    } else {
+    } else if (this.tg_version.compareTo(new ComparableVersion("4.1.0")) < 0) {
       urlSb.append("/restpp/requesttoken");
+    } else {
+      urlSb.append("/gsql/v1/tokens");
     }
     String url = "";
     try {
@@ -747,7 +760,7 @@ public class RestppConnection extends Connection {
 
   @Override
   public java.sql.Statement createStatement() throws SQLException {
-    return new RestppStatement(this, this.queryTimeout, this.atomic);
+    return new RestppStatement(this, this.queryTimeout, this.atomic, this.tg_version);
   }
 
   @Override

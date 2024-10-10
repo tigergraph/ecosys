@@ -80,6 +80,7 @@ public class RestppPreparedStatement extends PreparedStatement {
             this.parameters,
             this.timeout,
             this.atomic,
+            this.tg_version,
             true);
     this.query_type = parser.getQueryType();
 
@@ -142,6 +143,7 @@ public class RestppPreparedStatement extends PreparedStatement {
             this.parameters,
             this.timeout,
             this.atomic,
+            this.tg_version,
             false);
 
     if (this.parser.getQueryType() == QueryType.QUERY_TYPE_LOAD_JOB) {
@@ -174,6 +176,7 @@ public class RestppPreparedStatement extends PreparedStatement {
             this.parameters,
             this.timeout,
             this.atomic,
+            this.tg_version,
             false);
 
     this.query_type = this.parser.getQueryType();
@@ -441,7 +444,7 @@ public class RestppPreparedStatement extends PreparedStatement {
 
   private String loadingJobPostAction(String errCode) throws SQLException {
     switch (errCode) {
-        // The max_num/percent_error limit exceeds
+      // The max_num/percent_error limit exceeds
       case "REST-20002":
         this.parameters.clear();
         this.addBatch("status jobid " + ((RestppConnection) getConnection()).getJobId());
