@@ -13,33 +13,14 @@
  */
 package com.tigergraph.spark.client;
 
-import com.tigergraph.spark.client.common.RestppAuthInterceptor;
-import com.tigergraph.spark.client.common.RestppDecoder;
-import com.tigergraph.spark.client.common.RestppEncoder;
-import com.tigergraph.spark.client.common.RestppErrorDecoder;
-import com.tigergraph.spark.client.common.RestppQueryInterceptor;
-import com.tigergraph.spark.client.common.RestppRetryer;
-import com.tigergraph.spark.client.common.RestppTokenManager;
-import com.tigergraph.spark.log.LoggerFactory;
-import com.tigergraph.spark.util.Options;
-import com.tigergraph.spark.util.Utils;
-import feign.*;
-import feign.Target.HardCodedTarget;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.codec.ErrorDecoder;
-import feign.hc5.ApacheHttp5Client;
+import java.util.List;
+import java.util.Random;
+import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.security.KeyStore;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -51,10 +32,22 @@ import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.spark.SparkFiles;
+import com.tigergraph.spark.client.common.RestppAuthInterceptor;
+import com.tigergraph.spark.client.common.RestppDecoder;
+import com.tigergraph.spark.client.common.RestppEncoder;
+import com.tigergraph.spark.client.common.RestppErrorDecoder;
+import com.tigergraph.spark.client.common.RestppRetryer;
+import com.tigergraph.spark.util.Options;
+import com.tigergraph.spark.util.Utils;
+import feign.*;
+import feign.Target.HardCodedTarget;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
+import feign.hc5.ApacheHttp5Client;
 
 /** Builder for all client, with custom client settings. */
 public class Builder {
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Builder.class);
 
   private Feign.Builder builder = new Feign.Builder();
   // default client settings
@@ -65,8 +58,7 @@ public class Builder {
   private Decoder decoder = RestppDecoder.INSTANCE;
   private ErrorDecoder errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE);
   private Retryer retryer = new Retryer.Default();
-  private RequestInterceptor authInterceptor;
-  private RequestInterceptor queryInterceptor;
+  private RequestInterceptor reqInterceptor;
   private Request.Options reqOpts = new Request.Options();
 
   public Builder setRequestOptions(int connectTimeoutMs, int readTimeoutMs) {
@@ -78,19 +70,16 @@ public class Builder {
 
   /** Set response error decoder with the HTTP error codes that will be retried. */
   public Builder setRetryableCode(Integer... code) {
-    this.errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE, code);
-    return this;
-  }
-
-  /** Set custom RESTPP response decoder. */
-  public Builder setDecoder(Decoder decoder) {
-    this.decoder = decoder;
+    this.errDecoder = new RestppErrorDecoder(decoder, code);
     return this;
   }
 
   /** Set retryer for token expiration, io exception and server errors */
   public Builder setRetryer(
-      RestppTokenManager tokenMgr,
+      Auth auth,
+      String basicAuth,
+      String secret,
+      String token,
       int ioPeriod,
       int ioMaxPeriod,
       int ioMaxAttempts,
@@ -99,7 +88,10 @@ public class Builder {
       int serverMaxAttempts) {
     this.retryer =
         new RestppRetryer(
-            tokenMgr,
+            auth,
+            basicAuth,
+            secret,
+            token,
             ioPeriod,
             ioMaxPeriod,
             ioMaxAttempts,
@@ -124,19 +116,8 @@ public class Builder {
   }
 
   /** Set request interceptor for adding authorization header */
-  public Builder setAuthInterceptor(
-      String basicAuth, AtomicReference<String> token, boolean restAuthEnabled) {
-    this.authInterceptor = new RestppAuthInterceptor(basicAuth, token, restAuthEnabled);
-    return this;
-  }
-
-  /** Set request interceptor for adding GSQL query headers */
-  public Builder setQueryInterceptor(Integer queryTimeoutMs, Long queryMaxRespByte) {
-    logger.debug(
-        "Query timeout: {}ms, query response size limit: {}bytes. (default value: 0)",
-        queryTimeoutMs,
-        queryMaxRespByte);
-    this.queryInterceptor = new RestppQueryInterceptor(queryTimeoutMs, queryMaxRespByte);
+  public Builder setRequestInterceptor(String basicAuth, String token, boolean restAuthEnabled) {
+    this.reqInterceptor = new RestppAuthInterceptor(basicAuth, token, restAuthEnabled);
     return this;
   }
 
@@ -152,8 +133,8 @@ public class Builder {
           break;
         case Options.SSL_MODE_VERIFY_HOSTNAME:
           hostnameVerifier = new DefaultHostnameVerifier();
-          // the security level of hostname verification is higher than
-          // CA verification, so need to continue to the next case
+        // the security level of hostname verification is higher than
+        // CA verification, so need to continue to the next case
         case Options.SSL_MODE_VERIFY_CA:
           if (Utils.isEmpty(trustStoreFile)) {
             throw new IllegalArgumentException("\"ssl.truststore\" is required for mode " + mode);
@@ -189,15 +170,9 @@ public class Builder {
         .options(reqOpts)
         .client(
             new ApacheHttp5Client(hc5builder.setConnectionManager(connMgrBuilder.build()).build()));
-    List<RequestInterceptor> interceptorChain = new ArrayList<>();
-    interceptorChain.add(new UAInterceptor());
-    if (authInterceptor != null) interceptorChain.add(authInterceptor);
-    if (queryInterceptor != null) interceptorChain.add(queryInterceptor);
-    builder.requestInterceptors(interceptorChain);
-
-    // Required to fetch the iterator after the response is processed, need to be close
-    if (Query.class.equals(apiType)) builder.doNotCloseAfterDecode();
-
+    if (reqInterceptor != null) {
+      builder.requestInterceptor(reqInterceptor);
+    }
     return builder.target(new LoadBalanceTarget<T>(apiType, url));
   }
 
@@ -228,30 +203,6 @@ public class Builder {
       // Randomize URLs on every request, including on retries
       input.target(url());
       return input.request();
-    }
-  }
-
-  // For audit logging
-  public static class UAInterceptor implements RequestInterceptor {
-    private static final String PRODUCT;
-
-    static {
-      Properties properties = new Properties();
-      try {
-        InputStream stream =
-            UAInterceptor.class.getResourceAsStream(
-                "/META-INF/maven/com.tigergraph/tigergraph-spark-connector/pom.properties");
-        properties.load(stream);
-      } catch (Exception e) {
-        // no-op
-      }
-      String version = properties.getProperty("version", "");
-      PRODUCT = "tigergraph-spark-connector/".concat(version);
-    }
-
-    @Override
-    public void apply(RequestTemplate template) {
-      template.header("User-Agent", PRODUCT);
     }
   }
 }

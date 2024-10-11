@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.StringTokenizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -100,27 +99,5 @@ public class Utils {
     // after v3.9.0
     List<JsonNode> badDataV2 = in.findParents("lineData");
     badDataV2.forEach(json -> ((ObjectNode) json).remove("lineData"));
-  }
-
-  /**
-   * The query type of vertex/edge query is determined by the field count: query.vertex = Comment.1
-   * It has two fields: Comment and 1, separated by dot
-   */
-  public static int countQueryFields(String query, String fieldSep) {
-    return extractQueryFields(query, fieldSep).size();
-  }
-
-  /**
-   * The query type of vertex/edge query is determined by the field count: query.vertex = Comment.1
-   * It has two fields: Comment and 1, return ["Comment", "1"] TODO: should be able to quote field
-   * which contain '.'
-   */
-  public static List<String> extractQueryFields(String query, String fieldSep) {
-    StringTokenizer tknz = new StringTokenizer(query, fieldSep);
-    List<String> tokenList = new ArrayList<>();
-    while (tknz.hasMoreTokens()) {
-      tokenList.add(tknz.nextToken());
-    }
-    return tokenList;
   }
 }

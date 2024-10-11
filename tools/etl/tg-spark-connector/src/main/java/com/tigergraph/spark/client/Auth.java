@@ -13,93 +13,34 @@
  */
 package com.tigergraph.spark.client;
 
-import com.tigergraph.spark.client.common.RestppResponse;
-import com.tigergraph.spark.util.Utils;
 import feign.*;
+import com.tigergraph.spark.client.common.RestppResponse;
 
 /** APIs for RESTPP authentication */
 public interface Auth {
   public static final long TOKEN_LIFETIME_SEC = 6 * 60 * 60; // 6h
 
   /**
-   * A helper function to check whether RESTPP auth is enabled, if not, an exception of 401/403
-   * error will be thrown.
+   * A helper function to check whether RESTPP auth is enabled, if not, an exception of 404 error
+   * will be thrown.
    */
-  @RequestLine("GET /restpp/version")
-  RestppResponse getVersionWithoutToken();
+  @RequestLine("GET /restpp/requesttoken")
+  AuthResponse checkAuthEnabled();
 
-  default Boolean checkAuthEnabled() {
-    try {
-      getVersionWithoutToken();
-    } catch (FeignException e) {
-      // The code is different in different RESTPP versions
-      if (e.status() == 401 || e.status() == 403) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * @deprecated TG 4.1.0
-   */
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithUserPassV0(
+  AuthResponse requestTokenWithUserPass(
       @Param("graph") String graph,
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
 
-  /**
-   * @since TG 4.1.0
-   */
-  @RequestLine("POST /gsql/v1/tokens")
-  @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
-  @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithUserPassV1(
-      @Param("graph") String graph,
-      @Param("basicAuth") String basicAuth,
-      @Param("lifetime") long lifetime);
-
-  default AuthResponse requestTokenWithUserPass(
-      String version, String graph, String basicAuth, long lifetime) {
-    if (Utils.versionCmp(version, "4.1.0") >= 0) {
-      return requestTokenWithUserPassV1(graph, basicAuth, lifetime);
-    } else {
-      return requestTokenWithUserPassV0(graph, basicAuth, lifetime);
-    }
-  }
-
-  /**
-   * @deprecated TG 4.1.0
-   */
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithSecretV0(
+  AuthResponse requestTokenWithSecret(
       @Param("secret") String secret, @Param("lifetime") long lifetime);
 
-  /**
-   * @since TG 4.1.0
-   */
-  @RequestLine("POST /gsql/v1/tokens")
-  @Headers({"Content-Type: application/json"})
-  @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithSecretV1(
-      @Param("secret") String secret, @Param("lifetime") long lifetime);
-
-  default AuthResponse requestTokenWithSecret(String version, String secret, long lifetime) {
-    if (Utils.versionCmp(version, "4.1.0") >= 0) {
-      return requestTokenWithSecretV1(secret, lifetime);
-    } else {
-      return requestTokenWithSecretV0(secret, lifetime);
-    }
-  }
-
-  /**
-   * @deprecated TG 4.1.0
-   */
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -108,9 +49,6 @@ public interface Auth {
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
 
-  /**
-   * @deprecated TG 4.1.0
-   */
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -120,21 +58,7 @@ public interface Auth {
       @Param("lifetime") long lifetime);
 
   public class AuthResponse extends RestppResponse {
-    public String expiration;
+    public long expiration;
     public String token;
-
-    /**
-     * RESTPP has different response format in different versions, we need to try to parse token
-     * from different places.
-     */
-    public String getToken() {
-      if (!Utils.isEmpty(token)) {
-        return token;
-      } else if (results != null) {
-        return results.path("token").asText();
-      } else {
-        return "";
-      }
-    }
   }
 }

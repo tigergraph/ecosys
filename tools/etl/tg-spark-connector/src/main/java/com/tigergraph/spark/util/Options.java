@@ -13,15 +13,13 @@
  */
 package com.tigergraph.spark.util;
 
-import com.tigergraph.spark.util.OptionDef.OptionKey;
-import com.tigergraph.spark.util.OptionDef.Type;
-import com.tigergraph.spark.util.OptionDef.ValidVersion;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.tigergraph.spark.util.OptionDef.OptionKey;
+import com.tigergraph.spark.util.OptionDef.Type;
 
 /** Validate and transform Spark DataFrame options(configurations) */
 public class Options implements Serializable {
@@ -31,20 +29,7 @@ public class Options implements Serializable {
     READ
   }
 
-  /** Refer to {@link com.tigergraph.spark.client.Query} */
-  public static enum QueryType {
-    GET_VERTICES,
-    GET_VERTEX,
-    GET_EDGES_BY_SRC_VERTEX,
-    GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE,
-    GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE,
-    GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX,
-    INSTALLED,
-    INTERPRETED
-  }
-
   private final OptionType optionType;
-  private QueryType queryType;
 
   public static final String GRAPH = "graph";
   public static final String URL = "url";
@@ -60,7 +45,6 @@ public class Options implements Serializable {
   public static final String LOADING_EOL = "loading.eol";
   public static final String LOADING_BATCH_SIZE_BYTES = "loading.batch.size.bytes";
   public static final String LOADING_TIMEOUT_MS = "loading.timeout.ms";
-  public static final String LOADING_ACK = "loading.ack";
   public static final String LOADING_MAX_PERCENT_ERROR = "loading.max.percent.error";
   public static final String LOADING_MAX_NUM_ERROR = "loading.max.num.error";
   public static final String LOADING_RETRY_INTERVAL_MS = "loading.retry.interval.ms";
@@ -71,8 +55,6 @@ public class Options implements Serializable {
   public static final String LOADING_EOL_DEFAULT = "\n";
   public static final int LOADING_BATCH_SIZE_BYTES_DEFAULT = 2 * 1024 * 1024; // 2mb
   public static final int LOADING_TIMEOUT_MS_DEFAULT = 0; // restpp default
-  public static final String LOADING_ACK_ALL = "all";
-  public static final String LOADING_ACK_NONE = "none";
   public static final int LOADING_RETRY_INTERVAL_MS_DEFAULT = 5 * 1000; // 5s
   public static final int LOADING_MAX_RETRY_INTERVAL_MS_DEFAULT = 5 * 60 * 1000; // 5min
   public static final int LOADING_MAX_RETRY_ATTEMPTS_DEFAULT = 10;
@@ -98,66 +80,25 @@ public class Options implements Serializable {
   public static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
   public static final String SSL_TRUSTSTORE_TYPE_DEFAULT = "JKS";
 
-  // Query
-  public static final String QUERY_VERTEX = "query.vertex";
-  public static final String QUERY_EDGE = "query.edge";
-  public static final String QUERY_FIELD_SEPARATOR = "query.field.separator";
-  public static final String QUERY_INSTALLED = "query.installed";
-  public static final String QUERY_INTERPRETED = "query.interpreted";
-  public static final String QUERY_PARAMS = "query.params";
-  // row_number:json_key, e.g. 0:vSet which will extract vSet from [{a:1,vSet:[]},{b:2}]
-  public static final String QUERY_RESULTS_EXTRACT = "query.results.extract";
-
-  // Query - operator
-  public static final String QUERY_OP_SELECT = "query.op.select";
-  public static final String QUERY_OP_FILTER = "query.op.filter";
-  public static final String QUERY_OP_LIMIT = "query.op.limit";
-  public static final String QUERY_OP_SORT = "query.op.sort";
-  // Query - request setting
-  public static final String QUERY_TIMEOUT_MS = "query.timeout.ms";
-  public static final String QUERY_MAX_RESPONSE_BYTES = "query.max.response.bytes";
-  // Query - partitioning
-  public static final String QUERY_PARTITION_KEY = "query.partition.key";
-  public static final String QUERY_PARTITION_NUM = "query.partition.num";
-  public static final String QUERY_PARTITION_UPPER_BOUND = "query.partition.upper.bound";
-  public static final String QUERY_PARTITION_LOWER_BOUND = "query.partition.lower.bound";
-
-  // Logging
-  public static final String LOG_LEVEL = "log.level";
-  public static final String LOG_FILE = "log.file";
-
   // Options' group name
   public static final String GROUP_GENERAL = "general";
   public static final String GROUP_AUTH = "auth";
   public static final String GROUP_LOADING_JOB = "loading.job";
   public static final String GROUP_TRANSPORT_TIMEOUT = "transport.timeout";
   public static final String GROUP_SSL = "ssl";
-  public static final String GROUP_QUERY = "query";
-  public static final String GROUP_LOG = "log";
 
-  private final HashMap<String, String> originals;
-  private final HashMap<String, Serializable> transformed = new HashMap<>();
+  private final Map<String, String> originals;
+  private final Map<String, Serializable> transformed = new HashMap<>();
   private final OptionDef definition;
 
-  public Options(Map<String, String> originals, boolean skipValidate) {
-    if (originals == null) throw new IllegalArgumentException("Original option map can't be null.");
-    if (originals.containsKey(LOADING_JOB)) {
-      this.optionType = OptionType.WRITE;
-    } else {
-      this.optionType = OptionType.READ;
-    }
-    this.originals = originals != null ? new HashMap<>(originals) : new HashMap<>();
+  public Options(Map<String, String> originals, OptionType ot) {
+    this.optionType = ot;
+    this.originals = originals != null ? originals : new HashMap<>();
     this.definition =
         new OptionDef()
             .define(GRAPH, Type.STRING, true, GROUP_GENERAL)
             .define(URL, Type.STRING, true, GROUP_GENERAL)
-            .define(
-                VERSION,
-                Type.STRING,
-                OptionDef.DefaultVal.NON_DEFAULT,
-                true,
-                ValidVersion.INSTANCE,
-                GROUP_GENERAL)
+            .define(VERSION, Type.STRING, GROUP_GENERAL)
             .define(USERNAME, Type.STRING, GROUP_AUTH)
             .define(PASSWORD, Type.STRING, GROUP_AUTH)
             .define(SECRET, Type.STRING, GROUP_AUTH)
@@ -213,11 +154,9 @@ public class Options implements Serializable {
                 false,
                 null,
                 GROUP_SSL)
-            .define(SSL_TRUSTSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL)
-            .define(LOG_LEVEL, Type.INT, GROUP_LOG)
-            .define(LOG_FILE, Type.STRING, "", false, null, GROUP_LOG);
+            .define(SSL_TRUSTSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL);
 
-    if (OptionType.WRITE.equals(this.optionType)) {
+    if (OptionType.WRITE.equals(ot)) {
       this.definition
           .define(LOADING_JOB, Type.STRING, true, GROUP_LOADING_JOB)
           .define(LOADING_FILENAME, Type.STRING, true, GROUP_LOADING_JOB)
@@ -243,13 +182,6 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB)
-          .define(
-              LOADING_ACK,
-              Type.STRING,
-              LOADING_ACK_ALL,
-              true,
-              OptionDef.ValidString.in(LOADING_ACK_ALL, LOADING_ACK_NONE),
-              GROUP_LOADING_JOB)
           .define(LOADING_MAX_PERCENT_ERROR, Type.DOUBLE, GROUP_LOADING_JOB)
           .define(LOADING_MAX_NUM_ERROR, Type.INT, GROUP_LOADING_JOB)
           .define(
@@ -273,33 +205,6 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB);
-    } else if (OptionType.READ.equals(this.optionType)) {
-      this.definition
-          .define(QUERY_VERTEX, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_EDGE, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_FIELD_SEPARATOR, Type.STRING, ".", false, null, GROUP_QUERY)
-          .define(QUERY_INSTALLED, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_INTERPRETED, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_PARAMS, Type.STRING, "", false, null, GROUP_QUERY)
-          .define(QUERY_RESULTS_EXTRACT, Type.STRING, "", false, null, GROUP_QUERY)
-          .define(QUERY_OP_SELECT, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_OP_FILTER, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_OP_LIMIT, Type.LONG, false, GROUP_QUERY)
-          .define(QUERY_OP_SORT, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_TIMEOUT_MS, Type.INT, 0, true, null, GROUP_QUERY)
-          .define(QUERY_MAX_RESPONSE_BYTES, Type.LONG, 0L, true, null, GROUP_QUERY)
-          .define(QUERY_PARTITION_KEY, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_PARTITION_NUM, Type.INT, false, GROUP_QUERY)
-          .define(QUERY_PARTITION_UPPER_BOUND, Type.STRING, false, GROUP_QUERY)
-          .define(QUERY_PARTITION_LOWER_BOUND, Type.STRING, false, GROUP_QUERY);
-    }
-
-    if (!skipValidate) {
-      this.validate();
-    }
-
-    if (OptionType.READ.equals(this.optionType)) {
-      this.parseQueryType();
     }
   }
 
@@ -352,8 +257,6 @@ public class Options implements Serializable {
           "Invalid input options: "
               + errors.stream().map(e -> e.toString()).reduce(". ", String::concat));
     }
-
-    sanityCheck();
   }
 
   /**
@@ -370,57 +273,6 @@ public class Options implements Serializable {
       return false;
     }
     return true;
-  }
-
-  private void sanityCheck() {
-    if (OptionType.READ.equals(optionType)) {
-      sanityCheckPartitionQueryOpts();
-    }
-  }
-
-  private void sanityCheckPartitionQueryOpts() {
-    // all those options are required for partitioned query
-    if ((containsOption(QUERY_PARTITION_KEY)
-            || containsOption(QUERY_PARTITION_NUM)
-            || containsOption(QUERY_PARTITION_LOWER_BOUND)
-            || containsOption(QUERY_PARTITION_UPPER_BOUND))
-        && !(containsOption(QUERY_PARTITION_KEY)
-            && containsOption(QUERY_PARTITION_NUM)
-            && containsOption(QUERY_PARTITION_LOWER_BOUND)
-            && containsOption(QUERY_PARTITION_UPPER_BOUND))) {
-      throw new IllegalArgumentException(
-          "To run partitioned queries, option "
-              + QUERY_PARTITION_KEY
-              + ", "
-              + QUERY_PARTITION_NUM
-              + ", "
-              + QUERY_PARTITION_LOWER_BOUND
-              + "and "
-              + QUERY_PARTITION_UPPER_BOUND
-              + " are all required");
-    }
-
-    if (containsOption(QUERY_PARTITION_KEY)) {
-      BigInteger lower;
-      try {
-        lower = new BigInteger(getString(QUERY_PARTITION_LOWER_BOUND));
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-            "Please provide an integer for " + QUERY_PARTITION_LOWER_BOUND);
-      }
-      BigInteger upper;
-      try {
-        upper = new BigInteger(getString(QUERY_PARTITION_UPPER_BOUND));
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-            "Please provide an integer value for " + QUERY_PARTITION_UPPER_BOUND);
-      }
-
-      if (lower.compareTo(upper) >= 0) {
-        throw new IllegalArgumentException(
-            QUERY_PARTITION_LOWER_BOUND + " should be less than " + QUERY_PARTITION_UPPER_BOUND);
-      }
-    }
   }
 
   /**
@@ -443,8 +295,8 @@ public class Options implements Serializable {
         try {
           switch (type) {
             case BOOLEAN:
-              if (trimmed != null && trimmed.equalsIgnoreCase("true")) return Boolean.TRUE;
-              else if (trimmed != null && trimmed.equalsIgnoreCase("false")) return Boolean.FALSE;
+              if (trimmed != null && trimmed.equalsIgnoreCase("true")) return true;
+              else if (trimmed != null && trimmed.equalsIgnoreCase("false")) return false;
               else throw new IllegalArgumentException("Expected value to be either true or false");
             case STRING:
               return value;
@@ -481,53 +333,8 @@ public class Options implements Serializable {
     }
   }
 
-  private void parseQueryType() {
-    if (containsOption(QUERY_VERTEX)) {
-      switch (Utils.countQueryFields(
-          getString(QUERY_VERTEX), getString(Options.QUERY_FIELD_SEPARATOR))) {
-        case 1:
-          queryType = QueryType.GET_VERTICES;
-          break;
-        case 2:
-          queryType = QueryType.GET_VERTEX;
-          break;
-        default:
-          throw new IllegalArgumentException(
-              "Invalid read option: " + QUERY_VERTEX + " -> " + getString(QUERY_VERTEX));
-      }
-    } else if (containsOption(QUERY_EDGE)) {
-      switch (Utils.countQueryFields(
-          getString(QUERY_EDGE), getString(Options.QUERY_FIELD_SEPARATOR))) {
-        case 2:
-          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX;
-          break;
-        case 3:
-          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE;
-          break;
-        case 4:
-          queryType = QueryType.GET_EDGES_BY_SRC_VERTEX_EDGE_TYPE_TGT_TYPE;
-          break;
-        case 5:
-          queryType = QueryType.GET_EDGE_BY_SRC_VERTEX_EDGE_TYPE_TGT_VERTEX;
-          break;
-        default:
-          throw new IllegalArgumentException(
-              "Invalid read option: " + QUERY_EDGE + " -> " + getString(QUERY_EDGE));
-      }
-    } else if (containsOption(QUERY_INSTALLED)) {
-      queryType = QueryType.INSTALLED;
-    } else if (containsOption(QUERY_INTERPRETED)) {
-      queryType = QueryType.INTERPRETED;
-    } else {
-      throw new IllegalArgumentException(
-          String.format(
-              "Unknown query type, please provide a valid value from %s, %s, %s or %s.",
-              QUERY_VERTEX, QUERY_EDGE, QUERY_INSTALLED, QUERY_INTERPRETED));
-    }
-  }
-
   /**
-   * Retrieve the value from transformed option map. Retrieve it from the original options if not in
+   * Retrive the value from transformed option map. Retrive it from the original options if not in
    * transformed map.
    *
    * @param key
@@ -558,19 +365,11 @@ public class Options implements Serializable {
     return (Double) get(key);
   }
 
-  public Boolean getBoolean(String key) {
-    return (Boolean) get(key);
-  }
-
   public Map<String, String> getOriginals() {
     return originals;
   }
 
   public OptionType getOptionType() {
     return this.optionType;
-  }
-
-  public QueryType getQueryType() {
-    return this.queryType;
   }
 }

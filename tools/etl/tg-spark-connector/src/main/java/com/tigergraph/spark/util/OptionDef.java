@@ -13,19 +13,16 @@
  */
 package com.tigergraph.spark.util;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.io.Serializable;
+import java.util.UUID;
 
 public class OptionDef implements Serializable {
-
-  // Identify whether the option has default value
-  public enum DefaultVal {
-    NON_DEFAULT
-  };
+  // A unique Java object which represents the lack of a default value.
+  public static final Serializable NO_DEFAULT_VALUE = UUID.randomUUID();
 
   // Options' definitions
   private final Map<String, OptionKey> optionKeys = new HashMap<>();
@@ -62,7 +59,7 @@ public class OptionDef implements Serializable {
   }
 
   public OptionDef define(String name, Type type, boolean required, String group) {
-    return define(name, type, DefaultVal.NON_DEFAULT, required, null, group);
+    return define(name, type, NO_DEFAULT_VALUE, required, null, group);
   }
 
   /*
@@ -93,15 +90,14 @@ public class OptionDef implements Serializable {
         String group) {
       this.name = name;
       this.type = type;
-      this.defaultValue =
-          DefaultVal.NON_DEFAULT.equals(defaultValue) ? DefaultVal.NON_DEFAULT : defaultValue;
+      this.defaultValue = NO_DEFAULT_VALUE.equals(defaultValue) ? NO_DEFAULT_VALUE : defaultValue;
       this.required = required;
       this.validator = validator;
       this.group = group;
     }
 
     public boolean hasDefault() {
-      return !DefaultVal.NON_DEFAULT.equals(this.defaultValue);
+      return !NO_DEFAULT_VALUE.equals(this.defaultValue);
     }
   }
 
@@ -116,23 +112,6 @@ public class OptionDef implements Serializable {
 
   public interface Validator extends Serializable {
     void ensureValid(String name, Serializable value);
-  }
-
-  public static class ValidVersion implements Validator {
-
-    public static ValidVersion INSTANCE = new ValidVersion();
-    private static final String VERSION_PATTERN = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
-
-    @Override
-    public void ensureValid(String name, Serializable value) {
-      if (!Pattern.matches(VERSION_PATTERN, String.valueOf(value))) {
-        throw new IllegalArgumentException(
-            "Option("
-                + name
-                + ") must follow the pattern: MAJOR.MINOR.PATCH, got "
-                + String.valueOf(value));
-      }
-    }
   }
 
   /*

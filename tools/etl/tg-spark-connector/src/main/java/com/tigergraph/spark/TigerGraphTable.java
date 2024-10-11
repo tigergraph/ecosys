@@ -13,28 +13,24 @@
  */
 package com.tigergraph.spark;
 
-import org.apache.spark.sql.connector.catalog.SupportsRead;
 import org.apache.spark.sql.connector.catalog.SupportsWrite;
 import org.apache.spark.sql.connector.catalog.TableCapability;
 import org.apache.spark.sql.connector.write.LogicalWriteInfo;
 import org.apache.spark.sql.types.StructType;
-import org.apache.spark.sql.util.CaseInsensitiveStringMap;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import com.tigergraph.spark.read.TigerGraphResultAccessor;
-import com.tigergraph.spark.read.TigerGraphScanBuilder;
 import com.tigergraph.spark.write.TigerGraphWriteBuilder;
 
 /** The representation of logical structured data set of a TG, with supported capabilities. */
-public class TigerGraphTable implements SupportsWrite, SupportsRead {
+public class TigerGraphTable implements SupportsWrite {
 
   private static final String TABLE_NAME = "TigerGraphTable";
-  private final TigerGraphResultAccessor accessor;
-  private final TigerGraphConnection conn;
+  private final StructType schema;
+  private final long creationTime = Instant.now().toEpochMilli();
 
-  public TigerGraphTable(TigerGraphResultAccessor accessor, TigerGraphConnection conn) {
-    this.accessor = accessor;
-    this.conn = conn;
+  TigerGraphTable(StructType schema) {
+    this.schema = schema;
   }
 
   @Override
@@ -44,7 +40,7 @@ public class TigerGraphTable implements SupportsWrite, SupportsRead {
 
   @Override
   public StructType schema() {
-    return accessor.getSchema();
+    return schema;
   }
 
   @Override
@@ -53,18 +49,12 @@ public class TigerGraphTable implements SupportsWrite, SupportsRead {
       {
         add(TableCapability.BATCH_WRITE);
         add(TableCapability.STREAMING_WRITE);
-        add(TableCapability.BATCH_READ);
       }
     };
   }
 
   @Override
   public TigerGraphWriteBuilder newWriteBuilder(LogicalWriteInfo info) throws RuntimeException {
-    return new TigerGraphWriteBuilder(info, conn);
-  }
-
-  @Override
-  public TigerGraphScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
-    return new TigerGraphScanBuilder(conn, accessor);
+    return new TigerGraphWriteBuilder(info, creationTime);
   }
 }

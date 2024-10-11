@@ -13,12 +13,14 @@
  */
 package com.tigergraph.spark.write;
 
-import com.tigergraph.spark.TigerGraphConnection;
-import com.tigergraph.spark.log.LoggerFactory;
+import java.time.Instant;
 import org.apache.spark.sql.connector.write.LogicalWriteInfo;
 import org.apache.spark.sql.connector.write.WriteBuilder;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.tigergraph.spark.TigerGraphConnection;
+import com.tigergraph.spark.util.Options;
 
 /** Builder for Batch Write or Streaming Write */
 public class TigerGraphWriteBuilder implements WriteBuilder {
@@ -26,21 +28,25 @@ public class TigerGraphWriteBuilder implements WriteBuilder {
   private final StructType schema;
   private final TigerGraphConnection conn;
 
-  public TigerGraphWriteBuilder(LogicalWriteInfo info, TigerGraphConnection conn) {
+  public TigerGraphWriteBuilder(LogicalWriteInfo info, long creationTime) {
     logger.info("Start to build TigerGraph data writer with queryId {}", info.queryId());
-    this.schema = info.schema();
-    this.conn = conn;
+    schema = info.schema();
+    Options opts = new Options(info.options().asCaseSensitiveMap(), Options.OptionType.WRITE);
+    opts.validate();
+    conn = new TigerGraphConnection(opts, creationTime);
     if (conn.getLoadingJobId() != null) {
       logger.info("Loading job ID: {}", conn.getLoadingJobId());
     }
   }
 
-  @Override
+  public TigerGraphWriteBuilder(LogicalWriteInfo info) {
+    this(info, Instant.now().toEpochMilli());
+  }
+
   public TigerGraphBatchWrite buildForBatch() {
     return new TigerGraphBatchWrite(schema, conn);
   }
 
-  @Override
   public TigerGraphStreamingWrite buildForStreaming() {
     return new TigerGraphStreamingWrite(schema, conn);
   }
