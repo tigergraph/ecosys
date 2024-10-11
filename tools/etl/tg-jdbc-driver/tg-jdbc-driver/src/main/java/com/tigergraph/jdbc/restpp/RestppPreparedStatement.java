@@ -404,7 +404,7 @@ public class RestppPreparedStatement extends PreparedStatement {
     count[0] = Integer.valueOf(String.valueOf(validLine));
 
     // Only failed line/object will have sample data in stats
-    if (obj.toString().contains("\"lineData\"")) {
+    if (obj.toString().contains("sample\":{")) {
       if (!logger.isDebugEnabled()) {
         removeFieldsWithKey(obj, "lineData");
       }
@@ -441,7 +441,7 @@ public class RestppPreparedStatement extends PreparedStatement {
 
   private String loadingJobPostAction(String errCode) throws SQLException {
     switch (errCode) {
-        // The max_num/percent_error limit exceeds
+      // The max_num/percent_error limit exceeds
       case "REST-20002":
         this.parameters.clear();
         this.addBatch("status jobid " + ((RestppConnection) getConnection()).getJobId());

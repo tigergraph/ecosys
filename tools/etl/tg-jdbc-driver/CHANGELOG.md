@@ -1,17 +1,3 @@
-## Release 1.3.20
-* Supported TG Version: 2.4.1+
-* Show error loading data when debug level is less than 3.
-
-## Release 1.3.19
-* Supported TG Version: 2.4.1+
-* Support JSON Web Token (JWT)
-* **Note:** TigerGraph 4.1.0 is not backward compatible with tigergraph-jdbc-driver v1.3.18 and prior.
-
-## Release 1.3.18
-* Supported TG Version: 2.4.1+
-* Fixed the bug that single quotes in the attribute string are removed when upserting vertex or edge.
-* Support `getCatalog()` which returns the graph name specified in the connection properties.
-
 ## Release 1.3.17
 * Supported TG Version: 2.4.1+
 * Support 3 release types: jar, jar with dependencies, tar.gz

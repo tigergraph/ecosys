@@ -26,7 +26,6 @@ public class RestppResponse {
   private String errCode;
   private String errMsg;
   private String content;
-  private String token; // only for 'POST /requesttoken'
   private List<JSONObject> results;
 
   /** For unit test only. */
@@ -91,7 +90,6 @@ public class RestppResponse {
   public void parse(String content) {
     JSONObject obj;
     obj = new JSONObject(content);
-    this.token = obj.optString("token", "");
     this.has_error = obj.optBoolean("error", false);
     if (this.has_error) {
       this.errMsg = obj.getString("message");
@@ -110,10 +108,6 @@ public class RestppResponse {
         }
       }
     }
-  }
-
-  public String getToken() {
-    return this.token;
   }
 
   public Boolean hasError() {
