@@ -42,7 +42,7 @@ Follow these commands to install cert-manager:
 > Please check whether cert-manager has been installed before execute the following command.
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml
 # Verify installation of cert-manager 
 kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
 kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
@@ -75,11 +75,22 @@ tigergraph-repo/tg-operator     1.3.0           1.3.0           A Helm chart for
 Run the `helm install` command to install the Operator. The following command specifies and creates a dedicated `tigergraph` namespace for installation.
 
 ```bash
-export SET_VALUE="replicas=3,image=docker.io/tigergraph/tigergraph-k8s-operator:1.3.0,jobImage=docker.io/tigergraph/tigergraph-k8s-init:1.3.0,pullPolicy=Always,resources.requests.cpu=1000m,resources.requests.memory=1024Mi,maxConcurrentReconcilesOfTG=2,maxConcurrentReconcilesOfBackup=2,maxConcurrentReconcilesOfBackupSchedule=2,maxConcurrentReconcilesOfRestore=2"
 export NAMESPACE="tigergraph"
 export CHART_VERSION="1.3.0"
 
-helm install tg-operator tigergraph-repo/tg-operator --set ${SET_VALUE} --namespace "${NAMESPACE}" --version ${CHART_VERSION} --create-namespace
+helm install tg-operator tigergraph-repo/tg-operator \
+--set replicas=3 \
+--set image=docker.io/tigergraph/tigergraph-k8s-operator:${CHART_VERSION} \
+--set jobImage=docker.io/tigergraph/tigergraph-k8s-init:${CHART_VERSION} \
+--set pullPolicy=IfNotPresent \
+--set "resources.requests.cpu=1000m,resources.requests.memory=1024Mi" \
+--set "resources.limits.cpu=1000m,resources.limits.memory=1024Mi" \
+--set maxConcurrentReconcilesOfTG=2 \
+--set maxConcurrentReconcilesOfBackup=2 \
+--set maxConcurrentReconcilesOfBackupSchedule=2 \
+--set maxConcurrentReconcilesOfRestore=2 \
+--namespace "${NAMESPACE}" \
+--version ${CHART_VERSION} --create-namespace
 ```
 
 You can customize the operator configuration by changing the option `--set`, all of the configurations are following:
@@ -113,8 +124,8 @@ resources:
     cpu: 1000m
     memory: 1024Mi
   limits:
-    cpu: 2000m
-    memory: 4096Mi
+    cpu: 1000m
+    memory: 1024Mi
 # nodeSelector is the nodeSelector of operator pods
 nodeSelector: null
 ```
@@ -158,11 +169,21 @@ kubectl wait deployment tigergraph-operator-controller-manager --for condition=A
 Run the `helm upgrade` command to upgrade the Operator. This command can be used to upgrade the Operator version and update other Operator configurations.
 
 ```bash
-export SET_VALUE="replicas=1,image=docker.io/tigergraph/tigergraph-k8s-operator:1.3.0,jobImage=docker.io/tigergraph/tigergraph-k8s-init:1.3.0,pullPolicy=Always,resources.requests.cpu=1000m,resources.requests.memory=1024Mi,maxConcurrentReconcilesOfTG=1,maxConcurrentReconcilesOfBackup=1,maxConcurrentReconcilesOfBackupSchedule=1,maxConcurrentReconcilesOfRestore=1"
 export NAMESPACE="tigergraph"
 export CHART_VERSION="1.3.0"
 
-helm upgrade tg-operator tigergraph-repo/tg-operator --set ${SET_VALUE} --namespace "${NAMESPACE}" --version ${CHART_VERSION}
+helm upgrade tg-operator tigergraph-repo/tg-operator \
+--set replicas=1 \
+--set image=docker.io/tigergraph/tigergraph-k8s-operator:${CHART_VERSION} \
+--set jobImage=docker.io/tigergraph/tigergraph-k8s-init:${CHART_VERSION} \
+--set pullPolicy=IfNotPresent \
+--set "resources.requests.cpu=500m,resources.requests.memory=512Mi" \
+--set "resources.limits.cpu=500m,resources.limits.memory=512Mi" \
+--set maxConcurrentReconcilesOfTG=1 \
+--set maxConcurrentReconcilesOfBackup=1 \
+--set maxConcurrentReconcilesOfBackupSchedule=1 \
+--set maxConcurrentReconcilesOfRestore=1 \
+--namespace "${NAMESPACE}" --version ${CHART_VERSION}
 ```
 
 ## Uninstall the TigerGraph Operator using Helm
