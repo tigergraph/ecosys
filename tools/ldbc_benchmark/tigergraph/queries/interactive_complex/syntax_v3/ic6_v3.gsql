@@ -1,0 +1,19 @@
+CREATE OR REPLACE QUERY ic6_v3(VERTEX<Person> personId, STRING tag) syntax v3{
+  TYPEDEF tuple<STRING tag, INT postCount> tagStats;
+  HeapAccum<tagStats>(10, postCount DESC, tag ASC) @@result;
+  SumAccum<INT> @postCount;
+  S = { personId };
+  vPost =
+    SELECT m
+    FROM (s:S) -[:KNOWS*1..2]-(p:Person) <-[:HAS_CREATOR]-(m:Post) -[:HAS_TAG]->(t:Tag {name:tag})
+    WHERE s != p;
+
+  vTag = 
+    SELECT t
+    FROM (:vPost)-[:HAS_TAG]->(t:Tag)
+    WHERE t.name != tag
+    ACCUM t.@postCount += 1
+    POST-ACCUM @@result += tagStats(t.name, t.@postCount);
+    
+  PRINT @@result;
+}

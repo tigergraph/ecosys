@@ -1,0 +1,34 @@
+CREATE OR REPLACE QUERY ic4_v3(VERTEX<Person> personId, DATETIME startDate, INT duration) syntax v3{
+  TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
+  SumAccum<int> @postCount;
+  SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;
+  HeapAccum<topic>(10, postCount DESC, tagName ASC) @@result;
+
+  DATETIME endDate;
+  endDate = DATETIME_add(startDate, INTERVAL duration DAY);
+
+  S = { personId };
+  // find tags of posts created by the Person's friends in the given timeframe
+  vTag =
+    SELECT t
+    FROM (s:S) -[:KNOWS] - (:Person) <- [:HAS_CREATOR] - (m:Post) - [:HAS_TAG] -> (t:Tag)
+    WHERE m.creationDate < endDate
+    PER(m,t)
+    ACCUM
+      CASE
+        WHEN m.creationDate >= startDate THEN
+          t.@postCount += 1
+        WHEN m.creationDate < startDate THEN
+          @@tagsExc += t
+      END
+    POST-ACCUM CASE WHEN t.@postCount > 0 THEN @@tagsFav += t END;
+
+  @@tagsFav = @@tagsFav MINUS @@tagsExc;
+  vTag = { @@tagsFav };
+
+  // perform ordering on vTag
+  vTag =
+    SELECT t FROM (t:vTag)
+    ACCUM @@result += topic(t.name, t.@postCount);
+  PRINT @@result;
+}

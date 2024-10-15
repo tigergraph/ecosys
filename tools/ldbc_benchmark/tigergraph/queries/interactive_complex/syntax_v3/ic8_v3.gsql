@@ -1,0 +1,14 @@
+CREATE OR REPLACE QUERY ic8_v3(VERTEX<Person> personId) syntax v3{
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
+                DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@result;
+
+  S = { personId };
+  M = 
+    SELECT m
+    FROM (s:S) <-[:HAS_CREATOR]- (:Comment:Post) <-[:REPLY_OF]- (m:Comment) -[:HAS_CREATOR]-> (p:Person)
+    PER(m,p)
+    ACCUM @@result += replier(p.id, p.firstName, p.lastName, m.creationDate, m.id, m.content);
+
+  PRINT @@result;
+}

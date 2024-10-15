@@ -1,0 +1,16 @@
+CREATE OR REPLACE QUERY is3_v3(VERTEX<Person> personId) syntax v3{
+  SumAccum<INT> @creationDate;
+
+  S = { personId };
+  P =
+    SELECT t
+    FROM (s:S)-[e:KNOWS]-(t:Person)
+    ACCUM t.@creationDate += datetime_to_epoch(e.creationDate)
+    ORDER BY t.@creationDate DESC, t.id ASC; 
+
+  PRINT P[
+      P.id AS personId,
+      P.firstName AS firstName,
+      P.lastName AS lastName,
+      epoch_to_datetime(P.@creationDate) AS friendshipCreationDate];
+}

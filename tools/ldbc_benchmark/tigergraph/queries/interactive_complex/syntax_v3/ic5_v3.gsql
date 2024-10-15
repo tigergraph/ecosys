@@ -1,0 +1,24 @@
+CREATE OR REPLACE QUERY ic5_v3(VERTEX<Person> personId, DATETIME startDate) syntax v3{
+  TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
+	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@result;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<INT> @memberIds;
+  SumAccum<INT> @postCount;
+  
+  S = { personId };
+  vForum =
+    SELECT t
+    FROM (s:S)-[:KNOWS*1..2]-(p:Person)<-[e:HAS_MEMBER]-(t:Forum)
+    WHERE p != s AND e.joinDate > startDate
+    PER(p,t)
+    ACCUM t.@memberIds += p.id, @@friendAll += p;
+
+  vFriend = { @@friendAll };
+  vForum = 
+    SELECT t
+    FROM (s:vFriend)<-[:HAS_CREATOR]-(:Post)<-[:CONTAINER_OF]-(t:vForum)
+    ACCUM CASE WHEN s.id IN t.@memberIds THEN t.@postCount += 1 END
+    POST-ACCUM @@result += forumInfo(t.title, t.@postCount, t.id);
+    
+  PRINT @@result;
+}

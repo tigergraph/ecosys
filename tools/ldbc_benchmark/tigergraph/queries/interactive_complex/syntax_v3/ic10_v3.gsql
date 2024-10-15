@@ -1,0 +1,50 @@
+CREATE OR REPLACE QUERY ic10_v3(vertex<Person> personId, int month) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
+  HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@result;
+  SumAccum<int> @commonInterestScore;
+  SumAccum<string> @city;
+  OrAccum @visited, @hasInterest;
+  int nextMonth;
+
+  nextMonth = 1 + month % 12;
+  
+  S = { personId };
+  F = 
+    SELECT p FROM (s:S) -[:KNOWS]- (p:Person)
+    ACCUM s.@visited += true, p.@visited += true;
+  F2 =
+    SELECT p
+    FROM (f:F) -[:KNOWS]- (p:Person)  -[:IS_LOCATED_IN]-> (c:City)
+    WHERE p.@visited == false
+          AND ((day(p.birthday) >= 21 AND month(p.birthday) == month) OR
+               (day(p.birthday) < 22 AND month(p.birthday) == nextMonth))
+    PER(p,c)
+    ACCUM p.@city = c.name;
+  
+  tmp = 
+    SELECT t
+    FROM (s:S)-[:HAS_INTEREST]->  (t:Tag)
+    ACCUM t.@hasInterest += true;        
+  
+  tmp = 
+    SELECT p 
+    FROM (f:F2) <-[:HAS_CREATOR]- (p:Post) -[:HAS_TAG]->(t:Tag)
+    WHERE t.@hasInterest    
+    PER(p)
+    ACCUM p.@hasInterest += true;
+            
+  tmp  =
+    SELECT f
+    FROM (f:F2) <-[:HAS_CREATOR]- (p:Post)
+    ACCUM
+      IF p.@hasInterest == true THEN
+        f.@commonInterestScore += 1
+      ELSE
+        f.@commonInterestScore += (-1)
+      END;
+    
+  F2 =
+    SELECT v FROM (v:F2)
+    ACCUM @@result += friendInfo(v.id, v.firstName, v.lastName, v.@commonInterestScore, v.gender, v.@city);
+  PRINT @@result;    
+}

@@ -1,0 +1,106 @@
+CREATE OR REPLACE QUERY ic14_v3(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v3{
+  TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
+
+  OrAccum @visited1, @visited2;
+  OrAccum @@found, @@next1=true, @@next2=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @path;
+  ListAccum<ListAccum<VERTEX<Person>>> @@pathAll;
+  SumAccum<DOUBLE> @@weight = 0.0;
+  HeapAccum<pathInfo>(0, pathWeight DESC) @@result;
+  STRING jsonStr;
+  SetAccum<VERTEX<Person>> @@p1, @@p2;
+  IF person1Id != person2Id THEN
+    vPerson = { person1Id, person2Id };
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM (s:S1) ACCUM s.@visited1 += true, s.@path += [s];
+    S2 = SELECT s FROM (s:S2) ACCUM s.@visited2 += true, s.@path += [s];
+
+    WHILE NOT @@found AND (@@next1 OR @@next2) DO
+      IF NOT @@found AND @@next1 THEN 
+        @@next1 = false;
+        S1 = 
+          SELECT t
+          FROM (s:S1)-[:KNOWS]-(t:Person)
+          WHERE NOT t.@visited1
+          ACCUM 
+            IF t.@visited2 THEN
+              @@found += True,
+              FOREACH p1 IN s.@path DO
+                FOREACH p2 IN t.@path DO
+                  @@pathAll += p1 + p2
+                END
+              END
+            ELSE
+              @@next1 += true,
+              t.@visited1 += true,
+              FOREACH p IN s.@path DO
+                t.@path += p + [t]
+              END
+            END;
+      END;
+
+      IF NOT @@found AND @@next2 THEN 
+        @@next2 = false;
+        S2 = 
+          SELECT t
+          FROM (s:S2)-[:KNOWS]-(t:Person)
+          WHERE NOT t.@visited2
+          ACCUM 
+            IF t.@visited1 THEN
+              @@found += True,
+              FOREACH p1 IN s.@path DO
+                FOREACH p2 IN t.@path DO
+                  @@pathAll += p2 + p1
+                END
+              END
+            ELSE
+              @@next2 += true,
+              t.@visited2 += true,
+              FOREACH p IN s.@path DO
+                t.@path += [t] + p
+              END
+            END;
+      END;
+    END; //WHILE NOT @@found AND @@next DO
+  END; //IF person1Id != person2Id THEN
+  @@result.resize(@@pathAll.size());
+  FOREACH path IN @@pathAll DO
+    jsonStr = "[";
+    @@weight = 0.0;
+    FOREACH i IN range[0, path.size()-2] DO
+      jsonStr = jsonStr + to_string(path.get(i).id) + ",";
+      @@p1.clear(); @@p1 += path.get(i);
+      @@p2.clear(); @@p2 += path.get(i+1);
+      S1 = @@p1;
+      S2 = @@p2;
+      P1 = SELECT c FROM (s:S1) <-[:HAS_CREATOR]- (c:Post);
+      P2 = SELECT c FROM (s:S2) <-[:HAS_CREATOR]- (c:Post);
+      C1 = SELECT c FROM (s:S1) <-[:HAS_CREATOR]- (c:Comment);
+      C2 = SELECT c FROM (s:S2) <-[:HAS_CREATOR]- (c:Comment);
+      
+      c1p =
+        SELECT c1
+        FROM (:P2) <-[:REPLY_OF]- (c1:C1)
+        ACCUM @@weight += 1;
+
+      c1c =
+        SELECT c1
+        FROM  (:C2) <-[:REPLY_OF]- (c1:C1)
+        ACCUM @@weight += 0.5;
+        
+      c2p =
+        SELECT c2
+        FROM (:P1) <-[:REPLY_OF]- (c2:C2)
+        ACCUM @@weight += 1;
+
+      c2c =
+        SELECT c2
+        FROM (:C1) <-[:REPLY_OF]- (c2:C2)
+        ACCUM @@weight += 0.5;
+    END; //FOREACH i IN range[0, path.size()-2] DO
+    jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";
+    @@result += pathInfo(parse_json_array(jsonStr), @@weight);
+  END; //FOREACH path IN @@pathAll DO
+  PRINT @@result;
+}

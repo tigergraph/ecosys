@@ -1,0 +1,52 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, 
+    STRING tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v3 {
+
+  TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
+  HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
+
+  SumAccum<UINT> @knowsCountA, @messageCountA;
+  SumAccum<UINT> @knowsCountB, @messageCountB;
+  INT yearA, monthA, dayA;
+  INT yearB, monthB, dayB;
+  yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
+  yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
+
+  personsA =
+    SELECT p
+    FROM (t:Tag {name:tagA}) <-[:HAS_TAG]- (m:Comment:Post) -[:HAS_CREATOR]-> (p:Person)
+    WHERE
+      year(epoch_to_datetime(m.creationDate/1000)) == yearA AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthA AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayA
+    ACCUM p.@messageCountA += 1;
+
+  tmp = SELECT p
+    FROM (:personsA) -[:KNOWS]- (p:personsA)
+    ACCUM p.@knowsCountA += 1;
+
+  # need to include person without any friends
+  personsA = SELECT p FROM (p:personsA) WHERE p.@knowsCountA <= maxKnowsLimit;
+
+  personsB =
+    SELECT p
+    FROM (t:Tag {name:tagB}) <-[:HAS_TAG]- (m:Comment:Post) -[:HAS_CREATOR]-> (p:Person)
+    WHERE
+      year(epoch_to_datetime(m.creationDate/1000)) == yearB AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthB AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayB
+    ACCUM p.@messageCountB += 1;
+
+  tmp = SELECT p FROM (:personsB) -[:KNOWS]- (p:personsB)
+    ACCUM p.@knowsCountB += 1;
+
+  # need to include person without any friends
+  personsB = SELECT p FROM (p:personsB) WHERE p.@knowsCountB <= maxKnowsLimit;
+
+  persons = personsA INTERSECT personsB;
+  persons =
+    SELECT p
+    FROM (p:persons)
+    POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
+
+  PRINT @@result as result;
+}

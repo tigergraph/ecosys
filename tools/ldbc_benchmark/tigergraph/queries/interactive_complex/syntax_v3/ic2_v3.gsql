@@ -1,0 +1,17 @@
+CREATE OR REPLACE QUERY ic2_v3(VERTEX<Person> personId, DATETIME date) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@result;
+  S = { personId };
+  T = 
+    SELECT t
+    FROM (s:S) -[:KNOWS] -(p:Person) <- [:HAS_CREATOR] - (t:Comment:Post)
+    WHERE t.creationDate < date
+    PER(p,t)
+    ACCUM 
+      IF t.type == "Comment" OR t.content != "" THEN
+        @@result += msg(p.id, p.firstName, p.lastName, t.id, t.content, t.creationDate)
+      ELSE
+        @@result += msg(p.id, p.firstName, p.lastName, t.id, t.imageFile, t.creationDate)
+      END;
+  PRINT @@result;
+}

@@ -1,0 +1,22 @@
+CREATE OR REPLACE QUERY is5_v3(STRING messageId) syntax v3{
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    P = 
+      SELECT t
+      FROM (s:vComments)-[:HAS_CREATOR]->(t:Person);
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+    P = 
+      SELECT t
+      FROM (s:vPost)-[:HAS_CREATOR]->(t:Person);
+  END;
+
+  PRINT P[
+      P.id AS personId,
+      P.firstName AS firstName,
+      P.lastName AS lastName];
+}
