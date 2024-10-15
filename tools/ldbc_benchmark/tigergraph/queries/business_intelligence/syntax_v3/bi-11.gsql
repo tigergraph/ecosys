@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 11 query description is on page 99 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate, DATETIME endDate) SYNTAX v3 {
   SumAccum<UINT> @@result;
   OrAccum<BOOL> @selected;

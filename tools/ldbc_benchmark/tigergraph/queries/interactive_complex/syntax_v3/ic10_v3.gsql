@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 10 query description is on page 67 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic10_v3(vertex<Person> personId, int month) syntax v3{
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT commonInterestScore, STRING personGender, STRING personCityName> friendInfo;
   HeapAccum<friendInfo>(10, commonInterestScore DESC, personId ASC) @@result;

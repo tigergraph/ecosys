@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 10 query description is on page 98 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass) SYNTAX v3 {
   TYPEDEF TUPLE <UINT personId, STRING tagName, UINT messageCount> RESULT;
   OrAccum @visited, @selected;

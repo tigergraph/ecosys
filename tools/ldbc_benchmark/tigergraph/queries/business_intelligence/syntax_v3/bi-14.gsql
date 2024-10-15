@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 14 query description is on page 102 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTAX v3 {
   TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
   TYPEDEF TUPLE <UINT pid, UINT score> ps;

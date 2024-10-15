@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 13 query description is on page 101 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTAX v3 {
 
   TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;

@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 3 query description is on page 91 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX v3 {
   TYPEDEF TUPLE <UINT forumId, STRING forumTitle, STRING forumCreationDate, UINT personId, UINT messageCount> RESULT;
   HeapAccum<RESULT>(20, messageCount DESC, forumId ASC) @@result;

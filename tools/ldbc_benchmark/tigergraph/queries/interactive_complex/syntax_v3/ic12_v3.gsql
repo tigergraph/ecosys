@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 12 query description is on page 69 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic12_v3(vertex<Person> personId, string tagClass) syntax v3{
   SetAccum<vertex<Comment>> @replySet;
   SetAccum<string> @tagNames;

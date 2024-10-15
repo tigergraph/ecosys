@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 2 query description is on page 59 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic2_v3(VERTEX<Person> personId, DATETIME date) syntax v3{
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
   HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@result;

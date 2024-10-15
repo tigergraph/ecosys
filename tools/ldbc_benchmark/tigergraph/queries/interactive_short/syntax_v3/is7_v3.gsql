@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 7 query description is on page 76 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY is7_v3(STRING messageId) syntax v3{
   TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
 

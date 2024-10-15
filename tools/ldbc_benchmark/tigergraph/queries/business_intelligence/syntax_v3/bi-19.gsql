@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 19 query description is on page 107 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v3 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, UINT totalWeight> RESULT;
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id> PAIR;

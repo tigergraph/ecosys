@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 13 query description is on page 70 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic13_v3(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v3{
   SumAccum<INT> @dist1 = -1, @dist2 = -1;
   OrAccum @@found, @@next1=True, @@next2=True;

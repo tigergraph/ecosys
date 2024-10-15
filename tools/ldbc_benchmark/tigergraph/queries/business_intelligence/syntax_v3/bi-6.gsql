@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 6 query description is on page 94 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v3 {
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;

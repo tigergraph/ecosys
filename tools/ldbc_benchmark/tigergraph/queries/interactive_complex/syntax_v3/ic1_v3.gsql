@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 1 query description is on page 58 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic1_v3(vertex<Person> personId, string firstName) syntax v3{
   typedef tuple<string orgName, int orgYear, string orgPlace> org;
   SumAccum<uint> @distance;

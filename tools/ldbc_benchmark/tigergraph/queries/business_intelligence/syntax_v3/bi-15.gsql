@@ -1,4 +1,5 @@
-//USE GRAPH ldbc_snb
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 15 query description is on page 103 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) syntax v3 {
   MinAccum<DOUBLE> @@result, @dis;
   OrAccum @next;

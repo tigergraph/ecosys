@@ -1,4 +1,5 @@
-# datetime is a reserved keyword so we use date here.
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 1 query description is on page 89 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v3{
 
   TYPEDEF TUPLE <INT year, BOOL isComment, INT lengthCategory, INT messageCount,

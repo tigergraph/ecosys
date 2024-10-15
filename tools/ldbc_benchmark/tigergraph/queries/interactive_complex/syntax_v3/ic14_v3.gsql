@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 14 query description is on page 71 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic14_v3(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v3{
   TYPEDEF tuple<JSONARRAY personIdsInPath, DOUBLE pathWeight> pathInfo;
 

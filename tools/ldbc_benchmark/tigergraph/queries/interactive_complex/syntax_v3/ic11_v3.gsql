@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 11 query description is on page 68 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic11_v3(vertex<Person> personId, string country, int workFromYear) syntax v3{
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
   HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@result;

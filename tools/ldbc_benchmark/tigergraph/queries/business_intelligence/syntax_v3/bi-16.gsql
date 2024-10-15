@@ -1,4 +1,6 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, 
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 16 query description is on page 104 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA,
     STRING tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v3 {
 
   TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;

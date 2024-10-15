@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 3 query description is on page 74 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY is3_v3(VERTEX<Person> personId) syntax v3{
   SumAccum<INT> @creationDate;
 

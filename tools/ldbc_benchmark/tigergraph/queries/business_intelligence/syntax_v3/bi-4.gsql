@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 4 query description is on page 92 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v3 {
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     STRING personCreationDate, UINT messageCount> RESULT;

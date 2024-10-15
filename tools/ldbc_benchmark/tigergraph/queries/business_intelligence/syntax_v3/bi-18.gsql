@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 18 query description is on page 106 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi18(STRING tag) SYNTAX v3 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, UINT mutualFriendCount> RESULT;
   HeapAccum<RESULT>(20, mutualFriendCount DESC, person1Id ASC, person2Id ASC) @@result;

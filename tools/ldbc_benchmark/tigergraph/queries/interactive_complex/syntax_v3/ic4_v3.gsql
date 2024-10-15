@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 4 query description is on page 61 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic4_v3(VERTEX<Person> personId, DATETIME startDate, INT duration) syntax v3{
   TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
   SumAccum<int> @postCount;

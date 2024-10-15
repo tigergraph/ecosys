@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 20 query description is on page 108 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3 {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  

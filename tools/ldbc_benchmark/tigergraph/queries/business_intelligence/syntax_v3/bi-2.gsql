@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 2 query description is on page 90 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClass) SYNTAX v3 {
 
   TYPEDEF TUPLE <STRING tagName, INT countWindow1, INT countWindow2, INT diff> RESULT;

@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 3 query description is on page 60 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic3_v3(VERTEX<Person> personId, STRING country1, STRING country2, DATETIME startDate, INT duration) syntax v3{
   TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
   HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@result;

@@ -1,5 +1,8 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 1 query description is on page 72 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY is1_v3(VERTEX<Person> personId) syntax v3{
   SumAccum<INT> @cityId;
+
   P = { personId };
   P = 
     SELECT s

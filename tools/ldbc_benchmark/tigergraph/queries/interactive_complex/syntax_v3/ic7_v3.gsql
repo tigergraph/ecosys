@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 7 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic7_v3(VERTEX<Person> personId) syntax v3{
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, 
                 INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;

@@ -1,3 +1,5 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 9 query description is on page 66 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
 CREATE OR REPLACE QUERY ic9_v3(VERTEX<Person> personId, DATETIME date) syntax v3{
   TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, 
                 INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
