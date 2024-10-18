@@ -21,7 +21,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold
     SELECT p
     FROM (:M) -[:HAS_CREATOR]-> (p:Person)
     ACCUM p.@messageCount += 1
-    POST-ACCUM @@personCount += (p.@messageCount -> 1);
+    POST-ACCUM (p) @@personCount += (p.@messageCount -> 1);
 
   allPersons = {Person.*};
   diff = allPersons.size() - persons.size();

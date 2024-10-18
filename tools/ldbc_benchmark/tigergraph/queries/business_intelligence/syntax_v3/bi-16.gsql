@@ -48,7 +48,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA,
   persons =
     SELECT p
     FROM (p:persons)
-    POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
+    POST-ACCUM (p) @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
 
   PRINT @@result as result;
 }

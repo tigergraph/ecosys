@@ -17,7 +17,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
       SELECT t
       FROM (s:S) -[:KNOWS]- (t:Person)
       WHERE NOT t.@visited
-      POST-ACCUM t.@visited = TRUE;
+      POST-ACCUM (t) t.@visited = TRUE;
     pathLength += 1;
   END;
   # Here, S is the Person with shortest length of 3
@@ -44,7 +44,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
       FOREACH t IN m.@tags DO
         p.@messageCount += (t -> 1)
       END
-    POST-ACCUM
+    POST-ACCUM (p)
       FOREACH (t,cnt) IN p.@messageCount DO
         @@result += RESULT(p.id, t.name, cnt)
       END;

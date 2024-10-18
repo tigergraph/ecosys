@@ -23,7 +23,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClass) SYNTAX v
       ELSE 
         t.@countWindow2 += 1
       END
-    POST-ACCUM
+    POST-ACCUM (t)
       @@result += RESULT(t.name, t.@countWindow1, t.@countWindow2, abs(t.@countWindow1 - t.@countWindow2));
 
   tmp =

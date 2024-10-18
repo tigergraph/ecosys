@@ -54,7 +54,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v3 {
     FROM  (m:messages2) -[:REPLY_OF]-> (m2)
     WHERE m2.@hasTag AND m.@creator != m2.@creator
     ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
-    POST-ACCUM m2.@Forum1.remove(m2.@forum)
+    POST-ACCUM (m2) m2.@Forum1.remove(m2.@forum)
     HAVING m2.@Forum1.size() > 0;
     
   message2 = 

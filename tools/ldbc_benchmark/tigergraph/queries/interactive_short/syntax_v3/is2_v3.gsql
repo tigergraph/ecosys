@@ -28,7 +28,7 @@ CREATE OR REPLACE QUERY is2_v3(VERTEX<Person> personId) syntax v3{
       s.@authorOgId = t2.id,
       s.@authorOgFN = t2.firstName,
       s.@authorOgLN = t2.lastName
-    POST-ACCUM @@result += ogPostInfo(s.id, s.@messageContent, 
+    POST-ACCUM (s) @@result += ogPostInfo(s.id, s.@messageContent,
             s.creationDate, s.@postId, s.@authorOgId, s.@authorOgFN, s.@authorOgLN);
 
   PRINT @@result;

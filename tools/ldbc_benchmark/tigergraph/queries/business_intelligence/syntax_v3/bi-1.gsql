@@ -30,7 +30,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v3{
       ELSE
         m.@lengthCategory = 3
       END
-    POST-ACCUM @@midResult += (year(epoch_to_datetime(m.creationDate/1000)), m.@isComment, m.@lengthCategory -> 1, m.length);
+    POST-ACCUM (m) @@midResult += (year(epoch_to_datetime(m.creationDate/1000)), m.@isComment, m.@lengthCategory -> 1, m.length);
 
   @@result.resize(@@midResult.size());
   FOREACH m IN @@midResult DO

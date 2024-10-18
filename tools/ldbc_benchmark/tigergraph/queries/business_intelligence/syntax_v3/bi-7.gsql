@@ -18,7 +18,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) SYNTAX v3 {
     SELECT t
     FROM  (r:repliesWithoutTag) -[:HAS_TAG]-> (t:Tag)
     ACCUM t.@count += 1
-    POST-ACCUM @@result += RESULT(t.name, t.@count);
+    POST-ACCUM (t) @@result += RESULT(t.name, t.@count);
 
   PRINT @@result as result;
 }

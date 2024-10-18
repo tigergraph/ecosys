@@ -13,7 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v3 {
     
   person1 = SELECT p1 FROM (m:message1) -[:HAS_CREATOR]-> (p1:Person)
     ACCUM p1.@pScore += m.@pScore
-    POST-ACCUM 
+    POST-ACCUM (p1)
       FOREACH (p,score) IN p1.@pScore DO
         p1.@authorityScore += score
       END,

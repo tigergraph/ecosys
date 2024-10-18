@@ -27,7 +27,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX 
     FROM (p:posts) <-[:CONTAINER_OF]- (f:Forum)
     WHERE f.@selected
     ACCUM f.@messageCount += p.@messageCount
-    POST-ACCUM @@result += RESULT(f.id, f.title, ms_to_string(f.creationDate), f.@personId, f.@messageCount);
+    POST-ACCUM (f) @@result += RESULT(f.id, f.title, ms_to_string(f.creationDate), f.@personId, f.@messageCount);
 
   PRINT @@result as result;
 }

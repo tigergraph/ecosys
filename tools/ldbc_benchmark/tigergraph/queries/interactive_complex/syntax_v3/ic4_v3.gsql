@@ -23,7 +23,7 @@ CREATE OR REPLACE QUERY ic4_v3(VERTEX<Person> personId, DATETIME startDate, INT 
         WHEN m.creationDate < startDate THEN
           @@tagsExc += t
       END
-    POST-ACCUM CASE WHEN t.@postCount > 0 THEN @@tagsFav += t END;
+    POST-ACCUM (t) CASE WHEN t.@postCount > 0 THEN @@tagsFav += t END;
 
   @@tagsFav = @@tagsFav MINUS @@tagsExc;
   vTag = { @@tagsFav };

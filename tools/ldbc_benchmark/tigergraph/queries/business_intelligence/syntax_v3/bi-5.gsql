@@ -20,7 +20,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi5(STRING tag) SYNTAX v3 {
       p.@replyCount += m.@replyCount,
       p.@likeCount += m.@likeCount,
       p.@messageCount += 1
-    POST-ACCUM
+    POST-ACCUM (p)
       @@result += RESULT(p.id, p.@replyCount, p.@likeCount, p.@messageCount,
         p.@messageCount + 2*p.@replyCount + 10*p.@likeCount);
 

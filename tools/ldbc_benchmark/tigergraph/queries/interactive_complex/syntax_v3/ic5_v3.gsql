@@ -20,7 +20,7 @@ CREATE OR REPLACE QUERY ic5_v3(VERTEX<Person> personId, DATETIME startDate) synt
     SELECT t
     FROM (s:vFriend)<-[:HAS_CREATOR]-(:Post)<-[:CONTAINER_OF]-(t:vForum)
     ACCUM CASE WHEN s.id IN t.@memberIds THEN t.@postCount += 1 END
-    POST-ACCUM @@result += forumInfo(t.title, t.@postCount, t.id);
+    POST-ACCUM (t) @@result += forumInfo(t.title, t.@postCount, t.id);
     
   PRINT @@result;
 }

@@ -15,7 +15,7 @@ CREATE OR REPLACE QUERY ic6_v3(VERTEX<Person> personId, STRING tag) syntax v3{
     FROM (:vPost)-[:HAS_TAG]->(t:Tag)
     WHERE t.name != tag
     ACCUM t.@postCount += 1
-    POST-ACCUM @@result += tagStats(t.name, t.@postCount);
+    POST-ACCUM (t) @@result += tagStats(t.name, t.@postCount);
     
   PRINT @@result;
 }

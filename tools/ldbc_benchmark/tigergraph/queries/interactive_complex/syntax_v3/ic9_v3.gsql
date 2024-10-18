@@ -18,7 +18,7 @@ CREATE OR REPLACE QUERY ic9_v3(VERTEX<Person> personId, DATETIME date) syntax v3
       m.@personId = p.id,
       m.@personFirstName = p.firstName,
       m.@personLastName = p.lastName
-    POST-ACCUM
+    POST-ACCUM (m)
       IF m.type == "Comment" OR m.content != "" THEN 
         @@result += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.content, m.creationDate)
       ELSE 
