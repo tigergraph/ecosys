@@ -29,6 +29,7 @@ This GSQL tutorial contains
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
+  - [Query Tuning](#query-tuning) 
  - [Support](#support) 
   
 
@@ -1191,6 +1192,9 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 ```
 [Go back to top](#top)
 
+## Query Tuning
+
+[Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
