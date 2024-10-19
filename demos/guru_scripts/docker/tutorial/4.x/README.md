@@ -1194,9 +1194,9 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 
 ## Query Tuning
 ### Batch Processing to Avoid OOM
-Sometime, you start from a vertex set-- we call it Seed set. Each vertex in the seed set will travese the graph doing the same thing. If this query takes too much memory, you can use divide-and-conquer method to avoid the out-of-memory issue.
+Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
 
-In the example below, we want to partition the seed set to 1000 batches. How do we select each batch vertices? We use mod 1000 == batch_number. That is, we group vertices based on their reminder when divided by 1000. 
+In the example below, we partition the Seed set into 1000 batches. To select vertices for each batch, we use the condition mod 1000 == batch_number. This groups vertices based on their remainder when divided by 1000.
 
 ```python
 CREATE OR REPLACE QUERY BatchCount (INT batch_num) SYNTAX v3 {
