@@ -1193,6 +1193,39 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 [Go back to top](#top)
 
 ## Query Tuning
+### Batch Processing to Avoid OOM
+Sometime, you start from a vertex set-- we call it Seed set. Each vertex in the seed set will travese the graph doing the same thing. If this query takes too much memory, you can use divide-and-conquer method to avoid the out-of-memory issue.
+
+In the example below, we want to partition the seed set to 1000 batches. How do we select each batch vertices? We use mod 1000 == batch_number. That is, we group vertices based on their reminder when divided by 1000. 
+
+```python
+CREATE OR REPLACE QUERY BatchCount (INT batch_num) SYNTAX v3 {
+        SumAccum<INT> @@count;
+        batch1 = SELECT s
+                 FROM (s:Account)
+                 WHERE getvid(s) % 1000 == batch_num; //only select all vertices that mod 1000 == batch_num
+
+        // 1000 is how many batch you will have. You can adjust the batch number to balance performance and memory usage
+        tmp = SELECT a1
+        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:Transfer]->(b2:batch1)
+        WHERE a1.name != a2.name AND b1.name != b2.name
+        ACCUM @@count +=1;
+ 
+        PRINT @@count;
+}
+```
+You can use a Shell script to invoke the above query with each batch id. 
+
+```bash
+#!/bin/bash
+
+# Loop from 0 to 999
+for i in {0...999}
+do
+  # Execute the curl command with the current batch_number
+  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/general/BatchCount?batch_number=$i"
+done
+```
 
 [Go back to top](#top)
 # Support 
