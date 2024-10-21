@@ -79,7 +79,7 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
     logger.info("Start executing the query.");
     List<String> fields;
     switch (opts.getQueryType()) {
-        // Vertex query
+      // Vertex query
       case GET_VERTICES:
         resp = query.getVertices(conn.getGraph(), opts.getString(Options.QUERY_VERTEX), queryOps);
         break;
@@ -90,7 +90,7 @@ public class TigerGraphPartitionReader implements PartitionReader<InternalRow> {
                 opts.getString(Options.QUERY_FIELD_SEPARATOR));
         resp = query.getVertex(conn.getGraph(), fields.get(0), fields.get(1), queryOps);
         break;
-        // Edge query
+      // Edge query
       case GET_EDGES_BY_SRC_VERTEX:
         fields =
             Utils.extractQueryFields(
