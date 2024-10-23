@@ -150,10 +150,13 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   PRINT T;
 }
 
-#compile and install the query as a stored procedure
+# Method 1: Run immediately with our interpret engine
+interpret query q1b()
+
+# Method 2: Compile and install the query as a stored procedure
 install query q1b
 
-#run the query
+# run the compiled query
 run query q1b()
 ```
 
@@ -188,10 +191,16 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
 
 }
 
-#compile and install the query as a stored procedure
+
+# Two methods to run the query. The compiled method gives the best performance. 
+
+# Method 1: Run immediately with our interpret engine
+interpret query q2a("Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q2a
 
-#run the query
+# run the compiled query
 run query q2a("Scott")
 ```
 
@@ -216,10 +225,15 @@ CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
 
 }
 
-#compile and install the query as a stored procedure
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q2b()
+
+# Method 2: Compile and install the query as a stored procedure
 install query q2b
 
-#run the query
+# run the compiled query
 run query q2b()
 ```
 
@@ -253,8 +267,15 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTA
 
 }
 
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q3a("2024-01-01", "2024-12-31", "Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q3a
 
+# run the compiled query
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
 
@@ -300,6 +321,12 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
 
 }
 
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q3b("2024-01-01", "2024-12-31", "Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q3b
 
 run query q3b("2024-01-01", "2024-12-31", "Scott")
