@@ -118,10 +118,15 @@ CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
 }
 
-#compile and install the query as a stored procedure
+#Two methods to run the query. The compiled method gives the best performance. 
+
+#Method 1: Run immediately with our interpret engine
+interpret query q1a()
+
+#Method 2: Compile and install the query as a stored procedure
 install query q1a
 
-#run the query
+#run the compiled query
 run query q1a()
 ```
 ### SELECT INTO A Table Style
