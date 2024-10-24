@@ -82,6 +82,6 @@ kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} -n ${NAMESPACE_OF_CLUSTER}
 
 ## Bugfixes
 
-- Support values in JSON array format in field tigergraph.spec.tigergraphConfig ([TP-5365](https://graphsql.atlassian.net/browse/TP-5425))
+- Support values in JSON array format in field tigergraph.spec.tigergraphConfig ([TP-5365](https://graphsql.atlassian.net/browse/TP-5365))
 
-- Fixed the issue with running the gcollect command of TigerGraph on Kubernetes ([TP-6341](https://graphsql.atlassian.net/browse/TP-5425))
+- Fixed the issue with running the gcollect command of TigerGraph on Kubernetes ([TP-6351](https://graphsql.atlassian.net/browse/TP-6351))
