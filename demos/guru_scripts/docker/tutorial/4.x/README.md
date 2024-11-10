@@ -16,6 +16,7 @@ This GSQL tutorial contains
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
+    - [Edge Attached Accumulator](#edge-attached-accumulator)
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
     - [Using Vertex Set Variables](#using-vertex-set-variables)
     - [Using Accumulators](#using-accumulators)
@@ -648,6 +649,37 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
+### Edge Attached Accumulator
+
+Similar to attaching accumulator a vertex, you can attach primitive accumulator to an edge instance. 
+
+Example. 
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
+
+  SumAccum<int> @totalTransfer = 0;
+  OrAccum EDGE @visited;
+
+  v = SELECT b
+      FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
+      ACCUM  e.@visited += TRUE;
+
+  v = SELECT b
+      FROM (a:Account)-[e:transfer]->(b:Account)
+      WHERE NOT e.@visited;
+
+  //output each v and their static attribute and runtime accumulators' state
+  PRINT v;
+
+}
+
+install query -single q4a
+run query q4a("Jenny")
+```
+[Go back to top](#top)
 ## Vertex Set Variables And Accumulator As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
