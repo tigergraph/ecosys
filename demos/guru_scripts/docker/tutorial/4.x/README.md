@@ -359,7 +359,8 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 # Advanced Topics
 ## Accumulators
-GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. 
+GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global, vertex local or edge local.
+
 Accumulators are containers that store a data value, accept inputs, and aggregate these inputs into the stored data value using a binary operation `+=`.
 An accumulator is used as a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
 
