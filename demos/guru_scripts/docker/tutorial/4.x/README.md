@@ -651,7 +651,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 
 ### Edge Attached Accumulator
 
-Similar to attaching accumulator a vertex, you can attach primitive accumulator to an edge instance. 
+Similar to attaching accumulator a vertex, you can attach primitive accumulators to an edge instance. 
 
 Example. 
 
@@ -660,7 +660,6 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
 
-  SumAccum<int> @totalTransfer = 0;
   OrAccum EDGE @visited;
 
   v = SELECT b
@@ -676,6 +675,7 @@ CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
 
 }
 
+//it is only supported for single node, or single node mode in distributed enviroment
 install query -single q4a
 run query q4a("Jenny")
 ```
