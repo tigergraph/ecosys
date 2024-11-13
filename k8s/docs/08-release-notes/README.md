@@ -9,6 +9,7 @@ Please see the detailed documentation of each TigerGraph Operator version releas
 
 - [TigerGraph Operator 1.3.0](./operator-1.3.0.md)
 - [TigerGraph Operator 1.2.0](./operator-1.2.0.md)
+- [TigerGraph Operator 1.1.1](./operator-1.1.1.md)
 - [TigerGraph Operator 1.1.0](./operator-1.1.0.md)
 - [TigerGraph Operator 1.0.0](./operator-1.0.0.md)
 - [TigerGraph Operator 0.0.9](./operator-0.0.9.md) **_Deprecated_**
