@@ -16,7 +16,21 @@ This GSQL tutorial contains
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
+    - [Edge Attached Accumulator](#edge-attached-accumulator)
   - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
+    - [Using Vertex Set Variables](#using-vertex-set-variables)
+    - [Using Accumulators](#using-accumulators)
+  - [Flow Control](#flow-control)
+    - [IF Statement](#if-statement)
+    - [WHILE Statement](#while-statement)
+    - [FOREACH Statement](#foreach-statement)
+    - [CONTINUE and BREAK Statement](#continue-and-break-statement)
+    - [CASE WHEN Statement](#case-when-statement)
+  - [Vertex Set Operators](#vertex-set-operators)
+    - [Union](#union)
+    - [Intersect](#intersect)
+    - [Minus](#minus)
+  - [Query Tuning](#query-tuning) 
  - [Support](#support) 
   
 
@@ -78,26 +92,42 @@ We show both styles for each pattern class.
 ### SELECT A Vertex Set Style 
 Copy [q1a.gsql](./script/q1a.gsql) to your container. 
 
-```sql
+```python
 #enter the graph
 USE GRAPH financialGraph
 
 //create a query
 CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
 
-  // select from a node pattern-- symbolized by ()
+  // select from a node pattern-- symbolized by (),
+  //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
   // v is a vertex set variable, holding the selected vertex set
   v = SELECT a
       FROM (a:Account);
 
   // output vertex set variable v in JSON format
   PRINT v;
+
+  //we can use vertex set variable in the subsequent query block's node pattern.
+  //v is placed in the node pattern vertex label position. The result is re-assigned to v. 
+  v = SELECT a
+      FROM (a:v)
+      WHERE a.name == "Scott";
+
+  // output vertex set variable v in JSON format
+  PRINT v;
+
 }
 
-#compile and install the query as a stored procedure
+# Two methods to run the query. The compiled method gives the best performance. 
+
+# Method 1: Run immediately with our interpret engine
+interpret query q1a()
+
+# Method 2: Compile and install the query as a stored procedure
 install query q1a
 
-#run the query
+# run the compiled query
 run query q1a()
 ```
 ### SELECT INTO A Table Style
@@ -105,7 +135,7 @@ If you're familiar with SQL, treat the matched node as a table -- table(a) or ta
 
 Copy [q1b.gsql](./script/q1b.gsql) to your container. 
 
-```sql
+```python
 #enter the graph
 USE GRAPH financialGraph
 
@@ -113,7 +143,7 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   //think the FROM clause as a table (a.attr1, a.attr2,...)
   // you can group by a or its attributes, and do aggregation.
   // ":Account" is the label of the vertex type, and "a" is the
-  // table alias, and () symbolize a vertex pattern in ASCII art.
+  // vertex type alias, and () symbolize a vertex pattern in ASCII art.
   SELECT a.isBlocked, count(*) INTO T
   FROM (a:Account)
   GROUP BY a.isBlocked;
@@ -121,10 +151,13 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   PRINT T;
 }
 
-#compile and install the query as a stored procedure
+# Method 1: Run immediately with our interpret engine
+interpret query q1b()
+
+# Method 2: Compile and install the query as a stored procedure
 install query q1b
 
-#run the query
+# run the compiled query
 run query q1b()
 ```
 
@@ -134,7 +167,7 @@ run query q1b()
 ### SELECT A Vertex Set Style 
 Copy [q2a.gsql](./script/q2a.gsql) to your container. 
 
-```sql
+```python
 
 USE GRAPH financialGraph
 
@@ -148,6 +181,7 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
   // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
   // "v" is a vertex set variable holding the selected vertex set.
   // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
+  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
   v = SELECT b
       FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
       //for each matched edge, accumulate e.amount into the local accumulator of b.
@@ -158,10 +192,16 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
 
 }
 
-#compile and install the query as a stored procedure
+
+# Two methods to run the query. The compiled method gives the best performance. 
+
+# Method 1: Run immediately with our interpret engine
+interpret query q2a("Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q2a
 
-#run the query
+# run the compiled query
 run query q2a("Scott")
 ```
 
@@ -170,7 +210,7 @@ If you're familiar with SQL, treat the matched edge as a table -- table(a, e, b)
 
 Copy [q2b.gsql](./script/q2b.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
@@ -186,10 +226,15 @@ CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
 
 }
 
-#compile and install the query as a stored procedure
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q2b()
+
+# Method 2: Compile and install the query as a stored procedure
 install query q2b
 
-#run the query
+# run the compiled query
 run query q2b()
 ```
 
@@ -200,7 +245,7 @@ run query q2b()
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./script/q3a.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // create a query
@@ -223,8 +268,15 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTA
 
 }
 
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q3a("2024-01-01", "2024-12-31", "Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q3a
 
+# run the compiled query
 run query q3a("2024-01-01", "2024-12-31", "Scott")
 ```
 
@@ -234,7 +286,7 @@ If you're familiar with SQL, treat the matched path as a table -- table(a, e, b,
 
 Copy [q3b.gsql](./script/q3b.gsql) to your container. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // create a query
@@ -270,6 +322,12 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
 
 }
 
+# Two methods to run the query. The compiled method gives the best performance.
+
+# Method 1: Run immediately with our interpret engine
+interpret query q3b("2024-01-01", "2024-12-31", "Scott")
+
+# Method 2: Compile and install the query as a stored procedure
 install query q3b
 
 run query q3b("2024-01-01", "2024-12-31", "Scott")
@@ -302,7 +360,9 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 # Advanced Topics
 ## Accumulators
-GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. An accumulator is a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
+GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. 
+Accumulators are containers that store a data value, accept inputs, and aggregate these inputs into the stored data value using a binary operation `+=`.
+An accumulator is used as a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
 
 ### Accumulator Operators
 An accumulator in GSQL supports two operators: assignment (=) and accumulation (+=).
@@ -311,7 +371,7 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 
 - `+=` operator: The accumulation operator can be used to add new values to the accumulator’s state. Depending on the type of accumulator, different accumulation semantics are applied.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 // "distributed" key word means this query can be run both on a single node or a cluster of nodes 
@@ -394,7 +454,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 
 - `@` is used for declaring local accumulator variables. It must be used with a vertex alias specified in the FROM clause in a query block. E.g. v.@cnt += 1 where v is a vertex alias specified in a FROM clause of a SELECT-FROM-WHERE query block.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
@@ -448,7 +508,7 @@ The accumulator will accumulate based on the accumulator type.
 
 #### ACCUM
 Running example. 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a2 () SYNTAX V3 {
@@ -495,7 +555,7 @@ The optional `POST-ACCUM` clause enables accumulation and other computations acr
 
 Running example. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
@@ -533,7 +593,7 @@ Another characteristic of the `POST-ACCUM` clause is that its statements can acc
 
 In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
@@ -583,25 +643,56 @@ In query a4(), we have multiple `POST-ACCUM` clauses, each will be looping one s
 
 Note that you can only access one vertex alias in a `POST-ACCUM`. Below example is not allowed, as it has two vertex alias (a, b) in `a.@maxAmount` and `b.@maxAmount`, respectively. 
 
-```sql
+```python
 ### Example of Incorrect Code ❌
 POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
+### Edge Attached Accumulator
+
+Similar to attaching accumulator a vertex, you can attach primitive accumulators to an edge instance. 
+
+Example. 
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
+
+  OrAccum EDGE @visited;
+
+  v = SELECT b
+      FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
+      ACCUM  e.@visited += TRUE;
+
+  v = SELECT b
+      FROM (a:Account)-[e:transfer]->(b:Account)
+      WHERE NOT e.@visited;
+
+  //output each v and their static attribute and runtime accumulators' state
+  PRINT v;
+
+}
+
+//it is only supported for single node, or single node mode in distributed enviroment
+install query -single q4a
+run query q4a("Jenny")
+```
+[Go back to top](#top)
 ## Vertex Set Variables And Accumulator As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
 
 User can use two methods to achieve query composition. 
 
-- (1) Using vertex set variable.
+### Using Vertex Set Variables
 
 GSQL query consists of a sequence of query blocks. Each query block will produce a vertex set variable. In top-down syntax order, subsequent query block's `FROM` clause pattern can refer to prior query block's vertex set variable. Thus, achieving query block composition.  
 
 High level, within the query body brackets, you can define a sequence of connected or unconnected query blocks to make up the query body. Below is the skeleton of a query body.
 
-```sql
+```python
 CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
     // Query body
 
@@ -626,7 +717,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
 A typical GSQL query follows a top-down sequence of query blocks. Each query block generates a vertex set, which can be used by subsequent query blocks to drive pattern matching. For example, 
 the query a5 below achieve query composition via tgtAccnts vertex set variable, where the first SELECT query block compute this variable, and the second SELECT query block uses the variable in its `FROM` clause. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
@@ -639,7 +730,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
              WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
              ACCUM y.@cnt +=1;
 
- // tgtAccnts vertex set drive the query block below
+ // tgtAccnts vertex set drive the query block below. It's placed in the vertex label position.
  tgtPhones = SELECT z
              FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
              WHERE z.isBlocked
@@ -652,7 +743,9 @@ INSTALL QUERY a5
 
 RUN QUERY a5()
 ```
-- (2) Using accumulators.
+[Go back to top](#top)
+
+### Using Accumulators
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
 each query block will access the latest value of each vertex's local accumulator, thus achieving composition. 
@@ -660,7 +753,7 @@ each query block will access the latest value of each vertex's local accumulator
 Global variable maintains a global state, it can be accessed within query block, or at the same level as a query block. 
 For example, in a6 query below, the first query block accumulate 1 into each `y`'s `@cnt` accumulator, and increment the global accumulator `@@cnt`. In the second query block's `WHERE` clause, we use the `@cnt` and `@@cnt` accumulator, thus achieving composition. 
 
-```sql
+```python
 USE GRAPH financialGraph
 
 CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
@@ -688,6 +781,514 @@ INSTALL QUERY a6
 
 
 RUN QUERY a6()
+```
+
+[Go back to top](#top)
+
+## Flow Control
+
+### IF Statement
+The `IF` statement provides conditional branching: execute a block of statements only if a given condition is true. The `IF` statement allows for zero or more `ELSE-IF` clauses, followed by an optional `ELSE` clause. It is always closed by the `END` keyword.
+
+The `IF` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```python
+IF condition1 THEN statement(s)
+ ELSE IF condition2 THEN statement(s)
+  ...
+ ELSE statement(s)
+END
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY IfElseTest () SYNTAX V3 {
+
+  SumAccum<INT> @@isBlocked;
+  SumAccum<INT> @@unBlocked;
+  SumAccum<INT> @@others;
+
+  S1 = SELECT a
+       FROM (a:Account)
+       ACCUM
+             IF a.isBlocked THEN @@isBlocked += 1
+              ELSE IF NOT a.isBlocked THEN @@unBlocked += 1
+              ELSE  @@others += 1
+             END;
+
+  PRINT @@isBlocked, @@unBlocked, @@others;
+
+  STRING drink = "Juice";
+  SumAccum<INT> @@calories = 0;
+
+ //if-else. Top-statement level. Each statement
+ //needs to end by a semicolon, including the “END”.
+
+  IF drink == "Juice" THEN @@calories += 50;
+   ELSE IF drink == "Soda"  THEN @@calories += 120;
+   ELSE @@calories = 0;   // Optional else-clause
+ END;
+  // Since drink = "Juice", 50 will be added to calories
+
+  PRINT @@calories;
+}
+
+INSTALL QUERY IfElseTest
+
+RUN QUERY IfElseTest()
+```
+[Go back to top](#top)
+
+### WHILE Statement
+The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
+
+The `WHILE` statement iterates over its body until the condition evaluates to false or until the iteration limit is met. A condition is any expression that evaluates to a boolean. The condition is evaluated before each iteration. `CONTINUE` statements can be used to change the control flow within the while block. `BREAK` statements can be used to exit the while loop.
+
+A `WHILE` statement may have an optional `LIMIT` clause. The `LIMIT` clauses have a constant positive integer value or integer variable to constrain the maximum number of loop iterations.
+
+The `WHILE` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```python
+WHILE condition (LIMIT maxIter)? DO
+    statement(s)
+END
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices (ANY) = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (visited_vertices)-[:transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE;
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+
+  //reset vertex set variables
+  reachable_vertices = {};
+  visited_vertices (ANY) = {seed};
+
+
+     //clear the visited flag
+  S1 = SELECT s
+       FROM  (s:Account)
+       ACCUM s.@visited = FALSE;
+
+    // Loop terminates when condition met or reach 2 iterations
+  WHILE visited_vertices.size() !=0 LIMIT 2 DO
+     visited_vertices = SELECT s
+                        FROM (visited_vertices)-[:transfer]-> (s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                              s.@visited = TRUE;
+
+     reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY WhileTest
+
+RUN QUERY WhileTest("Scott")
+```
+[Go back to top](#top)
+
+### FOREACH Statement
+The `FOREACH` statement provides bounded iteration over a block of statements.
+
+The `FOREACH` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at top-statement level-- the same level as the `SELECT` query block.
+
+**Syntax** 
+```python
+FOREACH loop_var IN rangeExpr DO
+   statements
+END
+
+//loop_var and rangExpr can be the following forms
+name IN setBagExpr
+(key, value) pair IN setBagExpr // because it’s a Map
+name IN RANGE [ expr, expr ]
+name IN RANGE [ expr, expr ].STEP ( expr )
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
+
+  ListAccum<UINT>  @@listVar = [1, 2, 3];
+  SetAccum<UINT>   @@setVar = (1, 2, 3);
+  BagAccum<UINT>   @@bagVar =  (1, 2, 3);
+
+  SetAccum<UINT> @@set1;
+  SetAccum<UINT> @@set2;
+  SetAccum<UINT> @@set3;
+
+  #FOREACH item in collection accumlators variables
+  S = SELECT tgt
+      FROM (s:Account) -[e:Transfer]-> (tgt)
+      ACCUM
+        @@listVar += e.amount,
+        @@setVar += e.amount,
+        @@bagVar += e.amount;
+
+  PRINT @@listVar, @@setVar, @@bagVar;
+
+  //loop element in a list
+  FOREACH i IN @@listVar DO
+      @@set1 += i;
+  END;
+
+  //loop element in a set
+  FOREACH i IN @@setVar DO
+     @@set2 += i;
+  END;
+
+  //loop element in a bag
+  FOREACH i IN @@bagVar DO
+      @@set3 += i;
+  END;
+
+  PRINT @@set1, @@set2, @@set3;
+
+  //show step of loop var
+  ListAccum<INT> @@st;
+  FOREACH k IN RANGE[-1,4].STEP(2) DO
+      @@st += k;
+  END;
+
+  PRINT @@st;
+
+  ListAccum<INT> @@t;
+
+  //nested loop:
+  // outer loop iterates 0, 1, 2.
+  // inner loop iterates 0 to i
+  FOREACH i IN RANGE[0, 2] DO
+    @@t += i;
+    S = SELECT s
+        FROM (s:Account)
+        WHERE s.name =="Scott"
+        ACCUM
+          FOREACH j IN RANGE[0, i] DO
+            @@t += j
+          END;
+  END;
+  PRINT @@t;
+
+  MapAccum<STRING,STRING> @@mapVar, @@mapVarResult;
+  S = SELECT s
+      FROM (s:Account)
+      WHERE s.name =="Scott" OR s.name == "Jennie"
+      ACCUM @@mapVar += (s.name -> s.isBlocked);
+
+   //loop (k,v) pairs of a map
+   FOREACH (keyI, valueJ) IN @@mapVar DO
+    @@mapVarResult += (keyI -> valueJ);
+   END;
+
+  PRINT  @@mapVar, @@mapVarResult;
+
+}
+
+INSTALL QUERY ForeachTest
+
+RUN QUERY ForeachTest()
+```
+[Go back to top](#top)
+
+### CONTINUE and BREAK Statement
+The `CONTINUE` and `BREAK` statements can only be used within a block of a `WHILE` or `FOREACH` statement. The `CONTINUE` statement branches control flow to the end of the loop, skipping any remaining statements in the current iteration, and proceeding to the next iteration. That is, everything in the loop block after the `CONTINUE` statement will be skipped, and then the loop will continue as normal. The `BREAK` statement branches control flow out of the loop, i.e., it will exit the loop and stop iteration.
+
+**Example** 
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY ContinueAndBreakTest ( ) {
+
+   //output: 1, 3
+   INT i = 0;
+   WHILE (i < 3) DO
+      i = i + 1;
+      IF (i == 2) THEN
+         CONTINUE; //go directly to WHILE condition
+      END;
+      PRINT i;
+    END;
+
+    //output: 1
+    i = 0;
+    WHILE (i < 3) DO
+      i = i + 1;
+      IF (i == 2) THEN
+        Break; //jump out of the WHILE loop
+      END;
+      PRINT i;
+    END;
+
+}
+
+INSTALL QUERY ContinueAndBreakTest
+
+RUN QUERY ContinueAndBreakTest()
+```
+[Go back to top](#top)
+
+
+### CASE WHEN Statement
+
+One `CASE` statement contains one or more `WHEN-THEN` clauses, each `WHEN` presenting one expression. The `CASE` statement may also have one `ELSE` clause whose statements are executed if none of the preceding conditions are true.
+
+The `CASE` statement can be used in two different syntaxes: One equivalent to an `IF-ELSE` statement, and the other equivalent to a switch statement.
+
+The `IF-ELSE` version evaluates the boolean condition within each `WHEN` clause and executes the first block of statements whose condition is true. The optional concluding `ELSE` clause is executed only if all `WHEN` clause conditions are false.
+
+The switch version evaluates the expression following the keyword `WHEN` and compares its value to the expression immediately following the keyword `CASE`. These expressions do not need to be boolean; the `CASE` statement compares pairs of expressions to see if their values are equal. The first `WHEN-THEN` clause to have an expression value equal to the `CASE` expression value is executed; the remaining clauses are skipped. The optional `ELSE` clause is executed only if no `WHEN` clause expression has a value matching the `CASE` value.
+
+The `CASE` statement can appear within a query block `ACCUM` or `POST-ACCUM` clause, or at a top-statement level — the same level as the `SELECT` query block
+
+**Syntax** 
+```python
+//if-else semantics
+CASE
+  WHEN condition1 THEN statement(s)
+  WHEN condition2 THEN statement(s)
+  ...
+  ELSE statement(s)
+END
+
+//or switch semantics
+CASE expr
+  WHEN constant1 THEN statement(s)
+  WHEN constant2 THEN statement(s)
+  ...
+  ELSE statement(s)
+END
+```
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY CaseWhenTest () SYNTAX V3{
+
+  SumAccum<INT> @@isBlocked;
+  SumAccum<INT> @@unBlocked;
+  SumAccum<INT> @@others;
+
+  SumAccum<INT> @@isBlocked2;
+  SumAccum<INT> @@unBlocked2;
+  SumAccum<INT> @@others2;
+
+
+  //case-when in a query block
+  S1 = SELECT a
+       FROM (a:Account)
+       ACCUM
+          //if-else semantic: within query block, statement
+          //does not need a semicolon to end.
+          CASE
+            WHEN a.isBlocked THEN @@isBlocked += 1
+            WHEN NOT a.isBlocked THEN @@unBlocked += 1
+            ELSE  @@others += 1
+          END;
+
+
+  PRINT @@isBlocked, @@unBlocked, @@others;
+
+  S2 = SELECT a
+       FROM (a:Account)
+       ACCUM
+          //switch semantic: within query block, statement
+          //does not need a semicolon to end.
+          CASE a.isBlocked
+            WHEN TRUE THEN @@isBlocked2 += 1
+            WHEN FALSE THEN @@unBlocked2 += 1
+            ELSE  @@others2 += 1
+          END;
+
+  PRINT @@isBlocked2, @@unBlocked2, @@others2;
+
+  STRING drink = "Juice";
+  SumAccum<INT> @@calories = 0;
+
+ //if-else version. Top-statement level. Each statement
+ //needs to end by a semicolon, including the “END”.
+  CASE
+    WHEN drink == "Juice" THEN @@calories += 50;
+    WHEN drink == "Soda"  THEN @@calories += 120;
+    ELSE @@calories = 0;       // Optional else-clause
+  END;
+  // Since drink = "Juice", 50 will be added to calories
+
+  //switch version. Top-statement level. Each statement
+  //needs to end by a semicolon, including the “END”.
+  CASE drink
+    WHEN "Juice" THEN @@calories += 50;
+    WHEN "Soda"  THEN @@calories += 120;
+    ELSE  @@calories = 0;    // Optional else-clause
+  END;
+
+  PRINT @@calories;
+}
+
+INSTALL QUERY CaseWhenTest
+
+RUN QUERY CaseWhenTest()
+```
+
+[Go back to top](#top)
+
+## Vertex Set Operators
+
+### Union
+The `UNION` operator in GSQL is used to combine two or more sets into a single result set. It removes duplicate elements from the input sets. The set could be vertex set or some type set.
+
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY unionTest () SYNTAX V3 {
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 UNION S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+  S4 = SELECT c
+       FROM (c:City);
+
+  S5 = S3 UNION S4;
+
+  //show what's in S5
+  PRINT S5[S5.number];
+
+}
+```
+[Go back to top](#top)
+
+### Intersect
+The `INTERSECT` operator in GSQL is used to return the common vertices between two vertex sets. It only returns the vertices that are present in both vertex sets.
+
+**Example**
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 INTERSECT S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+}
+```
+[Go back to top](#top)
+
+### Minus
+The `MINUS` operator in GSQL is used to return the difference between two vertex sets. It essentially subtracts one vertex set from the other, returning only the vertices that are present in the first vertex set but not in the second.
+
+**Example**
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 MINUS S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+}
+```
+[Go back to top](#top)
+
+## Query Tuning
+### Batch Processing to Avoid OOM
+Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
+
+In the example below, we partition the Seed set into 1000 batches. To select vertices for each batch, we use the condition mod 1000 == batch_number. This groups vertices based on their remainder when divided by 1000.
+
+```python
+CREATE OR REPLACE QUERY BatchCount (INT batch_num) SYNTAX v3 {
+        SumAccum<INT> @@count;
+        batch1 = SELECT s
+                 FROM (s:Account)
+                 WHERE getvid(s) % 1000 == batch_num; //only select all vertices that mod 1000 == batch_num
+
+        // 1000 is how many batch you will have. You can adjust the batch number to balance performance and memory usage
+        tmp = SELECT a1
+        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:Transfer]->(b2:batch1)
+        WHERE a1.name != a2.name AND b1.name != b2.name
+        ACCUM @@count +=1;
+ 
+        PRINT @@count;
+}
+```
+You can use a Shell script to invoke the above query with each batch id. 
+
+```bash
+#!/bin/bash
+
+# Loop from 0 to 999
+for i in {0...999}
+do
+  # Execute the curl command with the current batch_number
+  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/general/BatchCount?batch_number=$i"
+done
 ```
 
 [Go back to top](#top)
