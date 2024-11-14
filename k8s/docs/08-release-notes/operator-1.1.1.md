@@ -76,12 +76,12 @@ kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} -n ${NAMESPACE_OF_CLUSTER}
 
 ## Improvements
 
-- Validate the format of the backup tag in Webhook ([TP-5374](https://graphsql.atlassian.net/browse/TP-5374))
+- Validate the format of the backup tag in Webhook.
 
-- Support setting the ExternalTrafficPolicy of external services to local or cluster based on the TG version in the operator ([TP-5425](https://graphsql.atlassian.net/browse/TP-5425))
+- Support setting the ExternalTrafficPolicy of external services to local or cluster based on the TG version in the operator.
 
 ## Bugfixes
 
-- Support values in JSON array format in field tigergraph.spec.tigergraphConfig ([TP-5365](https://graphsql.atlassian.net/browse/TP-5365))
+- Support values in JSON array format in field tigergraph.spec.tigergraphConfig.
 
-- Fixed the issue with running the gcollect command of TigerGraph on Kubernetes ([TP-6351](https://graphsql.atlassian.net/browse/TP-6351))
+- Fixed the issue with running the gcollect command of TigerGraph on Kubernetes.

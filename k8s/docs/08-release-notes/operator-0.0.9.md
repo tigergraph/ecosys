@@ -42,30 +42,30 @@ kubectl tg upgrade --namespace ${NAMESPACE_OF_OPERATOR} --operator-version 0.0.9
 
 ## New features
 
-- CompressLevel is now supported in `TigerGraphBackup` and `TigerGraphBackupSchedule`, with support for DecompressProcessNumber in TigerGraphRestore. These features require a cluster version of 3.9.3 or higher.([TP-4017](https://graphsql.atlassian.net/browse/TP-4017))
+- CompressLevel is now supported in `TigerGraphBackup` and `TigerGraphBackupSchedule`, with support for DecompressProcessNumber in TigerGraphRestore. These features require a cluster version of 3.9.3 or higher.
 
 ## Improvements
 
-- The help message menu for the `kubectl-tg` plugin has been enhanced. ([TP-3915](https://graphsql.atlassian.net/browse/TP-3915))
+- The help message menu for the `kubectl-tg` plugin has been enhanced.
 
-- The `.spec.initTGConfig.version` field in TigerGraph CR is now optional. You no longer need to specify this field when creating or updating the CR. ([TP-3910](https://graphsql.atlassian.net/browse/TP-3910))
+- The `.spec.initTGConfig.version` field in TigerGraph CR is now optional. You no longer need to specify this field when creating or updating the CR.
 
-- Static passwords have been replaced with private keys for executing cluster operations jobs. ([TP-3792](https://graphsql.atlassian.net/browse/TP-3792))
+- Static passwords have been replaced with private keys for executing cluster operations jobs.
 
-- The make command has been added to support the installation of tsar, and password usage has been disabled when building the TG docker image. ([TP-3786](https://graphsql.atlassian.net/browse/TP-3786))
+- The make command has been added to support the installation of tsar, and password usage has been disabled when building the TG docker image.
 
-- Support for automatic restart of TigerGraph service under any circumstances has been introduced. ([TP-3848](https://graphsql.atlassian.net/browse/TP-3848) Database change)
+- Support for automatic restart of TigerGraph service under any circumstances has been introduced.
 
-- Service auto-restart in the Operator can now be enabled by setting the TG configuration Controller.ServiceManager.AutoRestart. ([TP-4045](https://graphsql.atlassian.net/browse/TP-4045))
+- Service auto-restart in the Operator can now be enabled by setting the TG configuration Controller.ServiceManager.AutoRestart.
 
 ## Bugfixes
 
-- A situation where the cluster was cloned again when a restore had already succeeded has been rectified. ([TP-3948](https://graphsql.atlassian.net/browse/TP-3948))
+- A situation where the cluster was cloned again when a restore had already succeeded has been rectified.
 
-- A problem with error handling in the TG container's PostStart Handler script has been resolved. ([TP-3914](https://graphsql.atlassian.net/browse/TP-3914))
+- A problem with error handling in the TG container's PostStart Handler script has been resolved.
 
-- A restpp status refresh issue has been addressed. ([CORE-1905](https://graphsql.atlassian.net/browse/CORE-1905))
+- A restpp status refresh issue has been addressed.
 
-- GSQL jobs no longer get stuck when some related services are down. ([GLE-5365](https://graphsql.atlassian.net/browse/GLE-5365))
+- GSQL jobs no longer get stuck when some related services are down.
 
-- An issue where expansion was stuck at importing gsql/gui has been fixed. ([TOOLS-2306](https://graphsql.atlassian.net/browse/TOOLS-2306))
+- An issue where expansion was stuck at importing gsql/gui has been fixed.

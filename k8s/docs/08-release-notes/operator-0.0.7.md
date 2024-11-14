@@ -53,14 +53,14 @@ kubectl tg upgrade --namespace ${NAMESPACE_OF_OPERATOR} --operator-version 0.0.7
 
 - Fixed the problem of external services updating twice, which led to errors.
 
-- Corrected unexpected config updates when executing an overlap operation between upgrade and expansion. ([TP-3646](https://graphsql.atlassian.net/browse/TP-3646))
+- Corrected unexpected config updates when executing an overlap operation between upgrade and expansion.
 
-- Addressed an incorrect error exit issue in the upgrade script. ([TP-3869](https://graphsql.atlassian.net/browse/TP-3869))
+- Addressed an incorrect error exit issue in the upgrade script.
 
 - Fixed the issue of cluster status checking during expansion and shrinking. It now checks the service of all nodes, not just the client node.
 
-- Graph query responses no longer encounter errors after successful execution of the expansion. ([GLE-5195](https://graphsql.atlassian.net/jira/software/c/projects/GLE/issues/GLE-5195), TigerGraph 3.9.2)
+- Graph query responses no longer encounter errors after successful execution of the expansion.
 
-- Resolved the issue of cluster size limits during cluster expansion. ([TP-3768](https://graphsql.atlassian.net/browse/TP-3768))
+- Resolved the issue of cluster size limits during cluster expansion.
 
-- Fixed unnecessary rolling update problems that occurred when upgrading from 3.7.0 and below to 3.9.0 and above. ([TP-3765](https://graphsql.atlassian.net/browse/TP-3765) & [CORE-2585](https://graphsql.atlassian.net/browse/CORE-2585))
+- Fixed unnecessary rolling update problems that occurred when upgrading from 3.7.0 and below to 3.9.0 and above.
