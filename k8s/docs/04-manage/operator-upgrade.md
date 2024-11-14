@@ -3,7 +3,7 @@
 This document provides step-by-step instructions for upgrading the TigerGraph Kubernetes Operator using the kubectl-tg plugin.
 
 - [How to upgrade TigerGraph Kubernetes Operator](#how-to-upgrade-tigergraph-kubernetes-operator)
-  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.2.0](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-120)
+  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.3.0](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-130)
     - [Upgrading kubectl-tg plugin](#upgrading-kubectl-tg-plugin)
       - [Upgrading TigerGraph Operator](#upgrading-tigergraph-operator)
   - [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above)
@@ -22,15 +22,19 @@ This document provides step-by-step instructions for upgrading the TigerGraph Ku
       - [Exposing Nginx Service Instead of Exposing RESTPP and GST (Tools and GUI) Services](#exposing-nginx-service-instead-of-exposing-restpp-and-gst-tools-and-gui-services)
       - [Performing a Full Backup Before Running HA Update, Shrink, and Expand Operations](#performing-a-full-backup-before-running-ha-update-shrink-and-expand-operations)
       - [Upgrading a TigerGraph Cluster to Use Multiple PVCs](#upgrading-a-tigergraph-cluster-to-use-multiple-pvcs)
+  - [Troubleshooting](#troubleshooting)
+    - [Successfully upgraded the operator from versions above 1.0.0 to 1.2.0, but still can’t create a TigerGraph cluster with the new features released in 1.2.0](#successfully-upgraded-the-operator-from-versions-above-100-to-120-but-still-cant-create-a-tigergraph-cluster-with-the-new-features-released-in-120)
+    - [Successfully upgraded the operator from version 0.0.9 to version 1.2.0 and earlier, but still encountered some errors when creating a TigerGraph cluster](#successfully-upgraded-the-operator-from-version-009-to-version-120-and-earlier-but-still-encountered-some-errors-when-creating-a-tigergraph-cluster)
+    - [Failed to upgrade the operator from version 0.0.9 to version 1.3.0 and above](#failed-to-upgrade-the-operator-from-version-009-to-version-130-and-above)
 
-## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.2.0
+## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.3.0
 
 ### Upgrading kubectl-tg plugin
 
-To upgrade the kubectl-tg plugin for TigerGraph Operator 1.2.0, execute the following command:
+To upgrade the kubectl-tg plugin for TigerGraph Operator 1.3.0, execute the following command:
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.2.0/kubectl-tg  -o kubectl-tg
+curl https://dl.tigergraph.com/k8s/1.3.0/kubectl-tg  -o kubectl-tg
 sudo install kubectl-tg /usr/local/bin/
 ```
 
@@ -39,8 +43,8 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.2.0
-Default version of TigerGraph cluster: 4.1.0
+Version: 1.3.0
+Default version of TigerGraph cluster: 4.1.1
 ```
 
 > [!WARNING]
@@ -48,21 +52,21 @@ Default version of TigerGraph cluster: 4.1.0
 
 #### Upgrading TigerGraph Operator
 
-There are no breaking changes in the TigerGraph CRDs for version 1.2.0. You can upgrade the TigerGraph Operator by following these steps if you have an older version 1.0.0 or above installed.
+There are no breaking changes in the TigerGraph CRDs for version 1.3.0 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if you have an older version (1.0.0 or above) installed.
 
 > [!IMPORTANT]
-> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade or delete TigerGraph CRDs manually.
+> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, for operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
 
-- Upgrade the TigerGraph CRDs to version 1.2.0
+- Upgrade the TigerGraph CRDs to the latest version(It's required for the operator version prior to 1.3.0)
 
   ```bash
-  kubectl apply -f https://dl.tigergraph.com/k8s/1.2.0/tg-operator-crd.yaml
+  kubectl apply -f https://dl.tigergraph.com/k8s/${OPERATOR_VERSION}/tg-operator-crd.yaml
   ```
 
-- Upgrade the TigerGraph Operator to version 1.2.0 using the `kubectl-tg` plugin
+- Upgrade the TigerGraph Operator to the specific version using the `kubectl-tg` plugin
 
   ```bash
-  kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-version 1.2.0
+  kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-version ${OPERATOR_VERSION}
   ```
   
   Ensure TigerGraph Operator has been upgraded successfully:
@@ -138,7 +142,7 @@ tg-data-test-cluster-2   Bound    pvc-73d58df7-206e-4c58-aa91-702df9761fac   10G
 ### Install the latest or target version of `kubectl-tg`
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.2.0/kubectl-tg  -o kubectl-tg
+curl https://dl.tigergraph.com/k8s/1.3.0/kubectl-tg  -o kubectl-tg
 sudo install kubectl-tg /usr/local/bin/
 ```
 
@@ -147,8 +151,8 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.2.0
-Default version of TigerGraph cluster: 4.1.0
+Version: 1.3.0
+Default version of TigerGraph cluster: 4.1.1
 ```
 
 ### Uninstall the old version of TigerGraph Operator and TigerGraph CRDs
@@ -189,7 +193,7 @@ Ensure TigerGraph Operator has been installed successfully:
 helm list -n tigergraph
 
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
-tg-operator     tigergraph      1               2024-06-24 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.2.0                1.2.0
+tg-operator     tigergraph      1               2024-09-10 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.3.0                1.3.0
 ```
 
 ```bash
@@ -327,3 +331,85 @@ Best practice for upgrading TigerGraph <=3.9.3 with a single PVC and TigerGraph 
   ```bash
   kubectl tg update --cluster-name $YOUR_CLUSTER_NAME --version 4.1.0 --namespace $YOUR_NAMESPACE
   ```
+
+## Troubleshooting
+
+### Successfully upgraded the operator from versions above 1.0.0 to 1.2.0, but still can’t create a TigerGraph cluster with the new features released in 1.2.0
+
+Starting from Helm V3, there is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss.
+
+This means that even if we successfully upgrade the TigerGraph Operator, we still need to manually upgrade the TigerGraph CRDs. Otherwise, you may encounter the following issues:
+
+```bash
+error: error validating "sidecar-loadbanalance.yaml": error validating data: ValidationError(TigerGraph.spec): unknown field "sidecarListener" in com.tigergraph.graphdb.v1alpha1.TigerGraph.spec; if you choose to ignore these errors, turn validation off with --validate=false
+```
+
+If you encounter the issue of an unknown field, you can manually upgrade the TigerGraph CRDs using the following command:
+
+```bash
+  kubectl apply -f https://dl.tigergraph.com/k8s/${OPERATOR_VERSION}/tg-operator-crd.yaml
+```
+
+> [!NOTE]
+> Starting from operator version 1.3.0, we use the Helm chart’s pre-upgrade hook to automatically upgrade the CRDs, provided there are no breaking changes during the CRD upgrade.
+
+### Successfully upgraded the operator from version 0.0.9 to version 1.2.0 and earlier, but still encountered some errors when creating a TigerGraph cluster
+
+Starting with TigerGraph Operator 1.0.0, the fields `spec.initTGConfig.license` and `spec.initTGConfig.ha` have been moved to `spec.license` and `spec.ha`, respectively. Additionally, `the spec.initTGConfig` field has been removed. You may encounter the error below if you only upgrade kubectl-tg to the latest version without upgrading TigerGraph Operator and CRDs.
+
+```bash
+kubectl tg create --namespace tigergraph --cluster-name test-cluster --license  ${YOUR_LICENSE} \ 
+-k ssh-key-secret --size 3 --ha 2  --storage-class standard --storage-size 100G --cpu 6000m --memory 12Gi
+
+Error from server (BadRequest): error when creating "STDIN": TigerGraph in version "v1alpha1" cannot be handled as a TigerGraph: strict decoding error: unknown field "spec.ha", unknown field "spec.license"
+```
+
+If you encounter the above issue, please refer to the section [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above).
+
+### Failed to upgrade the operator from version 0.0.9 to version 1.3.0 and above
+
+Starting from operator version 1.3.0, we use the Helm chart’s pre-upgrade hook to upgrade the CRDs automatically, provided there are no breaking changes during the CRD upgrade. However, the pre-upgrade hook will fail the upgrade if there is a schema difference, such as upgrading from version 0.0.9 to 1.3.0. The examples of errors are as follows:
+
+- Upgrade Operator failed
+
+```bash
+$ kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-version ${OPERATOR_VERSION}
+Error: UPGRADE FAILED: pre-upgrade hooks failed: job failed: BackoffLimitExceeded
+Major version has changed from 0 to 1
+
+$ helm list -n tigergraph
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS  CHART                           APP VERSION  
+tg-operator     tigergraph      2               2024-09-09 08:42:19.063457181 +0000 UTC failed  tg-operator-1.3.0               1.3.0
+```
+
+- Check the error logs of pre-upgrade job
+
+```bash
+$ export YOUR_NAMESPACE=tigergraph
+$ kubectl logs $(kubectl get pods --namespace ${YOUR_NAMESPACE} | grep tg-operator-pre-upgrade | awk 'NR==1{print $1}') --namespace ${YOUR_NAMESPACE}
+Processing file: /crds/tigergraphbackups.graphdb.tigergraph.com.yaml
+time="2024-09-09T08:42:26Z" level=info msg="The GroupResource of the validated CR graphdb.tigergraph.com, tigergraphbackups"
+time="2024-09-09T08:42:26Z" level=info msg="GroupVersionResource graphdb.tigergraph.com/v1alpha1, Resource=tigergraphbackups"
+2024/09/09 08:42:26 CRD tigergraphbackups.graphdb.tigergraph.com compatibility validation passed
+Processing file: /crds/tigergraphbackupschedules.graphdb.tigergraph.com.yaml
+time="2024-09-09T08:42:26Z" level=info msg="The GroupResource of the validated CR graphdb.tigergraph.com, tigergraphbackupschedules"
+time="2024-09-09T08:42:26Z" level=info msg="GroupVersionResource graphdb.tigergraph.com/v1alpha1, Resource=tigergraphbackupschedules"
+2024/09/09 08:42:26 CRD tigergraphbackupschedules.graphdb.tigergraph.com compatibility validation passed
+Processing file: /crds/tigergraphrestores.graphdb.tigergraph.com.yaml
+time="2024-09-09T08:42:27Z" level=info msg="The GroupResource of the validated CR graphdb.tigergraph.com, tigergraphrestores"
+time="2024-09-09T08:42:27Z" level=info msg="GroupVersionResource graphdb.tigergraph.com/v1alpha1, Resource=tigergraphrestores"
+2024/09/09 08:42:27 CRD tigergraphrestores.graphdb.tigergraph.com compatibility validation passed
+Processing file: /crds/tigergraphs.graphdb.tigergraph.com.yaml
+time="2024-09-09T08:42:27Z" level=info msg="The GroupResource of the validated CR graphdb.tigergraph.com, tigergraphs"
+time="2024-09-09T08:42:27Z" level=info msg="GroupVersionResource graphdb.tigergraph.com/v1alpha1, Resource=tigergraphs"
+time="2024-09-09T08:42:27Z" level=info msg="CR Name: test-cluster, namespace: tigergraph"
+2024/09/09 08:42:27 Error walking through directory: error validating existing CRs against new CRD's schema for "tigergraphs.graphdb.tigergraph.com": error validating graphdb.tigergraph.com/v1alpha1, 
+Kind=TigerGraph "tigergraph/test-cluster": updated validation is too restrictive: [[].spec.ha: Required value, [].spec.license: Required value, 
+[].status.conditions[0].lastTransitionTime: Required value, [].status.conditions[0].message: Required value, [].status.conditions[0].reason: Required value, 
+[].status.conditions[1].lastTransitionTime: Required value, [].status.conditions[1].reason: Required value, 
+[].status.conditions[2].lastTransitionTime: Required value, [].status.conditions[2].reason: Required value, 
+[].status.conditions[3].lastTransitionTime: Required value, [].status.conditions[3].reason: Required value]
+the schema compatibility check for the CRDs failed, there may be breaking changes during the operator upgrade. Please refer to the operator upgrade documentation for details.
+```
+
+If you encounter the above issue, please refer to the section [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above).

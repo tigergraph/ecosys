@@ -12,7 +12,9 @@ Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
+| 1.3.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.1|1.25, 1.26, 1.27, 1.28, 1.29|
 | 1.2.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.0|1.25, 1.26, 1.27, 1.28, 1.29|
+| 1.1.1 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.2|1.25, 1.26, 1.27, 1.28, 1.29|
 | 1.1.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.1|1.24, 1.25, 1.26, 1.27, 1.28|
 | 1.0.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.0|1.24, 1.25, 1.26, 1.27, 1.28|
 | 0.0.9 | TigerGraph >= 3.6.0 && TigerGraph <= 3.9.3|1.23, 1.24, 1.25, 1.26, 1.27|
@@ -38,6 +40,7 @@ TigerGraph Operator offers several deployment options for TigerGraph clusters on
     - [Deploy TigerGraph on Google Cloud GKE](../03-deploy/tigergraph-on-gke.md)
     - [Deploy TigerGraph on Red Hat OpenShift](../03-deploy/tigergraph-on-openshift.md)
     - [Deploy TigerGraph on K8s without internet access](../03-deploy/deploy-without-internet.md)
+    - [Deploy TigerGraph on Azure Kubernetes Service (AKS)](../03-deploy/tigergraph-on-aks.md)
 
 Once your deployment is complete, refer to the following documents for guidance on using, operating, and maintaining your TigerGraph clusters on Kubernetes:
 
@@ -45,7 +48,6 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Utilizing Static & Dynamic Persistent Volume Storage](../07-reference/static-and-dynamic-persistent-volume-storage.md)
 - [Configuring NodeSelectors, Affinities, and Toleration](../03-deploy/configure-affinity-by-kubectl-tg.md)
 - [Working with InitContainers, Sidecar Containers, and Custom Volumes](../03-deploy/use-custom-containers-by-kubectl-tg.md)
-- [Resizing Persistent Volumes for TigerGraph](../07-reference/expand-persistent-volume.md)
 - [Backing Up and Restoring TigerGraph Clusters](../04-manage/backup-and-restore/README.md)
 - [Pause and Resume TigerGraph Clusters](../04-manage/pause-and-resume.md)
 - [Customize TigerGraph Pods and Containers](../03-deploy/customize-tigergraph-pod.md)

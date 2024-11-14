@@ -62,7 +62,7 @@ Follow these commands to install cert-manager:
 > Please check whether cert-manager has been installed before execute the following command.
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml 
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml 
 # Verify installation of cert-manager 
 kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
 kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
@@ -107,6 +107,10 @@ kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
+
+If you want to install the TigerGraph Operator with Helm, you can refer to [Deploy TigerGraph Operator with Helm](./deploy-operator-with-helm.md).
+
+The example below shows how to install the TigerGraph Operator with the `kubectl-tg` plugin.
 
 To simplify the Operator installation and TigerGraph cluster deployment, define environment variables:
 
@@ -451,13 +455,36 @@ You can customize the configurations for the TigerGraph system by specifying the
 
 ### Create TG cluster with specific options
 
-To create a new TigerGraph cluster with specific options, use either the kubectl-tg plugin or a CR YAML manifest. Below are examples using the kubectl-tg plugin:
+You can create a new TigerGraph cluster with specific options, such as size, high availability, version, license, and resource specifications.
 
-You can get all of the TigerGraph docker image version from [tigergraph-k8s](https://hub.docker.com/r/tigergraph/tigergraph-k8s/tags)
+> [!IMPORTANT]
+> Choosing the right compute resources (CPU and memory) and storage size to host your TigerGraph system is crucial for achieving the right balance between cost and performance. We provide general guidelines for hardware selection based on simple hypothetical assumptions, but your actual hardware requirements will vary depending on your data size, workload, and performance needs.
 
-You must provide your license key when creating cluster. Contact TigerGraph support for help finding your license key.
+- Hardware Recommendations
+
+The sizing recommendations below apply to each TigerGraph node. If you have more than several hundred gigabytes of data, you should consider deploying a cluster of multiple nodes, to distribute your data.
+
+| Deployment env | CPU  | Memory | Storage size |
+|----------|----------|----------|----------|
+| Personal Use | 4 cores | 8GB | ≥ 50GB |
+| Development, UAT, or SIT System | 16 cores | 32GB | ≥ 300GB |
+| Production System | 32 cores | 64GB | ≥ 500GB |
+
+- Configuring HA settings
+
+TigerGraph's HA (High Availability) service provides load balancing when all components are operational, and automatic failover in the event of a service disruption. For detailed information, please refer to the [official documents](https://docs.tigergraph.com/tigergraph-server/current/cluster-and-ha-management/ha-cluster).
+
+The minimum value for the replication factor (HA) is 1, meaning high availability is not configured for the cluster. The partitioning factor is not explicitly set by the user; instead, TigerGraph determines it using the following formula:
+
+`partitioning factor = number of pods / replication factor`
+
+If the result is not an integer, some machines will remain unused. For example, in a 7-node cluster with a replication factor of 2, the system will configure 2-way HA with a partitioning factor of 3, leaving one machine unused.
+
+In general, we recommend setting the replication factor (HA) to 2 and using a cluster size that is a power of 2 (e.g., 4, 8, 16)
 
 - Export license key as an environment variable
+
+  You must provide your license key when creating cluster. Contact TigerGraph support for help finding your license key.
 
   ```bash
   export LICENSE=<LICENSE_KEY>
@@ -465,12 +492,18 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
 
 - Create TigerGraph cluster with kubectl-tg plugin
 
+> [!NOTE]
+> Please adjust the TigerGraph Docker image version (e.g., 4.1.0), CPU, memory, and storage size to meet your actual requirements.
+
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.9.3 --license ${LICENSE} \
-  --storage-class standard --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.1.0 --license ${LICENSE} \
+  --storage-class standard --storage-size 200G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
   ```
 
 - Alternatively, create a TigerGraph cluster with a CR YAML manifest:
+
+> [!NOTE]
+> Please adjust the TigerGraph Docker image version (e.g., 4.1.0), CPU, memory, and storage size to meet your actual requirements.
 
   ```bash
   cat <<EOF | kubectl apply -f -
@@ -480,27 +513,27 @@ You must provide your license key when creating cluster. Contact TigerGraph supp
     name: ${YOUR_CLUSTER_NAME}
     namespace: ${YOUR_NAMESPACE}
   spec:
-    image: docker.io/tigergraph/tigergraph-k8s:3.9.3
+    image: docker.io/tigergraph/tigergraph-k8s:4.1.0
     imagePullPolicy: IfNotPresent
     ha: 2
     license: ${LICENSE}
     listener:
       type: LoadBalancer
     privateKeyName: ${YOUR_SSH_KEY_SECRET_NAME}
-    replicas: 3
+    replicas: 4
     resources:
       limits:
-        cpu: "4"
-        memory: 8Gi
+        cpu: "6"
+        memory: 16Gi
       requests:
-        cpu: "4"
-        memory: 8Gi
+        cpu: "6"
+        memory: 16Gi
     storage:
       type: persistent-claim
       volumeClaimTemplate:
         resources:
           requests:
-            storage: 100G
+            storage: 200G
         storageClassName: standard
   EOF
   ```
@@ -572,10 +605,10 @@ Upgrading a TigerGraph cluster is supported from a lower version to a higher ver
 > [!WARNING]
 > Operator 0.0.9 has disabled TG downgrades from a higher version (e.g., 3.9.3) to any lower version (e.g., 3.9.2). Therefore, the upgrade job will fail if you attempt to downgrade.
 
-Assuming the current version of the cluster is 3.9.2, you can upgrade it to version 3.9.3 with the following command:
+Assuming the current version of the cluster is 4.1.0, you can upgrade it to version 4.1.1 with the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 3.9.3  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.1.1  --namespace ${YOUR_NAMESPACE}
 ```
 
 If you prefer using a CR YAML manifest, update the `spec.version` and `spec.image` field, and then apply it.

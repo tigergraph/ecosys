@@ -128,7 +128,7 @@ In the following steps, we assume that the TigerGraph Operator has been installe
   - If cert-manager is not installed, install it:
 
     ```bash
-    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml
     ```
   
   - Ensure cert-manager is running normally:

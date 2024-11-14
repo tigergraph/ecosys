@@ -91,40 +91,40 @@ The following examples suppose you are going to use cert-manager 1.8.0 version
 - Transferring the cert-manager Docker images to your private Docker registry
 
 ```bash
-# curl https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
-# quay.io/jetstack/cert-manager-cainjector:v1.8.0
-# quay.io/jetstack/cert-manager-controller:v1.8.0
-# quay.io/jetstack/cert-manager-webhook:v1.8.0
-docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.0
-docker pull quay.io/jetstack/cert-manager-controller:v1.8.0
-docker pull quay.io/jetstack/cert-manager-webhook:v1.8.0
+# curl https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml
+# quay.io/jetstack/cert-manager-cainjector:v1.12.13
+# quay.io/jetstack/cert-manager-controller:v1.12.13
+# quay.io/jetstack/cert-manager-webhook:v1.12.13
+docker pull quay.io/jetstack/cert-manager-cainjector:v1.12.13
+docker pull quay.io/jetstack/cert-manager-controller:v1.12.13
+docker pull quay.io/jetstack/cert-manager-webhook:v1.12.13
 
-docker save quay.io/jetstack/cert-manager-cainjector:v1.8.0 quay.io/jetstack/cert-manager-controller:v1.8.0 quay.io/jetstack/cert-manager-webhook:v1.8.0  > cert-manager-images.tar
+docker save quay.io/jetstack/cert-manager-cainjector:v1.12.13 quay.io/jetstack/cert-manager-controller:v1.12.13 quay.io/jetstack/cert-manager-webhook:v1.12.13  > cert-manager-images.tar
 
 # copy the docker images tar files to your target machine before loading
 docker load < cert-manager-images.tar
 
 # replace it to your private DOCKER REPO
 export DOCKER_REPO=docker.io/internal
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.8.0 ${DOCKER_REPO}/cert-manager-cainjector:v1.8.0
-docker tag quay.io/jetstack/cert-manager-controller:v1.8.0 ${DOCKER_REPO}/cert-manager-controller:v1.8.0
-docker tag quay.io/jetstack/cert-manager-webhook:v1.8.0 ${DOCKER_REPO}/cert-manager-webhook:v1.8.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.12.13 ${DOCKER_REPO}/cert-manager-cainjector:v1.12.13
+docker tag quay.io/jetstack/cert-manager-controller:v1.12.13 ${DOCKER_REPO}/cert-manager-controller:v1.12.13
+docker tag quay.io/jetstack/cert-manager-webhook:v1.12.13 ${DOCKER_REPO}/cert-manager-webhook:v1.12.13
 
 # push them to your private docker repo
-docker push ${DOCKER_REPO}/cert-manager-cainjector:v1.8.0
-docker push ${DOCKER_REPO}/cert-manager-controller:v1.8.0
-docker push ${DOCKER_REPO}/cert-manager-webhook:v1.8.0
+docker push ${DOCKER_REPO}/cert-manager-cainjector:v1.12.13
+docker push ${DOCKER_REPO}/cert-manager-controller:v1.12.13
+docker push ${DOCKER_REPO}/cert-manager-webhook:v1.12.13
 ```
 
 - Modify the manifests of cert-manager according to your docker registry
 
 ```bash
-curl -L "https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml" -o "cert-manager.yaml"
+curl -L "https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml" -o "cert-manager.yaml"
 
 # edit cert-manager.yaml, change the following lines which including cert-manager images
-quay.io/jetstack/cert-manager-cainjector:v1.8.0 -> ${DOCKER_REPO}/cert-manager-cainjector:v1.8.0
-quay.io/jetstack/cert-manager-cainjector:v1.8.0 -> ${DOCKER_REPO}/cert-manager-controller:v1.8.0
-quay.io/jetstack/cert-manager-cainjector:v1.8.0 -> ${DOCKER_REPO}/cert-manager-webhook:v1.8.0
+quay.io/jetstack/cert-manager-cainjector:v1.12.13 -> ${DOCKER_REPO}/cert-manager-cainjector:v1.12.13
+quay.io/jetstack/cert-manager-cainjector:v1.12.13 -> ${DOCKER_REPO}/cert-manager-controller:v1.12.13
+quay.io/jetstack/cert-manager-cainjector:v1.12.13 -> ${DOCKER_REPO}/cert-manager-webhook:v1.12.13
 
 # Install the cert-manager with your private docker 
 kubectl apply -f cert-manager.yaml
@@ -168,7 +168,7 @@ Customize the operator configuration via values.yaml, we should change the image
 replicas: 3
 # image is the docker image of operator
 image: tigergraph-k8s-operator
-# jobImange is the docker image of cluster operation(int, upgrade, scale and so on) job
+# jobImage is the docker image of cluster operation(int, upgrade, scale and so on) job
 jobImage: tigergraph-k8s-init
 pullPolicy: IfNotPresent
 # imagePullSecret is the docker image pull secret of operator
@@ -177,7 +177,12 @@ imagePullSecret: tigergraph-image-pull-secret
 watchNameSpaces: ""
 # clusterScope is whether the operator has ClusterRole
 clusterScope: true
-# resources are resources reqeusts configuration of operator
+# maxConcurrentReconciles of controllers, defaults to 2
+maxConcurrentReconcilesOfTG: 2
+maxConcurrentReconcilesOfBackup: 2
+maxConcurrentReconcilesOfBackupSchedule: 2
+maxConcurrentReconcilesOfRestore: 2
+# resources are resources requests configuration of operator
 resources:
   requests:
     cpu: 1000m
@@ -185,6 +190,8 @@ resources:
   limits:
     cpu: 2000m
     memory: 4096Mi
+# nodeSelector is the nodeSelector of operator pods
+nodeSelector: null
 ```
 
 Install Operator using helm

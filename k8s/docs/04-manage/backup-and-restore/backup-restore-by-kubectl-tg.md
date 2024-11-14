@@ -72,7 +72,7 @@ Options:
   --staging-path :              Specify the location to store temporary files.
   --timeout :                   Set the backup timeout in seconds. Default: 18000.
   --compress-process-number :   Determine the number of concurrent processes used for compression 
-                                during backup. A value of 0 indicates that the number of compression processes will match the number of CPU cores on the nodes. The default value is 0.
+                                during backup. A value of 0 indicates that the number of compression processes will match the number of CPU cores on the nodes.
   --compress-level :            Choose from options: BestSpeed, DefaultCompression, and 
                                 BestCompression. Only supported for TG clusters >=3.9.3.
   --incremental :               Perform incremental backup.
@@ -481,7 +481,7 @@ Options:
   --timeout :                   the backup timeout in seconds,default: 18000
   --compress-process-number :   the number of concurrent process for compression during backup 
                                 value 0 means the number of processes used to compress equals 
-                                the number of the node's CPU cores. And the default value is 0
+                                the number of the node's CPU cores.
   --compress-level :            choose from BestSpeed,DefaultCompression and BestCompression. Only support TG cluster >=3.9.3
   --schedule :                  specify the schedule of backup in cron format. e.g. '* * * * *' is backup every minute
   --destination :               set the destination to store backup files, support local and s3 now
