@@ -39,24 +39,24 @@ public class TigergraphDialect extends JdbcDialect {
    */
   private Option<DataType> toCatalystType(String typeName) {
     switch (typeName.toLowerCase()) {
-        // For basic types but not supported in collection.
-        // Will throw unsupportedJdbcTypeError.
+      // For basic types but not supported in collection.
+      // Will throw unsupportedJdbcTypeError.
       case "bool":
       case "uint":
       case "string compress":
       case "float":
         return Option.empty();
-        // For supported TG collection element type.
-        // The query response of retrieving LIST<DOUBLE> might be parsed as Integer/Long[] if the
-        // double is actually an integer,
-        // then Spark will force casting Integer/Long to Double instead of calling `setDouble()`,
-        // which can cause ClassCastException.
-        // In case of the situation above, both TG LIST<INT> and LIST<DOUBLE> will be converted to
-        // Scala Array[Double].
+      // For supported TG collection element type.
+      // The query response of retrieving LIST<DOUBLE> might be parsed as Integer/Long[] if the
+      // double is actually an integer,
+      // then Spark will force casting Integer/Long to Double instead of calling `setDouble()`,
+      // which can cause ClassCastException.
+      // In case of the situation above, both TG LIST<INT> and LIST<DOUBLE> will be converted to
+      // Scala Array[Double].
       case "int":
       case "double":
         return Option.apply(DataTypes.DoubleType);
-        // For string, datatime and UDT
+      // For string, datatime and UDT
       case "string":
       case "datetime":
       default:

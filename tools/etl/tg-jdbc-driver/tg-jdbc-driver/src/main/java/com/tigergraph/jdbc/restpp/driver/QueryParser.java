@@ -29,6 +29,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.slf4j.Logger;
 
 /** Parse the raw query, and build a http request. */
@@ -56,6 +57,7 @@ public class QueryParser {
   private List<String> field_list_;
   private String line;
   private String job;
+  private ComparableVersion version;
   private int timeout;
   private int atomic;
   private boolean
@@ -600,6 +602,7 @@ public class QueryParser {
       Map<Integer, Object> parameters,
       Integer timeout,
       Integer atomic,
+      ComparableVersion version,
       boolean isLoggable)
       throws SQLException {
     if ((query == null) || query.equals("")) {
@@ -611,6 +614,7 @@ public class QueryParser {
     this.timeout = timeout;
     this.atomic = atomic;
     this.query = query;
+    this.version = version;
     this.field_list_ = new ArrayList<>();
     this.isLoggable = isLoggable;
 
@@ -712,7 +716,11 @@ public class QueryParser {
         this.query_type = QueryType.QUERY_TYPE_INTERPRETED;
         this.httpType = HttpTypes.HttpPost;
         this.payload = new StringEntity(query_body, "UTF-8");
-        sb.append("interpreted_query");
+        if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+          sb.append("interpreted_query");
+        } else {
+          sb.append("gsql/v1/queries/interpret");
+        }
       } else {
         /**
          * It is a pre-installed query. e.g., "run pageRank(maxChange=?, maxIteration=?,
@@ -742,7 +750,11 @@ public class QueryParser {
         if (tokens.length < 3) {
           throw new SQLException("Missing jobid value");
         }
-        sb.append("gsql/loading-jobs?action=getprogress&jobId=");
+        if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+          sb.append("gsql/loading-jobs?action=getprogress&jobId=");
+        } else {
+          sb.append("gsql/v1/loading-jobs/status?jobIds=");
+        }
         if (tokens[2].trim().equals("?")) {
           if (this.paramArray.length == 0) {
             throw new SQLException("The parameter 'jobid' of the preparedStatement was not set.");
@@ -918,7 +930,11 @@ public class QueryParser {
         if (this.query_type == QueryType.QUERY_TYPE_INSTALLED) {
           sb.append(tokens[from_index + 2]).append("?");
         } else {
-          sb.append("interpreted_query?");
+          if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+            sb.append("interpreted_query?");
+          } else {
+            sb.append("gsql/v1/queries/interpret?");
+          }
         }
 
         /** Parse parameters. */
@@ -965,7 +981,11 @@ public class QueryParser {
           throw new SQLException("Missing jobid: " + query);
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("gsql/loading-jobs?action=getprogress&jobId=");
+        if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+          sb.append("gsql/loading-jobs?action=getprogress&jobId=");
+        } else {
+          sb.append("gsql/v1/loading-jobs/status?jobIds=");
+        }
         sb.append(tokens[from_index + 2]);
         this.endpoint = sb.toString();
       }
@@ -1010,7 +1030,9 @@ public class QueryParser {
         break;
       case QUERY_TYPE_INTERPRETED:
       case QUERY_TYPE_JOBID_STATS:
-        sb.append("/gsqlserver");
+        if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+          sb.append("/gsqlserver");
+        }
         break;
       case QUERY_TYPE_GRAPH:
       case QUERY_TYPE_GRAPH_GET_VERTEX:
@@ -1021,11 +1043,17 @@ public class QueryParser {
         break;
       case QUERY_TYPE_SCHEMA_EDGE:
       case QUERY_TYPE_SCHEMA_VERTEX:
-        sb.append("/gsqlserver/gsql/schema?");
-        if (graph != null && !graph.equals("")) {
-          sb.append("graph=").append(graph).append("&");
+        if (version.compareTo(new ComparableVersion("4.1.0")) < 0) {
+          sb.append("/gsqlserver/gsql/schema?");
+          if (graph != null && !graph.equals("")) {
+            sb.append("graph=").append(graph).append("&");
+          }
+          sb.append("type=").append(this.vertex_edge_type);
+        } else {
+          sb.append("/gsql/v1/schema/graphs/");
+          sb.append(graph).append("?");
+          sb.append("type=").append(this.vertex_edge_type);
         }
-        sb.append("type=").append(this.vertex_edge_type);
         break;
       case QUERY_TYPE_LOAD_JOB:
         sb.append("/restpp/ddl");
