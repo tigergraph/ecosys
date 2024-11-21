@@ -13,15 +13,16 @@
  */
 package com.tigergraph.spark.util;
 
-import com.tigergraph.spark.util.OptionDef.OptionKey;
-import com.tigergraph.spark.util.OptionDef.Type;
-import com.tigergraph.spark.util.OptionDef.ValidVersion;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.tigergraph.spark.util.OptionDef.OptionKey;
+import com.tigergraph.spark.util.OptionDef.Type;
+import com.tigergraph.spark.util.OptionDef.ValidVersion;
 
 /** Validate and transform Spark DataFrame options(configurations) */
 public class Options implements Serializable {
@@ -60,7 +61,6 @@ public class Options implements Serializable {
   public static final String LOADING_EOL = "loading.eol";
   public static final String LOADING_BATCH_SIZE_BYTES = "loading.batch.size.bytes";
   public static final String LOADING_TIMEOUT_MS = "loading.timeout.ms";
-  public static final String LOADING_ACK = "loading.ack";
   public static final String LOADING_MAX_PERCENT_ERROR = "loading.max.percent.error";
   public static final String LOADING_MAX_NUM_ERROR = "loading.max.num.error";
   public static final String LOADING_RETRY_INTERVAL_MS = "loading.retry.interval.ms";
@@ -71,8 +71,6 @@ public class Options implements Serializable {
   public static final String LOADING_EOL_DEFAULT = "\n";
   public static final int LOADING_BATCH_SIZE_BYTES_DEFAULT = 2 * 1024 * 1024; // 2mb
   public static final int LOADING_TIMEOUT_MS_DEFAULT = 0; // restpp default
-  public static final String LOADING_ACK_ALL = "all";
-  public static final String LOADING_ACK_NONE = "none";
   public static final int LOADING_RETRY_INTERVAL_MS_DEFAULT = 5 * 1000; // 5s
   public static final int LOADING_MAX_RETRY_INTERVAL_MS_DEFAULT = 5 * 60 * 1000; // 5min
   public static final int LOADING_MAX_RETRY_ATTEMPTS_DEFAULT = 10;
@@ -135,8 +133,8 @@ public class Options implements Serializable {
   public static final String GROUP_QUERY = "query";
   public static final String GROUP_LOG = "log";
 
-  private final HashMap<String, String> originals;
-  private final HashMap<String, Serializable> transformed = new HashMap<>();
+  private final Map<String, String> originals;
+  private final Map<String, Serializable> transformed = new HashMap<>();
   private final OptionDef definition;
 
   public Options(Map<String, String> originals, boolean skipValidate) {
@@ -146,7 +144,7 @@ public class Options implements Serializable {
     } else {
       this.optionType = OptionType.READ;
     }
-    this.originals = originals != null ? new HashMap<>(originals) : new HashMap<>();
+    this.originals = originals != null ? originals : new HashMap<>();
     this.definition =
         new OptionDef()
             .define(GRAPH, Type.STRING, true, GROUP_GENERAL)
@@ -154,7 +152,7 @@ public class Options implements Serializable {
             .define(
                 VERSION,
                 Type.STRING,
-                OptionDef.DefaultVal.NON_DEFAULT,
+                OptionDef.NO_DEFAULT_VALUE,
                 true,
                 ValidVersion.INSTANCE,
                 GROUP_GENERAL)
@@ -242,13 +240,6 @@ public class Options implements Serializable {
               LOADING_TIMEOUT_MS_DEFAULT,
               true,
               null,
-              GROUP_LOADING_JOB)
-          .define(
-              LOADING_ACK,
-              Type.STRING,
-              LOADING_ACK_ALL,
-              true,
-              OptionDef.ValidString.in(LOADING_ACK_ALL, LOADING_ACK_NONE),
               GROUP_LOADING_JOB)
           .define(LOADING_MAX_PERCENT_ERROR, Type.DOUBLE, GROUP_LOADING_JOB)
           .define(LOADING_MAX_NUM_ERROR, Type.INT, GROUP_LOADING_JOB)
