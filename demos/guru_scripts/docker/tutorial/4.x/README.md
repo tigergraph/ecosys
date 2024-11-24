@@ -83,7 +83,7 @@ You can choose one of the following methods.
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
-- SELECT A Vertex Set Style: if a query block generates a vertex set, we can use it to drive subsequent query blocks pattern matching.
+- SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
 - SELECT INTO A Table Style: if a query block generates a table, we can output the table.
 
 We show both styles for each pattern class. 
