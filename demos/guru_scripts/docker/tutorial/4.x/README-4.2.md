@@ -460,14 +460,14 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
 
-   // -[]- is an undirected edge.
+   // ~[]~ is an undirected edge.
    S = SELECT a
-       FROM (a:Account) - [e:hasPhone] - (p:Phone)
+       FROM (a:Account) ~ [e:hasPhone] ~ (p:Phone)
        WHERE a.isBlocked == FALSE
        ACCUM  a.@cnt +=1,
               p.@cnt +=1,
@@ -478,8 +478,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY a2 (/* parameters */) SYNTAX V3 {
 
 }
 
-install query a2
-run query a2()
+interpret query a2()
+
 ```
 
 In the above example:
