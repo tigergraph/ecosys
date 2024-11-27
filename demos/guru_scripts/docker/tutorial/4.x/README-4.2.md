@@ -251,9 +251,10 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTAX v3 {
 
-  // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->
+  // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->.
+  // You can also use WHERE clause inside a vertex () or edge-[]->. 
   R = SELECT b
-      FROM (a:Account {name: acctName})-[e:transfer]->()-[e2:transfer]->(b:Account)
+      FROM (a:Account WHERE a.name== accntName)-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
 
       PRINT R;
@@ -262,7 +263,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTA
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
   R = SELECT b
-      FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account);
+      FROM (a:Account WHERE a.name == accntName)-[:transfer*1..]->(b:Account);
 
       PRINT R;
 
