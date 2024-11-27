@@ -560,14 +560,14 @@ Running example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
+CREATE OR REPLACE QUERY a3 () SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@testCnt1 = 0; //global accumulator
     SumAccum<INT>  @@testCnt2 = 0; //global accumulator
 
    S = SELECT a
-       FROM (a:Account) - [e:hasPhone] - (p:Phone)
+       FROM (a:Account) ~ [e:hasPhone] ~ (p:Phone)
        WHERE a.isBlocked == TRUE
        //a.@cnt snapshot value is 0
        ACCUM  a.@cnt +=1, //add 1 to a.@cnt
@@ -582,9 +582,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a3 () SYNTAX V3 {
 
 }
 
-INSTALL QUERY a3
-
-RUN QUERY a3()
+INTERPRET QUERY a3()
 ```
 
 - `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
@@ -610,7 +608,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
      SumAccum<int> @@aCnt = 0;
 
     S = SELECT b
-        FROM (a:Account) - [e:transfer] - (b:Account)
+        FROM (a:Account) - [e:transfer] -> (b:Account)
         WHERE NOT a.isBlocked
         ACCUM  a.@maxAmount += e.amount, //sender max amount
                b.@minAmount += e.amount, //receiver min amount
