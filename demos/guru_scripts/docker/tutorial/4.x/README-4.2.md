@@ -732,7 +732,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
 
  // tgtAccnts vertex set drive the query block below. It's placed in the vertex label position.
  tgtPhones = SELECT z
-             FROM (x:tgtAccnts)- [e:hasPhone] - (z:Phone)
+             FROM (x:tgtAccnts) ~ [e:hasPhone] ~ (z:Phone)
              WHERE z.isBlocked
              ACCUM z.@cnt +=1;
 
