@@ -86,6 +86,8 @@ In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex s
 - SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
 - SELECT INTO A Table Style: if a query block generates a table, we can output the table.
 
+Regardless which style you are choosing, the FROM clause will always specify a pattern. The pattern follows ISO GQL standard syntax, which is a well-designed ASCII art syntax--() represents node, and -[]-> represents edges. 
+
 We show both styles for each pattern class. 
 
 ## Node Pattern
