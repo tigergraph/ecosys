@@ -340,7 +340,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 ## Pattern Summary
 
-## Table of Edge Patterns (following ISO GQL Syntax)
+## Table of Edge Patterns (following ISO GQL Standard Syntax)
 | Orientation | Example |  Edge Pattern | 
 |------------|---------------|----------------------------|
 | Pointing left  | <-[e:transfer]-   | <-[alias:type1\|type2\|..]- | 
