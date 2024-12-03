@@ -1,0 +1,22 @@
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
+
+  v = SELECT a
+      FROM (a:Account);
+
+  PRINT v WITH_EMBEDDING;
+
+  v = SELECT a
+      FROM (a:v)
+      WHERE a.name == "Scott";
+
+  PRINT v WITH_EMBEDDING;
+}
+
+#compile and install the query as a stored procedure
+install query -single q1a
+
+#run the query
+run query q1a()

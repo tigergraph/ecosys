@@ -1,0 +1,32 @@
+USE GRAPH financialGraph
+
+DROP JOB load_s3_file
+DROP DATA_SOURCE s3_data_source_0
+
+#define a data source from s3
+CREATE DATA_SOURCE s3_data_source_0 = "{\"access.key\":\"none\",\"secret.key\":\"none\",\"file.reader.settings.fs.s3a.aws.credentials.provider\": \"org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider\",\"type\":\"s3\"}" FOR GRAPH financialGraph
+
+
+CREATE LOADING JOB load_s3_file  {
+ // define the s3 location of the source files; each file path is assigned a filename variable.
+ DEFINE FILENAME account="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/account.csv"}""";
+ DEFINE FILENAME phone="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/phone.csv"}""";
+ DEFINE FILENAME city="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/city.csv"}""";
+ DEFINE FILENAME hasPhone="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/hasPhone.csv"}""";
+ DEFINE FILENAME locatedIn="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/locate.csv"}""";
+ DEFINE FILENAME transferdata="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/transfer.csv"}""";
+ DEFINE FILENAME accountEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-tutorial-data/ecosys/account_emb.csv"}""";
+ DEFINE FILENAME phoneEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-tutorial-data/ecosys/phone_emb.csv"}""";
+ //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause.
+ LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+ LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+ LOAD city TO VERTEX City VALUES ($"name") USING header="true", separator=",";
+ LOAD hasPhone TO Edge hasPhone VALUES ($"accnt", gsql_trim($"phone")) USING header="true", separator=",";
+ LOAD locatedIn TO Edge isLocatedIn VALUES ($"accnt", gsql_trim($"city")) USING header="true", separator=",";
+ LOAD transferdata TO Edge transfer VALUES ($"src", $"tgt", $"date", $"amount") USING header="true", separator=",";
+ LOAD accountEmb TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|";
+ LOAD phoneEmb TO EMBEDDING ATTRIBUTE emb1 ON VERTEX phone VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|";
+
+}
+
+run loading job load_s3_file
