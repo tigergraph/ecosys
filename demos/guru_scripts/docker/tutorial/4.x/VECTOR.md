@@ -135,7 +135,7 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
       ACCUM  b.@totalTransfer += e.amount;
 
   // fetch the query embedding from the query vertex to the ListAccum
-  w = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
+  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
 
   // get Top 2 vectors having least distance to the query vector
   r = TopKVectorSearch({Account.emb1}, @@query_vector, 2, {filter: v});
@@ -154,6 +154,14 @@ run query q2a("Scott")
 
 ## Path Pattern 
 
+### Install GDS functions
+GDS functions to be used in the queries need to be installed in advance
+
+```python
+import package gds
+install function gds.**
+```
+
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./vector/q3a.gsql) to your container. 
 
@@ -161,14 +169,14 @@ Copy [q3a.gsql](./vector/q3a.gsql) to your container.
 #enter the graph
 USE GRAPH financialGraph
 
-// create a query
+# create a query
 CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
-  //Define a custom tuple to store the vertex and its distance to the query vector
+  // Define a custom tuple to store the vertex and its distance to the query vector
   TYPEDEF TUPLE <VERTEX s, FLOAT distance > DIST;
-  //Declare a global heap accumulator to store the top 3 values
+  // Declare a global heap accumulator to store the top 3 values
   HeapAccum<DIST>(3, distance ASC) @@result;
-  //Declare a global list accumulator to store query embedding value.
+  // Declare a global list accumulator to store query embedding value.
   ListAccum<float> @@query_vector;
 
   // get query vector
@@ -206,7 +214,36 @@ run query q3a("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
-## Pattern Summary
+## Vector Functions Summary
+
+### TopKVectorSearch Syntax
+```
+TopKVectorSearch(EmbeddingAttributes, EmbeddingConstant, K, optionalParam)
+```
+
+### Parameter
+|Parameter	|Description
+|-------|--------
+|`EmbeddingAttributes`	|A set of embedding attributes we will search, the items should be in format **VertexType.EmbeddingName**, for example { v1.eb1, v2.eb2}.
+|`EmbeddingConstant`	|The embedding constant to search the top K vectors that are most similar to it.
+|`K`	|The number of the results to be given.
+|`optionalParam` |Optional, a map of params, including vertex filter and EF overriding, for example {filter: vset1, ef: 20}.
+
+### Return
+Will return a vertex set
+
+### Table of supported GDS vector functions
+
+| Function | Example |  Description |
+|------------|---------|--------------|
+|gds.vector.cosine_distance | |
+|gds.vector.dimension_count | |
+|gds.vector.distance | |
+|gds.vector.elements_sum | |
+|gds.vector.euclidean_distance | |
+|gds.vector.ip_distance | |
+|gds.vector.kth_element | |
+|gds.vector.norm | |
 
 [Go back to top](#top)
 
