@@ -10,8 +10,12 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
-  - [Pattern Summary](#pattern-summary)
+  - [TopKVectorSearch Summary](#topkvectorsearch-summary)
+  - [GDS Functions Summary](#gds-functions-summary)
 - [Advanced Topics](#advanced-topics)
+  - [Schema Change](#schema-change)
+  - [Vector Data Loading](#vector-data-loading)
+  - [Python Integration](#python-integration)
 - [Support](#support) 
   
 
@@ -104,6 +108,28 @@ install query -single q1a
 
 # run the compiled query
 run query q1a()
+```
+
+### Vertex As Parameter
+Copy [q1b.gsql](./vector/q1b.gsql) to your container. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q1b (VERTWX<Account> name) SYNTAX v3 {
+  // Define a vextex set from the parameter
+  v = {name};
+  // output vertex set variable v in JSON format with embedding
+  print v WITH_EMBEDDING;
+}
+
+#compile and install the query as a stored procedure
+install query -single q1b
+
+#run the query
+run query q1b("Scott")
 ```
 
 [Go back to top](#top)
@@ -214,9 +240,9 @@ run query q3a("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
-## Vector Functions Summary
+## TopKVectorSearch Summary
 
-### TopKVectorSearch Syntax
+### Syntax
 ```
 TopKVectorSearch(EmbeddingAttributes, EmbeddingConstant, K, optionalParam)
 ```
@@ -232,22 +258,29 @@ TopKVectorSearch(EmbeddingAttributes, EmbeddingConstant, K, optionalParam)
 ### Return
 Will return a vertex set
 
+## GDS Functions Summary
 ### Table of supported GDS vector functions
 
-| Function | Example |  Description |
+| Function | Parameter | Description |
 |------------|---------|--------------|
-|gds.vector.cosine_distance | |
-|gds.vector.dimension_count | |
-|gds.vector.distance | |
-|gds.vector.elements_sum | |
-|gds.vector.euclidean_distance | |
-|gds.vector.ip_distance | |
-|gds.vector.kth_element | |
-|gds.vector.norm | |
+|gds.vector.cosine_distance |list<double> list1, list<double> list2 |Calculates the cosine distance between two vectors represented as lists of doubles.
+|gds.vector.dimension_count |list<double> list1 |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
+|gds.vector.distance |list<double> list1, list<double> list2, string metric |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric.
+|gds.vector.elements_sum |list<double> list1 |Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.ip_distance |list<double> list1, list<double> list2 |Calculates the inner product (dot product) between two vectors represented as lists of double values.
+|gds.vector.kth_element |list<double> list1, int kth_index |Retrieves the k-th element from a vector, represented as a list of double values.
+|gds.vector.l2_distance |list<double> list1, list<double> list2 |Calculates the Euclidean distance between two vectors represented as lists of double values.
+|gds.vector.norm |list<double> list1, string metric |Computes the norm (magnitude) of a vector based on a specified metric.
 
 [Go back to top](#top)
 
 # Advanced Topics
+
+## Schema Change
+
+## Vector Data Loading
+
+## Python Integration
 
 [Go back to top](#top)
 
