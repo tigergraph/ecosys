@@ -332,6 +332,7 @@ Schema creation in Python needs to be done by running a gsql command via the pyT
 
 ```python
 # Create a vector with 1024 dimension in TigerGraph database
+# Ensure to connect to TigerGraph server before any operations.
 result = conn.gsql("""
     USE GLOBAL
     CREATE VERTEX Account(
@@ -367,10 +368,12 @@ print(result)
 ```
 
 In case the vector data contains square brackets, the loading job should be revised to handle the extra brackets accordingly.
+
 Data:
 ```python
 Scott|n|[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
 ```
+
 Loading job:
 ```python
         LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
@@ -380,6 +383,8 @@ For more details about loading jobs, please refer to https://docs.tigergraph.com
 
 #### Load From DataFrame
 ```python
+# Generate and load data from pandas.DataFrame
+# Ensure to connect to TigerGraph server before any operations.
 import pandas as pd
 
 embeddings = OpenAIEmbeddings()
@@ -414,6 +419,8 @@ A query accessing vector data needs to be created and installed in order to be c
 
 #### GSQL Console
 ```python
+# Run a query to get the Top 3 vectors similar to the query vector
+# Ensure to connect to TigerGraph server before any operations.
 query = "Scott"
 embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
@@ -426,6 +433,8 @@ print(result)
 
 #### RESTPP endpoint
 ```python
+# Run a RESTPP call to get the Top 3 vectors similar to the query vector
+# Ensure to connect to TigerGraph server before any operations.
 query = "Scott"
 embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
