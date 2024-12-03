@@ -263,14 +263,14 @@ Will return a vertex set
 
 | Function | Parameter | Description |
 |------------|---------|--------------|
-|gds.vector.cosine_distance |list<double> list1, list<double> list2 |Calculates the cosine distance between two vectors represented as lists of doubles.
-|gds.vector.dimension_count |list<double> list1 |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
-|gds.vector.distance |list<double> list1, list<double> list2, string metric |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric.
-|gds.vector.elements_sum |list<double> list1 |Calculates the sum of all elements in a vector, represented as a list of double values.
-|gds.vector.ip_distance |list<double> list1, list<double> list2 |Calculates the inner product (dot product) between two vectors represented as lists of double values.
-|gds.vector.kth_element |list<double> list1, int kth_index |Retrieves the k-th element from a vector, represented as a list of double values.
-|gds.vector.l2_distance |list<double> list1, list<double> list2 |Calculates the Euclidean distance between two vectors represented as lists of double values.
-|gds.vector.norm |list<double> list1, string metric |Computes the norm (magnitude) of a vector based on a specified metric.
+|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |Calculates the cosine distance between two vectors represented as lists of doubles.
+|gds.vector.dimension_count |`list<double> list1` |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
+|gds.vector.distance |`list<double> list1, list<double> list2, string metric` |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric.
+|gds.vector.elements_sum |`list<double> list1` |Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.ip_distance |`list<double> list1, list<double> list2` |Calculates the inner product (dot product) between two vectors represented as lists of double values.
+|gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
+|gds.vector.l2_distance |`list<double> list1, list<double> list2` |Calculates the Euclidean distance between two vectors represented as lists of double values.
+|gds.vector.norm |`list<double> list1, string metric` |Computes the norm (magnitude) of a vector based on a specified metric.
 
 [Go back to top](#top)
 
@@ -281,6 +281,161 @@ Will return a vertex set
 ## Vector Data Loading
 
 ## Python Integration
+TigerGraph's Python integration is done via pyTigerGraph mainly using the following functions:
+
+|Function	|Description
+|-------|--------
+|`TigerGraphConnection()`	|Construct a connection to TigerGraph database
+|`gsql()`	|Run gsql command same as in a gsql console
+|`runLoadingJobWithFile()`	|Load data to TigerGraph database using a text file as Data Source
+|`runLoadingJobWithDataFrame()`	|Load data to TigerGraph database using a pandas.DataFrame as Data Source
+|`runLoadingJobWithData()`	|Load data to TigerGraph database using a string variable as Data Source
+|`runInstalledQuery()`	|Run an installed query via RESTPP endpoint
+
+For more details, please refer to the [pyTigerGraph Doc](https://docs.tigergraph.com/pytigergraph/1.8/intro/).
+
+### Manage TigerGraph Connections
+Below example connects to a TigerGraph server with host as localhost and port as 14240 and disconnects from it.
+
+#### Connect to a TigerGraph server
+Construct a TigerGraph connection. 
+
+```python
+# Establish a connection to the TigerGraph database
+import pyTigerGraph as tg
+conn = tg.TigerGraphConnection(
+    host="http://127.0.0.1",
+    restppPort="14240",
+    graphname="g1",
+    username="tigergraph",
+    password="tigergraph"
+)
+```
+
+#### Parameter
+|Parameter	|Description
+|-------|--------
+|`host`	|IP address of the TigerGraph server.
+|`restppPort`	|REST port of the TigerGraph server.
+|`graphname`	|Graph name to be used for the schema.
+|`username` |User name to connect to the TigerGraph server.
+|`password` |Password to connect to the TigerGraph server.
+
+#### Return
+A TigerGraph connection created by the passed parameters.
+
+#### Raises
+* **TigerGraphException**: In case on invalid URL scheme.
+
+### Create Schema
+Schema creation in Python needs to be done by running a gsql command via the pyTigerGraph.gsql() function.
+
+```python
+# Create a vector with 1024 dimension in TigerGraph database
+result = conn.gsql("""
+    USE GLOBAL
+    CREATE VERTEX Account(
+        name STRING PRIMARY KEY, 
+        isBlocked BOOL
+    ) WITH VECTOR ATTRIBUTE emb1(
+        DIMENSION = 3
+    )
+    CREATE GRAPH financialGraph(*)
+""")
+print(result)
+```
+
+### Load Data
+Once a schema is created in TigerGraph database, a corresponding Loading Job needs to be created in order to define the data format and mapping to the schema. Given that the embedding data is usually separated by comma, it is recommended to use `|` as the separator for both of the data file and loading job. For example:
+```
+Scott|n|-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
+```
+
+#### Create Loading Job
+
+```python
+# Create a loading job for the vector schema in TigerGraph database
+# Ensure to connect to TigerGraph server before any operations.
+result = conn.gsql("""
+    CREATE LOADING JOB l1 {
+        DEFINE FILENAME file1;
+        LOAD file1 TO VERTEX Account VALUES ($0, $1) USING SEPARATOR="|";
+        LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT($2, ",")) USING SEPARATOR="|";
+    }
+""")
+print(result)
+```
+
+In case the vector data contains square brackets, the loading job should be revised to handle the extra brackets accordingly.
+Data:
+```python
+Scott|n|[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
+```
+Loading job:
+```python
+        LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
+```
+
+For more details about loading jobs, please refer to https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs.
+
+#### Load From DataFrame
+```python
+import pandas as pd
+
+embeddings = OpenAIEmbeddings()
+
+text_data = {
+    "sentences": [
+        "Scott",
+        "Jenny"
+    ]
+}
+
+df = pd.DataFrame(text_data)
+df['embedding'] = df['sentences'].apply(lambda t: embeddings.embed_query(t))
+df['embedding'] = df['embedding'].apply(lambda x: ",".join(str(y) for y in x))
+df['sentences'] = df['sentences'].apply(lambda x: x.replace("\n", "\\n"))
+
+cols=["sentences", "embedding"]
+result = conn.runLoadingJobWithDataFrame(df, "file1", "l1", "|", columns=cols)
+print(result)
+```
+
+#### Load From Data File
+```python
+datafile = "openai_embedding.csv"
+result = conn.runLoadingJobWithFile(datafile, "file1", "l1", "|")
+print(result)
+```
+
+### Run a Query
+
+A query accessing vector data needs to be created and installed in order to be called from gsql console or via RESTPP endpoint.
+
+#### GSQL Console
+```python
+query = "Scott"
+embeddings = OpenAIEmbeddings()
+query_embedding = embeddings.embed_query(query)
+
+result = conn.gsql(f"""
+run query top3_vector({query_embeddings})
+""")
+print(result)
+```
+
+#### RESTPP endpoint
+```python
+query = "Scott"
+embeddings = OpenAIEmbeddings()
+query_embedding = embeddings.embed_query(query)
+result = conn.runInstalledQuery(
+    "top3_vector",
+    "ll="+"&ll=".join(str(y) for y in query_embedding),
+    timeout=864000
+)
+print(result)
+```
 
 [Go back to top](#top)
 
