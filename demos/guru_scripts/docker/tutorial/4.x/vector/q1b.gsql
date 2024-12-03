@@ -2,8 +2,8 @@
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1b (VERTWX<Account> name) SYNTAX v3 {
-  vset = {name};
-  print vset with_embedding;
+  v = {name};
+  print v WITH_EMBEDDING;
 }
 
 #compile and install the query as a stored procedure
