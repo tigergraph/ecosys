@@ -199,7 +199,7 @@ CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
   // use a range filter based on vector distance using cosine metric
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      WHERE gds.vector.distance(b, a.emb1, "COSINE") < 0.2
+      WHERE gds.vector.distance(b, a.emb1, "COSINE") < 1.0
       ACCUM  b.@totalTransfer += e.amount;
 
   //output each v and their static attribute and embedding value

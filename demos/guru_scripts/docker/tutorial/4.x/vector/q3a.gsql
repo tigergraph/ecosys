@@ -14,7 +14,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   r = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500
-      ACCUM @@result += DIST(b, gds.vector.distance(b, @@query_vector, "COSINE"));
+      ACCUM @@result += DIST(b, gds.vector.distance(b.emb1, @@query_vector, "COSINE"));
 
   PRINT @@result;
 
@@ -25,7 +25,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   // select the reachable end point and bind it to vertex alias "b"
   r = SELECT b
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-      ACCUM @@result += DIST(b, gds.vector.consine_distance(b, query_vector));
+      ACCUM @@result += DIST(b, gds.vector.consine_distance(b.emb1, a.emb1));
 
   PRINT @@result;
 }
