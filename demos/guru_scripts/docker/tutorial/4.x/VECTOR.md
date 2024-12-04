@@ -160,7 +160,7 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
       //for each matched edge, accumulate e.amount into the local accumulator of b.
       ACCUM  b.@totalTransfer += e.amount;
 
-  // fetch the query embedding from the query vertex to the ListAccum
+  // fetch the query vector from the query vertex to the ListAccum
   q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
 
   // get Top 2 vectors having least distance to the query vector
@@ -178,7 +178,7 @@ install query -single q2a
 run query q2a("Scott")
 ```
 
-### Range Query Style
+### Query Vector from Parameter
 Copy [q2b.gsql](./vector/q2b.gsql) to your container. 
 
 ```python
@@ -186,7 +186,7 @@ Copy [q2b.gsql](./vector/q2b.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
 
   //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
   //The vertex instance is selected based on the FROM clause pattern.
@@ -196,22 +196,22 @@ CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
   // "v" is a vertex set variable holding the selected vertex set.
   // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
   // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
-  // use a range filter based on vector distance using cosine metric
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      WHERE gds.vector.distance(b, a.emb1, "COSINE") < 1.0
       ACCUM  b.@totalTransfer += e.amount;
 
-  //output each v and their static attribute and embedding value
-  PRINT v WITH_EMBEDDING;
+  // get Top 2 vectors having least distance to the query vector provided
+  r = TopKVectorSearch({Account.emb1}, query_vector, 2, {filter: v});
 
+  //output each v and their static attribute and embedding value
+  PRINT r WITH_EMBEDDING;
 }
 
 #compile and install the query as a stored procedure
 install query -single q2b
 
 #run the query
-run query q2b("Scott")
+run query q2b("Scott", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 
 ## Path Pattern 
@@ -272,6 +272,56 @@ install query q3a
 
 # run the compiled query
 run query q3a("2024-01-01", "2024-12-31", "Scott")
+```
+
+### SELECT INTO A Table Style: Group By On A Path Table
+
+If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
+
+Copy [q3b.gsql](./vector/q3b.gsql) to your container.
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTAX v3 {
+
+   // a path pattern in ascii art () -[]->()-[]->()
+   // think the FROM clause is a matched table with columns (a, e, b, e2, c)
+   // you can use SQL syntax to group by on the matched table
+   // Below query find 2-hop reachable account c from a, and group by the path a, b, c
+   // find out how much each hop's total transfer amount within the given distance range..
+   SELECT a, b, c, sum(DISTINCT e.amount) AS hop_1_sum,  sum(DISTINCT e2.amount) AS hop_2_sum INTO T1
+   FROM (a:Account)-[e:transfer]->(b)-[e2:transfer]->(c:Account)
+   WHERE e.date >= low AND e.date <= high AND (gds.vector.distance(b.emb1, c.emb1, "COSINE") < 1.0 OR gds.vector.distance(b.emb1, c.emb1, "COSINE") < 1.0)
+   GROUP BY a, b, c;
+
+   PRINT T1;
+
+   /* below we use variable length path.
+      *1.. means 1 to more steps of the edge type "transfer"
+      select the reachable end point and bind it to vertex alias "b"
+     note:
+      1. the path has "shortest path" semantics. If you have a path that is longer than the shortest,
+      we only count the shortest. E.g., scott to scott shortest path length is 4. Any path greater than 4 will
+      not be matched.
+     2. we can not put an alias to bind the edge in the the variable length part -[:transfer*1..]->, but
+     we can bind the end points (a) and (b) in the variable length path, and group by on them.
+   */
+   SELECT a, b, count(*) AS path_cnt INTO T2
+   FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account)
+   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 1.0
+   GROUP BY a, b;
+
+   PRINT T2;
+
+}
+
+# Compile and install the query as a stored procedure
+install query -single q3b
+
+# run the compiled query
+run query q3b("2024-01-01", "2024-12-31", "Scott")
 ```
 
 [Go back to top](#top)

@@ -1,15 +1,16 @@
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
 
   SumAccum<int> @totalTransfer = 0;
 
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 1.0
       ACCUM  b.@totalTransfer += e.amount;
 
-  PRINT v WITH_EMBEDDING;
+  r = TopKVectorSearch({Account.emb1}, query_vector, 2, {filter: v});
+
+  PRINT r WITH_EMBEDDING;
 
 }
 
@@ -17,4 +18,4 @@ CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
 install query -single q2b
 
 #run the query
-run query q2b("Scott")
+run query q2b("Scott", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
