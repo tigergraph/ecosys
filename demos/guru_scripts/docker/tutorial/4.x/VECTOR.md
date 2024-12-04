@@ -118,7 +118,7 @@ Copy [q1b.gsql](./vector/q1b.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q1b (VERTWX<Account> name) SYNTAX v3 {
+CREATE OR REPLACE QUERY q1b (VERTEX<Account> name) SYNTAX v3 {
   // Define a vextex set from the parameter
   v = {name};
   // output vertex set variable v in JSON format with embedding
@@ -306,7 +306,7 @@ import pyTigerGraph as tg
 conn = tg.TigerGraphConnection(
     host="http://127.0.0.1",
     restppPort="14240",
-    graphname="g1",
+    graphname="financialGraph",
     username="tigergraph",
     password="tigergraph"
 )
