@@ -1,15 +1,15 @@
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
 
-  //think the FROM clause is a matched table with columns (a, e, b)
-  //you can use SQL syntax to group by the source and target account, and sum the total transfer amount
-  SELECT a, b, sum(e.amount)  INTO T
-  FROM (a:Account)-[e:transfer]->(b:Account)
-  GROUP BY a, b;
+  SumAccum<int> @totalTransfer = 0;
 
-  //output the table in JSON format
-  PRINT T;
+  v = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      WHERE gds.vector.distance(b, a.emb1, "COSINE") < 0.2
+      ACCUM  b.@totalTransfer += e.amount;
+
+  PRINT v WITH_EMBEDDING;
 
 }
 
@@ -17,4 +17,4 @@ CREATE OR REPLACE QUERY q2b () SYNTAX v3 {
 install query -single q2b
 
 #run the query
-run query q2b()
+run query q2b("Scott")

@@ -1,7 +1,7 @@
 #enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1b (VERTWX<Account> name) SYNTAX v3 {
+CREATE OR REPLACE QUERY q1b (VERTEX<Account> name) SYNTAX v3 {
   v = {name};
   print v WITH_EMBEDDING;
 }

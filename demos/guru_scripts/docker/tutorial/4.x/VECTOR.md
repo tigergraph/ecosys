@@ -166,7 +166,7 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
   // get Top 2 vectors having least distance to the query vector
   r = TopKVectorSearch({Account.emb1}, @@query_vector, 2, {filter: v});
 
-  //output each v and their static attribute and embedding value
+  //output each r with their static attribute and embedding value
   PRINT r WITH_EMBEDDING;
 
 }
@@ -176,6 +176,42 @@ install query -single q2a
 
 # run the compiled query
 run query q2a("Scott")
+```
+
+### Range Query Style
+Copy [q2b.gsql](./vector/q2b.gsql) to your container. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
+
+  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
+  //The vertex instance is selected based on the FROM clause pattern.
+  SumAccum<int> @totalTransfer = 0;
+
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+  // "v" is a vertex set variable holding the selected vertex set.
+  // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
+  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
+  // use a range filter based on vector distance using cosine metric
+  v = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      WHERE gds.vector.distance(b, a.emb1, "COSINE") < 0.2
+      ACCUM  b.@totalTransfer += e.amount;
+
+  //output each v and their static attribute and embedding value
+  PRINT v WITH_EMBEDDING;
+
+}
+
+#compile and install the query as a stored procedure
+install query -single q2b
+
+#run the query
+run query q2b("Scott")
 ```
 
 ## Path Pattern 
