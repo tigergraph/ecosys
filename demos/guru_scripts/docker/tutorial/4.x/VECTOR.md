@@ -293,7 +293,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
    // find out how much each hop's total transfer amount within the given distance range..
    SELECT a, b, c, sum(DISTINCT e.amount) AS hop_1_sum,  sum(DISTINCT e2.amount) AS hop_2_sum INTO T1
    FROM (a:Account)-[e:transfer]->(b)-[e2:transfer]->(c:Account)
-   WHERE e.date >= low AND e.date <= high AND (gds.vector.distance(b.emb1, c.emb1, "COSINE") < 1.0 OR gds.vector.distance(b.emb1, c.emb1, "COSINE") < 1.0)
+   WHERE e.date >= low AND e.date <= high AND gds.vector.distance(b.emb1, c.emb1, "COSINE") < 1.0
    GROUP BY a, b, c;
 
    PRINT T1;
@@ -525,8 +525,8 @@ query = "Scott"
 embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 result = conn.runInstalledQuery(
-    "top3_vector",
-    "ll="+"&ll=".join(str(y) for y in query_embedding),
+    "q2b",
+    "accntName=Scott&query_vector="+"&query_vector=".join(str(y) for y in query_embedding),
     timeout=864000
 )
 print(result)
