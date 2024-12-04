@@ -5,29 +5,24 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
 
   TYPEDEF TUPLE <VERTEX s, FLOAT distance > DIST;
   HeapAccum<DIST>(3, distance ASC) @@result;
-  ListAccum<float> @@query_vector;
-
-  // get query vector
-  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
+  GroupByAccum<Vertex<Account> a, Vertex<Account> b, SetAccum<float> distance> @@distances;
 
   // a path pattern in ascii art () -[]->()-[]->()
   r = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500
-      ACCUM @@result += DIST(b, gds.vector.distance(b.emb1, @@query_vector, "COSINE"));
+      ACCUM @@result += DIST(b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
 
   PRINT @@result;
-
-  @@result.clear();
 
   // below we use variable length path.
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
   r = SELECT b
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-      ACCUM @@result += DIST(b, gds.vector.consine_distance(b.emb1, a.emb1));
+      ACCUM  @@distances += (a,b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
-  PRINT @@result;
+  PRINT @@distances;
 }
 
 install query -single q3a

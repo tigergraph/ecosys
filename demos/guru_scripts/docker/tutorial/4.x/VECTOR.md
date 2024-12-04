@@ -238,33 +238,27 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   TYPEDEF TUPLE <VERTEX s, FLOAT distance > DIST;
   // Declare a global heap accumulator to store the top 3 values
   HeapAccum<DIST>(3, distance ASC) @@result;
-  // Declare a global list accumulator to store query embedding value.
-  ListAccum<float> @@query_vector;
-
-  // get query vector
-  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
+  // Declare a global groupby accumulator to store vector distances.
+  GroupByAccum<Vertex<Account> a, Vertex<Account> b, SetAccum<float> distance> @@distances;
 
   // a path pattern in ascii art () -[]->()-[]->()
   r = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500
-      ACCUM @@result += DIST(b, gds.vector.distance(b, @@query_vector, "COSINE"));
+      ACCUM @@result += DIST(b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
 
   // print the top 3 vertices
   PRINT @@result;
-
-  // clean the heap accummulator
-  @@result.clear();
 
   // below we use variable length path.
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
   r = SELECT b
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-      ACCUM @@result += DIST(b, gds.vector.consine_distance(b, query_vector));
+      ACCUM  @@distances += (a,b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
-  // print the top 3 vertices
-  PRINT @@result;
+  // print the distances between accounts
+  PRINT @@distances;
 }
 
 # Compile and install the query as a stored procedure
@@ -310,7 +304,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
    */
    SELECT a, b, count(*) AS path_cnt INTO T2
    FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account)
-   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 1.0
+   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 0.9
    GROUP BY a, b;
 
    PRINT T2;
@@ -349,14 +343,14 @@ Will return a vertex set
 
 | Function | Parameter | Description |
 |------------|---------|--------------|
-|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |Calculates the cosine distance between two vectors represented as lists of doubles.
-|gds.vector.dimension_count |`list<double> list1` |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
 |gds.vector.distance |`list<double> list1, list<double> list2, string metric` |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric.
-|gds.vector.elements_sum |`list<double> list1` |Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |Calculates the cosine distance between two vectors represented as lists of doubles.
 |gds.vector.ip_distance |`list<double> list1, list<double> list2` |Calculates the inner product (dot product) between two vectors represented as lists of double values.
-|gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
 |gds.vector.l2_distance |`list<double> list1, list<double> list2` |Calculates the Euclidean distance between two vectors represented as lists of double values.
 |gds.vector.norm |`list<double> list1, string metric` |Computes the norm (magnitude) of a vector based on a specified metric.
+|gds.vector.dimension_count |`list<double> list1` |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
+|gds.vector.elements_sum |`list<double> list1` |Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
 
 [Go back to top](#top)
 

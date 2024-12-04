@@ -26,7 +26,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string accntName) SYNT
    // we can bind the end points (a) and (b) in the variable length path, and group by on them.
    SELECT a, b, count(*) AS path_cnt INTO T2
    FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 1.0
+   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 0.9
    GROUP BY a, b;
 
    PRINT T2;
