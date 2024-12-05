@@ -518,7 +518,7 @@ run loading job load_local_file using file1="/home/tigergraph/data/account_emb_n
 ```
 
 #### Run Loading Job Remotely
-TigerGraph also supports run a loading job remotely via RESTPP endpoint `POST /restpp/ddl/{graph_name}?tag={loading_job_name}&filename={file_variable_name}`.
+TigerGraph also supports run a loading job remotely via DDL endpoint `POST /restpp/ddl/{graph_name}?tag={loading_job_name}&filename={file_variable_name}`.
 
 For example:
 ```python
@@ -527,13 +527,16 @@ curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl
 
 ### RESTPP Loading
 ```python
-curl -X POST "http://localhost:9000/graph/financialGraph" -d '
+curl -X POST "http://localhost:14240/restpp/graph/embGraph" -d '
 {
   "vertices": {
     "Account": {
       "Scott": {
         "name": {
           "value": 4
+        },
+        "isBlocked": {
+          "value": True
         },
         "emb1": {
           "value": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
@@ -545,7 +548,10 @@ curl -X POST "http://localhost:9000/graph/financialGraph" -d '
 '
 ```
 
-Other data formats are also supported by TigerGraph. Please refer to https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/ for various ways to load data.
+### Other Data Source
+TigerGraph supports various ways to load data, including loading from cloud storage and parquet file format. 
+
+Please refer to https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/ for more details.
 
 ## Python Integration
 TigerGraph's Python integration is done via pyTigerGraph mainly using the following functions:
@@ -643,7 +649,7 @@ Scott|n|[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
 
 Loading job:
 ```python
-        LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
+LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
 ```
 
 For more details about loading jobs, please refer to https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs.
