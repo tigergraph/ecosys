@@ -275,9 +275,10 @@ If you're familiar with SQL, treat the matched path as a table -- table(a, e, b,
 Copy [q3b.gsql](./vector/q3b.gsql) to your container.
 
 ```python
+#enter the graph
 USE GRAPH financialGraph
 
-// create a query
+# create a query
 CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTAX v3 {
 
    // a path pattern in ascii art () -[]->()-[]->()
@@ -304,7 +305,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
    */
    SELECT a, b, count(*) AS path_cnt INTO T2
    FROM (a:Account {name: acctName})-[:transfer*1..]->(b:Account)
-   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") < 0.9
+   WHERE gds.vector.distance(b.emb1, a.emb1, "COSINE") > 0.8
    GROUP BY a, b;
 
    PRINT T2;
@@ -358,7 +359,193 @@ Will return a vertex set
 
 ## Schema Change
 
+### Global Vertex and Edge
+Global vertex/edge is the vertex/edge type created in global scope and shared with multiple graphs, which can only be modified from the global scope.
+
+#### Add a Vector To Global Vertex
+
+```python
+# enter global
+USE GLOBAL
+
+# create a global schema change job to modify the global vertex
+CREATE GLOBAL SCHEMA_CHANGE JOB add_emb2 {
+  ALTER VERTEX Account ADD EMBEDDING ( emb2(DIMENSION=10, METRIC="L2") );
+}
+
+# run the global schema_change job
+run global schema_change job add_emb2
+```
+
+#### Remove a Vector From Global Vertex
+
+```python
+# enter global
+USE GLOBAL
+
+# create a global schema change job to modify the global vertex
+CREATE GLOBAL SCHEMA_CHANGE JOB drop_emb2 {
+  ALTER VERTEX Account DROP EMBEDDING ( emb2 );
+}
+
+# run the global schema_change job
+run global schema_change job drop_emb2
+```
+
+### Local Graph and Local Vertex
+Local graph contains its own vertex and edge types as well as data, which is invisible from other local graphs.
+
+#### Create a Local Graph
+```python
+# enter global
+USE GLOBAL
+
+# create an empty local graph
+CREATE GRAPH localGraph()
+```
+
+#### Create Local Vertex and Edge
+```python
+#enter local graph
+USE GRAPH localGraph
+
+# create a local schema change job to create local vertex with or without vector
+CREATE SCHEMA_CHANGE JOB add_local_vertex FOR GRAPH localGraph {
+  ADD VERTEX Account (name STRING PRIMARY KEY, isBlocked BOOL) WITH EMBEDDING ATTRIBUTE emb1(dimension=3);
+  ADD VERTEX Phone (number STRING PRIMARY KEY, isBlocked BOOL);
+  ADD DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATETIME), amount UINT) WITH REVERSE_EDGE="transfer_reverse";
+}
+RUN SCHEMA_CHANGE JOB add_local_vertex
+```
+
+#### Add a Vector To Local Vertex
+```python
+#enter local graph
+USE GRAPH localGraph
+
+# create a local schema change job to modify the local vertex
+CREATE SCHEMA_CHANGE JOB add_local_emb2 FOR GRAPH localGraph {
+  ALTER VERTEX Account ADD EMBEDDING ( emb2(DIMENSION=10, METRIC="L2") );
+  ALTER VERTEX Phone ADD EMBEDDING ( emb1(DIMENSION=3, METRIC="COSINE") );
+}
+
+# run the local schema_change job
+run schema_change job add_local_emb2
+```
+
+#### Remove a Vector From Local Vertex
+
+```python
+#enter local graph
+USE GRAPH localGraph
+
+# create a local schema change job to modify the global vertex
+CREATE SCHEMA_CHANGE JOB drop_local_emb2 FOR GRAPH localGraph {
+  ALTER VERTEX Account DROP EMBEDDING ( emb2 );
+}
+
+# run the local schema_change job
+run schema_change job drop_local_emb2
+```
+
+#### Remove Local Vertex and Edge
+```python
+#enter local graph
+USE GRAPH localGraph
+
+# create a local schema change job to drop local vertex with or without vector
+CREATE SCHEMA_CHANGE JOB drop_local_vertex FOR GRAPH localGraph {
+  DROP VERTEX Account, Phone;
+  DROP EDGE transfer;
+}
+RUN SCHEMA_CHANGE JOB drop_local_vertex
+```
+
+#### Remove a Local Graph
+Dropping a local graph will also drop all of its vertex, edge and data.
+```python
+# enter global
+USE GLOBAL
+
+# drop the whole local graph
+DROP GRAPH localGraph CASCADE;
+```
+
+For more details, please visit https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/.
+
 ## Vector Data Loading
+
+### File Loading
+#### Identify Data Format
+It is crucial to find the proper data format for embedding loading, mainly to identify the possible values of the primary key, text or binary contents, and the embedding values, in order to define appropriate headers, separator and end-of-line character to have the data parsed by the loading job correctly.
+* Field Separator - If the content contains comma, it's recommended to use `|` instead.
+* Newline Character - If the content contains newline character, it's recommended to escape it or define another end-of-line character.
+* Header line - Headers can make the fields human-friendly, otherwise the fields will be referrd according to their positions.
+
+Below is a typical data format for embedding values:
+```python
+id|name|isBlocked|embedding
+1|Scott|n|-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
+```
+
+#### Create Loading Job
+```python
+# enter graph
+USE GRAPH embGraph
+
+#create a loading job for the vetex and edge
+CREATE LOADING JOB load_local_file FOR GRAPH embGraph {
+ // define the location of the source files; each file path is assigned a filename variable.  
+ DEFINE FILENAME file1="/home/tigergraph/data/account_emb.csv";
+
+ //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
+ LOAD file1 TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+ LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|", HEADER="true";
+}
+```
+
+#### Run Loading Job Locally
+If the source file location has been defined in the loading job directly, use the following command:
+```python
+USE GRAPH embGraph
+run loading job load_local_file
+```
+
+It can also provide a file path in the command to override the file path defined inside the loading job:
+```python
+USE GRAPH embGraph
+run loading job load_local_file using file1="/home/tigergraph/data/account_emb_no_header.csv", header="false"
+```
+
+#### Run Loading Job Remotely
+TigerGraph also supports run a loading job remotely via RESTPP endpoint `POST /restpp/ddl/{graph_name}?tag={loading_job_name}&filename={file_variable_name}`.
+
+For example:
+```python
+curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl/embGraph?tag=load_local_file&filename=file1"
+```
+
+### RESTPP Loading
+```python
+curl -X POST "http://localhost:9000/graph/financialGraph" -d '
+{
+  "vertices": {
+    "Account": {
+      "Scott": {
+        "name": {
+          "value": 4
+        },
+        "emb1": {
+          "value": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
+        }
+      }
+    }
+  }
+}
+'
+```
+
+Other data formats are also supported by TigerGraph. Please refer to https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/ for various ways to load data.
 
 ## Python Integration
 TigerGraph's Python integration is done via pyTigerGraph mainly using the following functions:
