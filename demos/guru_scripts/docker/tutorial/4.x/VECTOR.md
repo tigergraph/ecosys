@@ -186,7 +186,7 @@ Copy [q2b.gsql](./vector/q2b.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName, list<float> query_vector) SYNTAX v3 {
 
   //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
   //The vertex instance is selected based on the FROM clause pattern.

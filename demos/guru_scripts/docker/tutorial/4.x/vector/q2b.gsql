@@ -1,6 +1,6 @@
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName, list<float> query_vector) SYNTAX v3 {
 
   SumAccum<int> @totalTransfer = 0;
 

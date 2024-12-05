@@ -20,7 +20,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   // select the reachable end point and bind it to vertex alias "b"
   r = SELECT b
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-      ACCUM  @@distances += (a,b -> gds.vector.cosine_distance(a.emb1, b.emb1));
+      ACCUM @@distances += (a,b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
   PRINT @@distances;
 }
