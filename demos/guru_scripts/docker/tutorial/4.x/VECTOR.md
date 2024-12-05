@@ -536,7 +536,7 @@ curl -X POST "http://localhost:14240/restpp/graph/embGraph" -d '
           "value": "Curry"
         },
         "isBlocked": {
-          "value": True
+          "value":  false
         },
         "emb1": {
           "value": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
