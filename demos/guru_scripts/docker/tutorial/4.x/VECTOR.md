@@ -533,7 +533,7 @@ curl -X POST "http://localhost:14240/restpp/graph/embGraph" -d '
     "Account": {
       "Scott": {
         "name": {
-          "value": 4
+          "value": "Curry"
         },
         "isBlocked": {
           "value": True
