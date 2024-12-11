@@ -1,0 +1,52 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 10 query description is on page 98 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass) SYNTAX v3 {
+  TYPEDEF TUPLE <UINT personId, STRING tagName, UINT messageCount> RESULT;
+  OrAccum @visited, @selected;
+  SetAccum<VERTEX<Tag>> @tags;
+  MapAccum<VERTEX<Tag>, SumAccum<UINT>> @messageCount;
+  HeapAccum<RESULT> (100, messageCount DESC, tagName ASC, personId ASC) @@result;
+
+  candidates = SELECT p FROM (cn:Country {name:country}) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]- (p:Person);
+
+  S = {personId};
+  UINT pathLength = 0;
+  S = SELECT s FROM (s:S) ACCUM s.@visited = TRUE;
+  WHILE pathLength < 3 DO
+    S =
+      SELECT t
+      FROM (s:S) -[:KNOWS]- (t:Person)
+      WHERE NOT t.@visited
+      POST-ACCUM (t) t.@visited = TRUE;
+    pathLength += 1;
+  END;
+  # Here, S is the Person with shortest length of 3
+  persons = SELECT t
+    FROM (s:S) -[:KNOWS]- (t:Person)
+    WHERE NOT t.@visited;
+  persons = (persons UNION S) INTERSECT candidates;
+
+  messages = SELECT m
+    FROM (p:persons) <-[:HAS_CREATOR]- (m:Comment:Post)
+    ACCUM m.@selected += TRUE;
+
+  messages = SELECT m
+    FROM (tc:TagClass {name:tagClass}) <-[:HAS_TYPE]- (t:Tag) <-[:HAS_TAG]- (m:Comment:Post)
+    WHERE m.@selected;
+
+  messages = SELECT m
+    FROM (m:messages) -[:HAS_TAG]-> (t:Tag)
+    ACCUM m.@tags += t;
+
+  persons = SELECT p
+    FROM (m:messages) -[:HAS_CREATOR]-> (p:Person)
+    ACCUM
+      FOREACH t IN m.@tags DO
+        p.@messageCount += (t -> 1)
+      END
+    POST-ACCUM (p)
+      FOREACH (t,cnt) IN p.@messageCount DO
+        @@result += RESULT(p.id, t.name, cnt)
+      END;
+  PRINT @@result as result;
+}

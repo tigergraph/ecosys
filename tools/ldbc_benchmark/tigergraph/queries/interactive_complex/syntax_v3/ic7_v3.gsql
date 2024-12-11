@@ -1,0 +1,27 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 7 query description is on page 64 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE QUERY ic7_v3(VERTEX<Person> personId) syntax v3{
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate, 
+                INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
+  HeapAccum<liker>(20, likeCreationDate DESC, commentOrPostId ASC) @@result;
+  AndAccum<BOOL> @isNew;
+  S = { personId };
+  P =
+    SELECT p
+    FROM (:S)-[:KNOWS]-(p:Person)
+    ACCUM p.@isNew += FALSE;
+
+  P = 
+    SELECT p
+    FROM (s:S)<-[:HAS_CREATOR]- (m:Comment:Post) <-[e:LIKES]-(p:Person)
+    PER(m,e,p)
+    ACCUM
+      IF m.type == "Comment" OR m.content != "" THEN
+        @@result += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id, 
+                            m.content, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
+      ELSE
+        @@result += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id, 
+                            m.imageFile, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
+      END;
+  PRINT @@result;
+}
