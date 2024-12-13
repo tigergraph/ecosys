@@ -106,6 +106,110 @@ CREATE OR REPLACE OPENCYPHER QUERY matchExample(STRING acctName="Jenny"){
 - Specify edges with directions: `->`, `<-`, or `-`.
 - `Account {name: $acctName}` filters the source `Account` vertex based on the name attribute.
 
+### Multiple MATCH Clauses and Associations
+
+#### Using Common Aliases to Link Patterns
+
+In some queries, multiple `MATCH` clauses are used to match different parts of the graph, and edges between them are established using common aliases. The result is a graph traversal that connects different parts based on shared elements.
+
+```graphql
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample01(){
+  MATCH (s:Account {name: "Paul"})-[:transfer]->(mid)
+  MATCH (mid)-[:transfer]->(t)
+  RETURN t
+}
+```
+
+### Example 1: Data Tables
+
+#### Step 1: First MATCH Result
+
+The first `MATCH` filters the `Account` node with `name = "Paul"` and the `transfer` edges to intermediate `mid`.
+
+| **s (Source Account)** | **mid (Intermediate Account)** |
+|------------------------|--------------------------------|
+| Paul                   | Steven                         |
+| Paul                   | Jenny                          |
+
+#### Step 2: Second MATCH Result
+
+The second `MATCH` clause uses the common alias `mid` to find the resulting accounts (`r`) connected by `transfer` edges.
+
+| **mid (Intermediate Account)** | **r (Resulting Account)** |
+|--------------------------------|---------------------------|
+| Steven                         | Jenny                     |
+| Jenny                          | Scott                     |
+
+#### Final Result
+
+The final result returns all `r` (resulting accounts) that are connected to the intermediate accounts (`mid`).
+
+| **r (Resulting Account)** |
+|---------------------------|
+| Jenny                     |
+| Scott                     |
+
+---
+
+#### Using WHERE to Explicitly Connect Patterns
+
+An alternative to using common aliases is to connect patterns using the WHERE clause. This method can provide more flexibility, especially when the relationship between patterns is more complex or requires specific conditions.
+
+```graphql
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample02(){
+  MATCH (s:Account {name: "Paul"})-[:transfer]->(mid)
+  MATCH (ss)-[:transfer]->(t)
+  WHERE ss = mid
+  RETURN t
+}
+```
+
+### Example 2: Data Tables
+
+#### Step 1: First MATCH Result (table T)
+
+After the first `MATCH`, you get a table (`T`) containing `Account` vertices with the name "Paul" and their corresponding transfer edges to intermediate vertices (`mid`).
+
+| **T.s ** | **T.mid ** |
+|----------|------------|
+| Paul     | Steven     |
+| Paul     | Jenny      |
+
+
+#### Step 2: Second MATCH Result (table T_1)
+
+The second `MATCH` fetches all `Account` vertices (ss) and their transfer edges to another set of `Account` vertices (`t`), producing the table (`T_1`).
+
+| **T_1.ss ** | **T_1.t ** |
+|-------------|------------|
+| Jenny       | Scott      |
+| Steven      | Jenny      |
+| Ed          | Paul       |
+| Paul        | Jenny      |
+| Scott       | Ed         |
+| Scott       | Ed         |
+| Scott       | Ed         |
+
+
+#### Final Result (table T_2)
+
+After applying the `WHERE ss = mid`, a `join` is performed between the two tables (`T` and `T_1`) where the `mid` in `T` matches the `ss` in `T_1`. The result is a final table (`T_2`):
+
+| **T.mid ** | **T_1.ss ** | **T_1.t ** |
+|------------|-------------|------------|
+| Steven     | Steven      | Jenny      |
+| Jenny      | Jenny       | Scott      |
+
+
+---
+[Go back to top](#top)
+
+## Conclusion:
+- The `MATCH` clause allows you to find specific patterns in a graph, which can be as simple as finding direct connections or more complex patterns involving multiple relationships and nodes.
+- The use of common aliases or explicit `WHERE` clauses helps in controlling how nodes and relationships are matched and joined in more complex queries.
+
 ### OPTIONAL MATCH Clause
 
 `OPTIONAL MATCH` matches patterns against your graph, just like `MATCH` does. The difference is that if no matches are found, `OPTIONAL MATCH` will use a `null` for missing parts of the pattern.
