@@ -112,6 +112,8 @@ CREATE OR REPLACE OPENCYPHER QUERY matchExample(STRING acctName="Jenny"){
 
 In some queries, multiple `MATCH` clauses are used to match different parts of the graph, and edges between them are established using common aliases. The result is a graph traversal that connects different parts based on shared elements.
 
+### Example 1
+
 ```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample01(){
@@ -156,6 +158,8 @@ The final result returns all `r` (resulting accounts) that are connected to the 
 
 An alternative to using common aliases is to connect patterns using the WHERE clause. This method can provide more flexibility, especially when the relationship between patterns is more complex or requires specific conditions.
 
+### Example 2
+
 ```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample02(){
@@ -172,35 +176,35 @@ CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample02(){
 
 After the first `MATCH`, you get a table (`T`) containing `Account` vertices with the name "Paul" and their corresponding transfer edges to intermediate vertices (`mid`).
 
-| **T.s ** | **T.mid ** |
-|----------|------------|
-| Paul     | Steven     |
-| Paul     | Jenny      |
+| **T.s** | **T.mid** |
+|---------|-----------|
+| Paul    | Steven    |
+| Paul    | Jenny     |
 
 
 #### Step 2: Second MATCH Result (table T_1)
 
 The second `MATCH` fetches all `Account` vertices (ss) and their transfer edges to another set of `Account` vertices (`t`), producing the table (`T_1`).
 
-| **T_1.ss ** | **T_1.t ** |
-|-------------|------------|
-| Jenny       | Scott      |
-| Steven      | Jenny      |
-| Ed          | Paul       |
-| Paul        | Jenny      |
-| Scott       | Ed         |
-| Scott       | Ed         |
-| Scott       | Ed         |
+| **T_1.ss** | **T_1.t** |
+|------------|-----------|
+| Jenny      | Scott     |
+| Steven     | Jenny     |
+| Ed         | Paul      |
+| Paul       | Jenny     |
+| Scott      | Ed        |
+| Scott      | Ed        |
+| Scott      | Ed        |
 
 
 #### Final Result (table T_2)
 
 After applying the `WHERE ss = mid`, a `join` is performed between the two tables (`T` and `T_1`) where the `mid` in `T` matches the `ss` in `T_1`. The result is a final table (`T_2`):
 
-| **T.mid ** | **T_1.ss ** | **T_1.t ** |
-|------------|-------------|------------|
-| Steven     | Steven      | Jenny      |
-| Jenny      | Jenny       | Scott      |
+| **T.mid** | **T_1.ss** | **T_1.t** |
+|-----------|------------|-----------|
+| Steven    | Steven     | Jenny     |
+| Jenny     | Jenny      | Scott     |
 
 
 ---
