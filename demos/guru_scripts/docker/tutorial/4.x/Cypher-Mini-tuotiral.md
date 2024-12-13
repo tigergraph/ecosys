@@ -210,10 +210,6 @@ After applying the `WHERE ss = mid`, a `join` is performed between the two table
 ---
 [Go back to top](#top)
 
-## Conclusion:
-- The `MATCH` clause allows you to find specific patterns in a graph, which can be as simple as finding direct connections or more complex patterns involving multiple relationships and nodes.
-- The use of common aliases or explicit `WHERE` clauses helps in controlling how nodes and relationships are matched and joined in more complex queries.
-
 ### OPTIONAL MATCH Clause
 
 `OPTIONAL MATCH` matches patterns against your graph, just like `MATCH` does. The difference is that if no matches are found, `OPTIONAL MATCH` will use a `null` for missing parts of the pattern.
@@ -221,18 +217,71 @@ After applying the `WHERE ss = mid`, a `join` is performed between the two table
 #### Syntax:
 
 ```graphql
-USE GRAPH financialGraph
-CREATE OR REPLACE OPENCYPHER QUERY optionalMatchExample(STRING acctName="Jenny"){
-  MATCH (srcAccount:Account {name: $acctName})
-  OPTIONAL MATCH (srcAccount)-[:transfer]->(t1)
-  OPTIONAL MATCH (t1)-[:transfer]-> (t2)
-  RETURN srcAccount, t1 AS oneStepAccount, t2 AS twoStepAccount
+CREATE OR REPLACE OPENCYPHER QUERY q(){
+  MATCH (pattern)
+  OPTIONAL MATCH (pattern)
+  WHERE <condition>
+  RETURN <result>
 }
 ```
 
-#### Key Points:
-- `MATCH` clause ensures that the source `Account` is always found, while the `OPTIONAL MATCH` clauses attempt to find related data and return `null` if no match is found.
-- `OPTIONAL MATCH`: When the `transfer` edge does not exist, `OPTIONAL MATCH` will return `null` for the `t1` and `t2` vertices.
+#### Query Example:
+
+```graphql
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY multipleOptionalMatchExample(){
+  MATCH (srcAccount:Account)
+  WHERE srcAccount.isBlocked
+  OPTIONAL MATCH (srcAccount)-[e1:transfer]->(midAccount:Account)
+  OPTIONAL MATCH (midAccount)-[e2:transfer]->(finalAccount:Account)
+  RETURN srcAccount, e1 AS firstTransfer, midAccount, e2 AS secondTransfer, finalAccount
+}
+```
+
+#### Explanation:
+- The first `OPTIONAL MATCH` finds transfers from the source account to an intermediate account (`midAccount`).
+- The second `OPTIONAL MATCH` finds transfers from the intermediate account to a final account (`finalAccount`).
+- If either pattern is not found, the unmatched elements (`e1`, `e2`, `midAccount`, `finalAccount`) will be `null`.
+
+---
+
+### Example: Data Tables
+
+#### Step 1: Base MATCH Result
+The `MATCH` clause retrieves `Account` vertices based on the condition `isBlocked` (e.g., accounts 'Jenny' and 'Scott').
+
+| **srcAccount** |
+|----------------|
+| Jenny          |
+ | Scott          |
+
+#### Step 2: First OPTIONAL MATCH Result
+The first `OPTIONAL MATCH` retrieves transfers from 'Jenny' and 'Scott' to intermediate accounts (`midAccount`). This is the left table `srcAccount` joined with the right table `midAccount` based on the `transfer` edge. If no `transfer` exists, `e1` and `midAccount` will be `null`.
+
+| **srcAccount** | **e1 (First Transfer)** | **midAccount** |
+|----------------|-------------------------|----------------|
+| Jenny          | Transfer1               | Steven         |
+| Scott          | NULL                    | NULL           |
+
+#### Step 3: Second OPTIONAL MATCH Result
+The second `OPTIONAL MATCH` retrieves transfers from the `midAccount` to the `finalAccount`. Here, the `midAccount` (from Step 2) is evaluated to find related final accounts (`finalAccount`). If no `transfer` exists, `e2` and `finalAccount` will be `null`.
+
+| **midAccount** | **e2 (Second Transfer)** | **finalAccount** |
+|----------------|--------------------------|------------------|
+| Steven         | NULL                     | NULL             |
+| NULL           | NULL                     | NULL             |
+
+#### Final Result
+Combining the results, the query returns:
+
+| **srcAccount** | **e1 (First Transfer)** | **midAccount** | **e2 (Second Transfer)** | **finalAccount** |
+|----------------|-------------------------|----------------|--------------------------|------------------|
+| Jenny          | Transfer1               | Steven         | NULL                     | NULL             |
+| Scott          | NULL                    | NULL           | NULL                     | NULL             |
+
+### Summary of OPTIONAL MATCH
+
+The `OPTIONAL MATCH` clause in Cypher performs multi-table associations using a Left Lateral Join. This means that for each element in the left table (the first matched pattern), the right table (the second pattern) is evaluated. If no corresponding match is found in the right table, the unmatched elements are returned as `null`.
 
 ---
 [Go back to top](#top)
