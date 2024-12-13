@@ -127,6 +127,7 @@ CREATE OR REPLACE OPENCYPHER QUERY optionalMatchExample(STRING acctName="Jenny")
 - `OPTIONAL MATCH`: When the `transfer` edge does not exist, `OPTIONAL MATCH` will return `null` for the `t1` and `t2` vertices.
 
 ---
+[Go back to top](#top)
 
 ## Filtering Results
 
@@ -170,6 +171,7 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
 - Allows attribute filtering, regular expressions, and null checks.
 
 ---
+[Go back to top](#top)
 
 ## Query Segmentation
 
@@ -206,6 +208,7 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample(){
   - Breaking down a complex query into manageable, logical segments.
 
 ---
+[Go back to top](#top)
 
 ## Sorting and Limiting Results
 
@@ -219,7 +222,7 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample(){
 
 **Example 1**: Using `ORDER BY`, `SKIP`, `LIMIT` After `WITH`
 
-```cypher  
+```graphql  
 USE GRAPH financialGraph  
 CREATE OR REPLACE OPENCYPHER QUERY OrderSkipLimitExample01(){  
   MATCH (src)-[e:transfer]-> (tgt1)  
@@ -238,7 +241,7 @@ In this example, the query first uses `MATCH` and `WITH` to gather `srcAccountNa
 
 **Example 2** :  Using `ORDER BY`, `SKIP`, `LIMIT` After `RETURN`
 
-```cypher  
+```graphql  
 USE GRAPH financialGraph  
 CREATE OR REPLACE OPENCYPHER QUERY OrderSkipLimitExample02(){  
   MATCH (src)-[e:transfer]-> (tgt1)  
@@ -267,6 +270,7 @@ This example is similar to the first one, but `ORDER BY`, `SKIP`, and `LIMIT` ar
   - Often used with `SKIP` for pagination.
 
 ---  
+[Go back to top](#top)
 
 ## Working with Lists
 
@@ -276,7 +280,7 @@ The `UNWIND` clause is used to transform a list into individual rows, allowing y
 
 #### Syntax:
 
-```cypher
+```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY unwindExample01(){
   MATCH (src)-[e:transfer]-> (tgt1)
@@ -299,6 +303,7 @@ In this example:
 - Combine with `COLLECT()` to group rows back into lists.
 
 ---
+[Go back to top](#top)
 
 ### Combining Results
 The UNION and UNION ALL clauses in OpenCypher are used to combine results from multiple queries into a single result set. While both serve the same basic purpose, they differ in how they handle duplicate rows.
@@ -309,7 +314,7 @@ The UNION clause combines the results of multiple queries and removes any duplic
 
 **Syntax:**
 
-```cypher
+```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
   MATCH (s:Account {name: "Paul"})
@@ -350,6 +355,7 @@ CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
 - Faster than `UNION` since no deduplication is performed.
 
 ---
+[Go back to top](#top)
 
 ## Conditional Logic
 
@@ -389,6 +395,7 @@ In this example:
 - Helps dynamically adjust query results based on certain conditions, making it useful for various data transformations and aggregations.
 
 ---
+[Go back to top](#top)
 
 ## Functions
 
@@ -436,3 +443,5 @@ In this example:
 -   Aggregation functions are used to summarize or analyze data, such as counting, summing, or averaging values.
 -   They work within the `WITH` clause to aggregate data before passing it along to further parts of the query.
 -   Functions like `COLLECT()` can be used to group values into lists, while functions like `SUM()` and `AVG()` perform mathematical calculations on grouped data.
+
+[Go back to top](#top)
