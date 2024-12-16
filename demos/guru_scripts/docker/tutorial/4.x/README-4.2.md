@@ -352,6 +352,26 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 | Left, undirected, or right  | -[e:transfer\|hasPhone]-   | -[alias:type1\|type2\|..]- | 
 
 ## Variable Length Pattern Quantifier
+We support two ways to specify repetitions of a pattern. 
+
+### GQL way:
+| Quantifier | Example |  Description |
+|------------|---------|--------------|
+| {m,n}    | -[:transfer]->{1,2}   | beween m and n repetitions |
+| {m,}    | -[:transfer]->{1,}   | m or more repetitions |
+| *    | -[:transfer]->*   | equivalent to {0,} |
+| +    | -[:transfer]->+   | equivalent to {1,} |
+
+
+### GSQL way: 
+| Quantifier | Example |  Description |
+|------------|---------|--------------|
+| *m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
+| *m..    | -[:transfer*1..]->   | m or more repetitions |
+| *m    | -[:transfer*m]->   | equivalent to m..m |
+
+
+
 
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
