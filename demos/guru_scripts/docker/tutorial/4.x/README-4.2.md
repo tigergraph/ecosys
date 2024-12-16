@@ -354,7 +354,7 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ## Variable Length Pattern Quantifier
 We support two ways to specify repetitions of a pattern. 
 
-### GQL way:
+### GQL Style:
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
 | {m,n}    | -[:transfer]->{1,2}   | beween m and n repetitions |
@@ -363,16 +363,7 @@ We support two ways to specify repetitions of a pattern.
 | +    | -[:transfer]->+   | equivalent to {1,} |
 
 
-### GSQL way: 
-| Quantifier | Example |  Description |
-|------------|---------|--------------|
-| *m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
-| *m..    | -[:transfer*1..]->   | m or more repetitions |
-| *m    | -[:transfer*m]->   | equivalent to m..m |
-
-
-
-
+### GSQL Style: 
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
 | *m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
