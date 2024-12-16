@@ -290,13 +290,25 @@ The `OPTIONAL MATCH` clause in Cypher performs multi-table associations using a 
 
 ### WHERE Clause
 
-The `WHERE` clause is used in OpenCypher to filter results based on specific conditions. It helps to narrow down the set of vertices and edges that match a given pattern.
+The `WHERE` clause in OpenCypher is used to filter results based on specific conditions. It narrows down the set of vertices and edges that match a given pattern, ensuring only relevant data is returned.
 
 #### Syntax:
 
+```graphql
+CREATE OR REPLACE OPENCYPHER QUERY q(){
+  MATCH (pattern)
+  WHERE <condition>
+  WITH <intermediate_result_or_aggregation>
+  WHERE <condition>
+  RETURN <result>
+}
+```
+
+#### Query Example:
+
 - **After `MATCH` or `OPTIONAL MATCH`**:
   - When `WHERE` follows a `MATCH` or `OPTIONAL MATCH` clause, it filters the pattern results to include only those that satisfy the conditions specified in the `WHERE` clause.
-  - Example: Restrict transfers to those where the source account is blocked and the transfer date is after a given date.
+  - Example 1: Restrict transfers to those where the source account is blocked and the transfer date is after a given date.
 
 ```graphql
 USE GRAPH financialGraph
@@ -309,7 +321,7 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample1(datetime date=to_datetime("2024
 ```
 **After `WITH` clause**:
   - `WHERE` clause can be placed after a `WITH` clause to filter intermediate results. This allows you to apply conditions based on aggregated or calculated data.
-  - Example: Example: Filter accounts with more than one transfer.
+  - Example 2: Filter accounts with more than one transfer.
 
 ```graphql
 USE GRAPH financialGraph
@@ -325,7 +337,10 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
 
 #### Key Points:
 - Supports logical operators like `AND`, `OR`, `NOT`.
-- Allows attribute filtering, regular expressions, and null checks.
+- Supports string matching, such as `STARTS WITH`, `ENDS WITH`.
+- Support `null` checks using `IS NULL` or `IS NOT NULL`.
+- Allows filtering by attributes.
+- Supports list filtering using `IN` to check if a value exists within a list.
 
 ---
 [Go back to top](#top)
@@ -334,13 +349,27 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
 
 ### WITH Clause
 
-The WITH clause in OpenCypher is used to divide a query into logical segments, allowing intermediate results to be processed and passed to subsequent parts of the query. It is especially useful for performing transformations, aggregations, or applying conditions step by step.
+The `WITH` clause in OpenCypher is used to divide a query into logical segments, allowing intermediate results to be processed and passed to subsequent parts of the query. It is especially useful for performing transformations, aggregations, or applying conditions step by step.
 
 #### Syntax:
 
+```graphsql
+CREATE OR REPLACE OPENCYPHER QUERY q() {
+  MATCH (pattern)
+  WITH < intermediate result> 
+  WHERE <condition>
+  WITH < intermediate result>
+  RETURN <result>
+}
+```
+
+#### Query Example:
+
+**Example 1: Conditional Logic in `WITH`**
+
 ```graphql
 USE GRAPH financialGraph
-CREATE OR REPLACE OPENCYPHER QUERY withExample(){
+CREATE OR REPLACE OPENCYPHER QUERY withExample1(){
   MATCH (src)-[e:transfer]-> (tgt)
   WITH
     src, COUNT(e) AS transferCnt
@@ -353,16 +382,34 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample(){
   RETURN src AS srcAccount, isTgt
 }
 ```
-**Example Explanation**
+**Explanation**
 
 - **First Query Segment**:  The `WITH` clause aggregates transfers using `COUNT(e)` and stores the result as `transferCnt` while passing the src forward.
 - **Second Query Segment**:  A second WITH clause applies a `CASE expression` to evaluate whether `transferCnt` exceeds 3.
 
+**Example 2: Filtering and Sorting with `WITH`**
+
+```graphql
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY withExample2(){
+  MATCH (src)-[e:transfer]->(tgt)
+  WITH src, COUNT(e) AS transferCnt
+  WHERE transferCnt > 1
+  ORDER BY transferCnt DESC
+  LIMIT 5
+  RETURN src AS sourceAccount, transferCnt
+}
+```
+**Explanation**
+- This query aggregates the transfer count for each `src` account, filters the accounts with more than one transfer, orders them by the transfer count in descending order, and limits the result to the top 5 accounts.
+
 #### Key Points:
-- The `WITH` clause is useful when:
+- The `WITH` clause is useful for:
   - Performing aggregations like `COUNT()`, `SUM()`, `AVG()`, etc. 
   - Applying conditions and filtering intermediate results.
   - Breaking down a complex query into manageable, logical segments.
+  - Using `ORDER BY` and `LIMIT` to control the order and number of results before passing them on.
+  - Performing calculations or conditional transformations with expressions.
 
 ---
 [Go back to top](#top)
@@ -420,7 +467,7 @@ This example is similar to the first one, but `ORDER BY`, `SKIP`, and `LIMIT` ar
   - Default sorting is ascending (`ASC`), use `DESC` for descending order.
   - Can sort by multiple fields.
 - **SKIP**:
-  - Skips the first N records
+  - Skips the first `N` records
   - Useful for pagination.
 - **LIMIT**:
   - Restricts the number of records returned.
@@ -437,6 +484,14 @@ The `UNWIND` clause is used to transform a list into individual rows, allowing y
 
 #### Syntax:
 
+```
+UNWIND <list_expression> AS <variable>
+```
+
+#### Query Example:
+
+**Example 1: Basic `UNWIND` Usage**
+
 ```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY unwindExample01(){
@@ -447,13 +502,30 @@ CREATE OR REPLACE OPENCYPHER QUERY unwindExample01(){
 }
 ```
 
-#### Example Explanation:
-
-In this example:
+**Explanation**:
 
 -   The `UNWIND` clause expands the list `[1, 2, 3]` into individual values (`x`).
 -   The `WITH` clause calculates the result (`res`) by multiplying `e.amount` by each value of `x`.
 -   Finally, the `RETURN` clause outputs the `srcAccount` and the calculated `res` for each combination of `src` and the values of `x`.
+
+**Example 2: Combining `UNWIND` with `COLLECT()`**
+
+```graphql
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY unwindExample02(){
+  MATCH (src)-[e:transfer]->(tgt1)
+  WITH src AS srcAccount, COLLECT(e.amount) AS amounts
+  UNWIND amounts AS amount
+  WITH srcAccount, amount, amount * 2 AS doubleAmount
+  RETURN srcAccount, COLLECT(doubleAmount) AS doubledAmounts
+}
+```
+
+**Explanation**:
+- The `COLLECT(e.amount)` gathers all transfer amounts into a list for each `src` vertex.
+- The `UNWIND` clause expands the amounts list into individual rows (`amount`).
+- The query calculates `doubleAmount` by multiplying each amount by 2.
+- The `COLLECT(doubleAmount)` groups the doubled amounts back into a list (`doubledAmounts`).
 
 #### Key Points:
 - Often used to process arrays from query results.
@@ -463,11 +535,11 @@ In this example:
 [Go back to top](#top)
 
 ### Combining Results
-The UNION and UNION ALL clauses in OpenCypher are used to combine results from multiple queries into a single result set. While both serve the same basic purpose, they differ in how they handle duplicate rows.
+The `UNION` and `UNION ALL` clauses in OpenCypher are used to combine results from multiple queries into a single result set. While both serve the same basic purpose, they differ in how they handle duplicate rows.
 
 #### UNION Clause
 
-The UNION clause combines the results of multiple queries and removes any duplicate rows.
+The `UNION` clause combines the results of multiple queries and removes any duplicate rows.
 
 **Syntax:**
 
@@ -518,9 +590,19 @@ CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
 
 ### CASE Expression
 
-The `CASE expression` in OpenCypher allows you to implement conditional logic within a query, enabling dynamic result customization based on specific conditions.
+The `CASE` expression in OpenCypher allows you to implement conditional logic within a query, enabling dynamic result customization based on specific conditions.
 
 #### Syntax:
+
+```graphsql
+CASE
+  WHEN <condition1> THEN <result1>
+  WHEN <condition2> THEN <result2>
+  ...
+  ELSE <default_result>
+END
+```
+#### Query Example:
 
 ```graphql
 USE GRAPH financialGraph
@@ -539,8 +621,6 @@ CREATE OR REPLACE OPENCYPHER QUERY caseExprExample(){
 ```
 
 #### Example Explanation:
-
-In this example:
 
 -   The `MATCH` clause identifies the `Account` node with the name "Steven" and finds all `transfer` edges from this vertex to others.
 -   The `CASE` expression evaluates whether `s.isBlocked` is true. If it is, the result is `0`, otherwise, the result is `1`.
