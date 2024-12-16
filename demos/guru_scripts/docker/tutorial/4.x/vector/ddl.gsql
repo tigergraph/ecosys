@@ -3,14 +3,21 @@ import package gds
 install function gds.**
 
 //create vertex types
-CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL) WITH EMBEDDING ATTRIBUTE emb1(dimension=3)
+CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
 CREATE VERTEX City ( name STRING PRIMARY KEY)
-CREATE VERTEX Phone (number STRING PRIMARY KEY, isBlocked BOOL) WITH EMBEDDING ATTRIBUTE emb1(dimension=3)
+CREATE VERTEX Phone (number STRING PRIMARY KEY, isBlocked BOOL)
 
 //create edge types
 CREATE DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATETIME), amount UINT) WITH REVERSE_EDGE="transfer_reverse"
 CREATE UNDIRECTED EDGE hasPhone (FROM Account, TO Phone)
 CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
+
+//create vectors
+CREATE GLOBAL SCHEMA_CHANGE JOB fin_add_vector {
+  ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb1(dimension=3);
+  ALTER VERTEX Phone ADD VECTOR ATTRIBUTE emb1(dimension=3);
+}
+run global schema_change job fin_add_vector
 
 //create graph; * means include all graph element types in the graph.
 CREATE GRAPH financialGraph (*)

@@ -1,3 +1,7 @@
+# Native Vector Support in TigerGraph
+
+TigerGraph has unveiled native vector support, a revolutionary feature that significantly amplifies the capabilities of graph analytics by incorporating high-dimensional vector embeddings. This cutting-edge enhancement is tailored for contemporary AI and machine learning workflows, facilitating a seamless integration of structured graph data with vector embeddings, thus unlocking new levels of analytical power and efficiency.
+
 # Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](./FinancialGraph.jpg)
 
@@ -6,11 +10,12 @@ This GSQL tutorial contains
 - [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
+- [Install GDS Functions](#install-gds-functions)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
-  - [TopKVectorSearch Summary](#topkvectorsearch-summary)
+  - [vectorSearch Summary](#vectorsearch-summary)
   - [GDS Functions Summary](#gds-functions-summary)
 - [Advanced Topics](#advanced-topics)
   - [Schema Change](#schema-change)
@@ -66,15 +71,21 @@ You can choose one of the following methods.
     
 [Go back to top](#top)
 
+# Install GDS functions
+GDS functions to be used in the queries need to be installed in advance
+
+```python
+import package gds
+install function gds.**
+```
+
 # Query Examples 
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
 - SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
 
-
-## Node Pattern
-### SELECT A Vertex Set Style 
+### Vertex As Parameter
 Copy [q1a.gsql](./vector/q1a.gsql) to your container. 
 
 ```python
@@ -82,7 +93,33 @@ Copy [q1a.gsql](./vector/q1a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a (VERTEX<Account> name) SYNTAX v3 {
+  // Define a vextex set from the parameter
+  v = {name};
+
+  // output vertex set variable v in JSON format with embedding
+  print v WITH VECTOR;
+}
+
+#compile and install the query as a stored procedure
+install query -single q1a
+
+#run the query
+run query q1a("Scott")
+```
+
+[Go back to top](#top)
+
+## Node Pattern
+### SELECT A Vertex Set Style 
+Copy [q1b.gsql](./vector/q1b.gsql) to your container.
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
 
   // select from a node pattern-- symbolized by (),
   //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
@@ -91,7 +128,7 @@ CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
       FROM (a:Account);
 
   // output vertex set variable v in JSON format with embedding
-  PRINT v WITH_EMBEDDING;
+  PRINT v WITH VECTOR;
 
   //we can use vertex set variable in the subsequent query block's node pattern.
   //v is placed in the node pattern vertex label position. The result is re-assigned to v. 
@@ -100,39 +137,15 @@ CREATE OR REPLACE QUERY q1a () SYNTAX v3 {
       WHERE a.name == "Scott";
 
   // output vertex set variable v in JSON format with embedding
-  PRINT v WITH_EMBEDDING;
+  PRINT v WITH VECTOR;
 }
 
 # Compile and install the query as a stored procedure using gpr mode
-install query -single q1a
-
-# run the compiled query
-run query q1a()
-```
-
-### Vertex As Parameter
-Copy [q1b.gsql](./vector/q1b.gsql) to your container. 
-
-```python
-#enter the graph
-USE GRAPH financialGraph
-
-# create a query
-CREATE OR REPLACE QUERY q1b (VERTEX<Account> name) SYNTAX v3 {
-  // Define a vextex set from the parameter
-  v = {name};
-  // output vertex set variable v in JSON format with embedding
-  print v WITH_EMBEDDING;
-}
-
-#compile and install the query as a stored procedure
 install query -single q1b
 
-#run the query
-run query q1b("Scott")
+# run the compiled query
+run query q1b()
 ```
-
-[Go back to top](#top)
 
 ## Edge Pattern 
 ### SELECT A Vertex Set Style 
@@ -163,11 +176,11 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
   // fetch the query vector from the query vertex to the ListAccum
   q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
 
-  // get Top 2 vectors having least distance to the query vector
-  r = TopKVectorSearch({Account.emb1}, @@query_vector, 2, {filter: v});
+  // get Top 3 vectors having least distance to the query vector
+  r = vectorSearch({Account.emb1}, @@query_vector, 3, {candidate_set: v});
 
   //output each r with their static attribute and embedding value
-  PRINT r WITH_EMBEDDING;
+  PRINT r WITH VECTOR;
 
 }
 
@@ -188,6 +201,8 @@ USE GRAPH financialGraph
 # create a query
 CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
 
+  //Declare a global accumulator to store the similarity score of the result set to the query vector
+  MapAccum<Vertex<Account>, Float> @@similarity;
   //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
   //The vertex instance is selected based on the FROM clause pattern.
   SumAccum<int> @totalTransfer = 0;
@@ -200,11 +215,15 @@ CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
       ACCUM  b.@totalTransfer += e.amount;
 
-  // get Top 2 vectors having least distance to the query vector provided
-  r = TopKVectorSearch({Account.emb1}, query_vector, 2, {filter: v});
+  // get Top 3 vectors having least distance to the query vector provided
+  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v});
 
   //output each v and their static attribute and embedding value
-  PRINT r WITH_EMBEDDING;
+  PRINT r WITH VECTOR;
+
+  //output each v and their similarity score to the query vector
+  w = select s from r:s accum @@similarity += ( s -> 1 - gds.vector.cosine_distance(ll, s.emb1));
+  PRINT @@similarity;
 }
 
 #compile and install the query as a stored procedure
@@ -215,14 +234,6 @@ run query q2b("Scott", [-0.017733968794345856, -0.01019224338233471, -0.01657187
 ```
 
 ## Path Pattern 
-
-### Install GDS functions
-GDS functions to be used in the queries need to be installed in advance
-
-```python
-import package gds
-install function gds.**
-```
 
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
 Copy [q3a.gsql](./vector/q3a.gsql) to your container. 
@@ -321,20 +332,20 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
-## TopKVectorSearch Summary
+## vectorSearch Summary
 
 ### Syntax
 ```
-TopKVectorSearch(EmbeddingAttributes, EmbeddingConstant, K, optionalParam)
+vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 ```
 
 ### Parameter
 |Parameter	|Description
 |-------|--------
-|`EmbeddingAttributes`	|A set of embedding attributes we will search, the items should be in format **VertexType.EmbeddingName**, for example { v1.eb1, v2.eb2}.
+|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example { v1.eb1, v2.eb2}.
 |`EmbeddingConstant`	|The embedding constant to search the top K vectors that are most similar to it.
 |`K`	|The number of the results to be given.
-|`optionalParam` |Optional, a map of params, including vertex filter and EF overriding, for example {filter: vset1, ef: 20}.
+|`optionalParam` |Optional, a map of params, including vertex candidate set and EF overriding, for example {candidate_set: vset1, ef: 20}.
 
 ### Return
 Will return a vertex set
@@ -370,7 +381,7 @@ USE GLOBAL
 
 # create a global schema change job to modify the global vertex
 CREATE GLOBAL SCHEMA_CHANGE JOB add_emb2 {
-  ALTER VERTEX Account ADD EMBEDDING ( emb2(DIMENSION=10, METRIC="L2") );
+  ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb2(DIMENSION=3, METRIC="L2");
 }
 
 # run the global schema_change job
@@ -385,7 +396,7 @@ USE GLOBAL
 
 # create a global schema change job to modify the global vertex
 CREATE GLOBAL SCHEMA_CHANGE JOB drop_emb2 {
-  ALTER VERTEX Account DROP EMBEDDING ( emb2 );
+  ALTER VERTEX Account DROP VECTOR ATTRIBUTE ( emb2 );
 }
 
 # run the global schema_change job
@@ -411,11 +422,11 @@ USE GRAPH localGraph
 
 # create a local schema change job to create local vertex with or without vector
 CREATE SCHEMA_CHANGE JOB add_local_vertex FOR GRAPH localGraph {
-  ADD VERTEX Account (name STRING PRIMARY KEY, isBlocked BOOL) WITH EMBEDDING ATTRIBUTE emb1(dimension=3);
+  ADD VERTEX Account (name STRING PRIMARY KEY, isBlocked BOOL);
   ADD VERTEX Phone (number STRING PRIMARY KEY, isBlocked BOOL);
   ADD DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATETIME), amount UINT) WITH REVERSE_EDGE="transfer_reverse";
 }
-RUN SCHEMA_CHANGE JOB add_local_vertex
+run schema_change job add_local_vertex
 ```
 
 #### Add a Vector To Local Vertex
@@ -424,13 +435,14 @@ RUN SCHEMA_CHANGE JOB add_local_vertex
 USE GRAPH localGraph
 
 # create a local schema change job to modify the local vertex
-CREATE SCHEMA_CHANGE JOB add_local_emb2 FOR GRAPH localGraph {
-  ALTER VERTEX Account ADD EMBEDDING ( emb2(DIMENSION=10, METRIC="L2") );
-  ALTER VERTEX Phone ADD EMBEDDING ( emb1(DIMENSION=3, METRIC="COSINE") );
+CREATE SCHEMA_CHANGE JOB add_local_emb1 FOR GRAPH localGraph {
+  ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb1(DIMENSION=3, METRIC="COSINE");
+  ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb2(DIMENSION=10, METRIC="L2");
+  ALTER VERTEX Phone ADD VECTOR ATTRIBUTE emb1(DIMENSION=3);
 }
 
 # run the local schema_change job
-run schema_change job add_local_emb2
+run schema_change job add_local_emb1
 ```
 
 #### Remove a Vector From Local Vertex
@@ -440,12 +452,12 @@ run schema_change job add_local_emb2
 USE GRAPH localGraph
 
 # create a local schema change job to modify the global vertex
-CREATE SCHEMA_CHANGE JOB drop_local_emb2 FOR GRAPH localGraph {
-  ALTER VERTEX Account DROP EMBEDDING ( emb2 );
+CREATE SCHEMA_CHANGE JOB drop_local_emb1 FOR GRAPH localGraph {
+  ALTER VERTEX Account DROP VECTOR ATTRIBUTE ( emb1 );
 }
 
 # run the local schema_change job
-run schema_change job drop_local_emb2
+run schema_change job drop_local_emb1
 ```
 
 #### Remove Local Vertex and Edge
@@ -500,7 +512,7 @@ CREATE LOADING JOB load_local_file FOR GRAPH embGraph {
 
  //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
  LOAD file1 TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
- LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|", HEADER="true";
+ LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|", HEADER="true";
 }
 ```
 
@@ -522,7 +534,7 @@ TigerGraph also supports run a loading job remotely via DDL endpoint `POST /rest
 
 For example:
 ```python
-curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl/embGraph?tag=load_local_file&filename=file1"
+curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl/embGraph?tag=load_local_file&filename=file1&sep=|"
 ```
 
 ### RESTPP Loading
@@ -604,17 +616,19 @@ A TigerGraph connection created by the passed parameters.
 Schema creation in Python needs to be done by running a gsql command via the pyTigerGraph.gsql() function.
 
 ```python
-# Create a vector with 1024 dimension in TigerGraph database
+# Create a vector with 3 dimension in TigerGraph database
 # Ensure to connect to TigerGraph server before any operations.
 result = conn.gsql("""
     USE GLOBAL
     CREATE VERTEX Account(
         name STRING PRIMARY KEY, 
         isBlocked BOOL
-    ) WITH VECTOR ATTRIBUTE emb1(
-        DIMENSION = 3
     )
     CREATE GRAPH financialGraph(*)
+    CREATE GLOBAL SCHEMA_CHANGE JOB fin_add_vector FOR GRAPH financialGraph {
+        ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb1(dimension=3);
+    }
+    RUN GLOBAL SCHEMA_CHANGE JOB fin_add_vector
 """)
 print(result)
 ```
@@ -622,7 +636,7 @@ print(result)
 ### Load Data
 Once a schema is created in TigerGraph database, a corresponding Loading Job needs to be created in order to define the data format and mapping to the schema. Given that the embedding data is usually separated by comma, it is recommended to use `|` as the separator for both of the data file and loading job. For example:
 ```
-Scott|n|-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
+1|Scott|n|-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 ```
 
 #### Create Loading Job
@@ -634,7 +648,7 @@ result = conn.gsql("""
     CREATE LOADING JOB l1 {
         DEFINE FILENAME file1;
         LOAD file1 TO VERTEX Account VALUES ($0, $1) USING SEPARATOR="|";
-        LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT($2, ",")) USING SEPARATOR="|";
+        LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|";
     }
 """)
 print(result)
@@ -644,12 +658,12 @@ In case the vector data contains square brackets, the loading job should be revi
 
 Data:
 ```python
-Scott|n|[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
+1|Scott|n|[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]
 ```
 
 Loading job:
 ```python
-LOAD file1 TO EMBEDDING ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
+LOAD file1 TO VECTR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
 ```
 
 For more details about loading jobs, please refer to https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs.
@@ -699,7 +713,7 @@ embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 
 result = conn.gsql(f"""
-run query top3_vector({query_embeddings})
+run query q2b("Scott", {query_embeddings})
 """)
 print(result)
 ```

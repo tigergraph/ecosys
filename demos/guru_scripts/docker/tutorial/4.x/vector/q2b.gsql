@@ -3,14 +3,18 @@ USE GRAPH financialGraph
 CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
 
   SumAccum<int> @totalTransfer = 0;
+  MapAccum<Vertex<Account>, Float> @@similarity;
 
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
       ACCUM  b.@totalTransfer += e.amount;
 
-  r = TopKVectorSearch({Account.emb1}, query_vector, 2, {filter: v});
+  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v});
+  PRINT r WITH VECTOR;
 
-  PRINT r WITH_EMBEDDING;
+  w = select s from r:s accum @@similarity += ( s -> 1 - gds.vector.cosine_distance(ll, s.emb1));
+  PRINT @@similarity;
+
 
 }
 

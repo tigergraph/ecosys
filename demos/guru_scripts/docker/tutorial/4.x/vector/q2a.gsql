@@ -9,12 +9,11 @@ CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
       ACCUM  b.@totalTransfer += e.amount;
 
-  #w = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
-  w = SELECT a FROM Account:a WHERE a.name == accntName POST-ACCUM @@query_vector += a.emb1;
+  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
 
-  r = TopKVectorSearch({Account.emb1}, @@query_vector, 2, {filter: v});
+  r = vectorSearch({Account.emb1}, @@query_vector, 3, {candidate_set: v});
 
-  PRINT r WITH_EMBEDDING;
+  PRINT r WITH VECTOR;
 
 }
 
