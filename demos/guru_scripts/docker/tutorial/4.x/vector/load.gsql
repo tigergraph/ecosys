@@ -15,8 +15,8 @@ CREATE LOADING JOB load_s3_file  {
  DEFINE FILENAME hasPhone="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/hasPhone.csv"}""";
  DEFINE FILENAME locatedIn="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/locate.csv"}""";
  DEFINE FILENAME transferdata="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/transfer.csv"}""";
- DEFINE FILENAME accountEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-tutorial-data/ecosys/account_emb.csv"}""";
- DEFINE FILENAME phoneEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-tutorial-data/ecosys/phone_emb.csv"}""";
+ DEFINE FILENAME accountEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/account_emb.csv"}""";
+ DEFINE FILENAME phoneEmb="""$s3_data_source_0:{"file.uris":"s3a://tigergraph-example-data/ecosys/phone_emb.csv"}""";
  //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause.
  LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
  LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
