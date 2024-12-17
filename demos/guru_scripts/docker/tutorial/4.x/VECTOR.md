@@ -28,6 +28,11 @@ This GSQL tutorial contains
 
 Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
 
+> **_Note:_** For vector feature preview, please pull `tigergraph/tigergraph:4.2.0-preview` docker images instead. For example:
+> ```
+> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
+> ```
+
 [Go back to top](#top)
 
 # Setup Schema 
@@ -373,10 +378,10 @@ vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 ### Parameter
 |Parameter	|Description
 |-------|--------
-|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example { v1.eb1, v2.eb2}.
+|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example `{v1.eb1, v2.eb2}`.
 |`EmbeddingConstant`	|The embedding constant to search the top K vectors that are most similar to it.
 |`K`	|The number of the results to be given.
-|`optionalParam` |Optional, a map of params, including vertex candidate set and EF overriding, for example {candidate_set: vset1, ef: 20}.
+|`optionalParam` |Optional, a map of params, including vertex candidate set, EF overriding, and distance scores (MapAccum), for example `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
 ### Return
 Will return a vertex set
