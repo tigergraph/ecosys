@@ -1,0 +1,28 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q2a (string accntName, list<float> query_vector) SYNTAX v3 {
+
+  MapAccum<Vertex, Float> @@distances;
+  SumAccum<int> @totalTransfer = 0;
+
+  v = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      WHERE e.amount >= 1000;
+
+  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v, distance_map: @@distances});
+  PRINT r WITH VECTOR;
+  PRINT @@distances;
+
+  v = SELECT b
+      FROM (a:r)-[e:transfer]->(b:Account)
+      ACCUM b.@totalTransfer += e.amount;
+
+  PRINT v;
+
+}
+
+#compile and install the query as a stored procedure
+install query -single q2a
+
+#run the query
+run query q2a("Scott", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
