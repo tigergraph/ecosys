@@ -21,7 +21,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   r = SELECT a
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
       WHERE a.name != b.name
-      ACCUM  a.@distances += (b -> gds.vector.cosine_distance(a.emb1, b.emb1));
+      ACCUM a.@distances += (b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
   PRINT r;
 }

@@ -83,7 +83,8 @@ install function gds.**
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
-- SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
+- Vertex as Parameter: if a single or a set of vertex id is provided as a query parameter, it can be activatd as a vertex set and used in subsequent query blocks
+- SELECT A Vertex Set Style: if a function or query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
 
 ### Vertex As Parameter
 Copy [q1a.gsql](./vector/q1a.gsql) to your container. 
@@ -93,14 +94,20 @@ Copy [q1a.gsql](./vector/q1a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q1a (VERTEX<Account> name, SET<VERTEX<Account>> slist) SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a (VERTEX<Account> name, SET<VERTEX<Account>> slist, LIST<float> query_vector) SYNTAX v3 {
   // Define a vextex set from the vertex parameter
   v = {name};
+
   // output vertex set variable v in JSON format with embedding
   print v WITH VECTOR;
 
   // Define a vextex set from the vertex set parameter
   v = {slist};
+
+  // Get the most similar vector from the list
+  // The result is re-assigned to v. 
+  v = vectorSearch({Account.emb1}, query_vector, 1, {candidate_set: v});
+
   // output vertex set variable v in JSON format with embedding
   print v WITH VECTOR;
 }
@@ -109,7 +116,7 @@ CREATE OR REPLACE QUERY q1a (VERTEX<Account> name, SET<VERTEX<Account>> slist) S
 install query -single q1a
 
 #run the query
-run query q1a("Scott", ["Steven", "Jenny"])
+run query q1a("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 
 [Go back to top](#top)
@@ -125,22 +132,24 @@ USE GRAPH financialGraph
 # create a query
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
 
+  ListAccum<float> @@query_vector;
+
   // select from a node pattern-- symbolized by (),
   //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
   // v is a vertex set variable, holding the selected vertex set
   v = SELECT a
       FROM (a:Account)
-      ORDER BY gds.vector.norm(a.emb1, "L2")
-      LIMIT 10;
-
-  // output vertex set variable v in JSON format with embedding
-  PRINT v WITH VECTOR;
+      WHERE a.emb1.size() == 3;
 
   //we can use vertex set variable in the subsequent query block's node pattern.
-  //v is placed in the node pattern vertex label position. The result is re-assigned to v. 
-  v = SELECT a
+  q = SELECT a
       FROM (a:v)
-      WHERE a.name == "Scott";
+      WHERE a.name == "Scott"
+      POST-ACCUM @@query_vector += a.emb1;
+
+  // Get the top 3 similar vertices for Scott with an adjusted ef
+  // The result is re-assigned to v. 
+  v = vectorSearch({Account.emb1}, @@query_vector, 3, {candidate_set: v, ef: 10});
 
   // output vertex set variable v in JSON format with embedding
   PRINT v WITH VECTOR;
@@ -162,68 +171,11 @@ Copy [q2a.gsql](./vector/q2a.gsql) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE QUERY q2a (string accntName) SYNTAX v3 {
-
-  //Declare a global map accumulator to store vector distance values.
-  MapAccum<Vertex<Account>, Float> @@similarity;
-  //Declare a global list accumulator to store query embedding value.
-  ListAccum<float> @@query_vector;
-  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
-  //The vertex instance is selected based on the FROM clause pattern.
-  SumAccum<int> @totalTransfer = 0;
-
-  // fetch the query vector from the query vertex to the ListAccum
-  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
-
-  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
-  // "v" is a vertex set variable holding the selected vertex set.
-  // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
-  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
-  // get Top 3 vectors having least distance to the query vector
-  v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      ACCUM  b.@totalTransfer += e.amount
-      ORDER BY gds.vector.cosine_distance(b.emb1, @@query_vector)
-      LIMIT 3;
-  //output each v with their static attribute and embedding value
-  PRINT v WITH VECTOR;
-
-  // get the similarity values of the top 3 vectors from the previous query block
-  r = select s from v:s accum @@similarity += ( s -> 1 - gds.vector.cosine_distance(@@query_vector, s.emb1));
-  //output similarity values calculated
-  PRINT @@similarity;
-}
-
-# Compile and install the query as a stored procedure using gpr mode
-install query -single q2a
-
-# run the compiled query
-run query q2a("Scott")
-```
-
-### Query Vector from Parameter
-Copy [q2b.gsql](./vector/q2b.gsql) to your container. 
-
-```python
-#enter the graph
-USE GRAPH financialGraph
-
-# create a query
-CREATE OR REPLACE QUERY q2b (string accntName, list<float> query_vector) SYNTAX v3 {
-
-  SumAccum<int> @totalTransfer = 0;
-
-  v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-
-  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v, distance_map: @@distances});
-  PRINT r WITH VECTOR;
-
-}
-CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2a (string accntName, list<double> query_vector) SYNTAX v3 {
 
   //Declare a global accumulator to store the distances of the result from vectorSearch
   MapAccum<Vertex, Float> @@distances;
+
   //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
   //The vertex instance is selected based on the FROM clause pattern.
   SumAccum<int> @totalTransfer = 0;
@@ -241,12 +193,13 @@ CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX
 
   //output each r and their static attribute and embedding value
   PRINT r WITH VECTOR;
+
   //print distance mapping
   PRINT @@distances;
 
-  // get total amount for all transfers to the top 3 vectors
+  // get total amount for all transfers originated from the top 3 vertices
   v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:r)
+      FROM (a:r)-[e:transfer]->(b:Account)
       ACCUM b.@totalTransfer += e.amount;
 
   // output each v and their static attributes
@@ -254,10 +207,64 @@ CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX
 }
 
 #compile and install the query as a stored procedure
-install query -single q2b
+install query -single q2a
 
 #run the query
-run query q2b("Scott", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+run query q2a("Scott", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+
+### Query Vector from Parameter
+Copy [q2b.gsql](./vector/q2b.gsql) to your container. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
+
+  //Declare a global map accumulator to store vector distance values.
+  MapAccum<Vertex<Account>, Float> @@similarity;
+
+  //Declare a global list accumulator to store query embedding value.
+  ListAccum<float> @@query_vector;
+
+  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
+  //The vertex instance is selected based on the FROM clause pattern.
+  SumAccum<int> @totalTransfer = 0;
+
+  // fetch the query vector from the query vertex to the ListAccum
+  q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
+
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+  // "v" is a vertex set variable holding the selected vertex set.
+  // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
+  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
+  // get Top 3 vectors having least distance to the query vector
+  v = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      ACCUM  b.@totalTransfer += e.amount
+      ORDER BY gds.vector.cosine_distance(b.emb1, @@query_vector)
+      LIMIT 3;
+
+  //output each v with their static attribute and embedding value
+  PRINT v WITH VECTOR;
+
+  // get the similarity values of the top 3 vectors from the previous query block
+  r = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:v)
+      WHERE b.@totalTransfer > 3000
+      ACCUM @@similarity += ( b -> 1 - gds.vector.cosine_distance(@@query_vector, b.emb1));
+
+  //output similarity values calculated
+  PRINT r[r.@totalTransfer], @@similarity;
+}
+
+# Compile and install the query as a stored procedure using gpr mode
+install query -single q2b
+
+# run the compiled query
+run query q2b("Scott")
 ```
 
 ## Path Pattern 
@@ -274,8 +281,10 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
 
   // Define a custom tuple to store the vertex and its distance to the query vector
   TYPEDEF TUPLE <VERTEX s, FLOAT distance > DIST;
+
   // Declare a global heap accumulator to store the top 3 values
   HeapAccum<DIST>(3, distance ASC) @@result;
+
   // Declare a local groupby accumulator to store vector distances.
   GroupByAccum<Vertex<Account> b, SetAccum<float> distance> @distances;
 
@@ -294,7 +303,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNT
   r = SELECT b
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
       WHERE a.name != b.name
-      ACCUM  a.@distances += (b -> gds.vector.cosine_distance(a.emb1, b.emb1));
+      ACCUM a.@distances += (b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
   // print eacho r with static attributes and distances
   PRINT r;
@@ -740,7 +749,7 @@ embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 
 result = conn.gsql(f"""
-run query q2b("Scott", {query_embeddings})
+run query q2a("Scott", {query_embeddings})
 """)
 print(result)
 ```
@@ -753,7 +762,7 @@ query = "Scott"
 embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 result = conn.runInstalledQuery(
-    "q2b",
+    "q2a",
     "accntName=Scott&query_vector="+"&query_vector=".join(str(y) for y in query_embedding),
     timeout=864000
 )

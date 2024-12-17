@@ -3,16 +3,18 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
 
+  ListAccum<float> @@query_vector;
+
   v = SELECT a
       FROM (a:Account)
-      ORDER BY gds.vector.norm(a.emb1, "L2")
-      LIMIT 10;
+      WHERE a.emb1.size() == 3;
 
-  PRINT v WITH VECTOR;
-
-  v = SELECT a
+  q = SELECT a
       FROM (a:v)
-      WHERE a.name == "Scott";
+      WHERE a.name == "Scott"
+      POST-ACCUM @@query_vector += a.emb1;
+
+  v = vectorSearch({Account.emb1}, @@query_vector, 3, {candidate_set: v});
 
   PRINT v WITH VECTOR;
 
