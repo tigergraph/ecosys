@@ -9,7 +9,7 @@ CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
   q = SELECT a FROM (a:Account {name: accntName}) POST-ACCUM @@query_vector += a.emb1;
 
   v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      FROM (a:Account)-[e:transfer]->(b:Account)
       ACCUM b.@totalTransfer += e.amount
       ORDER BY gds.vector.cosine_distance(b.emb1, @@query_vector)
       LIMIT 5;

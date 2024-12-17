@@ -139,17 +139,12 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
   // v is a vertex set variable, holding the selected vertex set
   v = SELECT a
       FROM (a:Account)
-      WHERE a.emb1.size() == 3;
-
-  //we can use vertex set variable in the subsequent query block's node pattern.
-  q = SELECT a
-      FROM (a:v)
-      WHERE a.name == "Scott"
+      WHERE a.emb1.size() == 3 and a.name == "Scott";
       POST-ACCUM @@query_vector += a.emb1;
 
-  // Get the top 3 similar vertices for Scott with an adjusted ef
+  // Get the top 3 similar vertices for Scott from all Account vertices
   // The result is re-assigned to v. 
-  v = vectorSearch({Account.emb1}, @@query_vector, 3, {candidate_set: v, ef: 10});
+  v = vectorSearch({Account.emb1}, @@query_vector, 3);
 
   // output vertex set variable v in JSON format with embedding
   PRINT v WITH VECTOR;
@@ -242,7 +237,7 @@ CREATE OR REPLACE QUERY q2b (string accntName) SYNTAX v3 {
   // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
   // get Top 3 vectors having least distance to the query vector
   v = SELECT b
-      FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
+      FROM (a:Account)-[e:transfer]->(b:Account)
       ACCUM  b.@totalTransfer += e.amount
       ORDER BY gds.vector.cosine_distance(b.emb1, @@query_vector)
       LIMIT 3;
