@@ -4,7 +4,9 @@ USE GRAPH financialGraph
 CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
 
   v = SELECT a
-      FROM (a:Account);
+      FROM (a:Account)
+      ORDER BY gds.vector.norm(a.emb1, "L2")
+      LIMIT 10;
 
   PRINT v WITH VECTOR;
 
@@ -13,6 +15,7 @@ CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
       WHERE a.name == "Scott";
 
   PRINT v WITH VECTOR;
+
 }
 
 #compile and install the query as a stored procedure

@@ -1,8 +1,11 @@
 #enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1a (VERTEX<Account> name) SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a (VERTEX<Account> name, SET<VERTEX<Account>> slist) SYNTAX v3 {
   v = {name};
+  print v WITH VECTOR;
+
+  v = {slist};
   print v WITH VECTOR;
 }
 
@@ -10,4 +13,4 @@ CREATE OR REPLACE QUERY q1a (VERTEX<Account> name) SYNTAX v3 {
 install query -single q1a
 
 #run the query
-run query q1a("Scott")
+run query q1a("Scott", ["Steven", "Jenny"])

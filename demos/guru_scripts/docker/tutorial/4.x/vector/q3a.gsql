@@ -3,26 +3,27 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string accntName) SYNTAX v3 {
 
-  TYPEDEF TUPLE <VERTEX s, FLOAT distance > DIST;
+  TYPEDEF TUPLE <VERTEX s, VERTEX t, FLOAT distance > DIST;
   HeapAccum<DIST>(3, distance ASC) @@result;
-  GroupByAccum<Vertex<Account> a, Vertex<Account> b, SetAccum<float> distance> @@distances;
+  GroupByAccum<Vertex<Account> b, SetAccum<float> distance> @distances;
 
   // a path pattern in ascii art () -[]->()-[]->()
   r = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500
-      ACCUM @@result += DIST(b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
+      ACCUM @@result += DIST(a, b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
 
   PRINT @@result;
 
   // below we use variable length path.
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
-  r = SELECT b
+  r = SELECT a
       FROM (a:Account {name: accntName})-[:transfer*1..]->(b:Account)
-      ACCUM  @@distances += (a,b -> gds.vector.cosine_distance(a.emb1, b.emb1));
+      WHERE a.name != b.name
+      ACCUM  a.@distances += (b -> gds.vector.cosine_distance(a.emb1, b.emb1));
 
-  PRINT @@distances;
+  PRINT r;
 }
 
 install query -single q3a

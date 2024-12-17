@@ -1,20 +1,23 @@
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q2b (string accntName, list<double> query_vector) SYNTAX v3 {
+CREATE OR REPLACE QUERY q2b (string accntName, list<float> query_vector) SYNTAX v3 {
 
+  MapAccum<Vertex, Float> @@distances;
   SumAccum<int> @totalTransfer = 0;
-  MapAccum<Vertex<Account>, Float> @@similarity;
 
   v = SELECT b
       FROM (a:Account {name: accntName})-[e:transfer]->(b:Account)
-      ACCUM  b.@totalTransfer += e.amount;
+      WHERE e.amount >= 1000;
 
-  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v});
+  r = vectorSearch({Account.emb1}, query_vector, 3, {candidate_set: v, distance_map: @@distances});
   PRINT r WITH VECTOR;
+  PRINT @@distances;
 
-  w = select s from r:s accum @@similarity += ( s -> 1 - gds.vector.cosine_distance(ll, s.emb1));
-  PRINT @@similarity;
+  v = SELECT b
+      FROM (a:Account {name: accntName})-[e:transfer]->(b:r)
+      ACCUM b.@totalTransfer += e.amount;
 
+  PRINT v;
 
 }
 
