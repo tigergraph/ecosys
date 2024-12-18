@@ -3,11 +3,11 @@
 TigerGraph has unveiled native vector support, a revolutionary feature that significantly amplifies the capabilities of graph analytics by incorporating high-dimensional vector embeddings. This cutting-edge enhancement is tailored for contemporary AI and machine learning workflows, facilitating a seamless integration of structured graph data with vector embeddings, thus unlocking new levels of analytical power and efficiency.
 
 # Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./FinancialGraph.jpg)
+![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
 
 # Content
 This GSQL tutorial contains 
-- [Setup Environment](#setup-Environment)
+- [Setup Environment](#setup-environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
 - [Install GDS Functions](#install-gds-functions)
@@ -18,7 +18,7 @@ This GSQL tutorial contains
   - [vectorSearch Summary](#vectorsearch-summary)
   - [GDS Functions Summary](#gds-functions-summary)
 - [Advanced Topics](#advanced-topics)
-  - [Schema Change](#schema-change)
+  - [Global and Local Schema Change](#global-and-local-schema-change)
   - [Vector Data Loading](#vector-data-loading)
   - [Python Integration](#python-integration)
 - [Support](#support) 
@@ -36,7 +36,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 [Go back to top](#top)
 
 # Setup Schema 
-Copy [ddl.gsql](./vector/ddl.gsql) to your container. 
+Copy [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql ddl.gsql
@@ -50,12 +50,12 @@ You can choose one of the following methods.
 
 - Load sample data from our publicly accessible s3 bucket 
   
-  Copy [load.gsql](./vector/load.gsql) to your container. 
+  Copy [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql load.gsql
+  gsql load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste it into the GSQL shell editor to run.
+  or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
@@ -68,11 +68,11 @@ You can choose one of the following methods.
     - [account_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account_emb.csv)
     - [phone_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone_emb.csv)
 
-  - Copy [load2.gsql](./script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+  - Copy [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql load2.gsql
+    gsql load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
+    or in GSQL Shell editor, copy the content of [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql), and paste in GSQL shell editor to run.
     
 [Go back to top](#top)
 
@@ -92,7 +92,7 @@ In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex s
 - SELECT A Vertex Set Style: if a function or query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
 
 ### Vertex As Parameter
-Copy [q1a.gsql](./vector/q1a.gsql) to your container. 
+Copy [q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -128,7 +128,7 @@ run query q1a("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.010192243
 
 ## Node Pattern
 ### SELECT A Vertex Set Style 
-Copy [q1b.gsql](./vector/q1b.gsql) to your container.
+Copy [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.gsql) to your container.
 
 ```python
 #enter the graph
@@ -164,7 +164,7 @@ run query q1b()
 
 ## Edge Pattern 
 ### SELECT A Vertex Set Style 
-Copy [q2a.gsql](./vector/q2a.gsql) to your container. 
+Copy [q2a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2a.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -214,7 +214,7 @@ run query q2a("Scott", [-0.017733968794345856, -0.01019224338233471, -0.01657187
 ```
 
 ### Query Vector from Parameter
-Copy [q2b.gsql](./vector/q2b.gsql) to your container. 
+Copy [q2b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2b.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -270,7 +270,7 @@ run query q2b("Scott")
 ## Path Pattern 
 
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
-Copy [q3a.gsql](./vector/q3a.gsql) to your container. 
+Copy [q3a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3a.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -320,7 +320,7 @@ run query q3a("2024-01-01", "2024-12-31", "Scott")
 
 If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
-Copy [q3b.gsql](./vector/q3b.gsql) to your container.
+Copy [q3b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3b.gsql) to your container.
 
 ```python
 #enter the graph
@@ -404,7 +404,7 @@ Will return a vertex set
 
 # Advanced Topics
 
-## Schema Change
+## Global and Local Schema Change
 
 ### Global Vertex and Edge
 Global vertex/edge is the vertex/edge type created in global scope and shared with multiple graphs, which can only be modified from the global scope.
@@ -519,7 +519,7 @@ USE GLOBAL
 DROP GRAPH localGraph CASCADE;
 ```
 
-For more details, please visit https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/.
+For more details, please visit [https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/).
 
 ## Vector Data Loading
 
@@ -599,7 +599,7 @@ curl -X POST "http://localhost:14240/restpp/graph/embGraph" -d '
 ### Other Data Source
 TigerGraph supports various ways to load data, including loading from cloud storage and parquet file format. 
 
-Please refer to https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/ for more details.
+Please refer to [https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/](https://docs.tigergraph.com/tigergraph-server/4.1/data-loading/) for more details.
 
 ## Python Integration
 TigerGraph's Python integration is done via pyTigerGraph mainly using the following functions:
@@ -702,7 +702,7 @@ Loading job:
 LOAD file1 TO VECTR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
 ```
 
-For more details about loading jobs, please refer to https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs.
+For more details about loading jobs, please refer to [https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs/](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs/).
 
 #### Load From DataFrame
 ```python
@@ -774,10 +774,10 @@ print(result)
 # Support
 If you like the tutorial and want to explore more, join the GSQL developer community at
 
-https://community.tigergraph.com/
+[https://community.tigergraph.com/](https://community.tigergraph.com/)
 
 Or, study our product document at
 
-https://docs.tigergraph.com/gsql-ref/current/intro/
+[https://docs.tigergraph.com/gsql-ref/current/intro/](https://docs.tigergraph.com/gsql-ref/current/intro/)
 
 [Go back to top](#top)
