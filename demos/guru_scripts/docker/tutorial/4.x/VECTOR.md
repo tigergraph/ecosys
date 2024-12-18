@@ -30,7 +30,14 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 
 > **_Note:_** For vector feature preview, please pull `tigergraph/tigergraph:4.2.0-preview` docker images instead. For example:
 > ```
-> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
+> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph tigergraph/tigergraph:4.2.0-preview
+> ```
+> Please remember to apply your TigerGraph license key to the container:
+> ```
+> docker exec -it tigergraph
+> gadmin license set <license_key>
+> gadmin config apply -y
+> gadmin start all
 > ```
 
 [Go back to top](#top)
