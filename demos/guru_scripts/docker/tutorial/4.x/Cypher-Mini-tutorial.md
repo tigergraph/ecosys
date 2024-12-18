@@ -6,9 +6,9 @@ This OpenCypher tutorial contains
 - [Setup Environment](#setup-environment)
 - [Setup Schema](#setup-schema)
 - [Load Data](#load-data)
-  - [Load Sample Data from S3 Bucket](#load-sample-data-from-s3-bucket)
-  - [Load from Local Files](#load-from-local-files)
-- [Cypher Syntax Overview](#cypher-syntax-overview)
+  - [Load Sample Data from S3 Bucket](#load-sample-data-from-our-publicly-accessible-s3-bucket)
+  - [Load from Local Files](#load-from-local-file-in-your-container)
+- [Cypher Syntax Overview](#opencypher-syntax-overview)
   - [Pattern Matching](#pattern-matching)
     - [MATCH Clause](#match-clause)
     - [OPTIONAL MATCH Clause](#optional-match-clause)
@@ -322,14 +322,14 @@ CREATE OR REPLACE OPENCYPHER QUERY q(){
 -   **Second `WHERE` clause**:  
     Filters the intermediate results produced by the `WITH` clause, applying additional conditions before the final results are returned.
 
--   **Conditions**:  
+- **Conditions**:    
     In the `WHERE` clause, you can use:
 
-  -   **Comparison operators**: `=`, `>`, `<`, `>=`, `<=`, `<>`
-  -   **String matching**: `STARTS WITH`, `ENDS WITH`
-  -   **Logical operators**: `AND`, `OR`, `NOT`
-  -   **NULL checks**: `IS NULL`, `IS NOT NULL`
-  -   **List membership**: `IN` to check if a value exists within a list.
+    - **Comparison operators**: `=`, `>`, `<`, `>=`, `<=`, `<>`
+    - **String matching**: `STARTS WITH`, `ENDS WITH`
+    - **Logical operators**: `AND`, `OR`, `NOT`
+    - **NULL checks**: `IS NULL`, `IS NOT NULL`
+    - **List membership**: `IN` to check if a value exists within a list.
 
 #### Example 1: After `MATCH` or `OPTIONAL MATCH`
 
