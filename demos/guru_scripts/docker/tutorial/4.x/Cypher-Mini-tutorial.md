@@ -102,9 +102,9 @@ CREATE OR REPLACE OPENCYPHER QUERY matchExample(STRING acctName="Jenny"){
 ```
 
 #### Key Points:
-- `MATCH` clause: finds vertices and edges that match the given pattern in the graph
+- `MATCH` clause: finds a pattern specified by ASCII art, where alternating node() and edge -[]-> pattern. E.g., a 2-hop pattern ()-[]->()-[]->(). 
 - Specify edges with directions: `->`, `<-`, or `-`.
-- `Account {name: $acctName}` filters the source `Account` vertex based on the name attribute.
+- Use JSON format to specify node or edge filters. E.g.,  `{name: $acctName}` filters the source `Account` vertex whose name attribute equals the value $acctName. 
 
 ### Multiple MATCH Clauses and Associations
 
