@@ -34,7 +34,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 > ```
 > Please remember to apply your TigerGraph license key to the container:
 > ```
-> docker exec -it tigergraph
+> docker exec -it tigergraph /bin/bash
 > gadmin license set <license_key>
 > gadmin config apply -y
 > gadmin start all
