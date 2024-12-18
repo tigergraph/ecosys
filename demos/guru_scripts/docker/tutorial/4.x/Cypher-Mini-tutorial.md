@@ -101,64 +101,60 @@ CREATE OR REPLACE OPENCYPHER QUERY matchExample(STRING acctName="Jenny"){
 }
 ```
 
-#### Key Points:
-- `MATCH` clause: finds a pattern specified by ASCII art, where alternating node() and edge -[]-> pattern. E.g., a 2-hop pattern ()-[]->()-[]->(). 
+#### Explanation:
+- `MATCH` clause: finds a pattern specified by ASCII art, where alternating node`()` and edge `-[]->` pattern. E.g., a 2-hop pattern `()-[]->()-[]->()`. 
 - Specify edges with directions: `->`, `<-`, or `-`.
 - Use JSON format to specify node or edge filters. E.g.,  `{name: $acctName}` filters the source `Account` vertex whose name attribute equals the value $acctName. 
 
 ### Multiple MATCH Clauses and Associations
 
-#### Using Common Aliases to Link Patterns
-
 In some queries, multiple `MATCH` clauses are used to match different parts of the graph, and edges between them are established using common aliases. The result is a graph traversal that connects different parts based on shared elements.
 
-### Example 1
+#### Example 1: Using Shared Aliases(variables) to Link Patterns
 
 ```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample01(){
-  MATCH (s:Account {name: "Paul"})-[:transfer]->(mid)
-  MATCH (mid)-[:transfer]->(t)
+  MATCH (s:Account {name: "Paul"})-[e1:transfer]->(mid)
+  MATCH (mid)-[e2:transfer]->(t)
   RETURN t
 }
 ```
 
-### Example 1: Data Tables
+#### Data Tables for Example 1
 
-#### Step 1: First MATCH Result
+**Step 1: First MATCH Result**
 
 The first `MATCH` filters the `Account` node with `name = "Paul"` and the `transfer` edges to intermediate `mid`.
 
-| **s (Source Account)** | **mid (Intermediate Account)** |
-|------------------------|--------------------------------|
-| Paul                   | Steven                         |
-| Paul                   | Jenny                          |
+| **s (Source Account)** | **e1(transfer)**            | **mid (Intermediate Account)** |
+|------------------------|-----------------------------|--------------------------------|
+| s -> Paul              | transfer1 (Paul -> Steven)  | mid -> Steven                  |
+| s -> Paul              | transfer2 (Paul -> Jenny)   | mid -> Jenny                   |
 
-#### Step 2: Second MATCH Result
+**Step 2: Second MATCH Result**
 
 The second `MATCH` clause uses the common alias `mid` to find the resulting accounts (`r`) connected by `transfer` edges.
 
-| **mid (Intermediate Account)** | **r (Resulting Account)** |
-|--------------------------------|---------------------------|
-| Steven                         | Jenny                     |
-| Jenny                          | Scott                     |
+| **mid (Intermediate Account)** | **e2(transfer)**            | **r (Resulting Account)** |
+|--------------------------------|-----------------------------|---------------------------|
+| mid -> Steven                  | transfer3 (Steven -> Jenny) | r -> Jenny                |
+| mid -> Jenny                   | transfer4 (Jenny -> Scott)  | r -> Scott                |
 
-#### Final Result
+**Final Result**
 
-The final result returns all `r` (resulting accounts) that are connected to the intermediate accounts (`mid`).
+The final result returns all variable(`r`) that are connected to the intermediate accounts (`mid`).
 
 | **r (Resulting Account)** |
 |---------------------------|
-| Jenny                     |
-| Scott                     |
+| r -> Jenny                |
+| r -> Scott                |
 
 ---
 
-#### Using WHERE to Explicitly Connect Patterns
+#### Example 2: Using WHERE to Explicitly Connect Patterns
 
 An alternative to using common aliases is to connect patterns using the WHERE clause. This method can provide more flexibility, especially when the relationship between patterns is more complex or requires specific conditions.
-
-### Example 2
 
 ```graphql
 USE GRAPH financialGraph
@@ -170,9 +166,9 @@ CREATE OR REPLACE OPENCYPHER QUERY multipleMatchExample02(){
 }
 ```
 
-### Example 2: Data Tables
+#### Data Tables for Example 2
 
-#### Step 1: First MATCH Result (table T)
+**Step 1: First MATCH Result (table T)**
 
 After the first `MATCH`, you get a table (`T`) containing `Account` vertices with the name "Paul" and their corresponding transfer edges to intermediate vertices (`mid`).
 
@@ -182,7 +178,7 @@ After the first `MATCH`, you get a table (`T`) containing `Account` vertices wit
 | Paul    | Jenny     |
 
 
-#### Step 2: Second MATCH Result (table T_1)
+**Step 2: Second MATCH Result (table T_1)**
 
 The second `MATCH` fetches all `Account` vertices (ss) and their transfer edges to another set of `Account` vertices (`t`), producing the table (`T_1`).
 
@@ -197,14 +193,21 @@ The second `MATCH` fetches all `Account` vertices (ss) and their transfer edges 
 | Scott      | Ed        |
 
 
-#### Final Result (table T_2)
+**Final Result (table T_2)**
 
-After applying the `WHERE ss = mid`, a `join` is performed between the two tables (`T` and `T_1`) where the `mid` in `T` matches the `ss` in `T_1`. The result is a final table (`T_2`):
+After applying the `WHERE ss = mid`, a `join` is performed between the two tables (`T` and `T_1`) where the `mid` in `T` matches the `ss` in `T_1`. The result of this join is written into the final table `T_2`:
 
-| **T.mid** | **T_1.ss** | **T_1.t** |
+| **T.mid** | **T_1.ss** | **T_1.t** | 
 |-----------|------------|-----------|
 | Steven    | Steven     | Jenny     |
 | Jenny     | Jenny      | Scott     |
+
+       ↓
+
+| **T_2.t**  | 
+|------------|
+| Jenny      |
+| Scott      | 
 
 
 ---
@@ -218,14 +221,24 @@ After applying the `WHERE ss = mid`, a `join` is performed between the two table
 
 ```graphql
 CREATE OR REPLACE OPENCYPHER QUERY q(){
-  MATCH (pattern)
-  OPTIONAL MATCH (pattern)
-  WHERE <condition>
-  RETURN <result>
+  MATCH (srcAccount:Account {name: $acctName})
+  OPTIONAL MATCH (srcAccount)- [e:transfer]-> (tgtAccount:Account)
+  WHERE srcAccount.isBlocked
+  RETURN srcAccount, tgtAccount
 }
 ```
 
-#### Query Example:
+#### Explanation:
+-   **`MATCH` Clause**
+  -   Match nodes with a specific label. E.g.  `(srcAccount:Account)`
+  -   Uses JSON format to filter nodes or edges. E.g.  `{name: $acctName}` filters the `Account` node where the `name` attribute equals `$acctName`.
+-   **`OPTIONAL MATCH` Clause**
+  -   Find patterns specified by ASCII art, where alternating `node()` and `edge -[]->` . For example: a 1-hop pattern `()-[]->()`.
+  -   Uses `WHERE` clauses to filter patterns. For example: `WHERE srcAccount.isBlocked` filters patterns where `srcAccount` has the `isBlocked` attribute set to `true`.
+
+#### Example: Multiple OPTIONAL MATCH for 1-hop or 2-hop transfer accounts
+
+This example shows how to use multiple `OPTIONAL MATCH` clauses to capture 1-hop or 2-hop transfers between accounts. The first `OPTIONAL MATCH` retrieves transfers to an intermediate account, and the second retrieves transfers to a final account. Unmatched transfers will result in `null` values.
 
 ```graphql
 USE GRAPH financialGraph
@@ -238,16 +251,10 @@ CREATE OR REPLACE OPENCYPHER QUERY multipleOptionalMatchExample(){
 }
 ```
 
-#### Explanation:
-- The first `OPTIONAL MATCH` finds transfers from the source account to an intermediate account (`midAccount`).
-- The second `OPTIONAL MATCH` finds transfers from the intermediate account to a final account (`finalAccount`).
-- If either pattern is not found, the unmatched elements (`e1`, `e2`, `midAccount`, `finalAccount`) will be `null`.
+#### Data Tables for Example
 
----
+**Step 1: Base MATCH Result**
 
-### Example: Data Tables
-
-#### Step 1: Base MATCH Result
 The `MATCH` clause retrieves `Account` vertices based on the condition `isBlocked` (e.g., accounts 'Jenny' and 'Scott').
 
 | **srcAccount** |
@@ -255,15 +262,17 @@ The `MATCH` clause retrieves `Account` vertices based on the condition `isBlocke
 | Jenny          |
  | Scott          |
 
-#### Step 2: First OPTIONAL MATCH Result
+**Step 2: First OPTIONAL MATCH Result**
+
 The first `OPTIONAL MATCH` retrieves transfers from 'Jenny' and 'Scott' to intermediate accounts (`midAccount`). This is the left table `srcAccount` joined with the right table `midAccount` based on the `transfer` edge. If no `transfer` exists, `e1` and `midAccount` will be `null`.
 
-| **srcAccount** | **e1 (First Transfer)** | **midAccount** |
-|----------------|-------------------------|----------------|
-| Jenny          | Transfer1               | Steven         |
-| Scott          | NULL                    | NULL           |
+| **srcAccount** | **e1 (First Transfer)**  | **midAccount** |
+|----------------|--------------------------|----------------|
+| Jenny          | Transfer1(Jenny->Steven) | Steven         |
+| Scott          | NULL                     | NULL           |
 
-#### Step 3: Second OPTIONAL MATCH Result
+**Step 3: Second OPTIONAL MATCH Result**
+
 The second `OPTIONAL MATCH` retrieves transfers from the `midAccount` to the `finalAccount`. Here, the `midAccount` (from Step 2) is evaluated to find related final accounts (`finalAccount`). If no `transfer` exists, `e2` and `finalAccount` will be `null`.
 
 | **midAccount** | **e2 (Second Transfer)** | **finalAccount** |
@@ -271,13 +280,14 @@ The second `OPTIONAL MATCH` retrieves transfers from the `midAccount` to the `fi
 | Steven         | NULL                     | NULL             |
 | NULL           | NULL                     | NULL             |
 
-#### Final Result
+**Final Result**
+
 Combining the results, the query returns:
 
-| **srcAccount** | **e1 (First Transfer)** | **midAccount** | **e2 (Second Transfer)** | **finalAccount** |
-|----------------|-------------------------|----------------|--------------------------|------------------|
-| Jenny          | Transfer1               | Steven         | NULL                     | NULL             |
-| Scott          | NULL                    | NULL           | NULL                     | NULL             |
+| **srcAccount** | **e1 (First Transfer)**   | **midAccount** | **e2 (Second Transfer)** | **finalAccount** |
+|----------------|---------------------------|----------------|--------------------------|------------------|
+| Jenny          | Transfer1(Jenny->Steven)  | Steven         | NULL                     | NULL             |
+| Scott          | NULL                      | NULL           | NULL                     | NULL             |
 
 ### Summary of OPTIONAL MATCH
 
@@ -297,18 +307,33 @@ The `WHERE` clause in OpenCypher is used to filter results based on specific con
 ```graphql
 CREATE OR REPLACE OPENCYPHER QUERY q(){
   MATCH (pattern)
-  WHERE <condition>
+  WHERE <condition> // First WHERE - applies to MATCH
   WITH <intermediate_result_or_aggregation>
-  WHERE <condition>
+  WHERE <condition> // Second WHERE - applies to WITH
   RETURN <result>
 }
 ```
 
-#### Query Example:
+#### Explanation:
 
-- **After `MATCH` or `OPTIONAL MATCH`**:
-  - When `WHERE` follows a `MATCH` or `OPTIONAL MATCH` clause, it filters the pattern results to include only those that satisfy the conditions specified in the `WHERE` clause.
-  - Example 1: Restrict transfers to those where the source account is blocked and the transfer date is after a given date.
+-   **First `WHERE` clause**:  
+    Filters the nodes and relationships matched by the `MATCH` clause, narrowing down the results based on the specified condition before further processing.
+
+-   **Second `WHERE` clause**:  
+    Filters the intermediate results produced by the `WITH` clause, applying additional conditions before the final results are returned.
+
+-   **Conditions**:  
+    In the `WHERE` clause, you can use:
+
+  -   **Comparison operators**: `=`, `>`, `<`, `>=`, `<=`, `<>`
+  -   **String matching**: `STARTS WITH`, `ENDS WITH`
+  -   **Logical operators**: `AND`, `OR`, `NOT`
+  -   **NULL checks**: `IS NULL`, `IS NOT NULL`
+  -   **List membership**: `IN` to check if a value exists within a list.
+
+#### Example 1: After `MATCH` or `OPTIONAL MATCH`
+
+When `WHERE` follows a `MATCH` or `OPTIONAL MATCH` clause, it filters the pattern results to include only those that satisfy the conditions specified in the `WHERE` clause.
 
 ```graphql
 USE GRAPH financialGraph
@@ -319,10 +344,18 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample1(datetime date=to_datetime("2024
   RETURN src AS srcAccount, e AS transferDetails, tgt AS tgtAccount
 }
 ```
-**After `WITH` clause**:
-  - `WHERE` clause can be placed after a `WITH` clause to filter intermediate results. This allows you to apply conditions based on aggregated or calculated data.
-  - Example 2: Filter accounts with more than one transfer.
 
+#### Explanation for Example 1:
+
+The `WHERE` clause applies two conditions after the `MATCH`:
+
+-   `src.isBlocked`: Filters for `src` nodes with `isBlocked` set to `true`.
+-   `e.date > $date`: Filters `transfer` relationships where the `date` attribute is greater than the provided `$date`.
+
+#### Example 2: After `WITH` clause
+
+The `WHERE` clause can be placed after a `WITH` clause to filter intermediate results. This allows you to apply conditions based on aggregated or calculated data.
+  
 ```graphql
 USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
@@ -334,13 +367,12 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
   RETURN src AS srcAccount, transferCnt
 }
 ```
+#### Explanation for Example 2:
 
-#### Key Points:
-- Supports logical operators like `AND`, `OR`, `NOT`.
-- Supports string matching, such as `STARTS WITH`, `ENDS WITH`.
-- Support `null` checks using `IS NULL` or `IS NOT NULL`.
-- Allows filtering by attributes.
-- Supports list filtering using `IN` to check if a value exists within a list.
+The `WHERE` clause filters intermediate results after the `WITH` clause:
+
+-   The first `WHERE` filters `src` nodes based on the `isBlocked` attribute.
+-   The second `WHERE` filters based on the aggregated transfer count, only including accounts with more than 1 transfer.
 
 ---
 [Go back to top](#top)
@@ -351,21 +383,44 @@ CREATE OR REPLACE OPENCYPHER QUERY whereExample2(){
 
 The `WITH` clause in OpenCypher is used to divide a query into logical segments, allowing intermediate results to be processed and passed to subsequent parts of the query. It is especially useful for performing transformations, aggregations, or applying conditions step by step.
 
+**Key Uses of `WITH`**
+  - Performing aggregations like `COUNT()`, `SUM()`, `MAX()`, etc.
+  - Filtering intermediate results with conditions.
+  - Breaking down a complex query into manageable, logical segments.
+  - Using `ORDER BY` and `LIMIT` to control the order and number of results before passing them on.
+  - Performing calculations or conditional transformations with expressions.
+
 #### Syntax:
 
 ```graphsql
 CREATE OR REPLACE OPENCYPHER QUERY q() {
-  MATCH (pattern)
-  WITH < intermediate result> 
+  MATCH (pattern1)
+  WITH < intermediate result1> 
   WHERE <condition>
-  WITH < intermediate result>
+  MATCH (pattern2)
+  WITH < intermediate result2>
+  WITH < intermediate result3>
   RETURN <result>
 }
 ```
 
+#### Explanation：
+-   **First part: `MATCH` and `WITH`**  
+    The first `MATCH` clause is used to find data in the graph, and the `WITH` clause passes intermediate results (such as nodes, relationships, or computed values) to the next part of the query.
+
+-   **Conditional Filtering: `WHERE`**  
+    The `WHERE` clause filters the intermediate results based on specified conditions before proceeding further.
+
+-   **Subsequent `MATCH` and `WITH` Clauses**  
+    Additional `MATCH` clauses continue to match more data, and the new `WITH` clauses pass additional intermediate results, enabling multiple aggregations or calculations.
+
+-   **Final Output: `RETURN`**  
+    The `RETURN` clause outputs the results of the query, including all necessary intermediate calculations and filtered data.
+  
+
 #### Query Example:
 
-**Example 1: Conditional Logic in `WITH`**
+##### Example 1: Conditional Logic in `WITH`
 
 ```graphql
 USE GRAPH financialGraph
@@ -382,12 +437,12 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample1(){
   RETURN src AS srcAccount, isTgt
 }
 ```
-**Explanation**
+##### Explanation for Example 1
 
-- **First Query Segment**:  The `WITH` clause aggregates transfers using `COUNT(e)` and stores the result as `transferCnt` while passing the src forward.
-- **Second Query Segment**:  A second WITH clause applies a `CASE expression` to evaluate whether `transferCnt` exceeds 3.
+- **First `WITH` clause**:  The `WITH` clause aggregates transfers using `COUNT(e)` and stores the result as `transferCnt` while passing the `src` forward.
+- **Second `WITH` clause**:  A second `WITH` clause applies a `CASE` expression to evaluate whether `transferCnt` exceeds `3`.
 
-**Example 2: Filtering and Sorting with `WITH`**
+##### Example 2: Filtering and Sorting with `WITH`
 
 ```graphql
 USE GRAPH financialGraph
@@ -400,16 +455,9 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample2(){
   RETURN src AS sourceAccount, transferCnt
 }
 ```
-**Explanation**
-- This query aggregates the transfer count for each `src` account, filters the accounts with more than one transfer, orders them by the transfer count in descending order, and limits the result to the top 5 accounts.
+##### Explanation for Example 2
+This query aggregates the transfer count for each `src` account, filters the accounts with more than one transfer, orders them by the transfer count in descending order, and limits the result to the top `5` accounts.
 
-#### Key Points:
-- The `WITH` clause is useful for:
-  - Performing aggregations like `COUNT()`, `SUM()`, `AVG()`, etc. 
-  - Applying conditions and filtering intermediate results.
-  - Breaking down a complex query into manageable, logical segments.
-  - Using `ORDER BY` and `LIMIT` to control the order and number of results before passing them on.
-  - Performing calculations or conditional transformations with expressions.
 
 ---
 [Go back to top](#top)
@@ -422,9 +470,9 @@ CREATE OR REPLACE OPENCYPHER QUERY withExample2(){
 `SKIP` defines from which record to start including the records in the output.
 `LIMIT` constrains the number of records in the output.
 
-**Example Usage**:
+#### Example Usage
 
-**Example 1**: Using `ORDER BY`, `SKIP`, `LIMIT` After `WITH`
+##### Example 1: Using `ORDER BY`, `SKIP`, `LIMIT` After `WITH`
 
 ```graphql  
 USE GRAPH financialGraph  
@@ -439,11 +487,15 @@ CREATE OR REPLACE OPENCYPHER QUERY OrderSkipLimitExample01(){
 } 
 ```  
 
-**Explanation**:  
-In this example, the query first uses `MATCH` and `WITH` to gather `srcAccountName` and `tgt2Cnt`. Then, it uses `ORDER BY` to sort the results by `tgt2Cnt` in descending order and `srcAccountName` in descending order. Afterward, `SKIP 1` skips the first result from the sorted list, and `LIMIT 3` restricts the output to the next 3 records. The final result returns `srcAccountName` and `tgt2Cnt`.
+##### Explanation for Example 1:
 
+-   In this query, the sorting (`ORDER BY`), skipping (`SKIP`), and limiting (`LIMIT`) operations occur **after the `WITH` clause**, which means they are applied to the intermediate results.
+-   The query first aggregates data by counting `tgt2` for each `srcAccountName` using `WITH`.
+-   Then, `ORDER BY` sorts the results by `tgt2Cnt` (descending) and `srcAccountName` (descending).
+-   `SKIP 1` skips the first record from the sorted intermediate result set.
+-   `LIMIT 3` restricts the output to the next 3 records.
 
-**Example 2** :  Using `ORDER BY`, `SKIP`, `LIMIT` After `RETURN`
+##### Example 2:  Using `ORDER BY`, `SKIP`, `LIMIT` After `RETURN`
 
 ```graphql  
 USE GRAPH financialGraph  
@@ -458,20 +510,10 @@ CREATE OR REPLACE OPENCYPHER QUERY OrderSkipLimitExample02(){
 } 
 ```  
 
-**Explanation**:  
-This example is similar to the first one, but `ORDER BY`, `SKIP`, and `LIMIT` are applied after `RETURN`. This means the sorting, skipping, and limiting operations are performed on the final result set. The query first aggregates data using `MATCH` and `WITH`, then sorts the results by `tgt2Cnt` and `srcAccountName`, skips the first record, and limits the output to the next 3 results. Finally, `srcAccountName` and `tgt2Cnt` are returned.
+##### Explanation for Example 2:
 
-#### Key Points:
-
-- **ORDER BY**:
-  - Default sorting is ascending (`ASC`), use `DESC` for descending order.
-  - Can sort by multiple fields.
-- **SKIP**:
-  - Skips the first `N` records
-  - Useful for pagination.
-- **LIMIT**:
-  - Restricts the number of records returned.
-  - Often used with `SKIP` for pagination.
+- In this example, the sorting (`ORDER BY`), skipping (`SKIP`), and limiting (`LIMIT`) operations are applied **after the `RETURN` clause**, meaning they act on the final result set.
+- The final result is the same as Example 1, but the order of operations is different.
 
 ---  
 [Go back to top](#top)
@@ -480,7 +522,7 @@ This example is similar to the first one, but `ORDER BY`, `SKIP`, and `LIMIT` ar
 
 ### UNWIND Clause
 
-The `UNWIND` clause is used to transform a list into individual rows, allowing you to process each item in the list as a separate element in the query result.
+The `UNWIND` clause takes a list and expands it into individual rows so that the subsequent parts of the query (the “following statement”) can process each element separately. Without the actual statement or more context, it’s difficult to provide a more specific relationship.
 
 #### Syntax:
 
@@ -488,9 +530,11 @@ The `UNWIND` clause is used to transform a list into individual rows, allowing y
 UNWIND <list_expression> AS <variable>
 ```
 
-#### Query Example:
+#### Explanation:
+- `UNWIND` is used to expand a list or array into individual rows.
+- In each expanded row, the `<variable>` will hold each element of the list, allowing you to perform further operations on it in the subsequent parts of the query.
 
-**Example 1: Basic `UNWIND` Usage**
+#### Example 1: Basic `UNWIND` Usage
 
 ```graphql
 USE GRAPH financialGraph
@@ -502,13 +546,13 @@ CREATE OR REPLACE OPENCYPHER QUERY unwindExample01(){
 }
 ```
 
-**Explanation**:
+#### Explanation for Example 1:
 
 -   The `UNWIND` clause expands the list `[1, 2, 3]` into individual values (`x`).
 -   The `WITH` clause calculates the result (`res`) by multiplying `e.amount` by each value of `x`.
 -   Finally, the `RETURN` clause outputs the `srcAccount` and the calculated `res` for each combination of `src` and the values of `x`.
 
-**Example 2: Combining `UNWIND` with `COLLECT()`**
+#### Example 2: Combining `UNWIND` with `COLLECT()`
 
 ```graphql
 USE GRAPH financialGraph
@@ -521,15 +565,11 @@ CREATE OR REPLACE OPENCYPHER QUERY unwindExample02(){
 }
 ```
 
-**Explanation**:
+#### Explanation for Example 2:
 - The `COLLECT(e.amount)` gathers all transfer amounts into a list for each `src` vertex.
-- The `UNWIND` clause expands the amounts list into individual rows (`amount`).
-- The query calculates `doubleAmount` by multiplying each amount by 2.
+- The `UNWIND` clause expands the `amounts` list into individual rows (`amount`).
+- The query calculates `doubleAmount` by multiplying each `amount` by `2`.
 - The `COLLECT(doubleAmount)` groups the doubled amounts back into a list (`doubledAmounts`).
-
-#### Key Points:
-- Often used to process arrays from query results.
-- Combine with `COLLECT()` to group rows back into lists.
 
 ---
 [Go back to top](#top)
@@ -541,7 +581,7 @@ The `UNION` and `UNION ALL` clauses in OpenCypher are used to combine results fr
 
 The `UNION` clause combines the results of multiple queries and removes any duplicate rows.
 
-**Syntax:**
+##### Syntax:
 
 ```graphql
 USE GRAPH financialGraph
@@ -555,7 +595,7 @@ CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
 }
 ```
 
-**Key Points:**
+##### Explanation:
 - Automatically removes duplicates between result sets.
 - All queries must return the same number of columns with the same or compatible data types.
 - Slower than `UNION ALL` due to the deduplication process.
@@ -564,7 +604,7 @@ CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
 
 The UNION clause combines the results of multiple queries and removes any duplicate rows.
 
-**Syntax:**
+##### Syntax:
 
 ```graphql
 USE GRAPH financialGraph
@@ -578,9 +618,9 @@ CREATE OR REPLACE OPENCYPHER QUERY unionExample(){
 }
 ```
 
-**Key Points:**
-- Does not remove duplicates, including all rows from the combined queries.
-- All queries must return the same number of columns with the same or compatible data types.
+##### Explanation:
+- Includes all rows, even duplicates, from the combined queries.
+- All queries involved must return the same number of columns with compatible data types.
 - Faster than `UNION` since no deduplication is performed.
 
 ---
@@ -602,7 +642,13 @@ CASE
   ELSE <default_result>
 END
 ```
-#### Query Example:
+#### Explanation:
+- `CASE`: Starts the conditional logic block.
+- `WHEN <condition> THEN <result>`:  Evaluates the condition, and if it's `true`, returns the corresponding result.
+- `ELSE <default_result>`: Returns the default result if none of the `WHEN` conditions are satisfied.
+- `END`: Marks the end of the `CASE` expression.
+
+#### Example Usage:
 
 ```graphql
 USE GRAPH financialGraph
@@ -620,16 +666,12 @@ CREATE OR REPLACE OPENCYPHER QUERY caseExprExample(){
 }
 ```
 
-#### Example Explanation:
+#### Explanation:
 
--   The `MATCH` clause identifies the `Account` node with the name "Steven" and finds all `transfer` edges from this vertex to others.
+-   The `MATCH` clause finds a pattern specified by ASCII art, where alternating node `()` and edge `-[]->` patterns represent the structure of the query. For example, this query finds a 1-hop pattern: `()-[]->()`.
 -   The `CASE` expression evaluates whether `s.isBlocked` is true. If it is, the result is `0`, otherwise, the result is `1`.
--   The `WITH` clause aggregates the conditional results, storing the result of the `CASE` expression as `tgt`.
--   The `RETURN` clause outputs the `srcAccount` and the total count of `tgt`.
-
-#### Key Points:
-- Supports `WHEN ... THEN ...` for conditionally assigning values and ELSE for default cases.
-- Helps dynamically adjust query results based on certain conditions, making it useful for various data transformations and aggregations.
+-   The `WITH` clause calculates and aggregates the `CASE` expression result into the variable `tgt`. It computes whether each transfer should count as `1` or `0` based on the blocked status of the source account.
+-   The `RETURN` clause returns the source account (`srcAccount`) and the total count of valid transfers (`tgtCnt`), which is the sum of the `tgt` values for each source account.
 
 ---
 [Go back to top](#top)
@@ -642,14 +684,21 @@ Aggregation functions in OpenCypher allow you to perform calculations over a set
 
 #### Common Aggregation Functions:
 
-- `COUNT()`: Counts the number of items in a given set.
-- `SUM()`: Computes the sum of numeric values.
+- `COUNT()`: Counts the number of items in a given set. e.g. `COUNT(*)`, `COUNT(1)`, `COUNT(DISTINCT columnName)`.
+- `SUM()`: Computes the sum of numeric values. It is often used to calculate totals, such as the total amount transferred.
 - `AVG()`: Calculates the average of numeric values.
-- `MIN()`: Finds the smallest value in a set.
-- `MAX()`: Finds the largest value in a set.
-- `COLLECT()`: Groups values into a list.
+- `MIN()`: Finds the smallest value in a set. Often used to determine the minimum amount or value.
+- `MAX()`: Finds the largest value in a set. This is useful for identifying the highest value.
+- `COLLECT()`: Aggregates values into a list. Can be used to collect nodes or relationships into a list for further processing.
 - `STDEV()`: Computes the standard deviation of values.
 - `STDEVP()`: Computes the population standard deviation of values.
+
+#### Explanation:
+
+-   Aggregation functions are used to summarize or analyze data, such as counting, summing, or averaging values.
+-   These functions are typically used within the `WITH` clause to calculate aggregate values before passing them along to subsequent parts of the query.
+-   Functions like `COLLECT()` can be used to group values into lists, while functions like `SUM()` and `AVG()` perform mathematical calculations on grouped data.
+-   Aggregation functions can be used together, allowing for more complex data analysis within a single query.
 
 #### Example Usage:
 
@@ -667,18 +716,17 @@ CREATE OR REPLACE OPENCYPHER QUERY aggregateExample(){
 
 #### Example Explanation:
 
-In this example:
-
 -   The `MATCH` clause finds all `transfer` edges between `src` and `tgt` nodes.
 -   The `WITH` clause uses several aggregation functions:
   -   `COUNT(DISTINCT tgt)` counts the number of distinct `transfer` vertices.
   -   `SUM(e.amount)` calculates the total amount transferred for each source account.
   -   `STDEV(e.amount)` calculates the standard deviation of the amounts transferred for each source account.
+-   The `RETURN` clause outputs the aggregated data.
 
-#### Key Points:
+### Other OpenCypher Functions
 
--   Aggregation functions are used to summarize or analyze data, such as counting, summing, or averaging values.
--   They work within the `WITH` clause to aggregate data before passing it along to further parts of the query.
--   Functions like `COLLECT()` can be used to group values into lists, while functions like `SUM()` and `AVG()` perform mathematical calculations on grouped data.
+In addition to aggregation functions, OpenCypher provides a wide range of other functions that can be used for various purposes, including string manipulation, mathematical operations, and more.
+
+For a comprehensive list of functions and their descriptions, you can refer to the [link description](XXX).
 
 [Go back to top](#top)
