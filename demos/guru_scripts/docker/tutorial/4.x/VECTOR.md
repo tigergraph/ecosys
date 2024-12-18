@@ -660,11 +660,11 @@ result = conn.gsql("""
         name STRING PRIMARY KEY, 
         isBlocked BOOL
     )
-    CREATE GRAPH financialGraph(*)
     CREATE GLOBAL SCHEMA_CHANGE JOB fin_add_vector {
         ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb1(dimension=3);
     }
     RUN GLOBAL SCHEMA_CHANGE JOB fin_add_vector
+    CREATE GRAPH financialGraph(*)
 """)
 print(result)
 ```
