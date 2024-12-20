@@ -19,3 +19,70 @@ This GSQL tutorial contains
   - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
     
+# Setup Environment 
+
+Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+
+> **_Note:_** For vector feature preview, please pull `tigergraph/tigergraph:4.2.0-preview` docker images instead. For example:
+> ```
+> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
+> ```
+> Please remember to apply your TigerGraph license key to the container:
+> ```
+> docker exec -it tigergraph /bin/bash
+> gadmin license set <license_key>
+> gadmin config apply -y
+> gadmin start all
+> ```
+
+[Go back to top](#top)
+
+# Setup Schema 
+Copy [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) to your container. 
+Next, run the following in your container's bash command line. 
+```
+gsql ddl.gsql
+```
+
+[Go back to top](#top)
+
+# Load Data 
+
+You can choose one of the following methods. 
+
+- Load sample data from our publicly accessible s3 bucket 
+  
+  Copy [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) to your container. 
+  Next, run the following in your container's bash command line. 
+  ```
+  gsql load.gsql
+  ```
+  or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load.gsql), and paste it into the GSQL shell editor to run.
+  
+- Load from local file in your container
+  - Copy the following data files to your container.
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
+    - [account_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account_emb.csv)
+    - [phone_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone_emb.csv)
+
+  - Copy [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+    ```
+    gsql load2.gsql
+    ``` 
+    or in GSQL Shell editor, copy the content of [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql), and paste in GSQL shell editor to run.
+    
+[Go back to top](#top)
+
+# Install GDS functions
+GDS functions to be used in the queries need to be installed in advance
+
+```python
+import package gds
+install function gds.**
+show package gds.vector
+```
