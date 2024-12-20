@@ -105,3 +105,18 @@ The result will be assigned to a vertex set varialbe, which can be used by subse
 |`optionalParam` | A map of optional params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and a global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
 [Go back to top](#top)
+## GDS Functions Summary
+In order to support vector type computation, GSQL provides a list of built-in vector functions. 
+
+| Function | Parameter | Description |
+|------------|---------|--------------|
+|gds.vector.distance |`list<double> list1, list<double> list2, string metric` |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric.
+|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |Calculates the cosine distance between two vectors represented as lists of doubles.
+|gds.vector.ip_distance |`list<double> list1, list<double> list2` |Calculates the inner product (dot product) between two vectors represented as lists of double values.
+|gds.vector.l2_distance |`list<double> list1, list<double> list2` |Calculates the Euclidean distance between two vectors represented as lists of double values.
+|gds.vector.norm |`list<double> list1, string metric` |Computes the norm (magnitude) of a vector based on a specified metric.
+|gds.vector.dimension_count |`list<double> list1` |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
+|gds.vector.elements_sum |`list<double> list1` |Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
+
+[Go back to top](#top)
