@@ -99,7 +99,7 @@ The result will be assigned to a vertex set varialbe, which can be used by subse
 ### Parameter
 |Parameter	|Description
 |-------|--------
-|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**. E.g., `{Account.eb1, Phone.eb2}`.
+|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**. E.g., `{Account.eb1, Phone.eb1}`.
 |`QueryEmbedding`	|The query embedding constant to search the top K most similar vectors.
 |`K`	|The top k cutoff--where K most similar vectors will be returned.
 |`optionalParam` | A map of optional params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and a global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
