@@ -1,21 +1,16 @@
-#enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1a (VERTEX<Account> name, SET<VERTEX<Account>> slist, LIST<float> query_vector) SYNTAX v3 {
+CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
 
-  v = {name};
-
-  print v WITH VECTOR;
-
-  v = {slist};
-
-  v = vectorSearch({Account.emb1}, query_vector, 1, {candidate_set: v});
+  v = vectorSearch({Account.emb1, Phone.emb1}, query_vector, 8, { distance_map: @@distances});
 
   print v WITH VECTOR;
+  print @@distances;
 }
 
 #compile and install the query as a stored procedure
 install query -single q1a
 
 #run the query
-run query q1a("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])

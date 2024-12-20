@@ -1,0 +1,16 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q2 (LIST<float> query_vector, double threshold) SYNTAX v3 {
+
+  v = SELECT a
+      FROM (a:Account)
+      WHERE gds.vector.distance(a.emb1, query_vector, "COSINE") < threshold;
+
+  print v WITH VECTOR;
+}
+
+#compile and install the query as a stored procedure
+install query -single q2
+
+#run the query
+run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
