@@ -80,56 +80,56 @@ kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} -n ${NAMESPACE_OF_CLUSTER}
 
 ## New features
 
-- Support customizing and updating TigerGraph configurations via TigerGraph CR or kubectl-tg plugin([TP-4166](https://graphsql.atlassian.net/browse/TP-4166) and [TP-4189](https://graphsql.atlassian.net/browse/TP-4189))
+- Support customizing and updating TigerGraph configurations via TigerGraph CR or kubectl-tg plugin.
 
-- Support pausing and resuming TigerGraph cluster ([TP-4263](https://graphsql.atlassian.net/browse/TP-4263))
+- Support pausing and resuming TigerGraph cluster.
 
-- Support customizing SecurityContext of TigerGraph ([TP-4515](https://graphsql.atlassian.net/browse/TP-4515))
+- Support customizing SecurityContext of TigerGraph.
 
-- Support customizing labels and annotations of TigerGraph Pod ([TP-4309](https://graphsql.atlassian.net/browse/TP-4309))
+- Support customizing labels and annotations of TigerGraph Pod.
 
-- Support Lifecycle hooks for TigerGraph CR: postInitAction ([TP-4308](https://graphsql.atlassian.net/browse/TP-4308))
+- Support Lifecycle hooks for TigerGraph CR: postInitAction.
 
-- Support mounting multiple PVC and PV for pods of TG（[TP-3590](https://graphsql.atlassian.net/browse/TP-3590))
+- Support mounting multiple PVC and PV for pods of TG.
 
-- Support customized volume mounts for TG container([TP-4352](https://graphsql.atlassian.net/browse/TP-4352))
+- Support customized volume mounts for TG container.
 
-- Support configuring additional storage and custom volume mounts of the TG container in kubectl-tg plugin([TP-4363](https://graphsql.atlassian.net/browse/TP-4363))
+- Support configuring additional storage and custom volume mounts of the TG container in kubectl-tg plugin.
 
-- Support customizing ingressClassName of ingress external service([TP-4244](https://graphsql.atlassian.net/browse/TP-4244))
+- Support customizing ingressClassName of ingress external service.
 
-- Support customizing custom volume with a new option --custom-volume in kubectl-tg plugin([TP-4531](https://graphsql.atlassian.net/browse/TP-4531))
+- Support customizing custom volume with a new option --custom-volume in kubectl-tg plugin.
 
-- Supports creating and updating clusters without external services via kubectl-tg([TP-4435](https://graphsql.atlassian.net/browse/TP-4435))
+- Supports creating and updating clusters without external services via kubectl-tg.
 
-- Supports independent modification of replication factor via TigerGraph CR([TP-4443](https://graphsql.atlassian.net/browse/TP-4443)) and kubectl-tg plugin([TP-4448](https://graphsql.atlassian.net/browse/TP-4448))
+- Supports independent modification of replication factor via TigerGraph CR.
 
 ## Improvements
 
-- Improve state transitions of TigerGraph CR ([TP-4211](https://graphsql.atlassian.net/browse/TP-4211))
+- Improve state transitions of TigerGraph CR.
 
-- Remove the redundant configuration of Tigergraph CRD and refactor the status output([TP-3710](https://graphsql.atlassian.net/browse/TP-3710))
+- Remove the redundant configuration of Tigergraph CRD and refactor the status output.
 
-- Removing dynamic pod labels and RESTPP external service([TP-3623](https://graphsql.atlassian.net/browse/TP-3623)); kubectl-tg plugin updated accordingly([TP-3729](https://graphsql.atlassian.net/browse/TP-3729))
+- Removing dynamic pod labels and RESTPP external service.
 
-- Remove field spec.InitTGConfig and place its remaining fields into subfields of spec and Status([TP-4230](https://graphsql.atlassian.net/browse/TP-4230))
+- Remove field spec.InitTGConfig and place its remaining fields into subfields of spec and Status.
 
-- Remove the InitJob field to improve usability([TP-3585](https://graphsql.atlassian.net/browse/TP-3585))
+- Remove the InitJob field to improve usability.
 
-- Refactor and improve the status output of TG CR([TP-3740](https://graphsql.atlassian.net/browse/TP-3740))
+- Refactor and improve the status output of TG CR.
 
-- Improve TigerGraphBackup and TigerGraphRestore CRD([TP-3726](https://graphsql.atlassian.net/browse/TP-3726)))
+- Improve TigerGraphBackup and TigerGraphRestore CRD.
 
-- Removing the pods of scale down automatically after executing shrinking successfully([TP-4245](https://graphsql.atlassian.net/browse/TP-4245))
+- Removing the pods of scale down automatically after executing shrinking successfully.
 
-- Invokes switch_version.sh to switch new version of TG to decouple the DB upgrade business logic([TP-4291](https://graphsql.atlassian.net/browse/TP-4291))
+- Invokes switch_version.sh to switch new version of TG to decouple the DB upgrade business logic.
 
-- Improve the failover process of expansion/shrinking for the new error code of ETCD([TP-4360](https://graphsql.atlassian.net/browse/TP-4360))
+- Improve the failover process of expansion/shrinking for the new error code of ETCD.
 
-- Use `gadmin start all --local` to start local services([TP-4327](https://graphsql.atlassian.net/browse/TP-4327))
+- Use `gadmin start all --local` to start local services.
 
 ## Bugfixes
 
-- Fix the issue of readiness check when the license is expired([TP-4451](https://graphsql.atlassian.net/browse/TP-4451))
+- Fix the issue of readiness check when the license is expired.
 
-- Add retry logic when resetting services and apply new configuration during expansion/shrinking([TP-4588](https://graphsql.atlassian.net/browse/TP-4588) TigerGraph 3.10.0 and above required)
+- Add retry logic when resetting services and apply new configuration during expansion/shrinking.

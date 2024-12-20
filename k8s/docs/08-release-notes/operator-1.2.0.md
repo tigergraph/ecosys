@@ -56,40 +56,40 @@ Refer to the documentation [How to upgrade TigerGraph Kubernetes Operator](../04
 
 ## New features
 
-- Support lifecycle hooks preDeleteAction and prePauseAction for TigerGraph CR [TP-4706](https://graphsql.atlassian.net/browse/TP-4706)
+- Support lifecycle hooks preDeleteAction and prePauseAction for TigerGraph CR.
 
-- Support expanding PVCs of TigerGraph CR automatically [TP-4853](https://graphsql.atlassian.net/browse/TP-4853)
+- Support expanding PVCs of TigerGraph CR automatically.
 
-- Support customizing MaxConcurrentReconciles of controllers in K8s operator [TP-5196](https://graphsql.atlassian.net/browse/TP-5196)
+- Support customizing MaxConcurrentReconciles of controllers in K8s operator.
 
-- Support the creation of services for sidecar containers [TP-4900](https://graphsql.atlassian.net/browse/TP-4900)
+- Support the creation of services for sidecar containers.
 
-- Support configuring sidecar service in kubectl-tg [TP-5067](https://graphsql.atlassian.net/browse/TP-5067)
+- Support configuring sidecar service in kubectl-tg.
 
-- Support Multi-AZ cluster resiliency for better high availability and efficient resource utilization [TP-4854](https://graphsql.atlassian.net/browse/TP-4854)
+- Support Multi-AZ cluster resiliency for better high availability and efficient resource utilization.
 
-- Support Configuring topologySpreadConstraints and region awareness in kubectl-tg  [TP-5272](https://graphsql.atlassian.net/browse/TP-5272)
+- Support Configuring topologySpreadConstraints and region awareness in kubectl-tg.
 
-- Support debugging mode in operator [TP-4884](https://graphsql.atlassian.net/browse/TP-4884)
+- Support debugging mode in operator.
 
 ## Improvements
 
-- Support controlling retry behavior of TigerGraphBackup/ TigerGraphRestore [TP-4736](https://graphsql.atlassian.net/browse/TP-4736)
+- Support controlling retry behavior of TigerGraphBackup/ TigerGraphRestore.
 
-- Record the actual tag of the backup package in TigerGraphBackup.Status and support deleting backup package when deleting TigerGraphBackup CR [TP-4738](https://graphsql.atlassian.net/browse/TP-4738)
+- Record the actual tag of the backup package in TigerGraphBackup.Status and support deleting backup package when deleting TigerGraphBackup CR.
 
-- Remove TigerGraphBackupSchedule’s dependence on K8s Cronjob [TP-4809](https://graphsql.atlassian.net/browse/TP-4809)
+- Remove TigerGraphBackupSchedule’s dependence on K8s Cronjob.
 
-- Add a new status NotReady to check if the services of TG are Online. [TP-4890](https://graphsql.atlassian.net/browse/TP-4890)
+- Add a new status NotReady to check if the services of TG are Online.
 
-- Validate the format of the backup tag in webhook [TP-5374](https://graphsql.atlassian.net/browse/TP-5374)
+- Validate the format of the backup tag in webhook.
 
-- Improve the config update process to avoid restarting all services [TP-4820](https://graphsql.atlassian.net/browse/TP-4820)
+- Improve the config update process to avoid restarting all services.
 
-- Support setting the ExternalTrafficPolicy of external services to local or cluster based on the TG version in the operator [TP-5425](https://graphsql.atlassian.net/browse/TP-5425)
+- Support setting the ExternalTrafficPolicy of external services to local or cluster based on the TG version in the operator.
 
 ## Bug Fixes
 
-- Support values in JSON array format in field `tigergraph.spec.tigergraphConfig` [TP-5359](https://graphsql.atlassian.net/browse/TP-5359)
+- Support values in JSON array format in field `tigergraph.spec.tigergraphConfig`.
 
-- GSE slow shutdown [CORE-3372](https://graphsql.atlassian.net/browse/CORE-3372)  
+- GSE slow shutdown.  

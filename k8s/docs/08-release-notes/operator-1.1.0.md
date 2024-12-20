@@ -76,12 +76,12 @@ kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} -n ${NAMESPACE_OF_CLUSTER}
 
 ## Improvements
 
-- Support overlap between ConfigUpdate and ConfigUpdate. Now when a config-update job is running, users are able to change .spec.tigergraphConfig. After the running job completes, another config-update job will run to apply the changes.([TP-4699](https://graphsql.atlassian.net/browse/TP-4699))
+- Support overlap between ConfigUpdate and ConfigUpdate. Now when a config-update job is running, users are able to change .spec.tigergraphConfig. After the running job completes, another config-update job will run to apply the changes.
 
 ## Bugfixes
 
-- Kubectl-tg plugin cannot remove tigergraphConfig/podLabels/podAnnotations fields of TigerGraph CR.([TP-5091](https://graphsql.atlassian.net/browse/TP-5091))
+- Kubectl-tg plugin cannot remove tigergraphConfig/podLabels/podAnnotations fields of TigerGraph CR.
 
-- Fix the watch namespace update issue of the operator in kubectl-tg plugin.([TP-5280](https://graphsql.atlassian.net/browse/TP-5280))
+- Fix the watch namespace update issue of the operator in kubectl-tg plugin.
 
-- Fix the issue of Nginx DNS cache for tigergraph on K8s ([TP-5360](https://graphsql.atlassian.net/browse/TP-5360))
+- Fix the issue of Nginx DNS cache for TigerGraph on Kubernetes.

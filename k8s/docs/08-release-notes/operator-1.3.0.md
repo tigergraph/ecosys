@@ -25,7 +25,7 @@ sudo install kubectl-tg /usr/local/bin/
 There are no breaking changes in the TigerGraph CRDs for version 1.3.0 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if an older version (1.0.0 or above) is installed.
 
 > [!NOTE]
-> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, for operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
+> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, starting from Operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
 
 Upgrade the TigerGraph CRDs to the latest version(It's required for the operator version prior to 1.3.0)
 
@@ -59,30 +59,30 @@ Refer to the documentation [How to upgrade TigerGraph Kubernetes Operator](../04
 
 ## New features
 
-- Operator 1.3.0 achieves GA for AKS, ensuring improved stability and support for Azure Kubernetes Service
+- Operator 1.3.0 achieves GA for AKS, ensuring improved stability and support for Azure Kubernetes Service.
 
-- Support for customizing external service port for TG listener and sidecar listener [TP-5759](https://graphsql.atlassian.net/browse/TP-5759)
+- Support for customizing external service port for TG listener and sidecar listener.
 
-- Add a pre-upgrade hook in operator helm chart to refresh CRD automatically during operator upgrade  [TP-6095](https://graphsql.atlassian.net/browse/TP-6095)
+- Add a pre-upgrade hook in operator helm chart to refresh CRD automatically during operator upgrade.
 
 ## Improvements
 
-- Add a new status Degraded in operator to indicate that a region-aware cluster is partially available [TP-6122](https://graphsql.atlassian.net/browse/TP-6122)
+- Add a new status Degraded in operator to indicate that a region-aware cluster is partially available.
 
-- Make the maximum number of retries for the init-job configurable via annotations [TP-6104](https://graphsql.atlassian.net/browse/TP-6104)
+- Make the maximum number of retries for the init-job configurable via annotations.
 
-- Add namespace as a suffix of HostName in HostList on K8s [TP-5776](https://graphsql.atlassian.net/browse/TP-5776)
+- Add namespace as a suffix of HostName in HostList on K8s.
 
-- Support for configuring nodeSelector for operator pods [TP-5395](https://graphsql.atlassian.net/browse/TP-5395)
+- Support for configuring nodeSelector for operator pods.
 
-- Avoid too many events on SuccessfulDeleteService [TP-4564](https://graphsql.atlassian.net/browse/TP-4564)
+- Avoid too many events on SuccessfulDeleteService.
 
-- Improve log of Operator Jobs by removing redundant gadmin output [TP-5603](https://graphsql.atlassian.net/browse/TP-5603)
+- Improve log of Operator Jobs by removing redundant gadmin output.
 
 ## Bug Fixes
 
-- Inconsistent precheck error message for a non-region-aware cluster in k8s operator [TP-5669](https://graphsql.atlassian.net/browse/TP-5669)
+- Inconsistent pre-check error message for a non-region-aware cluster in k8s operator.
 
-- Verify the existence of S3 secret for restoring from s3 [TP-4111](https://graphsql.atlassian.net/browse/TP-4111)
+- Verify the existence of S3 secret for restoring from s3.
 
-- Don't set default backup compress process number [TP-6179](https://graphsql.atlassian.net/browse/TP-6179)
+- Don't set default backup compress process number.

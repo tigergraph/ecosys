@@ -31,4 +31,4 @@ sudo install kubectl-tg /usr/local/bin/
 
 ## Bugfixes
 
-- Addressed an issue where the expand command would become stuck when no schema and graph data existed in the TigerGraph cluster. ([CORE-1743](https://graphsql.atlassian.net/browse/CORE-1743), TigerGraph 3.8.0)
+- Addressed an issue where the expand command would become stuck when no schema and graph data existed in the TigerGraph cluster.
