@@ -123,14 +123,14 @@ In order to support vector type computation, GSQL provides a list of built-in ve
 
 # Query Examples
 ## Vector Search
-Do a top-k vector search on a given vector type's vector attribute. 
+Do a top-k vector search on a given vertex type's vector attribute. 
 
 ```python
 #enter the graph
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1(LIST<float> query_vector) SYNTAX v3 {
-
+  //find top-1 similar embeddings from Account's embedding attribute emb1
   v = vectorSearch({Account.emb1}, query_vector, 1);
   print v WITH VECTOR; //show the embeddings
 }
