@@ -148,7 +148,7 @@ install query -single q1
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 
-Do a top-k vector search on a a set of vertex type's vector attribute. 
+Do a top-k vector search on a a set of vertex types' vector attributes. 
 ```python
 #enter the graph
 USE GRAPH financialGraph
