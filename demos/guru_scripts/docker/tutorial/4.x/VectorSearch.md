@@ -249,7 +249,35 @@ run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.010192243382
 
 [Go back to top](#top)
 ## Vector Similarity Join on Graph Patterns
+Find most similar pairs from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q5() SYNTAX v3 {
+
+  //Define a custom tuple to store the vertex pairs and their distance
+  TYPEDEF TUPLE <VERTEX s, VERTEX t, FLOAT distance> pair;
+
+  //Declare a global heap accumulator to store the top 2 similar pairs
+  HeapAccum<pair>(2, distance ASC) @@result;
+
+  // a path pattern in ascii art () -[]->()-[]->()
+  v  = SELECT b
+       FROM (a:Account)-[e:transfer]->()-[e2:transfer]->(b:Account)
+       ACCUM @@result += pair(a, b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
+
+  PRINT @@result;
+}
+
+#compile and install the query as a stored procedure
+install query -single q5
+
+#run the query
+run query q5()
+```
 
 [Go back to top](#top)
 
