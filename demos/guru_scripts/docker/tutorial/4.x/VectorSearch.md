@@ -15,6 +15,7 @@ This GSQL tutorial contains
   - [Vector Built-in Functions](#vector-built-in-functions) 
 - [Query Examples](#query-examples)
   - [Vector Search](#vector-search)
+  - [Range Vector Search](#range-vector-search)
   - [Filtered Vector Search](#filtered-vector-search)
   - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
@@ -148,10 +149,29 @@ run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 
 [Go back to top](#top)
 
-## Filtered Vector Search
+## Range Vector Search
+Do a range vector search with a given query embedding and a distance threshold. 
 
+```python
+#enter the graph
+USE GRAPH financialGraph
 
+CREATE OR REPLACE QUERY q2 (LIST<float> query_vector, double threshold) SYNTAX v3 {
+
+  v = SELECT a
+      FROM (a:Account)
+      WHERE gds.vector.distance(a.emb1, query_vector, "COSINE") < threshold;
+
+  print v WITH VECTOR;
+}
+
+#compile and install the query as a stored procedure
+install query -single q2
+
+#run the query
+run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
 [Go back to top](#top)
+
 ## Vector Search on Graph Patterns
 
 
