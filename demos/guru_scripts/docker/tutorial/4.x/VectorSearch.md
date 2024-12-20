@@ -173,6 +173,9 @@ run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 ```
 
 [Go back to top](#top)
+## Filtered Vector Search
+
+[Go back to top](#top)
 ## Vector Search on Graph Patterns
 
 
