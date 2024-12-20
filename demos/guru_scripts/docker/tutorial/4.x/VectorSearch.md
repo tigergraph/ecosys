@@ -34,7 +34,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 > ```
 > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
 > ```
-> Please remember to apply your TigerGraph license key to the container:
+> Please remember to apply your TigerGraph license key to the TigerGraph instance:
 > ```
 > docker exec -it tigergraph /bin/bash
 > gadmin license set <license_key>
@@ -45,7 +45,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 [Go back to top](#top)
 
 # Setup Schema 
-Copy [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) to your container. 
+Locate [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql ddl.gsql
@@ -59,7 +59,7 @@ You can choose one of the following methods.
 
 - Load sample data from our publicly accessible s3 bucket 
   
-  Copy [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) to your container. 
+  Locate [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
   Next, run the following in your container's bash command line. 
   ```
   gsql load.gsql
@@ -67,7 +67,7 @@ You can choose one of the following methods.
   or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
-  - Copy the following data files to your container.
+  - Locate the following data files under `/home/tigergraph/tutorial/4.x/data` or copy them to your container:
     - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
     - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
     - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
@@ -77,7 +77,7 @@ You can choose one of the following methods.
     - [account_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account_emb.csv)
     - [phone_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone_emb.csv)
 
-  - Copy [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+  - Locate [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/script/load2.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. Modify the script with your local file path if necessary. Next, run the following in your container's bash command line. 
     ```
     gsql load2.gsql
     ``` 
@@ -101,13 +101,13 @@ show package gds.vector
 result = vectorSearch(VectorAttributes, QueryEmbedding, K, optionalParam)
 ```
 ### Function name 
-In GSQL, we support top-k vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryEmbedding`. 
+In GSQL, we support top-k vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryVector`. 
 The result will be assigned to a vertex set varialbe, which can be used by subsequent GSQL query block. E.g., `result` will hold the top-k most similar vertices based on their embedding distance to the query embedding. 
 ### Parameter
 |Parameter	|Description
 |-------|--------
 |`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**. E.g., `{Account.eb1, Phone.eb1}`.
-|`QueryEmbedding`	|The query embedding constant to search the top K most similar vectors.
+|`QueryVector`	|The query embedding constant to search the top K most similar vectors.
 |`K`	|The top k cutoff--where K most similar vectors will be returned.
 |`optionalParam` | A map of optional params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and a global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
@@ -132,6 +132,12 @@ In order to support vector type computation, GSQL provides a list of built-in ve
 ## Vector Search
 Do a top-k vector search on a given vertex type's vector attribute. 
 
+Locate [q1.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q1.gsql
+```
+
 ```python
 #enter the graph
 USE GRAPH financialGraph
@@ -154,6 +160,13 @@ run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 ```
 
 Do a top-k vector search on a a set of vertex types' vector attributes. 
+
+Locate [q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q1a.gsql
+```
+
 ```python
 #enter the graph
 USE GRAPH financialGraph
@@ -179,6 +192,12 @@ run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.0165718756616115
 ## Range Vector Search
 Do a range vector search with a given query embedding and a distance threshold. 
 
+Locate [q2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q2.gsql
+```
+
 ```python
 #enter the graph
 USE GRAPH financialGraph
@@ -202,6 +221,12 @@ run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 [Go back to top](#top)
 ## Filtered Vector Search
 Do a GSQL query block to select a vertex candidate set, then do vector top-k search on the candidate set. 
+
+Locate [q3.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q3.gsql
+```
 
 ```python
 #enter the graph
@@ -231,6 +256,12 @@ run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 [Go back to top](#top)
 ## Vector Search on Graph Patterns
 Do a pattern match first to find candidate vertex set. Then, do a vector search. 
+
+Locate [q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q4.gsql
+```
 
 ```python
 #enter the graph
@@ -278,6 +309,12 @@ run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.010192243382
 ## Vector Similarity Join on Graph Patterns
 Find most similar pairs from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
+Locate [q5.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q5.gsql
+```
+
 ```python
 #enter the graph
 USE GRAPH financialGraph
@@ -309,6 +346,12 @@ run query q5()
 
 ## Vector Search Driven Pattern Match
 Do vector search first, the result drive the next pattern match. 
+
+Locate [q6.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q6.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q6.gsql
+```
 
 ```python
 #enter the graph
@@ -471,10 +514,10 @@ id|name|isBlocked|embedding
 #### Create Loading Job
 ```python
 # enter graph
-USE GRAPH embGraph
+USE GRAPH financialGraph
 
 #create a loading job for the vetex and edge
-CREATE LOADING JOB load_local_file FOR GRAPH embGraph {
+CREATE LOADING JOB load_local_file FOR GRAPH financialGraph {
  // define the location of the source files; each file path is assigned a filename variable.  
  DEFINE FILENAME file1="/home/tigergraph/data/account_emb.csv";
 
@@ -487,13 +530,13 @@ CREATE LOADING JOB load_local_file FOR GRAPH embGraph {
 #### Run Loading Job Locally
 If the source file location has been defined in the loading job directly, use the following command:
 ```python
-USE GRAPH embGraph
+USE GRAPH financialGraph
 run loading job load_local_file
 ```
 
 It can also provide a file path in the command to override the file path defined inside the loading job:
 ```python
-USE GRAPH embGraph
+USE GRAPH financialGraph
 run loading job load_local_file using file1="/home/tigergraph/data/account_emb_no_header.csv", header="false"
 ```
 
@@ -502,12 +545,12 @@ TigerGraph also supports run a loading job remotely via DDL endpoint `POST /rest
 
 For example:
 ```python
-curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl/embGraph?tag=load_local_file&filename=file1&sep=|"
+curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl/financialGraph?tag=load_local_file&filename=file1&sep=|"
 ```
 
 ### RESTPP Loading
 ```python
-curl -X POST "http://localhost:14240/restpp/graph/embGraph" -d '
+curl -X POST "http://localhost:14240/restpp/graph/financialGraph" -d '
 {
   "vertices": {
     "Account": {
@@ -613,10 +656,10 @@ Once a schema is created in TigerGraph database, a corresponding Loading Job nee
 # Create a loading job for the vector schema in TigerGraph database
 # Ensure to connect to TigerGraph server before any operations.
 result = conn.gsql("""
-    CREATE LOADING JOB l1 {
+    CREATE LOADING JOB load_emb {
         DEFINE FILENAME file1;
-        LOAD file1 TO VERTEX Account VALUES ($0, $1) USING SEPARATOR="|";
-        LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|";
+        LOAD file1 TO VERTEX Account VALUES ($1, $2) USING SEPARATOR="|";
+        LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|", HEADER="false";
     }
 """)
 print(result)
@@ -657,14 +700,14 @@ df['embedding'] = df['embedding'].apply(lambda x: ",".join(str(y) for y in x))
 df['sentences'] = df['sentences'].apply(lambda x: x.replace("\n", "\\n"))
 
 cols=["sentences", "embedding"]
-result = conn.runLoadingJobWithDataFrame(df, "file1", "l1", "|", columns=cols)
+result = conn.runLoadingJobWithDataFrame(df, "file1", "load_emb", "|", columns=cols)
 print(result)
 ```
 
 #### Load From Data File
 ```python
 datafile = "openai_embedding.csv"
-result = conn.runLoadingJobWithFile(datafile, "file1", "l1", "|")
+result = conn.runLoadingJobWithFile(datafile, "file1", "load_emb", "|")
 print(result)
 ```
 
@@ -681,7 +724,7 @@ embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 
 result = conn.gsql(f"""
-run query q2a("Scott", {query_embeddings})
+run query q1({query_embeddings})
 """)
 print(result)
 ```
@@ -689,13 +732,14 @@ print(result)
 #### RESTPP endpoint
 ```python
 # Run a RESTPP call to get the Top 3 vectors similar to the query vector
+# List needs to be specified in format of <param=value1&param=value2...>
 # Ensure to connect to TigerGraph server before any operations.
 query = "Scott"
 embeddings = OpenAIEmbeddings()
 query_embedding = embeddings.embed_query(query)
 result = conn.runInstalledQuery(
-    "q2a",
-    "accntName=Scott&query_vector="+"&query_vector=".join(str(y) for y in query_embedding),
+    "q1",
+    "query_vector="+"&query_vector=".join(str(y) for y in query_embedding),
     timeout=864000
 )
 print(result)
