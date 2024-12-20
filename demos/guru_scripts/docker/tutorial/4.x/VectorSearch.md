@@ -153,7 +153,7 @@ CREATE OR REPLACE QUERY q1 (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q1
+install query q1
 
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -181,7 +181,7 @@ CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q1a
+install query q1a
 
 #run the query
 run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -212,7 +212,7 @@ CREATE OR REPLACE QUERY q2 (LIST<float> query_vector, double threshold) SYNTAX v
 }
 
 #compile and install the query as a stored procedure
-install query -single q2
+install query q2
 
 #run the query
 run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
@@ -247,7 +247,7 @@ CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q3
+install query q3
 
 #run the query
 run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)
@@ -299,7 +299,7 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
 }
 
 #compile and install the query as a stored procedure
-install query -single q4
+install query q4
 
 #run the query
 run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -337,7 +337,7 @@ CREATE OR REPLACE QUERY q5() SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q5
+install query q5
 
 #run the query
 run query q5()
@@ -371,7 +371,7 @@ CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q6
+install query q6
 
 #run the query
 run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])

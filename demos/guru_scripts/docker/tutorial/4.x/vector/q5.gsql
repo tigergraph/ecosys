@@ -18,7 +18,7 @@ CREATE OR REPLACE QUERY q5() SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q5
+install query q5
 
 #run the query
 run query q5()
