@@ -105,7 +105,7 @@ The result will be assigned to a vertex set varialbe, which can be used by subse
 |`optionalParam` | A map of optional params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and a global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
 [Go back to top](#top)
-## GDS Functions Summary
+## Vector Built-in Functions
 In order to support vector type computation, GSQL provides a list of built-in vector functions. 
 
 | Function | Parameter | Description |
