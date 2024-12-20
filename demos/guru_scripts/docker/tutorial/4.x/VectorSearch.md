@@ -93,6 +93,9 @@ show package gds.vector
 ```
 result = vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 ```
+### Function name 
+In GSQL, we support top-k vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input query embedding. 
+The result will be assigned to a vertex set varialbe, which can be used by subsequent GSQL query block. E.g., `result` will hold the top-k most similar vertices based on their embedding distance to the query embedding. 
 ### Parameter
 |Parameter	|Description
 |-------|--------
@@ -101,6 +104,4 @@ result = vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 |`K`	|The top k cutoff--where K most similar vectors will be returned.
 |`optionalParam` | A map of optional params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and a global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
-### Return
-Will return a vertex set
 [Go back to top](#top)
