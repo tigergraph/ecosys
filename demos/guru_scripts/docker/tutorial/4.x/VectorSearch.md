@@ -311,7 +311,7 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
 
-  R = vectorSearch({Account.emb1}, query_vector, 5);
+  R = vectorSearch({Account.emb1}, query_vector, 3);
 
   PRINT R;
 
