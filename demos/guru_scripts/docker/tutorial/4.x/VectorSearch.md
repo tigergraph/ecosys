@@ -182,7 +182,7 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
   MapAccum<Vertex, Float> @@distances;
-
+  //select candidate for vector search
   c = SELECT a
       FROM (a:Account)
       WHERE a.name in ("Scott", "Paul", "Steven");
