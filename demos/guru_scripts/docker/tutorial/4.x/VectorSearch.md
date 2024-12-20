@@ -310,9 +310,8 @@ Do vector search first, the result drive the next pattern match.
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
-  MapAccum<Vertex, Float> @@distances;
 
-  R = vectorSearch({Account.emb1}, query_vector, 5, { distance_map: @@distances});
+  R = vectorSearch({Account.emb1}, query_vector, 5);
 
   PRINT R;
 
