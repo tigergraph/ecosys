@@ -19,6 +19,7 @@ This GSQL tutorial contains
   - [Filtered Vector Search](#filtered-vector-search)
   - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
+  - [ Patterns](#vector-similarity-join-on-graph-patterns)
     
 # Setup Environment 
 
@@ -145,6 +146,27 @@ install query -single q1
 
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+
+Do a top-k vector search on a a set of vertex type's vector attribute. 
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
+
+  v = vectorSearch({Account.emb1, Phone.emb1}, query_vector, 8, { distance_map: @@distances});
+
+  print v WITH VECTOR;
+  print @@distances;
+}
+
+#compile and install the query as a stored procedure
+install query -single q1a
+
+#run the query
+run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 
 [Go back to top](#top)
