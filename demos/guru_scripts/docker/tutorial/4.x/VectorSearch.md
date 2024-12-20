@@ -19,7 +19,7 @@ This GSQL tutorial contains
   - [Filtered Vector Search](#filtered-vector-search)
   - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
-  - [ Patterns](#vector-similarity-join-on-graph-patterns)
+  - [Vector Search Driven Pattern Match](#vector-search-driven-pattern-match)
     
 # Setup Environment 
 
@@ -300,7 +300,8 @@ install query -single q5
 #run the query
 run query q5()
 ```
-
 [Go back to top](#top)
 
+## Vector Search Driven Pattern Match
+Do vector search first, the result drive the next pattern match. 
 
