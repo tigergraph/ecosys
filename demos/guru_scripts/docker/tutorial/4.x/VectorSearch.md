@@ -305,3 +305,28 @@ run query q5()
 ## Vector Search Driven Pattern Match
 Do vector search first, the result drive the next pattern match. 
 
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
+
+  R = vectorSearch({Account.emb1}, query_vector, 5, { distance_map: @@distances});
+
+  PRINT R;
+
+  //query composition via vector search result R
+  V = SELECT b
+      FROM (a:R)-[e:transfer]->()-[e2:transfer]->(b:Account);
+
+  print V ;
+}
+
+#compile and install the query as a stored procedure
+install query -single q6
+
+#run the query
+run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+[Go back to top](#top)
