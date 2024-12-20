@@ -120,3 +120,25 @@ In order to support vector type computation, GSQL provides a list of built-in ve
 |gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
 
 [Go back to top](#top)
+
+# Query Examples
+## Vector Search
+Do a top-k vector search on a given vector type's vector attribute. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1(LIST<float> query_vector) SYNTAX v3 {
+
+  v = vectorSearch({Account.emb1}, query_vector, 1);
+  print v WITH VECTOR; //show the embeddings
+}
+
+#compile and install the query as a stored procedure
+install query -single q1
+
+#run the query
+run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+
