@@ -96,10 +96,10 @@ result = vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 ### Parameter
 |Parameter	|Description
 |-------|--------
-|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example `{Account.eb1, Phone.eb2}`.
-|`EmbeddingConstant`	|The embedding constant to search the top K vectors that are most similar to it.
-|`K`	|The number of the results to be given.
-|`optionalParam` |Optional, a map of params, including vertex candidate set, EF overriding, and distance scores (MapAccum), for example `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
+|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**. E.g., `{Account.eb1, Phone.eb2}`.
+|`QueryEmbedding`	|The query embedding constant to search the top K most similar vectors.
+|`K`	|The top k cutoff--where K most similar vectors will be returned.
+|`optionalParam` |Optional, a map of params, including vertex candidate set, EF-- the exploration factor in HNSW algorithm, and global MapAccum storing top-k (vertex, distance score) pairs. E.g., `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
 
 ### Return
 Will return a vertex set
