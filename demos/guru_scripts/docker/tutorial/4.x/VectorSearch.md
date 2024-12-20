@@ -174,6 +174,32 @@ run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 
 [Go back to top](#top)
 ## Filtered Vector Search
+Do a GSQL query block to select a vertex candidate set, then do vector top-k search on the candidate set. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
+
+  c = SELECT a
+      FROM (a:Account)
+      WHERE a.name in ("Scott", "Paul", "Steven");
+
+  v = vectorSearch({Account.emb1}, query_vector, k, {candidate_set: c, distance_map: @@distances});
+
+  print v WITH VECTOR;
+  print @@distances;
+
+}
+
+#compile and install the query as a stored procedure
+install query -single q3
+
+#run the query
+run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)
+```
 
 [Go back to top](#top)
 ## Vector Search on Graph Patterns
