@@ -89,6 +89,7 @@ GDS functions to be used in the queries need to be installed in advance
 ```python
 import package gds
 install function gds.**
+show package gds.vector
 ```
 
 # Query Examples 
