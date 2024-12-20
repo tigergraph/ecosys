@@ -129,10 +129,14 @@ Do a top-k vector search on a given vertex type's vector attribute.
 #enter the graph
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q1(LIST<float> query_vector) SYNTAX v3 {
-  //find top-1 similar embeddings from Account's embedding attribute emb1
-  v = vectorSearch({Account.emb1}, query_vector, 1);
+CREATE OR REPLACE QUERY q1 (LIST<float> query_vector) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
+
+  //find top-5 similar embeddings from Account's embedding attribute emb1, store the distance in @@distance
+  v = vectorSearch({Account.emb1}, query_vector, 5, { distance_map: @@distances});
+
   print v WITH VECTOR; //show the embeddings
+  print @@distances; //show the distance map
 }
 
 #compile and install the query as a stored procedure
