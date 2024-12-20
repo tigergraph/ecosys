@@ -96,7 +96,7 @@ result = vectorSearch(VectorAttributes, EmbeddingConstant, K, optionalParam)
 ### Parameter
 |Parameter	|Description
 |-------|--------
-|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example `{v1.eb1, v2.eb2}`.
+|`VectorAttributes`	|A set of vector attributes we will search, the items should be in format **VertexType.VectorName**, for example `{Account.eb1, Phone.eb2}`.
 |`EmbeddingConstant`	|The embedding constant to search the top K vectors that are most similar to it.
 |`K`	|The number of the results to be given.
 |`optionalParam` |Optional, a map of params, including vertex candidate set, EF overriding, and distance scores (MapAccum), for example `{candidate_set: vset1, ef: 20, distance_map: @@distmap}`.
