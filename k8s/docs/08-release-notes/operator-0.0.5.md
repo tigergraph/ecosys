@@ -47,4 +47,4 @@ kubectl tg upgrade --namespace ${NAMESPACE_OF_OPERATOR} --operator-version 0.0.5
 
 - Job Name Length: Added a hint when the job name exceeds the RFC 1123 character limit.
 
-- Fixed an issue where expansion or shrink operations on an empty queue would skip pausing GPE. ([CORE-2440](https://graphsql.atlassian.net/browse/CORE-2440), TigerGraph 3.9.1)
+- Fixed an issue where expansion or shrink operations on an empty queue would skip pausing GPE.

@@ -7,9 +7,11 @@ We have exposed some configurations for you to customize the pods and containers
 - [Customize TigerGraph Pods and TigerGraph Containers](#customize-tigergraph-pods-and-tigergraph-containers)
   - [Customize TigerGraph Pods/TigerGraph Containers by kubectl tg](#customize-tigergraph-podstigergraph-containers-by-kubectl-tg)
     - [Customize Labels and Annotations of TigerGraph Pods](#customize-labels-and-annotations-of-tigergraph-pods)
+    - [Customize pod labels and annotations in the PodTemplateSpec of the StatefulSet managing TigerGraph pods](#customize-pod-labels-and-annotations-in-the-podtemplatespec-of-the-statefulset-managing-tigergraph-pods)
     - [Customize Security Context of TigerGraph Containers](#customize-security-context-of-tigergraph-containers)
   - [Customize TigerGraph Pods/TigerGraph Containers by TigerGraph CR](#customize-tigergraph-podstigergraph-containers-by-tigergraph-cr)
     - [Customize Labels and Annotations of TigerGraph Pods in TigerGraph CR](#customize-labels-and-annotations-of-tigergraph-pods-in-tigergraph-cr)
+    - [Customize pod labels and annotations in the PodTemplateSpec of the StatefulSet managing TigerGraph pods in TigerGraph CR](#customize-pod-labels-and-annotations-in-the-podtemplatespec-of-the-statefulset-managing-tigergraph-pods-in-tigergraph-cr)
     - [Customize Security Context of TigerGraph Containers in TigerGraph CR](#customize-security-context-of-tigergraph-containers-in-tigergraph-cr)
 
 ## Customize TigerGraph Pods/TigerGraph Containers by kubectl tg
@@ -17,6 +19,12 @@ We have exposed some configurations for you to customize the pods and containers
 You can customize the pods by using the `kubectl tg create` command when you create the cluster, and you can also update them by `kubectl tg update`.
 
 ### Customize Labels and Annotations of TigerGraph Pods
+
+> [!IMPORTANT]
+> To prevent pods from undergoing a rolling update when adding or updating labels and annotations, these actions are performed during pod creation.
+> As a result, the labels and annotations will not be included in the PodTemplateSpec of the StatefulSet managing TigerGraph pods.
+> If you wish to apply these labels and annotations during pod creations, you can use the options `--pod-init-labels` and `--pod-init-annotations`.
+> For more details, please refer to the following section.
 
 ```bash
   --pod-labels :      add some customized labels to all pods, your input should be like like 'k1=v1,k2="v2 with space"'
@@ -35,6 +43,32 @@ You can also update them by:
 ```bash
     kubectl tg update --cluster-name test-cluster --namespace tigergraph \
   --pod-labels "app=tg,env=test" --pod-annotations "app=tg,env=test" ${OTHER_OPTIONS}
+```
+
+### Customize pod labels and annotations in the PodTemplateSpec of the StatefulSet managing TigerGraph pods
+
+> [!NOTE]
+> This feature is supported starting from TigerGraph Operator 1.4.0.
+
+For certain use cases, such as injecting Istio sidecars into TigerGraph pods, you may need to add or update labels and annotations during pod creation. To customize these labels and annotations, use the following options:
+
+```bash
+  --pod-init-labels : add customized labels to the pod template before creating them, your input should be like like 'k1=v1,k2="v2 with space"'
+  --pod-init-annotations : add customized annotations to the pod template before creating them, your input should be like like 'k1=v1,k2="v2 with space"'
+```
+
+You can specify the labels and annotations of the pods by using the `--pod-init-labels` and `--pod-init-annotations` options. The input should be like `k1=v1,k2=v2`. For example:
+
+```bash
+kubectl tg create --cluster-name test-cluster --namespace tigergraph \
+  --pod-init-labels "app=tg,env=prod" --pod-init-annotations "app=tg,env=prod" ${OTHER_OPTIONS}
+```
+
+You can also update them by:
+
+```bash
+    kubectl tg update --cluster-name test-cluster --namespace tigergraph \
+  --pod-init-labels "app=tg,env=test" --pod-init-annotations "app=tg,env=test" ${OTHER_OPTIONS}
 ```
 
 ### Customize Security Context of TigerGraph Containers
@@ -84,6 +118,12 @@ kubectl tg update --cluster-name test-cluster --namespace tigergraph \
 
 ### Customize Labels and Annotations of TigerGraph Pods in TigerGraph CR
 
+> [!IMPORTANT]
+> To prevent pods from undergoing a rolling update when adding or updating labels and annotations, these actions are performed during pod creation.
+> As a result, the labels and annotations will not be included in the PodTemplateSpec of the StatefulSet managing TigerGraph pods.
+> If you wish to apply these labels and annotations during pod creations, you can specify the field `spec.podInitLabels` and `spec.PodInitAnnotations`.
+> For more details, please refer to the following section.
+
 You can add labels to field `spec.podLabels` and annotations to field `spec.PodAnnotations` in the TigerGraph CR file. Operator will inject these labels and annotations to all tigergraph pods.
 For example:
 
@@ -121,6 +161,51 @@ spec:
     key.tg.com: value
   podAnnotations:
     key.tg.com: value
+```
+
+### Customize pod labels and annotations in the PodTemplateSpec of the StatefulSet managing TigerGraph pods in TigerGraph CR
+
+> [!NOTE]
+> This feature is supported starting from TigerGraph Operator 1.4.0.
+
+For certain use cases, such as injecting Istio sidecars into TigerGraph pods, you may need to add or update labels and annotations during pod creation. To customize these labels and annotations, you can add labels to the spec.podInitLabels field and annotations to the spec.podInitAnnotations field in the TigerGraph CR file. The operator will then inject these labels and annotations into all TigerGraph pods during pod creation.
+For example:
+
+```yaml
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-cluster
+spec:
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.2
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: tigergraph-image-pull-secret
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  license: YOUR_LICENSE
+  replicas: 4
+  ha: 2
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10G
+      storageClassName: standard
+      volumeMode: Filesystem
+  podInitLabels:
+    sidecar.istio.io/inject: "true"
+  podInitAnnotations:
+    traffic.sidecar.istio.io/excludeOutboundPorts: "9188,9178"
+    traffic.sidecar.istio.io/excludeInboundPorts: "9178,9188"
 ```
 
 ### Customize Security Context of TigerGraph Containers in TigerGraph CR

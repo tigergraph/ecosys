@@ -324,6 +324,32 @@ map[string]string
 </tr>
 <tr>
 <td>
+<code>podInitLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PodInitLabels will be added to metadata.labels field of spec.template (PodTemplateSpec)
+in the StatefulSet used to manage TigerGraph Pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podInitAnnotations</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PodInitAnnotations will be added to the metadata.annotations field of spec.template (PodTemplateSpec)
+in the StatefulSet used to manage TigerGraph Pods.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>pause</code></br>
 <em>
 bool
@@ -1235,6 +1261,49 @@ S3Bucket
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.HostListItem">HostListItem</h3>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>Hostname</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>ID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>Region</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.IngressRule">IngressRule</h3>
 <p>
 (<em>Appears on:</em>
@@ -1449,6 +1518,18 @@ which can be set to LoadBalancer, NodePort, and Ingress</p>
 </tr>
 <tr>
 <td>
+<code>port</code></br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ServicePort is the port that is exposed by a LoadBalancer service.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>nginxNodePort</code></br>
 <em>
 int32
@@ -1557,6 +1638,18 @@ int32
 </td>
 <td>
 <p>The port that exposes in sidecar container</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>targetPort</code></br>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TargetPort is the internal port to access on the pods targeted by the service</p>
 </td>
 </tr>
 <tr>
@@ -2820,6 +2913,32 @@ map[string]string
 </tr>
 <tr>
 <td>
+<code>podInitLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PodInitLabels will be added to metadata.labels field of spec.template (PodTemplateSpec)
+in the StatefulSet used to manage TigerGraph Pods.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podInitAnnotations</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PodInitAnnotations will be added to the metadata.annotations field of spec.template (PodTemplateSpec)
+in the StatefulSet used to manage TigerGraph Pods.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>pause</code></br>
 <em>
 bool
@@ -3033,6 +3152,28 @@ map[string]string
 </td>
 <td>
 <p>Current customized annotations of TigerGraph Pods</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podInitLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>Current customized labels of PodTemplateSpec in StatefulSet used to manage TigerGraph Pods</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>podInitAnnotations</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>Current customized annotations of PodTemplateSpec in StatefulSet used to manage TigerGraph Pods</p>
 </td>
 </tr>
 <tr>

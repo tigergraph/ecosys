@@ -7,6 +7,7 @@ Those document describes the new features, improvements, bugfixes for all of Tig
 
 Please see the detailed documentation of each TigerGraph Operator version release notes as follows:
 
+- [TigerGraph Operator 1.4.0](./operator-1.4.0.md)
 - [TigerGraph Operator 1.3.0](./operator-1.3.0.md)
 - [TigerGraph Operator 1.2.0](./operator-1.2.0.md)
 - [TigerGraph Operator 1.1.1](./operator-1.1.1.md)
