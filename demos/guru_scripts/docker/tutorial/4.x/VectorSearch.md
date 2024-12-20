@@ -1,6 +1,5 @@
 # Native Vector Support in TigerGraph
-
-TigerGraph has unveiled native vector support, a revolutionary feature that significantly amplifies the capabilities of graph analytics by incorporating high-dimensional vector embeddings. This cutting-edge enhancement is tailored for contemporary AI and machine learning workflows, facilitating a seamless integration of structured graph data with vector embeddings, thus unlocking new levels of analytical power and efficiency.
+TigerGraph now offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration.
 
 # Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
