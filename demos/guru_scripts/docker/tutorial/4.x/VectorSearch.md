@@ -45,7 +45,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 [Go back to top](#top)
 
 # Setup Schema 
-Locate [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_s/docker/tutorial/4.x/vector/ddl.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
+Locate [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql ddl.gsql
@@ -59,12 +59,12 @@ You can choose one of the following methods.
 
 - Load sample data from our publicly accessible s3 bucket 
   
-  Locate [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_s/docker/tutorial/4.x/vector/load.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
+  Locate [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
   Next, run the following in your container's bash command line. 
   ```
   gsql load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_s/docker/tutorial/4.x/vector/load.gsql), and paste it into the GSQL shell editor to run.
+  or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Locate the following data files under `/home/tigergraph/tutorial/4.x/data` or copy them to your container:
