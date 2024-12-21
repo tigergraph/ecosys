@@ -60,7 +60,7 @@ You can choose one of the following methods.
 - Load sample data from our publicly accessible s3 bucket 
   
   Locate [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_s/docker/tutorial/4.x/vector/load.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
-  Next, run the following in your container's bash command line. 
+  Next, run the following in your container's bash command line. Wait 2 mintues as it's pulling data from s3. 
   ```
   gsql load.gsql
   ```
