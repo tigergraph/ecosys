@@ -90,9 +90,9 @@ GDS functions to be used in the queries need to be installed in advance
 
 ```python
 gsql 
-import package gds
-install function gds.**
-show package gds.vector
+GSQL> import package gds
+GSQL> install function gds.**
+GSQL> show package gds.vector
 ```
 [Go back to top](#top)
 # Vector Search Functions
