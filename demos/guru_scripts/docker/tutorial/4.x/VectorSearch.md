@@ -159,6 +159,10 @@ install query q1
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
+You can also use REST api to invoke the installed query. 
+```python
+curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d "{\"query_vector\":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}" | jq
+```
 
 Do a top-k vector search on a a set of vertex types' vector attributes. 
 
