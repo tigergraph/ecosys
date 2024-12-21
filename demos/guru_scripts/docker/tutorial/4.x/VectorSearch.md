@@ -89,6 +89,7 @@ You can choose one of the following methods.
 GDS functions to be used in the queries need to be installed in advance
 
 ```python
+gsql 
 import package gds
 install function gds.**
 show package gds.vector
