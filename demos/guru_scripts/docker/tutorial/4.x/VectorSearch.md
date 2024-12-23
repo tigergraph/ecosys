@@ -560,6 +560,8 @@ curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl
 ```
 
 ### RESTPP Loading
+You can follow the official documentation on RESTPP loading https://docs.tigergraph.com/tigergraph-server/4.1/api/upsert-rest. 
+Below is a simple example. 
 ```python
 curl -X POST "http://localhost:14240/restpp/graph/financialGraph" -d '
 {
