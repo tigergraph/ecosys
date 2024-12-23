@@ -421,6 +421,7 @@ run query q4a([-0.017733968794345856, -0.01019224338233471, -0.01657187566161155
 
 [Go back to top](#top)
 ## Vector Similarity Join on Graph Patterns
+### Top-K similarity join on graph patterns
 Find most similar pairs from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
 Locate [q5.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
@@ -456,6 +457,36 @@ install query q5
 #run the query
 run query q5()
 ```
+### Range similarity join on graph patterns. 
+Find similar pairs whose distance is less than a threshold from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
+
+Locate [q5a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q5a.gsql
+```
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q5a() SYNTAX v3 {
+
+  //find close pairs that has distance less than 0.8
+  SELECT a, b,  gds.vector.distance(b.emb1, a.emb1, "COSINE") AS dist INTO T
+  FROM (a:Account)-[e:transfer]->()-[e2:transfer]->(b:Account)
+  WHERE gds.vector.distance(a.emb1, b.emb1, "COSINE") < 0.8;
+
+  PRINT T;
+}
+
+#compile and install the query as a stored procedure
+install query q5a
+
+#run the query
+run query q5a()
+```
+
 [Go back to top](#top)
 
 ## Vector Search Driven Pattern Match
