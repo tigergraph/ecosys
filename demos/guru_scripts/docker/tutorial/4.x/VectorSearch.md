@@ -303,6 +303,8 @@ curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d '{"query
 
 [Go back to top](#top)
 ## Vector Search on Graph Patterns
+
+### ANN vector search on a graph pattern
 Do a pattern match first to find candidate vertex set. Then, do a vector search. 
 
 Locate [q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
@@ -352,6 +354,69 @@ install query q4
 #run the query
 run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
+
+### Exact vector search on a graph pattern 
+
+Use `ORDER BY ASC` or `ORDER BY DSC` to do exact top-k vector search. This method is exepensive. 
+
+Locate [q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q4a.gsql
+```
+
+```python
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q4a (LIST<float> query_vector) SYNTAX v3 {
+
+
+  MapAccum<Vertex, Float> @@distances1;
+  MapAccum<Vertex, Float> @@distances2;
+
+  // do an exact top-k search on "b" using the ORDER BY clause with ASC keyword
+  c1 = SELECT b
+       FROM (a:Account)-[e:transfer]->(b:Account)
+       ORDER BY gds.vector.cosine_distance(b.emb1, query_vector) ASC
+       LIMIT 3;
+
+  PRINT c1 WITH VECTOR;
+
+
+  // an approximate top-k search on the Account vertex set
+  v = vectorSearch({Account.emb1}, query_vector, 3, {distance_map: @@distances1});
+
+  PRINT v WITH VECTOR;
+  PRINT @@distances1;
+
+  // below we use variable length path.
+  // *1.. means 1 to more steps of the edge type "transfer"
+  // select the reachable end point and bind it to vertex alias "b"
+  // do an exact top-k reverse-search on "b" using the ORDER BY clause with DESC keyword
+  c2 = SELECT b
+       FROM (a:Account {name: "Scott"})-[:transfer*1..]->(b:Account)
+       WHERE a.name != b.name
+       ORDER BY gds.vector.cosine_distance(b.emb1, query_vector) DESC
+       LIMIT 3;
+
+  PRINT c2 WITH VECTOR;
+
+  // an approximate top-k search on the Account vertex set
+  v = vectorSearch({Account.emb1}, query_vector, 5, {distance_map: @@distances2});
+
+  PRINT v WITH VECTOR;
+  PRINT @@distances2;
+
+}
+
+#compile and install the query as a stored procedure
+install query q4a
+
+#run the query
+run query q4a([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+
 
 [Go back to top](#top)
 ## Vector Similarity Join on Graph Patterns
