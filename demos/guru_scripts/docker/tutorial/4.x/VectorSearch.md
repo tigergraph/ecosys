@@ -358,7 +358,7 @@ run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.010192243382
 
 ### Exact vector search on a graph pattern 
 
-Use `ORDER BY ASC` or `ORDER BY DSC` to do exact top-k vector search. This method is exepensive. 
+Use `ORDER BY ASC` or `ORDER BY DESC` to do exact top-k vector search. This method is exepensive. 
 
 Locate [q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
