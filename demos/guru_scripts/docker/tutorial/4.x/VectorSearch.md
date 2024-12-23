@@ -162,7 +162,7 @@ run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
 ```python
-curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d "{\"query_vector\":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}" | jq
+curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}' | jq
 ```
 
 Do a top-k vector search on a a set of vertex types' vector attributes. 
@@ -261,7 +261,7 @@ run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
 ```python
-curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d "{\"query_vector\":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], \"k\": 2}" | jq
+curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], "k": 2}' | jq
 ```
 
 [Go back to top](#top)
