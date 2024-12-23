@@ -304,7 +304,7 @@ curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d '{"query
 [Go back to top](#top)
 ## Vector Search on Graph Patterns
 
-### ANN vector search on a graph pattern
+### Approximate Nearest Neighbor (ANN) vector search on a graph pattern
 Do a pattern match first to find candidate vertex set. Then, do a vector search. 
 
 Locate [q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
@@ -329,6 +329,7 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
        FROM (a:Account {name: "Scott"})-[e:transfer]->()-[e2:transfer]->(b:Account)
        WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
 
+  //ANN search
   v = vectorSearch({Account.emb1}, query_vector, 2, {candidate_set: c1, distance_map: @@distances1});
 
   PRINT v WITH VECTOR;
@@ -340,7 +341,7 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
   c2 = SELECT b
        FROM (a:Account {name: "Scott"})-[:transfer*1..]->(b:Account)
        WHERE a.name != b.name;
-
+  //ANN search
   v = vectorSearch({Account.emb1}, query_vector, 2, {candidate_set: c2, distance_map: @@distances2});
 
   PRINT v WITH VECTOR;
