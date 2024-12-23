@@ -103,7 +103,7 @@ GSQL> show package gds.vector
 result = vectorSearch(VectorAttributes, QueryEmbedding, K, optionalParam)
 ```
 ### Function name 
-In GSQL, we support top-k vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryVector`. 
+In GSQL, we support top-k ANN (approximate nearest neighbor) vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryVector`. 
 The result will be assigned to a vertex set varialbe, which can be used by subsequent GSQL query block. E.g., `result` will hold the top-k most similar vertices based on their embedding distance to the query embedding. 
 ### Parameter
 |Parameter	|Description
