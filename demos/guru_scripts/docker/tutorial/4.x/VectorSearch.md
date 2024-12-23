@@ -166,7 +166,7 @@ On the payload, you specify the parameter using "key:value" by escaping the quot
 curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}' | jq
 ```
 
-### Top-k vector search on a a set of vertex types' vector attributes. 
+### Top-k vector search on a set of vertex types' vector attributes. 
 
 Locate [q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
