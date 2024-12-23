@@ -15,7 +15,7 @@ CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q3
+install query q3
 
 #run the query
 run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)

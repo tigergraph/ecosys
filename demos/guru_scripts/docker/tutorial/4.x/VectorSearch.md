@@ -34,7 +34,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 > ```
 > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
 > ```
-> Please remember to apply your TigerGraph license key to the TigerGraph instance:
+> Please remember to apply your TigerGraph license key to the TigerGraph instance, you can obtain a free dev license here https://dl.tigergraph.com/
 > ```
 > docker exec -it tigergraph /bin/bash
 > gadmin license set <license_key>
@@ -60,7 +60,8 @@ You can choose one of the following methods.
 - Load sample data from our publicly accessible s3 bucket 
   
   Locate [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
-  Next, run the following in your container's bash command line. 
+  Next, run the following in your container's bash command line. Wait 2 mintues as it's pulling data from s3. 
+
   ```
   gsql load.gsql
   ```
@@ -89,9 +90,10 @@ You can choose one of the following methods.
 GDS functions to be used in the queries need to be installed in advance
 
 ```python
-import package gds
-install function gds.**
-show package gds.vector
+gsql 
+GSQL> import package gds
+GSQL> install function gds.**
+GSQL> show package gds.vector
 ```
 [Go back to top](#top)
 # Vector Search Functions
@@ -153,10 +155,15 @@ CREATE OR REPLACE QUERY q1 (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q1
+install query q1
 
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+```
+You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
+On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
+```python
+curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}' | jq
 ```
 
 Do a top-k vector search on a a set of vertex types' vector attributes. 
@@ -181,7 +188,7 @@ CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q1a
+install query q1a
 
 #run the query
 run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -212,7 +219,7 @@ CREATE OR REPLACE QUERY q2 (LIST<float> query_vector, double threshold) SYNTAX v
 }
 
 #compile and install the query as a stored procedure
-install query -single q2
+install query q2
 
 #run the query
 run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
@@ -247,10 +254,15 @@ CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q3
+install query q3
 
 #run the query
 run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)
+```
+You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
+On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
+```python
+curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], "k": 2}' | jq
 ```
 
 [Go back to top](#top)
@@ -299,7 +311,7 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
 }
 
 #compile and install the query as a stored procedure
-install query -single q4
+install query q4
 
 #run the query
 run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -337,7 +349,7 @@ CREATE OR REPLACE QUERY q5() SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q5
+install query q5
 
 #run the query
 run query q5()
@@ -371,7 +383,7 @@ CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
 }
 
 #compile and install the query as a stored procedure
-install query -single q6
+install query q6
 
 #run the query
 run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
@@ -549,6 +561,8 @@ curl -X POST --data-binary @./account_emb.csv "http://localhost:14240/restpp/ddl
 ```
 
 ### RESTPP Loading
+You can follow the official documentation on RESTPP loading https://docs.tigergraph.com/tigergraph-server/4.1/api/upsert-rest. 
+Below is a simple example. 
 ```python
 curl -X POST "http://localhost:14240/restpp/graph/financialGraph" -d '
 {
