@@ -194,6 +194,42 @@ install query q1a
 run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 
+### Top-k vector search using a vertex embedding as the query vector
+
+Locate [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+```
+gsql q1b.gsql
+```
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
+  //this global accumulator will be storing the query vector. 
+  //You can retrieve an embedding attribute and accmulate it into a ListAccum<float>
+  ListAccum<float> @@query_vector;
+  MapAccum<Vertex, Float> @@distances;
+ 
+ //find Scott's embedding, store it in @@query_vector
+ s = SELECT a
+     FROM (a:Account)
+     WHERE a.name == "Scott"
+     POST-ACCUM @@query_vector += a.emb1;
+
+  //find top-5 similar to Scott's embedding from Account's embedding attribute emb1, store the distance in @@distance
+  v = vectorSearch({Account.emb1}, @@query_vector, 5, { distance_map: @@distances});
+
+  print v WITH VECTOR; //show the embeddings
+  print @@distances; //show the distance map
+}
+
+#compile and install the query as a stored procedure
+install query q1b
+
+#run the query
+run query q1b()
+```
+
 [Go back to top](#top)
 
 ## Range Vector Search
