@@ -232,7 +232,7 @@ run query q1b()
 
 ### Top-k vector search from a vertex set parameter
 
-Locate [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1c.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Locate [q1c.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1c.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 
 ```
