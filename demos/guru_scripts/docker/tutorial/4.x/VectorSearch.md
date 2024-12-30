@@ -230,6 +230,45 @@ install query q1b
 run query q1b()
 ```
 
+### Top-k vector search from a vertex set parameter
+
+Locate [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1c.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
+Next, run the following in your container's bash command line.
+
+```
+gsql q1c.gsql
+```
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE QUERY q1c (VERTEX<Account> name, SET<VERTEX<Account>> slist, LIST<float> query_vector) SYNTAX v3 {
+  // Define a vextex set from the vertex parameter
+  v = {name};
+
+  // output vertex set variable v in JSON format with embedding
+  print v WITH VECTOR;
+
+  // Define a vextex set from the vertex set parameter
+  v = {slist};
+
+  // Get the most similar vector from the list
+  // The result is re-assigned to v. 
+  v = vectorSearch({Account.emb1}, query_vector, 1, {candidate_set: v});
+
+  // output vertex set variable v in JSON format with embedding
+  print v WITH VECTOR;
+}
+
+#compile and install the query as a stored procedure
+install query q1c
+
+#run the query
+run query q1c("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
+
+```
 [Go back to top](#top)
 
 ## Range Vector Search
