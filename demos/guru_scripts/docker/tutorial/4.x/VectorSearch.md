@@ -11,6 +11,7 @@ This GSQL tutorial contains
 - [Load Data](#load-data)
 - [Install GDS Functions](#install-gds-functions)
 - [Vector Search Functions](#vector-search-functions)
+  - [ANN Search Architecture](#ann-search-architecture)
   - [vectorSearch Function](#vectorsearch-function)
   - [Vector Built-in Functions](#vector-built-in-functions) 
 - [Query Examples](#query-examples)
@@ -97,6 +98,18 @@ GSQL> show package gds.vector
 ```
 [Go back to top](#top)
 # Vector Search Functions
+## ANN Search Architecture
+Approximate Nearest Neighbors (ANN) is a technique for identifying points that are approximately closest to a query point in high-dimensional spaces. It offers significant improvements in speed and scalability compared to exact methods, with only a slight trade-off in accuracy.
+
+TigerGraph enhances vertex capabilities by introducing support for vector attributes. When vector data is loaded as an attribute, the engine automatically indexes it to facilitate ANN searches. This indexing process leverages TigerGraph’s Massively Parallel Processing (MPP) architecture, enabling efficient parallel processing across multiple compute cores or machines. By default, the HNSW algorithm is used, with future releases planned to support additional indexing methods.
+
+TigerGraph provides a user-friendly vectorSearch function for performing ANN searches within a GSQL query. This built-in function integrates seamlessly with other GSQL query blocks and accumulators, supporting both basic and advanced use cases. These include pure vector searches, filtered vector searches, and searches based on graph patterns.
+
+Vector attributes are also mutable, allowing users to create, read, update, or delete vector data in the same way as other vertex attribute types.
+
+To support exact searches, TigerGraph includes a set of built-in vector functions. These functions allow users to perform operations on vector attributes, enabling advanced capabilities such as exact top-k vector searches, similarity joins on graph patterns, and innovative fusions of structured and unstructured data.
+
+[Go back to top](#top)
 ## vectorSearch Function
 ### Syntax
 ```
