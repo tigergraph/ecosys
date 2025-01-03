@@ -20,7 +20,7 @@ This GSQL tutorial contains
   - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
   - [Vector Search Driven Pattern Match](#vector-search-driven-pattern-match)
-- [Advanced Topics](#advanced-topics)
+- [Essential Operations and Tools](#Essential-operations-and-tools)
   - [Global and Local Schema Change](#global-and-local-schema-change)
   - [Vector Data Loading](#vector-data-loading)
   - [Python Integration](#python-integration)
@@ -561,7 +561,7 @@ install query q6
 run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
 [Go back to top](#top)
-# Advanced Topics
+# Essential Operations and Tools
 
 ## Global and Local Schema Change
 
