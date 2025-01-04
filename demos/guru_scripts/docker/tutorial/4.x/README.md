@@ -41,6 +41,8 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 [Go back to top](#top)
 
 # Setup Schema 
+We use an artificial financial schema and dataset as a running example to demonstrate the usability of graph searches. The figure above provides a visualization of all the graph data in the database.
+
 Copy [ddl.gsql](./script/ddl.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
