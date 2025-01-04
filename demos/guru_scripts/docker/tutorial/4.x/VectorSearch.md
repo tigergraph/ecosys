@@ -156,16 +156,16 @@ Packages "gds.vector":
         - gds.vector.norm(list<double> list1, string metric) RETURNS (float) (installed)
 ```
 
-| Function | Parameter | Description |
-|------------|---------|--------------|
-|gds.vector.distance |`list<double> list1, list<double> list2, string metric` |Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric: "cosine", "l2", "ip".
-|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |Calculates the cosine distance between two vectors represented as lists of doubles.
-|gds.vector.ip_distance |`list<double> list1, list<double> list2` |Calculates the inner product (dot product) between two vectors represented as lists of double values.
-|gds.vector.l2_distance |`list<double> list1, list<double> list2` |Calculates the Euclidean distance between two vectors represented as lists of double values.
-|gds.vector.norm |`list<double> list1, string metric` |Computes the norm (magnitude) of a vector based on a specified metric.
-|gds.vector.dimension_count |`list<double> list1` |Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
-|gds.vector.elements_sum |`list<double> list1` |Calculates the sum of all elements in a vector, represented as a list of double values.
-|gds.vector.kth_element |`list<double> list1, int index` |Retrieves the k-th element from a vector, represented as a list of double values.
+| Function | Parameter | Return Type | Description |
+|------------|---------|--------------|--------------|
+|gds.vector.distance |`list<double> list1, list<double> list2, string metric` |float|Calculates the distance between two vectors represented as lists of double values, based on a specified distance metric: "cosine", "l2", "ip".
+|gds.vector.cosine_distance |`list<double> list1, list<double> list2` |float|Calculates the cosine distance between two vectors represented as lists of doubles.
+|gds.vector.ip_distance |`list<double> list1, list<double> list2` |float|Calculates the inner product (dot product) between two vectors represented as lists of double values.
+|gds.vector.l2_distance |`list<double> list1, list<double> list2` |float|Calculates the Euclidean distance between two vectors represented as lists of double values.
+|gds.vector.norm |`list<double> list1, string metric` |float|Computes the norm (magnitude) of a vector based on a specified metric.
+|gds.vector.dimension_count |`list<double> list1` |int|Returns the number of dimensions (elements) in a given vector, represented as a list of double values.
+|gds.vector.elements_sum |`list<double> list1` |float|Calculates the sum of all elements in a vector, represented as a list of double values.
+|gds.vector.kth_element |`list<double> list1, int index` |float|Retrieves the k-th element from a vector, represented as a list of double values.
 
 [Go back to top](#top)
 
