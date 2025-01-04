@@ -1,0 +1,40 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T": [
+        {
+          "a": "Steven",
+          "b": "Scott",
+          "dist": 0.03255625
+        },
+        {
+          "a": "Paul",
+          "b": "Scott",
+          "dist": 0.3933879
+        },
+        {
+          "a": "Scott",
+          "b": "Paul",
+          "dist": 0.3933879
+        },
+        {
+          "a": "Scott",
+          "b": "Paul",
+          "dist": 0.3933879
+        },
+        {
+          "a": "Scott",
+          "b": "Paul",
+          "dist": 0.3933879
+        }
+      ]
+    }
+  ]
+}
