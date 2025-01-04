@@ -135,7 +135,26 @@ The result will be assigned to a vertex set varialbe, which can be used by subse
 
 [Go back to top](#top)
 ## Vector Built-in Functions
-In order to support vector type computation, GSQL provides a list of built-in vector functions. 
+In order to support vector type computation, GSQL provides a list of built-in vector functions. You can see the function signatures by typing the following command in GSQL shell.
+
+
+```python
+GSQL> show package gds.vector
+````
+You will see
+```
+Packages "gds.vector":
+  - Object:
+    - Functions:
+        - gds.vector.cosine_distance(list<double> list1, list<double> list2) RETURNS (float) (installed)
+        - gds.vector.dimension_count(list<double> list1) RETURNS (int) (installed)
+        - gds.vector.distance(list<double> list1, list<double> list2, string metric) RETURNS (float) (installed)
+        - gds.vector.elements_sum(list<double> list1) RETURNS (float) (installed)
+        - gds.vector.ip_distance(list<double> list1, list<double> list2) RETURNS (float) (installed)
+        - gds.vector.kth_element(list<double> list1, int kth_index) RETURNS (float) (installed)
+        - gds.vector.l2_distance(list<double> list1, list<double> list2) RETURNS (float) (installed)
+        - gds.vector.norm(list<double> list1, string metric) RETURNS (float) (installed)
+```
 
 | Function | Parameter | Description |
 |------------|---------|--------------|
