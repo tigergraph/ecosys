@@ -46,6 +46,10 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 [Go back to top](#top)
 
 # Setup Schema 
+We use an artificial financial schema and dataset as a running example to demonstrate the usability of hybrid vector and graph searches. The figure above provides a visualization of all the graph data in the database.
+
+To augment the graph dataset with vector data, for each Account and Phone node, we generated a 3-dimensional random vector data. By default, the cosine metric is used to measure the distance between vectors.
+
 Locate [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
 Next, run the following in your container's bash command line. 
 ```
