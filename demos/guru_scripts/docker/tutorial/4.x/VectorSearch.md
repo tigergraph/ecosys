@@ -167,6 +167,10 @@ Packages "gds.vector":
 |gds.vector.elements_sum |`list<double> list1` |float|Calculates the sum of all elements in a vector, represented as a list of double values.
 |gds.vector.kth_element |`list<double> list1, int index` |float|Retrieves the k-th element from a vector, represented as a list of double values.
 
+You can also see these built-in function implementations, which is GSQL code. For example, if we want to see the `distance` function implementation, we can do
+```python
+GSQL>show function gds.vector.distance
+```
 [Go back to top](#top)
 
 # Query Examples
