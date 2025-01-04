@@ -238,7 +238,7 @@ install query q1a
 #run the query
 run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-
+The result is shown in [q1a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.out) under `/home/tigergraph/tutorial/4.x/vector/q1a.out` 
 ### Top-k vector search using a vertex embedding as the query vector
 
 Locate [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
@@ -274,6 +274,7 @@ install query q1b
 #run the query
 run query q1b()
 ```
+The result is shown in [q1b.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.out) under `/home/tigergraph/tutorial/4.x/vector/q1b.out` 
 
 ### Top-k vector search from a vertex set parameter
 
@@ -312,8 +313,9 @@ install query q1c
 
 #run the query
 run query q1c("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
-
 ```
+The result is shown in [q1c.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1c.out) under `/home/tigergraph/tutorial/4.x/vector/q1c.out` 
+
 [Go back to top](#top)
 
 ## Range Vector Search
@@ -344,6 +346,7 @@ install query q2
 #run the query
 run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
 ```
+The result is shown in [q2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2.out) under `/home/tigergraph/tutorial/4.x/vector/q2.out` 
 
 [Go back to top](#top)
 ## Filtered Vector Search
@@ -379,6 +382,9 @@ install query q3
 #run the query
 run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)
 ```
+
+The result is shown in [q3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3.out) under `/home/tigergraph/tutorial/4.x/vector/q3.out` 
+
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
 ```python
@@ -439,6 +445,7 @@ install query q4
 #run the query
 run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
+The result is shown in [q4.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.out) under `/home/tigergraph/tutorial/4.x/vector/q4.out` 
 
 ### Exact vector search on a graph pattern 
 
@@ -501,7 +508,7 @@ install query q4a
 #run the query
 run query q4a([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-
+The result is shown in [q4a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4a.out) under `/home/tigergraph/tutorial/4.x/vector/q4a.out` 
 
 [Go back to top](#top)
 ## Vector Similarity Join on Graph Patterns
@@ -541,6 +548,8 @@ install query q5
 #run the query
 run query q5()
 ```
+The result is shown in [q5.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5.out) under `/home/tigergraph/tutorial/4.x/vector/q5.out`
+
 ### Range similarity join on graph patterns. 
 Find similar pairs whose distance is less than a threshold from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
@@ -570,7 +579,7 @@ install query q5a
 #run the query
 run query q5a()
 ```
-
+The result is shown in [q5a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5a.out) under `/home/tigergraph/tutorial/4.x/vector/q5a.out` 
 [Go back to top](#top)
 
 ## Vector Search Driven Pattern Match
@@ -605,6 +614,7 @@ install query q6
 #run the query
 run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
+The result is shown in [q6.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q6.out) under `/home/tigergraph/tutorial/4.x/vector/q6.out` 
 [Go back to top](#top)
 # Essential Operations and Tools
 
