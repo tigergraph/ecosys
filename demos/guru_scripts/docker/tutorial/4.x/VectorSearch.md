@@ -126,8 +126,8 @@ Vector attributes are also mutable, allowing users to create, read, update, or d
 result = vectorSearch(VectorAttributes, QueryVector, K, optionalParam)
 ```
 ### Function name and return type
-In GSQL, we support top-k ANN (approximate nearest neighbor) vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryVector`. 
-The result will be assigned to a vertex set varialbe, which can be used by subsequent GSQL query block. E.g., `result` will hold the top-k most similar vertices based on their embedding distance to the query embedding. 
+In GSQL, we support top-k ANN (approximate nearest neighbor) vector search via the function `vectorSearch()`, which will return the top k most similar vectors to an input `QueryVector`.
+The result will be assigned to a vertex set variable, which can be used by subsequent GSQL query blocks. E.g., `result` will hold the top-k most similar vertices based on their embedding distance to the query embedding.
 
 ### Parameter
 |Parameter	|Description
