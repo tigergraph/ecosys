@@ -203,6 +203,8 @@ install query q1
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
+The result is shown in [q1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1.out) under `/home/tigergraph/tutorial/4.x/vector/q1.out` 
+
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
 ```python
