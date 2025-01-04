@@ -49,7 +49,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 Locate [ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/ddl.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql ddl.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/ddl.gsql
 ```
 
 [Go back to top](#top)
@@ -64,7 +64,7 @@ You can choose one of the following methods.
   Next, run the following in your container's bash command line. Wait 2 mintues as it's pulling data from s3. 
 
   ```
-  gsql load.gsql
+  gsql /home/tigergraph/tutorial/4.x/vector/load.gsql
   ```
   or in GSQL Shell editor, copy the content of [load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load.gsql), and paste it into the GSQL shell editor to run.
   
@@ -81,7 +81,7 @@ You can choose one of the following methods.
 
   - Locate [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load2.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container. Modify the script with your local file path if necessary. Next, run the following in your container's bash command line. 
     ```
-    gsql load2.gsql
+    gsql /home/tigergraph/tutorial/4.x/vector/load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load2.gsql), and paste in GSQL shell editor to run.
     
@@ -150,7 +150,7 @@ In order to support vector type computation, GSQL provides a list of built-in ve
 Locate [q1.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q1.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q1.gsql
 ```
 
 ```python
@@ -184,7 +184,7 @@ curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query
 Locate [q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q1a.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q1a.gsql
 ```
 
 ```python
@@ -212,7 +212,7 @@ run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.0165718756616115
 Locate [q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q1b.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q1b.gsql
 ```
 ```python
 USE GRAPH financialGraph
@@ -249,7 +249,7 @@ Locate [q1c.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/dem
 Next, run the following in your container's bash command line.
 
 ```
-gsql q1c.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q1c.gsql
 ```
 
 ```python
@@ -290,7 +290,7 @@ Do a range vector search with a given query embedding and a distance threshold.
 Locate [q2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q2.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q2.gsql
 ```
 
 ```python
@@ -320,7 +320,7 @@ Do a GSQL query block to select a vertex candidate set, then do vector top-k sea
 Locate [q3.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q3.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q3.gsql
 ```
 
 ```python
@@ -362,7 +362,7 @@ Do a pattern match first to find candidate vertex set. Then, do a vector search.
 Locate [q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q4.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q4.gsql
 ```
 
 ```python
@@ -415,7 +415,7 @@ Use `ORDER BY ASC` or `ORDER BY DESC` to do exact top-k vector search. This meth
 Locate [q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q4a.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q4a.gsql
 ```
 
 ```python
@@ -479,7 +479,7 @@ Find most similar pairs from a graph pattern. Exhaustive search any two pairs sp
 Locate [q5.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q5.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q5.gsql
 ```
 
 ```python
@@ -515,7 +515,7 @@ Find similar pairs whose distance is less than a threshold from a graph pattern.
 Locate [q5a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5a.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q5a.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q5a.gsql
 ```
 ```python
 #enter the graph
@@ -547,7 +547,7 @@ Do vector search first, the result drive the next pattern match.
 Locate [q6.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q6.gsql) under `/home/tigergraph/tutorial/4.x/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
-gsql q6.gsql
+gsql /home/tigergraph/tutorial/4.x/vector/q6.gsql
 ```
 
 ```python
