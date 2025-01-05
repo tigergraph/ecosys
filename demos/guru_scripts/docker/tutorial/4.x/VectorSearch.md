@@ -118,35 +118,35 @@ You can choose one of the following methods.
     or in GSQL Shell editor, copy the content of [load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/load2.gsql), and paste in GSQL shell editor to run.
  
     The declarative loading script is self-explainatory. You define the filename alias for each data source, and use the the `LOAD` statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes. 
+
     ```python
-USE GRAPH financialGraph
+    USE GRAPH financialGraph
 
-DROP JOB load_local_file
+    DROP JOB load_local_file
 
-//load from local file
-CREATE LOADING JOB load_local_file  {
- // define the location of the source files; each file path is assigned a filename variable.  
- DEFINE FILENAME account="/home/tigergraph/tutorial/4.x/data/account.csv";
- DEFINE FILENAME phone="/home/tigergraph/tutorial/4.x/data/phone.csv";
- DEFINE FILENAME city="/home/tigergraph/tutorial/4.x/data/city.csv";
- DEFINE FILENAME hasPhone="/home/tigergraph/tutorial/4.x/data/hasPhone.csv";
- DEFINE FILENAME locatedIn="/home/tigergraph/tutorial/4.x/data/locate.csv";
- DEFINE FILENAME transferdata="/home/tigergraph/tutorial/4.x/data/transfer.csv";
- DEFINE FILENAME accountEmb="/home/tigergraph/tutorial/4.x/data/account_emb.csv";
- DEFINE FILENAME phoneEmb="/home/tigergraph/tutorial/4.x/data/phone_emb.csv";
- //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
- LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
- LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
- LOAD city TO VERTEX City VALUES ($"name") USING header="true", separator=",";
- LOAD hasPhone TO Edge hasPhone VALUES ($"accnt", gsql_trim($"phone")) USING header="true", separator=",";
- LOAD locatedIn TO Edge isLocatedIn VALUES ($"accnt", gsql_trim($"city")) USING header="true", separator=",";
- LOAD transferdata TO Edge transfer VALUES ($"src", $"tgt", $"date", $"amount") USING header="true", separator=",";
- LOAD accountEmb TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|", header="true";
- LOAD phoneEmb TO VECTOR ATTRIBUTE emb1 ON VERTEX Phone VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|", header="true";
+    //load from local file
+    CREATE LOADING JOB load_local_file  {
+      // define the location of the source files; each file path is assigned a filename variable.  
+      DEFINE FILENAME account="/home/tigergraph/tutorial/4.x/data/account.csv";
+      DEFINE FILENAME phone="/home/tigergraph/tutorial/4.x/data/phone.csv";
+      DEFINE FILENAME city="/home/tigergraph/tutorial/4.x/data/city.csv";
+      DEFINE FILENAME hasPhone="/home/tigergraph/tutorial/4.x/data/hasPhone.csv";
+      DEFINE FILENAME locatedIn="/home/tigergraph/tutorial/4.x/data/locate.csv";
+      DEFINE FILENAME transferdata="/home/tigergraph/tutorial/4.x/data/transfer.csv";
+      DEFINE FILENAME accountEmb="/home/tigergraph/tutorial/4.x/data/account_emb.csv";
+      DEFINE FILENAME phoneEmb="/home/tigergraph/tutorial/4.x/data/phone_emb.csv";
+      //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
+      LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+      LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+      LOAD city TO VERTEX City VALUES ($"name") USING header="true", separator=",";
+      LOAD hasPhone TO Edge hasPhone VALUES ($"accnt", gsql_trim($"phone")) USING header="true", separator=",";
+      LOAD locatedIn TO Edge isLocatedIn VALUES ($"accnt", gsql_trim($"city")) USING header="true", separator=",";
+      LOAD transferdata TO Edge transfer VALUES ($"src", $"tgt", $"date", $"amount") USING header="true", separator=",";
+      LOAD accountEmb TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|", header="true";
+      LOAD phoneEmb TO VECTOR ATTRIBUTE emb1 ON VERTEX Phone VALUES ($0, SPLIT($1, ",")) USING SEPARATOR="|", header="true";
+    }
 
-}
-
-run loading job load_local_file
+    run loading job load_local_file
     ```
     
 [Go back to top](#top)
