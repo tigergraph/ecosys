@@ -1,5 +1,5 @@
 #enter the graph
-USE GRAPH FINANCIALGRAPH
+USE GRAPH financialGraph
 
 CREATE OR REPLACE OPENCYPHER QUERY c1() {
   // MATCH a node pattern-- symbolized by (),
@@ -9,12 +9,8 @@ CREATE OR REPLACE OPENCYPHER QUERY c1() {
   RETURN a
 }
 
-# Two methods to run the query. The compiled method gives the best performance. 
-
-# Method 1: Run immediately with our interpret engine
-interpret query c1()
-
-# Method 2: Compile and install the query as a stored procedure
+# To run the query, we need to install it first.
+# Compile and install the query as a stored procedure
 install query c1
 
 # run the compiled query
