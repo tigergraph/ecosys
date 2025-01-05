@@ -1,0 +1,23 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "VS_XXX": [
+        {
+          "v_id": "Ed",
+          "v_type": "Account",
+          "attributes": {
+            "b": "Ed",
+            "sum_lparen_e_dot_amount_rparen_": 21300
+          }
+        }
+      ]
+    }
+  ]
+}
