@@ -158,3 +158,29 @@ install query c1
 run query c1()
 ```
 The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c1.out) under `/home/tigergraph/tutorial/4.x/cypher/c1.out`
+
+### MATCH A Vertex Set With Filter
+Copy [c2.cypher](./cypher/c2.cypher) to your container. 
+
+```python
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE OPENCYPHER QUERY c2() {
+  // MATCH a node pattern-- symbolized by (),
+  //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
+  // WHERE clause specify a boolean condition to filter the matched Accounts. 
+  // return will print out all the bound Account vertices in JSOn format.
+  MATCH (a:Account)
+  WHERE a.name = "Scott"
+  RETURN a
+}
+
+# To run the query, we need to install it first.
+# Compile and install the query as a stored procedure
+install query c2
+
+# run the compiled query
+run query c2()
+```
+The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c2.out) under `/home/tigergraph/tutorial/4.x/cypher/c2.out`
