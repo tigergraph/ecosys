@@ -210,3 +210,4 @@ install query c3
 # run the compiled query
 run query c3("Scott")
 ```
+The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c3.out) under `/home/tigergraph/tutorial/4.x/cypher/c3.out`
