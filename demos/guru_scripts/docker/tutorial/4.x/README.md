@@ -78,6 +78,33 @@ You can choose one of the following methods.
        gsql load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
+
+    The declarative loading script is self-explainatory. You define the filename alias for each data source, and use the the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
+    ```python
+    USE GRAPH financialGraph
+
+    DROP JOB load_local_file
+
+    //load from local file
+    CREATE LOADING JOB load_local_file  {
+      // define the location of the source files; each file path is assigned a filename variable.  
+      DEFINE FILENAME account="/home/tigergraph/data/account.csv";
+      DEFINE FILENAME phone="/home/tigergraph/data/phone.csv";
+      DEFINE FILENAME city="/home/tigergraph/data/city.csv";
+      DEFINE FILENAME hasPhone="/home/tigergraph/data/hasPhone.csv";
+      DEFINE FILENAME locatedIn="/home/tigergraph/data/locate.csv";
+      DEFINE FILENAME transferdata="/home/tigergraph/data/transfer.csv";
+      //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
+      LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+      LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+      LOAD city TO VERTEX City VALUES ($"name") USING header="true", separator=",";
+      LOAD hasPhone TO Edge hasPhone VALUES ($"accnt", gsql_trim($"phone")) USING header="true", separator=",";
+      LOAD locatedIn TO Edge isLocatedIn VALUES ($"accnt", gsql_trim($"city")) USING header="true", separator=",";
+      LOAD transferdata TO Edge transfer VALUES ($"src", $"tgt", $"date", $"amount") USING header="true", separator=",";
+    }
+
+    run loading job load_local_file
+    ```
     
 [Go back to top](#top)
 
