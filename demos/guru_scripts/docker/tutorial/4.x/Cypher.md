@@ -136,7 +136,7 @@ We will use examples to illustrate cypher syntax.
 
 ## Node Pattern
 ### MATCH A Vertex Set 
-Copy [c1.cypher](./cpyher/c1.cypher) to your container. 
+Copy [c1.cypher](./cypher/c1.cypher) to your container. 
 
 ```python
 #enter the graph
