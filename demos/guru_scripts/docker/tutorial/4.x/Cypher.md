@@ -184,3 +184,29 @@ install query c2
 run query c2()
 ```
 The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c2.out) under `/home/tigergraph/tutorial/4.x/cypher/c2.out`
+
+## Edge Pattern 
+### MATCH 1-hop Edge Pattern
+Copy [c3.cypher](./cypher/c3.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE OPENCYPHER QUERY c3(string acctName) {
+
+    // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+    // In cypher, we use $param to denote the binding literal
+    // {name: $acctName} is a JSON style filter. It's equivalent to "a.name = $acctName".
+    // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
+    MATCH  (a:Account {name: $acctName})-[e:transfer]->(b:Account)
+    RETURN b, sum(e.amount)
+
+}
+
+# compile and install the query as a stored procedure
+install query c3
+
+# run the compiled query
+run query c3("Scott")
+```
