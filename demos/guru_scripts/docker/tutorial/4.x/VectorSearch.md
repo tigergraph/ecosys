@@ -58,7 +58,7 @@ gsql /home/tigergraph/tutorial/4.x/vector/ddl.gsql
 
 As seen below, `Account` and `Phone` vertex types are extended with `emb1` vector attribute, which is 3-dimensional vector. By default, the `emb1` will use `consine` metric. An ANN search index will be automatically built and maintained as vector data is loaded and updated.  
 
-```
+```python
 //install gds functions
 import package gds
 install function gds.**
