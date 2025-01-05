@@ -1,0 +1,22 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "VS_XXX": [
+        {
+          "v_id": "Scott",
+          "v_type": "Account",
+          "attributes": {
+            "a": "Scott"
+          }
+        }
+      ]
+    }
+  ]
+}
