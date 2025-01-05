@@ -136,7 +136,7 @@ We will use examples to illustrate cypher syntax.
 
 ## Node Pattern
 ### MATCH A Vertex Set 
-Copy [q1a.gsql](./script/q1a.gsql) to your container. 
+Copy [c1.cypher](./cpyher/c1.cypher) to your container. 
 
 ```python
 #enter the graph
@@ -161,3 +161,4 @@ install query c1
 # run the compiled query
 run query c1()
 ```
+The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c1.out) under `/home/tigergraph/tutorial/4.x/cypher/c1.out`
