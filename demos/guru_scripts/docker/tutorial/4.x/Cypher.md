@@ -48,6 +48,26 @@ Next, run the following in your container's bash command line.
 ```
 gsql ddl.gsql
 ```
+As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
+
+```
+//install gds functions
+import package gds
+install function gds.**
+
+//create vertex types
+CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
+CREATE VERTEX City ( name STRING PRIMARY KEY)
+CREATE VERTEX Phone (number STRING PRIMARY KEY, isBlocked BOOL)
+
+//create edge types
+CREATE DIRECTED EDGE transfer (FROM Account, TO Account, DISCRIMINATOR(date DATETIME), amount UINT) WITH REVERSE_EDGE="transfer_reverse"
+CREATE UNDIRECTED EDGE hasPhone (FROM Account, TO Phone)
+CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
+
+//create graph; * means include all graph element types in the graph.
+CREATE GRAPH financialGraph (*)
+```
 
 [Go back to top](#top)
 
@@ -78,7 +98,7 @@ You can choose one of the following methods.
        gsql load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
-    
+
     The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
     ```python
     USE GRAPH financialGraph
