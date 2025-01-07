@@ -1,10 +1,19 @@
-# Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./FinancialGraph.jpg)
 
-# Content
-This GSQL tutorial contains 
-- [Setup Environment](#setup-Environment)
-- [Setup Schema (model)](#setup-schema)
+
+# Introduction <a name="top"></a>
+
+This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis
+
+GSQL V3 syntax reflects the evolution towards GQL, the ISO standard graph query language standard released in 2024. V3 emphasizes ASCII art in its syntax, as well as support for most OpenCyper syntax and functions.
+
+A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/latest/intro/).
+
+
+# Table of Contents
+
+- [Sample Graph](#sample-graph-for-tutorial)
+- [Set Up Environment](#set-up-environment)
+- [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
@@ -17,7 +26,7 @@ This GSQL tutorial contains
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
     - [Edge Attached Accumulator](#edge-attached-accumulator)
-  - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
+  - [Vertex Set Variables And Accumulators As Composition Tools](#vertex-set-variables-and-accumulators-as-composition-tools)
     - [Using Vertex Set Variables](#using-vertex-set-variables)
     - [Using Accumulators](#using-accumulators)
   - [Flow Control](#flow-control)
@@ -32,23 +41,30 @@ This GSQL tutorial contains
     - [Minus](#minus)
   - [Query Tuning](#query-tuning) 
  - [Support](#support) 
-  
 
-# Setup Environment 
+# Sample Graph For Tutorial
+This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+![Financial Graph](./FinancialGraph.jpg)
+
+
+# Set Up Environment 
+
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
+Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 
 [Go back to top](#top)
 
-# Setup Schema 
-We use an artificial financial schema and dataset as a running example to demonstrate the usability of graph searches. The figure above provides a visualization of all the graph data in the database.
+# Set Up Schema 
+A graph schema describes the vertex types, edge types, and properties found in your graph. TigerGraph is a schema-first database, meaning that the schema is declared before loading data. This not only optimizes data storage and query performance, but it also provides built-in checks to make sure your data conformed to the expected schema.
 
 Copy [ddl.gsql](./script/ddl.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql ddl.gsql
 ```
-As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. `REVERSE_EDGE` option specifies a twin edge type except the direction is reversed to its hosting edge type. 
+As seen below, the declarative DDL creates vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires `FROM` and `TO` vertex types as the key.
+Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction.
 
 ```python
 //install gds functions
@@ -73,9 +89,9 @@ CREATE GRAPH financialGraph (*)
 
 # Load Data 
 
-You can choose one of the following methods. 
+Now that you have a graph schema, you can load data using one of the following methods. 
 
-- Load sample data from our publicly accessible s3 bucket 
+- Load sample data from our publicly accessible s3 bucket:
   
   Copy [load.gsql](./script/load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
@@ -740,7 +756,7 @@ install query -single q4a
 run query q4a("Jenny")
 ```
 [Go back to top](#top)
-## Vertex Set Variables And Accumulator As Composition Tools
+## Vertex Set Variables And Accumulators As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
 
