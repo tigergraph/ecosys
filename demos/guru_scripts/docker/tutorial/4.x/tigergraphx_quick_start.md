@@ -1,10 +1,53 @@
 # TigerGraphX Quick Start: Using TigerGraph for Graph and Vector Database
 
----
-
 In this quick start guide, we will work with the following graph:
 
 ![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
+
+
+## Installation Guide
+
+Follow this guide to install and set up **TigerGraphX** in your environment.
+
+### Requirements
+
+This project requires **Python 3.12** and **TigerGraph 4.2**. Ensure you meet the following prerequisites before proceeding:
+
+#### **1. Python 3.12**
+- Please ensure Python 3.12 is installed on your system.
+- You can download and install it from the [official Python website](https://www.python.org/downloads/).
+
+#### **2. TigerGrapsh 4.2**
+
+TigerGraph is required for this project and can be set up in one of the following ways:
+
+- **TigerGraph DB**: Install and configure a local instance of TigerGraph.
+- **TigerGraph Cloud**: Use a cloud-hosted instance of TigerGraph.
+
+### Installation Steps
+
+The simplest way to get started with **TigerGraphX** is by installing it directly from PyPI. Using a virtual environment is recommended to ensure a clean and isolated setup.
+
+To install TigerGraphX, run:
+```bash
+pip install tigergraphx
+```
+
+This allows you to quickly start using the library without needing the source code.
+
+#### **Verify Installation**
+
+After installing, verify that TigerGraphX is installed correctly by running:
+```bash
+python -c "import tigergraphx; print('TigerGraphX installed successfully!')"
+```
+
+If the installation was successful, you will see:
+```
+TigerGraphX installed successfully!
+```
+
+This ensures that the library is properly installed and ready for use.
 
 ## Create a Graph
 ### Define a Graph Schema
