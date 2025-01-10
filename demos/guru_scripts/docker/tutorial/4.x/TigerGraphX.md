@@ -4,25 +4,44 @@ In this quick start guide, we will work with the following graph:
 
 ![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
 
-
 ## Installation Guide
 
 Follow this guide to install and set up **TigerGraphX** in your environment.
 
 ### Requirements
 
-This project requires **Python 3.12** and **TigerGraph 4.2**. Ensure you meet the following prerequisites before proceeding:
+This project requires **Python 3.10, 3.11 or 3.12** and **TigerGraph 4.2**. Ensure you meet the following prerequisites before proceeding:
 
-#### **1. Python 3.12**
-- Please ensure Python 3.12 is installed on your system.
+#### **1. Python**
+- Please ensure Python 3.10, 3.11 or 3.12 is installed on your system.
 - You can download and install it from the [official Python website](https://www.python.org/downloads/).
 
-#### **2. TigerGrapsh 4.2**
+#### **2. TigerGraph**
 
-TigerGraph is required for this project and can be set up in one of the following ways:
+TigerGraph 4.2 is required for this project and can be set up in one of the following ways:
 
 - **TigerGraph DB**: Install and configure a local instance of TigerGraph.
 - **TigerGraph Cloud**: Use a cloud-hosted instance of TigerGraph.
+- **TigerGraph Docker**: Use a Docker container to run TigerGraph. 
+
+  ##### **Docker Setup Guide**
+
+  Follow the [Docker setup guide](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your Docker environment.
+
+  > **_Note:_** For vector feature preview, please pull the `tigergraph/tigergraph:4.2.0-preview` Docker image instead. Here's how you can do it:
+  >
+  > ```bash
+  > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
+  > ```
+  >
+  > After setting up the Docker container, remember to apply your TigerGraph license key to the instance. You can obtain a free developer license [here](https://dl.tigergraph.com/). Once you have your license key, follow these steps:
+  >
+  > ```bash
+  > docker exec -it tigergraph /bin/bash
+  > gadmin license set <license_key>
+  > gadmin config apply -y
+  > gadmin start all
+  > ```
 
 ### Installation Steps
 
@@ -159,12 +178,14 @@ nodes_for_adding = [
     ("Ed", {"isBlocked": False}),
 ]
 print("Adding Account Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
+
 nodes_for_adding = [
     ("718-245-5888", {"isBlocked": False}),
     ("650-658-9867", {"isBlocked": True}),
     ("352-871-8978", {"isBlocked": False}),
 ]
 print("Adding Phone Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
+
 nodes_for_adding = ["New York", "Gainesville", "San Francisco"]
 print("Adding City Nodes:", G.add_nodes_from(nodes_for_adding, node_type="City"))
 ```
@@ -186,6 +207,7 @@ ebunch_to_add = [
     ("Ed", "352-871-8978"),
 ]
 print("Adding hasPhone Edges:", G.add_edges_from(ebunch_to_add, "Account", "hasPhone", "Phone"))
+
 ebunch_to_add = [
     ("Scott", "New York"),
     ("Jenny", "San Francisco"),
@@ -194,6 +216,7 @@ ebunch_to_add = [
     ("Ed", "Gainesville"),
 ]
 print("Adding isLocatedIn Edges:", G.add_edges_from(ebunch_to_add, "Account", "isLocatedIn", "City"))
+
 ebunch_to_add = [
     ("Scott", "Ed", {"date": "2024-01-04", "amount": 20000}),
     ("Scott", "Ed", {"date": "2024-02-01", "amount": 800}),
@@ -217,44 +240,21 @@ To insert embeddings into the nodes, you can use the following data format:
 
 
 ```python
-data = [
-    {
-        "name": "Scott",
-        "emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557],
-    },
-    {
-        "name": "Jenny",
-        "emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128],
-    },
-    {
-        "name": "Steven",
-        "emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929],
-    },
-    {
-        "name": "Paul",
-        "emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444],
-    },
-    {
-        "name": "Ed",
-        "emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603],
-    },
+nodes_for_adding = [
+    ("Scott", {"emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}),
+    ("Jenny", {"emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128]}),
+    ("Steven", {"emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929]}),
+    ("Paul", {"emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444]}),
+    ("Ed", {"emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603]}),
 ]
-print("Number of Account Nodes Inserted:", G.upsert(data, "Account"))
-data = [
-    {
-        "number": "718-245-5888",
-        "emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155],
-    },
-    {
-        "number": "650-658-9867",
-        "emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702],
-    },
-    {
-        "number": "352-871-8978",
-        "emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639],
-    },
+print("Number of Account Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
+
+nodes_for_adding = [
+    ("718-245-5888", {"emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155]}),
+    ("650-658-9867", {"emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702]}),
+    ("352-871-8978", {"emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639]}),
 ]
-print("Number of Phone Nodes Inserted:", G.upsert(data, "Phone"))
+print("Number of Phone Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
 ```
 
     Number of Account Nodes Inserted: 0
@@ -294,6 +294,21 @@ for result in results:
     {'id': 'Paul', 'distance': 0.393388, 'name': 'Paul', 'isBlocked': False}
     {'id': 'Scott', 'distance': 0, 'name': 'Scott', 'isBlocked': False}
     {'id': 'Steven', 'distance': 0.0325563, 'name': 'Steven', 'isBlocked': True}
+
+
+After performing the vector search, the following code retrieves the detailed embeddings of the top-k nodes identified in the search. This is achieved by using their IDs and the specified vector attribute. The results are then printed for each node.
+
+
+```python
+node_ids = {item['id'] for item in results}
+nodes = G.fetch_nodes(node_ids, vector_attribute_name="emb1", node_type="Account")
+for node in nodes.items():
+    print(node)
+```
+
+    ('Paul', [0.001119343, -0.001038988, -0.01715852])
+    ('Scott', [-0.01773397, -0.01019224, -0.01657188])
+    ('Steven', [-0.01505514, -0.01681934, -0.022187])
 
 
 ### Top-k Vector Search on a Set of Vertex Types' Vector Attributes
