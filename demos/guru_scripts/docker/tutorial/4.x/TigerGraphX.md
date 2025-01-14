@@ -58,7 +58,7 @@ This allows you to quickly start using the library without needing the source co
 
 After installing, verify that TigerGraphX is installed correctly by running:
 ```bash
-python -c "import tigergraphx; print('TigerGraphX installed successfully!')"
+python -c 'import tigergraphx; print("TigerGraphX installed successfully!")'
 ```
 
 If the installation was successful, you will see:
