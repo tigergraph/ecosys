@@ -281,5 +281,34 @@ install query c6
 run query c6("Scott")
 ```
 
-The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`    
+The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`   
 
+### Sum Distinct on 1-hop
+Path pattern has multiple hops. To sum each hop's edge attributes, we need `DISTINCT` keyword. 
+Copy [c7.cypher](./cypher/c7.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c7 (datetime low, datetime high, string accntName) {
+
+   // a path pattern in ascii art () -[]->()-[]->()
+   // think the FROM clause is a matched table with columns (a, e, b, e2, c)
+   // you can use SQL syntax to group by on the matched table
+   // Below query find 2-hop reachable account c from a, and group by the path a, b, c
+   // find out how much each hop's total transfer amount.
+   MATCH (a:Account)-[e:transfer]->(b)-[e2:transfer]->(c:Account)
+   WHERE e.date >= $low AND e.date <= $high
+   RETURN a, b, c, sum(DISTINCT e.amount) AS hop_1_sum,  sum(DISTINCT e2.amount) AS hop_2_sum   
+   
+}
+
+#compile and install the query as a stored procedure
+install query c7
+
+#run the query
+run query c7("2024-01-01", "2024-12-31", "Scott")
+```
+
+The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
