@@ -1,7 +1,17 @@
+
+# Introduction <a name="top"></a>
+
+This OpenCypher tutorial provides a hands-on introduction to new users. The software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis
+
+OpenCypher syntax emphasizes ASCII art in its syntax.
+
+A more exhaustive description of functionality and behavior of OpenCypher is available from the [OpenCypher Language Reference](https://opencypher.org/).
+
+
 # Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](./FinancialGraph.jpg)
 
-# Content
+# Table of Contents
 This GSQL tutorial contains 
 - [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
