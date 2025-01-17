@@ -259,5 +259,28 @@ install query c5
 run query c5("2024-01-01", "2024-12-31", "Scott")
 ```
 
+### Variable Length Path Pattern
+Copy [c6.cypher](./cypher/c6.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c6 (string accntName) {
+
+  // a path pattern in ascii art () -[]->()-[]->()
+  MATCH (a:Account {name: $accntName})-[:transfer*1..]->(b:Account)
+  RETURN a, b     
+
+}
+
+#compile and install the query as a stored procedure
+install query c6
+
+#run the query
+run query c6("Scott")
+```
+
+The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`    
 The result is shown in [c5.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c5.out) under `/home/tigergraph/tutorial/4.x/cypher/c5.out`   
 
