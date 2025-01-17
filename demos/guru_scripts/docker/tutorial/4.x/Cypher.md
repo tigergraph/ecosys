@@ -211,3 +211,25 @@ install query c3
 run query c3("Scott")
 ```
 The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c3.out) under `/home/tigergraph/tutorial/4.x/cypher/c3.out`
+
+Copy [c4.cypher](./cypher/c4.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE OPENCYPHER QUERY c4() {
+
+  //think the MATCH clause is a matched table with columns (a, e, b)
+  //you can use SQL syntax to group by the source and target account, and sum the total transfer amount
+  MATCH (a:Account)-[e:transfer]->(b:Account)
+  RETURN a, b, sum(e.amount) AS transfer_total
+
+}
+
+#compile and install the query as a stored procedure
+install query c4
+
+#run the query
+run query c4()
+```
+The result is shown in [c4.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
