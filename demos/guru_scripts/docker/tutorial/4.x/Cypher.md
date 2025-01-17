@@ -283,15 +283,45 @@ run query c6("Scott")
 
 The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`   
 
-### Sum Distinct On 1-hop Within A Path
-Path pattern has multiple hops. To sum each hop's edge attributes, we need `DISTINCT` keyword. 
 Copy [c7.cypher](./cypher/c7.cypher) to your container. 
 
 ```python
 USE GRAPH financialGraph
 
 // create a query
-CREATE OR REPLACE OPENCYPHER QUERY c7 (datetime low, datetime high, string accntName) {
+CREATE OR REPLACE OPENCYPHER QUERY c7(datetime low, datetime high, string accntName) {
+
+   // below we use variable length path.
+   // *1.. means 1 to more steps of the edge type "transfer"
+   // select the reachable end point and bind it to vertex alias "b"
+   // note:
+   // 1. the path has "shortest path" semantics. If you have a path that is longer than the shortest,
+   // we only count the shortest. E.g., scott to scott shortest path length is 4. Any path greater than 4 will
+   // not be matched.
+   // 2. we can not put an alias to bind the edge in the the variable length part -[:transfer*1..]->, but
+   // we can bind the end points (a) and (b) in the variable length path, and group by on them.
+   MATCH (a:Account {name: $accntName})-[:transfer*1..]->(b:Account)
+   RETURN a, b, count(*) AS path_cnt 
+   
+
+}
+
+install query c7
+
+run query c7("2024-01-01", "2024-12-31", "Scott")
+```
+
+The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
+
+### Sum Distinct On 1-hop Within A Path
+Path pattern has multiple hops. To sum each hop's edge attributes, we need `DISTINCT` keyword. 
+Copy [c8.cypher](./cypher/c8.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c8 (datetime low, datetime high, string accntName) {
 
    // a path pattern in ascii art () -[]->()-[]->()
    // think the FROM clause is a matched table with columns (a, e, b, e2, c)
@@ -305,10 +335,10 @@ CREATE OR REPLACE OPENCYPHER QUERY c7 (datetime low, datetime high, string accnt
 }
 
 #compile and install the query as a stored procedure
-install query c7
+install query c8
 
 #run the query
-run query c7("2024-01-01", "2024-12-31", "Scott")
+run query c8("2024-01-01", "2024-12-31", "Scott")
 ```
 
-The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
+The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
