@@ -10,27 +10,6 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
-  - [Pattern Summary](#pattern-summary)
-- [Advanced Topics](#advanced-topics)
-  - [Accumulators](#accumulators)
-    - [Accumulator Operators](#accumulator-operators)
-    - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
-    - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
-    - [Edge Attached Accumulator](#edge-attached-accumulator)
-  - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
-    - [Using Vertex Set Variables](#using-vertex-set-variables)
-    - [Using Accumulators](#using-accumulators)
-  - [Flow Control](#flow-control)
-    - [IF Statement](#if-statement)
-    - [WHILE Statement](#while-statement)
-    - [FOREACH Statement](#foreach-statement)
-    - [CONTINUE and BREAK Statement](#continue-and-break-statement)
-    - [CASE WHEN Statement](#case-when-statement)
-  - [Vertex Set Operators](#vertex-set-operators)
-    - [Union](#union)
-    - [Intersect](#intersect)
-    - [Minus](#minus)
-  - [Query Tuning](#query-tuning) 
  - [Support](#support) 
   
 
@@ -342,3 +321,16 @@ run query c8("2024-01-01", "2024-12-31", "Scott")
 ```
 
 The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
+
+[Go back to top](#top)
+# Support 
+If you like the tutorial and want to explore more, join the GSQL developer community at 
+
+https://community.tigergraph.com/
+
+Or, study our product document at
+
+https://docs.tigergraph.com/gsql-ref/current/intro/
+
+[Go back to top](#top)
+
