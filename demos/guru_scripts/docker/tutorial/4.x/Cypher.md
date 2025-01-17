@@ -233,3 +233,31 @@ install query c4
 run query c4()
 ```
 The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
+
+## Path Pattern 
+
+### Fixed Length Path Pattern
+Copy [c5.cypher](./cypher/c5.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c5(datetime low, datetime high, string accntName) {
+
+  // a path pattern in ascii art () -[]->()-[]->()
+  MATCH (a:Account {name: $accntName})-[e:transfer]->()-[e2:transfer]->(b:Account)
+  WHERE e.date >= $low AND e.date <= $high and e.amount >500 and e2.amount>500
+  RETURN b.isBlocked, b.name    
+ 
+}
+
+#compile and install the query as a stored procedure
+install query c5
+
+#run the query
+run query c5("2024-01-01", "2024-12-31", "Scott")
+```
+
+The result is shown in [c5.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c5.out) under `/home/tigergraph/tutorial/4.x/cypher/c5.out`   
+
