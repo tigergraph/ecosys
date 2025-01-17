@@ -199,8 +199,8 @@ CREATE OR REPLACE OPENCYPHER QUERY c3(string acctName) {
     // In cypher, we use $param to denote the binding literal
     // {name: $acctName} is a JSON style filter. It's equivalent to "a.name = $acctName".
     // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
-    MATCH  (a:Account {name: $acctName})-[e:transfer]->(b:Account)
-    RETURN b, sum(e.amount)
+    MATCH (a:Account {name: $accntName})-[e:transfer]->(b:Account)
+    RETURN b, sum(e.amount) AS totalTransfer
 
 }
 
