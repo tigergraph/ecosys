@@ -171,28 +171,28 @@ G = Graph(graph_schema, connection)
 
 ```python
 nodes_for_adding = [
-    ("Scott", {"isBlocked": False}),
-    ("Jenny", {"isBlocked": False}),
-    ("Steven", {"isBlocked": True}),
-    ("Paul", {"isBlocked": False}),
-    ("Ed", {"isBlocked": False}),
+    ("Scott", {"isBlocked": False, "emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}),
+    ("Jenny", {"isBlocked": False, "emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128]}),
+    ("Steven", {"isBlocked": True, "emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929]}),
+    ("Paul", {"isBlocked": False, "emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444]}),
+    ("Ed", {"isBlocked": False, "emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603]}),
 ]
-print("Adding Account Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
+print("Number of Account Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
 
 nodes_for_adding = [
-    ("718-245-5888", {"isBlocked": False}),
-    ("650-658-9867", {"isBlocked": True}),
-    ("352-871-8978", {"isBlocked": False}),
+    ("718-245-5888", {"isBlocked": False, "emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155]}),
+    ("650-658-9867", {"isBlocked": True, "emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702]}),
+    ("352-871-8978", {"isBlocked": False, "emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639]}),
 ]
-print("Adding Phone Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
+print("Number of Phone Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
 
 nodes_for_adding = ["New York", "Gainesville", "San Francisco"]
-print("Adding City Nodes:", G.add_nodes_from(nodes_for_adding, node_type="City"))
+print("Number of City Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="City"))
 ```
 
-    Adding Account Nodes: 5
-    Adding Phone Nodes: 3
-    Adding City Nodes: 3
+    Number of Account Nodes Inserted: 5
+    Number of Phone Nodes Inserted: 3
+    Number of City Nodes Inserted: 3
 
 
 ### Add Edges
@@ -206,7 +206,7 @@ ebunch_to_add = [
     ("Paul", "650-658-9867"),
     ("Ed", "352-871-8978"),
 ]
-print("Adding hasPhone Edges:", G.add_edges_from(ebunch_to_add, "Account", "hasPhone", "Phone"))
+print("Number of hasPhone Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "hasPhone", "Phone"))
 
 ebunch_to_add = [
     ("Scott", "New York"),
@@ -215,7 +215,7 @@ ebunch_to_add = [
     ("Paul", "Gainesville"),
     ("Ed", "Gainesville"),
 ]
-print("Adding isLocatedIn Edges:", G.add_edges_from(ebunch_to_add, "Account", "isLocatedIn", "City"))
+print("Number of isLocatedIn Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "isLocatedIn", "City"))
 
 ebunch_to_add = [
     ("Scott", "Ed", {"date": "2024-01-04", "amount": 20000}),
@@ -227,41 +227,13 @@ ebunch_to_add = [
     ("Ed", "Paul", {"date": "2024-01-04", "amount": 1500}),
     ("Paul", "Steven", {"date": "2023-05-09", "amount": 20000}),
 ]
-print("Adding transfer Edges:", G.add_edges_from(ebunch_to_add, "Account", "transfer", "Account"))
+print("Number of transfer Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "transfer", "Account"))
 ```
 
-    Adding hasPhone Edges: 5
-    Adding isLocatedIn Edges: 5
-    Adding transfer Edges: 8
+    Number of hasPhone Edges Inserted: 5
+    Number of isLocatedIn Edges Inserted: 5
+    Number of transfer Edges Inserted: 8
 
-
-### Inserting Embeddings into Nodes
-To insert embeddings into the nodes, you can use the following data format:
-
-
-```python
-nodes_for_adding = [
-    ("Scott", {"emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}),
-    ("Jenny", {"emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128]}),
-    ("Steven", {"emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929]}),
-    ("Paul", {"emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444]}),
-    ("Ed", {"emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603]}),
-]
-print("Number of Account Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
-
-nodes_for_adding = [
-    ("718-245-5888", {"emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155]}),
-    ("650-658-9867", {"emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702]}),
-    ("352-871-8978", {"emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639]}),
-]
-print("Number of Phone Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
-```
-
-    Number of Account Nodes Inserted: 0
-    Number of Phone Nodes Inserted: 0
-
-
-Note: A result of 0 simply indicates that no new nodes were added, as the nodes were already inserted into TigerGraph. This does not mean the update failed.
 
 ### Display the Number of Nodes
 Next, let's verify that the data has been inserted into the graph by using the following command. As expected, the number of nodes is 5.
@@ -347,9 +319,6 @@ G.search_top_k_similar_nodes(
 )
 ```
 
-
-
-
     [{'id': 'Paul', 'distance': 0.3933879, 'name': 'Paul', 'isBlocked': False},
      {'id': 'Steven', 'distance': 0.0325563, 'name': 'Steven', 'isBlocked': True}]
 
@@ -382,17 +351,17 @@ Let's first retrieves all "Account" nodes where the isBlocked attribute is False
 ```python
 nodes_df = G.get_nodes(
     node_type="Account",
-    filter_expression="s.isBlocked == False",
+    node_alias="s", # The alias "s" is used in filter_expression. You can remove this line since the default node alias is "s"
+    filter_expression='s.isBlocked == False AND s.name != "Ed"',
     return_attributes=["name"],
 )
 print(nodes_df)
 ```
 
         name
-    0   Paul
-    1     Ed
-    2  Scott
-    3  Jenny
+    0  Scott
+    1   Paul
+    2  Jenny
 
 
 Then convert the name column of the retrieved DataFrame into a set of candidate IDs and performs a top-2 vector search on the "Account" node type using the "emb1" embedding attribute, restricted to the specified candidate IDs.
