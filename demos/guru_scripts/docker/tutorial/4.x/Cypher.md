@@ -283,7 +283,7 @@ run query c6("Scott")
 
 The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`   
 
-### Sum Distinct on 1-hop
+### Sum Distinct On 1-hop Within A Path
 Path pattern has multiple hops. To sum each hop's edge attributes, we need `DISTINCT` keyword. 
 Copy [c7.cypher](./cypher/c7.cypher) to your container. 
 
