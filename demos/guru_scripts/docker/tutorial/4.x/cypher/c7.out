@@ -10,46 +10,29 @@
     {
       "T": [
         {
-          "a": "Ed",
-          "b": "Paul",
-          "c": "Steven",
-          "hop_1_sum": 1500,
-          "hop_2_sum": 20000
-        },
-        {
-          "a": "Ed",
-          "b": "Paul",
-          "c": "Jenny",
-          "hop_1_sum": 1500,
-          "hop_2_sum": 653
-        },
-        {
-          "a": "Jenny",
+          "a": "Scott",
           "b": "Scott",
-          "c": "Ed",
-          "hop_1_sum": 1000,
-          "hop_2_sum": 21300
-        },
-        {
-          "a": "Paul",
-          "b": "Jenny",
-          "c": "Scott",
-          "hop_1_sum": 653,
-          "hop_2_sum": 1000
+          "path_cnt": 3
         },
         {
           "a": "Scott",
           "b": "Ed",
-          "c": "Paul",
-          "hop_1_sum": 21300,
-          "hop_2_sum": 1500
+          "path_cnt": 3
         },
         {
-          "a": "Steven",
+          "a": "Scott",
+          "b": "Steven",
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
           "b": "Jenny",
-          "c": "Scott",
-          "hop_1_sum": 8560,
-          "hop_2_sum": 1000
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
+          "b": "Paul",
+          "path_cnt": 3
         }
       ]
     }
