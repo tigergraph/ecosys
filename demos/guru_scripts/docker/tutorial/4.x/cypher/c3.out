@@ -2,7 +2,7 @@
   "version": {
     "edition": "enterprise",
     "api": "v2",
-    "schema": 0
+    "schema": 1
   },
   "error": false,
   "message": "",
@@ -14,7 +14,7 @@
           "v_type": "Account",
           "attributes": {
             "b": "Ed",
-            "sum_lparen_e_dot_amount_rparen_": 21300
+            "totalTransfer": 21300
           }
         }
       ]
