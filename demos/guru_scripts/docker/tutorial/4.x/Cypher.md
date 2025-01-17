@@ -282,5 +282,4 @@ run query c6("Scott")
 ```
 
 The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`    
-The result is shown in [c5.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c5.out) under `/home/tigergraph/tutorial/4.x/cypher/c5.out`   
 
