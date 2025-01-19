@@ -441,7 +441,6 @@ In query c12 below, the sorting (`ORDER BY`), skipping (`SKIP`), and limiting (`
 
 The query first aggregates data by counting `tgt2` for each `srcAccountName` using `WITH`. Next, `ORDER BY` sorts the results by `tgt2Cnt` (descending) and `srcAccountName` (descending). `SKIP 1` skips the first record from the sorted intermediate result set. `LIMIT 3` restricts the output to the next 3 records.
 
-
 Copy [c12.cypher](./cypher/c12.cypher) to your container. 
 
 ```python
@@ -464,6 +463,30 @@ run query c12()
 
 The result is shown in [c12.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c12.out) under `/home/tigergraph/tutorial/4.x/cypher/c12.out`  
 
+[Go back to top](#top)
+
+In query c13 below, the sorting (`ORDER BY`), skipping (`SKIP`), and limiting (`LIMIT`) operations are applied after the `RETURN` clause, meaning they act on the final result set. The final result is the same as c12, but the order of operations is different.
+
+Copy [c13.cypher](./cypher/c13.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph  
+CREATE OR REPLACE OPENCYPHER QUERY c13(){  
+  MATCH (src)-[e:transfer]-> (tgt1)  
+  MATCH (tgt1)-[e:transfer]-> (tgt2)  
+  WITH src.name AS srcAccountName, COUNT(tgt2) AS tgt2Cnt   
+  RETURN srcAccountName, tgt2Cnt  
+  ORDER BY tgt2Cnt DESC, srcAccountName DESC  
+  SKIP 1  
+  LIMIT 3 
+} 
+
+install query c13
+
+run query c13()
+```
+
+The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
