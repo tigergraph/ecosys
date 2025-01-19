@@ -20,6 +20,7 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
+  - [With Clause](#with-clause)
  - [Support](#support) 
   
 
@@ -333,6 +334,38 @@ run query c8("2024-01-01", "2024-12-31", "Scott")
 The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
 
 [Go back to top](#top)
+
+## With Clause
+
+The WITH clause in Cypher is used to chain parts of a query, pass intermediate results to the next part, or perform transformations like aggregation. It acts as a way to manage query scope and handle intermediate data without exposing everything to the final result.
+
+### Key Uses:
+- **Filter intermediate results**: Apply conditions on data before proceeding.
+- **Aggregation**: Perform calculations and pass the results further.
+- **Variable scope management**: Avoid cluttering query scope by controlling what gets passed forward.
+
+### Filter intermediate result
+
+In the exmaple below, the `WITH a` passes the filtered `Account` (names starting with "J") to the next part of the query.
+The `RETURN a.name` outputs the names.
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c9() {
+
+  MATCH (a:Account)
+  WHERE a.name STARTS WITH "J"
+  WITH a
+  RETURN a.name
+}
+
+install query c9
+
+run query c9()
+```
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
