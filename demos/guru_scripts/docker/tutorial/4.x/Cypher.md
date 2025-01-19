@@ -370,6 +370,29 @@ run query c9()
 
 The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
 
+### Aggregation
+Let's find the number of Account blocked.
+Copy [c10.cypher](./cypher/c10.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c10() {
+
+MATCH (a:Account)
+WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count
+RETURN Blocked, blocked_count
+
+}
+
+install query c10
+
+run query c10()
+```
+
+The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`   
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
