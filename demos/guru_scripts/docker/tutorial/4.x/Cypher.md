@@ -21,6 +21,7 @@ This GSQL tutorial contains
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
   - [With Clause](#with-clause)
+  - [Sorting and Limiting Results](#sorting-and-limiting-results)
  - [Support](#support) 
   
 
@@ -432,6 +433,8 @@ run query c11()
 The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c11.out) under `/home/tigergraph/tutorial/4.x/cypher/c11.out`  
 
 [Go back to top](#top)
+
+## Sorting and Limiting Results
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
