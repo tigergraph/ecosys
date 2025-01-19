@@ -371,7 +371,9 @@ run query c9()
 The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
 
 ### Aggregation
-Let's find the number of Account blocked.
+In c10 query below, the `WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count` groups data by `isBlocked` and calculates the count of Account.
+`RETURN Blocked, blocked_count` outputs the aggregated results.
+
 Copy [c10.cypher](./cypher/c10.cypher) to your container. 
 
 ```python
