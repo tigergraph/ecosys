@@ -149,6 +149,8 @@ run query c1()
 ```
 The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c1.out) under `/home/tigergraph/tutorial/4.x/cypher/c1.out`
 
+[Go back to top](#top)
+
 ### MATCH A Vertex Set With Filter
 Copy [c2.cypher](./cypher/c2.cypher) to your container. 
 
@@ -174,6 +176,8 @@ install query c2
 run query c2()
 ```
 The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c2.out) under `/home/tigergraph/tutorial/4.x/cypher/c2.out`
+
+[Go back to top](#top)
 
 ## Edge Pattern 
 ### MATCH 1-hop Edge Pattern
@@ -224,6 +228,8 @@ run query c4()
 ```
 The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
 
+[Go back to top](#top)
+
 ## Path Pattern 
 
 ### Fixed Length Path Pattern
@@ -248,6 +254,7 @@ install query c5
 #run the query
 run query c5("2024-01-01", "2024-12-31", "Scott")
 ```
+[Go back to top](#top)
 
 ### Variable Length Path Pattern
 Copy [c6.cypher](./cypher/c6.cypher) to your container. 
@@ -292,8 +299,6 @@ CREATE OR REPLACE OPENCYPHER QUERY c7(datetime low, datetime high, string accntN
    // we can bind the end points (a) and (b) in the variable length path, and group by on them.
    MATCH (a:Account {name: $accntName})-[:transfer*1..]->(b:Account)
    RETURN a, b, count(*) AS path_cnt 
-   
-
 }
 
 install query c7
@@ -302,6 +307,8 @@ run query c7("2024-01-01", "2024-12-31", "Scott")
 ```
 
 The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
+
+[Go back to top](#top)
 
 ### Sum Distinct On 1-hop Within A Path
 Path pattern has multiple hops. To sum each hop's edge attributes, we need `DISTINCT` keyword. 
@@ -370,6 +377,8 @@ run query c9()
 
 The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
 
+[Go back to top](#top)
+
 ### Aggregation
 In c10 query below, the `WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count` groups data by `isBlocked` and calculates the count of Account.
 `RETURN Blocked, blocked_count` outputs the aggregated results.
@@ -395,6 +404,8 @@ run query c10()
 
 The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`  
 
+[Go back to top](#top)
+
 ### Variable scope management
 In query c11 below, the ` WITH a.name AS name` narrows the scope to only the name property.
 `WHERE name STARTS WITH "J"` filters names starting with 'J'. `RETURN name` outputs the filtered names.
@@ -419,6 +430,8 @@ run query c11()
 ```
 
 The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c11.out) under `/home/tigergraph/tutorial/4.x/cypher/c11.out`  
+
+[Go back to top](#top)
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
