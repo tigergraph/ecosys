@@ -349,6 +349,8 @@ The WITH clause in Cypher is used to chain parts of a query, pass intermediate r
 In the exmaple below, the `WITH a` passes the filtered `Account` (names starting with "J") to the next part of the query.
 The `RETURN a.name` outputs the names.
 
+Copy [c9.cypher](./cypher/c9.cypher) to your container. 
+
 ```python
 USE GRAPH financialGraph
 
@@ -365,6 +367,8 @@ install query c9
 
 run query c9()
 ```
+
+The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
