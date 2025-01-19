@@ -393,7 +393,34 @@ install query c10
 run query c10()
 ```
 
-The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`   
+The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`  
+
+### Variable scope management
+In query c11 below, the ` WITH a.name AS name` narrows the scope to only the name property.
+`WHERE name STARTS WITH "J"` filters names starting with 'J'. `RETURN name` outputs the filtered names.
+
+Copy [c11.cypher](./cypher/c11.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+
+// create a query
+CREATE OR REPLACE OPENCYPHER QUERY c11() {
+
+   MATCH (a:Account)
+   WITH a.name AS name
+   WHERE name STARTS WITH "J"
+   RETURN name
+
+
+}
+
+install query c11
+
+run query c11()
+```
+
+The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c11.out) under `/home/tigergraph/tutorial/4.x/cypher/c11.out`  
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
