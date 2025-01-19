@@ -380,9 +380,9 @@ USE GRAPH financialGraph
 // create a query
 CREATE OR REPLACE OPENCYPHER QUERY c10() {
 
-MATCH (a:Account)
-WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count
-RETURN Blocked, blocked_count
+  MATCH (a:Account)
+  WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count
+  RETURN Blocked, blocked_count
 
 }
 
