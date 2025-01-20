@@ -22,6 +22,7 @@ This GSQL tutorial contains
   - [Path Pattern](#path-pattern)
   - [With Clause](#with-clause)
   - [Sorting and Limiting Results](#sorting-and-limiting-results)
+  - [Working with List](#working-with-list)
  - [Support](#support) 
   
 
@@ -487,6 +488,9 @@ run query c13()
 ```
 
 The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
+
+## Working With List
+
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
