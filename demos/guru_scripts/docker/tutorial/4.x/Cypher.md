@@ -20,6 +20,7 @@ This GSQL tutorial contains
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
+  - [Optional Match](#optional-match)
   - [With Clause](#with-clause)
   - [Sorting and Limiting Results](#sorting-and-limiting-results)
   - [Working With List](#working-with-list)
@@ -347,6 +348,9 @@ run query c8("2024-01-01", "2024-12-31", "Scott")
 The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
 
 [Go back to top](#top)
+
+## Optional Match
+`OPTIONAL MATCH` matches patterns against your graph, just like MATCH does. The difference is that if no matches are found, OPTIONAL MATCH will use a null for missing parts of the pattern.
 
 ## With Clause
 
