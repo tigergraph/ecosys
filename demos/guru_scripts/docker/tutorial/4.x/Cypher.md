@@ -25,7 +25,8 @@ This GSQL tutorial contains
   - [Working With List](#working-with-list)
   - [Combining MATCH Pattern Results](#combining-match-pattern-results)
   - [Conditional Logic](#conditional-logic)
-  - [Aggregate Function](#aggregate-function)
+  - [Aggregate Functions](#aggregate-function)
+  - [Other Expression Functions](#other-expression-functions)
  - [Support](#support) 
   
 
@@ -657,7 +658,7 @@ run query c19()
 
 The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c19.out) under `/home/tigergraph/tutorial/4.x/cypher/c19.out`
 
-## Aggregate Function
+## Aggregate Functions
 Aggregation functions in OpenCypher allow you to perform calculations over a set of values, summarizing or transforming the data into a single result. These functions are typically used in combination with the `WITH` or `RETURN` clauses to compute aggregate values based on certain criteria. In `WITH` and `RETURN`, other non-aggregate expressions are used form groups of the matched rows. 
 
 ### Common Aggregation Functions:
@@ -691,6 +692,9 @@ run query c20()
 ```
 
 The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c20.out) under `/home/tigergraph/tutorial/4.x/cypher/c20.out`
+
+## Other Expression Functions
+There are many expression functions openCypher supports. Please refer to [openCypher functions](https://docs.tigergraph.com/gsql-ref/4.1/opencypher-in-gsql/opencypher-in-gsql) 
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
