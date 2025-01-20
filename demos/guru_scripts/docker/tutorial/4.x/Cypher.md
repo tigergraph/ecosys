@@ -574,9 +574,10 @@ The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/maste
 
 Each `MATCH` clause will create a match table. You can use `UNION` and `UNION ALL` to combine schema compatiable match tables.
 
-In query c17() below, ` MATCH (s:Account {name: "Paul"})` finds "Paul". `MATCH (s:Account) WHERE s.isBlocked` finds all blocked accounts. `UNION` will combine these two.
+### UNION
+In query c17() below, ` MATCH (s:Account {name: "Paul"})` finds "Paul". `MATCH (s:Account) WHERE s.isBlocked` finds all blocked accounts. `UNION` will combine these two with duplicates removed.
 
-Copy [c16.cypher](./cypher/c17.cypher) to your container.
+Copy [c17.cypher](./cypher/c17.cypher) to your container.
 
 ```python
 USE GRAPH financialGraph
@@ -593,6 +594,28 @@ install query c17
 ```
 
 The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c17.out) under `/home/tigergraph/tutorial/4.x/cypher/c17.out`
+
+### UNION ALL
+In query c18() below, ` MATCH (s:Account {name: "Steven"})` finds "Steven". `MATCH (s:Account) WHERE s.isBlocked` finds all blocked accounts--"Steven". `UNION ALL` will combine these two, keeping the duplicates.
+
+Copy [c18.cypher](./cypher/c18.cypher) to your container.
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c18(){
+  MATCH (s:Account {name: "Steven"})
+  RETURN s AS srcAccount
+  UNION ALL
+  MATCH (s:Account)
+  WHERE s.isBlocked
+  RETURN s AS srcAccount
+}
+
+install query c18
+run query c18()
+```
+
+The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c18.out) under `/home/tigergraph/tutorial/4.x/cypher/c18.out`
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
