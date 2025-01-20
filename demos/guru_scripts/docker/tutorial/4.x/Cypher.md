@@ -206,7 +206,7 @@ Copy [c3.cypher](./cypher/c3.cypher) to your container.
 USE GRAPH financialGraph
 
 # create a query
-CREATE OR REPLACE OPENCYPHER QUERY c3(string acctName) {
+CREATE OR REPLACE OPENCYPHER QUERY c3(string accntName) {
 
     // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
     // In cypher, we use $param to denote the binding literal
