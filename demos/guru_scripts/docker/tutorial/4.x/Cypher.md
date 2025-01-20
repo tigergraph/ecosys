@@ -16,6 +16,7 @@ This GSQL tutorial contains
 - [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
+- [Cypher Syntax Overview](#cypher-syntax-overview)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
@@ -124,6 +125,17 @@ You can choose one of the following methods.
     ```
     
 [Go back to top](#top)
+
+# Cypher Syntax Overview
+
+OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties.
+
+The core syntax of openCypher follows the MATCH-WHERE-RETURN pattern.
+
+- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style, such as `()-[]->()-[]->()`. Here, `()` represents nodes, and `-[]->` represents relationships. By alternating nodes and relationships, users can define linear paths or complex patterns within the graph schema.
+- The results of a `MATCH` operation are stored in an implicit working table, where the columns correspond to the aliases of graph elements (nodes or relationships) in the declared pattern. These columns can then be referenced in subsequent clauses, including MATCH, OPTIONAL MATCH, WITH, or RETURN. Each subsequent clause can transform the invisible working table by projecting aways columns, adding new columns, and rows. 
+
+In the next section, we will explore Cypher syntax in detail through practical examples.
 
 # Query Examples 
 
