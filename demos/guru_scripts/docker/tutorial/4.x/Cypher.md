@@ -25,7 +25,7 @@ This GSQL tutorial contains
   - [Working With List](#working-with-list)
   - [Combining MATCH Pattern Results](#combining-match-pattern-results)
   - [Conditional Logic](#conditional-logic)
-  - [Aggregate Functions](#aggregate-function)
+  - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
  - [Support](#support) 
   
