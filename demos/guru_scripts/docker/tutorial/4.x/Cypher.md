@@ -631,6 +631,31 @@ CASE
   ELSE <default_result>
 END
 ```
+
+In query c19() below, `CASE WHEN` will produce 0 for blcoked account, and 1 for non-blocked account.
+
+Copy [c19.cypher](./cypher/c19.cypher) to your container.
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c19(){
+  MATCH (s:Account {name: "Steven"})- [:transfer]-> (t)
+  WITH
+    s.name AS srcAccount,
+    t.name AS tgtAccount,
+    CASE
+       WHEN s.isBlocked = true THEN 0
+       ELSE 1
+    END AS tgt
+  RETURN srcAccount, SUM(tgt) as tgtCnt
+}
+
+install query c19
+run query c19()
+```
+
+The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c19.out) under `/home/tigergraph/tutorial/4.x/cypher/c19.out`
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
