@@ -491,6 +491,31 @@ The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/maste
 
 ## Working With List
 
+### UNWIND Clause
+In Cypher, the `UNWIND` clause is used to transform a list into individual rows. It's helpful when you have a list of values and want to treat each value as a separate row in your query.
+
+In query c14 below, the `UNWIND` is used to expand existing rows with each element of the list `[1, 2, 3]`. 
+In each expanded row, the variable `x` will hold each element of the list, allowing you to perform further operations on it in the subsequent parts of the query.
+
+Copy [c14.cypher](./cypher/c14.cypher) to your container. 
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c14(){
+   MATCH (src)-[e:transfer]-> (tgt1)
+   WHERE src.name in ["Jenny", "Paul"]
+   UNWIND [1, 2, 3] AS x //the "Jenny" row will be expanded to [Jenny, 1], [Jenny,2], [Jenny, 3]. Same fashion applies to the "Paul" row.
+   WITH src AS srcAccount, e.amount * x AS res
+   RETURN srcAccount, res
+}
+
+install query c14
+
+run query c14()
+```
+
+The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c14.out) under `/home/tigergraph/tutorial/4.x/cypher/c14.out`  
+
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
