@@ -364,7 +364,7 @@ The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master
 ## Optional Match
 `OPTIONAL MATCH` matches patterns against your graph, just like MATCH does. The difference is that if no matches are found, OPTIONAL MATCH will use a null for missing parts of the pattern.
 
-In query c21, we first match `Account` whose name is $accntName. Next, we find if the matched `Account` satifies the `OPTIONAL MATCH` clause. If not, we pad `null` on the `MATCH` clause produced match table row. If yes, we pad the `OPTIONAL MATCH` table to the `MATCH` clause matched row. 
+In query c21, we first match `Account` whose name is $accntName. Next, we find if the matched `Account` satisfies the `OPTIONAL MATCH` clause. If not, we pad `null` on the `MATCH` clause produced match table row. If yes, we pad the `OPTIONAL MATCH` table to the `MATCH` clause matched row. 
 
 Copy [c21.cypher](./cypher/c21.cypher) to your container. 
 
