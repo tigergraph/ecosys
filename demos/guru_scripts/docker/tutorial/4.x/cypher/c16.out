@@ -1,0 +1,27 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T_3": [
+        {
+          "srcAccount": "Paul",
+          "doubleAmount": 40000
+        },
+        {
+          "srcAccount": "Jenny",
+          "doubleAmount": 2000
+        },
+        {
+          "srcAccount": "Paul",
+          "doubleAmount": 1306
+        }
+      ]
+    }
+  ]
+}
