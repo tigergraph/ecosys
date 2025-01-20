@@ -516,6 +516,27 @@ run query c14()
 
 The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c14.out) under `/home/tigergraph/tutorial/4.x/cypher/c14.out`  
 
+### COLLECT Function
+In Cypher, the `collect()` function is used to aggregate values into a list. It is often used in conjunction with `RETURN` or `WITH` to group and organize data into collections.
+
+In query c15() below, `MATCH (src)-[e:transfer]->(tgt)` finds all 1-hop transfers started with "Jenny" or "Paul". `COLLECT(e.amount)` gathers all the `e.amount` into a single list, grouped by `srcAccount`. `RETURN` outputs the `amounts` list per `srcAccount`.
+
+Copy [c15.cypher](./cypher/c15.cypher) to your container.
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c15(){
+   MATCH (src)-[e:transfer]->(tgt)
+   WHERE src.name in ["Jenny", "Paul"]
+   WITH src AS srcAccount, COLLECT(e.amount) AS amounts
+   RETURN srcAccount, amounts
+}
+
+install query c15
+
+run query c15()
+```
+The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
