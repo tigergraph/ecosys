@@ -538,6 +538,30 @@ run query c15()
 ```
 The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
 
+### Using WITH and COLLECT()
+You can use `UNWIND` to decompose a list column produced by `COLLECT()`.
+
+In query c16() below, `MATCH (src)-[e:transfer]->(tgt)` finds all 1-hop transfers started with "Jenny" or "Paul". `COLLECT(e.amount)` gathers all the `e.amount` into a single list, grouped by `srcAccount`. `UNWIND` expand the list, and append each element on the list's belonging row.  `WITH` will double the amount column. `RETURN` output the `UNWIND` result.
+
+Copy [c16.cypher](./cypher/c16.cypher) to your container.
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c16(){
+   MATCH (src)-[e:transfer]->(tgt)
+   WHERE src.name in ["Jenny", "Paul"]
+   WITH src AS srcAccount, COLLECT(e.amount) AS amounts //collect will create ammounts list for each srcAccount
+   UNWIND amounts as amount //for each source account row, inflate the row to a list of rows with each element in the amounts list
+   WITH srcAccount, amount*2 AS doubleAmount
+   RETURN srcAccount, doubleAmount
+}
+
+install query c16
+run query c16()
+```
+
+The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c16.out) under `/home/tigergraph/tutorial/4.x/cypher/c16.out`
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
