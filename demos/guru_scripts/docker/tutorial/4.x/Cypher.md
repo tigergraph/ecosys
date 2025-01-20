@@ -395,7 +395,7 @@ The WITH clause in Cypher is used to chain parts of a query, pass intermediate r
 
 ### Filter intermediate result
 
-In the exmaple below, the `WITH a` passes the filtered `Account` (names starting with "J") to the next part of the query.
+In the example below, the `WITH a` passes the filtered `Account` (names starting with "J") to the next part of the query.
 The `RETURN a.name` outputs the names.
 
 Copy [c9.cypher](./cypher/c9.cypher) to your container. 
