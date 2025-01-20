@@ -23,6 +23,7 @@ This GSQL tutorial contains
   - [With Clause](#with-clause)
   - [Sorting and Limiting Results](#sorting-and-limiting-results)
   - [Working With List](#working-with-list)
+  - [Combining MATCH Pattern Results](#combining-match-pattern-results)
  - [Support](#support) 
   
 
@@ -489,6 +490,7 @@ run query c13()
 
 The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
 
+[Go back to top](#top)
 ## Working With List
 
 ### UNWIND Clause
@@ -516,6 +518,8 @@ run query c14()
 
 The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c14.out) under `/home/tigergraph/tutorial/4.x/cypher/c14.out`  
 
+[Go back to top](#top)
+
 ### COLLECT Function
 In Cypher, the `collect()` function is used to aggregate values into a list. It is often used in conjunction with `RETURN` or `WITH` to group and organize data into collections.
 
@@ -537,6 +541,8 @@ install query c15
 run query c15()
 ```
 The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
+
+[Go back to top](#top)
 
 ### Using WITH and COLLECT()
 You can use `UNWIND` to decompose a list column produced by `COLLECT()`.
@@ -561,6 +567,32 @@ run query c16()
 ```
 
 The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c16.out) under `/home/tigergraph/tutorial/4.x/cypher/c16.out`
+
+[Go back to top](#top)
+
+## Combining MATCH Pattern Results
+
+Each `MATCH` clause will create a match table. You can use `UNION` and `UNION ALL` to combine schema compatiable match tables.
+
+In query c17() below, ` MATCH (s:Account {name: "Paul"})` finds "Paul". `MATCH (s:Account) WHERE s.isBlocked` finds all blocked accounts. `UNION` will combine these two.
+
+Copy [c16.cypher](./cypher/c17.cypher) to your container.
+
+```python
+USE GRAPH financialGraph
+CREATE OR REPLACE OPENCYPHER QUERY c17(){
+  MATCH (s:Account {name: "Paul"})
+  RETURN s AS srcAccount
+  UNION
+  MATCH (s:Account)
+  WHERE s.isBlocked
+  RETURN s AS srcAccount
+}
+
+install query c17
+```
+
+The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c17.out) under `/home/tigergraph/tutorial/4.x/cypher/c17.out`
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
