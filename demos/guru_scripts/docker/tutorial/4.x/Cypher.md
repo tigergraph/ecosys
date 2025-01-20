@@ -22,7 +22,7 @@ This GSQL tutorial contains
   - [Path Pattern](#path-pattern)
   - [With Clause](#with-clause)
   - [Sorting and Limiting Results](#sorting-and-limiting-results)
-  - [Working with List](#working-with-list)
+  - [Working With List](#working-with-list)
  - [Support](#support) 
   
 
