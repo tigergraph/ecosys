@@ -25,6 +25,7 @@ This GSQL tutorial contains
   - [Working With List](#working-with-list)
   - [Combining MATCH Pattern Results](#combining-match-pattern-results)
   - [Conditional Logic](#conditional-logic)
+  - [Aggregate Function](#aggregate-function)
  - [Support](#support) 
   
 
@@ -655,6 +656,20 @@ run query c19()
 ```
 
 The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c19.out) under `/home/tigergraph/tutorial/4.x/cypher/c19.out`
+
+## Aggregate Function
+Aggregation functions in OpenCypher allow you to perform calculations over a set of values, summarizing or transforming the data into a single result. These functions are typically used in combination with the WITH or RETURN clauses to compute aggregate values based on certain criteria.
+
+### Common Aggregation Functions:
+***COUNT()***: Counts the number of items in a given set. e.g. COUNT(*), COUNT(1), COUNT(DISTINCT columnName).
+***SUM()***: Computes the sum of numeric values. It is often used to calculate totals, such as the total amount transferred.
+***AVG()***: Calculates the average of numeric values.
+***MIN()***: Finds the smallest value in a set. Often used to determine the minimum amount or value.
+***MAX()***: Finds the largest value in a set. This is useful for identifying the highest value.
+***COLLECT()***: Aggregates values into a list. Can be used to collect nodes or relationships into a list for further processing.
+***STDEV()***: Computes the standard deviation of values.
+***STDEVP()***: Computes the population standard deviation of values.
+
 
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
