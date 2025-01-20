@@ -352,6 +352,26 @@ The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master
 ## Optional Match
 `OPTIONAL MATCH` matches patterns against your graph, just like MATCH does. The difference is that if no matches are found, OPTIONAL MATCH will use a null for missing parts of the pattern.
 
+In query c21, we first match `Account` whose name is $accntName. Next, we find if the matched `Account` satifies the `OPTIONAL MATCH` clause. If not, we pad `null` on the `MATCH` clause produced match table row. If yes, we pad the `OPTIONAL MATCH` table to the `MATCH` clause matched row. 
+
+Copy [c21.cypher](./cypher/c21.cypher) to your container. 
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE OPENCYPHER QUERY c21(String accntName){
+  MATCH (srcAccount:Account {name: $accntName})
+  OPTIONAL MATCH (srcAccount)- [e:transfer]-> (tgtAccount:Account)
+  WHERE srcAccount.isBlocked
+  RETURN srcAccount, tgtAccount
+}
+
+install query c21
+run query c21("Jenny")
+```
+
+The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c21.out) under `/home/tigergraph/tutorial/4.x/cypher/c21.out`   
+
 ## With Clause
 
 The WITH clause in Cypher is used to chain parts of a query, pass intermediate results to the next part, or perform transformations like aggregation. It acts as a way to manage query scope and handle intermediate data without exposing everything to the final result.
