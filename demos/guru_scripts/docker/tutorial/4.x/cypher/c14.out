@@ -1,0 +1,51 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T_3": [
+        {
+          "srcAccount": "Paul",
+          "res": 40000
+        },
+        {
+          "srcAccount": "Paul",
+          "res": 20000
+        },
+        {
+          "srcAccount": "Paul",
+          "res": 1959
+        },
+        {
+          "srcAccount": "Jenny",
+          "res": 2000
+        },
+        {
+          "srcAccount": "Jenny",
+          "res": 3000
+        },
+        {
+          "srcAccount": "Paul",
+          "res": 60000
+        },
+        {
+          "srcAccount": "Jenny",
+          "res": 1000
+        },
+        {
+          "srcAccount": "Paul",
+          "res": 1306
+        },
+        {
+          "srcAccount": "Paul",
+          "res": 653
+        }
+      ]
+    }
+  ]
+}
