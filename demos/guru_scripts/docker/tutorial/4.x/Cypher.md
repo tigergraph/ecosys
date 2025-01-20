@@ -24,6 +24,7 @@ This GSQL tutorial contains
   - [Sorting and Limiting Results](#sorting-and-limiting-results)
   - [Working With List](#working-with-list)
   - [Combining MATCH Pattern Results](#combining-match-pattern-results)
+  - [Conditional Logic](#conditional-logic)
  - [Support](#support) 
   
 
@@ -617,6 +618,19 @@ run query c18()
 
 The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c18.out) under `/home/tigergraph/tutorial/4.x/cypher/c18.out`
 
+## Conditional Logic
+### CASE Expression
+The CASE expression in OpenCypher allows you to implement conditional logic within a query, enabling dynamic result customization based on specific conditions.
+
+***Syntax***
+```python
+CASE
+  WHEN <condition1> THEN <result1>
+  WHEN <condition2> THEN <result2>
+  ...
+  ELSE <default_result>
+END
+```
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
