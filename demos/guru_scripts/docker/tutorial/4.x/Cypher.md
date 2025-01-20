@@ -154,7 +154,7 @@ USE GRAPH financialGraph
 CREATE OR REPLACE OPENCYPHER QUERY c1() {
   // MATCH a node pattern-- symbolized by (),
   //":Account" is the label of the vertex type Account, "a" is a binding variable to the matched node. 
-  // return will print out all the bound Account vertices in JSOn format.
+  // return will print out all the bound Account vertices in JSON format.
   MATCH (a:Account)
   RETURN a
 }
