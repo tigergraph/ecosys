@@ -1,0 +1,53 @@
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices (ANY) = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (:visited_vertices)-[:transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE;
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+
+  //reset vertex set variables
+  reachable_vertices = {};
+  visited_vertices (ANY) = {seed};
+
+
+     //clear the visited flag
+  S1 = SELECT s
+       FROM  (s:Account)
+       ACCUM s.@visited = FALSE;
+
+    // Loop terminates when condition met or reach 2 iterations
+  WHILE visited_vertices.size() !=0 LIMIT 2 DO
+     visited_vertices = SELECT s
+                        FROM (visited_vertices)-[:transfer]-> (s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                              s.@visited = TRUE;
+
+     reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY WhileTest
+
+RUN QUERY WhileTest("Scott")
