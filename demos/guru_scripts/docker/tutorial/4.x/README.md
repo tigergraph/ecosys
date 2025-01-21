@@ -1380,6 +1380,16 @@ Each schema object is visible within a scope. In a graph database, there are two
 
 ![Catalog Scope](./CatalogScope.jpg)
 
+As illustrated in above figure, we can use `CREATE` statements to create the `Account`, `City`, and `Phone` vertex schema object, and the `isLocatedIn`, `hasPhone`, `Transfer`, and `Transfer_Reverse` edge schema object, and the `financialGraph` graph schema object. They are all visible in the Global scope.
+
+To enter the global scope, type the `use global` command in the GSQL shell. Next, use the `ls` command to list all the schema objects under this scope.
+
+```python
+GSQL> USE GLOBAL
+GSQL> ls
+```
+
+
 [Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
