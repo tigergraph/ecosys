@@ -1,0 +1,55 @@
+USE GRAPH financialGraph
+
+// "distributed" key word means this query can be run both on a single node or a cluster of nodes 
+CREATE OR REPLACE DISTRIBUTED QUERY q4 (/* parameters */) SYNTAX v3 {
+
+    SumAccum<INT> @@sum_accum = 0;
+    MinAccum<INT> @@min_accum = 0;
+    MaxAccum<INT> @@max_accum = 0;
+    AvgAccum @@avg_accum;
+    OrAccum @@or_accum = FALSE;
+    AndAccum @@and_accum = TRUE;
+    ListAccum<INT> @@list_accum;
+
+    // @@sum_accum will be 3 when printed
+    @@sum_accum +=1;
+    @@sum_accum +=2;
+    PRINT @@sum_accum;
+
+    // @@min_accum will be 1 when printed
+    @@min_accum +=1;
+    @@min_accum +=2;
+    PRINT @@min_accum;
+
+    // @@max_accum will be 2 when printed
+    @@max_accum +=1;
+    @@max_accum +=2;
+    PRINT @@max_accum;
+
+    @@avg_accum +=1;
+    @@avg_accum +=2;
+    PRINT @@avg_accum;
+
+    // @@or_accum will be TRUE when printed
+    @@or_accum += TRUE;
+    @@or_accum += FALSE;
+    PRINT @@or_accum;
+
+    // @@and_accum will be FALSE when printed
+    @@and_accum += TRUE;
+    @@and_accum += FALSE;
+    PRINT @@and_accum;
+
+    // @@list_accum will be [1,2,3,4] when printed
+    @@list_accum += 1;
+    @@list_accum += 2;
+    @@list_accum += [3,4];
+    PRINT @@list_accum;
+
+}
+
+//install the query
+install query  q4
+
+//run the query
+run query q4()
