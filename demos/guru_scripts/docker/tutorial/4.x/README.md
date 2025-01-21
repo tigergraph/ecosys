@@ -39,7 +39,8 @@ A more exhaustive description of functionality and behavior of GSQL is available
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
-  - [Query Tuning](#query-tuning) 
+  - [Query Tuning](#query-tuning)
+  - [Explore Catalog](#explore-catalog)
  - [Support](#support) 
 
 # Sample Graph For Tutorial
@@ -1366,6 +1367,17 @@ do
   curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/general/BatchCount?batch_number=$i"
 done
 ```
+[Go back to top](#top)
+
+## Explore Catalog
+
+### Global Scope vs. Graph Scope
+A database uses Data Definition Language (DDL) to create and modify schema objects. Schema objects include vertex types, edge types, graph types, etc. These schema objects reside in the metadata store, known as the Catalog.
+Each schema object is visible within a scope. In a graph database, there are two scopes:
+
+- ***Global Scope***: This is the default scope for schema objects. By default, all objects created using the "CREATE" DDL statement belong to the global scope.
+- ***Graph Scope***: Each graph has its own scope. A schema change job can be used to add schema objects (vertex or edge types) to a specific graph’s scope.
+
 
 [Go back to top](#top)
 # Support 
