@@ -1388,6 +1388,10 @@ To enter the global scope, type the `use global` command in the GSQL shell. Next
 GSQL> USE GLOBAL
 GSQL> ls
 ```
+![Graph Scope](./GlobalLocal.jpg)
+The figure above shows that the `financialGraph` is composed of global scope schema objects such as `Account`, `City`, `Phone`, `isLocatedIn`, and `hasPhone` etc. The `privateGraph` also uses the global schema object `Phone`. Thus, both the `financialGraph` and the `privateGraph` share the `Phone` schema object. Additionally, the `privateGraph` has its own private schema objects— `Loan` and `Person` vertex objects.
+
+To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell. Then, use the `ls` command to list all the schema objects under this graph scope.
 
 
 [Go back to top](#top)
