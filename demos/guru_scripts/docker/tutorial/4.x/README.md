@@ -1398,6 +1398,8 @@ To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell
 > ls
 ```
 
+To see how to do schema change at global or local level, please refer to [Modify a Graph Schema](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/modifying-a-graph-schema)
+
 [Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
