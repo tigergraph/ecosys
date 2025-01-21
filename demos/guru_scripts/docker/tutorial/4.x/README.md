@@ -949,7 +949,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
        //s is all neighbors of visited_vertices
        //which have not been visited
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[:transfer]->(s)
+                        FROM (:visited_vertices)-[:transfer]->(s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                                 s.@visited = TRUE;
