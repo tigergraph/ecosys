@@ -455,7 +455,7 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 USE GRAPH financialGraph
 
 // "distributed" key word means this query can be run both on a single node or a cluster of nodes 
-CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q4 (/* parameters */) SYNTAX v3 {
 
     SumAccum<INT> @@sum_accum = 0;
     MinAccum<INT> @@min_accum = 0;
@@ -503,10 +503,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
 }
 
 //install the query
-install query  a1
+install query  q4
 
 //run the query
-run query a1()
+run query q4()
 ```  
 In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain their semantics and usage.
 
@@ -537,7 +537,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE QUERY q5 (/* parameters */) SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
@@ -555,7 +555,7 @@ CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
 
 }
 
-interpret query a2()
+interpret query q5()
 
 ```
 
@@ -591,7 +591,7 @@ Running example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE QUERY q6 (/* parameters */) SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
@@ -609,7 +609,7 @@ CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
 
 }
 
-interpret query a2()
+interpret query q6()
 ```
 - `FROM-WHERE` Produces a Binding Table
   
@@ -637,7 +637,7 @@ Running example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a3 () SYNTAX V3 {
+CREATE OR REPLACE QUERY q7 () SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@testCnt1 = 0; //global accumulator
@@ -659,7 +659,7 @@ CREATE OR REPLACE QUERY a3 () SYNTAX V3 {
 
 }
 
-INTERPRET QUERY a3()
+INTERPRET QUERY q7()
 ```
 
 - `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
@@ -673,7 +673,7 @@ In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, a
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q8 () SYNTAX V3 {
 
      SumAccum<int> @@edgeCnt = 0;
      MaxAccum<int> @maxAmount = 0;
@@ -700,10 +700,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
 
 }
 
-INSTALL QUERY a4
+INSTALL QUERY q8
 
 
-RUN QUERY a4()
+RUN QUERY q8()
 ```
 
 When you reference a vertex alias in a `POST-ACCUM` statement, you bind that vertex alias to the `POST-ACCUM` clause implicitly. You can also explicitly bind a vertex alias with a `POST-ACCUM` clause by putting the vertex alias in parentheses immediately after the keyword `POST-ACCUM`. Each `POST-ACCUM` clause must be bound with one and only one vertex alias.
@@ -735,7 +735,7 @@ Example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q9 (string acctName) SYNTAX v3 {
 
   OrAccum EDGE @visited;
 
@@ -753,8 +753,8 @@ CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
 }
 
 //it is only supported for single node, or single node mode in distributed enviroment
-install query -single q4a
-run query q4a("Jenny")
+install query -single q9
+run query q9("Jenny")
 ```
 [Go back to top](#top)
 ## Vertex Set Variables And Accumulators As Composition Tools
@@ -797,7 +797,7 @@ the query a5 below achieve query composition via tgtAccnts vertex set variable, 
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q10() SYNTAX V3 {
 
  SumAccum<int> @cnt = 0;
 
@@ -816,9 +816,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
   PRINT tgtPhones;
 }
 
-INSTALL QUERY a5
+INSTALL QUERY q10
 
-RUN QUERY a5()
+RUN QUERY q10()
 ```
 [Go back to top](#top)
 
@@ -833,7 +833,7 @@ For example, in a6 query below, the first query block accumulate 1 into each `y`
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q11() SYNTAX V3 {
 
  SumAccum<int> @cnt = 0;
  SumAccum<int> @@cnt = 0;
@@ -854,10 +854,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
 }
 
 
-INSTALL QUERY a6
+INSTALL QUERY q11
 
 
-RUN QUERY a6()
+RUN QUERY q11()
 ```
 
 [Go back to top](#top)
