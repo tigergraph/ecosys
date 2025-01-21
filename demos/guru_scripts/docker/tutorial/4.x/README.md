@@ -1400,6 +1400,43 @@ To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell
 
 To see how to do schema change at global or local level, please refer to [Modify a Graph Schema](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/modifying-a-graph-schema)
 
+### SHOW - View Parts of the Catalog
+The `SHOW` command can be used to show certain catalog objects, instead of manually filtering through the entire scope when using the ls command. You can either type the exact identifier or use regular expressions / Linux globbing to search.
+
+The syntax is 
+
+```python
+SHOW <VERTEX> | <EDGE> | <JOB> | <QUERY> | <GRAPH> | <PACKAGE> [ <name> | <glob> | -r <regex> ]
+```
+
+`SHOW GRAPH graphName` lists vertices and edges without giving their properties.  `SHOW VERTEX vertexName` and `SHOW EDGE edgeName` list the properties of the desired vertex or edge respectively. `SHOW PACKAGE packageName` lists the packages that are available, such as the packaged template queries. 
+
+This feature supports the ? and * from linux globbing operations, and also regular expression matching. Usage of the feature is limited to the scope of the graph the user is currently in - if you are using a global graph, you will not be able to see vertices that are not included in your current graph.
+
+Below are some examples to inspect object in the catalog. 
+
+```python
+//show what's in financialGraph scope
+use graph financialGraph
+ls
+
+//list what's in global scope
+use GLOBAL
+ls
+
+//show vertex types
+SHOW VERTEX Acc*            //shows all vertex types that start with the letters "Acc"
+SHOW VERTEX Ac?*t         //shows the vertext types that starts with "Ac" and ends with "t"
+SHOW VERTEX ?????          //shows all vertices that are 5 letters long
+
+
+//show query c1 content
+USE GRAPH financialGraph
+LS
+SHOW QUERY c1
+
+```
+
 [Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
