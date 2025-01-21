@@ -1,0 +1,33 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY q8 () SYNTAX V3 {
+
+     SumAccum<int> @@edgeCnt = 0;
+     MaxAccum<int> @maxAmount = 0;
+     MinAccum<int> @minAmount = 100000;
+
+     MaxAccum<int> @@maxSenderAmount = 0;
+     MinAccum<int> @@minReceiverAmount = 100000;
+     SumAccum<int> @@bCnt = 0;
+     SumAccum<int> @@aCnt = 0;
+
+    S = SELECT b
+        FROM (a:Account) - [e:transfer] -> (b:Account)
+        WHERE NOT a.isBlocked
+        ACCUM  a.@maxAmount += e.amount, //sender max amount
+               b.@minAmount += e.amount, //receiver min amount
+                @@edgeCnt +=1
+        POST-ACCUM (a) @@maxSenderAmount += a.@maxAmount
+        POST-ACCUM (b) @@minReceiverAmount += b.@minAmount
+        POST-ACCUM (a) @@aCnt +=1
+        POST-ACCUM (b) @@bCnt +=1 ;
+
+  PRINT @@maxSenderAmount,  @@minReceiverAmount;
+  PRINT @@edgeCnt, @@aCnt, @@bCnt;
+
+}
+
+INSTALL QUERY q8
+
+
+RUN QUERY q8()
