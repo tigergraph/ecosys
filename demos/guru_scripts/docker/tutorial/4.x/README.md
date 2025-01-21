@@ -1378,6 +1378,7 @@ Each schema object is visible within a scope. In a graph database, there are two
 - ***Global Scope***: This is the default scope for schema objects. By default, all objects created using the "CREATE" DDL statement belong to the global scope.
 - ***Graph Scope***: Each graph has its own scope. A schema change job can be used to add schema objects (vertex or edge types) to a specific graph’s scope.
 
+![Catalog Scope](./CatalogScope.jpg)
 
 [Go back to top](#top)
 # Support 
