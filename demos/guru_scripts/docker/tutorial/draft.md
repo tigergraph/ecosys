@@ -70,7 +70,8 @@ LET
 IN
   SELECT s FROM (s:Account) - [e:transfer]-> (t:Account)
     ACCUM s.@totalAmt += ratio * e.amount,
-          @@cnt += 1;
+          @@cnt += 1
+    ORDER BY s.@totalAmt DESC
 ```
 
 **Variable Usage Example**
