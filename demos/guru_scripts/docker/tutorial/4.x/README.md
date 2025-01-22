@@ -1364,7 +1364,7 @@ You can use a Shell script to invoke the above query with each batch id.
 for i in {0...999}
 do
   # Execute the curl command with the current batch_number
-  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/general/BatchCount?batch_number=$i"
+  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/financialGraph/BatchCount?batch_number=$i"
 done
 ```
 [Go back to top](#top)
