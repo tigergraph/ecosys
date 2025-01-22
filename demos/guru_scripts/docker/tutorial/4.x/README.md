@@ -423,7 +423,7 @@ We support two ways to specify repetitions of a pattern.
 ### GQL Style:
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
-| {m,n}    | -[:transfer]->{1,2}   | beween m and n repetitions |
+| {m,n}    | -[:transfer]->{1,2}   | between m and n repetitions |
 | {m,}    | -[:transfer]->{1,}   | m or more repetitions |
 | *    | -[:transfer]->*   | equivalent to {0,} |
 | +    | -[:transfer]->+   | equivalent to {1,} |
@@ -972,7 +972,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
     // Loop terminates when condition met or reach 2 iterations
   WHILE visited_vertices.size() !=0 LIMIT 2 DO
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[:transfer]-> (s)
+                        FROM (:visited_vertices)-[:transfer]-> (s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                               s.@visited = TRUE;
