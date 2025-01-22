@@ -48,6 +48,19 @@ GSQL > SELECT s.name, e.amount as amt, t FROM (s:Account) -[e:transfer]-> (t:Acc
 GSQL > SELECT DISTINCT type(s) FROM (s:Account:City) ORDER BY type(s)
 ```
 
+#### Using Expression
+
+```
+# Using mathematical expressions
+GSQL > SELECT s, e.amount*0.01 AS amt FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+
+# Using CASE expression
+GSQL > BEGIN
+GSQL > SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS status 
+GSQL > FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > END
+```
+
 ## LET...IN... Syntax
 
 The ```LET...IN``` construct in GSQL is used to define variables or accumulators in the LET block and use them in a SELECT query within the IN block. This enables more flexible and powerful queries.
