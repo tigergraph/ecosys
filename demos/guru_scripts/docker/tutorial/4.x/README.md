@@ -1022,7 +1022,7 @@ CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
 
   #FOREACH item in collection accumlators variables
   S = SELECT tgt
-      FROM (s:Account) -[e:Transfer]-> (tgt)
+      FROM (s:Account) -[e:transfer]-> (tgt)
       ACCUM
         @@listVar += e.amount,
         @@setVar += e.amount,
@@ -1348,7 +1348,7 @@ CREATE OR REPLACE QUERY BatchCount (INT batch_num) SYNTAX v3 {
 
         // 1000 is how many batch you will have. You can adjust the batch number to balance performance and memory usage
         tmp = SELECT a1
-        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:Transfer]->(b2:batch1)
+        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:transfer]->(b2:batch1)
         WHERE a1.name != a2.name AND b1.name != b2.name
         ACCUM @@count +=1;
  
