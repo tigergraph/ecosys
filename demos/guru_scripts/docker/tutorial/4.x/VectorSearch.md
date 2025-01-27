@@ -25,7 +25,8 @@ This GSQL tutorial contains
   - [Global and Local Schema Change](#global-and-local-schema-change)
   - [Vector Data Loading](#vector-data-loading)
   - [Python Integration](#python-integration)
-- [Support](#support) 
+- [Support](#support)
+- [Reference](#reference) 
     
 # Setup Environment 
 
@@ -1060,6 +1061,12 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 Or, study our product document at
 
 [https://docs.tigergraph.com/gsql-ref/current/intro/](https://docs.tigergraph.com/gsql-ref/current/intro/)
+
+[Go back to top](#top)
+
+# Reference
+TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs [https://arxiv.org/abs/2501.11216]
+
 
 [Go back to top](#top)
 
