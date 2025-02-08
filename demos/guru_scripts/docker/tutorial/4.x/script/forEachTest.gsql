@@ -61,7 +61,7 @@ CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
   END;
   PRINT @@t;
 
-  MapAccum<STRING,STRING> @@mapVar, @@mapVarResult;
+  MapAccum<STRING,BOOL> @@mapVar, @@mapVarResult;
   S = SELECT s
       FROM (s:Account)
       WHERE s.name =="Scott" OR s.name == "Jennie"
