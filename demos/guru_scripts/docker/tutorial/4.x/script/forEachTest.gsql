@@ -11,7 +11,7 @@ CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
 
   #FOREACH item in collection accumlators variables
   S = SELECT tgt
-      FROM (s:Account) -[e:Transfer]-> (tgt)
+      FROM (s:Account) -[e:transfer]-> (tgt)
       ACCUM
         @@listVar += e.amount,
         @@setVar += e.amount,
