@@ -1,4 +1,5 @@
 USE GRAPH financialGraph
+
 CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
   //mark if a node has been seen
   OrAccum @visited;
@@ -6,7 +7,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
   reachable_vertices = {};
   //declare a visited_vertices var, annotated its type
   //as ANY type so that it can take any vertex
-  visited_vertices (ANY) = {seed};
+  visited_vertices  = {seed};
 
   // Loop terminates when all neighbors are visited
   WHILE visited_vertices.size() !=0 DO
@@ -25,7 +26,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
 
   //reset vertex set variables
   reachable_vertices = {};
-  visited_vertices (ANY) = {seed};
+  visited_vertices  = {seed};
 
 
      //clear the visited flag
