@@ -266,7 +266,9 @@ CREATE QUERY circleDetection (vertex<account> srcId, int stepLowLimit = 3, int s
             tgt.@edgeTupleList = tgt.@newEdgeTupleList,
             tgt.@receiveNewPath = true,
             tgt.@newEdgeTupleList.clear()
-        END
+        END,
+        //clean up to reduce memory footprint
+        src.@edgeTupleList.clear()
       HAVING tgt.@receiveNewPath == true
     ;
 
@@ -302,7 +304,9 @@ CREATE QUERY circleDetection (vertex<account> srcId, int stepLowLimit = 3, int s
             END,
             tgt.@receiveNewPath = true,
             tgt.@newEdgeTupleList.clear()
-        END
+        END,
+        //clean up to reduce memory footprint
+        src.@edgeTupleList.clear()
       HAVING tgt.@receiveNewPath == true and tgt != srcId
     ;
 
