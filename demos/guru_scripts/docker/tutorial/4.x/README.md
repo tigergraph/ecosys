@@ -668,7 +668,7 @@ The `POST-ACCUM` clause is designed to do some computation based on a selected v
 
 Another characteristic of the `POST-ACCUM` clause is that its statements can access the aggregated accumulator value computed in the `ACCUM` clause.
 
-In query q8, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
+In query q8, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `a.@cnt`, which is 1.
 
 ```python
 USE GRAPH financialGraph
