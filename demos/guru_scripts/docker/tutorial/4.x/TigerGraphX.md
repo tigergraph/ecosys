@@ -4,25 +4,44 @@ In this quick start guide, we will work with the following graph:
 
 ![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
 
-
 ## Installation Guide
 
 Follow this guide to install and set up **TigerGraphX** in your environment.
 
 ### Requirements
 
-This project requires **Python 3.12** and **TigerGraph 4.2**. Ensure you meet the following prerequisites before proceeding:
+This project requires **Python 3.10, 3.11 or 3.12** and **TigerGraph 4.2**. Ensure you meet the following prerequisites before proceeding:
 
-#### **1. Python 3.12**
-- Please ensure Python 3.12 is installed on your system.
+#### **1. Python**
+- Please ensure Python 3.10, 3.11 or 3.12 is installed on your system.
 - You can download and install it from the [official Python website](https://www.python.org/downloads/).
 
-#### **2. TigerGrapsh 4.2**
+#### **2. TigerGraph**
 
-TigerGraph is required for this project and can be set up in one of the following ways:
+TigerGraph 4.2 is required for this project and can be set up in one of the following ways:
 
 - **TigerGraph DB**: Install and configure a local instance of TigerGraph.
 - **TigerGraph Cloud**: Use a cloud-hosted instance of TigerGraph.
+- **TigerGraph Docker**: Use a Docker container to run TigerGraph. 
+
+  ##### **Docker Setup Guide**
+
+  Follow the [Docker setup guide](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your Docker environment.
+
+  > **_Note:_** For vector feature preview, please pull the `tigergraph/tigergraph:4.2.0-preview` Docker image instead. Here's how you can do it:
+  >
+  > ```bash
+  > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
+  > ```
+  >
+  > After setting up the Docker container, remember to apply your TigerGraph license key to the instance. You can obtain a free developer license [here](https://dl.tigergraph.com/). Once you have your license key, follow these steps:
+  >
+  > ```bash
+  > docker exec -it tigergraph /bin/bash
+  > gadmin license set <license_key>
+  > gadmin config apply -y
+  > gadmin start all
+  > ```
 
 ### Installation Steps
 
@@ -39,7 +58,7 @@ This allows you to quickly start using the library without needing the source co
 
 After installing, verify that TigerGraphX is installed correctly by running:
 ```bash
-python -c "import tigergraphx; print('TigerGraphX installed successfully!')"
+python -c 'import tigergraphx; print("TigerGraphX installed successfully!")'
 ```
 
 If the installation was successful, you will see:
@@ -152,26 +171,28 @@ G = Graph(graph_schema, connection)
 
 ```python
 nodes_for_adding = [
-    ("Scott", {"isBlocked": False}),
-    ("Jenny", {"isBlocked": False}),
-    ("Steven", {"isBlocked": True}),
-    ("Paul", {"isBlocked": False}),
-    ("Ed", {"isBlocked": False}),
+    ("Scott", {"isBlocked": False, "emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}),
+    ("Jenny", {"isBlocked": False, "emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128]}),
+    ("Steven", {"isBlocked": True, "emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929]}),
+    ("Paul", {"isBlocked": False, "emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444]}),
+    ("Ed", {"isBlocked": False, "emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603]}),
 ]
-print("Adding Account Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
+print("Number of Account Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Account"))
+
 nodes_for_adding = [
-    ("718-245-5888", {"isBlocked": False}),
-    ("650-658-9867", {"isBlocked": True}),
-    ("352-871-8978", {"isBlocked": False}),
+    ("718-245-5888", {"isBlocked": False, "emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155]}),
+    ("650-658-9867", {"isBlocked": True, "emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702]}),
+    ("352-871-8978", {"isBlocked": False, "emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639]}),
 ]
-print("Adding Phone Nodes:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
+print("Number of Phone Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="Phone"))
+
 nodes_for_adding = ["New York", "Gainesville", "San Francisco"]
-print("Adding City Nodes:", G.add_nodes_from(nodes_for_adding, node_type="City"))
+print("Number of City Nodes Inserted:", G.add_nodes_from(nodes_for_adding, node_type="City"))
 ```
 
-    Adding Account Nodes: 5
-    Adding Phone Nodes: 3
-    Adding City Nodes: 3
+    Number of Account Nodes Inserted: 5
+    Number of Phone Nodes Inserted: 3
+    Number of City Nodes Inserted: 3
 
 
 ### Add Edges
@@ -185,7 +206,8 @@ ebunch_to_add = [
     ("Paul", "650-658-9867"),
     ("Ed", "352-871-8978"),
 ]
-print("Adding hasPhone Edges:", G.add_edges_from(ebunch_to_add, "Account", "hasPhone", "Phone"))
+print("Number of hasPhone Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "hasPhone", "Phone"))
+
 ebunch_to_add = [
     ("Scott", "New York"),
     ("Jenny", "San Francisco"),
@@ -193,7 +215,8 @@ ebunch_to_add = [
     ("Paul", "Gainesville"),
     ("Ed", "Gainesville"),
 ]
-print("Adding isLocatedIn Edges:", G.add_edges_from(ebunch_to_add, "Account", "isLocatedIn", "City"))
+print("Number of isLocatedIn Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "isLocatedIn", "City"))
+
 ebunch_to_add = [
     ("Scott", "Ed", {"date": "2024-01-04", "amount": 20000}),
     ("Scott", "Ed", {"date": "2024-02-01", "amount": 800}),
@@ -204,64 +227,13 @@ ebunch_to_add = [
     ("Ed", "Paul", {"date": "2024-01-04", "amount": 1500}),
     ("Paul", "Steven", {"date": "2023-05-09", "amount": 20000}),
 ]
-print("Adding transfer Edges:", G.add_edges_from(ebunch_to_add, "Account", "transfer", "Account"))
+print("Number of transfer Edges Inserted:", G.add_edges_from(ebunch_to_add, "Account", "transfer", "Account"))
 ```
 
-    Adding hasPhone Edges: 5
-    Adding isLocatedIn Edges: 5
-    Adding transfer Edges: 8
+    Number of hasPhone Edges Inserted: 5
+    Number of isLocatedIn Edges Inserted: 5
+    Number of transfer Edges Inserted: 8
 
-
-### Inserting Embeddings into Nodes
-To insert embeddings into the nodes, you can use the following data format:
-
-
-```python
-data = [
-    {
-        "name": "Scott",
-        "emb1": [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557],
-    },
-    {
-        "name": "Jenny",
-        "emb1": [-0.019265105947852135, 0.0004929182468913496, 0.006711316294968128],
-    },
-    {
-        "name": "Steven",
-        "emb1": [-0.01505514420568943, -0.016819344833493233, -0.0221870020031929],
-    },
-    {
-        "name": "Paul",
-        "emb1": [0.0011193430982530117, -0.001038988004438579, -0.017158523201942444],
-    },
-    {
-        "name": "Ed",
-        "emb1": [-0.003692442551255226, 0.010494389571249485, -0.004631792660802603],
-    },
-]
-print("Number of Account Nodes Inserted:", G.upsert(data, "Account"))
-data = [
-    {
-        "number": "718-245-5888",
-        "emb1": [0.0023173028603196144, 0.018836047500371933, 0.03107452765107155],
-    },
-    {
-        "number": "650-658-9867",
-        "emb1": [0.01969221793115139, 0.018642477691173553, 0.05322211980819702],
-    },
-    {
-        "number": "352-871-8978",
-        "emb1": [-0.003442931454628706, 0.016562696546316147, 0.012876809574663639],
-    },
-]
-print("Number of Phone Nodes Inserted:", G.upsert(data, "Phone"))
-```
-
-    Number of Account Nodes Inserted: 0
-    Number of Phone Nodes Inserted: 0
-
-
-Note: A result of 0 simply indicates that no new nodes were added, as the nodes were already inserted into TigerGraph. This does not mean the update failed.
 
 ### Display the Number of Nodes
 Next, let's verify that the data has been inserted into the graph by using the following command. As expected, the number of nodes is 5.
@@ -294,6 +266,21 @@ for result in results:
     {'id': 'Paul', 'distance': 0.393388, 'name': 'Paul', 'isBlocked': False}
     {'id': 'Scott', 'distance': 0, 'name': 'Scott', 'isBlocked': False}
     {'id': 'Steven', 'distance': 0.0325563, 'name': 'Steven', 'isBlocked': True}
+
+
+After performing the vector search, the following code retrieves the detailed embeddings of the top-k nodes identified in the search. This is achieved by using their IDs and the specified vector attribute. The results are then printed for each node.
+
+
+```python
+node_ids = {item['id'] for item in results}
+nodes = G.fetch_nodes(node_ids, vector_attribute_name="emb1", node_type="Account")
+for node in nodes.items():
+    print(node)
+```
+
+    ('Paul', [0.001119343, -0.001038988, -0.01715852])
+    ('Scott', [-0.01773397, -0.01019224, -0.01657188])
+    ('Steven', [-0.01505514, -0.01681934, -0.022187])
 
 
 ### Top-k Vector Search on a Set of Vertex Types' Vector Attributes
@@ -332,9 +319,6 @@ G.search_top_k_similar_nodes(
 )
 ```
 
-
-
-
     [{'id': 'Paul', 'distance': 0.3933879, 'name': 'Paul', 'isBlocked': False},
      {'id': 'Steven', 'distance': 0.0325563, 'name': 'Steven', 'isBlocked': True}]
 
@@ -367,17 +351,17 @@ Let's first retrieves all "Account" nodes where the isBlocked attribute is False
 ```python
 nodes_df = G.get_nodes(
     node_type="Account",
-    filter_expression="s.isBlocked == False",
+    node_alias="s", # The alias "s" is used in filter_expression. You can remove this line since the default node alias is "s"
+    filter_expression='s.isBlocked == False AND s.name != "Ed"',
     return_attributes=["name"],
 )
 print(nodes_df)
 ```
 
         name
-    0   Paul
-    1     Ed
-    2  Scott
-    3  Jenny
+    0  Scott
+    1   Paul
+    2  Jenny
 
 
 Then convert the name column of the retrieved DataFrame into a set of candidate IDs and performs a top-2 vector search on the "Account" node type using the "emb1" embedding attribute, restricted to the specified candidate IDs.
