@@ -98,7 +98,8 @@ GSQL >  DOUBLE a = 500.0;
 GSQL >  STRING b = "Jenny"; 
 GSQL >  BOOL c = false; 
 GSQL > IN 
-GSQL >  SELECT s, e.amount AS amt, t GSQL > FROM (s:Account) - [e:transfer]-> (t:Account) 
+GSQL >  SELECT s, e.amount AS amt, t
+GSQL >  FROM (s:Account) - [e:transfer]-> (t:Account) 
 GSQL >  WHERE s.isBlocked = c AND t.name <> b 
 GSQL >  HAVING amt > a; 
 GSQL > END
