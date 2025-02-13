@@ -1,3 +1,5 @@
+USE GLOBAL
+
 //create vertex types
 CREATE VERTEX Account ( name STRING PRIMARY KEY, isBlocked BOOL)
 CREATE VERTEX City ( name STRING PRIMARY KEY)
