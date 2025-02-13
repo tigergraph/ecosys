@@ -1387,6 +1387,7 @@ run query VirtualEdgeQuery()
 
 ```
 
+To see more how to use this feature, you can refer to [Virtual Edge](https://docs.tigergraph.com/gsql-ref/4.1/querying/data-types#_virtual_edge)
 [Go back to top](#top)
 
 ## Query Tuning
