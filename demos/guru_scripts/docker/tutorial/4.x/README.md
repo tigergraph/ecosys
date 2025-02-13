@@ -1347,6 +1347,45 @@ CREATE DIRECTED|UNDIRECTED VIRTUAL EDGE Virtual_Edge_Type_Name "("
     ["," attribute_name type [DEFAULT default_value]]* ")"
 ```
 
+### Example
+Currently, to use virtual edge we must
+
+- Use the "DISTRIBUTED" keyword to use the virtual edge feature. It can run on both single node machine and multi-node cluster.  
+- Use Syntax v2 of GSQL.
+
+```Python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE DISTRIBUTED QUERY VirtualEdgeQuery () SYNTAX v2 {
+
+  
+  // First we create a virtual edge type
+  CREATE DIRECTED VIRTUAL EDGE VirtualE1(FROM City, TO Phone, ts datetime);
+
+
+  //Insert into the virtual edge of connected Phone and City. 
+  v = SELECT c
+      FROM Phone:b - (hasPhone)- Account -(isLocatedIn>)-City:c
+      ACCUM    INSERT INTO VirtualE1 VALUES(c, b, to_datetime("2025-02-13"));
+
+
+ ListAccum<String> @@result;
+ //Store all virtual edge in 
+ v = SELECT p
+          FROM City:c -(VirtualE1>)- Phone:p
+          ACCUM @@result += c.name + "->" + to_string(p.nmuber);
+
+  //output each v and their static attribute and runtime accumulators' state
+  PRINT @@result;
+
+}
+
+install query VirtualEdgeQuery
+run query VirtualEdgeQuery()
+
+```
 
 [Go back to top](#top)
 
