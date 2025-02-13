@@ -1335,6 +1335,8 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 [Go back to top](#top)
 
 ## Virtual Edge
+In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
+![VirtualEdge](./VirtualEdge.jpg)
 
 [Go back to top](#top)
 
