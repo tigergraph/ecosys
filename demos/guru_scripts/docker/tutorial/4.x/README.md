@@ -1372,12 +1372,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY VirtualEdgeQuery () SYNTAX v2 {
 
 
  ListAccum<String> @@result;
- //Store all virtual edge in 
+ //Store all virtual edge in a ListAccum
  v = SELECT p
-          FROM City:c -(VirtualE1>)- Phone:p
-          ACCUM @@result += c.name + "->" + to_string(p.nmuber);
+     FROM City:c -(VirtualE1>)- Phone:p
+     ACCUM @@result += c.name + "->" + to_string(p.nmuber);
 
-  //output each v and their static attribute and runtime accumulators' state
+  //output all virtual edges
   PRINT @@result;
 
 }
