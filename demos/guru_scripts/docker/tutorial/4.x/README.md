@@ -1338,6 +1338,16 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
 ![VirtualEdge](./VirtualEdge.jpg)
 
+For example, in the above graph we create an in-memory “shortcut” edge “FOF”, so that we can bypass the interim node and find the second neighbor in 1-hop. 
+### Syntax
+```Python
+CREATE DIRECTED|UNDIRECTED VIRTUAL EDGE Virtual_Edge_Type_Name "("
+    FROM Vertex_Type_Name ("|" Vertex_Type_Name)* ","
+    TO Vertex_Type_Name ("|" Vertex_Type_Name)*
+    ["," attribute_name type [DEFAULT default_value]]* ")"
+```
+
+
 [Go back to top](#top)
 
 ## Query Tuning
