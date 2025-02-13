@@ -39,6 +39,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
+  - [Virtual Edge](#virtual-edge)
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
  - [Support](#support) 
@@ -1331,6 +1332,10 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 
 }
 ```
+[Go back to top](#top)
+
+## Virtual Edge
+
 [Go back to top](#top)
 
 ## Query Tuning
