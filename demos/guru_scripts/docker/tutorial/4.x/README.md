@@ -60,10 +60,10 @@ Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob
 # Set Up Schema 
 A graph schema describes the vertex types, edge types, and properties found in your graph. TigerGraph is a schema-first database, meaning that the schema is declared before loading data. This not only optimizes data storage and query performance, but it also provides built-in checks to make sure your data conformed to the expected schema.
 
-Copy [ddl.gsql](./script/ddl.gsql) to your container. 
+Copy [schema.gsql](./script/schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql ddl.gsql
+gsql schema.gsql
 ```
 As seen below, the declarative DDL creates vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires `FROM` and `TO` vertex types as the key.
 Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction.

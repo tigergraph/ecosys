@@ -41,10 +41,10 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 # Setup Schema 
 We use an artificial financial schema and dataset as a running example to demonstrate the usability of graph searches. The figure above provides a visualization of all the graph data in the database.
 
-Copy [ddl.gsql](./script/ddl.gsql) to your container. 
+Copy [schema.gsql](./script/schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql ddl.gsql
+gsql schema.gsql
 ```
 As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
 
