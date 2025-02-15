@@ -1352,6 +1352,7 @@ Currently, to use virtual edge we must
 
 - Use the "DISTRIBUTED" keyword to use the virtual edge feature. It can run on both single node machine and multi-node cluster.  
 - Use Syntax v2 of GSQL.
+- It can be run on TG cloud Savanna Read-only workspace.
 
 ```Python
 #enter the graph
