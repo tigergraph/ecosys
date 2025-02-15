@@ -6,7 +6,7 @@ This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for n
 
 GSQL V3 syntax reflects the evolution towards GQL, the ISO standard graph query language standard released in 2024. V3 emphasizes ASCII art in its syntax, as well as support for most OpenCyper pattern match syntax and functions.
 
-A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/latest/intro/).
+A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/4.1/intro/).
 
 
 # Table of Contents
