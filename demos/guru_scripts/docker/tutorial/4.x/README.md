@@ -100,7 +100,7 @@ Now that you have a graph schema, you can load data using one of the following m
   ```
      gsql load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste it into the GSQL shell editor to run.
+  or in GSQL editor of TigerGraph Savanna, copy the content of [load.gsql](./script/load.gsql), and paste it into the GSQL editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
