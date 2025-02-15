@@ -117,7 +117,7 @@ Now that you have a graph schema, you can load data using one of the following m
     ``` 
     or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
 
-    The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
+    The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
     ```python
     USE GRAPH financialGraph
 
@@ -381,7 +381,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
       1. the path has "shortest path" semantics. If you have a path that is longer than the shortest,
       we only count the shortest. E.g., scott to scott shortest path length is 4. Any path greater than 4 will
       not be matched.
-     2. we can not put an alias to bind the edge in the the variable length part -[:transfer*1..]->, but 
+     2. we can not put an alias to bind the edge in the variable length part -[:transfer*1..]->, but 
      we can bind the end points (a) and (b) in the variable length path, and group by on them.
    */
    SELECT a, b, count(*) AS path_cnt INTO T2
