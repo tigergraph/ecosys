@@ -1372,7 +1372,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY VirtualEdgeQuery () SYNTAX v2 {
 
 
  ListAccum<String> @@result;
- //Store all virtual edge in a ListAccum
+ // traverse the virtual edge (shortcut) computed by the prior query block,
+ // store them in a ListAccum, and output in the end.
  v = SELECT p
      FROM City:c -(VirtualE1>)- Phone:p
      ACCUM @@result += c.name + "->" + to_string(p.nmuber);
