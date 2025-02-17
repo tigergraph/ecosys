@@ -333,3 +333,294 @@ RETURN srcName, cnt1, cnt2
 ORDER BY cnt1 DESC, cnt2
 LIMIT 3
 ```
+
+## TABLE Syntax
+
+In **GSQL**, the `TABLE` syntax is used to define **intermediate** or **temporary** tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
+ 
+### **FILTER statement**
+
+The `FILTER` statement works by applying the condition to the specified `target_table`, modifying its rows based on the logical expression provided. Filters are applied sequentially, so each subsequent filter operates on the results of the previous one.
+
+#### Syntax
+
+```
+FILTER <target_table> ON <condition>;
+```
+
+#### Example Usage:
+
+```
+CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
+   SELECT s.name as srcAccount, e.amount as amt, t.name as tgtAccount INTO T
+      FROM (s:Account) - [e:transfer]-> (t)
+      ;
+
+   FILTER T ON srcAccount = "Scott" OR amt > 10000;
+
+   PRINT T;
+
+   FILTER T ON srcAccount <> "Scott";
+
+   PRINT T;
+}
+```
+
+#### Explanation:
+
+-   The first `FILTER` statement retains rows where `srcAccount` is "Scott" or `amt` is greater than `10000`.
+-   The second `FILTER` statement removes rows where `srcAccount` is "Scott".
+-   The `PRINT` statements display the intermediate and final results after filtering.
+
+ ----------
+ 
+ ### `PROJECT` Statement
+ 
+The `PROJECT` statement reshapes a table by creating new derived columns based on expressions. These columns can result from arithmetic operations, string concatenation, or logical conditions. The `PROJECT` statement is particularly useful for preparing data for further analysis without altering the original table.
+
+#### Syntax
+
+ **1. Transforming Table Data**
+ 
+ ```python
+PROJECT tableName ON
+   columnExpression AS newColumnName,
+   ...
+INTO newTableName;
+```
+
+ **2. Extracting Vertex Sets**
+ 
+ Converts a table column containing **vertex objects** into a **vertex set**.
+ 
+ ```python
+ PROJECT tableName ON VERTEX COLUMN vertexColumnName INTO VSET;
+ ```
+
+
+#### Example 1: Transforming Table Data
+
+```python
+CREATE OR REPLACE QUERY projectExample() syntax v3{  
+   SELECT s.name as srcAccount, p.number as phoneNumber, sum(e.amount) as amt INTO T1  
+      FROM (s:Account {name: "Scott"}) - [e:transfer]-> (t),  
+           (s) - [:hasPhone]- (p);  
+  
+   PRINT T1;  
+  
+   PROJECT T1 ON  
+      T1.srcAccount + ":" + T1.phoneNumber as acct,  
+      T1.amt * 2 as doubleAmt,  
+      T1.amt % 7 as mod7Amt,  
+      T1.amt > 10000 as flag  
+   INTO T2;  
+  
+   PRINT T2;  
+}
+```
+
+#### Explanation:
+
+The `PROJECT` statement transforms the data by adding new calculated columns:
+
+ - `acct`: Concatenates the account name (`srcAccount`) with the phone number (`phoneNumber`) into a single string.
+ - `doubleAmt`: Doubles the value of `amt`.
+ - `mod7Amt`: Computes the remainder when `amt` is divided by 7.
+ - `flag`: Creates a boolean flag indicating whether `amt` is greater than `10,000`.
+
+The `PROJECT` statement does not modify the original table (`T1`) but instead creates a new table (`T2`) with the transformed data. This ensures that the original data remains unchanged for future use.
+
+#### Example 2: Extracting Vertex Sets from a Table
+
+```python
+CREATE OR REPLACE QUERY projectExample2() syntax v3{  
+   SELECT tgt as tgtAcct, phone as tgtPhone INTO T1  
+      FROM (s:Account {name: "Scott"}) - [e:transfer]-> (tgt:Account) - [:hasPhone] - (phone);  
+  
+   PRINT T1;  
+  
+   PROJECT T1 ON VERTEX COLUMN  
+      tgtAcct INTO vSet1,  
+      tgtPhone INTO vSet2  
+      ;  
+  
+   VS_1 =  SELECT s FROM (s:vSet1);  
+   VS_2 =  SELECT s FROM (s:vSet2);  
+  
+   PRINT VS_1, VS_2;  
+}
+```
+#### **Explanation:**
+**Create an intermediate table (**`T1`**)**: `T1` contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
+        
+**Extract vertex sets using** `**PROJECT**`:
+
+ - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
+ - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
+
+---
+
+### **JOIN statement**
+
+In GSQL queries, the `JOIN` operation is commonly used to combine data from multiple tables (or nodes and relationships). Depending on the specific requirements, different types of `JOIN` operations are used. Common `JOIN` types include `INNER JOIN`, `CROSS JOIN`, `SEMIJOIN`, and `LEFT JOIN`.
+
+#### **INNER JOIN**
+
+The `INNER JOIN` statement combines rows from both tables where the join condition is true. Only rows that have matching values in both tables are returned.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+CREATE OR REPLACE QUERY innerJoinExample(STRING accountName = "Scott") syntax v3{  
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1  
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);  
+  
+   SELECT s.name, t.number as phoneNumber INTO T2  
+      FROM (s:Account) - [:hasPhone]- (t:Phone);  
+  
+   JOIN T1 t1 WITH T2 t2  
+     ON t1.srcAccount == t2.name  
+   PROJECT  
+     t1.srcAccount + ":" + t2.phoneNumber as acct,  
+     t1.amt as totalAmt  
+   INTO T3;  
+  
+   PRINT T3;  
+}
+```
+**Explanation:**
+
+-   **`INNER JOIN`** combines data from `T1` and `T2` based on matching `srcAccount` and `name`. Only rows with a match in both tables are returned, which results in a joined set of data containing the account name and the total transfer amount.
+
+---
+
+#### **CROSS JOIN**
+
+The `CROSS JOIN` statement combines each row from the first table with all rows from the second table, producing the Cartesian product. This type of join does not require a condition and can potentially result in a large number of rows. If you want to eliminate duplicate rows from the result, you can use the `DISTINCT` keyword to return only unique combinations.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+CREATE OR REPLACE QUERY crossJoinExample(STRING accountName = "Scott") syntax v3{  
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1  
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);  
+  
+   SELECT s.name, t.number as phoneNumber INTO T2  
+      FROM (s:Account) - [:hasPhone]- (t:Phone);  
+  
+   JOIN T1 t1 WITH T2 t2  
+   PROJECT distinct  
+     t1.srcAccount + ":" + t2.phoneNumber as acct,  
+     t1.amt as totalAmt  
+   INTO T3;  
+  
+   PRINT T3;  
+}
+```
+#### **Explanation:**
+
+-   **`CROSS JOIN`** produces a Cartesian product between `T1` and `T2`. In this example, every `srcAccount` will be paired with every phone number from `T2`, resulting in all combinations of accounts and phone numbers.
+-   **`DISTINCT`** is used to remove any duplicate combinations from the result. Without `DISTINCT`, you might get repeated rows if there are multiple matching rows in `T2` for each row in `T1`.
+---
+
+#### **SEMIJOIN**
+
+The `SEMIJOIN` statement filters rows from the first table based on whether they have a matching row in the second table. It returns rows from the first table where the join condition is true, but **only columns from the left (first) table can be accessed**. The right table's columns are not included in the result.
+
+**Syntax:**
+```python
+SEMIJOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+      ON <condition>
+ PROJECT 
+	<table1_alias columnExpression> as columnName1,
+	<table1_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+CREATE OR REPLACE QUERY semiJoinExample(STRING accountName = "Scott") syntax v3{  
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1  
+      FROM (s:Account) - [e:transfer]-> (t);  
+  
+   SELECT s.name, t.number as phoneNumber INTO T2  
+      FROM (s:Account {name: accountName}) - [:hasPhone]- (t:Phone);  
+  
+   SEMIJOIN T1 t1 WITH T2 t2  
+     ON t1.srcAccount == t2.name  
+   PROJECT  
+     t1.srcAccount as acct,  
+     t1.amt as totalAmt  
+   INTO T3;  
+  
+   PRINT T3;  
+}
+```
+
+**Explanation:**
+
+-   **`SEMIJOIN`** returns rows from `T1` where there is a matching row in `T2`, but only the columns from `T1` are included in the result. Even though there is a match between the two tables on `srcAccount` and `name`, **the result only includes columns from the left table (`T1`)**. This is useful when you want to check for the existence of matching rows without including data from the second table.
+
+---
+
+#### **LEFT JOIN**
+
+The `LEFT JOIN` statement combines rows from both tables, but ensures that all rows from the left table (first table) are included, even if there is no matching row in the right table (second table). If no match exists, the right table's columns will have `NULL` values.
+
+**Syntax:**
+```python
+LEFT JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+CREATE OR REPLACE QUERY leftJoinExample(STRING accountName = "Scott") syntax v3{  
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1  
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);  
+  
+   SELECT s.name, t.number as phoneNumber INTO T2  
+      FROM (s:Account) - [:hasPhone]- (t:Phone)  
+      WHERE s.name <> accountName;  
+  
+   LEFT JOIN T1 t1 WITH T2 t2  
+     ON t1.srcAccount == t2.name  
+   PROJECT  
+     t1.srcAccount  as acct,  
+     t2.phoneNumber as phoneNum,  
+     t1.amt as totalAmt  
+   INTO T3;  
+  
+   PRINT T3;  
+}
+```
+
+**Explanation:**
+
+-   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
+
