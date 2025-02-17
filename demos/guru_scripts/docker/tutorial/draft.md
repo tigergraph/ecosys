@@ -920,7 +920,3 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 
 ---
 
-**Explanation:**
-
--   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
-
