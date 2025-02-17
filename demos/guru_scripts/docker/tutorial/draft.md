@@ -325,7 +325,7 @@ GSQL > END
 
 This query counts the distinct transfer relationships for each account and returns the top 3 accounts with more than one transfer, ordered by the number of transfers.
 
-```
+```python
 MATCH (s:Account)- [e1:transfer] ->()- [e2:transfer]-> (t)
 WITH s.name as srcName, COUNT(distinct e1) as cnt1, COUNT(distinct e2) as cnt2
 WHERE cnt1 > 1
@@ -334,23 +334,150 @@ ORDER BY cnt1 DESC, cnt2
 LIMIT 3
 ```
 
+---
+
+
 ## TABLE Syntax
 
-In **GSQL**, the `TABLE` syntax is used to define **intermediate** or **temporary** tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
+In GSQL, the `TABLE` syntax is used to define intermediate or temporary tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
+
+### SELECT INTO TABLE statement
+
+The `SELECT INTO TABLE` statement in GSQL is used to retrieve data and store it into a new table. This allows you to perform queries and store results for further operations or transformations.
+
+#### Syntax
+
+```python
+SELECT column1, column2, ... INTO newTable FROM pattern 
+[WHERE condition] 
+[HAVING condition] 
+[ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...] 
+[LIMIT number] 
+[OFFSET number]
+;
+```
+-   `column1, column2, ...`: Specifies the columns to retrieve.
+-   `newTable`: The name of the new table where the query results will be stored.
+-   `pattern`: Defines the data pattern, which can be a node, relationship, or a combination of both.
+-   `WHERE condition`: Optional. Used to filter rows that satisfy specific conditions.
+-   `HAVING condition`: Optional. Used to filter aggregated results.
+-   `ORDER BY`: Optional. Specifies how the results should be sorted (either `ASC` for ascending or `DESC` for descending).
+-   `LIMIT`: Optional. Limits the number of rows returned.
+-   `OFFSET`: Optional. Specifies the number of rows to skip.
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {  
+  SELECT s.name AS acct, SUM(e.amount) AS totalAmt INTO T1  
+  FROM (s:Account)- [e:transfer]-> (t:Account)  
+  WHERE not s.isBlocked  
+  HAVING totalAmt > 1000  
+  ORDER BY totalAmt DESC  
+  LIMIT 5 OFFSET 0  
+  ;  
+  
+  PRINT T1;  
+}
+```
+#### Explanation:
+
+-   In this example, we are retrieving data from the `Account` nodes `s` and `t` connected by the `transfer` relationship.
+-   The query aggregates the `amount` of the transfer and stores the result into a new table `T1`.
+-   The `HAVING` clause filters the results to only include those with a `totalAmt` greater than 1000, and the results are ordered by `totalAmt` in descending order, limiting the output to the top 5 entries.
+-   Finally, the content of table `T1` is printed.
+
+---
+
+### INIT statement
+
+The `INIT` statement in GSQL is used to initialize a constant value and assign it to a table. This allows you to create a table with predefined constant values, which can be used for further operations or queries.
+
+#### Syntax
+
+```python
+INIT tableName value1 AS column1, value2 AS column2, ...;
+```
+-   `tableName`: The name of the table to be initialized.
+-   `value1, value2, ...`: The constant values to be assigned to the table.
+-   `column1, column2, ...`: The names of the columns in the table that correspond to the values.
+
+---
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{  
+  // Initialize a table with different constant values.  
+  INIT T1 1 as col_1, true as col_2, [0.1, -1.1] as col_3;  
+  PRINT T1;  
+  
+  // Initialize a table with variables and function calls  
+  DATETIME date = now();  
+  INIT T2 date as col_1, intVal as col_2, SPLIT("a,b,c", ",") as col_3;  
+  PRINT T2;  
+}
+```
+
+#### Explanation:
+
+-   **Table Initialization with Constant Values**: The first `INIT` statement creates table `T1` with three columns (`col_1`, `col_2`, `col_3`). The values `1`, `true`, and `[0.1, -1.1]` are assigned to `col_1`, `col_2`, and `col_3`
+- **Table Initialization with Variables**: The second `INIT` statement initializes table `T2`. It uses the current date and time (`now()`) for `col_1`, the input variable `intVal` for `col_2`, and splits a string `"a,b,c"` into an array and assigns it to `col_3`.
+
+---
+
+### ORDER TABLE
+
+The `ORDER` statement in GSQL is used to sort tables based on one or more columns, with optional `LIMIT` and `OFFSET` clauses. This allows efficient ordering and retrieval of a subset of data.
+
+#### Syntax
+
+```python
+ORDER tableName BY column1 [ASC|DESC], column2 [ASC|DESC] ... LIMIT number OFFSET number;
+```
+-   `tableName`: The table to be ordered.
+-   `column1, column2, ...`: Columns to sort by.
+-   `ASC | DESC`: Sorting order (ascending by default).
+-   `LIMIT number`: Restricts the number of rows in the result.
+-   `OFFSET number`: Skips a number of rows before returning results.
+
+---
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{  
+  
+  SELECT s.name as acct, max(e.amount) as maxTransferAmt INTO T1  
+       FROM (s:Account)- [e:transfer]-> (t:Account)  
+    ;  
+  
+  ORDER T1 BY maxTransferAmt DESC, acct LIMIT 3 OFFSET 1 * page;  
+  
+  PRINT T1;  
+}
+```
+
+#### Explanation
+ - Selects account names and their maximum transfer amounts.
+ - Sorts by `maxTransferAmt` (descending) and `acct` (ascending).
+ - Returns 3 rows per page, skipping `page` rows for pagination.
+
+---
  
-### **FILTER statement**
+### FILTER statement
 
 The `FILTER` statement works by applying the condition to the specified `target_table`, modifying its rows based on the logical expression provided. Filters are applied sequentially, so each subsequent filter operates on the results of the previous one.
 
 #### Syntax
 
-```
+```python
 FILTER <target_table> ON <condition>;
 ```
 
 #### Example Usage:
 
-```
+```python
 CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
    SELECT s.name as srcAccount, e.amount as amt, t.name as tgtAccount INTO T
       FROM (s:Account) - [e:transfer]-> (t)
@@ -374,14 +501,13 @@ CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
 
  ----------
  
- ### `PROJECT` Statement
+ ### PROJECT Statement
  
 The `PROJECT` statement reshapes a table by creating new derived columns based on expressions. These columns can result from arithmetic operations, string concatenation, or logical conditions. The `PROJECT` statement is particularly useful for preparing data for further analysis without altering the original table.
 
 #### Syntax
 
  **1. Transforming Table Data**
- 
  ```python
 PROJECT tableName ON
    columnExpression AS newColumnName,
@@ -391,7 +517,7 @@ INTO newTableName;
 
  **2. Extracting Vertex Sets**
  
- Converts a table column containing **vertex objects** into a **vertex set**.
+ Converts a table column containing vertex objects into a vertex set.
  
  ```python
  PROJECT tableName ON VERTEX COLUMN vertexColumnName INTO VSET;
@@ -450,21 +576,21 @@ CREATE OR REPLACE QUERY projectExample2() syntax v3{
    PRINT VS_1, VS_2;  
 }
 ```
-#### **Explanation:**
-**Create an intermediate table (**`T1`**)**: `T1` contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
+**Explanation:**
+**Create an intermediate table (`T1`)**: `T1` contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
         
-**Extract vertex sets using** `**PROJECT**`:
+**Extract vertex sets using `PROJECT`**:
 
  - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
  - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
 
 ---
 
-### **JOIN statement**
+### JOIN statement
 
 In GSQL queries, the `JOIN` operation is commonly used to combine data from multiple tables (or nodes and relationships). Depending on the specific requirements, different types of `JOIN` operations are used. Common `JOIN` types include `INNER JOIN`, `CROSS JOIN`, `SEMIJOIN`, and `LEFT JOIN`.
 
-#### **INNER JOIN**
+#### INNER JOIN
 
 The `INNER JOIN` statement combines rows from both tables where the join condition is true. Only rows that have matching values in both tables are returned.
 
@@ -504,7 +630,7 @@ CREATE OR REPLACE QUERY innerJoinExample(STRING accountName = "Scott") syntax v3
 
 ---
 
-#### **CROSS JOIN**
+#### CROSS JOIN
 
 The `CROSS JOIN` statement combines each row from the first table with all rows from the second table, producing the Cartesian product. This type of join does not require a condition and can potentially result in a large number of rows. If you want to eliminate duplicate rows from the result, you can use the `DISTINCT` keyword to return only unique combinations.
 
@@ -536,13 +662,13 @@ CREATE OR REPLACE QUERY crossJoinExample(STRING accountName = "Scott") syntax v3
    PRINT T3;  
 }
 ```
-#### **Explanation:**
+**Explanation:**
 
 -   **`CROSS JOIN`** produces a Cartesian product between `T1` and `T2`. In this example, every `srcAccount` will be paired with every phone number from `T2`, resulting in all combinations of accounts and phone numbers.
 -   **`DISTINCT`** is used to remove any duplicate combinations from the result. Without `DISTINCT`, you might get repeated rows if there are multiple matching rows in `T2` for each row in `T1`.
 ---
 
-#### **SEMIJOIN**
+#### SEMIJOIN
 
 The `SEMIJOIN` statement filters rows from the first table based on whether they have a matching row in the second table. It returns rows from the first table where the join condition is true, but **only columns from the left (first) table can be accessed**. The right table's columns are not included in the result.
 
@@ -583,11 +709,12 @@ CREATE OR REPLACE QUERY semiJoinExample(STRING accountName = "Scott") syntax v3{
 
 ---
 
-#### **LEFT JOIN**
+#### LEFT JOIN
 
 The `LEFT JOIN` statement combines rows from both tables, but ensures that all rows from the left table (first table) are included, even if there is no matching row in the right table (second table). If no match exists, the right table's columns will have `NULL` values.
 
 **Syntax:**
+
 ```python
 LEFT JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
   ON <condition>
@@ -599,6 +726,7 @@ INTO newTableName;
 ```
 
 **Example Usage:**
+
 ```python
 CREATE OR REPLACE QUERY leftJoinExample(STRING accountName = "Scott") syntax v3{  
    SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1  
@@ -619,6 +747,178 @@ CREATE OR REPLACE QUERY leftJoinExample(STRING accountName = "Scott") syntax v3{
    PRINT T3;  
 }
 ```
+
+**Explanation:**
+
+-   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
+
+---
+
+### UNION statement
+
+The `UNION` statement in GSQL combines the results of two tables into a new table, ensuring **no duplicate rows** in the output by default. This operation is useful when merging datasets from different sources or when performing set operations on table results.
+
+#### Syntax
+
+```python
+UNION table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+-   `table1`, `table2`, ...: Input tables that need to be combined.
+-   `newTable`: The resulting table that stores the merged data.
+-   The input tables **must have the same schema** (i.e., the same number of columns with matching data types).
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY unionExample(STRING accountName = "Scott") syntax v3{  
+   // Select accounts that transferred money
+   SELECT s as acct INTO T1  
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);  
+  
+   // Select accounts by name
+   SELECT s as acct INTO T2  
+      FROM (s:Account {name: accountName})  
+      ;  
+   
+   // Combine both results into table T3
+   UNION T1 WITH T2 INTO T3;  
+  
+   PRINT T3;  
+}
+```
+
+#### Explanation:
+
+**Selecting Data Into Temporary Tables**
+
+ - `T1`: Selects accounts that have transferred money.
+ - `T2`: Selects accounts that match the given name.
+
+**Performing the UNION Operation**
+ `UNION T1 WITH T2 INTO T3;`：Merges results from `T1` and `T2`, removing duplicates.
+
+**Printing the Final Result**
+    `PRINT T3;` outputs the combined dataset.
+    
+---
+
+### UNION ALL statement
+
+The `UNION ALL` statement functions similarly to `UNION`, but **does not remove duplicate rows**. This operation is useful when preserving all records from input tables, even if they are identical.
+
+#### Syntax
+
+```python
+UNION ALL table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY unionAllExample(STRING accountName = "Scott") syntax v3{  
+   SELECT s as acct INTO T1  
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);  
+  
+   SELECT s as acct INTO T2  
+      FROM (s:Account {name: accountName})  
+      ;  
+  
+   // Combine both results into table T3, keeping all duplicate rows
+   UNION ALL T1 WITH T2 INTO T3;  
+  
+   PRINT T3;  
+}
+```
+
+#### Explanation:
+
+Using `UNION ALL` can improve performance when duplicate elimination is unnecessary, as it avoids the extra computation required to filter out duplicates.
+
+---
+
+### UNWIND statement
+
+The `UNWIND` statement in GSQL is used to expand a list into multiple rows, allowing iteration over list elements and their combination with other tables. This is particularly useful when applying transformations or computations based on a set of values.
+
+There are two main forms of `UNWIND`:
+
+1.  **Expanding a fixed list** to initialize a new table.
+2.  **Expanding a list per row** in an existing table.
+
+#### Syntax
+
+**Expanding a Fixed List (UNWIND INIT)**
+
+```python
+UNWIND [value1, value2, ...] AS columnName INTO newTable;
+```
+
+-   `[value1, value2, ...]`: A list of values to be expanded.
+-   `columnName`: The alias for each value in the generated table.
+-   `newTable`: The resulting table that stores the expanded rows.
+
+**Expanding a List Per Row (UNWIND TABLE)**
+
+```python
+UNWIND tableName ON list AS columnName INTO newTable;
+```
+
+-   `tableName`: The input table whose rows will be expanded.
+-   `list`: A list to be expanded for each row of `tableName`.
+-   `columnName`: The alias for each value in the expanded list.
+-   `newTable`: The resulting table that stores expanded rows while preserving columns from `tableName`.
+
+#### Expanding a fixed list to init a new table Example:
+
+```python
+CREATE OR REPLACE QUERY unwindExample() syntax v3{  
+
+  // Creates table `T1`, where each value from the list `[0.9, 1.0, 1.1]` is inserted as a separate row under the column `ratio`.
+  UNWIND [0.9, 1.0, 1.1] AS ratio INTO T1;  
+  PRINT T1;  
+  
+  SELECT s.name as acct, sum(e.amount) as totalAmt INTO T2  
+       FROM (s:Account)- [e:transfer]-> (t:Account)  
+      WHERE s.isBlocked  
+    ;  
+  
+  // 1. Joins `T1` (containing ratios) with `T2` (containing account transfer sums).
+  // 2. Computes a new column "resAmt = totalAmt * ratio" to adjust transfer amounts based on different ratios.
+  // 3. Stores the result in new table T3.
+  JOIN T1 t1 WITH T2 t2  
+  PROJECT t2.acct as acct, t1.ratio as ratio, t2.totalAmt * t1.ratio as resAmt  
+  INTO T3;  
+  
+  PRINT T3;  
+}
+```
+#### Explanation:
+
+-   The list `[0.9, 1.0, 1.1]` is expanded **independently** into a new table (`T1`).
+-   Later, `T1` is **joined** with `T2` to apply multipliers to `totalAmt`.
+
+
+#### Expanding a list for each row in an existing table Example:
+
+```python
+CREATE OR REPLACE QUERY unwindExample2() syntax v3{  
+  
+  SELECT s.name as acct, sum(e.amount) as totalAmt INTO T1  
+       FROM (s:Account)- [e:transfer]-> (t:Account)  
+      WHERE s.isBlocked  
+    ;  
+  
+  UNWIND T1 ON [0.9, 1.0, 1.1] AS ratio INTO T2;  
+  
+  PRINT T2;  
+}
+```
+#### Explanation:
+
+-   Instead of creating a separate table first (`T1`), the list `[0.9, 1.0, 1.1]` is **expanded per row of `T1`** directly into `T2`.
+-   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
+
+---
 
 **Explanation:**
 
