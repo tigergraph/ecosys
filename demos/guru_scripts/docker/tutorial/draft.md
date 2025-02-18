@@ -766,6 +766,7 @@ UNION table1 WITH table2 [WITH table3 ...] INTO newTable;
 -   `table1`, `table2`, ...: Input tables that need to be combined.
 -   `newTable`: The resulting table that stores the merged data.
 -   The input tables **must have the same schema** (i.e., the same number of columns with matching data types).
+-   Important Note: After UNION, the original tables (table1, table2, etc.) are destroyed and cannot be used in subsequent query operations.
 
 #### Example Usage:
 
