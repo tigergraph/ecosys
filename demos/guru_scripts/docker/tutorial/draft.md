@@ -917,7 +917,7 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 ```
 #### Explanation:
 
--   Instead of creating a separate table first (`T1`), the list `[0.9, 1.0, 1.1]` is **expanded per row of `T1`** directly into `T2`.
+-   Instead of creating a separate table first (`T1`), the list column `ratioList` is **expanded per row of `T1`** directly into `T2`.
 -   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
 
 ---
