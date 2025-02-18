@@ -152,8 +152,8 @@ public class Builder {
           break;
         case Options.SSL_MODE_VERIFY_HOSTNAME:
           hostnameVerifier = new DefaultHostnameVerifier();
-          // the security level of hostname verification is higher than
-          // CA verification, so need to continue to the next case
+        // the security level of hostname verification is higher than
+        // CA verification, so need to continue to the next case
         case Options.SSL_MODE_VERIFY_CA:
           if (Utils.isEmpty(trustStoreFile)) {
             throw new IllegalArgumentException("\"ssl.truststore\" is required for mode " + mode);

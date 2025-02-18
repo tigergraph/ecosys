@@ -51,16 +51,16 @@ public class JULFormatter extends Formatter {
 
   private String getLocalizedLevel(int level) {
     switch (level) {
-        // SEVERE
+      // SEVERE
       case 1000:
         return "ERROR";
-        // WARNING
+      // WARNING
       case 900:
         return "WARN";
-        // INFO
+      // INFO
       case 800:
         return "INFO";
-        // FINE
+      // FINE
       case 500:
       default:
         return "DEBUG";

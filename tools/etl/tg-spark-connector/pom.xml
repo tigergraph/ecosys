@@ -33,7 +33,7 @@
 
   <groupId>com.tigergraph</groupId>
   <artifactId>tigergraph-spark-connector</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -94,9 +94,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.wiremock</groupId>
-      <artifactId>wiremock</artifactId>
-      <version>3.3.1</version>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8</artifactId>
+      <version>3.0.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -153,11 +153,15 @@
               <relocations>
                 <relocation>
                   <pattern>com.fasterxml.jackson</pattern>
-                  <shadedPattern>com.shaded.fasterxml.jackson</shadedPattern>
+                  <shadedPattern>com.tigergraph.spark.shaded.jackson</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.hc</pattern>
-                  <shadedPattern>org.shaded.apache.hc</shadedPattern>
+                  <shadedPattern>com.tigergraph.spark.shaded.hc</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>feign</pattern>
+                  <shadedPattern>com.tigergraph.spark.shaded.feign</shadedPattern>
                 </relocation>
               </relocations>
               <transformers>
