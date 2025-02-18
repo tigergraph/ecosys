@@ -1,3 +1,7 @@
+# v0.2.2
+* Support schema inference for ListAccum, SetAccum, BagAccum, MapAccum and GroupByAccum;
+* Fix: Update shaded pattern of third-party dependencies to avoid conflicts;
+
 # v0.2.1
 * Fix the NPE issue when `log.level` is unset. The `log.level` option is optional. If not provided, the connector should initialize the logger using the Spark Log4j configurations
 * New writer option `loading.ack` with default value "all": 

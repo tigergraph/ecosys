@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tigergraph.spark.read.TigerGraphResultAccessor.FieldMeta;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
@@ -172,6 +174,51 @@ public class TigerGraphResultAccessorTest {
     assertEquals(out.catalogString(), "struct<results:string>");
   }
 
+  /**
+   * Test case for parsing accumulator schemas. <br>
+   * The element type of the accumulator is parsed and mapped to the Spark SQL data type. <br>
+   * E.g. `[{"name": "ListAccum<int>"}]` => `struct<name:int>`
+   */
+  @Test
+  public void testParseAccumSchema() throws Exception {
+    List<String> testCases =
+        Arrays.asList(
+            "[{\"name\": \"ListAccum<int>\"}]",
+            "[{\"name\": \"SetAccum<string>\"}]",
+            "[{\"name\": \"BagAccum<int>\"}]",
+            "[{\"name\": \"MapAccum<int, string>\"}]",
+            "[{\"name\": \"ArrayAccum<SumAccum<double>>\"}]",
+            "[{\"name\": \"HeapAccum<Test_Results<string, string, int>>(4, score DESC, last_name"
+                + " ASC)\"}]",
+            "[{\"name\": \"GroupByAccum<int a, string b, MaxAccum<int> maxa,"
+                + " HeapAccum<Test_Results<string, string, int>>(4, score DESC, last_name ASC)"
+                + " hea>\"}]",
+            // neg: unknown element type will be mapped to string
+            "[{\"name\": \"ListAccum<unknown_type>\"}]",
+            // neg: non-accumulator type will be mapped to string, with the key name retained
+            "[{\"name\": \"NotAnAccum\"}]");
+    List<String> expected =
+        Arrays.asList(
+            "struct<results:decimal(38,0)>",
+            "struct<results:string>",
+            "struct<results:decimal(38,0)>",
+            "struct<key:decimal(38,0),value:string>",
+            "struct<results:string>",
+            "struct<results:string>",
+            "struct<a:decimal(38,0),b:string,maxa:decimal(38,0),hea:string>",
+            "struct<results:string>",
+            "struct<name:string>");
+
+    for (int i = 0; i < testCases.size(); i++) {
+      assertEquals(
+          expected.get(i),
+          TigerGraphResultAccessor.fromQueryMeta(objectMapper.readTree(testCases.get(i)), null)
+              .getSchema()
+              .catalogString(),
+          "i=" + i);
+    }
+  }
+
   @Test
   public void testNormalAccessor() throws Exception {
     // column name | JSON path | isQueryable | original JSON obj | expected result
@@ -188,6 +235,45 @@ public class TigerGraphResultAccessorTest {
               (String) testCases[i][0], (String) testCases[i][1], (Boolean) testCases[i][2]);
       JsonNode res = meta.toAccessor().apply(objectMapper.readTree((String) testCases[i][3]));
       assertEquals((String) testCases[i][4], res.toString());
+    }
+  }
+
+  /** Test the extraction of element type from accumulator type. */
+  @Test
+  public void testExtractElementType() throws Exception {
+    List<String> testCases =
+        Arrays.asList(
+            "ListAccum<int>",
+            "SetAccum<string>",
+            "BagAccum<int>",
+            "MapAccum<int,string>",
+            "ArrayAccum<SumAccum<double>>",
+            "HeapAccum<Test_Results<string, string, int>>(4, score DESC, last_name ASC)",
+            "GroupByAccum<int a, string b, HeapAccum<My_Tuple<string, int>>(4, last_name ASC) hea,"
+                + " ListAccum<ListAccum<int>> lists>",
+            "int", // primitive data types
+            "", // empty
+            "HeapAccum<aaa" // no end bracket
+            );
+    List<List<String>> expected =
+        Arrays.asList(
+            Arrays.asList("int"),
+            Arrays.asList("string"),
+            Arrays.asList("int"),
+            Arrays.asList("int", "string"),
+            Arrays.asList("SumAccum<double>"),
+            Arrays.asList("Test_Results<string, string, int>"),
+            Arrays.asList(
+                "int a",
+                "string b",
+                "HeapAccum<My_Tuple<string, int>> hea",
+                "ListAccum<ListAccum<int>> lists"),
+            Arrays.asList(),
+            Arrays.asList(),
+            Arrays.asList());
+    for (int i = 0; i < testCases.size(); i++) {
+      assertEquals(
+          expected.get(i), TigerGraphResultAccessor.extractElementType(testCases.get(i)), "i=" + i);
     }
   }
 }

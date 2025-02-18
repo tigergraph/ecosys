@@ -20,13 +20,14 @@ import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Utils;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Function;
-import java.util.stream.Stream;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
@@ -44,7 +45,7 @@ public class TigerGraphResultAccessor implements Serializable {
       "0:"; // extract first obj of first PRING statement
 
   private List<FieldMeta> fieldMetas = new ArrayList<FieldMeta>();
-  private StructType schema;
+  private StructType schema = new StructType();
   // For extracting obj from query results
   private Boolean extractObj = false;
   private Integer rowNumber;
@@ -56,12 +57,11 @@ public class TigerGraphResultAccessor implements Serializable {
    */
   public static TigerGraphResultAccessor fromExternalSchema(
       StructType schema, String resultsExtract) {
-    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    accessor.parseResultsExtract(resultsExtract);
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
     accessor.schema = schema;
     StructField[] fields = schema.fields();
     for (StructField field : fields) {
-      accessor.add(field.name(), "/".concat(field.name()), true);
+      accessor.addAccessor(field.name(), "/".concat(field.name()), true);
     }
     return accessor;
   }
@@ -75,11 +75,9 @@ public class TigerGraphResultAccessor implements Serializable {
    */
   public static TigerGraphResultAccessor fromVertexMeta(JsonNode meta, Set<String> columnPrune) {
     TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    StructType schema = new StructType();
     // Parse primary id type
     String vIdType = meta.path("PrimaryId").path("AttributeType").path("Name").asText("STRING");
-    schema = schema.add("v_id", mapTGTypeToSparkType(vIdType));
-    accessor.add("v_id", "/v_id", false);
+    accessor.add("v_id", "/v_id", vIdType, false);
     // Parse attributes type
     Iterator<JsonNode> attrIter = meta.path("Attributes").elements();
     while (attrIter.hasNext()) {
@@ -87,11 +85,9 @@ public class TigerGraphResultAccessor implements Serializable {
       String attrName = attr.path("AttributeName").asText();
       String attrType = attr.path("AttributeType").path("Name").asText("STRING");
       if (!Utils.isEmpty(attrName) && (columnPrune == null || columnPrune.contains(attrName))) {
-        schema = schema.add(attrName, mapTGTypeToSparkType(attrType));
-        accessor.add(attrName, "/attributes/".concat(attrName), false);
+        accessor.add(attrName, "/attributes/".concat(attrName), attrType, false);
       }
     }
-    accessor.schema = schema;
     return accessor;
   }
 
@@ -105,15 +101,13 @@ public class TigerGraphResultAccessor implements Serializable {
    */
   public static TigerGraphResultAccessor fromEdgeMeta(JsonNode meta, Set<String> columnPrune) {
     TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    StructType fixedSchema =
-        StructType.fromDDL("from_type STRING, from_id STRING, to_type STRING, to_id STRING");
+    // Fixed schema
     accessor
-        .add("from_type", "/from_type", false)
-        .add("from_id", "/from_id", false)
-        .add("to_type", "/to_type", false)
-        .add("to_id", "/to_id", false);
+        .add("from_type", "/from_type", "STRING", false)
+        .add("from_id", "/from_id", "STRING", false)
+        .add("to_type", "/to_type", "STRING", false)
+        .add("to_id", "/to_id", "STRING", false);
 
-    StructType attrSchema = new StructType();
     // Parse attributes type
     Iterator<JsonNode> attrIter = meta.path("Attributes").elements();
     while (attrIter.hasNext()) {
@@ -121,11 +115,9 @@ public class TigerGraphResultAccessor implements Serializable {
       String attrName = attr.path("AttributeName").asText();
       String attrType = attr.path("AttributeType").path("Name").asText("STRING");
       if (!Utils.isEmpty(attrName) && (columnPrune == null || columnPrune.contains(attrName))) {
-        attrSchema = attrSchema.add(attrName, mapTGTypeToSparkType(attrType));
-        accessor.add(attrName, "/attributes/".concat(attrName), false);
+        accessor.add(attrName, "/attributes/".concat(attrName), attrType, false);
       }
     }
-    accessor.schema = fixedSchema.merge(attrSchema);
     return accessor;
   }
 
@@ -142,8 +134,7 @@ public class TigerGraphResultAccessor implements Serializable {
    * it.
    */
   public static TigerGraphResultAccessor fromQueryMeta(JsonNode meta, String resultsExtract) {
-    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    accessor.parseResultsExtract(resultsExtract);
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
     JsonNode objMeta = null;
     if (accessor.extractObj()) {
       // explicitly extract an obj from query output
@@ -163,28 +154,21 @@ public class TigerGraphResultAccessor implements Serializable {
       // Infer the results type
       if (objMeta.isTextual()) {
         String format = objMeta.asText();
-        String[] nonMapAccumTypes = {
-          "SumAccum",
-          "MinAccum",
-          "MaxAccum",
-          "AvgAccum",
-          "PercentileContAccum",
-          "AndAccum",
-          "OrAccum",
-          "BitwiseAndAccum",
-          "BitwiseOrAccum",
-          "ListAccum",
-          "SetAccum",
-          "BagAccum",
-          "ArrayAccum",
-          "HeapAccum",
-          "GroupByAccum"
-        };
-        if (Stream.of(nonMapAccumTypes).anyMatch((prefix) -> format.startsWith(prefix))) {
-          return fromNonMapAccumQueryMeta(format, resultsExtract);
+        List<String> eleType = extractElementType(format);
+        if (format.startsWith("ListAccum")
+            || format.startsWith("SetAccum")
+            || format.startsWith("BagAccum")) {
+          return fromCollectionAccumQueryMeta(eleType, resultsExtract);
+        } else if (format.startsWith("ArrayAccum")) {
+          return fromArrayAccumQueryMeta(eleType, resultsExtract);
+        } else if (format.startsWith("HeapAccum")) {
+          return fromHeapAccumQueryMeta(eleType, resultsExtract);
+        } else if (format.startsWith("GroupByAccum")) {
+          return fromGroupByAccumQueryMeta(eleType, resultsExtract);
         } else if (format.startsWith("MapAccum")) {
-          return fromMapAccumQueryMeta(format, resultsExtract);
+          return fromMapAccumQueryMeta(eleType, resultsExtract);
         }
+        // o/w, go to the buttom, non-extractable query result
       } else if (objMeta.isArray()) {
         // typed vertex/edge set
         if (objMeta.size() == 1) {
@@ -214,12 +198,8 @@ public class TigerGraphResultAccessor implements Serializable {
     logger.warn(
         "Failed to infer schema, use default schema 'results STRING'. You can set custom schema"
             + " manually based on the output JSON keys.");
-    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    accessor.parseResultsExtract(resultsExtract);
-    StructType schema = new StructType();
-    schema = schema.add("results", "STRING");
-    accessor.add("results", "", false);
-    accessor.schema = schema;
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
+    accessor.add("results", "", "STRING", false);
     return accessor;
   }
 
@@ -245,18 +225,14 @@ public class TigerGraphResultAccessor implements Serializable {
       // different lines have different schemas, so we don't flatten it
       return fromUnknownMeta(resultsExtract);
     } else {
-      TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-      accessor.parseResultsExtract(resultsExtract);
-      StructType schema = new StructType();
+      TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
       JsonNode uniqueMeta = dedupMeta.iterator().next();
       Iterator<Entry<String, JsonNode>> iter = uniqueMeta.fields();
       while (iter.hasNext()) {
         Entry<String, JsonNode> field = iter.next();
-        schema =
-            schema.add(field.getKey(), mapTGTypeToSparkType(field.getValue().asText("STRING")));
-        accessor.add(field.getKey(), "/".concat(field.getKey()), false);
+        accessor.add(
+            field.getKey(), "/".concat(field.getKey()), field.getValue().asText("STRING"), false);
       }
-      accessor.schema = schema;
       return accessor;
     }
   }
@@ -264,9 +240,7 @@ public class TigerGraphResultAccessor implements Serializable {
   /** Parse schema for vertex expression set */
   private static TigerGraphResultAccessor fromVertexSetQueryMeta(
       JsonNode meta, String resultsExtract) {
-    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    accessor.parseResultsExtract(resultsExtract);
-    StructType schema = new StructType();
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
     Iterator<Entry<String, JsonNode>> iter = meta.fields();
     Iterator<Entry<String, JsonNode>> attrIter = null;
     while (iter.hasNext()) {
@@ -282,38 +256,73 @@ public class TigerGraphResultAccessor implements Serializable {
       if ("v_id".equals(key)) {
         typeStr = "STRING";
       }
-      schema = schema.add(key, mapTGTypeToSparkType(typeStr));
-      accessor.add(key, "/".concat(key), false);
+      accessor.add(key, "/".concat(key), typeStr, false);
     }
     if (attrIter != null) {
       while (attrIter.hasNext()) {
         Entry<String, JsonNode> attrField = attrIter.next();
         String attrKey = attrField.getKey();
         String attrTypeStr = attrField.getValue().asText("STRING");
-        schema = schema.add(attrKey, mapTGTypeToSparkType(attrTypeStr));
-        accessor.add(attrKey, "/attributes/".concat(attrKey), false);
+        accessor.add(attrKey, "/attributes/".concat(attrKey), attrTypeStr, false);
       }
     }
-    accessor.schema = schema;
     return accessor;
   }
 
-  private static TigerGraphResultAccessor fromNonMapAccumQueryMeta(
-      String format, String resultsExtract) {
+  // General collection types like List, Set, Bag and Array
+  private static TigerGraphResultAccessor fromCollectionAccumQueryMeta(
+      List<String> eleType, String resultsExtract) {
+    if (eleType == null || eleType.size() != 1) {
+      eleType = Arrays.asList("STRING");
+    }
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
+    accessor.add("results", "", eleType.get(0), false);
+    return accessor;
+  }
+
+  // Use column "key" and "value" to place the JSON keys and values
+  private static TigerGraphResultAccessor fromMapAccumQueryMeta(
+      List<String> eleType, String resultsExtract) {
+    if (eleType == null || eleType.size() != 2) {
+      eleType = Arrays.asList("STRING", "STRING");
+    }
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
+    accessor.add("key", "/key", eleType.get(0), false);
+    accessor.add("value", "/value", eleType.get(1), false);
+    return accessor;
+  }
+
+  private static TigerGraphResultAccessor fromArrayAccumQueryMeta(
+      List<String> eleTypes, String resultsExtract) {
+    // Currently the query signature API can't tell the dimension of the ArrayAccum,
+    // thus we don't know the element is a primitive type or an array
     return fromUnknownMeta(resultsExtract);
   }
 
-  private static TigerGraphResultAccessor fromMapAccumQueryMeta(
-      String format, String resultsExtract) {
-    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor();
-    accessor.parseResultsExtract(resultsExtract);
-    StructType schema = new StructType();
-    schema = schema.add("key", "STRING");
-    schema = schema.add("value", "STRING");
-    accessor.add("key", "/key", false);
-    accessor.add("value", "/value", false);
-    accessor.schema = schema;
+  private static TigerGraphResultAccessor fromGroupByAccumQueryMeta(
+      List<String> eleType, String resultsExtract) {
+    if (eleType == null || eleType.size() == 0) {
+      return fromUnknownMeta(resultsExtract);
+    }
+    TigerGraphResultAccessor accessor = new TigerGraphResultAccessor(resultsExtract);
+    for (String ele : eleType) {
+      // The GroupByAccum's element type is followed by alias, e.g.:
+      // GroupByAccum<int a, string b, MaxAccum<int> maxa, ListAccum<ListAccum<int>> lists>
+      int lastSpaceIndex = ele.lastIndexOf(' ');
+      if (lastSpaceIndex == -1) {
+        return fromUnknownMeta(resultsExtract);
+      }
+      String type = ele.substring(0, lastSpaceIndex).trim();
+      String alias = ele.substring(lastSpaceIndex + 1);
+      accessor.add(alias, "/".concat(alias), type, false);
+    }
     return accessor;
+  }
+
+  private static TigerGraphResultAccessor fromHeapAccumQueryMeta(
+      List<String> eleType, String resultsExtract) {
+    // So far we are not able to detect the tuple format of a heap accum
+    return fromUnknownMeta(resultsExtract);
   }
 
   public StructType getSchema() {
@@ -341,6 +350,14 @@ public class TigerGraphResultAccessor implements Serializable {
    */
   protected static DataType mapTGTypeToSparkType(String tgType) {
     if (Utils.isEmpty(tgType)) return DataTypes.StringType;
+    // Single value accumulators
+    if (tgType.startsWith("SumAccum")
+        || tgType.startsWith("MinAccum")
+        || tgType.startsWith("MaxAccum")) {
+      List<String> ele = extractElementType(tgType);
+      if (ele != null && ele.size() == 1) tgType = ele.get(0);
+      else tgType = "string";
+    }
     tgType = tgType.toLowerCase();
     switch (tgType) {
       case "int":
@@ -349,29 +366,91 @@ public class TigerGraphResultAccessor implements Serializable {
       case "float":
         return DataTypes.FloatType;
       case "double":
+      case "avgaccum":
         return DataTypes.DoubleType;
       case "bool":
       case "boolean":
+      case "andaccum":
+      case "oraccum":
         return DataTypes.BooleanType;
       case "fixed_binary":
         return DataTypes.BinaryType;
+      case "string":
       default:
         return DataTypes.StringType;
     }
   }
 
   /**
-   * E.g. MapAccum<vertex, ListAccum<vertex>> => [vertex, ListAccum<vertex>]
+   * E.g. MapAccum<vertex, ListAccum<vertex>> => [vertex, ListAccum<vertex>] Note: it only extract
+   * the first level element type
    *
    * @param accumType
    * @return
    */
-  private static List<String> extractElementType(String accumType) {
-    // TODO in next relese
-    return null;
+  protected static List<String> extractElementType(String accumType) {
+    StringBuilder buf = new StringBuilder();
+    List<String> res = new ArrayList<>();
+    Stack<Character> angleBracketMatch = new Stack<>();
+    // HeapAccum parameters, which should be skipped
+    // E.g. HeapAccum<My_Tuple<string, int>>(4, last_name ASC) => HeapAccum<My_Tuple<string, int>>
+    Boolean inParentheses = false;
+    Boolean finished = false;
+    for (char ch : accumType.toCharArray()) {
+      switch (ch) {
+        case '<':
+          angleBracketMatch.add(ch);
+          if (angleBracketMatch.size() > 1) {
+            buf.append(ch);
+          }
+          break;
+        case '>':
+          if (!angleBracketMatch.isEmpty()) {
+            angleBracketMatch.pop();
+          }
+          if (!angleBracketMatch.isEmpty()) {
+            buf.append(ch);
+          } else {
+            finished = true;
+            res.add(buf.toString().trim());
+          }
+          break;
+        case ',':
+          if (inParentheses) break;
+          if (angleBracketMatch.size() == 1) {
+            res.add(buf.toString().trim());
+            buf.setLength(0);
+          } else if (angleBracketMatch.size() > 1) {
+            buf.append(ch);
+          }
+          break;
+        case '(':
+          inParentheses = true;
+          break;
+        case ')':
+          inParentheses = false;
+          break;
+        default:
+          if (angleBracketMatch.size() >= 1 && !inParentheses) {
+            buf.append(ch);
+          }
+          break;
+      }
+      if (finished) break;
+    }
+    if (!angleBracketMatch.isEmpty()) {
+      // can't match the starting bracket
+      // fallback to empty element
+      res.clear();
+    }
+    return res;
   }
 
   private TigerGraphResultAccessor() {}
+
+  private TigerGraphResultAccessor(String resultExtract) {
+    this.parseResultsExtract(resultExtract);
+  }
 
   /**
    * Add accessor(json pointer) for the column.
@@ -380,8 +459,23 @@ public class TigerGraphResultAccessor implements Serializable {
    * @param jsPath
    * @param isQueryable whether search recursively
    */
-  private TigerGraphResultAccessor add(String colName, String jsPath, Boolean isQueryable) {
+  private TigerGraphResultAccessor addAccessor(String colName, String jsPath, Boolean isQueryable) {
     this.fieldMetas.add(FieldMeta.fromValue(colName, jsPath, isQueryable));
+    return this;
+  }
+
+  /**
+   * Add accessor(json pointer) for the column, as well as Spark df schema.
+   *
+   * @param colName
+   * @param jsPath
+   * @param tgType
+   * @param isQueryable whether search recursively
+   */
+  private TigerGraphResultAccessor add(
+      String colName, String jsPath, String tgType, Boolean isQueryable) {
+    this.fieldMetas.add(FieldMeta.fromValue(colName, jsPath, isQueryable));
+    this.schema = schema.add(colName, mapTGTypeToSparkType(tgType));
     return this;
   }
 
