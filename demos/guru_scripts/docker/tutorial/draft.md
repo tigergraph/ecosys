@@ -902,16 +902,17 @@ CREATE OR REPLACE QUERY unwindExample() syntax v3{
 #### Expanding a list for each row in an existing table Example:
 
 ```python
-CREATE OR REPLACE QUERY unwindExample2() syntax v3{  
-  
-  SELECT s.name as acct, sum(e.amount) as totalAmt INTO T1  
-       FROM (s:Account)- [e:transfer]-> (t:Account)  
-      WHERE s.isBlocked  
-    ;  
-  
-  UNWIND T1 ON [0.9, 1.0, 1.1] AS ratio INTO T2;  
-  
-  PRINT T2;  
+SET opencypher_mode = true
+CREATE OR REPLACE QUERY unwindExample2() syntax v3{
+
+  SELECT s.name as acct, [0.9, 1.0, 1.1] as ratioList, sum(e.amount) as totalAmt INTO T1
+       FROM (s:Account)- [e:transfer]-> (t:Account)
+      WHERE s.isBlocked
+    ;
+
+  UNWIND T1 ON ratioList AS ratio INTO T2;
+
+  PRINT T2;
 }
 ```
 #### Explanation:
