@@ -2081,6 +2081,99 @@ Using `UNION ALL` can improve performance when duplicate elimination is unnecess
 [Go back to top](#top)
 
 ## Unwind Statement
+The `UNWIND` statement in GSQL is used to expand a list into multiple rows, allowing iteration over list elements and their combination with other tables. This is particularly useful when applying transformations or computations based on a set of values.
+
+There are two main forms of `UNWIND`:
+
+1.  **Expanding a fixed list** to initialize a new table.
+2.  **Expanding a list column per row** in an existing table.
+
+#### Syntax
+
+**Expanding a Fixed List (UNWIND INIT)**
+
+```python
+UNWIND [value1, value2, ...] AS columnName INTO newTable;
+```
+
+-   `[value1, value2, ...]`: A list of values to be expanded.
+-   `columnName`: The alias for each value in the generated table.
+-   `newTable`: The resulting table that stores the expanded rows.
+
+**Expanding a List Per Row (UNWIND A TABLE)**
+
+```python
+UNWIND tableName ON list AS columnName INTO newTable;
+```
+
+-   `tableName`: The input table whose rows will be expanded.
+-   `list`: A list to be expanded for each row of `tableName`.
+-   `columnName`: The alias for each value in the expanded list.
+-   `newTable`: The resulting table that stores expanded rows while preserving columns from `tableName`.
+
+#### Expanding a fixed list to init a new table Example:
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unwindExample() syntax v3{
+
+  // Creates table `T1`, where each value from the list `[0.9, 1.0, 1.1]` is inserted as a separate row under the column `ratio`.
+  UNWIND [0.9, 1.0, 1.1] AS ratio INTO T1;
+  PRINT T1;
+
+  SELECT s.name as acct, sum(e.amount) as totalAmt INTO T2
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE s.isBlocked
+    ;
+
+  // 1. Joins `T1` (containing ratios) with `T2` (containing account transfer sums).
+  // 2. Computes a new column "resAmt = totalAmt * ratio" to adjust transfer amounts based on different ratios.
+  // 3. Stores the result in new table T3.
+  JOIN T1 t1 WITH T2 t2
+  PROJECT t2.acct as acct, t1.ratio as ratio, t2.totalAmt * t1.ratio as resAmt
+  INTO T3;
+
+  PRINT T3;
+}
+
+install query unwindExample
+run query unwindExample()
+```
+#### Explanation
+
+-   The list `[0.9, 1.0, 1.1]` is expanded **independently** into a new table (`T1`).
+-   Later, `T1` is **joined** with `T2` to apply multipliers to `totalAmt`.
+
+
+#### Expanding a list for each row in an existing table Example:
+
+```python
+use graph financialGraph
+
+SET opencypher_mode = true #unwind needs to set openCypher mode
+CREATE OR REPLACE QUERY unwindExample2() syntax v3{
+
+  SELECT s.name as acct, [0.9, 1.0, 1.1] as ratioList, sum(e.amount) as totalAmt INTO T1
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE s.isBlocked
+    ;
+
+  UNWIND T1 ON ratioList AS ratio INTO T2;
+
+  PRINT T2;
+}
+
+install query unwindExample2
+run query unwindExample2()
+```
+#### Explanation:
+
+-   Instead of creating a separate table first (`T1`), the list column `ratioList` is **expanded per row of `T1`** directly into `T2`.
+-   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
+
+---
+
 
 
 [Go back to top](#top)
