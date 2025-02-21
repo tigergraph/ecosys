@@ -43,8 +43,6 @@ A more exhaustive description of functionality and behavior of GSQL is available
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
-    
- - [Support](#support)
    - [Table](#table)
    - [Init Table Statement](#init-table-statement)
    - [Order Table Statement](#order-table-statement)
@@ -54,7 +52,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
    - [Union Statement](#union-statement)
    - [Union All Statement](#union-all-statement)
    - [Unwind Statement](#unwind-statement)    
-
+ - [Support](#support)
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
