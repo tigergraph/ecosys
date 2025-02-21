@@ -2041,7 +2041,42 @@ run query unionExample()
 [Go back to top](#top)
 
 ## Union All Statement
+The `UNION ALL` statement functions similarly to `UNION`, but **does not remove duplicate rows**. This operation is useful when preserving all records from input tables, even if they are identical.
 
+#### Syntax
+
+```python
+UNION ALL table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+
+#### Example Usage:
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unionAllExample(STRING accountName = "Scott") syntax v3{
+   SELECT s as acct INTO T1
+      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s as acct INTO T2
+      FROM (s:Account {name: accountName})
+      ;
+
+   // Combine both results into table T3, keeping all duplicate rows
+   UNION ALL T1 WITH T2 INTO T3;
+
+   PRINT T3;
+}
+
+install query unionAllExample
+run query unionAllExample()
+```
+
+#### Explanation:
+
+Using `UNION ALL` can improve performance when duplicate elimination is unnecessary, as it avoids the extra computation required to filter out duplicates.
+
+---
 
 [Go back to top](#top)
 
