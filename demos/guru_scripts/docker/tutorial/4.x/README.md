@@ -1542,7 +1542,7 @@ FROM pattern
 -   `LIMIT`: Optional. Limits the number of rows returned.
 -   `OFFSET`: Optional. Specifies the number of rows to skip.
 
-#### Example:
+#### Example
 
 ```python
 CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {  
@@ -1557,7 +1557,7 @@ CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {
   PRINT T1;  
 }
 ```
-#### Explanation:
+#### Explanation
 
 -   In this example, we are retrieving data from the `Account` nodes `s` and `t` connected by the `transfer` relationship.
 -   The query aggregates the `amount` of the transfer and stores the result into a new table `T1`.
@@ -1580,7 +1580,7 @@ INIT tableName value1 AS column1, value2 AS column2, ...;
 
 ---
 
-#### Example:
+#### Example
 
 ```python
 CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{  
@@ -1595,7 +1595,7 @@ CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{
 }
 ```
 
-#### Explanation:
+#### Explanation
 
 - **Table Initialization with Constant Values**: The first `INIT` statement creates table `T1` with three columns (`col_1`, `col_2`, `col_3`). The values `1`, `true`, and `[0.1, -1.1]` are assigned to `col_1`, `col_2`, and `col_3`
 - **Table Initialization with Variables**: The second `INIT` statement initializes table `T2`. It uses the current date and time (`now()`) for `col_1`, the input variable `intVal` for `col_2`, and splits a string `"a,b,c"` into an array and assigns it to `col_3`.
@@ -1605,7 +1605,45 @@ CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{
 [Go back to top](#top)
 
 ## Order Table Statement
+The `ORDER` statement in GSQL is used to sort tables based on one or more columns, with the optional `LIMIT` and `OFFSET` clauses. This allows efficient ordering and retrieval of a subset of data.
 
+#### Syntax
+
+```python
+ORDER tableName BY column1 [ASC|DESC], column2 [ASC|DESC] ... LIMIT number OFFSET number;
+```
+-   `tableName`: The table to be ordered.
+-   `column1, column2, ...`: Columns to sort by.
+-   `ASC | DESC`: Sorting order (ascending by default).
+-   `LIMIT number`: Restricts the number of rows in the result.
+-   `OFFSET number`: Skips a number of rows before returning results.
+
+---
+
+#### Example
+
+```python
+CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{  
+  
+  SELECT s.name as acct, max(e.amount) as maxTransferAmt INTO T1  
+  FROM (s:Account)- [e:transfer]-> (t:Account)  
+    ;  
+  
+  ORDER T1 BY maxTransferAmt DESC, acct
+  LIMIT 3
+  OFFSET 1 * page;  
+  
+  PRINT T1;  
+}
+```
+
+#### Explanation
+ - Selects account names and their maximum transfer amounts.
+ - Sorts by `maxTransferAmt` (descending) and `acct` (ascending).
+ - Returns 3 rows per page, skipping first `page` rows for pagination.
+
+---
+ 
 
 [Go back to top](#top)
 
