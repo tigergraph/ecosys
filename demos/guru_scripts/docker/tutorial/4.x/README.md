@@ -1545,17 +1545,22 @@ FROM pattern
 #### Example
 
 ```python
-CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {  
-  SELECT s.name AS acct, SUM(e.amount) AS totalAmt INTO T1  
-  FROM (s:Account)- [e:transfer]-> (t:Account)  
-  WHERE not s.isBlocked  
-  HAVING totalAmt > 1000  
-  ORDER BY totalAmt DESC  
-  LIMIT 5 OFFSET 0  
-  ;  
-  
-  PRINT T1;  
+use graph financialGraph
+
+CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {
+  SELECT s.name AS acct, SUM(e.amount) AS totalAmt INTO T1
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE not s.isBlocked
+  HAVING totalAmt > 1000
+  ORDER BY totalAmt DESC
+  LIMIT 5 OFFSET 0
+  ;
+
+  PRINT T1;
 }
+
+install query selectExample2
+run query selectExample2()
 ```
 #### Explanation
 
@@ -1583,16 +1588,22 @@ INIT tableName value1 AS column1, value2 AS column2, ...;
 #### Example
 
 ```python
-CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{  
-  // Initialize a table with different constant values.  
-  INIT T1 1 as col_1, true as col_2, [0.1, -1.1] as col_3;  
-  PRINT T1;  
-  
-  // Initialize a table with variables and function calls  
-  DATETIME date = now();  
-  INIT T2 date as col_1, intVal as col_2, SPLIT("a,b,c", ",") as col_3;  
-  PRINT T2;  
+use graph financialGraph
+
+CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{
+  // Initialize a table with different constant values.
+  INIT T1 1 as col_1, true as col_2, [0.1, -1.1] as col_3;
+  PRINT T1;
+
+  // Initialize a table with variables and function calls
+  DATETIME date = now();
+  INIT T2 date as col_1, intVal as col_2, SPLIT("a,b,c", ",") as col_3;
+  PRINT T2;
+
 }
+
+install query initExample
+run query initExample()
 ```
 
 #### Explanation
@@ -1623,18 +1634,21 @@ ORDER tableName BY column1 [ASC|DESC], column2 [ASC|DESC] ... LIMIT number OFFSE
 #### Example
 
 ```python
-CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{  
-  
-  SELECT s.name as acct, max(e.amount) as maxTransferAmt INTO T1  
-  FROM (s:Account)- [e:transfer]-> (t:Account)  
-    ;  
-  
-  ORDER T1 BY maxTransferAmt DESC, acct
-  LIMIT 3
-  OFFSET 1 * page;  
-  
-  PRINT T1;  
+use graph financialGraph
+
+CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{
+
+  SELECT s.name as acct, max(e.amount) as maxTransferAmt INTO T1
+       FROM (s:Account)- [e:transfer]-> (t:Account)
+    ;
+
+  ORDER T1 BY maxTransferAmt DESC, acct LIMIT 3 OFFSET 1 * page;
+
+  PRINT T1;
 }
+
+install query orderExample
+run query orderExample()
 ```
 
 #### Explanation
@@ -1658,6 +1672,8 @@ FILTER <target_table> ON <condition>;
 #### Example
 
 ```python
+use graph financialGraph
+
 CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
    SELECT s.name as srcAccount, e.amount as amt, t.name as tgtAccount INTO T
    FROM (s:Account) - [e:transfer]-> (t)
@@ -1671,6 +1687,9 @@ CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
 
    PRINT T;
 }
+
+install query filterExample
+run query filterExample()
 ```
 
 #### Explanation
@@ -1709,22 +1728,27 @@ INTO newTableName;
 #### Example 1: Transforming Table Data
 
 ```python
-CREATE OR REPLACE QUERY projectExample() syntax v3{  
-   SELECT s.name as srcAccount, p.number as phoneNumber, sum(e.amount) as amt INTO T1  
-   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (t),  
-           (s) - [:hasPhone]- (p);  
-  
-   PRINT T1;  
-  
-   PROJECT T1 ON  
-      T1.srcAccount + ":" + T1.phoneNumber as acct,  
-      T1.amt * 2 as doubleAmt,  
-      T1.amt % 7 as mod7Amt,  
-      T1.amt > 10000 as flag  
-   INTO T2;  
-  
-   PRINT T2;  
+use graph financialGraph
+
+CREATE OR REPLACE QUERY projectExample() syntax v3{
+   SELECT s.name as srcAccount, p.number as phoneNumber, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (t),
+           (s) - [:hasPhone]- (p);
+
+   PRINT T1;
+
+   PROJECT T1 ON
+      T1.srcAccount + ":" + T1.phoneNumber as acct,
+      T1.amt * 2 as doubleAmt,
+      T1.amt % 7 as mod7Amt,
+      T1.amt > 10000 as flag
+   INTO T2;
+
+   PRINT T2;
 }
+
+install query projectExample
+run query projectExample()
 ```
 
 #### Explanation
@@ -1740,22 +1764,27 @@ The `PROJECT` statement does not modify the original table (`T1`) but instead cr
 #### Example 2: Extracting Vertex Sets from a Table
 
 ```python
-CREATE OR REPLACE QUERY projectExample2() syntax v3{  
-   SELECT tgt as tgtAcct, phone as tgtPhone INTO T1  
-   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (tgt:Account) - [:hasPhone] - (phone);  
-  
-   PRINT T1;  
-  
-   PROJECT T1 ON VERTEX COLUMN  
-      tgtAcct INTO vSet1,  
-      tgtPhone INTO vSet2  
-      ;  
-  
-   VS_1 =  SELECT s FROM (s:vSet1);  
-   VS_2 =  SELECT s FROM (s:vSet2);  
-  
-   PRINT VS_1, VS_2;  
+use graph financialGraph
+
+CREATE OR REPLACE QUERY projectExample2() syntax v3{
+   SELECT tgt as tgtAcct, phone as tgtPhone INTO T1
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (tgt:Account) - [:hasPhone] - (phone);
+
+   PRINT T1;
+
+   PROJECT T1 ON VERTEX COLUMN
+      tgtAcct INTO vSet1,
+      tgtPhone INTO vSet2
+      ;
+
+   VS_1 =  SELECT s FROM (s:vSet1);
+   VS_2 =  SELECT s FROM (s:vSet2);
+
+   PRINT VS_1, VS_2;
 }
+
+install query projectExample2
+run query projectExample2()
 ```
 **Explanation**
 
@@ -1770,6 +1799,52 @@ Next,  we extract vertex sets using the `PROJECT tableName ON VERTEX COLUMN` syn
 [Go back to top](#top)
 
 ## Join Statement
+In GSQL queries, the `JOIN` operation is commonly used to combine data from multiple tables (or nodes and relationships). Depending on the specific requirements, different types of `JOIN` operations are used. Common `JOIN` types include `INNER JOIN`, `CROSS JOIN`, `SEMIJOIN`, and `LEFT JOIN`.
+
+#### INNER JOIN
+
+The `INNER JOIN` statement combines rows from both tables where the join condition is true. Only rows that have matching values in both tables are returned.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example**
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY innerJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+   FROM (s:Account) - [:hasPhone]- (t:Phone);
+
+   JOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount + ":" + t2.phoneNumber as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query innerJoinExample
+run query innerJoinExample()
+```
+**Explanation:**
+
+-   **`INNER JOIN`** combines data from `T1` and `T2` based on matching `srcAccount` and `name`. Only rows with a match in both tables are returned, which results in a joined set of data containing the account name and the total transfer amount.
+
+---
 
 
 [Go back to top](#top)
