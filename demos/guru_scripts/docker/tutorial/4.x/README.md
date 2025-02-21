@@ -101,12 +101,12 @@ Now that you have a graph schema, you can load data using one of the following m
 
 - Load sample data from our publicly accessible s3 bucket:
   
-  Copy [load.gsql](./gsql/load.gsql) to your container. 
+  Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
      gsql load.gsql
   ```
-  or in GSQL editor of TigerGraph Savanna, copy the content of [load.gsql](./gsql/load.gsql), and paste it into the GSQL editor to run.
+  or in GSQL editor of TigerGraph Savanna, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
@@ -117,11 +117,11 @@ Now that you have a graph schema, you can load data using one of the following m
     - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
     - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
 
-  - Copy [load2.gsql](./gsql/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+  - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
        gsql load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [load2.gsql](./gsql/load2.gsql), and paste in GSQL shell editor to run.
+    or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
 
     The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
     ```python
@@ -165,7 +165,7 @@ We show both styles for each pattern class.
 
 ## Node Pattern
 ### SELECT A Vertex Set Style 
-Copy [q1a.gsql](./gsql/q1a.gsql) to your container. 
+Copy [02_q1a.gsql](./gsql/02_q1a.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -208,7 +208,7 @@ run query q1a()
 ### SELECT INTO A Table Style
 If you're familiar with SQL, treat the matched node as a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
-Copy [q1b.gsql](./gsql/q1b.gsql) to your container. 
+Copy [03_q1b.gsql](./gsql/03_q1b.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -240,7 +240,7 @@ run query q1b()
 
 ## Edge Pattern 
 ### SELECT A Vertex Set Style 
-Copy [q2a.gsql](./gsql/q2a.gsql) to your container. 
+Copy [04_q2a.gsql](./gsql/04_q2a.gsql) to your container. 
 
 ```python
 
@@ -283,7 +283,7 @@ run query q2a("Scott")
 ### SELECT INTO A Table Style
 If you're familiar with SQL, treat the matched edge as a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
-Copy [q2b.gsql](./gsql/q2b.gsql) to your container. 
+Copy [05_q2b.gsql](./gsql/05_q2b.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
@@ -318,7 +318,7 @@ run query q2b()
 ## Path Pattern 
 
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
-Copy [q3a.gsql](./gsql/q3a.gsql) to your container. 
+Copy [06_q3a.gsql](./gsql/06_q3a.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
@@ -360,7 +360,7 @@ run query q3a("2024-01-01", "2024-12-31", "Scott")
 
 If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
-Copy [q3b.gsql](./gsql/q3b.gsql) to your container. 
+Copy [07_q3b.gsql](./gsql/07_q3b.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
