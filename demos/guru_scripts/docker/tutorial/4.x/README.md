@@ -1643,12 +1643,43 @@ CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{
  - Returns 3 rows per page, skipping first `page` rows for pagination.
 
 ---
- 
 
 [Go back to top](#top)
 
 ## Filter Table Statement
+The `FILTER` statement works by applying the condition to the specified `target_table`, modifying its rows based on the logical expression provided. Filters are applied sequentially, so each subsequent filter operates on the results of the previous one.
 
+#### Syntax
+
+```python
+FILTER <target_table> ON <condition>;
+```
+
+#### Example
+
+```python
+CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
+   SELECT s.name as srcAccount, e.amount as amt, t.name as tgtAccount INTO T
+   FROM (s:Account) - [e:transfer]-> (t)
+      ;
+
+   FILTER T ON srcAccount == "Scott" OR amt > 10000;
+
+   PRINT T;
+
+   FILTER T ON srcAccount != "Scott";
+
+   PRINT T;
+}
+```
+
+#### Explanation
+
+-   The first `FILTER` statement retains rows where `srcAccount` is "Scott" or `amt` is greater than `10000`.
+-   The second `FILTER` statement removes rows where `srcAccount` is "Scott".
+-   The `PRINT` statements display the intermediate and final results after filtering.
+
+ ----------
 
 [Go back to top](#top)
 
