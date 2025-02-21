@@ -1986,6 +1986,56 @@ run query leftJoinExample()
 [Go back to top](#top)
 
 ## Union Statement
+The `UNION` statement in GSQL combines the results of two compatible tables into a new table, ensuring **no duplicate rows** in the output by default. This operation is useful when merging data sets from different sources or when performing set operations on table results.
+
+#### Syntax
+
+```python
+UNION table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+-   `table1`, `table2`, ...: Input tables that need to be combined.
+-   `newTable`: The resulting table that stores the merged data.
+-   The input tables **must have the same schema** (i.e., the same number of columns with matching data types).
+-   Important Note: After UNION, the original tables (table1, table2, etc.) are destroyed and cannot be used in subsequent query operations.
+
+#### Example 
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unionExample(STRING accountName = "Scott") syntax v3{
+   // Select accounts that transferred money
+   SELECT s as acct INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   // Select accounts by name
+   SELECT s as acct INTO T2
+   FROM (s:Account {name: accountName})
+      ;
+
+   // Combine both results into table T3
+   UNION T1 WITH T2 INTO T3;
+
+   PRINT T3;
+}
+
+install query unionExample
+run query unionExample()
+```
+
+#### Explanation
+
+**Selecting Data Into Temporary Tables**
+
+ - `T1`: Selects accounts that have transferred money.
+ - `T2`: Selects accounts that match the given name.
+
+**Performing the UNION Operation**
+ `UNION T1 WITH T2 INTO T3;`：Merges results from `T1` and `T2`, removing duplicates.
+
+**Printing the Final Result**
+    `PRINT T3;` outputs the combined dataset.
+    
+---
    
 
 [Go back to top](#top)
