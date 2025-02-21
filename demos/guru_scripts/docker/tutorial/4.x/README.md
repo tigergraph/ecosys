@@ -2056,10 +2056,10 @@ use graph financialGraph
 
 CREATE OR REPLACE QUERY unionAllExample(STRING accountName = "Scott") syntax v3{
    SELECT s as acct INTO T1
-      FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
 
    SELECT s as acct INTO T2
-      FROM (s:Account {name: accountName})
+   FROM (s:Account {name: accountName})
       ;
 
    // Combine both results into table T3, keeping all duplicate rows
