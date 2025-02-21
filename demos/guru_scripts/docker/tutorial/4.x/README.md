@@ -1517,6 +1517,54 @@ We also provide relational table and related operators on tables such as join et
 ## Table 
 In GSQL, the TABLE is used to define intermediate or temporary tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
 
+### SELECT INTO TABLE statement
+The `SELECT INTO TABLE` statement in GSQL is used to retrieve data and store it into a new table. This allows you to perform queries and store results for further operations or transformations.
+
+#### Syntax
+
+```python
+SELECT column1 AS alias1, column2 AS alias2, ... INTO newTable
+FROM pattern 
+[WHERE condition] 
+[HAVING condition] 
+[ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...] 
+[LIMIT number] 
+[OFFSET number]
+;
+```
+-   `column1, column2, ...`: Specifies the columns to retrieve.
+-   `AS alias1, AS alias2...`: specifies column alias of the selected column. 
+-   `newTable`: The name of the new table where the query results will be stored.
+-   `pattern`: Defines the data pattern, which can be a node, relationship, or a linear path.
+-   `WHERE condition`: Optional. Used to filter rows that satisfies a specific condition.
+-   `HAVING condition`: Optional. Used to filter the aggregated results.
+-   `ORDER BY`: Optional. Specifies how the results should be sorted (either `ASC` for ascending or `DESC` for descending).
+-   `LIMIT`: Optional. Limits the number of rows returned.
+-   `OFFSET`: Optional. Specifies the number of rows to skip.
+
+#### Example Usage:
+
+```python
+CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {  
+  SELECT s.name AS acct, SUM(e.amount) AS totalAmt INTO T1  
+  FROM (s:Account)- [e:transfer]-> (t:Account)  
+  WHERE not s.isBlocked  
+  HAVING totalAmt > 1000  
+  ORDER BY totalAmt DESC  
+  LIMIT 5 OFFSET 0  
+  ;  
+  
+  PRINT T1;  
+}
+```
+#### Explanation:
+
+-   In this example, we are retrieving data from the `Account` nodes `s` and `t` connected by the `transfer` relationship.
+-   The query aggregates the `amount` of the transfer and stores the result into a new table `T1`.
+-   The `HAVING` clause filters the results to only include those with a `totalAmt` greater than 1000, and the results are ordered by `totalAmt` in descending order, limiting the output to the top 5 entries.
+-   Finally, the content of table `T1` is printed.
+
+
 ## Init Table Statement
 
 
