@@ -1888,6 +1888,101 @@ run query crossJoinExample()
 -   **`DISTINCT`** is used to remove any duplicate combinations from the result. Without `DISTINCT`, you might get repeated rows if there are multiple matching rows in `T2` for each row in `T1`.
 ---
 
+#### SEMIJOIN
+
+The `SEMIJOIN` statement filters rows from the first table based on whether they have a matching row in the second table. It returns rows from the first table where the join condition is true, but **only columns from the left (first) table can be accessed**. The right table's columns are not included in the result.
+
+**Syntax:**
+```python
+SEMIJOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+      ON <condition>
+ PROJECT 
+	<table1_alias columnExpression> as columnName1,
+	<table1_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY semiJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+      FROM (s:Account) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+      FROM (s:Account {name: accountName}) - [:hasPhone]- (t:Phone);
+
+   SEMIJOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query semiJoinExample
+run query semiJoinExample()
+```
+
+**Explanation**
+
+-   **`SEMIJOIN`** returns rows from `T1` where there is a matching row in `T2`, but only the columns from `T1` are included in the result. Even though there is a match between the two tables on `srcAccount` and `name`, **the result only includes columns from the left table (`T1`)**. This is useful when you want to check for the existence of matching rows without including data from the second table.
+
+---
+
+#### LEFT JOIN
+
+The `LEFT JOIN` statement combines rows from both tables, but ensures that all rows from the left table (first table) are included, even if there is no matching row in the right table (second table). If no match exists, the right table's columns will have `NULL` values.
+
+**Syntax:**
+
+```python
+LEFT JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY leftJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+      FROM (s:Account) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+      FROM (s:Account) - [:hasPhone]- (t:Phone)  ;
+
+   LEFT JOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount  as acct,
+     t2.phoneNumber as phoneNum,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query leftJoinExample
+run query leftJoinExample()
+```
+
+**Explanation**
+
+-   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
+
+---
+
 [Go back to top](#top)
 
 ## Union Statement
