@@ -42,6 +42,8 @@ A more exhaustive description of functionality and behavior of GSQL is available
   - [Virtual Edge](#virtual-edge)
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
+ - [Experimental Features](#experimental-features)
+    
  - [Support](#support) 
 
 # Sample Graph For Tutorial
@@ -1502,7 +1504,8 @@ LS
 SHOW QUERY c1
 
 ```
-
+# Experimental Features
+sss
 [Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
