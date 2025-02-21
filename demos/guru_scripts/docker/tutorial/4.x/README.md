@@ -1685,6 +1685,87 @@ CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
 
 ## Project Table Statement
 
+The `PROJECT` statement reshapes a table by creating new derived columns based on selected expressions. These columns can result from arithmetic operations, string concatenation, or logical conditions. The `PROJECT` statement is particularly useful for preparing data for further analysis without altering the original table.
+
+#### Syntax
+
+ **1. Transforming Table Data**
+ ```python
+PROJECT tableName ON
+   columnExpression AS newColumnName,
+   ...
+INTO newTableName;
+```
+
+ **2. Extracting Vertex Sets**
+ 
+ Converts a table column containing vertex objects into a vertex set.
+ 
+ ```python
+ PROJECT tableName ON VERTEX COLUMN vertexColumnName INTO VSET;
+ ```
+
+
+#### Example 1: Transforming Table Data
+
+```python
+CREATE OR REPLACE QUERY projectExample() syntax v3{  
+   SELECT s.name as srcAccount, p.number as phoneNumber, sum(e.amount) as amt INTO T1  
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (t),  
+           (s) - [:hasPhone]- (p);  
+  
+   PRINT T1;  
+  
+   PROJECT T1 ON  
+      T1.srcAccount + ":" + T1.phoneNumber as acct,  
+      T1.amt * 2 as doubleAmt,  
+      T1.amt % 7 as mod7Amt,  
+      T1.amt > 10000 as flag  
+   INTO T2;  
+  
+   PRINT T2;  
+}
+```
+
+#### Explanation
+The `PROJECT` statement transforms the data by adding new calculated columns:
+
+ - `acct`: Concatenates the account name (`srcAccount`) with the phone number (`phoneNumber`) into a single string.
+ - `doubleAmt`: Doubles the value of `amt`.
+ - `mod7Amt`: Computes the remainder when `amt` is divided by 7.
+ - `flag`: Creates a boolean flag indicating whether `amt` is greater than `10,000`.
+
+The `PROJECT` statement does not modify the original table (`T1`) but instead creates a new table (`T2`) with the transformed data. This ensures that the original data remains unchanged for future use.
+
+#### Example 2: Extracting Vertex Sets from a Table
+
+```python
+CREATE OR REPLACE QUERY projectExample2() syntax v3{  
+   SELECT tgt as tgtAcct, phone as tgtPhone INTO T1  
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (tgt:Account) - [:hasPhone] - (phone);  
+  
+   PRINT T1;  
+  
+   PROJECT T1 ON VERTEX COLUMN  
+      tgtAcct INTO vSet1,  
+      tgtPhone INTO vSet2  
+      ;  
+  
+   VS_1 =  SELECT s FROM (s:vSet1);  
+   VS_2 =  SELECT s FROM (s:vSet2);  
+  
+   PRINT VS_1, VS_2;  
+}
+```
+**Explanation**
+**Create an intermediate table (`T1`)**: `T1` contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
+        
+**Extract vertex sets using `PROJECT`**:
+
+ - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
+ - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
+
+---
 
 [Go back to top](#top)
 
