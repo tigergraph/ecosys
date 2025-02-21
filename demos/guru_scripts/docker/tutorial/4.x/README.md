@@ -1758,9 +1758,9 @@ CREATE OR REPLACE QUERY projectExample2() syntax v3{
 }
 ```
 **Explanation**
-**Create an intermediate table (`T1`)**: `T1` contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
-        
-**Extract vertex sets using `PROJECT`**:
+
+We first create an intermediate table (`T1`), which contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
+Next,  we extract vertex sets using the `PROJECT tableName ON VERTEX COLUMN` syntax.
 
  - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
  - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
