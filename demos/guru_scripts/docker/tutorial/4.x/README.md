@@ -1542,7 +1542,7 @@ FROM pattern
 -   `LIMIT`: Optional. Limits the number of rows returned.
 -   `OFFSET`: Optional. Specifies the number of rows to skip.
 
-#### Example Usage:
+#### Example:
 
 ```python
 CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {  
@@ -1563,10 +1563,44 @@ CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {
 -   The query aggregates the `amount` of the transfer and stores the result into a new table `T1`.
 -   The `HAVING` clause filters the results to only include those with a `totalAmt` greater than 1000, and the results are ordered by `totalAmt` in descending order, limiting the output to the top 5 entries.
 -   Finally, the content of table `T1` is printed.
-
+  
+[Go back to top](#top)
 
 ## Init Table Statement
+The `INIT` statement in GSQL is used to initialize a table row containing constant values. This allows you to create a table with predefined constant values, which can be used for further operations or queries.
 
+#### Syntax
+
+```python
+INIT tableName value1 AS column1, value2 AS column2, ...;
+```
+-   `tableName`: The name of the table to be initialized.
+-   `value1, value2, ...`: The constant values to be assigned to the table.
+-   `column1, column2, ...`: The names of the columns in the table that correspond to the values.
+
+---
+
+#### Example:
+
+```python
+CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{  
+  // Initialize a table with different constant values.  
+  INIT T1 1 as col_1, true as col_2, [0.1, -1.1] as col_3;  
+  PRINT T1;  
+  
+  // Initialize a table with variables and function calls  
+  DATETIME date = now();  
+  INIT T2 date as col_1, intVal as col_2, SPLIT("a,b,c", ",") as col_3;  
+  PRINT T2;  
+}
+```
+
+#### Explanation:
+
+- **Table Initialization with Constant Values**: The first `INIT` statement creates table `T1` with three columns (`col_1`, `col_2`, `col_3`). The values `1`, `true`, and `[0.1, -1.1]` are assigned to `col_1`, `col_2`, and `col_3`
+- **Table Initialization with Variables**: The second `INIT` statement initializes table `T2`. It uses the current date and time (`now()`) for `col_1`, the input variable `intVal` for `col_2`, and splits a string `"a,b,c"` into an array and assigns it to `col_3`.
+
+---
 
 [Go back to top](#top)
 
