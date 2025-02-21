@@ -44,7 +44,16 @@ A more exhaustive description of functionality and behavior of GSQL is available
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
     
- - [Support](#support) 
+ - [Support](#support)
+   - [Table](#table)
+   - [Init Table Statement](#init-table-statement)
+   - [Order Table Statement](#order-table-statement)
+   - [Filter Table Statement](#filter-table-statement)
+   - [Project Table Statement](#project-table-statement)
+   - [Join Statement](#join-statement)
+   - [Union Statement](#union-statement)
+   - [Union All Statement](#union-all-statement)
+   - [Unwind Statement](#unwind-statement)    
 
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
@@ -1505,7 +1514,49 @@ SHOW QUERY c1
 
 ```
 # Experimental Features
-sss
+We also provide relational table and related operators on tables such as join etc. These experimental features are available starting from 4.1.2. They are working on *single machine* and *compiled mode* only.
+
+## Table 
+In GSQL, the TABLE is used to define intermediate or temporary tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
+
+## Init Table Statement
+
+
+[Go back to top](#top)
+
+## Order Table Statement
+
+
+[Go back to top](#top)
+
+## Filter Table Statement
+
+
+[Go back to top](#top)
+
+## Project Table Statement
+
+
+[Go back to top](#top)
+
+## Join Statement
+
+
+[Go back to top](#top)
+
+## Union Statement
+   
+
+[Go back to top](#top)
+
+## Union All Statement
+
+
+[Go back to top](#top)
+
+## Unwind Statement
+
+
 [Go back to top](#top)
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
