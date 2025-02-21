@@ -1845,7 +1845,48 @@ run query innerJoinExample()
 -   **`INNER JOIN`** combines data from `T1` and `T2` based on matching `srcAccount` and `name`. Only rows with a match in both tables are returned, which results in a joined set of data containing the account name and the total transfer amount.
 
 ---
+#### CROSS JOIN
 
+The `CROSS JOIN` statement combines each row from the first table with all rows from the second table, producing the Cartesian product. This type of join does not require a condition and can potentially result in a large number of rows. If you want to eliminate duplicate rows from the result, you can use the `DISTINCT` keyword to return only unique combinations.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example**
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY crossJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+   FROM (s:Account) - [:hasPhone]- (t:Phone);
+
+   JOIN T1 t1 WITH T2 t2
+   PROJECT distinct
+     t1.srcAccount + ":" + t2.phoneNumber as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query crossJoinExample
+run query crossJoinExample()
+```
+**Explanation**
+
+-   **`CROSS JOIN`** produces a Cartesian product between `T1` and `T2`. In this example, every `srcAccount` will be paired with every phone number from `T2`, resulting in all combinations of accounts and phone numbers.
+-   **`DISTINCT`** is used to remove any duplicate combinations from the result. Without `DISTINCT`, you might get repeated rows if there are multiple matching rows in `T2` for each row in `T1`.
+---
 
 [Go back to top](#top)
 
