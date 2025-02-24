@@ -567,6 +567,7 @@ The ```LET...IN``` prefix construct in GSQL is used to define and work with vari
 Since `LET ... IN...SELECT` typically spans multiple-lines, we need to use `BEGIN...END` to support it in GSQL shell. Below, we define some primitive type varibles with assigned value, and use them in the `SELECT` query block as bind variables. 
 
 ```python
+GSQL > use graph financialGraph 
 GSQL > BEGIN 
 GSQL > LET
 GSQL >  DOUBLE a = 500.0; 
@@ -579,6 +580,161 @@ GSQL >  WHERE s.isBlocked = c AND t.name <> b
 GSQL >  HAVING amt > a; 
 GSQL > END
 ```
+
+You can also use this syntax in one line. E.g., 
+
+```python
+GSQL > LET STRING n = "Jenny"; IN SELECT s, count(t) as cnt FROM (s:Account {name:n}) - [:transfer*0..2]-> (t:Account);
+```
+#### Accumulator type variables
+
+In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values across query results. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
+
+----------
+
+**Restrictions on SELECT Clause with Accumulators**
+
+When accumulators are used in a query, the `SELECT` clause is subject to the following restrictions:
+
+**Only One Node Alias Allowed:**
+
+**If accumulators are used**, the `SELECT` clause must return only **one** node alias.
+
+-  ✅ Source node alias **Allowed:**  `SELECT s FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ✅ Target node alias **Allowed:**  `SELECT t FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Relationship alias  **Not Allowed:**  `SELECT e FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Multiple node alias **Not Allowed:** `SELECT s, t FROM (s:Account)-[e:transfer]-(t:Account)`
+  
+
+**Functions, Expressions Not Allowed:**
+
+**When using accumulators**, functions and expressions cannot be used in the `SELECT` clause. 
+
+-  ❌ **Functions not allowed:**  `SELECT count(s) FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ **Expressions not allowed:**  `SELECT (s.isBlocked OR t.isBlocked) AS flag FROM (s:Account)-[e:transfer]-(t:Account)`
+
+**Local Accumulator Example**
+
+**Definition:**
+
+A **local accumulator** (prefixed with `@`) is associated with a specific vertex and is stored as part of its attributes. When a node is retrieved in a `SELECT` statement, its corresponding local accumulator values are displayed alongside its properties.
+
+**Query:**
+
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN
+GSQL> LET  
+GSQL>  SetAccum<string> @transferNames;  
+GSQL>  IN  
+GSQL>   SELECT s FROM (s:Account where s.isBlocked) -[:transfer*1..3]- (t:Account)  
+GSQL>   ACCUM s.@transferNames += t.name;
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Steven",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Steven",
+            "isBlocked": true,
+            "@transferNames": [
+              "Jenny",
+              "Paul",
+              "Scott",
+              "Steven",
+              "Ed"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Explanation:**
+
+-   The **local accumulator** `@transferNames` collects the names of accounts connected to `"Steven"` via `transfer` edges (up to 3 hops).
+-   In the output, `@transferNames` is stored as runtime attribute, alongside wiht other static attributes `name` and `isBlocked`.
+
+----------
+
+**Global Accumulator Example**
+
+**Definition:**
+
+A **global accumulator** (prefixed with `@@`) aggregates values across all selected nodes and is **printed separately** from node attributes in the query result. All global accumulators declared in the `LET` block will be included in the output.
+
+**Query:**
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN 
+GSQL> LET   
+GSQL>  double ratio = 0.01;  
+GSQL>  SumAccum<double> @totalAmt;  // local accumulator for total amount 
+GSQL>  SumAccum<INT> @@cnt;  // global accumulator for count
+GSQL> IN  
+GSQL>  SELECT s FROM (s:Account {name:"Ed"}) - [e:transfer]-> (t:Account) 
+GSQL>  ACCUM s.@totalAmt += ratio * e.amount, // Accumulate total amount for s 
+GSQL>      @@cnt += 1; // Accumulate count of transfers
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Ed",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Ed",
+            "isBlocked": false,
+            "@totalAmt": 15
+          }
+        }
+      ]
+    },
+    {
+      "@@cnt": 1
+    }
+  ]
+}
+```
+**Explanation:**
+
+-   The **local accumulator** `@totalAmt` accumulates the weighted sum of transfer amounts and is **stored as an attribute of "Ed"**.
+-   The **global accumulator** `@@cnt` counts the total number of transfers and is **printed separately** in the result.
+-   This ensures **per-node values are displayed within node attributes, while global aggregates appear in the final output**.
+
+----------
+
+
 [Go back to top](#top)
 
 # Advanced Topics
