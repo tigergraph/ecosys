@@ -458,6 +458,83 @@ We support two ways to specify repetitions of a pattern.
 [Go back to top](#top)
 
 # 1-Block Query Examples 
+1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
+
+## Basic Syntax
+The basic syntax structure of `1-Block SELECT` is as follows:
+
+```python
+SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
+```
+
+You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
+Or, you can break the one line to multiple lines and enclose them with `BEGIN` and `END` as illustrated below.  
+
+```python
+GSQL> BEGIN
+GSQL>  SELECT <output_variable>
+GSQL>  FROM <pattern>
+GSQL>  WHERE <condition> <additional_clauses>
+GSQL> END
+```
+
+### Examples
+
+#### SELECT with filters
+
+##### Using WHERE clause
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) LIMIT 10
+GSQL > SELECT s FROM (s:Account {name: "Scott"})
+GSQL > SELECT s FROM (s:Account WHERE s.isBlocked)
+GSQL > SELECT s FROM (s:Account) WHERE s.name IN ("Scott", "Steven")
+GSQL > SELECT s, e, t FROM (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t
+```
+
+##### Using HAVING
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked AND s.name = "Steven"
+```
+#### Aggregation SELECT
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT COUNT(s) FROM (s:_)
+GSQL > SELECT COUNT(*) FROM (s:Account:City)
+GSQL > SELECT COUNT(DISTINCT t) FROM (s:Account)-[e]->(t)
+GSQL > SELECT COUNT(e), STDEV(e.amount), AVG(e.amount) FROM (s:Account)-[e:transfer|isLocatedIn]->(t)
+```
+
+
+
+#### SELECT with Sorting and Limiting
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) ORDER BY s.name LIMIT 3 OFFSET 1
+GSQL > SELECT s.name, e.amount as amt, t FROM (s:Account) -[e:transfer]-> (t:Account) ORDER BY amt, s.name LIMIT 1
+GSQL > SELECT DISTINCT type(s) FROM (s:Account:City) ORDER BY type(s)
+```
+
+#### Using some expression
+
+```python
+# Using mathematical expressions
+GSQL > use graph financialGraph
+GSQL > SELECT s, e.amount*0.01 AS amt FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+
+# Using CASE expression
+GSQL > BEGIN
+GSQL >  SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS status 
+GSQL >  FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > END
+```
+----------
 
 # Advanced Topics
 ## Accumulators
