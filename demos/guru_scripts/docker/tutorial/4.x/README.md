@@ -561,7 +561,24 @@ The ```LET...IN``` prefix construct in GSQL is used to define and work with vari
 - ```<variable_definitions>```: Inside the `LET` block, you can define variables with primitive types such as `STRING`, `INT`, `UINT`, `BOOL`, `FLOAT`, `DATETIME` and `DOUBLE`. However, container types like `SET`, `LIST`, and `MAP` are not supported at the moment. Inside the `LET` block, you can also define accumulators.
 - ```IN SELECT <query_block>```: The  `SELECT` query block follows the `IN` keyword can use the variables and accumulators defined in the `LET` block.
 
+### Examples
 
+#### Primitive type variables
+Since `LET ... IN...SELECT` typically spans multiple-lines, we need to use `BEGIN...END` to support it in GSQL shell. Below, we define some primitive type varibles with assigned value, and use them in the `SELECT` query block as bind variables. 
+
+```python
+GSQL > BEGIN 
+GSQL > LET
+GSQL >  DOUBLE a = 500.0; 
+GSQL >  STRING b = "Jenny"; 
+GSQL >  BOOL c = false; 
+GSQL > IN 
+GSQL >  SELECT s, e.amount AS amt, t
+GSQL >  FROM (s:Account) - [e:transfer]-> (t:Account) 
+GSQL >  WHERE s.isBlocked = c AND t.name <> b 
+GSQL >  HAVING amt > a; 
+GSQL > END
+```
 [Go back to top](#top)
 
 # Advanced Topics
