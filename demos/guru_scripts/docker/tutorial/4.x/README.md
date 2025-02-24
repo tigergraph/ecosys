@@ -15,11 +15,12 @@ A more exhaustive description of functionality and behavior of GSQL is available
 - [Set Up Environment](#set-up-environment)
 - [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
-- [Query Examples](#query-examples)
+- [Store Procedure Query Examples](#store-procedure-query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
   - [Pattern Summary](#pattern-summary)
+- [1-Block Query Examples](#1-block-query-examples)
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
@@ -161,7 +162,7 @@ Now that you have a graph schema, you can load data using one of the following m
     
 [Go back to top](#top)
 
-# Query Examples 
+# Store Procedure Query Examples 
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
@@ -453,6 +454,8 @@ We support two ways to specify repetitions of a pattern.
 | *m    | -[:transfer*m]->   | equivalent to m..m |
 
 [Go back to top](#top)
+
+# 1-Block Query Examples 
 
 # Advanced Topics
 ## Accumulators
