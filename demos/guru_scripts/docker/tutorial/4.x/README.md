@@ -15,7 +15,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
 - [Set Up Environment](#set-up-environment)
 - [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
-- [Store Procedure Query Examples](#store-procedure-query-examples)
+- [Stored Procedure Query Examples](#store-procedure-query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
@@ -162,7 +162,9 @@ Now that you have a graph schema, you can load data using one of the following m
     
 [Go back to top](#top)
 
-# Store Procedure Query Examples 
+# Stored Procedure Query Examples 
+
+In this section, we explain how to write stored procedures. A stored procedure is a named query made up by a sequence of GSQL query blocks or statements. It is saved in the graph database catalog and can be repeatedly invoked using the "run query" command or a system-generated REST endpoint URL.
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
