@@ -588,7 +588,7 @@ GSQL > LET STRING n = "Jenny"; IN SELECT s, count(t) as cnt FROM (s:Account {nam
 ```
 #### Accumulator type variables
 
-In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values across query blocks. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
+In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values for a matched pattern. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
 
 ----------
 
