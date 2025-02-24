@@ -460,6 +460,9 @@ We support two ways to specify repetitions of a pattern.
 [Go back to top](#top)
 
 # 1-Block Query Examples 
+
+**NOTE** This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature. 
+
 ## SELECT BLOCK
 1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
 
