@@ -539,6 +539,7 @@ GSQL > END
 ```
 
 [Go back to top](#top)
+
 ----------
 ## SELECT BLOCK WITH ACCUMULATORS
 
