@@ -22,7 +22,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
   - [Pattern Summary](#pattern-summary)
 - [1-Block Query Examples](#1-block-query-examples)
   - [SELECT BLOCK](#select-block)
-  - [SELECT BLOCK WITH ACCUMULATORS](#select-block-with-accumulators)	
+  - [SELECT BLOCK WITH VARIABLES](#select-block-with-variables)	
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
@@ -541,7 +541,7 @@ GSQL > END
 [Go back to top](#top)
 
 ----------
-## SELECT BLOCK WITH ACCUMULATORS
+## SELECT BLOCK WITH VARIABLES
 
 
 [Go back to top](#top)
