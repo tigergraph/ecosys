@@ -545,7 +545,7 @@ GSQL > END
 
 ----------
 ## SELECT BLOCK WITH VARIABLES
-We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. These variables, which can be primitive types or accumulators, enable flexible computation and aggregation.
+We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. The variables defined between `LET` and `IN` can be primitive types or accumulators, enable flexible computation and aggregation.
 
 ### Basic Syntax
 ```python  
@@ -555,7 +555,12 @@ IN
  SELECT <query_block>
 ```
 
-The ```LET...IN``` prefix construct in GSQL is used to define and work with variables and accumulators. It allows for the creation of temporary variables or accumulators in the LET block, which can be referenced later in the SELECT block, enabling more powerful and flexible queries.
+The ```LET...IN``` prefix construct in GSQL is used to define and work with variables and accumulators. It allows for the creation of temporary variables or accumulators in the LET block, which can be referenced later in the SELECT block, enabling more powerful and flexible queries. Specifically,
+
+- ```LET```: This keyword starts the block where you define variables and accumulators.
+- ```<variable_definitions>```: Inside the `LET` block, you can define variables with primitive types such as `STRING`, `INT`, `UINT`, `BOOL`, `FLOAT`, `DATETIME` and `DOUBLE`. However, container types like `SET`, `LIST`, and `MAP` are not supported at the moment. Inside the `LET` block, you can also define accumulators.
+- ```IN SELECT <query_block>```: The  `SELECT` query block follows the `IN` keyword can use the variables and accumulators defined in the `LET` block.
+
 
 [Go back to top](#top)
 
