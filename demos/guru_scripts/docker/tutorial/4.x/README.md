@@ -15,7 +15,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
 - [Set Up Environment](#set-up-environment)
 - [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
-- [Stored Procedure Query Examples](#store-procedure-query-examples)
+- [Stored Procedure Query Examples](#stored-procedure-query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
