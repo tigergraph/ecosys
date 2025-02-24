@@ -592,9 +592,9 @@ In GSQL, **accumulators** are special state variables used to store and update v
 
 ----------
 
-**Restrictions on SELECT Clause with Accumulators**
+**Restrictions on 1-Block SELECT Clause with Accumulators**
 
-When accumulators are used in a query, the `SELECT` clause is subject to the following restrictions:
+When accumulators are used in a 1-block query, the `SELECT` clause is subject to the following restrictions:
 
 **Only One Node Alias Allowed:**
 
