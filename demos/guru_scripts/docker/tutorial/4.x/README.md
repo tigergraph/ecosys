@@ -21,6 +21,8 @@ A more exhaustive description of functionality and behavior of GSQL is available
   - [Path Pattern](#path-pattern)
   - [Pattern Summary](#pattern-summary)
 - [1-Block Query Examples](#1-block-query-examples)
+  - [SELECT BLOCK](#select-block)
+  - [SELECT BLOCK WITH ACCUMULATORS](#select-block-with-accumulators)	
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
@@ -458,9 +460,10 @@ We support two ways to specify repetitions of a pattern.
 [Go back to top](#top)
 
 # 1-Block Query Examples 
+## SELECT BLOCK
 1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
 
-## Basic Syntax
+### Basic Syntax
 The basic syntax structure of `1-Block SELECT` is as follows:
 
 ```python
@@ -534,7 +537,13 @@ GSQL >  SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS statu
 GSQL >  FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
 GSQL > END
 ```
+
+[Go back to top](#top)
 ----------
+## SELECT BLOCK WITH ACCUMULATORS
+
+
+[Go back to top](#top)
 
 # Advanced Topics
 ## Accumulators
