@@ -2473,7 +2473,7 @@ https://docs.tigergraph.com/gsql-ref/current/intro/
 [Go back to top](#top)
 
 # Contact
-To contact us for commercial support and purchase, please email us at [Email](mailto:info@tigergraph.com)
+To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
 
 
 
