@@ -716,7 +716,7 @@ USE GLOBAL
 
 # create a global schema change job to modify the global vertex
 CREATE GLOBAL SCHEMA_CHANGE JOB drop_emb2 {
-  ALTER VERTEX Account DROP VECTOR ATTRIBUTE ( emb2 );
+  ALTER VERTEX Account DROP VECTOR ATTRIBUTE emb2;
 }
 
 # run the global schema_change job
