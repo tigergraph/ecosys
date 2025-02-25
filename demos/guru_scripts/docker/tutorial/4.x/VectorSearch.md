@@ -44,6 +44,10 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 > gadmin config apply -y
 > gadmin start all
 > ```
+> After using the database, and you want to shutdown it, use the following shell commmand
+>```
+>gadmin stop all
+>```
 
 [Go back to top](#top)
 
