@@ -26,7 +26,8 @@ This GSQL tutorial contains
   - [Vector Data Loading](#vector-data-loading)
   - [Python Integration](#python-integration)
 - [Support](#support)
-- [Reference](#reference) 
+- [Reference](#reference)
+- [Contact](#contact)
     
 # Setup Environment 
 
@@ -1067,6 +1068,10 @@ Or, study our product document at
 # Reference
 TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs [https://arxiv.org/abs/2501.11216]
 
+[Go back to top](#top)
+
+# Contact
+To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
 
 [Go back to top](#top)
 
