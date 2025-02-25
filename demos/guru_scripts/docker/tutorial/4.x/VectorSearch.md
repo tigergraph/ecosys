@@ -37,7 +37,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 > ```
 > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 -t tigergraph/tigergraph:4.2.0-preview
 > ```
-> Please remember to apply your TigerGraph license key to the TigerGraph instance, you can obtain a free dev license here https://dl.tigergraph.com/
+> Please remember to apply your TigerGraph license key to the TigerGraph instance, you can obtain a free dev license here https://dl.tigergraph.com/, and use the following shell command to start the db.
 > ```
 > docker exec -it tigergraph /bin/bash
 > gadmin license set <license_key>
