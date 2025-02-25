@@ -2474,6 +2474,7 @@ https://docs.tigergraph.com/gsql-ref/current/intro/
 
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
+
 [Go back to top](#top)
 
 
