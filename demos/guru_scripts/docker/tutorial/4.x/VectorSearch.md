@@ -800,7 +800,7 @@ Dropping a local graph will also drop all of its vertex, edge and data.
 USE GLOBAL
 
 # drop the whole local graph
-DROP GRAPH localGraph CASCADE;
+DROP GRAPH localGraph CASCADE
 ```
 
 For more details, please visit [https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/).
