@@ -56,6 +56,7 @@ A more exhaustive description of functionality and behavior of GSQL is available
    - [Union All Statement](#union-all-statement)
    - [Unwind Statement](#unwind-statement)    
  - [Support](#support)
+ - [Contact](#contact)
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
@@ -2470,6 +2471,10 @@ Or, study our product document at
 https://docs.tigergraph.com/gsql-ref/current/intro/
 
 [Go back to top](#top)
+
+# Contact
+To contact us for commercial support and purchase, please email us at [Email](mailto:info@tigergraph.com)
+
 
 
 
