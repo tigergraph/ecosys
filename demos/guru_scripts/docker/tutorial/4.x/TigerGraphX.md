@@ -434,3 +434,10 @@ G.drop_graph()
 ---
 
 Start unlocking the power of graphs with **TigerGraphX** today!
+
+---
+# Contact
+To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
+
+[Go back to top](#top)
+
