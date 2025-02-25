@@ -29,7 +29,8 @@ This GSQL tutorial contains
   - [Conditional Logic](#conditional-logic)
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
- - [Support](#support) 
+ - [Support](#support)
+ - [Contact](#contact)
   
 
 # Setup Environment 
@@ -751,4 +752,10 @@ Or, study our product document at
 https://docs.tigergraph.com/gsql-ref/current/intro/
 
 [Go back to top](#top)
+
+# Contact
+To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
+
+[Go back to top](#top)
+
 
