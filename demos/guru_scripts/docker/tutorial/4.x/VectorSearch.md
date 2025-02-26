@@ -773,7 +773,7 @@ USE GRAPH localGraph
 
 # create a local schema change job to modify the global vertex
 CREATE SCHEMA_CHANGE JOB drop_local_emb1 FOR GRAPH localGraph {
-  ALTER VERTEX Account DROP VECTOR ATTRIBUTE ( emb1 );
+  ALTER VERTEX Account DROP VECTOR ATTRIBUTE  emb1;
 }
 
 # run the local schema_change job
