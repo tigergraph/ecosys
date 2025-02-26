@@ -10,8 +10,9 @@ A more exhaustive description of functionality and behavior of GSQL is available
 
 This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment.
 
-In contrast, TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
+---
 # Table of Contents
 
 - [Sample Graph](#sample-graph-for-tutorial)
@@ -60,6 +61,8 @@ In contrast, TigerGraph Savanna is entirely GUI-based, with no access to a bash 
    - [Unwind Statement](#unwind-statement)    
  - [Support](#support)
  - [Contact](#contact)
+
+---
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
