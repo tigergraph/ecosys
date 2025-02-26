@@ -74,6 +74,8 @@ gadmin status #should see all services are up.
 gsql #start the gsql shell. Congratulations, you have started tigergraph!
 ```
 
+In TigerGraph [Savanna](https://savanna.tgcloud.io/), everything is GUI based. You don't need `gadmin` shell command line and `gsql` shell command. For example, starting and shutting off a tigergraph instance is a menue click. Running a GSQL query is a button click.  
+
 [Go back to top](#top)
 
 # Set Up Schema 
