@@ -8,6 +8,9 @@ GSQL V3 syntax reflects the evolution towards GQL, the ISO  graph query language
 
 A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/4.1/intro/).
 
+This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment.
+
+In contrast, TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
 # Table of Contents
 
@@ -74,7 +77,6 @@ gadmin status #should see all services are up.
 gsql #start the gsql shell. Congratulations, you have started tigergraph!
 ```
 
-In TigerGraph [Savanna](https://savanna.tgcloud.io/), everything is GUI based. You don't need `gadmin` shell command line and `gsql` shell command. For example, starting and shutting off a tigergraph instance is a menue click. Running a GSQL query is a button click.  
 
 [Go back to top](#top)
 
