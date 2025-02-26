@@ -68,7 +68,7 @@ This graph is a simplifed version of a real-world financial transaction graph. T
 
 ![Financial Graph](./FinancialGraph.jpg)
 
-
+---
 # Set Up Environment 
 
 If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
@@ -80,7 +80,7 @@ gadmin status #should see all services are up.
 gsql #start the gsql shell. Congratulations, you have started tigergraph!
 ```
 
-
+---
 [Go back to top](#top)
 
 # Set Up Schema 
@@ -115,6 +115,7 @@ CREATE GRAPH financialGraph (*)
 
 [Go back to top](#top)
 
+---
 # Load Data 
 
 Now that you have a graph schema, you can load data using one of the following methods. 
@@ -171,6 +172,8 @@ Now that you have a graph schema, you can load data using one of the following m
     ```
     
 [Go back to top](#top)
+
+---
 
 # Stored Procedure Query Examples 
 
