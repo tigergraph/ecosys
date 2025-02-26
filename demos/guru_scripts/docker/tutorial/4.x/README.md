@@ -470,6 +470,8 @@ We support two ways to specify repetitions of a pattern.
 
 [Go back to top](#top)
 
+---
+
 # 1-Block Query Examples 
 
 **NOTE** This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature. 
@@ -743,7 +745,7 @@ GSQL> END
 -   The **global accumulator** `@@cnt` counts the total number of transfers and is **printed separately** in the result.
 -   This ensures **per-node values are displayed within node attributes, while global aggregates appear in the final output**.
 
-----------
+---
 
 
 [Go back to top](#top)
