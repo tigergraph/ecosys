@@ -2150,8 +2150,6 @@ Next,  we extract vertex sets using the `PROJECT tableName ON VERTEX COLUMN` syn
  - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
  - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
 
----
-
 [Go back to top](#top)
 
 ---
@@ -2338,10 +2336,9 @@ run query leftJoinExample()
 
 -   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
 
----
-
 [Go back to top](#top)
 
+---
 ## Union Statement
 The `UNION` statement in GSQL combines the results of two compatible tables into a new table, ensuring **no duplicate rows** in the output by default. This operation is useful when merging data sets from different sources or when performing set operations on table results.
 
@@ -2392,10 +2389,9 @@ run query unionExample()
 **Printing the Final Result**
     `PRINT T3;` outputs the combined dataset.
     
----
-   
-
 [Go back to top](#top)
+
+---
 
 ## Union All Statement
 The `UNION ALL` statement functions similarly to `UNION`, but **does not remove duplicate rows**. This operation is useful when preserving all records from input tables, even if they are identical.
@@ -2433,10 +2429,9 @@ run query unionAllExample()
 
 Using `UNION ALL` can improve performance when duplicate elimination is unnecessary, as it avoids the extra computation required to filter out duplicates.
 
----
-
 [Go back to top](#top)
 
+---
 ## Unwind Statement
 The `UNWIND` statement in GSQL is used to expand a list into multiple rows, allowing iteration over list elements and their combination with other tables. This is particularly useful when applying transformations or computations based on a set of values.
 
