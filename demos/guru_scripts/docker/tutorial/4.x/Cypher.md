@@ -439,6 +439,8 @@ The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master
 
 [Go back to top](#top)
 
+---
+
 ### Aggregation
 In c10 query below, the `WITH a.isBlocked AS Blocked, COUNT(a) AS blocked_count` groups data by `isBlocked` and calculates the count of Account.
 `RETURN Blocked, blocked_count` outputs the aggregated results.
@@ -465,6 +467,8 @@ run query c10()
 The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`  
 
 [Go back to top](#top)
+
+---
 
 ### Variable scope management
 In query c11 below, the ` WITH a.name AS name` narrows the scope to only the name property.
