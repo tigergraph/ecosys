@@ -179,6 +179,22 @@ Now that you have a graph schema, you can load data using one of the following m
 
 In this section, we explain how to write stored procedures. A stored procedure is a named query made up by a sequence of GSQL query blocks or statements. It is saved in the graph database catalog and can be repeatedly invoked using the "run query" command or a system-generated REST endpoint URL.
 
+To create a stored procedure, you can use the following syntax. 
+
+```python
+CREATE OR REPLACE QUERY queryName (/*params*/) SYNTAX v3 {
+   v1 = Query_block_1; //v1 is a vertex set variable, storing a set of selected vertices
+   v2 = Query_block_2; //v2 is a vertex set variable, storing a set of selected vertices
+    .
+    .
+    . 
+}
+```
+
+The query block can be a `Node Pattern`, an `Edge Pattern`, or a `Path Pattern`. We will illustrate each pattern with examples.
+
+## Two Flavors of SELECT
+
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
 - SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
@@ -187,6 +203,8 @@ In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex s
 Regardless which style you are choosing, the FROM clause will always specify a pattern. The pattern follows ISO GQL standard syntax, which is a well-designed ASCII art syntax-- `()` represents nodes, and `-[]->` represents edges. 
 
 We show both styles for each pattern class. 
+
+
 
 ## Node Pattern
 ### SELECT A Vertex Set Style 
