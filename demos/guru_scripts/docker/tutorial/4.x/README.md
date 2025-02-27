@@ -200,11 +200,15 @@ In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex s
 
 - SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation. Syntax
   ```python
-  V= SELECT s FROM pattern WHERE condition;
+  V= SELECT s
+     FROM pattern
+     [WHERE condition];
   ``` 
 - SELECT INTO A Table Style--if a query block generates a table, we can output the table. Syntax
   ```python
-   SELECT exp1, exp2.. INTO T FROM pattern WHERE condition;
+   SELECT exp1, exp2.. INTO T
+   FROM pattern
+   [WHERE condition];
   ```
 
 Regardless which style you are choosing, the FROM clause will always specify a pattern. The pattern follows ISO GQL standard syntax, which is a well-designed ASCII art syntax-- `()` represents nodes, and `-[]->` represents edges. 
