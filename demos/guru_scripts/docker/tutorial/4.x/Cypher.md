@@ -287,6 +287,8 @@ run query c5("2024-01-01", "2024-12-31", "Scott")
 ```
 [Go back to top](#top)
 
+---
+
 ### Variable Length Path Pattern
 Copy [c6.cypher](./cypher/c6.cypher) to your container. 
 
