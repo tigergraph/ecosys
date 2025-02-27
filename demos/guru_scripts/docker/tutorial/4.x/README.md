@@ -20,6 +20,7 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
 - [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
 - [Stored Procedure Query Examples](#stored-procedure-query-examples)
+  - [Two Flavors of SELECT](#two-flavors-of-select)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
