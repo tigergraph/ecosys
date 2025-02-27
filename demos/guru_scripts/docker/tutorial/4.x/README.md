@@ -47,6 +47,7 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
+  - [Vector Support](#vector-support)
   - [Virtual Edge](#virtual-edge)
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
@@ -1673,6 +1674,10 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 }
 ```
 [Go back to top](#top)
+
+## Vector Support
+TigerGraph has extend the vertex type to support vector type. It allows user to query both structured data (node and edges) and unstructured data (embedding attributes) in GSQL. 
+For vector support, you can refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
 
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
