@@ -590,7 +590,7 @@ GSQL > END
 
 [Go back to top](#top)
 
-----------
+---
 ## SELECT BLOCK WITH VARIABLES
 We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. The variables defined between `LET` and `IN` can be primitive types or accumulators, enable flexible computation and aggregation.
 
@@ -784,6 +784,7 @@ GSQL> END
 
 [Go back to top](#top)
 
+---
 # Advanced Topics
 ## Accumulators
 GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. 
@@ -871,6 +872,8 @@ In the above example, six different accumulator variables (those with prefix @@)
 - `ListAccum<INT>` keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
 
 [Go back to top](#top)
+
+---
 ### Global vs Vertex Attached Accumulator
 At this point, we have seen that accumulators are special typed variables in GSQL. We are ready to explain their global and local scopes.
 
@@ -930,6 +933,7 @@ The accumulator will accumulate based on the accumulator type.
 
 [Go back to top](#top)
 
+---
 ### ACCUM vs POST-ACCUM
 
 #### ACCUM
@@ -973,7 +977,7 @@ The `ACCUM` clause executes its statements once for each row in the `FROM-WHERE`
 
 The new snapshot of accumulate states is available for access after the ACCUM clause.
 
-
+---
 #### POST-ACCUM
 
 The optional `POST-ACCUM` clause enables accumulation and other computations across the set of vertices produced by the `FROM-WHERE` binding table. `POST-ACCUM` can be used without `ACCUM`. If it is preceded by an `ACCUM` clause, then its statement can access the new snapshot value of accumulators computed by the `ACCUM` clause.
@@ -1072,6 +1076,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
+---
 ### Edge Attached Accumulator
 
 Similar to attaching accumulator a vertex, you can attach primitive accumulators to an edge instance. 
@@ -1103,6 +1108,9 @@ install query -single q9
 run query q9("Jenny")
 ```
 [Go back to top](#top)
+
+---
+
 ## Vertex Set Variables And Accumulators As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
@@ -1168,6 +1176,7 @@ RUN QUERY q10()
 ```
 [Go back to top](#top)
 
+---
 ### Using Accumulators
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
@@ -1208,6 +1217,7 @@ RUN QUERY q11()
 
 [Go back to top](#top)
 
+---
 ## Flow Control
 
 ### IF Statement
@@ -1262,6 +1272,8 @@ INSTALL QUERY IfElseTest
 RUN QUERY IfElseTest()
 ```
 [Go back to top](#top)
+
+---
 
 ### WHILE Statement
 The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
@@ -1336,6 +1348,7 @@ RUN QUERY WhileTest("Scott")
 ```
 [Go back to top](#top)
 
+---
 ### FOREACH Statement
 The `FOREACH` statement provides bounded iteration over a block of statements.
 
@@ -1439,6 +1452,7 @@ RUN QUERY ForeachTest()
 ```
 [Go back to top](#top)
 
+---
 ### CONTINUE and BREAK Statement
 The `CONTINUE` and `BREAK` statements can only be used within a block of a `WHILE` or `FOREACH` statement. The `CONTINUE` statement branches control flow to the end of the loop, skipping any remaining statements in the current iteration, and proceeding to the next iteration. That is, everything in the loop block after the `CONTINUE` statement will be skipped, and then the loop will continue as normal. The `BREAK` statement branches control flow out of the loop, i.e., it will exit the loop and stop iteration.
 
@@ -1475,7 +1489,7 @@ RUN QUERY ContinueAndBreakTest()
 ```
 [Go back to top](#top)
 
-
+---
 ### CASE WHEN Statement
 
 One `CASE` statement contains one or more `WHEN-THEN` clauses, each `WHEN` presenting one expression. The `CASE` statement may also have one `ELSE` clause whose statements are executed if none of the preceding conditions are true.
@@ -1578,6 +1592,7 @@ RUN QUERY CaseWhenTest()
 
 [Go back to top](#top)
 
+---
 ## Vertex Set Operators
 
 ### Union
@@ -1618,6 +1633,7 @@ CREATE OR REPLACE QUERY unionTest () SYNTAX V3 {
 ```
 [Go back to top](#top)
 
+---
 ### Intersect
 The `INTERSECT` operator in GSQL is used to return the common vertices between two vertex sets. It only returns the vertices that are present in both vertex sets.
 
@@ -1648,6 +1664,7 @@ CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
 ```
 [Go back to top](#top)
 
+---
 ### Minus
 The `MINUS` operator in GSQL is used to return the difference between two vertex sets. It essentially subtracts one vertex set from the other, returning only the vertices that are present in the first vertex set but not in the second.
 
@@ -1679,10 +1696,12 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 ```
 [Go back to top](#top)
 
+---
 ## Vector Search
 TigerGraph has extended the vertex type to support vectors, enabling users to query both structured data (nodes and edges) and unstructured data (embedding attributes) in GSQL.
 For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
 
+---
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
 ![VirtualEdge](./VirtualEdge.jpg)
@@ -1742,6 +1761,7 @@ To see more how to use this feature, you can refer to [Virtual Edge](https://doc
 
 [Go back to top](#top)
 
+---
 ## Query Tuning
 ### Batch Processing to Avoid OOM
 Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
@@ -1778,6 +1798,7 @@ done
 ```
 [Go back to top](#top)
 
+---
 ## Explore Catalog
 
 ### Global Scope vs. Graph Scope
@@ -1809,6 +1830,7 @@ To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell
 
 To see how to do schema change at global or local level, please refer to [Modify a Graph Schema](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/modifying-a-graph-schema)
 
+---
 ### SHOW - View Parts of the Catalog
 The `SHOW` command can be used to show certain catalog objects, instead of manually filtering through the entire scope when using the ls command. You can either type the exact identifier or use regular expressions / Linux globbing to search.
 
@@ -1845,6 +1867,7 @@ LS
 SHOW QUERY c1
 
 ```
+---
 # Experimental Features
 We also provide relational table and related operators on tables such as join etc. These experimental features are available starting from 4.1.2. They are working on *single machine* and *compiled mode* only.
 
@@ -1905,6 +1928,7 @@ run query selectExample2()
   
 [Go back to top](#top)
 
+---
 ## Init Table Statement
 The `INIT` statement in GSQL is used to initialize a table row containing constant values. This allows you to create a table with predefined constant values, which can be used for further operations or queries.
 
@@ -1945,10 +1969,9 @@ run query initExample()
 - **Table Initialization with Constant Values**: The first `INIT` statement creates table `T1` with three columns (`col_1`, `col_2`, `col_3`). The values `1`, `true`, and `[0.1, -1.1]` are assigned to `col_1`, `col_2`, and `col_3`
 - **Table Initialization with Variables**: The second `INIT` statement initializes table `T2`. It uses the current date and time (`now()`) for `col_1`, the input variable `intVal` for `col_2`, and splits a string `"a,b,c"` into an array and assigns it to `col_3`.
 
----
-
 [Go back to top](#top)
 
+---
 ## Order Table Statement
 The `ORDER` statement in GSQL is used to sort tables based on one or more columns, with the optional `LIMIT` and `OFFSET` clauses. This allows efficient ordering and retrieval of a subset of data.
 
@@ -2036,6 +2059,7 @@ run query filterExample()
 
 [Go back to top](#top)
 
+---
 ## Project Table Statement
 
 The `PROJECT` statement reshapes a table by creating new derived columns based on selected expressions. These columns can result from arithmetic operations, string concatenation, or logical conditions. The `PROJECT` statement is particularly useful for preparing data for further analysis without altering the original table.
@@ -2132,6 +2156,7 @@ Next,  we extract vertex sets using the `PROJECT tableName ON VERTEX COLUMN` syn
 
 [Go back to top](#top)
 
+---
 ## Join Statement
 In GSQL queries, the `JOIN` operation is commonly used to combine data from multiple tables (or nodes and relationships). Depending on the specific requirements, different types of `JOIN` operations are used. Common `JOIN` types include `INNER JOIN`, `CROSS JOIN`, `SEMIJOIN`, and `LEFT JOIN`.
 
@@ -2506,11 +2531,9 @@ run query unwindExample2()
 -   Instead of creating a separate table first (`T1`), the list column `ratioList` is **expanded per row of `T1`** directly into `T2`.
 -   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
 
----
-
-
-
 [Go back to top](#top)
+
+---
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
@@ -2521,6 +2544,8 @@ Or, study our product document at
 https://docs.tigergraph.com/gsql-ref/current/intro/
 
 [Go back to top](#top)
+
+---
 
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
