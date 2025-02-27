@@ -1067,6 +1067,7 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 
 # Reference
 TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs [https://arxiv.org/abs/2501.11216]
+
 For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/README.md)
 
 [Go back to top](#top)
