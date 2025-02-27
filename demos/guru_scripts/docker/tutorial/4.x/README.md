@@ -2055,8 +2055,6 @@ run query filterExample()
 -   The second `FILTER` statement removes rows where `srcAccount` is "Scott".
 -   The `PRINT` statements display the intermediate and final results after filtering.
 
- ----------
-
 [Go back to top](#top)
 
 ---
