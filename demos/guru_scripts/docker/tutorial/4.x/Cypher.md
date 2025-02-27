@@ -39,6 +39,7 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 
 [Go back to top](#top)
 
+---
 # Setup Schema 
 We use an artificial financial schema and dataset as a running example to demonstrate the usability of graph searches. The figure above provides a visualization of all the graph data in the database.
 
@@ -69,6 +70,8 @@ CREATE GRAPH financialGraph (*)
 ```
 
 [Go back to top](#top)
+
+---
 
 # Load Data 
 
@@ -127,6 +130,8 @@ You can choose one of the following methods.
     
 [Go back to top](#top)
 
+---
+
 # Cypher Syntax Overview
 
 OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties.
@@ -143,6 +148,8 @@ In the next section, we will explore Cypher syntax in detail through practical e
 In OpenCypher, the main statement is a pattern match statement in the form of MATCH-WHERE-RETURN. Each MATCH statement will create or update an invisible working table. The working table consists all the alias (vertex/edge) and columns specified in the current and previous MATCH statements. Other statement will also work on the working table to drive the final result.
 
 We will use examples to illustrate cypher syntax. 
+
+---
 
 ## Node Pattern
 ### MATCH A Vertex Set 
@@ -199,6 +206,8 @@ The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/eco
 
 [Go back to top](#top)
 
+---
+
 ## Edge Pattern 
 ### MATCH 1-hop Edge Pattern
 Copy [c3.cypher](./cypher/c3.cypher) to your container. 
@@ -249,6 +258,8 @@ run query c4()
 The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
 
 [Go back to top](#top)
+
+---
 
 ## Path Pattern 
 
@@ -362,6 +373,8 @@ The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master
 
 [Go back to top](#top)
 
+---
+
 ## Optional Match
 `OPTIONAL MATCH` matches patterns against your graph, just like MATCH does. The difference is that if no matches are found, OPTIONAL MATCH will use a null for missing parts of the pattern.
 
@@ -384,6 +397,8 @@ run query c21("Jenny")
 ```
 
 The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c21.out) under `/home/tigergraph/tutorial/4.x/cypher/c21.out`   
+
+---
 
 ## With Clause
 
@@ -476,6 +491,8 @@ The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/maste
 
 [Go back to top](#top)
 
+---
+
 ## Sorting and Limiting Results
 `ORDER BY` is a sub-clause following `RETURN` or `WITH`, and it specifies that the output should be sorted and how. `SKIP` defines from which record to start including the records in the output. `LIMIT` constrains the number of records in the output.
 
@@ -531,6 +548,9 @@ run query c13()
 The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
 
 [Go back to top](#top)
+
+---
+
 ## Working With List
 
 ### UNWIND Clause
@@ -560,6 +580,8 @@ The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/maste
 
 [Go back to top](#top)
 
+---
+
 ### COLLECT Function
 In Cypher, the `collect()` function is used to aggregate values into a list. It is often used in conjunction with `RETURN` or `WITH` to group and organize data into collections.
 
@@ -583,6 +605,8 @@ run query c15()
 The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
 
 [Go back to top](#top)
+
+---
 
 ### Using WITH and COLLECT()
 You can use `UNWIND` to decompose a list column produced by `COLLECT()`.
@@ -609,6 +633,8 @@ run query c16()
 The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c16.out) under `/home/tigergraph/tutorial/4.x/cypher/c16.out`
 
 [Go back to top](#top)
+
+---
 
 ## Combining MATCH Pattern Results
 
@@ -637,6 +663,8 @@ The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/maste
 
 [Go back to top](#top)
 
+---
+
 ### UNION ALL
 In query c18() below, ` MATCH (s:Account {name: "Steven"})` finds "Steven". `MATCH (s:Account) WHERE s.isBlocked` finds all blocked accounts--"Steven". `UNION ALL` will combine these two, keeping the duplicates.
 
@@ -660,6 +688,8 @@ run query c18()
 The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c18.out) under `/home/tigergraph/tutorial/4.x/cypher/c18.out`
 
 [Go back to top](#top)
+
+---
 
 ## Conditional Logic
 ### CASE Expression
@@ -701,6 +731,8 @@ The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/maste
 
 [Go back to top](#top)
 
+---
+
 ## Aggregate Functions
 Aggregation functions in OpenCypher allow you to perform calculations over a set of values, summarizing or transforming the data into a single result. These functions are typically used in combination with the `WITH` or `RETURN` clauses to compute aggregate values based on certain criteria. In `WITH` and `RETURN`, other non-aggregate expressions are used form groups of the matched rows. 
 
@@ -738,10 +770,15 @@ The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/maste
 
 [Go back to top](#top)
 
+---
+
 ## Other Expression Functions
 There are many expression functions openCypher supports. Please refer to [openCypher functions](https://docs.tigergraph.com/gsql-ref/4.1/opencypher-in-gsql/opencypher-in-gsql) 
 
 [Go back to top](#top)
+
+---
+
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
@@ -752,6 +789,8 @@ Or, study our product document at
 https://docs.tigergraph.com/gsql-ref/current/intro/
 
 [Go back to top](#top)
+
+---
 
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
