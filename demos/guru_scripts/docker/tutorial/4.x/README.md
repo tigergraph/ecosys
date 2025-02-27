@@ -216,8 +216,7 @@ Regardless which style you are choosing, the FROM clause will always specify a p
 
 We show both styles for each pattern class. 
 
-
-
+---
 ## Node Pattern
 ### SELECT A Vertex Set Style 
 Copy [02_q1a.gsql](./gsql/02_q1a.gsql) to your container. 
@@ -293,6 +292,7 @@ run query q1b()
 
 [Go back to top](#top)
 
+---
 ## Edge Pattern 
 ### SELECT A Vertex Set Style 
 Copy [04_q2a.gsql](./gsql/04_q2a.gsql) to your container. 
@@ -369,6 +369,8 @@ run query q2b()
 ```
 
 [Go back to top](#top)
+
+---
 
 ## Path Pattern 
 
@@ -465,6 +467,8 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 ```
 
 [Go back to top](#top)
+
+---
 
 ## Pattern Summary
 
