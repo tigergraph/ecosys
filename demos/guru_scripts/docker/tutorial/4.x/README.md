@@ -2013,10 +2013,9 @@ run query orderExample()
  - Sorts by `maxTransferAmt` (descending) and `acct` (ascending).
  - Returns 3 rows per page, skipping first `page` rows for pagination.
 
----
-
 [Go back to top](#top)
 
+---
 ## Filter Table Statement
 The `FILTER` statement works by applying the condition to the specified `target_table`, modifying its rows based on the logical expression provided. Filters are applied sequentially, so each subsequent filter operates on the results of the previous one.
 
