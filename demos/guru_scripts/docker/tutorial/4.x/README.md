@@ -204,7 +204,7 @@ In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex s
      FROM pattern
      [WHERE condition];
   ``` 
-- SELECT INTO A Table Style--if a query block generates a table, we can output the table. Syntax
+- SELECT INTO A Table Style: if a query block generates a table, we can output the table. Syntax
   ```python
    SELECT exp1, exp2.. INTO T
    FROM pattern
