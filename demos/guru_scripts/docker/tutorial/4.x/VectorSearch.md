@@ -1063,10 +1063,6 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 
 [https://community.tigergraph.com/](https://community.tigergraph.com/)
 
-Or, study our product document at
-
-[https://docs.tigergraph.com/gsql-ref/current/intro/](https://docs.tigergraph.com/gsql-ref/current/intro/)
-
 [Go back to top](#top)
 
 # Reference
