@@ -170,6 +170,9 @@ Now that you have a graph schema, you can load data using one of the following m
 
     run loading job load_local_file
     ```
+
+- Load from Iceberg table, or alternative Spark data sources, through [tigergraph-spark-connector](https://docs.tigergraph.com/tigergraph-server/current/data-loading/load-from-spark-dataframe)
+  - Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
     
 [Go back to top](#top)
 
