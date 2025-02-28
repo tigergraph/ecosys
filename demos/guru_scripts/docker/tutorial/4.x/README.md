@@ -43,12 +43,13 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
-  - [Vertex Set Operators](#vertex-set-operators)
+ - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
   - [Vector Search](#vector-search)
   - [Virtual Edge](#virtual-edge)
+  - [Pass Parameter Via JSON](#pass-parameter-via-json)
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
@@ -1347,62 +1348,6 @@ INSTALL QUERY WhileTest
 RUN QUERY WhileTest("Scott")
 ```
 
-```python
-
-/*
-This algorithm is to find and return only the first full path between two vertex
-
-  Parameters:
-  v_source: source vertex
-  target_v: target vertex
-  depth: maxmium path length
-  print_results: print JSON output
- */
-use graph financialGraph
-
-CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX target_v, INT depth =8, BOOL print_results = TRUE ) SYNTAX v3 {
-
-  OrAccum @end_point, @visited, @@hit= FALSE;
-  ListAccum<VERTEX> @path_list; // the first list of vertices out of many paths
-  ListAccum<VERTEX> @@first_full_path;
-
-  // 1. mark the target node as true
-  endset = {target_v};
-  endset = SELECT s
-           From (s:endset)
-           POST-ACCUM s.@end_point = true;
-
-  // 2. start from the initial node, save the node to the patt_list, and find all nodes connected through the given name
-  Source = {v_source};
-  Source = SELECT s
-           FROM (s:Source)
-           POST-ACCUM s.@path_list = s, s.@visited = true;
-
- WHILE Source.size() > 0 AND NOT @@hit LIMIT depth DO
-       Source = SELECT t
-                FROM (s:Source) -[e]-> (t)
-                WHERE t.@visited == false
-                ACCUM
-                   t.@path_list = s.@path_list
-                 POST-ACCUM s.@path_list.clear()
-                 POST-ACCUM t.@path_list += t,
-                             t.@visited = true,
-                    IF t.@end_point ==TRUE THEN
-                      @@first_full_path += t.@path_list,
-                      @@hit += TRUE
-                    END;
- END;
-
- // 3. return the final result
-  IF print_results THEN
-      PRINT @@first_full_path as path;
-  END;
-}
-
-install query first_shortest_path
-RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
-```
-Note, we can use JSOn format to pass parameters. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
 [Go back to top](#top)
 
 ---
@@ -1759,6 +1704,83 @@ TigerGraph has extended the vertex type to support vectors, enabling users to qu
 For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
 
 ---
+
+## Pass Parameter Via JSON
+
+### Parameter JSON object
+To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
+
+For example, if we have the following query:
+
+```python
+CREATE QUERY greet_person(INT age = 3, STRING name = "John",
+  DATETIME birthday = to_datetime("2019-02-19 19:19:19"))
+{
+  PRINT age, name, birthday;
+}
+Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value:
+
+RUN QUERY greet_person( {"name": "Emma", "age": 21} )
+```
+
+Another example.
+
+```python
+
+/*
+This algorithm is to find and return only the first full path between two vertices
+
+  Parameters:
+  v_source: source vertex
+  target_v: target vertex
+  depth: maxmium path length
+  print_results: print JSON output
+ */
+use graph financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX target_v, INT depth =8, BOOL print_results = TRUE ) SYNTAX v3 {
+
+  OrAccum @end_point, @visited, @@hit= FALSE;
+  ListAccum<VERTEX> @path_list; // the first list of vertices out of many paths
+  ListAccum<VERTEX> @@first_full_path;
+
+  // 1. mark the target node as true
+  endset = {target_v};
+  endset = SELECT s
+           From (s:endset)
+           POST-ACCUM s.@end_point = true;
+
+  // 2. start from the initial node, save the node to the patt_list, and find all nodes connected through the given name
+  Source = {v_source};
+  Source = SELECT s
+           FROM (s:Source)
+           POST-ACCUM s.@path_list = s, s.@visited = true;
+
+ WHILE Source.size() > 0 AND NOT @@hit LIMIT depth DO
+       Source = SELECT t
+                FROM (s:Source) -[e]-> (t)
+                WHERE t.@visited == false
+                ACCUM
+                   t.@path_list = s.@path_list
+                 POST-ACCUM s.@path_list.clear()
+                 POST-ACCUM t.@path_list += t,
+                             t.@visited = true,
+                    IF t.@end_point ==TRUE THEN
+                      @@first_full_path += t.@path_list,
+                      @@hit += TRUE
+                    END;
+ END;
+
+ // 3. return the final result
+  IF print_results THEN
+      PRINT @@first_full_path as path;
+  END;
+}
+
+install query first_shortest_path
+RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
+```
+Refer to this link for more details. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
 ![VirtualEdge](./VirtualEdge.jpg)
