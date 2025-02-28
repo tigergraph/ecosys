@@ -1723,7 +1723,7 @@ Supplying the parameters with a JSON object will look like the following. The pa
 RUN QUERY greet_person( {"name": "Emma", "age": 21} )
 ```
 
-Another example.
+Another example-- find the shortest path between two vertices, and output one such path. 
 
 ```python
 
