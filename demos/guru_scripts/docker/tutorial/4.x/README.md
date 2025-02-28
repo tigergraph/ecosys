@@ -1346,6 +1346,63 @@ INSTALL QUERY WhileTest
 
 RUN QUERY WhileTest("Scott")
 ```
+
+```python
+
+/*
+This algorithm is to find and return only the first full path between two vertex
+
+  Parameters:
+  v_source: source vertex
+  target_v: target vertex
+  depth: maxmium path length
+  print_results: print JSON output
+ */
+use graph financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX target_v, INT depth =8, BOOL print_results = TRUE ) SYNTAX v3 {
+
+  OrAccum @end_point, @visited, @@hit= FALSE;
+  ListAccum<VERTEX> @path_list; // the first list of vertices out of many paths
+  ListAccum<VERTEX> @@first_full_path;
+
+  // 1. mark the target node as true
+  endset = {target_v};
+  endset = SELECT s
+           From (s:endset)
+           POST-ACCUM s.@end_point = true;
+
+  // 2. start from the initial node, save the node to the patt_list, and find all nodes connected through the given name
+  Source = {v_source};
+  Source = SELECT s
+           FROM (s:Source)
+           POST-ACCUM s.@path_list = s, s.@visited = true;
+
+ WHILE Source.size() > 0 AND NOT @@hit LIMIT depth DO
+       Source = SELECT t
+                FROM (s:Source) -[e]-> (t)
+                WHERE t.@visited == false
+                ACCUM
+                   t.@path_list = s.@path_list
+                 POST-ACCUM s.@path_list.clear()
+                 POST-ACCUM t.@path_list += t,
+                             t.@visited = true,
+                    IF t.@end_point ==TRUE THEN
+                      @@first_full_path += t.@path_list,
+                      @@hit += TRUE
+                    END;
+ END;
+
+ // 3. return the final result
+  IF print_results THEN
+      PRINT @@first_full_path as path;
+  END;
+}
+
+install query first_shortest_path
+RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
+```
+Note, we can use JSOn format to pass parameters. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
 [Go back to top](#top)
 
 ---
