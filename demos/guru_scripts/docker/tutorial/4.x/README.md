@@ -242,6 +242,7 @@ GSQL > SELECT COUNT(s) FROM (s:_)
 GSQL > SELECT COUNT(*) FROM (s:Account:City)
 GSQL > SELECT COUNT(DISTINCT t) FROM (s:Account)-[e]->(t)
 GSQL > SELECT COUNT(e), STDEV(e.amount), AVG(e.amount) FROM (s:Account)-[e:transfer|isLocatedIn]->(t)
+GSQL > SELECT a, sum(e.amount) as amount1 , sum(e2.amount) as amount2 FROM (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) GROUP BY a;
 ```
 
 
