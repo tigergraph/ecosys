@@ -198,7 +198,7 @@ Similar to SQL, graph queries use SELECT-FROM-WHERE clauses. The key difference 
 - `()` represents a node
 - `-[]->` represents an edge
 - `()-[]->()-[]->()...` A path is formed by alternating nodes and edges.
-- 
+
 This pattern-based approach enables more "declarative flavor", and more flexible and expressive querying of graph data. 
 
 You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
