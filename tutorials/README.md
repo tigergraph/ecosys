@@ -1,23 +1,40 @@
-# Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./FinancialGraph.jpg)
 
-# Content
-This GSQL tutorial contains 
-- [Setup Environment](#setup-Environment)
-- [Setup Schema (model)](#setup-schema)
+
+# Introduction <a name="top"></a>
+
+This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis.
+
+GSQL V3 syntax reflects the evolution towards GQL, the ISO  graph query language standard released in 2024. V3 emphasizes ASCII art in its syntax, as well as support for most OpenCyper pattern match syntax and functions.
+
+A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/4.1/intro/).
+
+This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment.
+
+Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+
+---
+# Table of Contents
+
+- [Sample Graph](#sample-graph-for-tutorial)
+- [Set Up Environment](#set-up-environment)
+- [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
-- [Query Examples](#query-examples)
+- [Stored Procedure Query Examples](#stored-procedure-query-examples)
+  - [Two Flavors of SELECT](#two-flavors-of-select)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
   - [Pattern Summary](#pattern-summary)
+- [1-Block Query Examples](#1-block-query-examples)
+  - [SELECT BLOCK](#select-block)
+  - [SELECT BLOCK WITH VARIABLES](#select-block-with-variables)	
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
     - [Global vs Vertex Attached Accumulator](#global-vs-vertex-attached-accumulator)
     - [ACCUM vs POST-ACCUM](#accum-vs-post-accum)
     - [Edge Attached Accumulator](#edge-attached-accumulator)
-  - [Vertex Set Variables And Accumulator As Composition Tools](#vertex-set-variables-and-accumulator-as-composition-tools)
+  - [Vertex Set Variables And Accumulators As Composition Tools](#vertex-set-variables-and-accumulators-as-composition-tools)
     - [Using Vertex Set Variables](#using-vertex-set-variables)
     - [Using Accumulators](#using-accumulators)
   - [Flow Control](#flow-control)
@@ -26,29 +43,59 @@ This GSQL tutorial contains
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
-  - [Vertex Set Operators](#vertex-set-operators)
+ - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
-  - [Query Tuning](#query-tuning) 
- - [Support](#support) 
-  
+  - [Vector Search](#vector-search)
+  - [Virtual Edge](#virtual-edge)
+  - [Pass Parameter Via JSON](#pass-parameter-via-json)
+  - [Query Tuning](#query-tuning)
+  - [Explore Catalog](#explore-catalog)
+ - [Experimental Features](#experimental-features)
+   - [Table](#table)
+   - [Init Table Statement](#init-table-statement)
+   - [Order Table Statement](#order-table-statement)
+   - [Filter Table Statement](#filter-table-statement)
+   - [Project Table Statement](#project-table-statement)
+   - [Join Statement](#join-statement)
+   - [Union Statement](#union-statement)
+   - [Union All Statement](#union-all-statement)
+   - [Unwind Statement](#unwind-statement)    
+ - [Support](#support)
+ - [Contact](#contact)
 
-# Setup Environment 
+---
+# Sample Graph For Tutorial
+This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+![Financial Graph](./FinancialGraph.jpg)
 
+---
+# Set Up Environment 
+
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
+Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
+After you installed TigerGraph, you can use gadmin tool to start/stop services. 
+```python
+gadmin start all  #start all tigergraph component services
+gadmin status #should see all services are up.
+gsql #start the gsql shell. Congratulations, you have started tigergraph!
+```
+
+---
 [Go back to top](#top)
 
-# Setup Schema 
-We use an artificial financial schema and dataset as a running example to demonstrate the usability of graph searches. The figure above provides a visualization of all the graph data in the database.
+# Set Up Schema 
+A graph schema describes the vertex types, edge types, and properties found in your graph. TigerGraph is a schema-first database, meaning that the schema is declared before loading data. This not only optimizes data storage and query performance, but it also provides built-in checks to make sure your data conformed to the expected schema.
 
-Copy [ddl.gsql](./script/ddl.gsql) to your container. 
+Copy [00_schema.gsql](./gsql/00_schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql ddl.gsql
+gsql 00_schema.gsql
 ```
-As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
+As seen below, the declarative DDL creates vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires `FROM` and `TO` vertex types as the key.
+Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction.
 
 ```python
 //install gds functions
@@ -71,18 +118,19 @@ CREATE GRAPH financialGraph (*)
 
 [Go back to top](#top)
 
+---
 # Load Data 
 
-You can choose one of the following methods. 
+Now that you have a graph schema, you can load data using one of the following methods. 
 
-- Load sample data from our publicly accessible s3 bucket 
+- Load sample data from our publicly accessible s3 bucket:
   
-  Copy [load.gsql](./script/load.gsql) to your container. 
+  Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
      gsql load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [load.gsql](./script/load.gsql), and paste it into the GSQL shell editor to run.
+  or in GSQL editor of TigerGraph Savanna, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
@@ -93,13 +141,13 @@ You can choose one of the following methods.
     - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
     - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
 
-  - Copy [load2.gsql](./script/load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+  - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
        gsql load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [load2.gsql](./script/load2.gsql), and paste in GSQL shell editor to run.
+    or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
 
-    The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
+    The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
     ```python
     USE GRAPH financialGraph
 
@@ -125,23 +173,57 @@ You can choose one of the following methods.
 
     run loading job load_local_file
     ```
+
+- Load from Iceberg table, or alternative Spark data sources, through [Tigergraph Spark Connector](https://docs.tigergraph.com/tigergraph-server/current/data-loading/load-from-spark-dataframe)
+  - Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
     
 [Go back to top](#top)
 
-# Query Examples 
+---
+
+# Stored Procedure Query Examples 
+
+In this section, we explain how to write stored procedures. A stored procedure is a named query made up by a sequence of GSQL query blocks or statements. It is saved in the graph database catalog and can be repeatedly invoked using the "run query" command or a system-generated REST endpoint URL.
+
+To create a stored procedure, you can use the following syntax. 
+
+```python
+CREATE OR REPLACE QUERY queryName (/*params*/) SYNTAX v3 {
+   v1 = Query_block_1; //v1 is a vertex set variable, storing a set of selected vertices
+   v2 = Query_block_2; //v2 is a vertex set variable, storing a set of selected vertices
+    .
+    .
+    . 
+}
+```
+
+The query block can be a `Node Pattern`, an `Edge Pattern`, or a `Path Pattern`. We will illustrate each pattern with examples.
+
+## Two Flavors of SELECT
 
 In GSQL, each query block (SELECT-FROM-WHERE) can be used to generate a vertex set or a table. 
 
-- SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation.
-- SELECT INTO A Table Style: if a query block generates a table, we can output the table.
+- SELECT A Vertex Set Style: if a query block generates a vertex set, we can store the vertex set in a variable, and use the vertex set variable to drive subsequent query blocks composition via pattern matching or set operation. Syntax
+  ```python
+  V= SELECT s
+     FROM pattern
+     [WHERE condition];
+  ``` 
+- SELECT INTO A Table Style: if a query block generates a table, we can output the table. Syntax
+  ```python
+   SELECT exp1, exp2.. INTO T
+   FROM pattern
+   [WHERE condition];
+  ```
 
-Regardless which style you are choosing, the FROM clause will always specify a pattern. The pattern follows ISO GQL standard syntax, which is a well-designed ASCII art syntax--() represents nodes, and -[]-> represents edges. 
+Regardless which style you are choosing, the FROM clause will always specify a pattern. The pattern follows ISO GQL standard syntax, which is a well-designed ASCII art syntax-- `()` represents nodes, and `-[]->` represents edges. 
 
 We show both styles for each pattern class. 
 
+---
 ## Node Pattern
 ### SELECT A Vertex Set Style 
-Copy [q1a.gsql](./script/q1a.gsql) to your container. 
+Copy [02_q1a.gsql](./gsql/02_q1a.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -184,7 +266,7 @@ run query q1a()
 ### SELECT INTO A Table Style
 If you're familiar with SQL, treat the matched node as a table -- table(a) or table(a.attr1, a.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension `SELECT a` as selecting the graph element a.
 
-Copy [q1b.gsql](./script/q1b.gsql) to your container. 
+Copy [03_q1b.gsql](./gsql/03_q1b.gsql) to your container. 
 
 ```python
 #enter the graph
@@ -214,9 +296,10 @@ run query q1b()
 
 [Go back to top](#top)
 
+---
 ## Edge Pattern 
 ### SELECT A Vertex Set Style 
-Copy [q2a.gsql](./script/q2a.gsql) to your container. 
+Copy [04_q2a.gsql](./gsql/04_q2a.gsql) to your container. 
 
 ```python
 
@@ -259,7 +342,7 @@ run query q2a("Scott")
 ### SELECT INTO A Table Style
 If you're familiar with SQL, treat the matched edge as a table -- table(a, e, b) or table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" as selecting the graph element.
 
-Copy [q2b.gsql](./script/q2b.gsql) to your container. 
+Copy [05_q2b.gsql](./gsql/05_q2b.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
@@ -291,10 +374,12 @@ run query q2b()
 
 [Go back to top](#top)
 
+---
+
 ## Path Pattern 
 
 ### SELECT A Vertex Set Style: Fixed Length vs. Variable Length Path Pattern
-Copy [q3a.gsql](./script/q3a.gsql) to your container. 
+Copy [06_q3a.gsql](./gsql/06_q3a.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
@@ -305,7 +390,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTA
   // a path pattern in ascii art ()-[]->()-[]->(), where alternating node() and edge -[]->.
   // You can also use WHERE clause inside a vertex () or edge-[]->. 
   R = SELECT b
-      FROM (a:Account WHERE a.name== accntName)-[e:transfer]->()-[e2:transfer]->(b:Account)
+      FROM (a:Account WHERE a.name== acctName)-[e:transfer]->()-[e2:transfer]->(b:Account)
       WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
 
       PRINT R;
@@ -314,7 +399,7 @@ CREATE OR REPLACE QUERY q3a (datetime low, datetime high, string acctName) SYNTA
   // *1.. means 1 to more steps of the edge type "transfer"
   // select the reachable end point and bind it to vertex alias "b"
   R = SELECT b
-      FROM (a:Account WHERE a.name == accntName)-[:transfer*1..]->(b:Account);
+      FROM (a:Account WHERE a.name == acctName)-[:transfer*1..]->(b:Account);
 
       PRINT R;
 
@@ -336,7 +421,7 @@ run query q3a("2024-01-01", "2024-12-31", "Scott")
 
 If you're familiar with SQL, treat the matched path as a table -- table(a, e, b, e2, c) or unfold their attributes into table(a.attr1, a.attr2..., e.attr1, e.attr2...,b.attr1, b.attr2...). You can group by and aggregate on its columns, just like in SQL. Use `SELECT expr1, expr2..` as usual, with the extension "SELECT a", "SELECT e", "SELECT b" etc. as selecting the graph element.
 
-Copy [q3b.gsql](./script/q3b.gsql) to your container. 
+Copy [07_q3b.gsql](./gsql/07_q3b.gsql) to your container. 
 
 ```python
 USE GRAPH financialGraph
@@ -363,7 +448,7 @@ CREATE OR REPLACE QUERY q3b (datetime low, datetime high, string acctName) SYNTA
       1. the path has "shortest path" semantics. If you have a path that is longer than the shortest,
       we only count the shortest. E.g., scott to scott shortest path length is 4. Any path greater than 4 will
       not be matched.
-     2. we can not put an alias to bind the edge in the the variable length part -[:transfer*1..]->, but 
+     2. we can not put an alias to bind the edge in the variable length part -[:transfer*1..]->, but 
      we can bind the end points (a) and (b) in the variable length path, and group by on them.
    */
    SELECT a, b, count(*) AS path_cnt INTO T2
@@ -387,6 +472,8 @@ run query q3b("2024-01-01", "2024-12-31", "Scott")
 
 [Go back to top](#top)
 
+---
+
 ## Pattern Summary
 
 ## Table of Edge Patterns (following ISO GQL Standard Syntax)
@@ -406,7 +493,7 @@ We support two ways to specify repetitions of a pattern.
 ### GQL Style:
 | Quantifier | Example |  Description |
 |------------|---------|--------------|
-| {m,n}    | -[:transfer]->{1,2}   | beween m and n repetitions |
+| {m,n}    | -[:transfer]->{1,2}   | between m and n repetitions |
 | {m,}    | -[:transfer]->{1,}   | m or more repetitions |
 | *    | -[:transfer]->*   | equivalent to {0,} |
 | +    | -[:transfer]->+   | equivalent to {1,} |
@@ -421,6 +508,287 @@ We support two ways to specify repetitions of a pattern.
 
 [Go back to top](#top)
 
+---
+
+# 1-Block Query Examples 
+
+**NOTE** This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature. 
+
+## SELECT BLOCK
+1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
+
+### Basic Syntax
+The basic syntax structure of `1-Block SELECT` is as follows:
+
+```python
+SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
+```
+
+You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
+Or, you can break the one line to multiple lines and enclose them with `BEGIN` and `END` as illustrated below.  
+
+```python
+GSQL> BEGIN
+GSQL>  SELECT <output_variable>
+GSQL>  FROM <pattern>
+GSQL>  WHERE <condition> <additional_clauses>
+GSQL> END
+```
+
+### Examples
+
+#### SELECT with filters
+
+##### Using WHERE clause
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) LIMIT 10
+GSQL > SELECT s FROM (s:Account {name: "Scott"})
+GSQL > SELECT s FROM (s:Account WHERE s.isBlocked)
+GSQL > SELECT s FROM (s:Account) WHERE s.name IN ("Scott", "Steven")
+GSQL > SELECT s, e, t FROM (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t
+```
+
+##### Using HAVING
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked AND s.name = "Steven"
+```
+#### Aggregation SELECT
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT COUNT(s) FROM (s:_)
+GSQL > SELECT COUNT(*) FROM (s:Account:City)
+GSQL > SELECT COUNT(DISTINCT t) FROM (s:Account)-[e]->(t)
+GSQL > SELECT COUNT(e), STDEV(e.amount), AVG(e.amount) FROM (s:Account)-[e:transfer|isLocatedIn]->(t)
+```
+
+
+
+#### SELECT with Sorting and Limiting
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) ORDER BY s.name LIMIT 3 OFFSET 1
+GSQL > SELECT s.name, e.amount as amt, t FROM (s:Account) -[e:transfer]-> (t:Account) ORDER BY amt, s.name LIMIT 1
+GSQL > SELECT DISTINCT type(s) FROM (s:Account:City) ORDER BY type(s)
+```
+
+#### Using some expression
+
+```python
+# Using mathematical expressions
+GSQL > use graph financialGraph
+GSQL > SELECT s, e.amount*0.01 AS amt FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+
+# Using CASE expression
+GSQL > BEGIN
+GSQL >  SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS status 
+GSQL >  FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > END
+```
+
+[Go back to top](#top)
+
+---
+## SELECT BLOCK WITH VARIABLES
+We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. The variables defined between `LET` and `IN` can be primitive types or accumulators, enable flexible computation and aggregation.
+
+### Basic Syntax
+```python  
+LET  
+ <variable_definitions>;
+IN  
+ SELECT <query_block>
+```
+
+The ```LET...IN``` prefix construct in GSQL is used to define and work with variables and accumulators. It allows for the creation of temporary variables or accumulators in the LET block, which can be referenced later in the SELECT block, enabling more powerful and flexible queries. Specifically,
+
+- ```LET```: This keyword starts the block where you define variables and accumulators.
+- ```<variable_definitions>```: Inside the `LET` block, you can define variables with primitive types such as `STRING`, `INT`, `UINT`, `BOOL`, `FLOAT`, `DATETIME` and `DOUBLE`. However, container types like `SET`, `LIST`, and `MAP` are not supported at the moment. Inside the `LET` block, you can also define accumulators.
+- ```IN SELECT <query_block>```: The  `SELECT` query block follows the `IN` keyword can use the variables and accumulators defined in the `LET` block.
+
+### Examples
+
+#### Primitive type variables
+Since `LET ... IN...SELECT` typically spans multiple-lines, we need to use `BEGIN...END` to support it in GSQL shell. Below, we define some primitive type varibles with assigned value, and use them in the `SELECT` query block as bind variables. 
+
+```python
+GSQL > use graph financialGraph 
+GSQL > BEGIN 
+GSQL > LET
+GSQL >  DOUBLE a = 500.0; 
+GSQL >  STRING b = "Jenny"; 
+GSQL >  BOOL c = false; 
+GSQL > IN 
+GSQL >  SELECT s, e.amount AS amt, t
+GSQL >  FROM (s:Account) - [e:transfer]-> (t:Account) 
+GSQL >  WHERE s.isBlocked = c AND t.name <> b 
+GSQL >  HAVING amt > a; 
+GSQL > END
+```
+
+You can also use this syntax in one line. E.g., 
+
+```python
+GSQL > LET STRING n = "Jenny"; IN SELECT s, count(t) as cnt FROM (s:Account {name:n}) - [:transfer*0..2]-> (t:Account);
+```
+#### Accumulator type variables
+
+In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values for a matched pattern. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
+
+----------
+
+**Restrictions on 1-Block SELECT Clause with Accumulators**
+
+When accumulators are used in a 1-block query, the `SELECT` clause is subject to the following restrictions:
+
+**Only One Node Alias Allowed:**
+
+**If accumulators are used**, the `SELECT` clause must return only **one** node alias.
+
+-  ✅ Source node alias **Allowed:**  `SELECT s FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ✅ Target node alias **Allowed:**  `SELECT t FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Relationship alias  **Not Allowed:**  `SELECT e FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Multiple node alias **Not Allowed:** `SELECT s, t FROM (s:Account)-[e:transfer]-(t:Account)`
+  
+
+**Functions, Expressions Not Allowed:**
+
+**When using accumulators**, functions and expressions cannot be used in the `SELECT` clause. 
+
+-  ❌ **Functions not allowed:**  `SELECT count(s) FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ **Expressions not allowed:**  `SELECT (s.isBlocked OR t.isBlocked) AS flag FROM (s:Account)-[e:transfer]-(t:Account)`
+
+**Local Accumulator Example**
+
+**Definition:**
+
+A **local accumulator** (prefixed with `@`) is associated with a specific vertex and is stored as part of its attributes. When a node is retrieved in a `SELECT` statement, its corresponding local accumulator values are displayed alongside its properties.
+
+**Query:**
+
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN
+GSQL> LET  
+GSQL>  SetAccum<string> @transferNames;  
+GSQL>  IN  
+GSQL>   SELECT s FROM (s:Account where s.isBlocked) -[:transfer*1..3]- (t:Account)  
+GSQL>   ACCUM s.@transferNames += t.name;
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Steven",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Steven",
+            "isBlocked": true,
+            "@transferNames": [
+              "Jenny",
+              "Paul",
+              "Scott",
+              "Steven",
+              "Ed"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Explanation:**
+
+-   The **local accumulator** `@transferNames` collects the names of accounts connected to `"Steven"` via `transfer` edges (up to 3 hops).
+-   In the output, `@transferNames` is stored as runtime attribute, alongside wiht other static attributes `name` and `isBlocked`.
+
+----------
+
+**Global Accumulator Example**
+
+**Definition:**
+
+A **global accumulator** (prefixed with `@@`) aggregates values across all selected nodes and is **printed separately** from node attributes in the query result. All global accumulators declared in the `LET` block will be included in the output.
+
+**Query:**
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN 
+GSQL> LET   
+GSQL>  double ratio = 0.01;  
+GSQL>  SumAccum<double> @totalAmt;  // local accumulator for total amount 
+GSQL>  SumAccum<INT> @@cnt;  // global accumulator for count
+GSQL> IN  
+GSQL>  SELECT s FROM (s:Account {name:"Ed"}) - [e:transfer]-> (t:Account) 
+GSQL>  ACCUM s.@totalAmt += ratio * e.amount, // Accumulate total amount for s 
+GSQL>      @@cnt += 1; // Accumulate count of transfers
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Ed",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Ed",
+            "isBlocked": false,
+            "@totalAmt": 15
+          }
+        }
+      ]
+    },
+    {
+      "@@cnt": 1
+    }
+  ]
+}
+```
+**Explanation:**
+
+-   The **local accumulator** `@totalAmt` accumulates the weighted sum of transfer amounts and is **stored as an attribute of "Ed"**.
+-   The **global accumulator** `@@cnt` counts the total number of transfers and is **printed separately** in the result.
+-   This ensures **per-node values are displayed within node attributes, while global aggregates appear in the final output**.
+
+---
+
+
+[Go back to top](#top)
+
+---
 # Advanced Topics
 ## Accumulators
 GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global or vertex local. 
@@ -438,7 +806,7 @@ An accumulator in GSQL supports two operators: assignment (=) and accumulation (
 USE GRAPH financialGraph
 
 // "distributed" key word means this query can be run both on a single node or a cluster of nodes 
-CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q4 (/* parameters */) SYNTAX v3 {
 
     SumAccum<INT> @@sum_accum = 0;
     MinAccum<INT> @@min_accum = 0;
@@ -486,10 +854,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a1 (/* parameters */) SYNTAX v3 {
 }
 
 //install the query
-install query  a1
+install query  q4
 
 //run the query
-run query a1()
+run query q4()
 ```  
 In the above example, six different accumulator variables (those with prefix @@) are declared, each with a unique type. Below we explain their semantics and usage.
 
@@ -508,6 +876,8 @@ In the above example, six different accumulator variables (those with prefix @@)
 - `ListAccum<INT>` keeps appending new integer(s) into its internal list variable. We append 1, 2, and [3,4] to the accumulator, and end up with [1,2,3,4].
 
 [Go back to top](#top)
+
+---
 ### Global vs Vertex Attached Accumulator
 At this point, we have seen that accumulators are special typed variables in GSQL. We are ready to explain their global and local scopes.
 
@@ -520,7 +890,7 @@ Global accumulators belong to the entire query. They can be updated anywhere wit
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE QUERY q5 (/* parameters */) SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
@@ -538,7 +908,7 @@ CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
 
 }
 
-interpret query a2()
+interpret query q5()
 
 ```
 
@@ -567,6 +937,7 @@ The accumulator will accumulate based on the accumulator type.
 
 [Go back to top](#top)
 
+---
 ### ACCUM vs POST-ACCUM
 
 #### ACCUM
@@ -574,7 +945,7 @@ Running example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE QUERY q6 (/* parameters */) SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
@@ -592,7 +963,7 @@ CREATE OR REPLACE QUERY a2 (/* parameters */) SYNTAX V3 {
 
 }
 
-interpret query a2()
+interpret query q6()
 ```
 - `FROM-WHERE` Produces a Binding Table
   
@@ -610,7 +981,7 @@ The `ACCUM` clause executes its statements once for each row in the `FROM-WHERE`
 
 The new snapshot of accumulate states is available for access after the ACCUM clause.
 
-
+---
 #### POST-ACCUM
 
 The optional `POST-ACCUM` clause enables accumulation and other computations across the set of vertices produced by the `FROM-WHERE` binding table. `POST-ACCUM` can be used without `ACCUM`. If it is preceded by an `ACCUM` clause, then its statement can access the new snapshot value of accumulators computed by the `ACCUM` clause.
@@ -620,7 +991,7 @@ Running example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY a3 () SYNTAX V3 {
+CREATE OR REPLACE QUERY q7 () SYNTAX V3 {
 
     SumAccum<INT> @cnt = 0; //local accumulator
     SumAccum<INT>  @@testCnt1 = 0; //global accumulator
@@ -642,21 +1013,21 @@ CREATE OR REPLACE QUERY a3 () SYNTAX V3 {
 
 }
 
-INTERPRET QUERY a3()
+INTERPRET QUERY q7()
 ```
 
 - `POST-ACCUM` Loops A Vertex Set Selected From the Binding Table
   
-The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex alias defined in the `FROM` clause. In query a3, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
+The `POST-ACCUM` clause is designed to do some computation based on a selected vertex set from the binding table. It executes its statements(s) once for each distinct value of a referenced vertex column from the binding table. You can have multiple `POST-ACCUM` clauses. But each `POST-ACCUM` clause can only refer to one vertex alias defined in the `FROM` clause. In query q8, `POST-ACCUM (a)` means we project the vertex “a” column from the binding table, remove the duplicates, and loop through the resulting vertex set.
 
 Another characteristic of the `POST-ACCUM` clause is that its statements can access the aggregated accumulator value computed in the `ACCUM` clause.
 
-In query a3, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `@a.cnt`, which is 1.
+In query q8, the `POST-ACCUM` statement will loop over the vertex set “a”, and its statement `@@testCnt2+=a.@cnt` will read the updated snapshot value of `a.@cnt`, which is 1.
 
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q8 () SYNTAX V3 {
 
      SumAccum<int> @@edgeCnt = 0;
      MaxAccum<int> @maxAmount = 0;
@@ -683,10 +1054,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY a4 () SYNTAX V3 {
 
 }
 
-INSTALL QUERY a4
+INSTALL QUERY q8
 
 
-RUN QUERY a4()
+RUN QUERY q8()
 ```
 
 When you reference a vertex alias in a `POST-ACCUM` statement, you bind that vertex alias to the `POST-ACCUM` clause implicitly. You can also explicitly bind a vertex alias with a `POST-ACCUM` clause by putting the vertex alias in parentheses immediately after the keyword `POST-ACCUM`. Each `POST-ACCUM` clause must be bound with one and only one vertex alias.
@@ -709,6 +1080,7 @@ POST-ACCUM @@maxSenderAmount += a.@maxAmount + b.@maxAmount;
 ```
 [Go back to top](#top)
 
+---
 ### Edge Attached Accumulator
 
 Similar to attaching accumulator a vertex, you can attach primitive accumulators to an edge instance. 
@@ -718,7 +1090,7 @@ Example.
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
+CREATE OR REPLACE QUERY q9 (string acctName) SYNTAX v3 {
 
   OrAccum EDGE @visited;
 
@@ -736,11 +1108,14 @@ CREATE OR REPLACE QUERY q4a (string acctName) SYNTAX v3 {
 }
 
 //it is only supported for single node, or single node mode in distributed enviroment
-install query -single q4a
-run query q4a("Jenny")
+install query -single q9
+run query q9("Jenny")
 ```
 [Go back to top](#top)
-## Vertex Set Variables And Accumulator As Composition Tools
+
+---
+
+## Vertex Set Variables And Accumulators As Composition Tools
 
 **Query Composition** means that one query block's computation result can be used as input to another query block. 
 
@@ -753,7 +1128,7 @@ GSQL query consists of a sequence of query blocks. Each query block will produce
 High level, within the query body brackets, you can define a sequence of connected or unconnected query blocks to make up the query body. Below is the skeleton of a query body.
 
 ```python
-CREATE OR REPLACE DISTRIBUTED QUERY q3(/* parameters */) SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q (/* parameters */) SYNTAX V3 {
     // Query body
 
     V1= Query_Block_1;
@@ -780,7 +1155,7 @@ the query a5 below achieve query composition via tgtAccnts vertex set variable, 
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q10() SYNTAX V3 {
 
  SumAccum<int> @cnt = 0;
 
@@ -799,12 +1174,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY a5() SYNTAX V3 {
   PRINT tgtPhones;
 }
 
-INSTALL QUERY a5
+INSTALL QUERY q10
 
-RUN QUERY a5()
+RUN QUERY q10()
 ```
 [Go back to top](#top)
 
+---
 ### Using Accumulators
  
 Recall that vertex-attached accumulator can be accessed in a query block. Across query blocks, if the same vertex is accessed, it's vertex-attached accumulator (a.k.a local accumulator) can be treated as the runtime attribute of the vertex,
@@ -816,7 +1192,7 @@ For example, in a6 query below, the first query block accumulate 1 into each `y`
 ```python
 USE GRAPH financialGraph
 
-CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
+CREATE OR REPLACE DISTRIBUTED QUERY q11() SYNTAX V3 {
 
  SumAccum<int> @cnt = 0;
  SumAccum<int> @@cnt = 0;
@@ -837,14 +1213,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY a6() SYNTAX V3 {
 }
 
 
-INSTALL QUERY a6
+INSTALL QUERY q11
 
 
-RUN QUERY a6()
+RUN QUERY q11()
 ```
 
 [Go back to top](#top)
 
+---
 ## Flow Control
 
 ### IF Statement
@@ -900,6 +1277,8 @@ RUN QUERY IfElseTest()
 ```
 [Go back to top](#top)
 
+---
+
 ### WHILE Statement
 The `WHILE` statement provides unbounded iteration over a block of statements. `WHILE` statements can be used at query block level or top-statement level.
 
@@ -932,7 +1311,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
        //s is all neighbors of visited_vertices
        //which have not been visited
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[:transfer]->(s)
+                        FROM (:visited_vertices)-[:transfer]->(s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                                 s.@visited = TRUE;
@@ -955,7 +1334,7 @@ CREATE OR REPLACE QUERY WhileTest (VERTEX<Account> seed) SYNTAX V3 {
     // Loop terminates when condition met or reach 2 iterations
   WHILE visited_vertices.size() !=0 LIMIT 2 DO
      visited_vertices = SELECT s
-                        FROM (visited_vertices)-[:transfer]-> (s)
+                        FROM (:visited_vertices)-[:transfer]-> (s)
                         WHERE s.@visited == FALSE
                         POST-ACCUM
                               s.@visited = TRUE;
@@ -971,8 +1350,10 @@ INSTALL QUERY WhileTest
 
 RUN QUERY WhileTest("Scott")
 ```
+
 [Go back to top](#top)
 
+---
 ### FOREACH Statement
 The `FOREACH` statement provides bounded iteration over a block of statements.
 
@@ -1005,7 +1386,7 @@ CREATE OR REPLACE QUERY ForeachTest ( ) SYNTAX V3 {
 
   #FOREACH item in collection accumlators variables
   S = SELECT tgt
-      FROM (s:Account) -[e:Transfer]-> (tgt)
+      FROM (s:Account) -[e:transfer]-> (tgt)
       ACCUM
         @@listVar += e.amount,
         @@setVar += e.amount,
@@ -1076,6 +1457,7 @@ RUN QUERY ForeachTest()
 ```
 [Go back to top](#top)
 
+---
 ### CONTINUE and BREAK Statement
 The `CONTINUE` and `BREAK` statements can only be used within a block of a `WHILE` or `FOREACH` statement. The `CONTINUE` statement branches control flow to the end of the loop, skipping any remaining statements in the current iteration, and proceeding to the next iteration. That is, everything in the loop block after the `CONTINUE` statement will be skipped, and then the loop will continue as normal. The `BREAK` statement branches control flow out of the loop, i.e., it will exit the loop and stop iteration.
 
@@ -1112,7 +1494,7 @@ RUN QUERY ContinueAndBreakTest()
 ```
 [Go back to top](#top)
 
-
+---
 ### CASE WHEN Statement
 
 One `CASE` statement contains one or more `WHEN-THEN` clauses, each `WHEN` presenting one expression. The `CASE` statement may also have one `ELSE` clause whose statements are executed if none of the preceding conditions are true.
@@ -1215,6 +1597,7 @@ RUN QUERY CaseWhenTest()
 
 [Go back to top](#top)
 
+---
 ## Vertex Set Operators
 
 ### Union
@@ -1255,6 +1638,7 @@ CREATE OR REPLACE QUERY unionTest () SYNTAX V3 {
 ```
 [Go back to top](#top)
 
+---
 ### Intersect
 The `INTERSECT` operator in GSQL is used to return the common vertices between two vertex sets. It only returns the vertices that are present in both vertex sets.
 
@@ -1285,6 +1669,7 @@ CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
 ```
 [Go back to top](#top)
 
+---
 ### Minus
 The `MINUS` operator in GSQL is used to return the difference between two vertex sets. It essentially subtracts one vertex set from the other, returning only the vertices that are present in the first vertex set but not in the second.
 
@@ -1316,6 +1701,149 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 ```
 [Go back to top](#top)
 
+---
+## Vector Search
+TigerGraph has extended the vertex type to support vectors, enabling users to query both structured data (nodes and edges) and unstructured data (embedding attributes) in GSQL.
+For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
+
+---
+
+## Pass Parameter Via JSON
+
+### Parameter JSON object
+To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
+
+For example, if we have the following query:
+
+```python
+CREATE QUERY greet_person(INT age = 3, STRING name = "John",
+  DATETIME birthday = to_datetime("2019-02-19 19:19:19"))
+{
+  PRINT age, name, birthday;
+}
+Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value:
+
+RUN QUERY greet_person( {"name": "Emma", "age": 21} )
+```
+
+Another example-- find the shortest path between two vertices, and output one such path. 
+
+```python
+
+/*
+This algorithm is to find and return only the first full path between two vertices
+
+  Parameters:
+  v_source: source vertex
+  target_v: target vertex
+  depth: maxmium path length
+  print_results: print JSON output
+ */
+use graph financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX target_v, INT depth =8, BOOL print_results = TRUE ) SYNTAX v3 {
+
+  OrAccum @end_point, @visited, @@hit= FALSE;
+  ListAccum<VERTEX> @path_list; // the first list of vertices out of many paths
+  ListAccum<VERTEX> @@first_full_path;
+
+  // 1. mark the target node as true
+  endset = {target_v};
+  endset = SELECT s
+           From (s:endset)
+           POST-ACCUM s.@end_point = true;
+
+  // 2. start from the initial node, save the node to the patt_list, and find all nodes connected through the given name
+  Source = {v_source};
+  Source = SELECT s
+           FROM (s:Source)
+           POST-ACCUM s.@path_list = s, s.@visited = true;
+
+ WHILE Source.size() > 0 AND NOT @@hit LIMIT depth DO
+       Source = SELECT t
+                FROM (s:Source) -[e]-> (t)
+                WHERE t.@visited == false
+                ACCUM
+                   t.@path_list = s.@path_list
+                 POST-ACCUM s.@path_list.clear()
+                 POST-ACCUM t.@path_list += t,
+                             t.@visited = true,
+                    IF t.@end_point ==TRUE THEN
+                      @@first_full_path += t.@path_list,
+                      @@hit += TRUE
+                    END;
+ END;
+
+ // 3. return the final result
+  IF print_results THEN
+      PRINT @@first_full_path as path;
+  END;
+}
+
+install query first_shortest_path
+RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
+```
+Refer to this link for more details. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
+## Virtual Edge
+In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
+![VirtualEdge](./VirtualEdge.jpg)
+
+For example, in the above graph we create an in-memory “shortcut” edge “FOF”, so that we can bypass the interim node and find the second neighbor in 1-hop. 
+### Syntax
+```Python
+CREATE DIRECTED|UNDIRECTED VIRTUAL EDGE Virtual_Edge_Type_Name "("
+    FROM Vertex_Type_Name ("|" Vertex_Type_Name)* ","
+    TO Vertex_Type_Name ("|" Vertex_Type_Name)*
+    ["," attribute_name type [DEFAULT default_value]]* ")"
+```
+
+### Example
+Currently, to use virtual edge we must
+
+- Use the "DISTRIBUTED" keyword to use the virtual edge feature. It can run on both single node machine and multi-node cluster.  
+- Use Syntax v2 of GSQL.
+- It can be run on TG cloud Savanna Read-only workspace.
+
+```Python
+#enter the graph
+USE GRAPH financialGraph
+
+# create a query
+CREATE OR REPLACE DISTRIBUTED QUERY VirtualEdgeQuery () SYNTAX v2 {
+
+  
+  // First we create a virtual edge type
+  CREATE DIRECTED VIRTUAL EDGE VirtualE1(FROM City, TO Phone, ts datetime);
+
+
+  //Insert into the virtual edge of connected Phone and City. 
+  v = SELECT c
+      FROM Phone:b - (hasPhone)- Account -(isLocatedIn>)-City:c
+      ACCUM    INSERT INTO VirtualE1 VALUES(c, b, to_datetime("2025-02-13"));
+
+
+ ListAccum<String> @@result;
+ // traverse the virtual edge (shortcut) computed by the prior query block,
+ // store them in a ListAccum, and output in the end.
+ v = SELECT p
+     FROM City:c -(VirtualE1>)- Phone:p
+     ACCUM @@result += c.name + "->" + to_string(p.nmuber);
+
+  //output all virtual edges
+  PRINT @@result;
+
+}
+
+install query VirtualEdgeQuery
+run query VirtualEdgeQuery()
+
+```
+
+To see more how to use this feature, you can refer to [Virtual Edge](https://docs.tigergraph.com/gsql-ref/4.1/querying/data-types#_virtual_edge)
+
+[Go back to top](#top)
+
+---
 ## Query Tuning
 ### Batch Processing to Avoid OOM
 Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
@@ -1331,7 +1859,7 @@ CREATE OR REPLACE QUERY BatchCount (INT batch_num) SYNTAX v3 {
 
         // 1000 is how many batch you will have. You can adjust the batch number to balance performance and memory usage
         tmp = SELECT a1
-        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:Transfer]->(b2:batch1)
+        FROM (a1:batch1)-[:transfer]->(b1:Account)-[:transfer]->(a2:Account)-[:transfer]->(b2:batch1)
         WHERE a1.name != a2.name AND b1.name != b2.name
         ACCUM @@count +=1;
  
@@ -1347,11 +1875,739 @@ You can use a Shell script to invoke the above query with each batch id.
 for i in {0...999}
 do
   # Execute the curl command with the current batch_number
-  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/general/BatchCount?batch_number=$i"
+  curl -X GET -H "GSQL-TIMEOUT: 500000" "http://127.0.0.1:9000/query/financialGraph/BatchCount?batch_number=$i"
 done
 ```
+[Go back to top](#top)
+
+---
+## Explore Catalog
+
+### Global Scope vs. Graph Scope
+A database uses Data Definition Language (DDL) to create and modify schema objects. Schema objects include vertex types, edge types, graph types, etc. These schema objects reside in the metadata store, known as the Catalog.
+Each schema object is visible within a scope. In a graph database, there are two scopes:
+
+- ***Global Scope***: This is the default scope for schema objects. By default, all objects created using the "CREATE" DDL statement belong to the global scope.
+- ***Graph Scope***: Each graph has its own scope. A schema change job can be used to add schema objects (vertex or edge types) to a specific graph’s scope.
+
+![Catalog Scope](./CatalogScope.jpg)
+
+As illustrated in above figure, we can use `CREATE` statements to create the `Account`, `City`, and `Phone` vertex schema object, and the `isLocatedIn`, `hasPhone`, `Transfer`, and `Transfer_Reverse` edge schema object, and the `financialGraph` graph schema object. They are all visible in the Global scope.
+
+To enter the global scope, type the `use global` command in the GSQL shell. Next, use the `ls` command to list all the schema objects under this scope.
+
+```python
+> USE GLOBAL
+> ls
+```
+![Graph Scope](./GlobalLocal.jpg)
+The figure above shows that the `financialGraph` is composed of global scope schema objects such as `Account`, `City`, `Phone`, `isLocatedIn`, and `hasPhone` etc. The `privateGraph` also uses the global schema object `Phone`. Thus, both the `financialGraph` and the `privateGraph` share the `Phone` schema object. Additionally, the `privateGraph` has its own private schema objects— `Loan` and `Person` vertex objects.
+
+To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell. Then, use the `ls` command to list all the schema objects under this graph scope.
+
+```python
+> USE GRAPH financialGraph
+> ls
+```
+
+To see how to do schema change at global or local level, please refer to [Modify a Graph Schema](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/modifying-a-graph-schema)
+
+---
+### SHOW - View Parts of the Catalog
+The `SHOW` command can be used to show certain catalog objects, instead of manually filtering through the entire scope when using the ls command. You can either type the exact identifier or use regular expressions / Linux globbing to search.
+
+The syntax is 
+
+```python
+SHOW <VERTEX> | <EDGE> | <JOB> | <QUERY> | <GRAPH> | <PACKAGE> [ <name> | <glob> | -r <regex> ]
+```
+
+`SHOW GRAPH graphName` lists vertices and edges without giving their properties.  `SHOW VERTEX vertexName` and `SHOW EDGE edgeName` list the properties of the desired vertex or edge respectively. `SHOW PACKAGE packageName` lists the packages that are available, such as the packaged template queries. 
+
+This feature supports the ? and * from linux globbing operations, and also regular expression matching. Usage of the feature is limited to the scope of the graph the user is currently in - if you are using a global graph, you will not be able to see vertices that are not included in your current graph.
+
+Below are some examples to inspect object in the catalog. 
+
+```python
+//show what's in financialGraph scope
+use graph financialGraph
+ls
+
+//list what's in global scope
+use GLOBAL
+ls
+
+//show vertex types
+SHOW VERTEX Acc*            //shows all vertex types that start with the letters "Acc"
+SHOW VERTEX Ac?*t         //shows the vertext types that starts with "Ac" and ends with "t"
+SHOW VERTEX ?????          //shows all vertices that are 5 letters long
+
+
+//show query c1 content
+USE GRAPH financialGraph
+LS
+SHOW QUERY c1
+
+```
+---
+# Experimental Features
+We also provide relational table and related operators on tables such as join etc. These experimental features are available starting from 4.1.2. They are working on *single machine* and *compiled mode* only.
+
+## Table 
+In GSQL, the TABLE is used to define intermediate or temporary tables that store query results during execution. These tables are not persistent and exist only within the scope of a query. They help structure and organize data before producing the final result.
+
+### SELECT INTO TABLE statement
+The `SELECT INTO TABLE` statement in GSQL is used to retrieve data and store it into a new table. This allows you to perform queries and store results for further operations or transformations.
+
+#### Syntax
+
+```python
+SELECT column1 AS alias1, column2 AS alias2, ... INTO newTable
+FROM pattern 
+[WHERE condition] 
+[HAVING condition] 
+[ORDER BY column1 [ASC|DESC], column2 [ASC|DESC], ...] 
+[LIMIT number] 
+[OFFSET number]
+;
+```
+-   `column1, column2, ...`: Specifies the columns to retrieve.
+-   `AS alias1, AS alias2...`: specifies column alias of the selected column. 
+-   `newTable`: The name of the new table where the query results will be stored.
+-   `pattern`: Defines the data pattern, which can be a node, relationship, or a linear path.
+-   `WHERE condition`: Optional. Used to filter rows that satisfies a specific condition.
+-   `HAVING condition`: Optional. Used to filter the aggregated results.
+-   `ORDER BY`: Optional. Specifies how the results should be sorted (either `ASC` for ascending or `DESC` for descending).
+-   `LIMIT`: Optional. Limits the number of rows returned.
+-   `OFFSET`: Optional. Specifies the number of rows to skip.
+
+#### Example
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY selectExample2() SYNTAX v3 {
+  SELECT s.name AS acct, SUM(e.amount) AS totalAmt INTO T1
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE not s.isBlocked
+  HAVING totalAmt > 1000
+  ORDER BY totalAmt DESC
+  LIMIT 5 OFFSET 0
+  ;
+
+  PRINT T1;
+}
+
+install query selectExample2
+run query selectExample2()
+```
+#### Explanation
+
+-   In this example, we are retrieving data from the `Account` nodes `s` and `t` connected by the `transfer` relationship.
+-   The query aggregates the `amount` of the transfer and stores the result into a new table `T1`.
+-   The `HAVING` clause filters the results to only include those with a `totalAmt` greater than 1000, and the results are ordered by `totalAmt` in descending order, limiting the output to the top 5 entries.
+-   Finally, the content of table `T1` is printed.
+  
+[Go back to top](#top)
+
+---
+## Init Table Statement
+The `INIT` statement in GSQL is used to initialize a table row containing constant values. This allows you to create a table with predefined constant values, which can be used for further operations or queries.
+
+#### Syntax
+
+```python
+INIT tableName value1 AS column1, value2 AS column2, ...;
+```
+-   `tableName`: The name of the table to be initialized.
+-   `value1, value2, ...`: The constant values to be assigned to the table.
+-   `column1, column2, ...`: The names of the columns in the table that correspond to the values.
+
+---
+
+#### Example
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY initExample(int intVal = 10) syntax v3{
+  // Initialize a table with different constant values.
+  INIT T1 1 as col_1, true as col_2, [0.1, -1.1] as col_3;
+  PRINT T1;
+
+  // Initialize a table with variables and function calls
+  DATETIME date = now();
+  INIT T2 date as col_1, intVal as col_2, SPLIT("a,b,c", ",") as col_3;
+  PRINT T2;
+
+}
+
+install query initExample
+run query initExample()
+```
+
+#### Explanation
+
+- **Table Initialization with Constant Values**: The first `INIT` statement creates table `T1` with three columns (`col_1`, `col_2`, `col_3`). The values `1`, `true`, and `[0.1, -1.1]` are assigned to `col_1`, `col_2`, and `col_3`
+- **Table Initialization with Variables**: The second `INIT` statement initializes table `T2`. It uses the current date and time (`now()`) for `col_1`, the input variable `intVal` for `col_2`, and splits a string `"a,b,c"` into an array and assigns it to `col_3`.
 
 [Go back to top](#top)
+
+---
+## Order Table Statement
+The `ORDER` statement in GSQL is used to sort tables based on one or more columns, with the optional `LIMIT` and `OFFSET` clauses. This allows efficient ordering and retrieval of a subset of data.
+
+#### Syntax
+
+```python
+ORDER tableName BY column1 [ASC|DESC], column2 [ASC|DESC] ... LIMIT number OFFSET number;
+```
+-   `tableName`: The table to be ordered.
+-   `column1, column2, ...`: Columns to sort by.
+-   `ASC | DESC`: Sorting order (ascending by default).
+-   `LIMIT number`: Restricts the number of rows in the result.
+-   `OFFSET number`: Skips a number of rows before returning results.
+
+---
+
+#### Example
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY orderExample(INT page=1) syntax v3{
+
+  SELECT s.name as acct, max(e.amount) as maxTransferAmt INTO T1
+       FROM (s:Account)- [e:transfer]-> (t:Account)
+    ;
+
+  ORDER T1 BY maxTransferAmt DESC, acct LIMIT 3 OFFSET 1 * page;
+
+  PRINT T1;
+}
+
+install query orderExample
+run query orderExample()
+```
+
+#### Explanation
+ - Selects account names and their maximum transfer amounts.
+ - Sorts by `maxTransferAmt` (descending) and `acct` (ascending).
+ - Returns 3 rows per page, skipping first `page` rows for pagination.
+
+[Go back to top](#top)
+
+---
+## Filter Table Statement
+The `FILTER` statement works by applying the condition to the specified `target_table`, modifying its rows based on the logical expression provided. Filters are applied sequentially, so each subsequent filter operates on the results of the previous one.
+
+#### Syntax
+
+```python
+FILTER <target_table> ON <condition>;
+```
+
+#### Example
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY filterExample() SYNTAX v3 {
+   SELECT s.name as srcAccount, e.amount as amt, t.name as tgtAccount INTO T
+   FROM (s:Account) - [e:transfer]-> (t)
+      ;
+
+   FILTER T ON srcAccount == "Scott" OR amt > 10000;
+
+   PRINT T;
+
+   FILTER T ON srcAccount != "Scott";
+
+   PRINT T;
+}
+
+install query filterExample
+run query filterExample()
+```
+
+#### Explanation
+
+-   The first `FILTER` statement retains rows where `srcAccount` is "Scott" or `amt` is greater than `10000`.
+-   The second `FILTER` statement removes rows where `srcAccount` is "Scott".
+-   The `PRINT` statements display the intermediate and final results after filtering.
+
+[Go back to top](#top)
+
+---
+## Project Table Statement
+
+The `PROJECT` statement reshapes a table by creating new derived columns based on selected expressions. These columns can result from arithmetic operations, string concatenation, or logical conditions. The `PROJECT` statement is particularly useful for preparing data for further analysis without altering the original table.
+
+#### Syntax
+
+ **1. Transforming Table Data**
+ ```python
+PROJECT tableName ON
+   columnExpression AS newColumnName,
+   ...
+INTO newTableName;
+```
+
+ **2. Extracting Vertex Sets**
+ 
+ Converts a table column containing vertex objects into a vertex set.
+ 
+ ```python
+ PROJECT tableName ON VERTEX COLUMN vertexColumnName INTO VSET;
+ ```
+
+
+#### Example 1: Transforming Table Data
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY projectExample() syntax v3{
+   SELECT s.name as srcAccount, p.number as phoneNumber, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (t),
+           (s) - [:hasPhone]- (p);
+
+   PRINT T1;
+
+   PROJECT T1 ON
+      T1.srcAccount + ":" + T1.phoneNumber as acct,
+      T1.amt * 2 as doubleAmt,
+      T1.amt % 7 as mod7Amt,
+      T1.amt > 10000 as flag
+   INTO T2;
+
+   PRINT T2;
+}
+
+install query projectExample
+run query projectExample()
+```
+
+#### Explanation
+The `PROJECT` statement transforms the data by adding new calculated columns:
+
+ - `acct`: Concatenates the account name (`srcAccount`) with the phone number (`phoneNumber`) into a single string.
+ - `doubleAmt`: Doubles the value of `amt`.
+ - `mod7Amt`: Computes the remainder when `amt` is divided by 7.
+ - `flag`: Creates a boolean flag indicating whether `amt` is greater than `10,000`.
+
+The `PROJECT` statement does not modify the original table (`T1`) but instead creates a new table (`T2`) with the transformed data. This ensures that the original data remains unchanged for future use.
+
+#### Example 2: Extracting Vertex Sets from a Table
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY projectExample2() syntax v3{
+   SELECT tgt as tgtAcct, phone as tgtPhone INTO T1
+   FROM (s:Account {name: "Scott"}) - [e:transfer]-> (tgt:Account) - [:hasPhone] - (phone);
+
+   PRINT T1;
+
+   PROJECT T1 ON VERTEX COLUMN
+      tgtAcct INTO vSet1,
+      tgtPhone INTO vSet2
+      ;
+
+   VS_1 =  SELECT s FROM (s:vSet1);
+   VS_2 =  SELECT s FROM (s:vSet2);
+
+   PRINT VS_1, VS_2;
+}
+
+install query projectExample2
+run query projectExample2()
+```
+**Explanation**
+
+We first create an intermediate table (`T1`), which contains `tgtAcct` (target account) and `tgtPhone` (phone number linked to the account).
+Next,  we extract vertex sets using the `PROJECT tableName ON VERTEX COLUMN` syntax.
+
+ - `PROJECT T1 ON VERTEX COLUMN tgtAcct INTO vSet1`: Extracts `tgtAcct` vertices into `vSet1`.
+ - `PROJECT T1 ON VERTEX COLUMN tgtPhone INTO vSet2`: Extracts `tgtPhone` vertices into `vSet2`.
+
+[Go back to top](#top)
+
+---
+## Join Statement
+In GSQL queries, the `JOIN` operation is commonly used to combine data from multiple tables (or nodes and relationships). Depending on the specific requirements, different types of `JOIN` operations are used. Common `JOIN` types include `INNER JOIN`, `CROSS JOIN`, `SEMIJOIN`, and `LEFT JOIN`.
+
+#### INNER JOIN
+
+The `INNER JOIN` statement combines rows from both tables where the join condition is true. Only rows that have matching values in both tables are returned.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example**
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY innerJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+   FROM (s:Account) - [:hasPhone]- (t:Phone);
+
+   JOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount + ":" + t2.phoneNumber as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query innerJoinExample
+run query innerJoinExample()
+```
+**Explanation:**
+
+-   **`INNER JOIN`** combines data from `T1` and `T2` based on matching `srcAccount` and `name`. Only rows with a match in both tables are returned, which results in a joined set of data containing the account name and the total transfer amount.
+
+---
+#### CROSS JOIN
+
+The `CROSS JOIN` statement combines each row from the first table with all rows from the second table, producing the Cartesian product. This type of join does not require a condition and can potentially result in a large number of rows. If you want to eliminate duplicate rows from the result, you can use the `DISTINCT` keyword to return only unique combinations.
+
+**Syntax:**
+```python
+JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example**
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY crossJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+   FROM (s:Account) - [:hasPhone]- (t:Phone);
+
+   JOIN T1 t1 WITH T2 t2
+   PROJECT distinct
+     t1.srcAccount + ":" + t2.phoneNumber as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query crossJoinExample
+run query crossJoinExample()
+```
+**Explanation**
+
+-   **`CROSS JOIN`** produces a Cartesian product between `T1` and `T2`. In this example, every `srcAccount` will be paired with every phone number from `T2`, resulting in all combinations of accounts and phone numbers.
+-   **`DISTINCT`** is used to remove any duplicate combinations from the result. Without `DISTINCT`, you might get repeated rows if there are multiple matching rows in `T2` for each row in `T1`.
+---
+
+#### SEMIJOIN
+
+The `SEMIJOIN` statement filters rows from the first table based on whether they have a matching row in the second table. It returns rows from the first table where the join condition is true, but **only columns from the left (first) table can be accessed**. The right table's columns are not included in the result.
+
+**Syntax:**
+```python
+SEMIJOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+      ON <condition>
+ PROJECT 
+	<table1_alias columnExpression> as columnName1,
+	<table1_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY semiJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+      FROM (s:Account) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+      FROM (s:Account {name: accountName}) - [:hasPhone]- (t:Phone);
+
+   SEMIJOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount as acct,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query semiJoinExample
+run query semiJoinExample()
+```
+
+**Explanation**
+
+-   **`SEMIJOIN`** returns rows from `T1` where there is a matching row in `T2`, but only the columns from `T1` are included in the result. Even though there is a match between the two tables on `srcAccount` and `name`, **the result only includes columns from the left table (`T1`)**. This is useful when you want to check for the existence of matching rows without including data from the second table.
+
+---
+
+#### LEFT JOIN
+
+The `LEFT JOIN` statement combines rows from both tables, but ensures that all rows from the left table (first table) are included, even if there is no matching row in the right table (second table). If no match exists, the right table's columns will have `NULL` values.
+
+**Syntax:**
+
+```python
+LEFT JOIN <target_table1> table1_alias WITH <target_table2> table2_alias
+  ON <condition>
+PROJECT 
+	<table1_alias columnExpression> as columnName1, 
+	<table2_alias columnExpression> as columnName2,
+	...
+INTO newTableName;
+```
+
+**Example Usage:**
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY leftJoinExample(STRING accountName = "Scott") syntax v3{
+   SELECT s.name as srcAccount, sum(e.amount) as amt INTO T1
+      FROM (s:Account) - [e:transfer]-> (t);
+
+   SELECT s.name, t.number as phoneNumber INTO T2
+      FROM (s:Account) - [:hasPhone]- (t:Phone)  ;
+
+   LEFT JOIN T1 t1 WITH T2 t2
+     ON t1.srcAccount == t2.name
+   PROJECT
+     t1.srcAccount  as acct,
+     t2.phoneNumber as phoneNum,
+     t1.amt as totalAmt
+   INTO T3;
+
+   PRINT T3;
+}
+
+install query leftJoinExample
+run query leftJoinExample()
+```
+
+**Explanation**
+
+-   **`LEFT JOIN`** returns all rows from `T1` (the left table), even if there is no matching row in `T2` (the right table). If no match is found, the columns from `T2` will be filled with `NULL`. In this example, even accounts without a phone number will appear in the result, with `phoneNumber` as `NULL`.
+
+[Go back to top](#top)
+
+---
+## Union Statement
+The `UNION` statement in GSQL combines the results of two compatible tables into a new table, ensuring **no duplicate rows** in the output by default. This operation is useful when merging data sets from different sources or when performing set operations on table results.
+
+#### Syntax
+
+```python
+UNION table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+-   `table1`, `table2`, ...: Input tables that need to be combined.
+-   `newTable`: The resulting table that stores the merged data.
+-   The input tables **must have the same schema** (i.e., the same number of columns with matching data types).
+-   Important Note: After UNION, the original tables (table1, table2, etc.) are destroyed and cannot be used in subsequent query operations.
+
+#### Example 
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unionExample(STRING accountName = "Scott") syntax v3{
+   // Select accounts that transferred money
+   SELECT s as acct INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   // Select accounts by name
+   SELECT s as acct INTO T2
+   FROM (s:Account {name: accountName})
+      ;
+
+   // Combine both results into table T3
+   UNION T1 WITH T2 INTO T3;
+
+   PRINT T3;
+}
+
+install query unionExample
+run query unionExample()
+```
+
+#### Explanation
+
+**Selecting Data Into Temporary Tables**
+
+ - `T1`: Selects accounts that have transferred money.
+ - `T2`: Selects accounts that match the given name.
+
+**Performing the UNION Operation**
+ `UNION T1 WITH T2 INTO T3;`：Merges results from `T1` and `T2`, removing duplicates.
+
+**Printing the Final Result**
+    `PRINT T3;` outputs the combined dataset.
+    
+[Go back to top](#top)
+
+---
+
+## Union All Statement
+The `UNION ALL` statement functions similarly to `UNION`, but **does not remove duplicate rows**. This operation is useful when preserving all records from input tables, even if they are identical.
+
+#### Syntax
+
+```python
+UNION ALL table1 WITH table2 [WITH table3 ...] INTO newTable;
+```
+
+#### Example Usage:
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unionAllExample(STRING accountName = "Scott") syntax v3{
+   SELECT s as acct INTO T1
+   FROM (s:Account {name: accountName}) - [e:transfer]-> (t);
+
+   SELECT s as acct INTO T2
+   FROM (s:Account {name: accountName})
+      ;
+
+   // Combine both results into table T3, keeping all duplicate rows
+   UNION ALL T1 WITH T2 INTO T3;
+
+   PRINT T3;
+}
+
+install query unionAllExample
+run query unionAllExample()
+```
+
+#### Explanation:
+
+Using `UNION ALL` can improve performance when duplicate elimination is unnecessary, as it avoids the extra computation required to filter out duplicates.
+
+[Go back to top](#top)
+
+---
+## Unwind Statement
+The `UNWIND` statement in GSQL is used to expand a list into multiple rows, allowing iteration over list elements and their combination with other tables. This is particularly useful when applying transformations or computations based on a set of values.
+
+There are two main forms of `UNWIND`:
+
+1.  **Expanding a fixed list** to initialize a new table.
+2.  **Expanding a list column per row** in an existing table.
+
+#### Syntax
+
+**Expanding a Fixed List (UNWIND INIT)**
+
+```python
+UNWIND [value1, value2, ...] AS columnName INTO newTable;
+```
+
+-   `[value1, value2, ...]`: A list of values to be expanded.
+-   `columnName`: The alias for each value in the generated table.
+-   `newTable`: The resulting table that stores the expanded rows.
+
+**Expanding a List Per Row (UNWIND A TABLE)**
+
+```python
+UNWIND tableName ON list AS columnName INTO newTable;
+```
+
+-   `tableName`: The input table whose rows will be expanded.
+-   `list`: A list to be expanded for each row of `tableName`.
+-   `columnName`: The alias for each value in the expanded list.
+-   `newTable`: The resulting table that stores expanded rows while preserving columns from `tableName`.
+
+#### Expanding a fixed list to init a new table Example:
+
+```python
+use graph financialGraph
+
+CREATE OR REPLACE QUERY unwindExample() syntax v3{
+
+  // Creates table `T1`, where each value from the list `[0.9, 1.0, 1.1]` is inserted as a separate row under the column `ratio`.
+  UNWIND [0.9, 1.0, 1.1] AS ratio INTO T1;
+  PRINT T1;
+
+  SELECT s.name as acct, sum(e.amount) as totalAmt INTO T2
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE s.isBlocked
+    ;
+
+  // 1. Joins `T1` (containing ratios) with `T2` (containing account transfer sums).
+  // 2. Computes a new column "resAmt = totalAmt * ratio" to adjust transfer amounts based on different ratios.
+  // 3. Stores the result in new table T3.
+  JOIN T1 t1 WITH T2 t2
+  PROJECT t2.acct as acct, t1.ratio as ratio, t2.totalAmt * t1.ratio as resAmt
+  INTO T3;
+
+  PRINT T3;
+}
+
+install query unwindExample
+run query unwindExample()
+```
+#### Explanation
+
+-   The list `[0.9, 1.0, 1.1]` is expanded **independently** into a new table (`T1`).
+-   Later, `T1` is **joined** with `T2` to apply multipliers to `totalAmt`.
+
+
+#### Expanding a list for each row in an existing table Example:
+
+```python
+use graph financialGraph
+
+SET opencypher_mode = true #unwind needs to set openCypher mode
+CREATE OR REPLACE QUERY unwindExample2() syntax v3{
+
+  SELECT s.name as acct, [0.9, 1.0, 1.1] as ratioList, sum(e.amount) as totalAmt INTO T1
+  FROM (s:Account)- [e:transfer]-> (t:Account)
+  WHERE s.isBlocked
+    ;
+
+  UNWIND T1 ON ratioList AS ratio INTO T2;
+
+  PRINT T2;
+}
+
+install query unwindExample2
+run query unwindExample2()
+```
+#### Explanation:
+
+-   Instead of creating a separate table first (`T1`), the list column `ratioList` is **expanded per row of `T1`** directly into `T2`.
+-   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
+
+[Go back to top](#top)
+
+---
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
@@ -1360,6 +2616,13 @@ https://community.tigergraph.com/
 Or, study our product document at
 
 https://docs.tigergraph.com/gsql-ref/current/intro/
+
+[Go back to top](#top)
+
+---
+
+# Contact
+To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
 
 [Go back to top](#top)
 

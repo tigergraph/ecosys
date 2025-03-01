@@ -1,0 +1,19 @@
+#enter the graph
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1b () SYNTAX v3 {
+
+  //select an expression list into a table T
+  SELECT a.isBlocked, count(*) INTO T
+  FROM (a:Account)
+  GROUP BY a.isBlocked;
+
+  //out put the table T in JSON format
+  PRINT T;
+}
+
+#compile and install the query as a stored procedure
+install query q1b
+
+#run the query
+run query q1b()

@@ -1,0 +1,28 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T": [
+        {
+          "srcAccount": "Jenny",
+          "amounts": [
+            1000
+          ]
+        },
+        {
+          "srcAccount": "Paul",
+          "amounts": [
+            20000,
+            653
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@distances;
+
+  v = vectorSearch({Account.emb1, Phone.emb1}, query_vector, 8, { distance_map: @@distances});
+
+  print v WITH VECTOR;
+  print @@distances;
+}
+
+#compile and install the query as a stored procedure
+install query q1a
+
+#run the query
+run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])

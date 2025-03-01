@@ -1,0 +1,21 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY q6 (/* parameters */) SYNTAX V3 {
+
+    SumAccum<INT> @cnt = 0; //local accumulator
+    SumAccum<INT>  @@hasPhoneCnt = 0; //global accumulator
+
+   // ~[]~ is an undirected edge.
+   S = SELECT a
+       FROM (a:Account) ~ [e:hasPhone] ~ (p:Phone)
+       WHERE a.isBlocked == FALSE
+       ACCUM  a.@cnt +=1,
+              p.@cnt +=1,
+              @@hasPhoneCnt +=1;
+
+   PRINT S;
+   PRINT @@hasPhoneCnt;
+
+}
+
+interpret query q6()

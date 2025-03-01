@@ -1,0 +1,25 @@
+USE GRAPH financialGraph
+CREATE OR REPLACE QUERY intersectTest () SYNTAX V3{
+  S1 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "111" OR s.number == "222";
+
+  //show what's in S1
+  PRINT S1[S1.number];
+
+  S2 = SELECT s
+       FROM (s:Phone)
+       WHERE s.number == "222";
+
+  //show what's in S2
+  PRINT S2[S2.number];
+
+  S3 = S1 INTERSECT S2;
+
+  //show what's in S3
+  PRINT S3[S3.number];
+
+}
+
+install query intersectTest
+run query intersectTest()

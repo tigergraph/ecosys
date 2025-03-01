@@ -1,0 +1,24 @@
+USE GRAPH financialGraph
+
+CREATE OR REPLACE DISTRIBUTED QUERY q10() SYNTAX V3 {
+
+ SumAccum<int> @cnt = 0;
+
+ //for each blocked account, find its 1-hop-neighbor who has not been blocked.
+ tgtAccnts = SELECT y
+             FROM (x:Account)- [e:transfer] -> (y:Account)
+             WHERE x.isBlocked == TRUE AND y.isBlocked == FALSE
+             ACCUM y.@cnt +=1;
+
+ // tgtAccnts vertex set drive the query block below. It's placed in the vertex label position.
+ tgtPhones = SELECT z
+             FROM (x:tgtAccnts) ~ [e:hasPhone] ~ (z:Phone)
+             WHERE z.isBlocked
+             ACCUM z.@cnt +=1;
+
+  PRINT tgtPhones;
+}
+
+INSTALL QUERY q10
+
+RUN QUERY q10()

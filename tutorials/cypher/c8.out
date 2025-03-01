@@ -1,0 +1,57 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T": [
+        {
+          "a": "Paul",
+          "b": "Jenny",
+          "c": "Scott",
+          "hop_1_sum": 653,
+          "hop_2_sum": 1000
+        },
+        {
+          "a": "Steven",
+          "b": "Jenny",
+          "c": "Scott",
+          "hop_1_sum": 8560,
+          "hop_2_sum": 1000
+        },
+        {
+          "a": "Scott",
+          "b": "Ed",
+          "c": "Paul",
+          "hop_1_sum": 21300,
+          "hop_2_sum": 1500
+        },
+        {
+          "a": "Ed",
+          "b": "Paul",
+          "c": "Jenny",
+          "hop_1_sum": 1500,
+          "hop_2_sum": 653
+        },
+        {
+          "a": "Jenny",
+          "b": "Scott",
+          "c": "Ed",
+          "hop_1_sum": 1000,
+          "hop_2_sum": 21300
+        },
+        {
+          "a": "Ed",
+          "b": "Paul",
+          "c": "Steven",
+          "hop_1_sum": 1500,
+          "hop_2_sum": 20000
+        }
+      ]
+    }
+  ]
+}
