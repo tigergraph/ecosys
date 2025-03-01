@@ -798,7 +798,7 @@ We support two ways to specify repetitions of a pattern.
 ---
 # Advanced Topics
 ## Accumulators
-GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global (suffixed with `@@` or vertex local (suffixed with `@`). 
+GSQL is a Turing-complete graph database query language. One of its key advantages over other graph query languages is its support for accumulators, which can be either global (prefixed with `@@`) or vertex local (prefixed with `@`). 
 Accumulators are containers that store a data value, accept inputs, and aggregate these inputs into the stored data value using a binary operation `+=`.
 An accumulator is used as a state variable in GSQL. Its state is mutable throughout the life cycle of a query.
 
