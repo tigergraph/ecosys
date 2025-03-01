@@ -193,6 +193,13 @@ The basic syntax structure of `1-Block SELECT` is as follows:
 ```python
 SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
 ```
+Similar to SQL, graph queries use SELECT-FROM-WHERE clauses. The key difference is that graph queries generalize the FROM clause to allow patterns. A pattern can represent a vertex, an edge, or a path. These patterns are expressed using ASCII art:
+
+- `()` represents a node
+- `-[]->` represents an edge
+- `()-[]->()-[]->()...` A path is formed by alternating nodes and edges.
+- 
+This pattern-based approach enables more "declarative flavor", and more flexible and expressive querying of graph data. 
 
 You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
 Or, you can break the one line to multiple lines and enclose them with `BEGIN` and `END` as illustrated below.  
