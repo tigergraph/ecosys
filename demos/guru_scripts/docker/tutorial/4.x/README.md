@@ -19,15 +19,15 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
 - [Set Up Environment](#set-up-environment)
 - [Set Up Schema (model)](#set-up-schema)
 - [Load Data](#load-data)
+- [1-Block Query Examples](#1-block-query-examples)
+  - [SELECT BLOCK](#select-block)
+  - [SELECT BLOCK WITH VARIABLES](#select-block-with-variables)	
 - [Stored Procedure Query Examples](#stored-procedure-query-examples)
   - [Two Flavors of SELECT](#two-flavors-of-select)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
   - [Pattern Summary](#pattern-summary)
-- [1-Block Query Examples](#1-block-query-examples)
-  - [SELECT BLOCK](#select-block)
-  - [SELECT BLOCK WITH VARIABLES](#select-block-with-variables)	
 - [Advanced Topics](#advanced-topics)
   - [Accumulators](#accumulators)
     - [Accumulator Operators](#accumulator-operators)
@@ -177,6 +177,284 @@ Now that you have a graph schema, you can load data using one of the following m
 - Load from Iceberg table, or alternative Spark data sources, through [Tigergraph Spark Connector](https://docs.tigergraph.com/tigergraph-server/current/data-loading/load-from-spark-dataframe)
   - Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
     
+[Go back to top](#top)
+
+---
+# 1-Block Query Examples 
+
+**NOTE** This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature. 
+
+## SELECT BLOCK
+1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
+
+### Basic Syntax
+The basic syntax structure of `1-Block SELECT` is as follows:
+
+```python
+SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
+```
+
+You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
+Or, you can break the one line to multiple lines and enclose them with `BEGIN` and `END` as illustrated below.  
+
+```python
+GSQL> BEGIN
+GSQL>  SELECT <output_variable>
+GSQL>  FROM <pattern>
+GSQL>  WHERE <condition> <additional_clauses>
+GSQL> END
+```
+
+### Examples
+
+#### SELECT with filters
+
+##### Using WHERE clause
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) LIMIT 10
+GSQL > SELECT s FROM (s:Account {name: "Scott"})
+GSQL > SELECT s FROM (s:Account WHERE s.isBlocked)
+GSQL > SELECT s FROM (s:Account) WHERE s.name IN ("Scott", "Steven")
+GSQL > SELECT s, e, t FROM (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t
+```
+
+##### Using HAVING
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked
+GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked AND s.name = "Steven"
+```
+#### Aggregation SELECT
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT COUNT(s) FROM (s:_)
+GSQL > SELECT COUNT(*) FROM (s:Account:City)
+GSQL > SELECT COUNT(DISTINCT t) FROM (s:Account)-[e]->(t)
+GSQL > SELECT COUNT(e), STDEV(e.amount), AVG(e.amount) FROM (s:Account)-[e:transfer|isLocatedIn]->(t)
+```
+
+
+
+#### SELECT with Sorting and Limiting
+
+```python
+GSQL > use graph financialGraph
+GSQL > SELECT s FROM (s:Account) ORDER BY s.name LIMIT 3 OFFSET 1
+GSQL > SELECT s.name, e.amount as amt, t FROM (s:Account) -[e:transfer]-> (t:Account) ORDER BY amt, s.name LIMIT 1
+GSQL > SELECT DISTINCT type(s) FROM (s:Account:City) ORDER BY type(s)
+```
+
+#### Using some expression
+
+```python
+# Using mathematical expressions
+GSQL > use graph financialGraph
+GSQL > SELECT s, e.amount*0.01 AS amt FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+
+# Using CASE expression
+GSQL > BEGIN
+GSQL >  SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS status 
+GSQL >  FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > END
+```
+
+[Go back to top](#top)
+
+---
+## SELECT BLOCK WITH VARIABLES
+We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. The variables defined between `LET` and `IN` can be primitive types or accumulators, enable flexible computation and aggregation.
+
+### Basic Syntax
+```python  
+LET  
+ <variable_definitions>;
+IN  
+ SELECT <query_block>
+```
+
+The ```LET...IN``` prefix construct in GSQL is used to define and work with variables and accumulators. It allows for the creation of temporary variables or accumulators in the LET block, which can be referenced later in the SELECT block, enabling more powerful and flexible queries. Specifically,
+
+- ```LET```: This keyword starts the block where you define variables and accumulators.
+- ```<variable_definitions>```: Inside the `LET` block, you can define variables with primitive types such as `STRING`, `INT`, `UINT`, `BOOL`, `FLOAT`, `DATETIME` and `DOUBLE`. However, container types like `SET`, `LIST`, and `MAP` are not supported at the moment. Inside the `LET` block, you can also define accumulators.
+- ```IN SELECT <query_block>```: The  `SELECT` query block follows the `IN` keyword can use the variables and accumulators defined in the `LET` block.
+
+### Examples
+
+#### Primitive type variables
+Since `LET ... IN...SELECT` typically spans multiple-lines, we need to use `BEGIN...END` to support it in GSQL shell. Below, we define some primitive type varibles with assigned value, and use them in the `SELECT` query block as bind variables. 
+
+```python
+GSQL > use graph financialGraph 
+GSQL > BEGIN 
+GSQL > LET
+GSQL >  DOUBLE a = 500.0; 
+GSQL >  STRING b = "Jenny"; 
+GSQL >  BOOL c = false; 
+GSQL > IN 
+GSQL >  SELECT s, e.amount AS amt, t
+GSQL >  FROM (s:Account) - [e:transfer]-> (t:Account) 
+GSQL >  WHERE s.isBlocked = c AND t.name <> b 
+GSQL >  HAVING amt > a; 
+GSQL > END
+```
+
+You can also use this syntax in one line. E.g., 
+
+```python
+GSQL > LET STRING n = "Jenny"; IN SELECT s, count(t) as cnt FROM (s:Account {name:n}) - [:transfer*0..2]-> (t:Account);
+```
+#### Accumulator type variables
+
+In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values for a matched pattern. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
+
+----------
+
+**Restrictions on 1-Block SELECT Clause with Accumulators**
+
+When accumulators are used in a 1-block query, the `SELECT` clause is subject to the following restrictions:
+
+**Only One Node Alias Allowed:**
+
+**If accumulators are used**, the `SELECT` clause must return only **one** node alias.
+
+-  ✅ Source node alias **Allowed:**  `SELECT s FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ✅ Target node alias **Allowed:**  `SELECT t FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Relationship alias  **Not Allowed:**  `SELECT e FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ Multiple node alias **Not Allowed:** `SELECT s, t FROM (s:Account)-[e:transfer]-(t:Account)`
+  
+
+**Functions, Expressions Not Allowed:**
+
+**When using accumulators**, functions and expressions cannot be used in the `SELECT` clause. 
+
+-  ❌ **Functions not allowed:**  `SELECT count(s) FROM (s:Account)-[e:transfer]-(t:Account)`
+
+-  ❌ **Expressions not allowed:**  `SELECT (s.isBlocked OR t.isBlocked) AS flag FROM (s:Account)-[e:transfer]-(t:Account)`
+
+**Local Accumulator Example**
+
+**Definition:**
+
+A **local accumulator** (prefixed with `@`) is associated with a specific vertex and is stored as part of its attributes. When a node is retrieved in a `SELECT` statement, its corresponding local accumulator values are displayed alongside its properties.
+
+**Query:**
+
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN
+GSQL> LET  
+GSQL>  SetAccum<string> @transferNames;  
+GSQL>  IN  
+GSQL>   SELECT s FROM (s:Account where s.isBlocked) -[:transfer*1..3]- (t:Account)  
+GSQL>   ACCUM s.@transferNames += t.name;
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Steven",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Steven",
+            "isBlocked": true,
+            "@transferNames": [
+              "Jenny",
+              "Paul",
+              "Scott",
+              "Steven",
+              "Ed"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Explanation:**
+
+-   The **local accumulator** `@transferNames` collects the names of accounts connected to `"Steven"` via `transfer` edges (up to 3 hops).
+-   In the output, `@transferNames` is stored as runtime attribute, alongside wiht other static attributes `name` and `isBlocked`.
+
+----------
+
+**Global Accumulator Example**
+
+**Definition:**
+
+A **global accumulator** (prefixed with `@@`) aggregates values across all selected nodes and is **printed separately** from node attributes in the query result. All global accumulators declared in the `LET` block will be included in the output.
+
+**Query:**
+```python
+GSQL> use graph financialGraph
+GSQL> BEGIN 
+GSQL> LET   
+GSQL>  double ratio = 0.01;  
+GSQL>  SumAccum<double> @totalAmt;  // local accumulator for total amount 
+GSQL>  SumAccum<INT> @@cnt;  // global accumulator for count
+GSQL> IN  
+GSQL>  SELECT s FROM (s:Account {name:"Ed"}) - [e:transfer]-> (t:Account) 
+GSQL>  ACCUM s.@totalAmt += ratio * e.amount, // Accumulate total amount for s 
+GSQL>      @@cnt += 1; // Accumulate count of transfers
+GSQL> END
+```
+**Output:**
+```json
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": [
+        {
+          "v_id": "Ed",
+          "v_type": "Account",
+          "attributes": {
+            "name": "Ed",
+            "isBlocked": false,
+            "@totalAmt": 15
+          }
+        }
+      ]
+    },
+    {
+      "@@cnt": 1
+    }
+  ]
+}
+```
+**Explanation:**
+
+-   The **local accumulator** `@totalAmt` accumulates the weighted sum of transfer amounts and is **stored as an attribute of "Ed"**.
+-   The **global accumulator** `@@cnt` counts the total number of transfers and is **printed separately** in the result.
+-   This ensures **per-node values are displayed within node attributes, while global aggregates appear in the final output**.
+
+
+
 [Go back to top](#top)
 
 ---
@@ -505,286 +783,6 @@ We support two ways to specify repetitions of a pattern.
 | *m..n    | -[:transfer*1..2]->   | beween m and n repetitions |
 | *m..    | -[:transfer*1..]->   | m or more repetitions |
 | *m    | -[:transfer*m]->   | equivalent to m..m |
-
-[Go back to top](#top)
-
----
-
-# 1-Block Query Examples 
-
-**NOTE** This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature. 
-
-## SELECT BLOCK
-1-Block SELECT is a feature that offers an exploratory (interactive style) approach to querying data in a style similar to SQL or Cypher. This syntax enables users to write a single, concise select-from-where-accum statement on one line to retrieve data based on specified conditions. It also supports operations such as filtering, aggregation, sorting, and pagination, making it an excellent tool for ad hoc data inspection.
-
-### Basic Syntax
-The basic syntax structure of `1-Block SELECT` is as follows:
-
-```python
-SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
-```
-
-You can directly type *one liner* of the above syntax in GSQL shell to explore your data. The query will not be stored in Catalog as a procedure. 
-Or, you can break the one line to multiple lines and enclose them with `BEGIN` and `END` as illustrated below.  
-
-```python
-GSQL> BEGIN
-GSQL>  SELECT <output_variable>
-GSQL>  FROM <pattern>
-GSQL>  WHERE <condition> <additional_clauses>
-GSQL> END
-```
-
-### Examples
-
-#### SELECT with filters
-
-##### Using WHERE clause
-
-```python
-GSQL > use graph financialGraph
-GSQL > SELECT s FROM (s:Account) LIMIT 10
-GSQL > SELECT s FROM (s:Account {name: "Scott"})
-GSQL > SELECT s FROM (s:Account WHERE s.isBlocked)
-GSQL > SELECT s FROM (s:Account) WHERE s.name IN ("Scott", "Steven")
-GSQL > SELECT s, e, t FROM (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t
-```
-
-##### Using HAVING
-
-```python
-GSQL > use graph financialGraph
-GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked
-GSQL > SELECT s FROM (s:Account) -[e:transfer]-> (t:Account) having s.isBlocked AND s.name = "Steven"
-```
-#### Aggregation SELECT
-
-```python
-GSQL > use graph financialGraph
-GSQL > SELECT COUNT(s) FROM (s:_)
-GSQL > SELECT COUNT(*) FROM (s:Account:City)
-GSQL > SELECT COUNT(DISTINCT t) FROM (s:Account)-[e]->(t)
-GSQL > SELECT COUNT(e), STDEV(e.amount), AVG(e.amount) FROM (s:Account)-[e:transfer|isLocatedIn]->(t)
-```
-
-
-
-#### SELECT with Sorting and Limiting
-
-```python
-GSQL > use graph financialGraph
-GSQL > SELECT s FROM (s:Account) ORDER BY s.name LIMIT 3 OFFSET 1
-GSQL > SELECT s.name, e.amount as amt, t FROM (s:Account) -[e:transfer]-> (t:Account) ORDER BY amt, s.name LIMIT 1
-GSQL > SELECT DISTINCT type(s) FROM (s:Account:City) ORDER BY type(s)
-```
-
-#### Using some expression
-
-```python
-# Using mathematical expressions
-GSQL > use graph financialGraph
-GSQL > SELECT s, e.amount*0.01 AS amt FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
-
-# Using CASE expression
-GSQL > BEGIN
-GSQL >  SELECT s, CASE WHEN e.amount*0.01 > 80 THEN true ELSE false END AS status 
-GSQL >  FROM (s:Account {name: "Scott"})- [e:transfer]-> (t)
-GSQL > END
-```
-
-[Go back to top](#top)
-
----
-## SELECT BLOCK WITH VARIABLES
-We can also pass variables to 1-Block SELECT with the prefix `LET...IN` construct. The variables defined between `LET` and `IN` can be primitive types or accumulators, enable flexible computation and aggregation.
-
-### Basic Syntax
-```python  
-LET  
- <variable_definitions>;
-IN  
- SELECT <query_block>
-```
-
-The ```LET...IN``` prefix construct in GSQL is used to define and work with variables and accumulators. It allows for the creation of temporary variables or accumulators in the LET block, which can be referenced later in the SELECT block, enabling more powerful and flexible queries. Specifically,
-
-- ```LET```: This keyword starts the block where you define variables and accumulators.
-- ```<variable_definitions>```: Inside the `LET` block, you can define variables with primitive types such as `STRING`, `INT`, `UINT`, `BOOL`, `FLOAT`, `DATETIME` and `DOUBLE`. However, container types like `SET`, `LIST`, and `MAP` are not supported at the moment. Inside the `LET` block, you can also define accumulators.
-- ```IN SELECT <query_block>```: The  `SELECT` query block follows the `IN` keyword can use the variables and accumulators defined in the `LET` block.
-
-### Examples
-
-#### Primitive type variables
-Since `LET ... IN...SELECT` typically spans multiple-lines, we need to use `BEGIN...END` to support it in GSQL shell. Below, we define some primitive type varibles with assigned value, and use them in the `SELECT` query block as bind variables. 
-
-```python
-GSQL > use graph financialGraph 
-GSQL > BEGIN 
-GSQL > LET
-GSQL >  DOUBLE a = 500.0; 
-GSQL >  STRING b = "Jenny"; 
-GSQL >  BOOL c = false; 
-GSQL > IN 
-GSQL >  SELECT s, e.amount AS amt, t
-GSQL >  FROM (s:Account) - [e:transfer]-> (t:Account) 
-GSQL >  WHERE s.isBlocked = c AND t.name <> b 
-GSQL >  HAVING amt > a; 
-GSQL > END
-```
-
-You can also use this syntax in one line. E.g., 
-
-```python
-GSQL > LET STRING n = "Jenny"; IN SELECT s, count(t) as cnt FROM (s:Account {name:n}) - [:transfer*0..2]-> (t:Account);
-```
-#### Accumulator type variables
-
-In GSQL, **accumulators** are special state variables used to store and update values during query execution. They are commonly utilized for aggregating sums, counts, sets, and other values for a matched pattern. Accumulators can be categorized into **local accumulators** (specific to individual vertices) and **global accumulators** (aggregating values across all selected nodes).
-
-----------
-
-**Restrictions on 1-Block SELECT Clause with Accumulators**
-
-When accumulators are used in a 1-block query, the `SELECT` clause is subject to the following restrictions:
-
-**Only One Node Alias Allowed:**
-
-**If accumulators are used**, the `SELECT` clause must return only **one** node alias.
-
--  ✅ Source node alias **Allowed:**  `SELECT s FROM (s:Account)-[e:transfer]-(t:Account)`
-
--  ✅ Target node alias **Allowed:**  `SELECT t FROM (s:Account)-[e:transfer]-(t:Account)`
-
--  ❌ Relationship alias  **Not Allowed:**  `SELECT e FROM (s:Account)-[e:transfer]-(t:Account)`
-
--  ❌ Multiple node alias **Not Allowed:** `SELECT s, t FROM (s:Account)-[e:transfer]-(t:Account)`
-  
-
-**Functions, Expressions Not Allowed:**
-
-**When using accumulators**, functions and expressions cannot be used in the `SELECT` clause. 
-
--  ❌ **Functions not allowed:**  `SELECT count(s) FROM (s:Account)-[e:transfer]-(t:Account)`
-
--  ❌ **Expressions not allowed:**  `SELECT (s.isBlocked OR t.isBlocked) AS flag FROM (s:Account)-[e:transfer]-(t:Account)`
-
-**Local Accumulator Example**
-
-**Definition:**
-
-A **local accumulator** (prefixed with `@`) is associated with a specific vertex and is stored as part of its attributes. When a node is retrieved in a `SELECT` statement, its corresponding local accumulator values are displayed alongside its properties.
-
-**Query:**
-
-```python
-GSQL> use graph financialGraph
-GSQL> BEGIN
-GSQL> LET  
-GSQL>  SetAccum<string> @transferNames;  
-GSQL>  IN  
-GSQL>   SELECT s FROM (s:Account where s.isBlocked) -[:transfer*1..3]- (t:Account)  
-GSQL>   ACCUM s.@transferNames += t.name;
-GSQL> END
-```
-**Output:**
-```json
-{
-  "version": {
-    "edition": "enterprise",
-    "api": "v2",
-    "schema": 0
-  },
-  "error": false,
-  "message": "",
-  "results": [
-    {
-      "Result_Vertex_Set": [
-        {
-          "v_id": "Steven",
-          "v_type": "Account",
-          "attributes": {
-            "name": "Steven",
-            "isBlocked": true,
-            "@transferNames": [
-              "Jenny",
-              "Paul",
-              "Scott",
-              "Steven",
-              "Ed"
-            ]
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-**Explanation:**
-
--   The **local accumulator** `@transferNames` collects the names of accounts connected to `"Steven"` via `transfer` edges (up to 3 hops).
--   In the output, `@transferNames` is stored as runtime attribute, alongside wiht other static attributes `name` and `isBlocked`.
-
-----------
-
-**Global Accumulator Example**
-
-**Definition:**
-
-A **global accumulator** (prefixed with `@@`) aggregates values across all selected nodes and is **printed separately** from node attributes in the query result. All global accumulators declared in the `LET` block will be included in the output.
-
-**Query:**
-```python
-GSQL> use graph financialGraph
-GSQL> BEGIN 
-GSQL> LET   
-GSQL>  double ratio = 0.01;  
-GSQL>  SumAccum<double> @totalAmt;  // local accumulator for total amount 
-GSQL>  SumAccum<INT> @@cnt;  // global accumulator for count
-GSQL> IN  
-GSQL>  SELECT s FROM (s:Account {name:"Ed"}) - [e:transfer]-> (t:Account) 
-GSQL>  ACCUM s.@totalAmt += ratio * e.amount, // Accumulate total amount for s 
-GSQL>      @@cnt += 1; // Accumulate count of transfers
-GSQL> END
-```
-**Output:**
-```json
-{
-  "version": {
-    "edition": "enterprise",
-    "api": "v2",
-    "schema": 0
-  },
-  "error": false,
-  "message": "",
-  "results": [
-    {
-      "Result_Vertex_Set": [
-        {
-          "v_id": "Ed",
-          "v_type": "Account",
-          "attributes": {
-            "name": "Ed",
-            "isBlocked": false,
-            "@totalAmt": 15
-          }
-        }
-      ]
-    },
-    {
-      "@@cnt": 1
-    }
-  ]
-}
-```
-**Explanation:**
-
--   The **local accumulator** `@totalAmt` accumulates the weighted sum of transfer amounts and is **stored as an attribute of "Ed"**.
--   The **global accumulator** `@@cnt` counts the total number of transfers and is **printed separately** in the result.
--   This ensures **per-node values are displayed within node attributes, while global aggregates appear in the final output**.
-
----
-
 
 [Go back to top](#top)
 
