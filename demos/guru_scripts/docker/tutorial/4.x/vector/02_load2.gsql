@@ -5,14 +5,14 @@ DROP JOB load_local_file
 //load from local file
 CREATE LOADING JOB load_local_file  {
  // define the location of the source files; each file path is assigned a filename variable.  
- DEFINE FILENAME account="/home/tigergraph/tutorial/4.x/data/account.csv";
- DEFINE FILENAME phone="/home/tigergraph/tutorial/4.x/data/phone.csv";
- DEFINE FILENAME city="/home/tigergraph/tutorial/4.x/data/city.csv";
- DEFINE FILENAME hasPhone="/home/tigergraph/tutorial/4.x/data/hasPhone.csv";
- DEFINE FILENAME locatedIn="/home/tigergraph/tutorial/4.x/data/locate.csv";
- DEFINE FILENAME transferdata="/home/tigergraph/tutorial/4.x/data/transfer.csv";
- DEFINE FILENAME accountEmb="/home/tigergraph/tutorial/4.x/data/account_emb.csv";
- DEFINE FILENAME phoneEmb="/home/tigergraph/tutorial/4.x/data/phone_emb.csv";
+ DEFINE FILENAME account="/home/tigergraph/tutorial/data/account.csv";
+ DEFINE FILENAME phone="/home/tigergraph/tutorial/data/phone.csv";
+ DEFINE FILENAME city="/home/tigergraph/tutorial/data/city.csv";
+ DEFINE FILENAME hasPhone="/home/tigergraph/tutorial/data/hasPhone.csv";
+ DEFINE FILENAME locatedIn="/home/tigergraph/tutorial/data/locate.csv";
+ DEFINE FILENAME transferdata="/home/tigergraph/tutorial/data/transfer.csv";
+ DEFINE FILENAME accountEmb="/home/tigergraph/tutorial/data/account_emb.csv";
+ DEFINE FILENAME phoneEmb="/home/tigergraph/tutorial/data/phone_emb.csv";
  //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
  LOAD account TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
  LOAD phone TO VERTEX Phone VALUES ($"number", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
