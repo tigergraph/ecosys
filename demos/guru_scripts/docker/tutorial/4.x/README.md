@@ -193,7 +193,7 @@ The basic syntax structure of `1-Block SELECT` is as follows:
 ```python
 SELECT <output_variable> FROM <pattern> WHERE <condition> <additional_clauses>
 ```
-Similar to SQL, graph queries use SELECT-FROM-WHERE clauses. The key difference is that graph queries generalize the FROM clause to allow patterns. A pattern can represent a vertex, an edge, or a path. These patterns are expressed using ASCII art:
+Similar to SQL, graph queries use SELECT-FROM-WHERE clauses. The key difference is that graph queries generalize the FROM clause to allow patterns. A matched pattern is a table, each row in the table is a pattern instance with the binding variables (alias) specified in the FROM clause as columns.  A pattern can represent a vertex, an edge, or a path. These patterns are expressed using ASCII art:
 
 - `()` represents a node. You can put alias (a variable bound to the node) in the front, and `:VertexName` in the suffix. E.g., `(a:Account)`. 
 - `-[]->` represents an edge. You can put alias (a variable bound to the edge) in the front, and `:EdgeName` in the suffix. <br> E.g., `-[e:transfer]->`. 
