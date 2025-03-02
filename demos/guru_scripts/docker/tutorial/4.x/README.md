@@ -1717,7 +1717,7 @@ For more details on vector support, refer to [Vector Search](https://github.com/
 
 ## REST API For GSQL
 
-TigerGraph has opened up all interaction with GSQL server via a suite of REST APIs. You can refer to [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we illustrate how to pass parameters of a GSQL procedure query via JSON object. 
+TigerGraph has enabled full interaction with the GSQL server through a suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to pass parameters to a GSQL procedure query using a JSON object.
 
 ### Parameter JSON object
 To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
