@@ -2,7 +2,7 @@
 
 In this quick start guide, we will work with the following graph:
 
-![Financial Graph](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/FinancialGraph.jpg)
+![Financial Graph](https://github.com/tigergraph/ecosys/blob/master/tutorials/pictures/FinancialGraph.jpg)
 
 
 ## Installation Guide
