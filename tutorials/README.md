@@ -1730,11 +1730,10 @@ CREATE QUERY greet_person(INT age = 3, STRING name = "John",
 {
   PRINT age, name, birthday;
 }
-Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value:
 
 RUN QUERY greet_person( {"name": "Emma", "age": 21} )
 
-//use REST API
+//call the query via REST API. Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value
 curl -H 'Content-Type: application/json' -X POST 'http://localhost:14240/gsql/v1/queries/greet_person?graph=financialGraph
 -d '{"diagnose":false,"denseMode":false,"allvertex":false,"asyncRun":false,"parameters":{"name": "Emma", "age": 21} }'
 ```
