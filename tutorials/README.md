@@ -49,7 +49,7 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
     - [Minus](#minus)
   - [Vector Search](#vector-search)
   - [Virtual Edge](#virtual-edge)
-  - [Pass Parameter Via JSON](#pass-parameter-via-json)
+  - [REST API For GSQL](#rest-api-for-gsql)
   - [Query Tuning](#query-tuning)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
@@ -1715,7 +1715,9 @@ For more details on vector support, refer to [Vector Search](https://github.com/
 
 ---
 
-## Pass Parameter Via JSON
+## REST API For GSQL
+
+TigerGraph has enabled full interaction with the GSQL server through a suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to pass parameters to a GSQL procedure query using a JSON object.
 
 ### Parameter JSON object
 To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
