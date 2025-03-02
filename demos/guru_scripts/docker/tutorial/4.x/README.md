@@ -69,7 +69,7 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
 
-![Financial Graph](./FinancialGraph.jpg)
+![Financial Graph](./pictures/FinancialGraph.jpg)
 
 ---
 # Set Up Environment 
@@ -1793,7 +1793,7 @@ RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, 
 Refer to this link for more details. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
-![VirtualEdge](./VirtualEdge.jpg)
+![VirtualEdge](./pictures/VirtualEdge.jpg)
 
 For example, in the above graph we create an in-memory “shortcut” edge “FOF”, so that we can bypass the interim node and find the second neighbor in 1-hop. 
 ### Syntax
@@ -1897,7 +1897,7 @@ Each schema object is visible within a scope. In a graph database, there are two
 - ***Global Scope***: This is the default scope for schema objects. By default, all objects created using the "CREATE" DDL statement belong to the global scope.
 - ***Graph Scope***: Each graph has its own scope. A schema change job can be used to add schema objects (vertex or edge types) to a specific graph’s scope.
 
-![Catalog Scope](./CatalogScope.jpg)
+![Catalog Scope](./pictures/CatalogScope.jpg)
 
 As illustrated in above figure, we can use `CREATE` statements to create the `Account`, `City`, and `Phone` vertex schema object, and the `isLocatedIn`, `hasPhone`, `Transfer`, and `Transfer_Reverse` edge schema object, and the `financialGraph` graph schema object. They are all visible in the Global scope.
 
@@ -1907,7 +1907,7 @@ To enter the global scope, type the `use global` command in the GSQL shell. Next
 > USE GLOBAL
 > ls
 ```
-![Graph Scope](./GlobalLocal.jpg)
+![Graph Scope](./pictures/GlobalLocal.jpg)
 The figure above shows that the `financialGraph` is composed of global scope schema objects such as `Account`, `City`, `Phone`, `isLocatedIn`, and `hasPhone` etc. The `privateGraph` also uses the global schema object `Phone`. Thus, both the `financialGraph` and the `privateGraph` share the `Phone` schema object. Additionally, the `privateGraph` has its own private schema objects— `Loan` and `Person` vertex objects.
 
 To enter a graph scope, type the `USE GRAPH` graphName command in the GSQL shell. Then, use the `ls` command to list all the schema objects under this graph scope.
