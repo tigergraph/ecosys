@@ -68,7 +68,7 @@ Currently, the Free Trial limits your database to **50 GB**, and is valid for **
 Quick Start
 ================================
 1. Download docker image from https://dl.tigergraph.com/
-2. Download Dev license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
+2. [Optional for enterprise edition] Download trial license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
 3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands
 
        docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz # the gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
