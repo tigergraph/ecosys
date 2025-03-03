@@ -9,7 +9,7 @@ A more exhaustive description of functionality and behavior of OpenCypher is ava
 
 
 # Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./FinancialGraph.jpg)
+![Financial Graph](./pictures/FinancialGraph.jpg)
 
 # Table of Contents
 This GSQL tutorial contains 
