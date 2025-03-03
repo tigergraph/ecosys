@@ -92,7 +92,7 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> use graph financialGraph  #enter sample graph
    GSQL> ls #see the catalog content
    GSQL> select a from (a:Account)  #query Account vertex
-   GSQL > select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
    GSQL> select count(*) from (s:Account)  #query Account node count
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
    GSQL> exit #quit the gsql shell
