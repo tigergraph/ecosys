@@ -1,6 +1,6 @@
 
 
-# Introduction <a name="top"></a>
+# Introduction to GSQL V3<a name="top"></a>
 
 This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis.
 
