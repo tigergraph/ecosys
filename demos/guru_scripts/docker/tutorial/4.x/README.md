@@ -1717,7 +1717,7 @@ For more details on vector support, refer to [Vector Search](https://github.com/
 
 ## REST API For GSQL
 
-TigerGraph has enabled full interaction with the GSQL server through a suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to pass parameters to a GSQL procedure query using a JSON object.
+TigerGraph provides seamless interaction with the GSQL server through a comprehensive suite of [GSQL REST APIs](https://docs.tigergraph.com/gsql-ref/4.1/api/gsql-endpoints#_run_query). Below, we demonstrate how to invoke an installed stored procedure via a REST call, passing parameters using a JSON object.
 
 ### Parameter JSON object
 To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
@@ -1725,15 +1725,23 @@ To pass query parameters by name with a JSON object, map the parameter names to 
 For example, if we have the following query:
 
 ```python
+USE GRAPH financialGraph
+
 CREATE QUERY greet_person(INT age = 3, STRING name = "John",
   DATETIME birthday = to_datetime("2019-02-19 19:19:19"))
 {
   PRINT age, name, birthday;
 }
-Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value:
 
+INSTALL QUERY greet_person
 RUN QUERY greet_person( {"name": "Emma", "age": 21} )
+
+//During installation, you will the see generated REST end point for this query. You can call the query via REST API.
+//Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value
+curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST 'http://127.0.0.1:14240/gsql/v1/queries/greet_person?graph=financialGraph' -d '{"diagnose":false,"denseMode":false,"allvertex":false,"asyncRun":false,"parameters":{"name":"Emma","age":21}}' | jq .
 ```
+
+The above example use "username:password" as an authentication method. There are token-based authentication methods. Please refer to [Enable REST Authentication](https://docs.tigergraph.com/tigergraph-server/4.1/user-access/enabling-user-authentication#_enable_restpp_authentication) 
 
 Another example-- find the shortest path between two vertices, and output one such path. 
 
@@ -1791,8 +1799,24 @@ CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX 
 
 install query first_shortest_path
 RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
+
+//we can also use JSON payload to pass in parameters via REST API call. We need to specify the v_source.type and the target_v.type in the JSON payload. 
+ curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST 'http://127.0.0.1:14240/gsql/v1/queries/first_shortest_path?graph=financialGraph' -d '{
+   "diagnose":false,
+   "denseMode":false,
+   "allvertex":false,
+   "asyncRun":false,
+   "parameters":{
+     "v_source": "Scott",
+     "v_source.type": "Account",
+     "target_v": "Steven",
+     "target_v.type": "Account",
+     "depth": 8,
+     "print_result": true
+   }
+  }' | jq .
 ```
-Refer to this link for more details. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
+
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
 ![VirtualEdge](./pictures/VirtualEdge.jpg)
