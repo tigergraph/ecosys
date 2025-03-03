@@ -56,8 +56,8 @@ Suppose we mount the host OS ~/data folder to a docker folder /home/tigergraph/m
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
 on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
 
-Getting a License Key
-================================
+Getting a License Key (Skip If Using Community Edition)
+=======================================================
 
 Please note that this package does not include a license key. 
 
