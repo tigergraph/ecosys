@@ -65,23 +65,28 @@ You may obtain a license key by going to [dl.tigergraph.com](https://dl.tigergra
 
 Currently, the Free Trial limits your database to **50 GB**, and is valid for **30 days** after the date of issue.
 
-Quick Start
+Quick Start for Community Edition
 ================================
 1. Download docker image from https://dl.tigergraph.com/
 2. [Optional for enterprise edition] Download trial license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
 3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands, change the image file name to the one you downloaded. 
 
+```python
        docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
        docker images #find image id
        docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
        docker exec -it mySandbox /bin/bash #start a shell on this container. 
-       gadmin license set the_license_from_step_2_text #copy the license from step 2 file
-       gadmin config apply #apply the license
        gadmin start all  #start all tigergraph component services
        gadmin status #should see all services are up.
        gsql #start the gsql shell. Congratulations, you have started tigergraph!
+```
+You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/tutorials/GSQL.md)
 
-   You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/README.md)
+If you download enterprise edition, you need to apply the license before you can start. 
+```python
+ gadmin license set the_license_from_step_2_text #copy the license from step 2 file
+ gadmin config apply #apply the license
+```
 
 Pull Pre-built TigerGraph Docker Image And Run It As A Server
 ================================================================
