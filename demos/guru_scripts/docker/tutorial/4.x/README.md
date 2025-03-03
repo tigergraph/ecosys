@@ -94,7 +94,8 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    gsql 00_schema.gsql  #setup sample schema in catalog
    gsql 01_load.gsql    #load sample data 
    gsql    #launch gsql shell
-   GSQL> use graph financialGraph  #enter sample graph 
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
    GSQL> select count(*) from (s:Account)  #query Account node count
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
 ```
