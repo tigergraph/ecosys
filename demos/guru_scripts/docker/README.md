@@ -83,14 +83,15 @@ Quick Start for Community Edition
 You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/tutorials/GSQL.md)
 
 For impatient users, try this in shell.
+
 ```python
-   cd tutorial/gsql/
-   gsql 00_schema.gsql
-   gsql 01_load.gsql
-   gsql
-   GSQL> use graph financialGraph
-   GSQL> select count(*) from (s:Account)
-   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph 
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
 ```
 
 If you download enterprise edition, you need to apply the license before you can start. 
