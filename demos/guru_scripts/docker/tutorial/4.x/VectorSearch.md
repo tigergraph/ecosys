@@ -1,5 +1,5 @@
 # Native Vector Support in TigerGraph
-TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration.
+TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration. We believe agentic AI will benefit from this powerful combination!
 
 # Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](https://github.com/tigergraph/ecosys/blob/master/tutorials/pictures/FinancialGraph.jpg)
