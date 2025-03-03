@@ -82,7 +82,7 @@ Quick Start for Community Edition
 ```
 You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/tutorials/GSQL.md)
 
-For impatient users, try this in shell.
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
 
 ```python
    cd tutorial/gsql/   
