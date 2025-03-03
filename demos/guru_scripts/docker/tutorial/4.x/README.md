@@ -2,13 +2,14 @@
 
 # Introduction <a name="top"></a>
 
-This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis.
+This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis. GSQL, by virtue of its Turing-completeness, provides the necessary computational power for Agentic AI implementations, specifically in the areas of task dependency management and comprehensive hybrid data retrieval encompassing both structured and unstructured formats. 
+
 
 GSQL V3 syntax reflects the evolution towards GQL, the ISO  graph query language standard released in 2024. V3 emphasizes ASCII art in its syntax, as well as support for most OpenCyper pattern match syntax and functions.
 
 A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/4.1/intro/).
 
-This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment.
+This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment. To obtain our free Community Edition, you can download our [Community Edition](https://dl.tigergraph.com/)
 
 Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
@@ -79,11 +80,24 @@ If you have your own machine (including Windows and Mac laptops), the easiest wa
 Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
 ```python
-gadmin start all  #start all tigergraph component services
-gadmin status #should see all services are up.
-gsql #start the gsql shell. Congratulations, you have started tigergraph!
+       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker images #find image id
+       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+       docker exec -it mySandbox /bin/bash #start a shell on this container. 
+       gadmin start all  #start all tigergraph component services
+       gadmin status #should see all services are up.
 ```
 
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph 
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+```
 ---
 [Go back to top](#top)
 
