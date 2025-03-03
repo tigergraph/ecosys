@@ -1717,7 +1717,7 @@ For more details on vector support, refer to [Vector Search](https://github.com/
 
 ## REST API For GSQL
 
-TigerGraph has enabled full interaction with the GSQL server through a suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to pass parameters to a GSQL procedure query using a JSON object.
+TigerGraph provides seamless interaction with the GSQL server through a comprehensive suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to invoke an installed stored procedure via a REST call, passing parameters using a JSON object.
 
 ### Parameter JSON object
 To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
@@ -1725,18 +1725,23 @@ To pass query parameters by name with a JSON object, map the parameter names to 
 For example, if we have the following query:
 
 ```python
+USE GRAPH financialGraph
+
 CREATE QUERY greet_person(INT age = 3, STRING name = "John",
   DATETIME birthday = to_datetime("2019-02-19 19:19:19"))
 {
   PRINT age, name, birthday;
 }
 
+INSTALL QUERY greet_person
 RUN QUERY greet_person( {"name": "Emma", "age": 21} )
 
-//call the query via REST API. Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value
-curl -H 'Content-Type: application/json' -X POST 'http://localhost:14240/gsql/v1/queries/greet_person?graph=financialGraph
--d '{"diagnose":false,"denseMode":false,"allvertex":false,"asyncRun":false,"parameters":{"name": "Emma", "age": 21} }'
+//During installation, you will the see generated REST end point for this query. You can call the query via REST API.
+//Supplying the parameters with a JSON object will look like the following. The parameter birthday is not named in the parameter JSON object and therefore takes the default value
+curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST 'http://127.0.0.1:14240/gsql/v1/queries/greet_person?graph=financialGraph' -d '{"diagnose":false,"denseMode":false,"allvertex":false,"asyncRun":false,"parameters":{"name":"Emma","age":21}}' | jq .
 ```
+
+The above example use "username:password" as an authentication method. There are token-based authentication methods. Please refer to [Enable REST Authentication](https://docs.tigergraph.com/tigergraph-server/4.1/user-access/enabling-user-authentication#_enable_restpp_authentication) 
 
 Another example-- find the shortest path between two vertices, and output one such path. 
 
