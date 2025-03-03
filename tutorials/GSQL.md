@@ -2,13 +2,14 @@
 
 # Introduction <a name="top"></a>
 
-This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis.
+This GSQL tutorial provides a hands-on introduction to GSQL Version 3 (V3) for new users. The GSQL&reg; software program is the TigerGraph comprehensive environment for designing graph schemas, loading and managing data to build a graph, and querying the graph to perform data analysis. GSQL, by virtue of its Turing-completeness, provides the necessary computational power for Agentic AI implementations, specifically in the areas of task dependency management and comprehensive hybrid data retrieval encompassing both structured and unstructured formats. 
+
 
 GSQL V3 syntax reflects the evolution towards GQL, the ISO  graph query language standard released in 2024. V3 emphasizes ASCII art in its syntax, as well as support for most OpenCyper pattern match syntax and functions.
 
 A more exhaustive description of functionality and behavior of GSQL is available from the [GSQL Language Reference](https://docs.tigergraph.com/gsql-ref/4.1/intro/).
 
-This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment.
+This tutorial assumes that you have installed a TigerGraph Docker image on your laptop or set up a TigerGraph instance on a Linux machine. And you have access to a Bash shell environment. To obtain our free Community Edition, you can download our [Community Edition](https://dl.tigergraph.com/)
 
 Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
