@@ -69,9 +69,9 @@ Quick Start
 ================================
 1. Download docker image from https://dl.tigergraph.com/
 2. [Optional for enterprise edition] Download trial license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
-3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands
+3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands, change the image file name to the one you downloaded. 
 
-       docker load -i ./tigergraph-4.1.0-offline-docker-image.tar.gz # the gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
        docker images #find image id
        docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
        docker exec -it mySandbox /bin/bash #start a shell on this container. 
