@@ -82,6 +82,17 @@ Quick Start for Community Edition
 ```
 You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/tutorials/GSQL.md)
 
+For impatient users, try this in shell.
+```python
+   cd tutorial/gsql/
+   gsql 00_schema.gsql
+   gsql 01_load.gsql
+   gsql
+   GSQL> use graph financialGraph
+   GSQL> select count(*) from (s:Account)
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)
+```
+
 If you download enterprise edition, you need to apply the license before you can start. 
 ```python
  gadmin license set the_license_from_step_2_text #copy the license from step 2 file
