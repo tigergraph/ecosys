@@ -78,8 +78,7 @@ Quick Start for Community Edition
        docker exec -it mySandbox /bin/bash #start a shell on this container. 
        gadmin start all  #start all tigergraph component services
        gadmin status #should see all services are up.
-       gsql #start the gsql shell. Congratulations, you have started tigergraph!
-```
+ ```
 You are ready to go! Try the [sample financial data](https://github.com/tigergraph/ecosys/blob/master/tutorials/GSQL.md)
 
 For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
@@ -89,9 +88,11 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    gsql 00_schema.gsql  #setup sample schema in catalog
    gsql 01_load.gsql    #load sample data 
    gsql    #launch gsql shell
-   GSQL> use graph financialGraph  #enter sample graph 
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the content of catalog
    GSQL> select count(*) from (s:Account)  #query Account node count
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit gsql shell
 ```
 
 If you download enterprise edition, you need to apply the license before you can start. 
