@@ -90,13 +90,13 @@ After you installed TigerGraph, you can use gadmin tool to start/stop services u
 
 For those impatient, load the sample data from tutorial/gsql folder and trigger your first query. 
 ```python
-   cd tutorial/gsql/
-   gsql 00_schema.gsql
-   gsql 01_load.gsql
-   gsql
-   GSQL> use graph financialGraph
-   GSQL> select count(*) from (s:Account)
-   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph 
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
 ```
 ---
 [Go back to top](#top)
