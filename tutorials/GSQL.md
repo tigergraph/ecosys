@@ -96,7 +96,7 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> exit #quit the gsql shell
 ```
 
-**Note that**, our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
 ---
 [Go back to top](#top)
