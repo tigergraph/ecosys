@@ -80,11 +80,24 @@ If you have your own machine (including Windows and Mac laptops), the easiest wa
 Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
 ```python
-gadmin start all  #start all tigergraph component services
-gadmin status #should see all services are up.
-gsql #start the gsql shell. Congratulations, you have started tigergraph!
+       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker images #find image id
+       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+       docker exec -it mySandbox /bin/bash #start a shell on this container. 
+       gadmin start all  #start all tigergraph component services
+       gadmin status #should see all services are up.
 ```
 
+For those impatient, load the sample data from tutorial/gsql folder and trigger your first query. 
+```python
+   cd tutorial/gsql/
+   gsql 00_schema.gsql
+   gsql 01_load.gsql
+   gsql
+   GSQL> use graph financialGraph
+   GSQL> select count(*) from (s:Account)
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)
+```
 ---
 [Go back to top](#top)
 
