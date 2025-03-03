@@ -1816,7 +1816,7 @@ RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, 
    }
   }' | jq .
 ```
-Refer to this link for more details. [JSON as Query Parameter](https://docs.tigergraph.com/gsql-ref/4.1/querying/query-operations#_parameter_json_object)
+
 ## Virtual Edge
 In a graph schema, vertex and edge types define the data model at design time. However, at query time, users often perform repetitive multi-step traversals between connected vertices, which can be cumbersome and inefficient. To address this, we are introducing the Virtual Edge feature— lightweight, in-memory edges dynamically created at query runtime, and discarded upon query completion. Virtual Edges simplify traversal and enable predicate application across non-adjacent vertices, significantly improving query efficiency and flexibility.
 ![VirtualEdge](./pictures/VirtualEdge.jpg)
