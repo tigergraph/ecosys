@@ -1800,7 +1800,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY first_shortest_path(VERTEX v_source, VERTEX 
 install query first_shortest_path
 RUN QUERY first_shortest_path( {"v_source": {"id": "Scott", "type": "Account"}, "target_v": {"id": "Steven", "type": "Account"},  "depth": 8, "print_result": true})
 
-//we can also use JSON payload to pass in parameters via REST API call.
+//we can also use JSON payload to pass in parameters via REST API call. We need to specify the v_source.type and the target_v.type in the JSON payload. 
  curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST 'http://127.0.0.1:14240/gsql/v1/queries/first_shortest_path?graph=financialGraph' -d '{
    "diagnose":false,
    "denseMode":false,
