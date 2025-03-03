@@ -35,8 +35,9 @@ Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/gu
 
 > **_Note:_** Vector feature preview is available in both TigerGraph Community Edition (Alpha) and Enterprise Edition (Preview).
 
-To use TigerGraph Community Edition without a license key, pull docker image `tigergraph/community:4.2.0-alpha` and start a TigerGraph instance.
+To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and start a TigerGraph instance.
 > ```
+> docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
 > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init -t tigergraph/community:4.2.0-alpha
 > ```
 > And access the instance via http://locahost:14240 or obtain a terminal with the following command:
