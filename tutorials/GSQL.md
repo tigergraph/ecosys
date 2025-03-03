@@ -1717,7 +1717,7 @@ For more details on vector support, refer to [Vector Search](https://github.com/
 
 ## REST API For GSQL
 
-TigerGraph provides seamless interaction with the GSQL server through a comprehensive suite of [REST APIs](https://docs.tigergraph.com/tigergraph-server/4.1/api/). Below, we demonstrate how to invoke an installed stored procedure via a REST call, passing parameters using a JSON object.
+TigerGraph provides seamless interaction with the GSQL server through a comprehensive suite of [GSQL REST APIs]([https://docs.tigergraph.com/gsql-ref/4.1/api/gsql-endpoints#_run_query). Below, we demonstrate how to invoke an installed stored procedure via a REST call, passing parameters using a JSON object.
 
 ### Parameter JSON object
 To pass query parameters by name with a JSON object, map the parameter names to their values in a JSON object enclosed in parentheses. Parameters that are not named in the JSON object will keep their default values for the execution of the query.
