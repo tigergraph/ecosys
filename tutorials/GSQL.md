@@ -88,7 +88,7 @@ After you installed TigerGraph, you can use gadmin tool to start/stop services u
        gadmin status #should see all services are up.
 ```
 
-For those impatient, load the sample data from tutorial/gsql folder and trigger your first query. 
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
 ```python
    cd tutorial/gsql/   
    gsql 00_schema.gsql  #setup sample schema in catalog
