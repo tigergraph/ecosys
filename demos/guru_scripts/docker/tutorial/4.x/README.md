@@ -48,6 +48,7 @@ Our fully managed service-- TigerGraph Savanna is entirely GUI-based, with no ac
     - [Intersect](#intersect)
     - [Minus](#minus)
   - [Vector Search](#vector-search)
+  - [OpenCypher Query](#opencypher-query)
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
   - [Query Tuning](#query-tuning)
@@ -1714,7 +1715,11 @@ TigerGraph has extended the vertex type to support vectors, enabling users to qu
 For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
 
 ---
+## OpenCypher Query
 
+TigerGraph also supports OpenCypher. For more details on querying using OpenCypher, please refer to [OpenCypher Tutorial](https://github.com/tigergraph/ecosys/blob/master/tutorials/Cypher.md)
+
+---
 ## REST API For GSQL
 
 TigerGraph provides seamless interaction with the GSQL server through a comprehensive suite of [GSQL REST APIs](https://docs.tigergraph.com/gsql-ref/4.1/api/gsql-endpoints#_run_query). Below, we demonstrate how to invoke an installed stored procedure via a REST call, passing parameters using a JSON object.
