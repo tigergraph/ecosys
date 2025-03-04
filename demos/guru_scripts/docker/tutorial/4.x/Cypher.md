@@ -46,7 +46,7 @@ We use an artificial financial schema and dataset as a running example to demons
 Copy [00_schema.gsql](./gsql/00_schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql 00_schema.gsql
+gsql schema.gsql
 ```
 As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
 
@@ -82,22 +82,22 @@ You can choose one of the following methods.
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql 01_load.gsql
+     gsql load.gsql
   ```
   or in GSQL Shell editor, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
-    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account.csv)
-    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone.csv)
-    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/city.csv)
-    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/hasPhone.csv)
-    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
-    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
 
   - Copy [25_load.gsql](./gsql/25_load.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql 25_load2.gsql
+       gsql load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load.gsql](./script/25_load.gsql), and paste in GSQL shell editor to run.
 
@@ -174,7 +174,7 @@ install query c1
 # run the compiled query
 run query c1()
 ```
-The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c1.out) under `/home/tigergraph/tutorial/cypher/c1.out`
+The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c1.out) under `/home/tigergraph/tutorial/4.x/cypher/c1.out`
 
 [Go back to top](#top)
 
@@ -202,7 +202,7 @@ install query c2
 # run the compiled query
 run query c2()
 ```
-The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c2.out) under `/home/tigergraph/tutorial/cypher/c2.out`
+The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c2.out) under `/home/tigergraph/tutorial/4.x/cypher/c2.out`
 
 [Go back to top](#top)
 
@@ -233,7 +233,7 @@ install query c3
 # run the compiled query
 run query c3("Scott")
 ```
-The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c3.out) under `/home/tigergraph/tutorial/cypher/c3.out`
+The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c3.out) under `/home/tigergraph/tutorial/4.x/cypher/c3.out`
 
 Copy [c4.cypher](./cypher/c4.cypher) to your container. 
 
@@ -255,7 +255,7 @@ install query c4
 #run the query
 run query c4()
 ```
-The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c4.out) under `/home/tigergraph/tutorial/cypher/c4.out`    
+The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
 
 [Go back to top](#top)
 
@@ -311,7 +311,7 @@ install query c6
 run query c6("Scott")
 ```
 
-The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c6.out) under `/home/tigergraph/tutorial/cypher/c6.out`   
+The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`   
 
 Copy [c7.cypher](./cypher/c7.cypher) to your container. 
 
@@ -339,7 +339,7 @@ install query c7
 run query c7("2024-01-01", "2024-12-31", "Scott")
 ```
 
-The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c7.out) under `/home/tigergraph/tutorial/cypher/c7.out`   
+The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
 
 [Go back to top](#top)
 
@@ -371,7 +371,7 @@ install query c8
 run query c8("2024-01-01", "2024-12-31")
 ```
 
-The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c8.out) under `/home/tigergraph/tutorial/cypher/c8.out`   
+The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
 
 [Go back to top](#top)
 
@@ -398,7 +398,7 @@ install query c21
 run query c21("Jenny")
 ```
 
-The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c21.out) under `/home/tigergraph/tutorial/cypher/c21.out`   
+The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c21.out) under `/home/tigergraph/tutorial/4.x/cypher/c21.out`   
 
 ---
 
@@ -435,7 +435,7 @@ install query c9
 run query c9()
 ```
 
-The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c9.out) under `/home/tigergraph/tutorial/cypher/c9.out`   
+The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
 
 [Go back to top](#top)
 
@@ -464,7 +464,7 @@ install query c10
 run query c10()
 ```
 
-The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c10.out) under `/home/tigergraph/tutorial/cypher/c10.out`  
+The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`  
 
 [Go back to top](#top)
 
@@ -493,7 +493,7 @@ install query c11
 run query c11()
 ```
 
-The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c11.out) under `/home/tigergraph/tutorial/cypher/c11.out`  
+The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c11.out) under `/home/tigergraph/tutorial/4.x/cypher/c11.out`  
 
 [Go back to top](#top)
 
@@ -526,7 +526,7 @@ install query c12
 run query c12()
 ```
 
-The result is shown in [c12.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c12.out) under `/home/tigergraph/tutorial/cypher/c12.out`  
+The result is shown in [c12.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c12.out) under `/home/tigergraph/tutorial/4.x/cypher/c12.out`  
 
 [Go back to top](#top)
 
@@ -551,7 +551,7 @@ install query c13
 run query c13()
 ```
 
-The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c13.out) under `/home/tigergraph/tutorial/cypher/c13.out`  
+The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
 
 [Go back to top](#top)
 
@@ -582,7 +582,7 @@ install query c14
 run query c14()
 ```
 
-The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c14.out) under `/home/tigergraph/tutorial/cypher/c14.out`  
+The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c14.out) under `/home/tigergraph/tutorial/4.x/cypher/c14.out`  
 
 [Go back to top](#top)
 
@@ -608,7 +608,7 @@ install query c15
 
 run query c15()
 ```
-The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c15.out) under `/home/tigergraph/tutorial/cypher/c15.out`
+The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
 
 [Go back to top](#top)
 
@@ -636,7 +636,7 @@ install query c16
 run query c16()
 ```
 
-The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c16.out) under `/home/tigergraph/tutorial/cypher/c16.out`
+The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c16.out) under `/home/tigergraph/tutorial/4.x/cypher/c16.out`
 
 [Go back to top](#top)
 
@@ -665,7 +665,7 @@ CREATE OR REPLACE OPENCYPHER QUERY c17(){
 install query c17
 ```
 
-The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c17.out) under `/home/tigergraph/tutorial/cypher/c17.out`
+The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c17.out) under `/home/tigergraph/tutorial/4.x/cypher/c17.out`
 
 [Go back to top](#top)
 
@@ -691,7 +691,7 @@ install query c18
 run query c18()
 ```
 
-The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c18.out) under `/home/tigergraph/tutorial/cypher/c18.out`
+The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c18.out) under `/home/tigergraph/tutorial/4.x/cypher/c18.out`
 
 [Go back to top](#top)
 
@@ -733,7 +733,7 @@ install query c19
 run query c19()
 ```
 
-The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c19.out) under `/home/tigergraph/tutorial/cypher/c19.out`
+The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c19.out) under `/home/tigergraph/tutorial/4.x/cypher/c19.out`
 
 [Go back to top](#top)
 
@@ -772,7 +772,7 @@ INSTALL query c20
 run query c20()
 ```
 
-The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c20.out) under `/home/tigergraph/tutorial/cypher/c20.out`
+The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c20.out) under `/home/tigergraph/tutorial/4.x/cypher/c20.out`
 
 [Go back to top](#top)
 

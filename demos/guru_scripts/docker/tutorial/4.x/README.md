@@ -145,22 +145,22 @@ Now that you have a graph schema, you can load data using one of the following m
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql 01_load.gsql
+     gsql load.gsql
   ```
   or in GSQL editor of TigerGraph Savanna, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
-    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account.csv)
-    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone.csv)
-    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/city.csv)
-    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/hasPhone.csv)
-    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
-    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
 
   - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql 25_load2.gsql
+       gsql load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
 
@@ -1728,7 +1728,7 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 ---
 ## Vector Search
 TigerGraph has extended the vertex type to support vectors, enabling users to query both structured data (nodes and edges) and unstructured data (embedding attributes) in GSQL.
-For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/tutorials/VectorSearch.md)
+For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
 
 ---
 ## OpenCypher Query

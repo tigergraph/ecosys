@@ -69,7 +69,7 @@ We use an artificial financial schema and dataset as a running example to demons
 
 To augment the graph dataset with vector data, for each Account and Phone node, we generated a 3-dimensional random vector data. By default, the cosine metric is used to measure the distance between vectors.
 
-Locate [00_ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/00_ddl.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. 
+Locate [00_ddl.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/00_ddl.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. 
 Next, run the following in your container's bash command line. 
 ```
 gsql /home/tigergraph/tutorial/vector/00_ddl.gsql
@@ -111,30 +111,30 @@ You can choose one of the following methods.
 
 - Load sample data from our publicly accessible s3 bucket 
   
-  Locate [01_load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/01_load.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. 
+  Locate [01_load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/01_load.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. 
   Next, run the following in your container's bash command line. Wait 2 mintues as it's pulling data from s3. 
 
   ```
   gsql /home/tigergraph/tutorial/vector/01_load.gsql
   ```
-  or in GSQL Shell editor, copy the content of [01_load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/01_load.gsql), and paste it into the GSQL shell editor to run.
+  or in GSQL Shell editor, copy the content of [01_load.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/01_load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Locate the following data files under `/home/tigergraph/tutorial/data` or copy them to your container:
-    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account.csv)
-    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone.csv)
-    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/city.csv)
-    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/hasPhone.csv)
-    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
-    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
-    - [account_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account_emb.csv)
-    - [phone_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone_emb.csv)
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
+    - [account_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account_emb.csv)
+    - [phone_emb.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone_emb.csv)
 
-  - Locate [02_load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/02_load2.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. Modify the script with your local file path if necessary. Next, run the following in your container's bash command line. 
+  - Locate [02_load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/02_load2.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container. Modify the script with your local file path if necessary. Next, run the following in your container's bash command line. 
     ```
     gsql /home/tigergraph/tutorial/vector/02_load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [02_load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/02_load2.gsql), and paste in GSQL shell editor to run.
+    or in GSQL Shell editor, copy the content of [02_load2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/02_load2.gsql), and paste in GSQL shell editor to run.
  
     The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the the `LOAD` statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes. 
 
@@ -260,7 +260,7 @@ GSQL>show function gds.vector.distance
 ## Vector Search
 ### Top-k vector search on a given vertex type's vector attribute. 
 
-Locate [03_q1.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/03_q1.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [03_q1.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/03_q1.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/03_q1.gsql
@@ -286,7 +286,7 @@ install query q1
 #run the query
 run query q1([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q1.out) under `/home/tigergraph/tutorial/vector/q1.out` 
+The result is shown in [q1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1.out) under `/home/tigergraph/tutorial/vector/q1.out` 
 
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
@@ -296,7 +296,7 @@ curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query
 
 ### Top-k vector search on a set of vertex types' vector attributes. 
 
-Locate [04_q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/04_q1a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [04_q1a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/04_q1a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/04_q1a.gsql
@@ -321,10 +321,10 @@ install query q1a
 #run the query
 run query q1a ([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q1a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q1a.out) under `/home/tigergraph/tutorial/vector/q1a.out` 
+The result is shown in [q1a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1a.out) under `/home/tigergraph/tutorial/vector/q1a.out` 
 ### Top-k vector search using a vertex embedding as the query vector
 
-Locate [05_q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/05_q1b.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [05_q1b.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/05_q1b.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/05_q1b.gsql
@@ -357,11 +357,11 @@ install query q1b
 #run the query
 run query q1b()
 ```
-The result is shown in [q1b.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q1b.out) under `/home/tigergraph/tutorial/vector/q1b.out` 
+The result is shown in [q1b.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1b.out) under `/home/tigergraph/tutorial/vector/q1b.out` 
 
 ### Top-k vector search from a vertex set parameter
 
-Locate [06_q1c.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/06_q1c.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [06_q1c.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/06_q1c.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 
 ```
@@ -397,14 +397,14 @@ install query q1c
 #run the query
 run query q1c("Scott", ["Steven", "Jenny"], [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q1c.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q1c.out) under `/home/tigergraph/tutorial/vector/q1c.out` 
+The result is shown in [q1c.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q1c.out) under `/home/tigergraph/tutorial/vector/q1c.out` 
 
 [Go back to top](#top)
 
 ## Range Vector Search
 Do a range vector search with a given query embedding and a distance threshold. 
 
-Locate [07_q2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/07_q2.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [07_q2.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/07_q2.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/07_q2.gsql
@@ -429,13 +429,13 @@ install query q2
 #run the query
 run query q2([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 0.394)
 ```
-The result is shown in [q2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q2.out) under `/home/tigergraph/tutorial/vector/q2.out` 
+The result is shown in [q2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q2.out) under `/home/tigergraph/tutorial/vector/q2.out` 
 
 [Go back to top](#top)
 ## Filtered Vector Search
 Do a GSQL query block to select a vertex candidate set, then do vector top-k search on the candidate set. 
 
-Locate [08_q3.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/08_q3.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [08_q3.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/08_q3.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/08_q3.gsql
@@ -466,7 +466,7 @@ install query q3
 run query q3([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557], 2)
 ```
 
-The result is shown in [q3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q3.out) under `/home/tigergraph/tutorial/vector/q3.out` 
+The result is shown in [q3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q3.out) under `/home/tigergraph/tutorial/vector/q3.out` 
 
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
@@ -480,7 +480,7 @@ curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q3" -d '{"query
 ### Approximate Nearest Neighbor (ANN) vector search on a graph pattern
 Do a pattern match first to find candidate vertex set. Then, do a vector search. 
 
-Locate [09_q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/09_q4.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [09_q4.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/09_q4.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/09_q4.gsql
@@ -528,13 +528,13 @@ install query q4
 #run the query
 run query q4("2024-01-01", "2024-12-31", [-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q4.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q4.out) under `/home/tigergraph/tutorial/vector/q4.out` 
+The result is shown in [q4.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4.out) under `/home/tigergraph/tutorial/vector/q4.out` 
 
 ### Exact vector search on a graph pattern 
 
 Use `ORDER BY ASC` or `ORDER BY DESC` to do exact top-k vector search. This method is exepensive. 
 
-Locate [10_q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/10_q4a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [10_q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/10_q4a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/10_q4a.gsql
@@ -591,14 +591,14 @@ install query q4a
 #run the query
 run query q4a([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q4a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q4a.out) under `/home/tigergraph/tutorial/vector/q4a.out` 
+The result is shown in [q4a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q4a.out) under `/home/tigergraph/tutorial/vector/q4a.out` 
 
 [Go back to top](#top)
 ## Vector Similarity Join on Graph Patterns
 ### Top-K similarity join on graph patterns
 Find most similar pairs from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
-Locate [11_q5.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/11_q5.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [11_q5.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/11_q5.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/11_q5.gsql
@@ -631,12 +631,12 @@ install query q5
 #run the query
 run query q5()
 ```
-The result is shown in [q5.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q5.out) under `/home/tigergraph/tutorial/vector/q5.out`
+The result is shown in [q5.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5.out) under `/home/tigergraph/tutorial/vector/q5.out`
 
 ### Range similarity join on graph patterns. 
 Find similar pairs whose distance is less than a threshold from a graph pattern. Exhaustive search any two pairs specified by vertex alias from a given graph pattern. 
 
-Locate [12_q5a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/12_q5a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [12_q5a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/12_q5a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/12_q5a.gsql
@@ -662,13 +662,13 @@ install query q5a
 #run the query
 run query q5a()
 ```
-The result is shown in [q5a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q5a.out) under `/home/tigergraph/tutorial/vector/q5a.out` 
+The result is shown in [q5a.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q5a.out) under `/home/tigergraph/tutorial/vector/q5a.out` 
 [Go back to top](#top)
 
 ## Vector Search Driven Pattern Match
 Do vector search first, the result drive the next pattern match. 
 
-Locate [13_q6.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/13_q6.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
+Locate [13_q6.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/13_q6.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
 ```
 gsql /home/tigergraph/tutorial/vector/13_q6.gsql
@@ -697,7 +697,7 @@ install query q6
 #run the query
 run query q6([-0.017733968794345856, -0.01019224338233471, -0.016571875661611557])
 ```
-The result is shown in [q6.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/q6.out) under `/home/tigergraph/tutorial/vector/q6.out` 
+The result is shown in [q6.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/vector/q6.out) under `/home/tigergraph/tutorial/vector/q6.out` 
 [Go back to top](#top)
 # Essential Operations and Tools
 
@@ -1081,7 +1081,7 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 # Reference
 TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs [https://arxiv.org/abs/2501.11216]
 
-For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergraph/ecosys/blob/master/tutorials/README.md)
+For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/README.md)
 
 [Go back to top](#top)
 
