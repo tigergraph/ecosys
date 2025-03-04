@@ -1,0 +1,45 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T": [
+        {
+          "srcAccount": "Jenny",
+          "transferCount": 1,
+          "totalAmount": 1000,
+          "stdevAmmount": 0
+        },
+        {
+          "srcAccount": "Paul",
+          "transferCount": 2,
+          "totalAmount": 20653,
+          "stdevAmmount": 13680.39489561613
+        },
+        {
+          "srcAccount": "Ed",
+          "transferCount": 1,
+          "totalAmount": 1500,
+          "stdevAmmount": 0
+        },
+        {
+          "srcAccount": "Scott",
+          "transferCount": 1,
+          "totalAmount": 21300,
+          "stdevAmmount": 11172.73466972164
+        },
+        {
+          "srcAccount": "Steven",
+          "transferCount": 1,
+          "totalAmount": 8560,
+          "stdevAmmount": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 1
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "T": [
+        {
+          "a": "Scott",
+          "b": "Scott",
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
+          "b": "Ed",
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
+          "b": "Steven",
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
+          "b": "Jenny",
+          "path_cnt": 3
+        },
+        {
+          "a": "Scott",
+          "b": "Paul",
+          "path_cnt": 3
+        }
+      ]
+    }
+  ]
+}
