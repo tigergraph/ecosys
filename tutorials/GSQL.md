@@ -145,7 +145,7 @@ Now that you have a graph schema, you can load data using one of the following m
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql load.gsql
+     gsql 01_load.gsql
   ```
   or in GSQL editor of TigerGraph Savanna, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL editor to run.
   
@@ -160,7 +160,7 @@ Now that you have a graph schema, you can load data using one of the following m
 
   - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql load2.gsql
+       gsql 25_load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
 

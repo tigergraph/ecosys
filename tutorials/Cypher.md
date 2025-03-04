@@ -46,7 +46,7 @@ We use an artificial financial schema and dataset as a running example to demons
 Copy [00_schema.gsql](./gsql/00_schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql schema.gsql
+gsql 00_schema.gsql
 ```
 As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
 
@@ -82,7 +82,7 @@ You can choose one of the following methods.
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql load.gsql
+     gsql 01_load.gsql
   ```
   or in GSQL Shell editor, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL shell editor to run.
   
@@ -97,7 +97,7 @@ You can choose one of the following methods.
 
   - Copy [25_load.gsql](./gsql/25_load.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql load2.gsql
+       gsql 25_load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load.gsql](./script/25_load.gsql), and paste in GSQL shell editor to run.
 
