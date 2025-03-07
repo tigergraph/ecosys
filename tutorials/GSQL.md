@@ -1704,6 +1704,8 @@ run query insertEdge()
 //see a new edge between "Scott" and "Paul" is inserted
 select e from (a:Account)-[e:transfer]->(t) where a.name="Scott"
 ```
+
+
 [Go back to top](#top)
 
 ---
