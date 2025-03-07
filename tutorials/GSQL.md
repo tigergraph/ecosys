@@ -40,7 +40,8 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
   - [DML](#dml)
-    - [Update Attribute](#update-attribute)  
+    - [Update Attribute](#update-attribute)
+    - [Insert Edge](#insert-edge)
  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
@@ -1666,6 +1667,42 @@ select a from (a:Account) where a.name = "Scott"
 
 //check "Scott" transfer edges' amount value has been incremented
 select e from (a:Account)-[e:transfer]->(t)  where a.name = "Scott"
+```
+
+### Insert Edge
+You can use `INSERT` statement to insert edges in ACCUM clause. 
+
+**Example**
+
+```python
+use graph financialGraph
+
+/*
+* Insert an edge by insert statement in ACCUM
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+
+CREATE OR REPLACE QUERY insertEdge() SYNTAX v3 {
+
+  DATETIME date = now();
+  v1 = SELECT a
+       FROM (a:Account)-[e:transfer]->()-[e2:transfer]->(t)
+       WHERE a.name = "Scott"
+       ACCUM
+            INSERT INTO transfer VALUES (a.name, t.name, date, 10);
+
+}
+
+#compile and install the query as a stored procedure
+install query insertEdge
+
+#run the query
+run query insertEdge()
+
+//see a new edge between "Scott" and "Paul" is inserted
+select e from (a:Account)-[e:transfer]->(t) where a.name="Scott"
 ```
 [Go back to top](#top)
 
