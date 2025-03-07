@@ -39,6 +39,8 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
+  - [DML](#dml)
+    - [Update Attribute](#update-attribute)  
  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
@@ -1622,6 +1624,57 @@ RUN QUERY CaseWhenTest()
 [Go back to top](#top)
 
 ---
+## DML
+
+### Update Attribute 
+You can directly update the graph element's attribute in the ACCUM and POST-ACCUM clause by directly assign their attribute with a new value. 
+**Example**
+```python
+use graph financialGraph
+
+/*
+* Update graph element attribute by direct assignment
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+
+CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
+
+
+  v1 = SELECT a
+       FROM (a:Account)-[e:transfer]->(b:Account)
+       WHERE a.name = "Scott";
+
+   PRINT v1;
+
+   v2 = SELECT a
+        FROM (a:Account)-[e:transfer]->(b:Account)
+        WHERE a.name = "Scott"
+        ACCUM e.amount = e.amount+1 //increment amount for each edge
+        POST-ACCUM (a)
+             CASE WHEN NOT a.isBlocked THEN a.isBlocked = TRUE END;
+
+
+}
+
+
+#compile and install the query as a stored procedure
+install query updateAttribute
+
+#run the query
+run query updateAttribute()
+
+//check "Scott" isBloked attribute value has been changed to "TRUE"
+select a from (a:Account) where a.name = "Scott"
+
+//check "Scott" transfer edges' amount value has been incremented
+select e from (a:Account)-[e:transfer]->(t)  where a.name = "Scott"
+```
+[Go back to top](#top)
+
+---
+### IF Statement
 ## Vertex Set Operators
 
 ### Union
