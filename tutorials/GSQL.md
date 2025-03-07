@@ -1632,16 +1632,13 @@ You can directly update the graph element's attribute in the ACCUM and POST-ACCU
 **Example**
 ```python
 use graph financialGraph
-
 /*
 * Update graph element attribute by direct assignment
 * Since GSQL stored procedure has snapshot semantics. The update will
 * only be seen after the query is fully executed.
 *
 */
-
 CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
-
 
   v1 = SELECT a
        FROM (a:Account)-[e:transfer]->(b:Account)
@@ -1655,10 +1652,7 @@ CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
         ACCUM e.amount = e.amount+1 //increment amount for each edge
         POST-ACCUM (a)
              CASE WHEN NOT a.isBlocked THEN a.isBlocked = TRUE END;
-
-
 }
-
 
 #compile and install the query as a stored procedure
 install query updateAttribute
