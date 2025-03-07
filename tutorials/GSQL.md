@@ -1628,6 +1628,7 @@ RUN QUERY CaseWhenTest()
 
 ### Update Attribute 
 You can directly update the graph element's attribute in the ACCUM and POST-ACCUM clause by directly assign their attribute with a new value. 
+
 **Example**
 ```python
 use graph financialGraph
