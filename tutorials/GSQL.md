@@ -1651,6 +1651,7 @@ CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
         WHERE a.name = "Scott"
         ACCUM e.amount = e.amount+1 //increment amount for each edge
         POST-ACCUM (a)
+              //change isBlocked from FALSE to TRUE of "Scott" node
              CASE WHEN NOT a.isBlocked THEN a.isBlocked = TRUE END;
 }
 
