@@ -1,0 +1,22 @@
+use graph financialGraph
+
+/*
+* Delete a graph element  by DELETE statement
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY deleteElement() SYNTAX v3 {
+
+  DELETE a FROM (a:Account)
+  WHERE a.name = "Scott";
+
+  DELETE e FROM (a:Account)-[e:transfer]->(t)
+  WHERE a.name = "Jenny";
+}
+
+#compile and install the query as a stored procedure
+install query deleteElement
+
+#run the query
+run query deleteElement()

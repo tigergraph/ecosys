@@ -1,0 +1,29 @@
+use graph financialGraph
+/*
+* Update graph element attribute by direct assignment
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
+
+  v1 = SELECT a
+       FROM (a:Account)-[e:transfer]->(b:Account)
+       WHERE a.name = "Scott";
+
+   PRINT v1;
+
+   v2 = SELECT a
+        FROM (a:Account)-[e:transfer]->(b:Account)
+        WHERE a.name = "Scott"
+        ACCUM e.amount = e.amount+1 //increment amount for each edge
+        POST-ACCUM (a)
+              //change isBlocked from FALSE to TRUE of "Scott" node
+             CASE WHEN NOT a.isBlocked THEN a.isBlocked = TRUE END;
+}
+
+#compile and install the query as a stored procedure
+install query updateAttribute
+
+#run the query
+run query updateAttribute()

@@ -39,6 +39,10 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
     - [FOREACH Statement](#foreach-statement)
     - [CONTINUE and BREAK Statement](#continue-and-break-statement)
     - [CASE WHEN Statement](#case-when-statement)
+  - [DML](#dml)
+    - [Update Attribute](#update-attribute)
+    - [Insert Edge](#insert-edge)
+    - [Delete Element](#delete-element)
  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
@@ -145,22 +149,22 @@ Now that you have a graph schema, you can load data using one of the following m
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql load.gsql
+     gsql 01_load.gsql
   ```
   or in GSQL editor of TigerGraph Savanna, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
-    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
-    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
-    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
-    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
-    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
-    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
 
   - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql load2.gsql
+       gsql 25_load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
 
@@ -1622,6 +1626,167 @@ RUN QUERY CaseWhenTest()
 [Go back to top](#top)
 
 ---
+## DML
+
+### Update Attribute 
+You can directly update the graph element's attribute in the ACCUM and POST-ACCUM clause by directly assign their attribute with a new value. 
+
+**Example**
+```python
+use graph financialGraph
+/*
+* Update graph element attribute by direct assignment
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY updateAttribute () SYNTAX v3 {
+
+  v1 = SELECT a
+       FROM (a:Account)-[e:transfer]->(b:Account)
+       WHERE a.name = "Scott";
+
+   PRINT v1;
+
+   v2 = SELECT a
+        FROM (a:Account)-[e:transfer]->(b:Account)
+        WHERE a.name = "Scott"
+        ACCUM e.amount = e.amount+1 //increment amount for each edge
+        POST-ACCUM (a)
+              //change isBlocked from FALSE to TRUE of "Scott" node
+             CASE WHEN NOT a.isBlocked THEN a.isBlocked = TRUE END;
+}
+
+#compile and install the query as a stored procedure
+install query updateAttribute
+
+#run the query
+run query updateAttribute()
+
+//check "Scott" isBloked attribute value has been changed to "TRUE"
+select a from (a:Account) where a.name = "Scott"
+
+//check "Scott" transfer edges' amount value has been incremented
+select e from (a:Account)-[e:transfer]->(t)  where a.name = "Scott"
+```
+
+### Insert Edge
+You can use `INSERT` statement to insert edges in ACCUM clause. 
+
+**Example**
+
+```python
+use graph financialGraph
+
+/*
+* Insert an edge by insert statement in ACCUM
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+
+CREATE OR REPLACE QUERY insertEdge() SYNTAX v3 {
+
+  DATETIME date = now();
+  v1 = SELECT a
+       FROM (a:Account)-[e:transfer]->()-[e2:transfer]->(t)
+       WHERE a.name = "Scott"
+       ACCUM
+            INSERT INTO transfer VALUES (a.name, t.name, date, 10);
+
+}
+
+#compile and install the query as a stored procedure
+install query insertEdge
+
+#run the query
+run query insertEdge()
+
+//see a new edge between "Scott" and "Paul" is inserted
+select e from (a:Account)-[e:transfer]->(t) where a.name="Scott"
+```
+
+[Go back to top](#top)
+
+### Delete Element
+You can use the `DELETE` statement to delete graph element.
+
+**Example**
+
+```python
+use graph financialGraph
+
+/*
+* Delete a graph element  by DELETE statement
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY deleteElement() SYNTAX v3 {
+
+  DELETE a FROM (a:Account)
+  WHERE a.name = "Scott";
+
+  DELETE e FROM (a:Account)-[e:transfer]->(t)
+  WHERE a.name = "Jenny";
+}
+
+#compile and install the query as a stored procedure
+install query deleteElement
+
+#run the query
+run query deleteElement()
+```
+
+The GSQL engine will periodically process updates. Occasionally, changes may not be visible immediately. To see the results instantly, invoke the `rebuildnow` REST API. Simply call the `rebuildnow` REST API with the graph name as a suffix to apply the changes immediately.
+
+```python
+ curl -X GET 'http://localhost:14240/restpp/rebuildnow/financialGraph'
+```
+
+After that, you can query with the latest graph status.
+
+```python
+select s from (s:Account) where s.name = "Scott"
+select s, t, e from (s:Account)-[e:transfer]-(t) where s.name = "Jenny"
+```
+
+You can also use DELETE() to delete graph element. 
+
+```python
+use graph financialGraph
+
+/*
+* Delete a graph element  by DELETE()
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY deleteElement2() SYNTAX v3 {
+
+  v = SELECT a
+      FROM (a:Account)
+      WHERE a.name = "Paul"
+      ACCUM DELETE(a); //delete a vertex
+
+  v = SELECT a
+      FROM (a:Account)-[e:transfer]-(t)
+      WHERE a.name = "Ed"
+      ACCUM DELETE(e); //delete matched edges
+}
+
+
+#compile and install the query as a stored procedure
+install query deleteElement2
+
+#run the query
+run query deleteElement2()
+```
+
+[Go back to top](#top)
+
+---
+### IF Statement
 ## Vertex Set Operators
 
 ### Union
@@ -1728,7 +1893,7 @@ CREATE OR REPLACE QUERY minusTest () SYNTAX V3 {
 ---
 ## Vector Search
 TigerGraph has extended the vertex type to support vectors, enabling users to query both structured data (nodes and edges) and unstructured data (embedding attributes) in GSQL.
-For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/VectorSearch.md)
+For more details on vector support, refer to [Vector Search](https://github.com/tigergraph/ecosys/blob/master/tutorials/VectorSearch.md)
 
 ---
 ## OpenCypher Query
