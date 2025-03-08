@@ -101,8 +101,14 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
    GSQL> exit #quit the gsql shell   
 ```
+The following command is good for operation.
 
-To stop the server, you can use `gadmin stop all` in the bash shell. 
+```python
+#To stop the server, you can use
+ gadmin stop all
+#To clear the database
+ gsql 'drop all'
+```
 
 **Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
