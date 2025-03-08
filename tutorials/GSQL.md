@@ -42,6 +42,7 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
   - [DML](#dml)
     - [Update Attribute](#update-attribute)
     - [Insert Edge](#insert-edge)
+    - [Delete Element](#delete-element)
  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
@@ -1705,8 +1706,49 @@ run query insertEdge()
 select e from (a:Account)-[e:transfer]->(t) where a.name="Scott"
 ```
 
-
 [Go back to top](#top)
+
+### Delete Element
+You can use the `DELETE` statement to delete graph element.
+
+**Example**
+
+```python
+use graph financialGraph
+
+/*
+* Delete a graph element  by DELETE statement
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY deleteElement() SYNTAX v3 {
+
+  DELETE a FROM (a:Account)
+  WHERE a.name = "Scott";
+
+  DELETE e FROM (a:Account)-[e:transfer]->(t)
+  WHERE a.name = "Jenny";
+}
+
+#compile and install the query as a stored procedure
+install query deleteElement
+
+#run the query
+run query deleteElement()
+```
+
+GSQL engine will periodially consume the update. Sometime, you may not see the change immediately. In order to see the result immediately, you need to invoke the rebuildnow REST api to make the change happen.
+You can call the rebuildnow API with the graph name as suffix. 
+```python
+ curl -X GET 'http://localhost:14240/restpp/rebuildnow/financialGraph'
+```
+After that, you can query with the latest graph status.
+
+```python
+select s from (s:Account) where s.name = "Scott"
+select s, t, e from (s:Account)-[e:transfer]-(t) where s.name = "Jenny"
+```
 
 ---
 ### IF Statement
