@@ -1781,7 +1781,9 @@ install query deleteElement2
 
 #run the query
 run query deleteElement2()
-```python
+```
+
+[Go back to top](#top)
 
 ---
 ### IF Statement
