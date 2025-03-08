@@ -1746,7 +1746,8 @@ install query deleteElement
 run query deleteElement()
 ```
 
-After the above procedure is run, you can check the result
+After the above query is run, you can query the latest graph. 
+
 ```python
 select s from (s:Account) where s.name = "Scott"
 select s, t, e from (s:Account)-[e:transfer]-(t) where s.name = "Jenny"
@@ -1787,7 +1788,7 @@ run query deleteElement2()
 [Go back to top](#top)
 
 ---
-### IF Statement
+
 ## Vertex Set Operators
 
 ### Union
