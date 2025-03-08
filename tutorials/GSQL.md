@@ -1788,7 +1788,7 @@ run query deleteElement2()
 [Go back to top](#top)
 
 ---
-### IF Statement
+
 ## Vertex Set Operators
 
 ### Union
