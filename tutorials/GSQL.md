@@ -1751,6 +1751,38 @@ select s from (s:Account) where s.name = "Scott"
 select s, t, e from (s:Account)-[e:transfer]-(t) where s.name = "Jenny"
 ```
 
+You can also use DELETE() to delete graph element. 
+
+```python
+use graph financialGraph
+
+/*
+* Delete a graph element  by DELETE()
+* Since GSQL stored procedure has snapshot semantics. The update will
+* only be seen after the query is fully executed.
+*
+*/
+CREATE OR REPLACE QUERY deleteElement2() SYNTAX v3 {
+
+  v = SELECT a
+      FROM (a:Account)
+      WHERE a.name = "Paul"
+      ACCUM DELETE(a); //delete a vertex
+
+  v = SELECT a
+      FROM (a:Account)-[e:transfer]-(t)
+      WHERE a.name = "Ed"
+      ACCUM DELETE(e); //delete matched edges
+}
+
+
+#compile and install the query as a stored procedure
+install query deleteElement2
+
+#run the query
+run query deleteElement2()
+```python
+
 ---
 ### IF Statement
 ## Vertex Set Operators
