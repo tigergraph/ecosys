@@ -94,6 +94,7 @@ CREATE DIRECTED EDGE isLocatedIn (FROM Account, TO City)
 
 //create vectors
 CREATE GLOBAL SCHEMA_CHANGE JOB fin_add_vector {
+  //add an embedding attribute "emb1" to vertex type "Account"
   ALTER VERTEX Account ADD VECTOR ATTRIBUTE emb1(dimension=3);
   ALTER VERTEX Phone ADD VECTOR ATTRIBUTE emb1(dimension=3);
 }
@@ -143,7 +144,7 @@ You can choose one of the following methods.
 
     DROP JOB load_local_file
 
-    //load from local file
+    //define a loading job to load from local file
     CREATE LOADING JOB load_local_file  {
       // define the location of the source files; each file path is assigned a filename variable.  
       DEFINE FILENAME account="/home/tigergraph/tutorial/data/account.csv";
@@ -308,7 +309,7 @@ USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q1a (LIST<float> query_vector) SYNTAX v3 {
   MapAccum<Vertex, Float> @@distances;
-
+  //specify vector search on Account and Phone's emb1 attribute. 
   v = vectorSearch({Account.emb1, Phone.emb1}, query_vector, 8, { distance_map: @@distances});
 
   print v WITH VECTOR;
@@ -415,7 +416,7 @@ gsql /home/tigergraph/tutorial/vector/07_q2.gsql
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q2 (LIST<float> query_vector, double threshold) SYNTAX v3 {
-
+  //find Account whose emb1 distance to a query_vector is less than a threshold
   v = SELECT a
       FROM (a:Account)
       WHERE gds.vector.distance(a.emb1, query_vector, "COSINE") < threshold;
