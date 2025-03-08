@@ -1746,13 +1746,7 @@ install query deleteElement
 run query deleteElement()
 ```
 
-The GSQL engine will periodically process updates. Occasionally, changes may not be visible immediately. To see the results instantly, invoke the `rebuildnow` REST API. Simply call the `rebuildnow` REST API with the graph name as a suffix to apply the changes immediately.
-
-```python
- curl -X GET 'http://localhost:14240/restpp/rebuildnow/financialGraph'
-```
-
-After that, you can query with the latest graph status.
+After the above query is run, you can query the latest graph. 
 
 ```python
 select s from (s:Account) where s.name = "Scott"
