@@ -1082,7 +1082,7 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 [Go back to top](#top)
 
 # Reference
-TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs [https://arxiv.org/abs/2501.11216], to appear in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
+[TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/abs/2501.11216), to appear in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
 
 For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergraph/ecosys/blob/master/tutorials/README.md)
 
