@@ -452,7 +452,7 @@ CREATE OR REPLACE QUERY q3 (LIST<float> query_vector, int k) SYNTAX v3 {
   c = SELECT a
       FROM (a:Account)
       WHERE a.name in ("Scott", "Paul", "Steven");
-
+  //do top-k vector search within the vertex set "c", store the top-k distances to the distance_map
   v = vectorSearch({Account.emb1}, query_vector, k, {candidate_set: c, distance_map: @@distances});
 
   print v WITH VECTOR;
@@ -498,12 +498,12 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
   MapAccum<Vertex, Float> @@distances1;
   MapAccum<Vertex, Float> @@distances2;
 
-  // a path pattern in ascii art () -[]->()-[]->()
+  // a path pattern in ascii art ()-[]->()-[]->()
   c1 = SELECT b
        FROM (a:Account {name: "Scott"})-[e:transfer]->()-[e2:transfer]->(b:Account)
        WHERE e.date >= low AND e.date <= high and e.amount >500 and e2.amount>500;
 
-  //ANN search
+  //ANN search. Do top-k search on the vertex set "c1".
   v = vectorSearch({Account.emb1}, query_vector, 2, {candidate_set: c1, distance_map: @@distances1});
 
   PRINT v WITH VECTOR;
@@ -515,7 +515,7 @@ CREATE OR REPLACE QUERY q4 (datetime low, datetime high, LIST<float> query_vecto
   c2 = SELECT b
        FROM (a:Account {name: "Scott"})-[:transfer*1..]->(b:Account)
        WHERE a.name != b.name;
-  //ANN search
+  //ANN search. Do top-k search on the vertex set "c2"
   v = vectorSearch({Account.emb1}, query_vector, 2, {candidate_set: c2, distance_map: @@distances2});
 
   PRINT v WITH VECTOR;
@@ -618,7 +618,9 @@ CREATE OR REPLACE QUERY q5() SYNTAX v3 {
   //Declare a global heap accumulator to store the top 2 similar pairs
   HeapAccum<pair>(2, distance ASC) @@result;
 
-  // a path pattern in ascii art () -[]->()-[]->()
+  // a path pattern in ascii art () -[]->()-[]->().
+  // for each (a,b) pair, we calculate their "CONSINE" distance. and store them in a Heap.
+  // only the top-2 pair will be kept in the Heap
   v  = SELECT b
        FROM (a:Account)-[e:transfer]->()-[e2:transfer]->(b:Account)
        ACCUM @@result += pair(a, b, gds.vector.distance(a.emb1, b.emb1, "COSINE"));
@@ -680,7 +682,7 @@ gsql /home/tigergraph/tutorial/vector/13_q6.gsql
 USE GRAPH financialGraph
 
 CREATE OR REPLACE QUERY q6 (LIST<float> query_vector) SYNTAX v3 {
-
+  //find top-3 vectors from Account.emb1 that are closest to query_vector
   R = vectorSearch({Account.emb1}, query_vector, 3);
 
   PRINT R;
