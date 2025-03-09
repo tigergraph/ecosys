@@ -1076,6 +1076,8 @@ print(result)
 
 # Vector Update
 
+## Delayed Update Visibility
+
 Vector attributes are fully editable, allowing users to create, read, update, and delete them like any other vertex attribute. However, since they are indexed using HNSW for fast ANN search, updates may not be immediately visible until the index is rebuilt. To track the rebuild status, we provide a REST endpoint for real-time status check.
 
 ```python
@@ -1110,6 +1112,9 @@ curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1/embAttr1?verbose=
 {"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildInstances({SEGID}_{VECTOR_ID})":{"GPE_1#1":[1_1]}},"code":"REST-0000"}
 ```
 
+## Frequent Update Consume More Memory and Disk
+
+Based on our experiments, a large volume of updates may lead to high memory and disk consumption. We observed that the index file size closely matches memory usage, while the main file size grows as expected, accumulating all update records.
 
 # Support
 If you like the tutorial and want to explore more, join the GSQL developer community at
