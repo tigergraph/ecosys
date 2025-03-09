@@ -25,6 +25,7 @@ This GSQL tutorial contains
   - [Global and Local Schema Change](#global-and-local-schema-change)
   - [Vector Data Loading](#vector-data-loading)
   - [Python Integration](#python-integration)
+- [Vector Update](#vector-update)
 - [Support](#support)
 - [Reference](#reference)
 - [Contact](#contact)
@@ -195,42 +196,6 @@ TigerGraph provides a user-friendly vectorSearch function for performing ANN sea
 ### Exact Vector Search 
 To support exact searches, TigerGraph includes a set of built-in vector functions. These functions allow users to perform operations on vector attributes, enabling advanced capabilities such as exact top-k vector searches, similarity joins on graph patterns, and innovative fusions of structured and unstructured data.
 
-### Vector Data Update
-Vector attributes are also mutable, allowing users to create, read, update, or delete vector data in the same way as other vertex attribute types.
-However, since vector attributes are indexed by HNSW (a special graph index structure to process ANN search), if you want to see the updated vector attribute, you have to wait until the existing HNSW is rebuilt. 
-We have added a REST endpoint to get current index rebuild status. The REST endpoint to check rebuild status is
-
-```python
-/vector/status/{graph_name}/{vertex_type}/{vector_name}
-```
-
-**Example**
-
-Check a vector attribute of vertex type `v1`.
-```python
-curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1/embAttr1"
-
-#sample output
-{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildServers":["GPE_1#1"]},"code":"REST-0000"}
-```
-
-Also, we can check by vertex type. 
-
-```python
-curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1"
-
-#sample output
-{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildServers":["GPE_1#1"]},"code":"REST-0000"}
-```
-
-We can add `verbose` flag, which will show all needed rebuild vector instances.
-
-```python
-curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1/embAttr1?verbose=true"
-
-#sample output
-{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildInstances({SEGID}_{VECTOR_ID})":{"GPE_1#1":[1_1]}},"code":"REST-0000"}
-```
 
 [Go back to top](#top)
 
@@ -1108,6 +1073,45 @@ print(result)
 ```
 
 [Go back to top](#top)
+
+# Vector Update
+
+Vector attributes are also mutable, allowing users to create, read, update, or delete vector data in the same way as other vertex attribute types.
+However, since vector attributes are indexed by HNSW (a special graph index structure to process ANN search), if you want to see the updated vector attribute, you have to wait until the existing HNSW is rebuilt. 
+We have added a REST endpoint to get current index rebuild status. The REST endpoint to check rebuild status is
+
+```python
+/vector/status/{graph_name}/{vertex_type}/{vector_name}
+```
+
+**Example**
+
+Check a vector attribute of vertex type `v1`.
+```python
+curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1/embAttr1"
+
+#sample output
+{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildServers":["GPE_1#1"]},"code":"REST-0000"}
+```
+
+Also, we can check by vertex type. 
+
+```python
+curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1"
+
+#sample output
+{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildServers":["GPE_1#1"]},"code":"REST-0000"}
+```
+
+We can add `verbose` flag, which will show all needed rebuild vector instances.
+
+```python
+curl -X GET "http://localhost:14240/restpp/vector/status/g1/v1/embAttr1?verbose=true"
+
+#sample output
+{"version":{"edition":"enterprise","api":"v2","schema":0},"error":false,"message":"fetched status success","results":{"NeedRebuildInstances({SEGID}_{VECTOR_ID})":{"GPE_1#1":[1_1]}},"code":"REST-0000"}
+```
+
 
 # Support
 If you like the tutorial and want to explore more, join the GSQL developer community at
