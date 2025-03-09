@@ -1076,9 +1076,7 @@ print(result)
 
 # Vector Update
 
-Vector attributes are also mutable, allowing users to create, read, update, or delete vector data in the same way as other vertex attribute types.
-However, since vector attributes are indexed by HNSW (a special graph index structure to process ANN search), if you want to see the updated vector attribute, you have to wait until the existing HNSW is rebuilt. 
-We have added a REST endpoint to get current index rebuild status. The REST endpoint to check rebuild status is
+Vector attributes are fully editable, allowing users to create, read, update, and delete them like any other vertex attribute. However, since they are indexed using HNSW for fast ANN search, updates may not be immediately visible until the index is rebuilt. To track the rebuild status, we provide a REST endpoint for real-time status check.
 
 ```python
 /vector/status/{graph_name}/{vertex_type}/{vector_name}
