@@ -2,6 +2,11 @@
 
 If you have experience with Custom Resources in Kubernetes (K8S), you can leverage CRs to initiate backup or restore processes. We provide a dedicated document detailing the steps for performing backup and restore using Custom Resources (CRs). [Backup & restore by CR](backup-restore-by-cr.md)
 
+> [!WARNING]
+> If you are using kubectl-tg plugin to backup and restore, we highly recommend you to avoid modifying the backup configurations by directly excuting `gadmin config` in the pod.
+> If you do that, the configurations set by CR and gadmin config may conflict, leading to some unknown behavior.
+
+
 - [Backup \& Restore cluster kubectl-tg plugin](#backup--restore-cluster-kubectl-tg-plugin)
   - [Prerequisite](#prerequisite)
   - [Utilizing `kubectl tg` Command for Backup](#utilizing-kubectl-tg-command-for-backup)
@@ -118,9 +123,15 @@ you can also customize timeout, staging path, the compress level and the compres
 ```
 
 > [!NOTE]
-> Please use subpath of `/home/tigergraph/tigergraph/data/` as local path for backup since this path is mounted with PV. For example, you can use `/home/tigergraph/tigergraph/data/mybackup` .If you do not use that, you will lose your backup data if the pod restarts. And be careful that don’t use the same path for local path as the staging path. If you don’t configure staging path, the default staging path is `/home/tigergraph/tigergraph/data/backup`, if you set local path as `/home/tigergraph/tigergraph/data/backup`, the backup will fail.
+> Please use subpath of `/home/tigergraph/tigergraph/data/` as local path for backup since this path is mounted with PV. For example, you can use `/home/tigergraph/tigergraph/data/mybackup` .If you do not use that, you will lose your backup data if the pod restarts.
 >
-> Please remember which path you use and use the same path if you want to restore the backup file you create.
+> And be careful that don’t use the same path for local path as the staging path. If you don’t configure staging path, the default staging path is `/home/tigergraph/tigergraph/data/backup`(version < 3.10.0) or `/home/tigergraph/tigergraph/data/backup_staging_dir/backup` (version >= 3.10.0),
+> if you set local path as `/home/tigergraph/tigergraph/data/backup` for TigerGraph < 3.10.0 or `/home/tigergraph/tigergraph/data/backup_staging_dir/backup` for TigerGraph >= 3.10.0, the backup will fail.
+>
+> If you configure staging path by `--staging-path`, the actual staging path will be `${stage_path}/backup`. For example, if you set `--staging-path /home/tigergraph/temp`, the actual staging path will be `/home/tigergraph/temp/backup`. And you should not use `/home/tigergraph/temp/backup` as local path.
+
+> [!IMPORTANT]
+> Please remember which local path you use and use the same path if you want to restore the backup package you create.
 
 #### Backup to an S3 Bucket
 

@@ -34,6 +34,9 @@ Since TigerGraph Operator 0.0.6, it has supported Kubernetes features such as Po
 
 Between these two extreme cases, there is a common need to distribute the Pods evenly across the topologies to achieve better cluster utilization and high availability of applications. This can be achieved by configuring topology spread constraints to control how Pods are distributed across your cluster among failure domains such as regions, zones, nodes, and other user-defined topology domains.
 
+> [!IMPORTANT]
+> To utilize the Kubernetes feature Pod Topology Spread Constraints, ensure that your cluster is running Kubernetes version 1.27 or higher, as the matchLabelKeys field, introduced as a beta feature, is enabled by default starting from version 1.27.
+
 ### Configure Topology Spread Constraints for TigerGraph Pods by TigerGraph CR
 
 The TigerGraph Cluster CRD includes a field, spec.topologySpreadConstraints. The usage of this field looks like the following:

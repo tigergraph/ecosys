@@ -3,6 +3,10 @@
 > [!IMPORTANT]
 > There are many examples on different conditions of backup and restore. Some fields in the YAML format CR is optional, a mark `# Optional` is put above them. All fields without the optional mark is required.
 
+> [!WARNING]
+> If you are using CRs to backup and restore, we highly recommend you to avoid modifying the backup configurations by directly excuting `gadmin config` in the pod.
+> If you do that, the configurations set by CR and gadmin config may conflict, leading to some unknown behavior.
+
 - [Backup \& Restore cluster by CR](#backup--restore-cluster-by-cr)
   - [Guarantee the access to S3 Bucket](#guarantee-the-access-to-s3-bucket)
     - [Use AWS Access Key and Secret Access Key](#use-aws-access-key-and-secret-access-key)
@@ -144,6 +148,17 @@ spec:
     # the backup CR will be deleted directly, the backup package still exists in cluster
     forceDeleteAfterMaxRetries: false
 ```
+
+> [!NOTE]
+> Please use subpath of `/home/tigergraph/tigergraph/data/` as local path for backup since this path is mounted with PV. For example, you can use `/home/tigergraph/tigergraph/data/mybackup` .If you do not use that, you will lose your backup data if the pod restarts.
+>
+> And be careful that don’t use the same path for local path as the staging path. If you don’t configure staging path, the default staging path is `/home/tigergraph/tigergraph/data/backup`(version < 3.10.0) or `/home/tigergraph/tigergraph/data/backup_staging_dir/backup` (version >= 3.10.0),
+> if you set local path as `/home/tigergraph/tigergraph/data/backup` for TigerGraph < 3.10.0 or `/home/tigergraph/tigergraph/data/backup_staging_dir/backup` for TigerGraph >= 3.10.0, the backup will fail.
+>
+> If you configure staging path by `.spec.backupConfig.stagingPath`, the actual staging path will be `${stage_path}/backup`. For example, if you set `stagingPath: /home/tigergraph/temp`, the actual staging path will be `/home/tigergraph/temp/backup`. And you should not use `/home/tigergraph/temp/backup` as local path.
+
+> [!IMPORTANT]
+> Please remember which local path you use and use the same path if you want to restore the backup package you create.
 
 ### Backup to S3 bucket
 

@@ -172,7 +172,7 @@ The output is like:
 
 ```bash
 NAME              REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                              SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE      CONDITION-STATUS   AGE
-example-cluster   3          3              1            docker.io/tginternal/tigergraph-k8s:3.10.1   LoadBalancer                      StorageExpandCheck  False              6h41m
+example-cluster   3          3              1            docker.io/tigergraph/tigergraph-k8s:3.10.1   LoadBalancer                      StorageExpandCheck  False              6h41m
 ```
 
 ### TigerGraph CR is in status `StorageExpandCheck, False`
