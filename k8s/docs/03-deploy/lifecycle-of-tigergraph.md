@@ -84,6 +84,14 @@ spec:
 
 If you configure the above `PreDeleteAction`, the command will be executed in the first TigerGraph pods(whose suffix is `-0`) before deleting the TigerGraph cluster. And the status of the cluster will become `DeletePre` once the delete-pre-job starts. After the delete-pre-job is finished, the status of the cluster will become `DeleteRoll`, operator will clean all resources of the cluster and remove the finalizer of TigerGraph CR. Then the TigerGraph CR will be cleaned by K8s. (See more details about finalizers in [Finalizers used by TG](../07-reference/finalizers-used-by-tg.md))
 
+> [!IMPORTANT]
+> In following scenarios, the PreDeleteAction will not be executed:
+>
+> 1. The cluster is in `Paused` status when you delete the cluster. Since the cluster is paused, the TigerGraph pods are not running, and the PreDeleteAction cannot be executed.
+>
+> 2. The cluster is in `InitializeRoll` status, and for some reason the pods are not running. Since the pods are not running, the PreDeleteAction cannot be executed.
+>
+
 > [!WARNING]
 > If your PreDeleteAction failed, the delete-pre-job will be considered as failed, and the TigerGraph CR will be moved to `DeletePre,False` status. The resources of the cluster will not be cleaned, and the finalizer of the TigerGraph CR will not be removed because the operator has to make sure the PreDeleteAction is executed successfully before deleting the cluster.
 > So please make sure that your PreDeleteAction is correct before you configure it, and you should also handle any errors in the PreDeleteAction script.

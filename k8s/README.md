@@ -6,12 +6,13 @@ TigerGraph Operator stands as an automated operations system meticulously design
 > Kubernetes Operator support is currently general availability in Operator version 1.1.0, which can be used for production deployments.
 
 > [!IMPORTANT]
-> TigerGraph Operator has had a breaking change since version 1.0.0. If you are still using a version older than 1.0.0, it is strongly recommended that you upgrade to version 1.2.0. Versions older than 1.0.0 have been deprecated.
+> TigerGraph Operator has had a breaking change since version 1.0.0. If you are still using a version older than 1.0.0, it is strongly recommended that you upgrade to version 1.2.0 and above. Versions older than 1.0.0 have been deprecated.
 
 Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
+| 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|1.26, 1.27, 1.28, 1.29, 1.30|
 | 1.4.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.2|1.25, 1.26, 1.27, 1.28, 1.29|
 | 1.3.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.1|1.25, 1.26, 1.27, 1.28, 1.29|
 | 1.2.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.0|1.25, 1.26, 1.27, 1.28, 1.29|
@@ -42,7 +43,7 @@ TigerGraph Operator offers several deployment options for TigerGraph clusters on
     - [Deploy TigerGraph on K8s without internet access](docs/03-deploy/deploy-without-internet.md)
     - [Deploy TigerGraph on Azure Kubernetes Service (AKS)](/03-deploy/tigergraph-on-aks.md)
 
-Once your deployment is complete, refer to the following documents for guidance on using, operating, and maintaining your TigerGraph clusters on Kubernetes:
+Once your deployment is complete, refer to the following documents for guidance on using, operating, monitoring, and maintaining your TigerGraph clusters on Kubernetes:
 
 - [Configuring TigerGraph Clusters on K8s using TigerGraph CR](docs/07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md)
 - [Utilizing Static & Dynamic Persistent Volume Storage](docs/07-reference/static-and-dynamic-persistent-volume-storage.md)
@@ -58,6 +59,10 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Configuring Services of Sidecar Containers](docs/03-deploy/configure-services-of-sidecar-containers.md)
 - [Enable debug mode of TigerGraph cluster](docs/04-manage/debug-mode.md)
 - [Expand Storage of TigerGraph Cluster](docs/04-manage/expand-storage.md)
+- [Configure Cross-Region Replication on Kubernetes](docs/03-deploy/configure-crr-on-k8s.md)
+- [Upgrade the TigerGraph Cluster Using the TigerGraph Operator](docs/04-manage/tigergraph-upgrade.md)
+- [Enable TigerGraph Operator monitoring with Prometheus and Grafana](docs/05-monitor/tigergraph-monitor-with-prometheus-grafana.md)
+- [Customize the backoff retries for cluster job operations](docs/04-manage/backoff-retries-for-cluster-job-operations.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 

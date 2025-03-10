@@ -2,6 +2,10 @@
 
 This document outlines common issues and provides solutions for troubleshooting TigerGraph Operator installation in a Kubernetes environment.
 
+- [TigerGraph Operator Installation Troubleshooting](#tigergraph-operator-installation-troubleshooting)
+  - [Troubleshooting Steps](#troubleshooting-steps)
+  - [Potential failures](#potential-failures)
+
 ## Troubleshooting Steps
 
 In the following steps, we assume that the TigerGraph Operator has been installed in the `tigergraph` namespace. Please adapt the commands according to your specific setup.
