@@ -291,8 +291,10 @@ The result is shown in [q1.out](https://raw.githubusercontent.com/tigergraph/eco
 
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
+
 ```python
-curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}' | jq
+curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST "http://127.0.0.1:14240/gsql/v1/queries/q1?graph=financialGraph" -d '{
+  "parameters":{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}}' | jq
 ```
 
 ### Top-k vector search on a set of vertex types' vector attributes. 
