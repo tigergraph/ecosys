@@ -35,7 +35,42 @@ This GSQL tutorial contains
 
 # Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
+Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
+After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
+```python
+       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker images #find image id
+       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+       docker exec -it mySandbox /bin/bash #start a shell on this container. 
+       gadmin start all  #start all tigergraph component services
+       gadmin status #should see all services are up.
+```
+
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
+   GSQL> select a from (a:Account)  #query Account vertex
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit the gsql shell   
+```
+The following command is good for operation.
+
+```python
+#To stop the server, you can use
+ gadmin stop all
+#To clear the database
+ gsql 'drop all'
+```
+
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
 [Go back to top](#top)
 
