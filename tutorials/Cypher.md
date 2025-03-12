@@ -35,7 +35,7 @@ This GSQL tutorial contains
 
 # Setup Environment 
 
-If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download Community Edition Docker Image. Follow the Docker setup instructions to set up the environment on your machine.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download [Community Edition Docker Image](https://dl.tigergraph.com/). Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 
 After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
 ```python
