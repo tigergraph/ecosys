@@ -32,36 +32,44 @@ This GSQL tutorial contains
     
 # Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
+Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
+After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
 
-> **_Note:_** Vector feature preview is available in both TigerGraph Community Edition (Alpha) and Enterprise Edition (Preview).
+```python
+       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker images #find image id
+       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+       docker exec -it mySandbox /bin/bash #start a shell on this container. 
+       gadmin start all  #start all tigergraph component services
+       gadmin status #should see all services are up.
+```
 
-To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and start a TigerGraph instance.
-> ```
-> docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
-> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init -t tigergraph/community:4.2.0-alpha
-> ```
-> And access the instance via http://locahost:14240 or obtain a terminal with the following command:
-> ```
-> docker exec -it tigergraph /bin/bash
-> gadmin start all
-> ```
-> After using the database, and you want to shutdown it, use the following shell commmand
->```
->gadmin stop all
->```
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
 
-To use the Enterprise Edition, please pull `tigergraph/tigergraph:4.2.0-preview` docker image instead.
-> ```
-> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init -t tigergraph/tigergraph:4.2.0-preview
-> ```
-> Please remember to apply your TigerGraph license key to the TigerGraph instance, you can obtain a free dev license here https://dl.tigergraph.com/, and use the following shell command to start the db.
-> ```
-> docker exec -it tigergraph /bin/bash
-> gadmin license set <license_key>
-> gadmin config apply -y
-> gadmin start all
-> ```
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
+   GSQL> select a from (a:Account)  #query Account vertex
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit the gsql shell   
+```
+The following command is good for operation.
+
+```python
+#To stop the server, you can use
+ gadmin stop all
+#To clear the database
+ gsql 'drop all'
+```
+
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
 
 [Go back to top](#top)
 
