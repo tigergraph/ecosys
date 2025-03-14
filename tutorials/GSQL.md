@@ -106,7 +106,7 @@ The following command is good for operation.
 ```python
 #To stop the server, you can use
  gadmin stop all
-#To clear the database
+#Check `gadmin status` to verify if the gsql service is running, then use the following command to reset (clear) the database.
  gsql 'drop all'
 ```
 
