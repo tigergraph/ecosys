@@ -65,7 +65,7 @@ The following command is good for operation.
 ```python
 #To stop the server, you can use
  gadmin stop all
-#To clear the database
+#To clear the database, only when gsql service is running.
  gsql 'drop all'
 ```
 
