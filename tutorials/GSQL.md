@@ -87,7 +87,7 @@ After you installed TigerGraph, you can use gadmin tool to start/stop services u
        gadmin status #should see all services are up.
 ```
 
-For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query. 
 ```python
    cd tutorial/gsql/   
    gsql 00_schema.gsql  #setup sample schema in catalog
@@ -110,7 +110,9 @@ The following command is good for operation.
  gsql 'drop all'
 ```
 
-**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based and does not provide access to a bash shell. To execute the GSQL examples in this tutorial, simply copy the query into the Savanna GSQL editor and click Run.
+
+Additionally, all GSQL examples referenced in this tutorial can be found in your TigerGraph tutorials/gsql folder.
 
 ---
 [Go back to top](#top)
