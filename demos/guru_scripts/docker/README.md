@@ -69,7 +69,10 @@ Quick Start for Community Edition
 ================================
 1. Download docker image from https://dl.tigergraph.com/
 2. [Optional for enterprise edition] Download trial license key from https://dl.tigergraph.com/, it's a text file containing the Dev license. 
-3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands, change the image file name to the one you downloaded. 
+3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands, change the image file name to the one you downloaded.
+
+[!NOTE]
+The TigerGraph Docker image is compiled for x86_64/AMD64 processors. If your  machine is a Macbook with an ARM processor, enable the **Apple Virtualization framework** and **Rosetta for x64_64/amd64 emulation on Apple Silicon** options in Docker Desktop. Then, when running the `docker run` command below, add the `--platform linux/amd64` flag.
 
 ```python
        docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
