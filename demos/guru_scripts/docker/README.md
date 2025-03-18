@@ -23,7 +23,7 @@ Install Docker Desktop
 1. Install Docker on your OS (choose one)
    - To install Docker for Mac OS, follow this video
      https://www.youtube.com/watch?v=MU8HUVlJTEY
-     Since the latest MacOS use M series chips use ARM instruction architecture. You need to enable Rosetta 2 to emulate ARM instruction set.
+     Since the latest macOS devices equipped with M-series chips use the ARM instruction set architecture, you'll need to enable Rosetta to emulate App designed for Intel’s x86 architecture. Below is Docker Desktop settings to enable it. 
      ![Rosetta](./images/Rosetta2.jpg)
 
    - To install Docker for Linux, follow this instructions.
