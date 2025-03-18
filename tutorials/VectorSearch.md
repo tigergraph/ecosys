@@ -36,7 +36,7 @@ If you have your own machine (including Windows and Mac laptops), the easiest wa
 
 **Note**: TigerGraph doesn't yet support ARM architecture, so it relies on Rosetta to emulate x86 instructions, leading to suboptimal performance. For production environments, we recommend using an x86-based system.
 
-After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
+After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 
 ```python
        docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
