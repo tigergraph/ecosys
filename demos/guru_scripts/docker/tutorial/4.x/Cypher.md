@@ -37,6 +37,8 @@ This GSQL tutorial contains
 
 If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download [Community Edition Docker Image](https://dl.tigergraph.com/). Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 
+**Note**: TigerGraph doesn't yet support ARM architecture, so it relies on Rosetta to emulate x86 instructions, leading to suboptimal performance. For production environments, we recommend using an x86-based system.
+
 After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
 ```python
        docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
@@ -70,7 +72,9 @@ The following command is good for operation.
  gsql 'drop all'
 ```
 
-**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based and does not provide access to a bash shell. To execute the GSQL examples in this tutorial, simply copy the query into the Savanna GSQL editor and click Run.
+
+Additionally, all Cypher examples referenced in this tutorial can be found in your TigerGraph tutorials/cypher folder.
 
 [Go back to top](#top)
 
