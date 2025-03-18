@@ -11,7 +11,7 @@ The latest TigerGraph docker image includes the following content.
 - emac, vim etc. 
 - jq
 - tar
-- tutorial: gsql 101, gsql 102 sub folders.
+- tutorial: GSQL.md, Cypher.md, Vector.md, gsql/,  vector/, cypher/.  
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
 This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
