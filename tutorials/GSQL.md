@@ -109,7 +109,7 @@ You can also access the GraphStudio visual IDE directly through your browser:
    http://localhost:14240/
 ```
 A login page will automatically open. Use the default credentials: user is `tigergraph`, password is `tigergraph`. 
-Once logged in, click the GraphStudio icon. Assuming you've set up the tutorial schema and loaded the data, navigate by selecting Global View, then choose financialGraph from the pop up menu. Click Explore Graph to start interacting with your data visually.
+Once logged in, click the GraphStudio icon. Assuming you've set up the tutorial schema and loaded the data, navigate by selecting `Global View`, then choose `financialGraph` from the pop up menu. Click Explore Graph to start interacting with your data visually.
 
 To further explore the features of GraphStudio, you can view these concise introductory [videos](https://www.youtube.com/watch?v=29PCZEhyx8M&list=PLq4l3NnrSRp7RfZqrtsievDjpSV8lHhe-), and [product manual](https://docs.tigergraph.com/gui/4.2/intro/) 
 
