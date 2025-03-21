@@ -10,11 +10,9 @@ A more exhaustive description of functionality and behavior of OpenCypher is ava
 To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
 
-# Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./pictures/FinancialGraph.jpg)
-
 # Table of Contents
-This GSQL tutorial contains 
+
+- [Sample Graph](#sample-graph-for-tutorial)
 - [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
@@ -34,7 +32,13 @@ This GSQL tutorial contains
   - [CRUD Statements](#crud-statements)
  - [Support](#support)
  - [Contact](#contact)
-  
+
+---
+# Sample Graph For Tutorial
+This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
+The use case is to analyze which other accounts are connected to 'blocked' accounts.
+
+![Financial Graph](./pictures/FinancialGraph.jpg)
 
 # Setup Environment 
 
