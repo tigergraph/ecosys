@@ -836,7 +836,7 @@ There are many expression functions openCypher supports. Please refer to [openCy
 
 ---
 
-## CRUD Statments
+## CRUD Statements
 
 OpenCypher offers comprehensive support for performing Data Modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
 
