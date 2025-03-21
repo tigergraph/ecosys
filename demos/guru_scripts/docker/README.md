@@ -33,7 +33,10 @@ Install Docker Desktop
    - To install Docker for Windows OS, follow this video
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
-2. Configure Docker Desktop with sufficient resources:
+2. Golden Rules for Configuring Docker on MacBook:
+- Optimal Configuration: Allocate **8 CPUs and 24GB of memory**.
+- Alternative Configuration: If your MacBook has fewer CPUs, allocate 4 CPUs and 16GB to 20GB of memory.
+
     Recommended: **8 cores and 24GB memory**
     Minimum: **4 cores and 16GB memory** 
 
