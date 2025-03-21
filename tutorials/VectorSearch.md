@@ -1,5 +1,5 @@
 # Native Vector Support in TigerGraph
-TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration. We believe agentic AI will benefit from this powerful combination!
+TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration. We believe agentic AI and GraphRAG will benefit from this powerful combination!
 
 To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
