@@ -958,64 +958,104 @@ run query insertEdge("Abby", "Ed")
 
 ### Delete Data
 
+The `DELETE` clause in OpenCypher is used to **remove nodes and relationships** from the graph. When deleting a node, note that this will also remove all its associated relationships.
+
 #### Delete a single node
+
+When you delete a node, if it has relationships, all of its relationships will also be deleted.
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteOneVertex(STRING name="Abby"){
   MATCH (s:Account {name: $name})
   DELETE s
 }
+
 install query deleteOneVertex
+
+# delete "Abby"
 run query deleteOneVertex("Abby")
 ```
 
 #### Delete all nodes of the specified type
+
+You can delete all nodes of a particular label type.
+
+**Single Label Type**
+
 ```python
 ### single type
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertexWithType01(){
   MATCH (s:Account)
   DELETE s
 }
-install query deleteAllVertexWithType01
-run query deleteAllVertexWithType01()
 
+install query deleteAllVertexWithType01
+
+# Delete all nodes with the label `Account`
+run query deleteAllVertexWithType01()
+```
+
+**Multiple Label Types**
+```
 ### multiple types
 CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
   MATCH (s:Account:Phone)
   DELETE s
 }
+
 install query deleteVertexWithType02
+
+# Delete all nodes with the label `Account` or `Phone`
 run query deleteVertexWithType02()
 ```
 
 #### Delete all nodes
+
+This query deletes all nodes in the graph.
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
   MATCH (s)
   DELETE s
 }
+
 install query deleteAllVertex
+
 run query deleteAllVertex()
 ```
 #### Delete relationships
-Delete `transfer` edges with a date filter
+
+You can delete relationships in the graph based on specific criteria.
+
+**Delete `transfer` Relationships with a Date Filter**
+
+This query deletes all `transfer` relationships where the date is earlier than the specified filter date.
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteEdge(STRING name="Abby", DATETIME filterDate="2024-02-01"){
   MATCH (s:Account {name: $name}) -[e:transfer] -> (t:Account)
   WHERE e.date < $filterDate
   DELETE e
 }
+
 install query deleteEdge
+
 run query deleteEdge()
 ```
-Delete all outgoing edges of a specific account
+
+**Delete all outgoing edges of a specific account**
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
   MATCH (s:Account {name: $name}) -[e] -> ()
   DELETE e
 }
+
 install query deleteAllEdge
+
+# Delete all outgoing relationships from the node with the name "Abby"
 run query deleteAllEdge()
 ```
+
 ### Update Data
 
 #### Update vertex attributes
