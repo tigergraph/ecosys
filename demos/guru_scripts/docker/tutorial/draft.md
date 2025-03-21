@@ -922,3 +922,124 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 
 ---
 
+## OpenCypher CRUD Syntax
+OpenCypher provides full support for vertex and edge insertion, deletion, and attribute update.
+
+### Insert Data
+`CREATE` clause in OpenCypher is used to add new nodes or relationships to the graph. If the node or relationship does not exist, it will be created, otherwise, it will be overwritten.
+
+#### Insert Node
+The following query creates a new `Account` node with properties `name` and `isBlocked`:
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertVertex(STRING name, BOOL isBlocked){
+  CREATE (p:Account {name: $name, isBlocked: $isBlocked})
+}
+
+install query insertVertex
+
+# This will create an `Account` node with `name="Abby"` and `isBlocked=true`.
+run query insertVertex("Abby", true)
+```
+
+#### Insert Relationship
+The following query creates a `transfer` edge between two `Account` nodes with properties `date` and `amount`
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertEdge(VERTEX<Account> s, VERTEX<Account> t, DATETIME dt, UINT amt){
+  CREATE (s) -[:transfer {date: $dt, amount: $amt}]-> (t)
+}
+
+install query insertEdge
+
+# This will create a `transfer` relationship from "Abby" to "Ed"
+run query insertEdge("Abby", "Ed")
+```
+---
+
+### Delete Data
+
+#### Delete a single node
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteOneVertex(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  DELETE s
+}
+install query deleteOneVertex
+run query deleteOneVertex("Abby")
+```
+
+#### Delete all nodes of the specified type
+```python
+### single type
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertexWithType01(){
+  MATCH (s:Account)
+  DELETE s
+}
+install query deleteAllVertexWithType01
+run query deleteAllVertexWithType01()
+
+### multiple types
+CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
+  MATCH (s:Account:Phone)
+  DELETE s
+}
+install query deleteVertexWithType02
+run query deleteVertexWithType02()
+```
+
+#### Delete all nodes
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
+  MATCH (s)
+  DELETE s
+}
+install query deleteAllVertex
+run query deleteAllVertex()
+```
+#### Delete relationships
+Delete `transfer` edges with a date filter
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteEdge(STRING name="Abby", DATETIME filterDate="2024-02-01"){
+  MATCH (s:Account {name: $name}) -[e:transfer] -> (t:Account)
+  WHERE e.date < $filterDate
+  DELETE e
+}
+install query deleteEdge
+run query deleteEdge()
+```
+Delete all outgoing edges of a specific account
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
+  MATCH (s:Account {name: $name}) -[e] -> ()
+  DELETE e
+}
+install query deleteAllEdge
+run query deleteAllEdge()
+```
+### Update Data
+
+#### Update vertex attributes
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateAccountAttr(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  SET s.isBlocked = false
+}
+install query updateAccountAttr
+run query updateAccountAttr()
+```
+#### Update edge attributes
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateTransferAmt(STRING startAcct="Jenny", UINT newAmt=100){
+  MATCH (s:Account {name: $startAcct})- [e:transfer]-> (t)
+  WHERE not t.isBlocked
+  SET e.amount = $newAmt
+}
+install query updateTransferAmt
+run query updateTransferAmt("Jenny", 300)
+```
+
+---
+
+
+
+
