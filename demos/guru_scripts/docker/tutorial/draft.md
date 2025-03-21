@@ -923,10 +923,12 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 ---
 
 ## OpenCypher CRUD Syntax
-OpenCypher provides full support for vertex and edge insertion, deletion, and attribute update.
+
+OpenCypher offers comprehensive support for performing CRUD (Create, Read, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
 
 ### Insert Data
-`CREATE` clause in OpenCypher is used to add new nodes or relationships to the graph. If the node or relationship does not exist, it will be created, otherwise, it will be overwritten.
+
+The `CREATE` clause in OpenCypher is used to **add** new nodes or relationships to the graph. If the node or relationship does not already exist, it will be created. If it exists, it will be replaced with the new data.
 
 #### Insert Node
 The following query creates a new `Account` node with properties `name` and `isBlocked`:
@@ -958,7 +960,7 @@ run query insertEdge("Abby", "Ed")
 
 ### Delete Data
 
-The `DELETE` clause in OpenCypher is used to **remove nodes and relationships** from the graph. When deleting a node, note that this will also remove all its associated relationships.
+The `DELETE` clause in OpenCypher is used to **remove nodes and relationships** from the graph. When deleting a node, all its associated relationships will also be deleted.
 
 #### Delete a single node
 
@@ -1027,7 +1029,7 @@ run query deleteAllVertex()
 
 #### Delete relationships
 
-You can delete relationships in the graph based on specific criteria.
+You can delete relationships based on specific conditions.
 
 **Delete `transfer` Relationships with a Date Filter**
 
@@ -1096,9 +1098,6 @@ install query updateTransferAmt
 
 run query updateTransferAmt("Jenny", 300)
 ```
-
----
-
 
 
 ---
