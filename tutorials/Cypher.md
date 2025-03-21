@@ -29,6 +29,7 @@ This GSQL tutorial contains
   - [Conditional Logic](#conditional-logic)
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
+  - [CRUD Statment](#crud-statement)
  - [Support](#support)
  - [Contact](#contact)
   
@@ -835,6 +836,303 @@ There are many expression functions openCypher supports. Please refer to [openCy
 
 ---
 
+## CRUD Statment
+
+OpenCypher offers comprehensive support for performing Data Modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
+
+### Insert Data
+
+The `CREATE` statement in OpenCypher is used to add new nodes or relationships to the graph. If the specified node or relationship doesn't exist, it will be created. If it does exist, it will be replaced with the new data.
+
+#### Insert Node
+
+The following query creates a new `Account` node with properties `name` and `isBlocked`:
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertVertex(STRING name, BOOL isBlocked){
+  CREATE (p:Account {name: $name, isBlocked: $isBlocked})
+}
+
+# This will create an `Account` node with `name="Abby"` and `isBlocked=true`.
+interpret query insertVertex("Abby", true)
+```
+
+#### Insert Relationship
+
+The following query creates a `transfer` edge between two `Account` nodes with properties `date` and `amount`
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertEdge(VERTEX<Account> s, VERTEX<Account> t, DATETIME dt, UINT amt){
+  CREATE (s) -[:transfer {date: $dt, amount: $amt}]-> (t)
+}
+
+# Create two `transfer` relationships from "Abby" to "Ed"
+interpret query insertEdge("Abby", "Ed", "2025-01-01", 100)
+interpret query insertEdge("Abby", "Ed", "2025-01-09", 200)
+```
+
+You can use the `SELECT` statement to check if the insertion was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Abby"}) -[e:transfer]-> (t:Account {name: "Ed"})
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-01 00:00:00",
+            "attributes": {
+              "date": "2025-01-01 00:00:00",
+              "amount": 100
+            }
+          }
+        },
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-09 00:00:00",
+            "attributes": {
+              "date": "2025-01-09 00:00:00",
+              "amount": 200
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Delete Data
+
+The `DELETE` statement in OpenCypher is used to **remove nodes and relationships** from the graph. When deleting a node, all its associated relationships will also be deleted.
+
+#### Delete a single node
+
+When you delete a node, if it has relationships, all of its relationships will also be deleted.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteOneVertex(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  DELETE s
+}
+
+# delete "Abby"
+interpret query deleteOneVertex("Abby")
+```
+
+You can use the `SELECT` statement to check if the deletion was successful.
+
+```python
+GSQL > select s from (s:Account) where s.name="Abby"
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": []
+    }
+  ]
+}
+```
+
+#### Delete all nodes of the specified type
+
+You can delete all nodes of a particular label type.
+
+**Single Label Type**
+
+```python
+### single type
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertexWithType01(){
+  MATCH (s:Account)
+  DELETE s
+}
+
+# Delete all nodes with the label `Account`
+interpret query deleteAllVertexWithType01()
+```
+
+**Multiple Label Types**
+
+```python
+### multiple types
+CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
+  MATCH (s:Account:Phone)
+  DELETE s
+}
+
+# Delete all nodes with the label `Account` or `Phone`
+interpret query deleteVertexWithType02()
+```
+
+#### Delete all nodes
+
+This query deletes all nodes in the graph.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
+  MATCH (s)
+  DELETE s
+}
+
+interpret query deleteAllVertex()
+```
+
+You can use the `SELECT` statement to check if the deletion was successful.
+
+```python
+GSQL > select count(*) from (s)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": {
+        "count_lparen_1_rparen_": 0
+      }
+    }
+  ]
+}
+```
+
+
+#### Delete relationships
+
+You can delete relationships based on specific conditions.
+
+**Delete `transfer` Relationships with a Date Filter**
+
+This query deletes all `transfer` relationships where the date is earlier than the specified filter date.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteEdge(STRING name="Abby", DATETIME filterDate="2024-02-01"){
+  MATCH (s:Account {name: $name}) -[e:transfer] -> (t:Account)
+  WHERE e.date < $filterDate
+  DELETE e
+}
+
+interpret query deleteEdge()
+```
+
+**Delete all outgoing edges of a specific account**
+
+```python
+//default parameter is "Abby"
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
+  MATCH (s:Account {name: $name}) -[e] -> ()
+  DELETE e
+}
+
+# Delete all outgoing relationships from the node with the name "Abby"
+interpret query deleteAllEdge()
+```
+
+---
+
+### Update Data
+
+Updating data in OpenCypher allows you to modify node and relationship attributes. The primary mechanism for updating attributes is the `SET` clause, which is used to assign or change the properties of nodes or relationships.
+
+#### Update vertex attributes
+
+You can update the attributes of a node. In this example, the `isBlocked` attribute of the `Account` node is set to `false` for a given account name.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateAccountAttr(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  SET s.isBlocked = false
+}
+
+# Update the `isBlocked` attribute of the `Account` node with name "Abby" to false
+interpret query updateAccountAttr()
+```
+
+#### Update edge attributes
+
+You can also update the attributes of a relationship. In this example, the `amount` attribute of a `transfer` relationship is updated for a specified account, as long as the target account is not blocked.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateTransferAmt(STRING startAcct="Jenny", UINT newAmt=100){
+  MATCH (s:Account {name: $startAcct})- [e:transfer]-> (t)
+  WHERE NOT t.isBlocked
+  SET e.amount = $newAmt
+}
+
+interpret query updateTransferAmt(_, 300)
+```
+
+You can use the `SELECT` statement to check if the update was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Jenny",
+            "from_type": "Account",
+            "to_id": "Scott",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2024-04-04 00:00:00",
+            "attributes": {
+              "date": "2024-04-04 00:00:00",
+              "amount": 300
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+[Go back to top](#top)
+
+---
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 
