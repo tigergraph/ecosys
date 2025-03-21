@@ -922,9 +922,9 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 
 ---
 
-## OpenCypher Data Modification Syntax
+## OpenCypher CRUD Syntax
 
-OpenCypher offers comprehensive support for performing data modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
+OpenCypher offers comprehensive support for performing CRUD (Create, Read, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
 
 ### Insert Data
 
@@ -937,10 +937,8 @@ CREATE OR REPLACE OPENCYPHER QUERY insertVertex(STRING name, BOOL isBlocked){
   CREATE (p:Account {name: $name, isBlocked: $isBlocked})
 }
 
-install query insertVertex
-
 # This will create an `Account` node with `name="Abby"` and `isBlocked=true`.
-run query insertVertex("Abby", true)
+interpret query insertVertex("Abby", true)
 ```
 
 #### Insert Relationship
@@ -951,11 +949,62 @@ CREATE OR REPLACE OPENCYPHER QUERY insertEdge(VERTEX<Account> s, VERTEX<Account>
   CREATE (s) -[:transfer {date: $dt, amount: $amt}]-> (t)
 }
 
-install query insertEdge
-
-# This will create a `transfer` relationship from "Abby" to "Ed"
-run query insertEdge("Abby", "Ed")
+# Create two `transfer` relationships from "Abby" to "Ed"
+interpret query insertEdge("Abby", "Ed", "2025-01-01", 100)
+interpret query insertEdge("Abby", "Ed", "2025-01-09", 200)
 ```
+
+You can use the SELECT statement to check if the insertion was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Abby"}) -[e:transfer]-> (t:Account {name: "Ed"})
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-01 00:00:00",
+            "attributes": {
+              "date": "2025-01-01 00:00:00",
+              "amount": 100
+            }
+          }
+        },
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-09 00:00:00",
+            "attributes": {
+              "date": "2025-01-09 00:00:00",
+              "amount": 200
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
 ---
 
 ### Delete Data
@@ -972,10 +1021,28 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteOneVertex(STRING name="Abby"){
   DELETE s
 }
 
-install query deleteOneVertex
-
 # delete "Abby"
-run query deleteOneVertex("Abby")
+interpret query deleteOneVertex("Abby")
+```
+
+You can use the SELECT statement to check if the deletion was successful.
+
+```python
+GSQL > select s from (s:Account) where s.name="Abby"
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": []
+    }
+  ]
+}
 ```
 
 #### Delete all nodes of the specified type
@@ -991,10 +1058,8 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertexWithType01(){
   DELETE s
 }
 
-install query deleteAllVertexWithType01
-
 # Delete all nodes with the label `Account`
-run query deleteAllVertexWithType01()
+interpret query deleteAllVertexWithType01()
 ```
 
 **Multiple Label Types**
@@ -1006,10 +1071,8 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
   DELETE s
 }
 
-install query deleteVertexWithType02
-
 # Delete all nodes with the label `Account` or `Phone`
-run query deleteVertexWithType02()
+interpret query deleteVertexWithType02()
 ```
 
 #### Delete all nodes
@@ -1022,10 +1085,31 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
   DELETE s
 }
 
-install query deleteAllVertex
-
-run query deleteAllVertex()
+interpret query deleteAllVertex()
 ```
+
+You can use the SELECT statement to check if the deletion was successful.
+
+```python
+GSQL > select count(*) from (s)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": {
+        "count_lparen_1_rparen_": 0
+      }
+    }
+  ]
+}
+```
+
 
 #### Delete relationships
 
@@ -1042,9 +1126,7 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteEdge(STRING name="Abby", DATETIME filte
   DELETE e
 }
 
-install query deleteEdge
-
-run query deleteEdge()
+interpret query deleteEdge()
 ```
 
 **Delete all outgoing edges of a specific account**
@@ -1055,10 +1137,8 @@ CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
   DELETE e
 }
 
-install query deleteAllEdge
-
 # Delete all outgoing relationships from the node with the name "Abby"
-run query deleteAllEdge()
+interpret query deleteAllEdge()
 ```
 
 ---
@@ -1077,10 +1157,8 @@ CREATE OR REPLACE OPENCYPHER QUERY updateAccountAttr(STRING name="Abby"){
   SET s.isBlocked = false
 }
 
-install query updateAccountAttr
-
 # Update the `isBlocked` attribute of the `Account` node with name "Abby" to false
-run query updateAccountAttr()
+interpret query updateAccountAttr()
 ```
 
 #### Update edge attributes
@@ -1094,14 +1172,46 @@ CREATE OR REPLACE OPENCYPHER QUERY updateTransferAmt(STRING startAcct="Jenny", U
   SET e.amount = $newAmt
 }
 
-install query updateTransferAmt
+interpret query updateTransferAmt(_, 300)
+```
 
-run query updateTransferAmt("Jenny", 300)
+You can use the SELECT statement to check if the update was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Jenny",
+            "from_type": "Account",
+            "to_id": "Scott",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2024-04-04 00:00:00",
+            "attributes": {
+              "date": "2024-04-04 00:00:00",
+              "amount": 300
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
 ```
 
 
 ---
-
-
 
 
