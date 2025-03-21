@@ -922,9 +922,9 @@ CREATE OR REPLACE QUERY unwindExample2() syntax v3{
 
 ---
 
-## OpenCypher CRUD Syntax
+## OpenCypher Data Modification Syntax
 
-OpenCypher offers comprehensive support for performing CRUD (Create, Read, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
+OpenCypher offers comprehensive support for performing Data Modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
 
 ### Insert Data
 
