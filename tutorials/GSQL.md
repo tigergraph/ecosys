@@ -2,7 +2,7 @@
 
 # Introduction <a name="top"></a>
 
-This GSQL tutorial introduces new users to TigerGraph’s graph query language. GSQL enables schema design, data loading, and querying, with Turing-completeness for Agentic AI applications like task dependency management and hybrid data retrieval.
+This GSQL tutorial introduces new users to TigerGraph’s graph query language. GSQL enables schema design, data loading, and querying, with Turing-completeness for Agentic AI applications like task dependency management and hybrid data retrieval for GraphRAG.
 
 GSQL V3 syntax aligns with the 2024 ISO GQL standard, incorporating ASCII art and OpenCypher pattern matching.
 
