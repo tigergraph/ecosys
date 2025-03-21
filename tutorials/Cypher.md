@@ -41,12 +41,12 @@ If you have your own machine (including Windows and Mac laptops), the easiest wa
 
 After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 ```python
-       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
-       docker images #find image id
-       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
-       docker exec -it mySandbox /bin/bash #start a shell on this container. 
-       gadmin start all  #start all tigergraph component services
-       gadmin status #should see all services are up.
+   docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+   docker images #find image id
+   docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+   docker exec -it mySandbox /bin/bash #start a shell on this container. 
+   gadmin start all  #start all tigergraph component services
+   gadmin status #should see all services are up.
 ```
 
 For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
@@ -63,6 +63,17 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
    GSQL> exit #quit the gsql shell   
 ```
+
+You can also access the GraphStudio visual IDE directly through your browser:
+```python
+   http://localhost:14240/
+```
+
+A login page will automatically open. Use the default credentials: user is `tigergraph`, password is `tigergraph`. 
+Once logged in, click the GraphStudio icon. Assuming you've set up the tutorial schema and loaded the data, navigate by selecting `Global View`, then choose `financialGraph` from the pop up menu. Click Explore Graph to start interacting with your data visually.
+
+To further explore the features of GraphStudio, you can view these concise introductory [videos](https://www.youtube.com/watch?v=29PCZEhyx8M&list=PLq4l3NnrSRp7RfZqrtsievDjpSV8lHhe-), and [product manual].(https://docs.tigergraph.com/gui/4.2/intro/) 
+
 The following command is good for operation.
 
 ```python
