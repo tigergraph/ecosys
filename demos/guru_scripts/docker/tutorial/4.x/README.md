@@ -69,6 +69,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
 ---
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
+The use case is to analyze which other accounts are connected to 'blocked' accounts.
 
 ![Financial Graph](./pictures/FinancialGraph.jpg)
 
