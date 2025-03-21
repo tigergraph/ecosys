@@ -7,6 +7,8 @@ OpenCypher syntax emphasizes ASCII art in its syntax.
 
 A more exhaustive description of functionality and behavior of OpenCypher is available from the [OpenCypher Language Reference](https://opencypher.org/).
 
+To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
+
 
 # Sample Graph To Start With <a name="top"></a>
 ![Financial Graph](./pictures/FinancialGraph.jpg)
