@@ -29,7 +29,7 @@ This GSQL tutorial contains
   - [Conditional Logic](#conditional-logic)
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
-  - [CRUD Statment](#crud-statement)
+  - [CRUD Statements](#crud-statements)
  - [Support](#support)
  - [Contact](#contact)
   
@@ -836,7 +836,7 @@ There are many expression functions openCypher supports. Please refer to [openCy
 
 ---
 
-## CRUD Statment
+## CRUD Statments
 
 OpenCypher offers comprehensive support for performing Data Modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
 
