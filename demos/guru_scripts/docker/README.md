@@ -34,13 +34,14 @@ Install Docker Desktop
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
 2. Configure Docker Desktop with sufficient resources:
-    Recommended: 4 cores and 16GB memory
-    Minimum: 2 cores and 10GB memory (performance will be degraded)
+    Recommended: 8 cores and 24GB memory
+    Minimum: 4 cores and 16GB memory 
 
     Click the Docker Desktop icon, click Preferences...>>Advanced menu, drag the CPU and Memory sliders
     to the desired configuration, save and restart Docker Desktop
+      ![Docker Resource](./images/DockerResource.jpg)
 
-3. To understand the Docker *Container* and *Image* concepts, watch this video:
+4. To understand the Docker *Container* and *Image* concepts, watch this video:
   https://www.youtube.com/watch?v=Rv3DAJbDrS0
 
 Prepare a Shared Folder on Host OS shared with Docker Container
