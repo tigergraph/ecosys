@@ -6,7 +6,7 @@ This GSQL tutorial introduces new users to TigerGraph’s graph query language. 
 
 GSQL V3 syntax aligns with the 2024 ISO GQL standard, incorporating ASCII art and OpenCypher pattern matching.
 
-To follow this tutorial, install the TigerGraph Docker image or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
+To follow this tutorial, install the TigerGraph Docker image (8 CPUs and 20 GB RAM recommended, or 4 CPUs and 16 GB RAM minimum) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
 ---
 # Table of Contents
