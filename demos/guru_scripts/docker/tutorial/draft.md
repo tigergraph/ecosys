@@ -996,7 +996,8 @@ run query deleteAllVertexWithType01()
 ```
 
 **Multiple Label Types**
-```
+
+```python
 ### multiple types
 CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
   MATCH (s:Account:Phone)
@@ -1023,6 +1024,7 @@ install query deleteAllVertex
 
 run query deleteAllVertex()
 ```
+
 #### Delete relationships
 
 You can delete relationships in the graph based on specific criteria.
@@ -1044,6 +1046,7 @@ run query deleteEdge()
 ```
 
 **Delete all outgoing edges of a specific account**
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
   MATCH (s:Account {name: $name}) -[e] -> ()
@@ -1056,27 +1059,47 @@ install query deleteAllEdge
 run query deleteAllEdge()
 ```
 
+---
+
 ### Update Data
 
+Updating data in OpenCypher allows you to modify node and relationship attributes. The primary mechanism for updating attributes is the `SET` clause, which is used to assign or change the properties of nodes or relationships.
+
 #### Update vertex attributes
+
+You can update the attributes of a node. In this example, the `isBlocked` attribute of the `Account` node is set to `false` for a given account name.
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY updateAccountAttr(STRING name="Abby"){
   MATCH (s:Account {name: $name})
   SET s.isBlocked = false
 }
+
 install query updateAccountAttr
+
+# Update the `isBlocked` attribute of the `Account` node with name "Abby" to false
 run query updateAccountAttr()
 ```
+
 #### Update edge attributes
+
+You can also update the attributes of a relationship. In this example, the `amount` attribute of a `transfer` relationship is updated for a specified account, as long as the target account is not blocked.
+
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY updateTransferAmt(STRING startAcct="Jenny", UINT newAmt=100){
   MATCH (s:Account {name: $startAcct})- [e:transfer]-> (t)
   WHERE not t.isBlocked
   SET e.amount = $newAmt
 }
+
 install query updateTransferAmt
+
 run query updateTransferAmt("Jenny", 300)
 ```
+
+---
+
+
 
 ---
 
