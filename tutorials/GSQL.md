@@ -4,7 +4,7 @@
 
 This GSQL tutorial introduces new users to TigerGraph’s graph query language. GSQL enables schema design, data loading, and querying, with Turing-completeness for Agentic AI applications like task dependency management and hybrid data retrieval for GraphRAG.
 
-GSQL V3 syntax aligns with the 2024 ISO GQL standard, incorporating ASCII art and OpenCypher pattern matching.
+GSQL V3 syntax aligns with the [2024 ISO GQL](https://www.iso.org/standard/76120.html) standard, incorporating ASCII art and OpenCypher pattern matching.
 
 To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
