@@ -197,7 +197,7 @@ In the next section, we will explore Cypher syntax in detail through practical e
 
 In OpenCypher, the main statement is a pattern match statement in the form of MATCH-WHERE-RETURN. Each MATCH statement will create or update an invisible working table. The working table consists all the alias (vertex/edge) and columns specified in the current and previous MATCH statements. Other statement will also work on the working table to drive the final result.
 
-We will use examples to illustrate cypher syntax. In TigerGraph, each Cypher query is installed as a stored procedure, allowing it to be repeatedly executed by its query name.
+We will use examples to illustrate Cypher syntax. In TigerGraph, each Cypher query is installed as a stored procedure using a code generation technique for optimal performance, enabling repeated execution by its query name.
 
 ---
 
