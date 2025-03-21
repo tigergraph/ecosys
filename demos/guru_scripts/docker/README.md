@@ -34,8 +34,8 @@ Install Docker Desktop
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
 2. Configure Docker Desktop with sufficient resources:
-    Recommended: 8 cores and 24GB memory
-    Minimum: 4 cores and 16GB memory 
+    Recommended: **8 cores and 24GB memory**
+    Minimum: **4 cores and 16GB memory** 
 
     Click the Docker Desktop icon, click Preferences...>>Advanced menu, drag the CPU and Memory sliders
     to the desired configuration, save and restart Docker Desktop
