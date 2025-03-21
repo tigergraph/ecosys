@@ -513,7 +513,7 @@ GSQL> END
 
 # Stored Procedure Query Examples 
 
-In this section, we explain how to write stored procedures. A stored procedure is a named query made up by a sequence of GSQL query blocks or statements. It is saved in the graph database catalog and can be repeatedly invoked using the "run query" command or a system-generated REST endpoint URL.
+In this section, we explain how to write stored procedures. A stored procedure is a named query consisting of a sequence of GSQL query blocks or statements. It is stored in the graph database catalog, installed once using a code generation technique for optimal performance, and can be invoked repeatedly using the 'run query' command or a system-generated REST endpoint URL.
 
 To create a stored procedure, you can use the following syntax. 
 
