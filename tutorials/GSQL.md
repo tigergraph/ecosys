@@ -106,7 +106,17 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> @01_load.gsql #use @filename in GSQL prompt to run a file containing gsql script
    GSQL> exit #quit the gsql shell   
 ```
+As shown above, you have two ways to run gsql script. 
 
+- Copy the gsql script in a file, say test.gsql, and in Bash commandline, use `gsql test.gsql` to run
+- Enter GSQL prompt, and use one line gsql script or multiple line enclosed by `Begin` and `End` to run gsql
+```
+  GSQL> Begin
+  GSQL> line1 xxxx
+  GSQL> line2 xxxx
+  GSQL> ....
+  GSQL> End
+```
 You can also access the GraphStudio visual IDE directly through your browser:
 ```python
    http://localhost:14240/
@@ -230,7 +240,7 @@ Now that you have a graph schema, you can load data using one of the following m
     ```
 
 - Load from Iceberg table, or alternative Spark data sources, through [Tigergraph Spark Connector](https://docs.tigergraph.com/tigergraph-server/current/data-loading/load-from-spark-dataframe)
-  - Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
+- Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
     
 [Go back to top](#top)
 
