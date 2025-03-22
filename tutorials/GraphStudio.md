@@ -38,4 +38,8 @@ In your chrome browser, type `http://localhost:14240`.
 ![Browser](./pictures/browser.jpg)
 
 Next, click `GraphStudio` icon, and it will ask you to enter user and password. Enter `tigergraph` and `tigergraph`.
+Once you are inside `GraphStudio`, first you need to select a graph. Click `Global View` on the top-left pane, and select `financialGraph` from the drop down menu. 
+
+
+![selectGraph](./pictures/selectGraph.jpg)
 
