@@ -18,5 +18,5 @@ After installing TigerGraph, the `gadmin` command-line tool is automatically inc
 
 In your chrome browser, type `http://localhost:14240`. 
 
-![Browser](./pictures/Browser.jpg)
+![Browser](./pictures/browser.jpg)
 
