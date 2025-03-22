@@ -81,4 +81,6 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
 Click the **Save*** button to save the query first, and click the **Install** button to install the query. Finally, click the **Run Query** button to run the query.
 ![installrun](./pictures/installrun.jpg)
 
-
+---
+Once you click the **Run Query** button, it will ask you to enter a parameter if you query requires. Here we enter "Jenny" as parameter, and click `Run Query`. 
+![runquery](./pictures/runquery.jpg)
