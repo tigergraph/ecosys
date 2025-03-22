@@ -30,18 +30,21 @@ Next, you can setup schema and data from our tutorial/gsql folder, and run your 
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
    GSQL> exit #quit the gsql shell   
 ```
-
+---
 Now, you are ready to enter the GUI IDE `GraphStudio`. 
 
 In your chrome browser, type `http://localhost:14240`. 
 
 ![Browser](./pictures/browser.jpg)
 
+---
+
 Next, click `GraphStudio` icon, and it will ask you to enter user and password. Enter `tigergraph` and `tigergraph`.
 Once you are inside `GraphStudio`, first you need to select a graph. Click `Global View` on the top-left pane, and select `financialGraph` from the drop down menu. 
 
 ![selectGraph](./pictures/selectGraph.jpg)
 
+---
 After you select a graph, you can inspect the content of the graph. Click `Explore Graph` on the left pane and click `Pick vertices` to randomly pick 5 vertices. You can double-click a node (say Ed) to expand it. 
 ![explore](./pictures/explore.jpg)
 
