@@ -15,8 +15,27 @@ After installing TigerGraph, the `gadmin` command-line tool is automatically inc
    gadmin start all  #start all tigergraph component services
    gadmin status #should see all services are up.
 ```
+Next, you can setup schema and data from our tutorial/gsql folder, and run your first query. 
+
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
+   GSQL> select a from (a:Account)  #query Account vertex
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit the gsql shell   
+```
+
+Now, you are ready to enter the GUI IDE `GraphStudio`. 
 
 In your chrome browser, type `http://localhost:14240`. 
 
 ![Browser](./pictures/browser.jpg)
+
+Next, click `GraphStudio` icon, and it will ask you to enter user and password. Enter `tigergraph` and `tigergraph`.
 
