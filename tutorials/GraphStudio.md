@@ -77,4 +77,8 @@ CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
 
 }
 ```
+---
+Click the Save button to save the query first, and click the Install button to install the query. 
+![installquery](./pictures/installquery.jpg)
+
 
