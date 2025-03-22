@@ -84,3 +84,8 @@ Click the **Save*** button to save the query first, and click the **Install** bu
 ---
 Once you click the **Run Query** button, it will ask you to enter a parameter if you query requires. Here we enter "Jenny" as parameter, and click `Run Query`. 
 ![runquery](./pictures/runquery.jpg)
+
+---
+Congratulations! You have finish the first query. Note, the query editor here only permits GSQL query. It does not take `install query` and `run query` command. 
+
+To further explore the features of GraphStudio, you can view these concise introductory [videos](https://www.youtube.com/watch?v=29PCZEhyx8M&list=PLq4l3NnrSRp7RfZqrtsievDjpSV8lHhe-), and [product manual].(https://docs.tigergraph.com/gui/4.2/intro/) 
