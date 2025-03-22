@@ -108,7 +108,7 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
 ```
 As shown above, you have two ways to run gsql script. 
 
-- Copy the gsql script in a file, say test.gsql, and in Bash commandline, use `gsql test.gsql` to run
+- Copy the gsql script in a file, say test.gsql, and in Bash command line, use `gsql test.gsql` to run
 - Enter GSQL prompt, and use one line gsql script or multiple line enclosed by `Begin` and `End` to run gsql
 ```
   GSQL> Begin
