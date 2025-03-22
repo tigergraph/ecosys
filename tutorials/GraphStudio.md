@@ -48,4 +48,9 @@ Once you are inside `GraphStudio`, first you need to select a graph. Click `Glob
 After you select a graph, you can inspect the content of the graph. Click `Explore Graph` on the left pane and click `Pick vertices` to randomly pick 5 vertices. You can double-click a node (say Jenny) to expand it. 
 ![explore](./pictures/explore.jpg)
 
+---
+Now, let's move on to create our first query in `GraphStudio`. Click `Write Queries` in the left pane, and click the `+` sign to add a query. Enter `q2a` in the  `new query name` text line, and click the `CREATE` button.
+![createquery](./pictures/createquery.jpg)
+
+
 
