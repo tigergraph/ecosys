@@ -103,6 +103,7 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
    GSQL> select count(*) from (s:Account)  #query Account node count
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> @01_load.gsql #use @filename in GSQL prompt to run a file containing gsql script
    GSQL> exit #quit the gsql shell   
 ```
 
@@ -140,7 +141,7 @@ Next, run the following in your container's bash command line.
 gsql 00_schema.gsql
 ```
 As seen below, the declarative DDL creates vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires `FROM` and `TO` vertex types as the key.
-Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction.
+Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction. You can put the following in a file, and invoke it under GSQL prompt `GSQL>@file.gsql`.
 
 ```python
 //install gds functions
