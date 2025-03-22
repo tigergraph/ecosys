@@ -190,9 +190,18 @@ Now that you have a graph schema, you can load data using one of the following m
     ```
        gsql 25_load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
+     
+    You can either use the Query Editor in the Savanna (cloud) by copying the content of [25_load2.gsql](./gsql/25_load2.gsql), and pasting it into the query editor to run it.
+
+    Alternatively, navigate to the gsql folder and open a GSQL Shell in Bash by typing GSQL. Then, use @filename to execute a GSQL script file within the GSQL Shell.
+
+    ```
+     GSQL>@25_load2.gsql
+    ```
 
     The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
+    Copy the following in a gsql file-- load.gsql, And run it in bash shell `gsql load.gsql`.
+    
     ```python
     USE GRAPH financialGraph
 
