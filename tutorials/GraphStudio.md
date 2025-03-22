@@ -45,7 +45,7 @@ Once you are inside `GraphStudio`, first you need to select a graph. Click `Glob
 ![selectGraph](./pictures/selectGraph.jpg)
 
 ---
-After you select a graph, you can inspect the content of the graph. Click `Explore Graph` on the left pane and click `Pick vertices` to randomly pick 5 vertices. You can double-click a node (say Ed) to expand it. 
+After you select a graph, you can inspect the content of the graph. Click `Explore Graph` on the left pane and click `Pick vertices` to randomly pick 5 vertices. You can double-click a node (say Jenny) to expand it. 
 ![explore](./pictures/explore.jpg)
 
 
