@@ -52,5 +52,29 @@ After you select a graph, you can inspect the content of the graph. Click `Explo
 Now, let's move on to create our first query in `GraphStudio`. Click `Write Queries` in the left pane, and click the `+` sign to add a query. Enter `q2a` in the  `new query name` text line, and click the `CREATE` button.
 ![createquery](./pictures/createquery.jpg)
 
+---
+Copy the following GSQL query content in the query editor. 
 
+```python
+# create a query
+CREATE OR REPLACE QUERY q2a (string acctName) SYNTAX v3 {
+
+  //Declare a local sum accumulator to add values. Each vertex has its own accumulator of the declared type
+  //The vertex instance is selected based on the FROM clause pattern.
+  SumAccum<int> @totalTransfer = 0;
+
+  // match an edge pattern-- symbolized by ()-[]->(), where () is node, -[]-> is a directed edge
+  // "v" is a vertex set variable holding the selected vertex set.
+  // {name: acctName} is a JSON style filter. It's equivalent to "a.name == acctName"
+  // ":transfer" is the label of the edge type "transfer". "e" is the alias of the matched edge.
+  v = SELECT b
+      FROM (a:Account {name: acctName})-[e:transfer]->(b:Account)
+      //for each matched edge, accumulate e.amount into the local accumulator of b.
+      ACCUM  b.@totalTransfer += e.amount;
+
+  //output each v and their static attribute and runtime accumulators' state
+  PRINT v;
+
+}
+```
 
