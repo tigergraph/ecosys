@@ -51,7 +51,10 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [OpenCypher Query](#opencypher-query)
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
-  - [Query Tuning](#query-tuning)
+  - [Query Tuning And Debug](#query-tuning-and-debug)
+    - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)
+    - [Debug Using PRINT Statement](#debug-using-print-statement)
+    - [Debug Using LOG Statement](#debug-using-log-statement)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
    - [Table](#table)
@@ -88,7 +91,7 @@ After installing TigerGraph, the `gadmin` command-line tool is automatically inc
    docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
    docker exec -it mySandbox /bin/bash #start a shell on this container. 
    gadmin start all  #start all tigergraph component services
-   gadmin status #should see all services are up.
+   gadmin status #should see all services are up. If not, try gadmin start all again
 ```
 
 For the impatient, load the sample data from the tutorial/gsql folder and run your first query. 
@@ -2100,7 +2103,7 @@ To see more how to use this feature, you can refer to [Virtual Edge](https://doc
 [Go back to top](#top)
 
 ---
-## Query Tuning
+## Query Tuning And Debug
 ### Batch Processing to Avoid OOM
 Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
 
@@ -2137,6 +2140,87 @@ done
 [Go back to top](#top)
 
 ---
+### Debug Using PRINT Statement
+
+We have shown many examples in this document using PRINT. You can refer to the official document on [PRINT](https://docs.tigergraph.com/gsql-ref/4.2/querying/output-statements-and-file-objects#_print_statement_api_v2).
+
+[Go back to top](#top)
+
+---
+
+
+### Debug Using LOG Statement
+The LOG statement is another method for outputting debug data. It functions as a command that writes information to a log file. The statement first evaluates the boolean condition, and if it is true, it outputs the remaining expressions to the log file. The syntax is as follows:
+
+```python
+logStmt := LOG "(" condition "," expression* ")"
+```
+
+E.g., 
+```python
+LOG(true, "hello world", 1+2); //it will print "hello world" and "3" to the compute engine log.
+```
+The `LOG` statement can appear within any query block or as a standalone statement in the query body. Here is an example:
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY logTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices  = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (:visited_vertices)-[:transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE, log(true, "s.@visited",  s, s.@visited);//log statement in the POST-ACCUM clause
+
+    log (true, "while loop", visited_vertices.size()); //a standalone log statement 
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY logTest
+
+RUN QUERY logTest("Scott")
+```
+
+After you add log statement, you can check the log. Under bash command line, find the log location.
+
+```python
+ gadmin log gpe #find the location of the compute engine log
+```
+
+You may see 
+
+```python
+GPE    : /home/tigergraph/tigergraph/log/gpe/GPE_1#1.out
+GPE    : /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+Next, you can use vim or any bash command line editor to open the log to search the log.INFO file. E.g., search "while loop" in our example. 
+
+```python
+vim /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+
+[Go back to top](#top)
+
+---
+
 ## Explore Catalog
 
 ### Global Scope vs. Graph Scope
