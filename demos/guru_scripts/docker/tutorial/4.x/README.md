@@ -2970,7 +2970,7 @@ The following academic papers have more technical depth for interested readers.
 - [The LDBC Social Network Benchmark: Business Intelligence Workload](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf), in [VLDB 2022 proceedings](https://vldb.org/2022/).
 - [PG-Schema: Schemas for Property Graphs](https://arxiv.org/pdf/2211.10962), in [SIGMOD 2023 proceedings](https://2023.sigmod.org/).
 - [Chasing Parallelism in Aggregating Graph Queries](https://drops.dagstuhl.de/storage/01oasics/oasics-vol119-tannens-festschrift/OASIcs.Tannen.5/OASIcs.Tannen.5.pdf), in [Tannen's Festschrift 2024](https://dblp.org/db/conf/birthday/tannen2024.html#Deutsch24).
-- [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/pdf/2501.11216)), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
+- [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/pdf/2501.11216), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
 - [Product Manual](https://docs.tigergraph.com/gsql-ref/current/intro/). 
 
 [Go back to top](#top)
