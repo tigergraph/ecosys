@@ -68,7 +68,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
    - [Unwind Statement](#unwind-statement)    
  - [Support](#support)
  - [Contact](#contact)
- - [References](#reference)
+ - [References](#references)
 
 ---
 # Sample Graph For Tutorial
