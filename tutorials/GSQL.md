@@ -2142,7 +2142,8 @@ done
 ---
 ### Debug Using PRINT Statement
 
-An
+We have shown many examples in this document using PRINT. You can refer to the official document on [PRINT](https://docs.tigergraph.com/gsql-ref/4.2/querying/output-statements-and-file-objects#_print_statement_api_v2).
+
 [Go back to top](#top)
 
 ---
