@@ -51,7 +51,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [OpenCypher Query](#opencypher-query)
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
-  - [Query Tuning](#query-tuning)
+  - [Query Tuning And Debug](#query-tuning-and-debug)
     - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)
     - [Debug Using PRINT Statement](#debug-using-print-statement)
     - [Debug Using LOG Statement](#debug-using-log-statement)
@@ -2103,7 +2103,7 @@ To see more how to use this feature, you can refer to [Virtual Edge](https://doc
 [Go back to top](#top)
 
 ---
-## Query Tuning
+## Query Tuning And Debug
 ### Batch Processing to Avoid OOM
 Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
 
