@@ -52,6 +52,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
   - [Query Tuning](#query-tuning)
+    - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)  
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
    - [Table](#table)
