@@ -2149,8 +2149,7 @@ An
 
 
 ### Debug Using LOG Statement
-The LOG statement is another means to output data. It works as a function that outputs information to a log file. It first evaluate the boolean condition, and if it's true, it print the remaining expressions to the log file. 
-The syntax is
+The LOG statement is another method for outputting debug data. It functions as a command that writes information to a log file. The statement first evaluates the boolean condition, and if it is true, it outputs the remaining expressions to the log file. The syntax is as follows:
 
 ```python
 logStmt := LOG "(" condition "," expression* ")"
@@ -2158,10 +2157,9 @@ logStmt := LOG "(" condition "," expression* ")"
 
 E.g., 
 ```python
-LOG(true, "hello world", 1+2); //it will print "hello world" and "3" to the compute engine log. 
+LOG(true, "hello world", 1+2); //it will print "hello world" and "3" to the compute engine log.
 ```
-
-The `log` statement can be in any query block or a standalone statement in the query body.  Here is an example. 
+The `LOG` statement can appear within any query block or as a standalone statement in the query body. Here is an example:
 
 ```python
 USE GRAPH financialGraph
