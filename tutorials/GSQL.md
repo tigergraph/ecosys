@@ -68,6 +68,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
    - [Unwind Statement](#unwind-statement)    
  - [Support](#support)
  - [Contact](#contact)
+ - [References](#reference)
 
 ---
 # Sample Graph For Tutorial
@@ -2953,10 +2954,6 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 
 https://community.tigergraph.com/
 
-Or, study our product document at
-
-https://docs.tigergraph.com/gsql-ref/current/intro/
-
 [Go back to top](#top)
 
 ---
@@ -2966,6 +2963,15 @@ To contact us for commercial support and purchase, please email us at [info@tige
 
 [Go back to top](#top)
 
+# References
+The following academic papers have more technical depth for interested readers. 
+- [Aggregation Support for Modern Graph Analytics in TigerGraph](https://dl.acm.org/doi/pdf/10.1145/3318464.3386144), in [SIGMOD 2020 proceedings](https://sigmod2020.org/).
+- [Aggregation Support for Modern Graph Analytics in TigerGraph](https://dl.acm.org/doi/pdf/10.1145/3318464.3386144), in [SIGMOD 2020 proceedings](https://sigmod2020.org/).
+- [The LDBC Social Network Benchmark: Business Intelligence Workload](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf), in [VLDB 2022 proceedings](https://vldb.org/2022/).
+- [PG-Schema: Schemas for Property Graphs](https://arxiv.org/pdf/2211.10962), in [SIGMOD 2023 proceedings](https://2023.sigmod.org/).
+- [Chasing Parallelism in Aggregating Graph Queries](https://drops.dagstuhl.de/storage/01oasics/oasics-vol119-tannens-festschrift/OASIcs.Tannen.5/OASIcs.Tannen.5.pdf), in [Tannen's Festschrift 2024](https://dblp.org/db/conf/birthday/tannen2024.html#Deutsch24).
+- [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/abs/2501.11216), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
+- [Product Manual](https://docs.tigergraph.com/gsql-ref/current/intro/). 
 
-
+[Go back to top](#top)
 
