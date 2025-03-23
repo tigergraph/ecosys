@@ -88,7 +88,7 @@ After installing TigerGraph, the `gadmin` command-line tool is automatically inc
    docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
    docker exec -it mySandbox /bin/bash #start a shell on this container. 
    gadmin start all  #start all tigergraph component services
-   gadmin status #should see all services are up.
+   gadmin status #should see all services are up. If not, try gadmin start all again
 ```
 
 For the impatient, load the sample data from the tutorial/gsql folder and run your first query. 
