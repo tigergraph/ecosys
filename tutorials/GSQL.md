@@ -52,7 +52,9 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
   - [Query Tuning](#query-tuning)
-    - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)  
+    - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)
+    - [Debug Using PRINT Statement](#debug-using-print-statement)
+    - [Debug Using LOG Statement](#debug-using-log-statement)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
    - [Table](#table)
@@ -2138,6 +2140,88 @@ done
 [Go back to top](#top)
 
 ---
+### Debug Using PRINT Statement
+
+An
+[Go back to top](#top)
+
+---
+
+
+### Debug Using LOG Statement
+The LOG statement is another means to output data. It works as a function that outputs information to a log file. It first evaluate the boolean condition, and if it's true, it print the remaining expressions to the log file. 
+The syntax is
+
+```python
+logStmt := LOG "(" condition "," expression* ")"
+```
+
+E.g., 
+```python
+LOG(true, "hello world", 1+2); //it will print "hello world" and "3" to the compute engine log. 
+```
+
+The `log` statement can be in any query block or a standalone statement in the query body.  Here is an example. 
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY logTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices  = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (:visited_vertices)-[:transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE, log(true, "s.@visited",  s, s.@visited);//log statement in the POST-ACCUM clause
+
+    log (true, "while loop", visited_vertices.size()); //a standalone log statement 
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY logTest
+
+RUN QUERY logTest("Scott")
+```
+
+After you add log statement, you can check the log. Under bash command line, find the log location.
+
+```python
+ gadmin log gpe #find the location of the compute engine log
+```
+
+You may see 
+
+```python
+GPE    : /home/tigergraph/tigergraph/log/gpe/GPE_1#1.out
+GPE    : /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+Next, you can use vim or any bash command line editor to open the log to search the log.INFO file. E.g., search "while loop" in our example. 
+
+```python
+vim /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+
+[Go back to top](#top)
+
+---
+
 ## Explore Catalog
 
 ### Global Scope vs. Graph Scope
