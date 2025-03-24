@@ -1,5 +1,8 @@
 # TigerGraph Operator Overview
 
+> [!IMPORTANT]
+> Operator versions prior to 1.5.0 relied on the Docker image `gcr.io/kubebuilder/kube-rbac-proxy` to secure the metrics endpoint and prevent exposure of sensitive data. However, this image will no longer be available after May 2025. Starting from version 1.5.0, the Operator now uses the Docker image `quay.io/brancz/kube-rbac-proxy` instead. To ensure successful deployment without image pull errors, you must upgrade the Operator to version 1.5.0 or later.
+
 TigerGraph Operator stands as an automated operations system meticulously designed to streamline the management of TigerGraph clusters within Kubernetes environments. Its comprehensive suite of functionalities encompasses every aspect of the TigerGraph lifecycle, spanning deployment, upgrades, scaling, backups, restoration, and fail-over processes. Whether you're operating in a public cloud setting or within a self-hosted environment, TigerGraph Operator ensures that your TigerGraph instances function seamlessly within Kubernetes clusters.
 
 > [!NOTE]
@@ -74,3 +77,12 @@ Explore [Troubleshoot TigerGraph on Kubernetes](../05-troubleshoot/README.md) to
 Lastly, when a new version of TigerGraph Operator becomes available, consult [Upgrade TigerGraph Operator](../04-manage/operator-upgrade.md) for a seamless transition to the latest version.
 
 For detailed information about the features, improvements, and bug fixes introduced in a specific Operator version, refer to the [release notes](../08-release-notes/README.md).
+
+## Raising Issues
+
+When raising issues, please specify the following:
+
+- Setup details as specified in the [issue template](../06-FAQs/issue_report_template.md)
+- A scenario where the issue occurred (with details on how to reproduce it)
+- Errors and log messages that are displayed by the involved software
+- Any other detail that might be useful

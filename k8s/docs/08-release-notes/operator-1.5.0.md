@@ -4,6 +4,9 @@
 
 **TigerGraph Operator 1.5.0** is now available, designed to work seamlessly with **TigerGraph version 4.2.0**.
 
+> [!IMPORTANT]
+> Operator versions prior to 1.5.0 relied on the Docker image `gcr.io/kubebuilder/kube-rbac-proxy` to secure the metrics endpoint and prevent exposure of sensitive data. However, this image will no longer be available after May 2025. Starting from version 1.5.0, the Operator now uses the Docker image `quay.io/brancz/kube-rbac-proxy` instead. To ensure successful deployment without image pull errors, you must upgrade the Operator to version 1.5.0 or later.
+
 This release introduces significant new features, enhancements, and bug fixes, including:
 
 - Cross-Region Replication (CRR) support within the same Kubernetes (K8s) cluster and across clusters.
@@ -85,7 +88,9 @@ Refer to the documentation [How to upgrade TigerGraph Kubernetes Operator](../04
 - Base image upgraded to Ubuntu 22.04 for TigerGraph K8s Docker image.
 - Retry mechanism for gadmin start --local in PostStart script.
 - Predelete action skipped when an image pull fails.
+- Improve the stability of the readiness check by checking the service status using the command gadmin status --local
 
 ## Bug Fixes
 
 - SSH configuration update (UsePAM=no) to allow setting allowPrivilegeEscalation=false for SecurityContext.
+- Fix the unavailability of the docker `image gcr.io/kubebuilder/kube-rbac-proxy` that the TigerGraph Operator depends on
