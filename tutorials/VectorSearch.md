@@ -1,11 +1,12 @@
 # Native Vector Support in TigerGraph
-TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration. We believe agentic AI will benefit from this powerful combination!
+TigerGraph offers native vector support, making it easier to perform vector searches on graph patterns. This feature combines the strengths of graph and vector databases, enabling powerful data analysis and seamless query integration. We believe agentic AI and GraphRAG will benefit from this powerful combination!
 
-# Sample Graph To Start With <a name="top"></a>
-![Financial Graph](https://github.com/tigergraph/ecosys/blob/master/tutorials/pictures/FinancialGraph.jpg)
+To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
-# Content
-This GSQL tutorial contains 
+---
+# Table of Contents
+
+- [Sample Graph](#sample-graph-for-tutorial)
 - [Setup Environment](#setup-environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
@@ -29,39 +30,71 @@ This GSQL tutorial contains
 - [Support](#support)
 - [Reference](#reference)
 - [Contact](#contact)
+
+---
+# Sample Graph For Tutorial
+This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
+The use case is to analyze which other accounts are connected to 'blocked' accounts.
+
+![Financial Graph](./pictures/FinancialGraph.jpg)
+
+---
     
 # Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download [Community Edition Docker Image](https://dl.tigergraph.com/). Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
 
-> **_Note:_** Vector feature preview is available in both TigerGraph Community Edition (Alpha) and Enterprise Edition (Preview).
+**Note**: TigerGraph does not currently support the ARM architecture and relies on Rosetta to emulate x86 instructions. For production environments, we recommend using an x86-based system.
+For optimal performance, configure your Docker environment with **8 CPUs and 20+ GB** of memory. If your laptop has limited resources, the minimum recommended configuration is **4 CPUs and 16 GB** of memory.
 
-To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and start a TigerGraph instance.
-> ```
-> docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
-> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init -t tigergraph/community:4.2.0-alpha
-> ```
-> And access the instance via http://locahost:14240 or obtain a terminal with the following command:
-> ```
-> docker exec -it tigergraph /bin/bash
-> gadmin start all
-> ```
-> After using the database, and you want to shutdown it, use the following shell commmand
->```
->gadmin stop all
->```
+After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 
-To use the Enterprise Edition, please pull `tigergraph/tigergraph:4.2.0-preview` docker image instead.
-> ```
-> docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init -t tigergraph/tigergraph:4.2.0-preview
-> ```
-> Please remember to apply your TigerGraph license key to the TigerGraph instance, you can obtain a free dev license here https://dl.tigergraph.com/, and use the following shell command to start the db.
-> ```
-> docker exec -it tigergraph /bin/bash
-> gadmin license set <license_key>
-> gadmin config apply -y
-> gadmin start all
-> ```
+```python
+  docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+  docker images #find image id
+  docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+  docker exec -it mySandbox /bin/bash #start a shell on this container. 
+  gadmin start all  #start all tigergraph component services
+  gadmin status #should see all services are up.
+```
+
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
+   GSQL> select a from (a:Account)  #query Account vertex
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit the gsql shell   
+```
+
+You can also access the GraphStudio visual IDE directly through your browser:
+```python
+   http://localhost:14240/
+```
+A login page will automatically open. Use the default credentials: user is `tigergraph`, password is `tigergraph`. 
+Once logged in, click the GraphStudio icon. Assuming you've set up the tutorial schema and loaded the data, navigate by selecting `Global View`, then choose `financialGraph` from the pop up menu. Click Explore Graph to start interacting with your data visually.
+
+To further explore the features of GraphStudio, you can view these concise introductory [videos](https://www.youtube.com/watch?v=29PCZEhyx8M&list=PLq4l3NnrSRp7RfZqrtsievDjpSV8lHhe-), and [product manual](https://docs.tigergraph.com/gui/4.2/intro/). 
+
+The following command is good for operation.
+
+```python
+#To stop the server, you can use
+ gadmin stop all
+#Check `gadmin status` to verify if the gsql service is running, then use the following command to reset (clear) the database.
+ gsql 'drop all'
+```
+
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based and does not provide access to a bash shell. To execute the GSQL examples in this tutorial, simply copy the query into the Savanna GSQL editor and click Run.
+
+Additionally, all GSQL examples referenced in this tutorial can be found in your TigerGraph tutorials/vector folder.
 
 [Go back to top](#top)
 
@@ -291,8 +324,10 @@ The result is shown in [q1.out](https://raw.githubusercontent.com/tigergraph/eco
 
 You can also use POST method to call REST api to invoke the installed query. By default, the query will be located at URL "restpp/query/{graphName}/{queryName}". 
 On the payload, you specify the parameter using "key:value" by escaping the quotes of the parameter name.
+
 ```python
-curl -X POST "http://127.0.0.1:14240/restpp/query/financialGraph/q1" -d '{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}' | jq
+curl -u "tigergraph:tigergraph" -H 'Content-Type: application/json' -X POST "http://127.0.0.1:14240/gsql/v1/queries/q1?graph=financialGraph" -d '{
+  "parameters":{"query_vector":[-0.017733968794345856, -0.01019224338233471, -0.016571875661611557]}}' | jq
 ```
 
 ### Top-k vector search on a set of vertex types' vector attributes. 

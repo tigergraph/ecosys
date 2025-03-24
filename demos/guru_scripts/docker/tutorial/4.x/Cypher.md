@@ -7,12 +7,12 @@ OpenCypher syntax emphasizes ASCII art in its syntax.
 
 A more exhaustive description of functionality and behavior of OpenCypher is available from the [OpenCypher Language Reference](https://opencypher.org/).
 
+To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
-# Sample Graph To Start With <a name="top"></a>
-![Financial Graph](./pictures/FinancialGraph.jpg)
 
 # Table of Contents
-This GSQL tutorial contains 
+
+- [Sample Graph](#sample-graph-for-tutorial)
 - [Setup Environment](#setup-Environment)
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
@@ -29,13 +29,71 @@ This GSQL tutorial contains
   - [Conditional Logic](#conditional-logic)
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
+  - [CRUD Statements](#crud-statements)
  - [Support](#support)
  - [Contact](#contact)
-  
+
+---
+# Sample Graph For Tutorial
+This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
+The use case is to analyze which other accounts are connected to 'blocked' accounts.
+
+![Financial Graph](./pictures/FinancialGraph.jpg)
 
 # Setup Environment 
 
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download [Community Edition Docker Image](https://dl.tigergraph.com/). Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
+
+**Note**: TigerGraph does not currently support the ARM architecture and relies on Rosetta to emulate x86 instructions. For production environments, we recommend using an x86-based system.
+For optimal performance, configure your Docker environment with **8 CPUs and 20+ GB** of memory. If your laptop has limited resources, the minimum recommended configuration is **4 CPUs and 16 GB** of memory.
+
+After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
+```python
+   docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+   docker images #find image id
+   docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+   docker exec -it mySandbox /bin/bash #start a shell on this container. 
+   gadmin start all  #start all tigergraph component services
+   gadmin status #should see all services are up.
+```
+
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+```python
+   cd tutorial/gsql/   
+   gsql 00_schema.gsql  #setup sample schema in catalog
+   gsql 01_load.gsql    #load sample data 
+   gsql    #launch gsql shell
+   GSQL> use graph financialGraph  #enter sample graph
+   GSQL> ls #see the catalog content
+   GSQL> select a from (a:Account)  #query Account vertex
+   GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
+   GSQL> select count(*) from (s:Account)  #query Account node count
+   GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> exit #quit the gsql shell   
+```
+
+You can also access the GraphStudio visual IDE directly through your browser:
+```python
+   http://localhost:14240/
+```
+
+A login page will automatically open. Use the default credentials: user is `tigergraph`, password is `tigergraph`. 
+Once logged in, click the GraphStudio icon. Assuming you've set up the tutorial schema and loaded the data, navigate by selecting `Global View`, then choose `financialGraph` from the pop up menu. Click Explore Graph to start interacting with your data visually.
+
+To further explore the features of GraphStudio, you can view these concise introductory [videos](https://www.youtube.com/watch?v=29PCZEhyx8M&list=PLq4l3NnrSRp7RfZqrtsievDjpSV8lHhe-), and [product manual](https://docs.tigergraph.com/gui/4.2/intro/). 
+
+The following command is good for operation.
+
+```python
+#To stop the server, you can use
+ gadmin stop all
+#Check `gadmin status` to verify if the gsql service is running, then use the following command to reset (clear) the database.
+ gsql 'drop all'
+```
+
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based and does not provide access to a bash shell. To execute the GSQL examples in this tutorial, simply copy the query into the Savanna GSQL editor and click Run.
+
+Additionally, all Cypher examples referenced in this tutorial can be found in your TigerGraph tutorials/cypher folder.
 
 [Go back to top](#top)
 
@@ -46,7 +104,7 @@ We use an artificial financial schema and dataset as a running example to demons
 Copy [00_schema.gsql](./gsql/00_schema.gsql) to your container. 
 Next, run the following in your container's bash command line. 
 ```
-gsql schema.gsql
+gsql 00_schema.gsql
 ```
 As seen below, the declarative DDL create vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires a `FROM` and `TO` vertex types as the key. We allow edges of the same type share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same endpoints. `REVERSE_EDGE` specifies a twin edge type excep the direction is reversed. 
 
@@ -82,22 +140,22 @@ You can choose one of the following methods.
   Copy [01_load.gsql](./gsql/01_load.gsql) to your container. 
   Next, run the following in your container's bash command line. 
   ```
-     gsql load.gsql
+     gsql 01_load.gsql
   ```
   or in GSQL Shell editor, copy the content of [01_load.gsql](./gsql/01_load.gsql), and paste it into the GSQL shell editor to run.
   
 - Load from local file in your container
   - Copy the following data files to your container.
-    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/account.csv)
-    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/phone.csv)
-    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/city.csv)
-    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/hasPhone.csv)
-    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/locate.csv)
-    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/data/transfer.csv)
+    - [account.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/account.csv)
+    - [phone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/phone.csv)
+    - [city.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/city.csv)
+    - [hasPhone.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/hasPhone.csv)
+    - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
+    - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
 
   - Copy [25_load.gsql](./gsql/25_load.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
-       gsql load2.gsql
+       gsql 25_load2.gsql
     ``` 
     or in GSQL Shell editor, copy the content of [25_load.gsql](./script/25_load.gsql), and paste in GSQL shell editor to run.
 
@@ -147,7 +205,7 @@ In the next section, we will explore Cypher syntax in detail through practical e
 
 In OpenCypher, the main statement is a pattern match statement in the form of MATCH-WHERE-RETURN. Each MATCH statement will create or update an invisible working table. The working table consists all the alias (vertex/edge) and columns specified in the current and previous MATCH statements. Other statement will also work on the working table to drive the final result.
 
-We will use examples to illustrate cypher syntax. 
+We will use examples to illustrate Cypher syntax. In TigerGraph, each Cypher query is installed as a stored procedure using a code generation technique for optimal performance, enabling repeated execution by its query name.
 
 ---
 
@@ -174,7 +232,7 @@ install query c1
 # run the compiled query
 run query c1()
 ```
-The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c1.out) under `/home/tigergraph/tutorial/4.x/cypher/c1.out`
+The result is shown in [c1.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c1.out) under `/home/tigergraph/tutorial/cypher/c1.out`
 
 [Go back to top](#top)
 
@@ -202,7 +260,7 @@ install query c2
 # run the compiled query
 run query c2()
 ```
-The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c2.out) under `/home/tigergraph/tutorial/4.x/cypher/c2.out`
+The result is shown in [c2.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c2.out) under `/home/tigergraph/tutorial/cypher/c2.out`
 
 [Go back to top](#top)
 
@@ -233,7 +291,7 @@ install query c3
 # run the compiled query
 run query c3("Scott")
 ```
-The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c3.out) under `/home/tigergraph/tutorial/4.x/cypher/c3.out`
+The result is shown in [c3.out](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/cypher/c3.out) under `/home/tigergraph/tutorial/cypher/c3.out`
 
 Copy [c4.cypher](./cypher/c4.cypher) to your container. 
 
@@ -255,7 +313,7 @@ install query c4
 #run the query
 run query c4()
 ```
-The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c4.out) under `/home/tigergraph/tutorial/4.x/cypher/c4.out`    
+The result is shown in [c4.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c4.out) under `/home/tigergraph/tutorial/cypher/c4.out`    
 
 [Go back to top](#top)
 
@@ -311,7 +369,7 @@ install query c6
 run query c6("Scott")
 ```
 
-The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c6.out) under `/home/tigergraph/tutorial/4.x/cypher/c6.out`   
+The result is shown in [c6.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c6.out) under `/home/tigergraph/tutorial/cypher/c6.out`   
 
 Copy [c7.cypher](./cypher/c7.cypher) to your container. 
 
@@ -339,7 +397,7 @@ install query c7
 run query c7("2024-01-01", "2024-12-31", "Scott")
 ```
 
-The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c7.out) under `/home/tigergraph/tutorial/4.x/cypher/c7.out`   
+The result is shown in [c7.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c7.out) under `/home/tigergraph/tutorial/cypher/c7.out`   
 
 [Go back to top](#top)
 
@@ -371,7 +429,7 @@ install query c8
 run query c8("2024-01-01", "2024-12-31")
 ```
 
-The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c8.out) under `/home/tigergraph/tutorial/4.x/cypher/c8.out`   
+The result is shown in [c8.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c8.out) under `/home/tigergraph/tutorial/cypher/c8.out`   
 
 [Go back to top](#top)
 
@@ -398,7 +456,7 @@ install query c21
 run query c21("Jenny")
 ```
 
-The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c21.out) under `/home/tigergraph/tutorial/4.x/cypher/c21.out`   
+The result is shown in [c21.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c21.out) under `/home/tigergraph/tutorial/cypher/c21.out`   
 
 ---
 
@@ -435,7 +493,7 @@ install query c9
 run query c9()
 ```
 
-The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c9.out) under `/home/tigergraph/tutorial/4.x/cypher/c9.out`   
+The result is shown in [c9.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c9.out) under `/home/tigergraph/tutorial/cypher/c9.out`   
 
 [Go back to top](#top)
 
@@ -464,7 +522,7 @@ install query c10
 run query c10()
 ```
 
-The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c10.out) under `/home/tigergraph/tutorial/4.x/cypher/c10.out`  
+The result is shown in [c10.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c10.out) under `/home/tigergraph/tutorial/cypher/c10.out`  
 
 [Go back to top](#top)
 
@@ -493,7 +551,7 @@ install query c11
 run query c11()
 ```
 
-The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c11.out) under `/home/tigergraph/tutorial/4.x/cypher/c11.out`  
+The result is shown in [c11.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c11.out) under `/home/tigergraph/tutorial/cypher/c11.out`  
 
 [Go back to top](#top)
 
@@ -526,7 +584,7 @@ install query c12
 run query c12()
 ```
 
-The result is shown in [c12.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c12.out) under `/home/tigergraph/tutorial/4.x/cypher/c12.out`  
+The result is shown in [c12.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c12.out) under `/home/tigergraph/tutorial/cypher/c12.out`  
 
 [Go back to top](#top)
 
@@ -551,7 +609,7 @@ install query c13
 run query c13()
 ```
 
-The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c13.out) under `/home/tigergraph/tutorial/4.x/cypher/c13.out`  
+The result is shown in [c13.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c13.out) under `/home/tigergraph/tutorial/cypher/c13.out`  
 
 [Go back to top](#top)
 
@@ -582,7 +640,7 @@ install query c14
 run query c14()
 ```
 
-The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c14.out) under `/home/tigergraph/tutorial/4.x/cypher/c14.out`  
+The result is shown in [c14.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c14.out) under `/home/tigergraph/tutorial/cypher/c14.out`  
 
 [Go back to top](#top)
 
@@ -608,7 +666,7 @@ install query c15
 
 run query c15()
 ```
-The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c15.out) under `/home/tigergraph/tutorial/4.x/cypher/c15.out`
+The result is shown in [c15.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c15.out) under `/home/tigergraph/tutorial/cypher/c15.out`
 
 [Go back to top](#top)
 
@@ -636,7 +694,7 @@ install query c16
 run query c16()
 ```
 
-The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c16.out) under `/home/tigergraph/tutorial/4.x/cypher/c16.out`
+The result is shown in [c16.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c16.out) under `/home/tigergraph/tutorial/cypher/c16.out`
 
 [Go back to top](#top)
 
@@ -665,7 +723,7 @@ CREATE OR REPLACE OPENCYPHER QUERY c17(){
 install query c17
 ```
 
-The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c17.out) under `/home/tigergraph/tutorial/4.x/cypher/c17.out`
+The result is shown in [c17.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c17.out) under `/home/tigergraph/tutorial/cypher/c17.out`
 
 [Go back to top](#top)
 
@@ -691,7 +749,7 @@ install query c18
 run query c18()
 ```
 
-The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c18.out) under `/home/tigergraph/tutorial/4.x/cypher/c18.out`
+The result is shown in [c18.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c18.out) under `/home/tigergraph/tutorial/cypher/c18.out`
 
 [Go back to top](#top)
 
@@ -733,7 +791,7 @@ install query c19
 run query c19()
 ```
 
-The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c19.out) under `/home/tigergraph/tutorial/4.x/cypher/c19.out`
+The result is shown in [c19.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c19.out) under `/home/tigergraph/tutorial/cypher/c19.out`
 
 [Go back to top](#top)
 
@@ -772,7 +830,7 @@ INSTALL query c20
 run query c20()
 ```
 
-The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/tutorial/4.x/cypher/c20.out) under `/home/tigergraph/tutorial/4.x/cypher/c20.out`
+The result is shown in [c20.out](https://github.com/tigergraph/ecosys/blob/master/tutorials/cypher/c20.out) under `/home/tigergraph/tutorial/cypher/c20.out`
 
 [Go back to top](#top)
 
@@ -785,6 +843,303 @@ There are many expression functions openCypher supports. Please refer to [openCy
 
 ---
 
+## CRUD Statements
+
+OpenCypher offers comprehensive support for performing Data Modification (Create, Update, Delete) operations on graph data. It provides an intuitive syntax to handle node and relationship manipulation, including their attributes.
+
+### Insert Data
+
+The `CREATE` statement in OpenCypher is used to add new nodes or relationships to the graph. If the specified node or relationship doesn't exist, it will be created. If it does exist, it will be replaced with the new data.
+
+#### Insert Node
+
+The following query creates a new `Account` node with properties `name` and `isBlocked`:
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertVertex(STRING name, BOOL isBlocked){
+  CREATE (p:Account {name: $name, isBlocked: $isBlocked})
+}
+
+# This will create an `Account` node with `name="Abby"` and `isBlocked=true`.
+interpret query insertVertex("Abby", true)
+```
+
+#### Insert Relationship
+
+The following query creates a `transfer` edge between two `Account` nodes with properties `date` and `amount`
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY insertEdge(VERTEX<Account> s, VERTEX<Account> t, DATETIME dt, UINT amt){
+  CREATE (s) -[:transfer {date: $dt, amount: $amt}]-> (t)
+}
+
+# Create two `transfer` relationships from "Abby" to "Ed"
+interpret query insertEdge("Abby", "Ed", "2025-01-01", 100)
+interpret query insertEdge("Abby", "Ed", "2025-01-09", 200)
+```
+
+You can use the `SELECT` statement to check if the insertion was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Abby"}) -[e:transfer]-> (t:Account {name: "Ed"})
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-01 00:00:00",
+            "attributes": {
+              "date": "2025-01-01 00:00:00",
+              "amount": 100
+            }
+          }
+        },
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Abby",
+            "from_type": "Account",
+            "to_id": "Ed",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2025-01-09 00:00:00",
+            "attributes": {
+              "date": "2025-01-09 00:00:00",
+              "amount": 200
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Delete Data
+
+The `DELETE` statement in OpenCypher is used to **remove nodes and relationships** from the graph. When deleting a node, all its associated relationships will also be deleted.
+
+#### Delete a single node
+
+When you delete a node, if it has relationships, all of its relationships will also be deleted.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteOneVertex(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  DELETE s
+}
+
+# delete "Abby"
+interpret query deleteOneVertex("Abby")
+```
+
+You can use the `SELECT` statement to check if the deletion was successful.
+
+```python
+GSQL > select s from (s:Account) where s.name="Abby"
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Vertex_Set": []
+    }
+  ]
+}
+```
+
+#### Delete all nodes of the specified type
+
+You can delete all nodes of a particular label type.
+
+**Single Label Type**
+
+```python
+### single type
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertexWithType01(){
+  MATCH (s:Account)
+  DELETE s
+}
+
+# Delete all nodes with the label `Account`
+interpret query deleteAllVertexWithType01()
+```
+
+**Multiple Label Types**
+
+```python
+### multiple types
+CREATE OR REPLACE OPENCYPHER QUERY deleteVertexWithType02(){
+  MATCH (s:Account:Phone)
+  DELETE s
+}
+
+# Delete all nodes with the label `Account` or `Phone`
+interpret query deleteVertexWithType02()
+```
+
+#### Delete all nodes
+
+This query deletes all nodes in the graph.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
+  MATCH (s)
+  DELETE s
+}
+
+interpret query deleteAllVertex()
+```
+
+You can use the `SELECT` statement to check if the deletion was successful.
+
+```python
+GSQL > select count(*) from (s)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": {
+        "count_lparen_1_rparen_": 0
+      }
+    }
+  ]
+}
+```
+
+
+#### Delete relationships
+
+You can delete relationships based on specific conditions.
+
+**Delete `transfer` Relationships with a Date Filter**
+
+This query deletes all `transfer` relationships where the date is earlier than the specified filter date.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY deleteEdge(STRING name="Abby", DATETIME filterDate="2024-02-01"){
+  MATCH (s:Account {name: $name}) -[e:transfer] -> (t:Account)
+  WHERE e.date < $filterDate
+  DELETE e
+}
+
+interpret query deleteEdge()
+```
+
+**Delete all outgoing edges of a specific account**
+
+```python
+//default parameter is "Abby"
+CREATE OR REPLACE OPENCYPHER QUERY deleteAllEdge(STRING name="Abby"){
+  MATCH (s:Account {name: $name}) -[e] -> ()
+  DELETE e
+}
+
+# Delete all outgoing relationships from the node with the name "Abby"
+interpret query deleteAllEdge()
+```
+
+---
+
+### Update Data
+
+Updating data in OpenCypher allows you to modify node and relationship attributes. The primary mechanism for updating attributes is the `SET` clause, which is used to assign or change the properties of nodes or relationships.
+
+#### Update vertex attributes
+
+You can update the attributes of a node. In this example, the `isBlocked` attribute of the `Account` node is set to `false` for a given account name.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateAccountAttr(STRING name="Abby"){
+  MATCH (s:Account {name: $name})
+  SET s.isBlocked = false
+}
+
+# Update the `isBlocked` attribute of the `Account` node with name "Abby" to false
+interpret query updateAccountAttr()
+```
+
+#### Update edge attributes
+
+You can also update the attributes of a relationship. In this example, the `amount` attribute of a `transfer` relationship is updated for a specified account, as long as the target account is not blocked.
+
+```python
+CREATE OR REPLACE OPENCYPHER QUERY updateTransferAmt(STRING startAcct="Jenny", UINT newAmt=100){
+  MATCH (s:Account {name: $startAcct})- [e:transfer]-> (t)
+  WHERE NOT t.isBlocked
+  SET e.amount = $newAmt
+}
+
+interpret query updateTransferAmt(_, 300)
+```
+
+You can use the `SELECT` statement to check if the update was successful.
+
+```python
+GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
+{
+  "version": {
+    "edition": "enterprise",
+    "api": "v2",
+    "schema": 0
+  },
+  "error": false,
+  "message": "",
+  "results": [
+    {
+      "Result_Table": [
+        {
+          "e": {
+            "e_type": "transfer",
+            "from_id": "Jenny",
+            "from_type": "Account",
+            "to_id": "Scott",
+            "to_type": "Account",
+            "directed": true,
+            "discriminator": "2024-04-04 00:00:00",
+            "attributes": {
+              "date": "2024-04-04 00:00:00",
+              "amount": 300
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+[Go back to top](#top)
+
+---
 # Support 
 If you like the tutorial and want to explore more, join the GSQL developer community at 
 

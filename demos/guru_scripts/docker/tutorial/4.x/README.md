@@ -2,11 +2,11 @@
 
 # Introduction <a name="top"></a>
 
-This GSQL tutorial introduces new users to TigerGraph’s graph query language. GSQL enables schema design, data loading, and querying, with Turing-completeness for Agentic AI applications like task dependency management and hybrid data retrieval.
+This GSQL tutorial introduces new users to TigerGraph’s graph query language. GSQL supports schema design, data loading, and querying, offering Turing-completeness for Agentic AI applications such as real-time task dependency management and hybrid data retrieval for GraphRAG.
 
-GSQL V3 syntax aligns with the 2024 ISO GQL standard, incorporating ASCII art and OpenCypher pattern matching.
+GSQL V3 syntax aligns with the [2024 ISO GQL](https://www.iso.org/standard/76120.html) standard, incorporating ASCII art and OpenCypher pattern matching.
 
-To follow this tutorial, install the TigerGraph Docker image or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
+To follow this tutorial, install the TigerGraph Docker image (configured with 8 CPUs and 20 GB of RAM or at minimum 4 CPUs and 16 GB of RAM) or set up a Linux instance with Bash access. Download our free [Community Edition](https://dl.tigergraph.com/) to get started.
 
 ---
 # Table of Contents
@@ -51,7 +51,10 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
   - [OpenCypher Query](#opencypher-query)
   - [Virtual Edge](#virtual-edge)
   - [REST API For GSQL](#rest-api-for-gsql)
-  - [Query Tuning](#query-tuning)
+  - [Query Tuning And Debug](#query-tuning-and-debug)
+    - [Batch Processing to Avoid OOM](#batch-processing-to-avoid-oom)
+    - [Debug Using PRINT Statement](#debug-using-print-statement)
+    - [Debug Using LOG Statement](#debug-using-log-statement)
   - [Explore Catalog](#explore-catalog)
  - [Experimental Features](#experimental-features)
    - [Table](#table)
@@ -65,29 +68,34 @@ To follow this tutorial, install the TigerGraph Docker image or set up a Linux i
    - [Unwind Statement](#unwind-statement)    
  - [Support](#support)
  - [Contact](#contact)
+ - [References](#references)
 
 ---
 # Sample Graph For Tutorial
 This graph is a simplifed version of a real-world financial transaction graph. There are 5 _Account_ vertices, with 8 _transfer_ edges between Accounts. An account may be associated with a _City_ and a _Phone_.
+The use case is to analyze which other accounts are connected to 'blocked' accounts.
 
 ![Financial Graph](./pictures/FinancialGraph.jpg)
 
 ---
 # Set Up Environment 
 
-If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image.
-Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine.
-After you installed TigerGraph, you can use gadmin tool to start/stop services under Bash shell.
+If you have your own machine (including Windows and Mac laptops), the easiest way to run TigerGraph is to install it as a Docker image. Download [Community Edition Docker Image](https://dl.tigergraph.com/). Follow the [Docker setup instructions](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to  set up the environment on your machine. 
+
+**Note**: TigerGraph does not currently support the ARM architecture and relies on Rosetta to emulate x86 instructions. For production environments, we recommend using an x86-based system.
+For optimal performance, configure your Docker environment with **8 CPUs and 20+ GB** of memory. If your laptop has limited resources, the minimum recommended configuration is **4 CPUs and 16 GB** of memory.
+
+After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 ```python
-       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
-       docker images #find image id
-       docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
-       docker exec -it mySandbox /bin/bash #start a shell on this container. 
-       gadmin start all  #start all tigergraph component services
-       gadmin status #should see all services are up.
+   docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+   docker images #find image id
+   docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
+   docker exec -it mySandbox /bin/bash #start a shell on this container. 
+   gadmin start all  #start all tigergraph component services
+   gadmin status #should see all services are up. If not, try gadmin start all again
 ```
 
-For the impatient, load the sample data from the tutorial/gsql folder and run your first query.
+For the impatient, load the sample data from the tutorial/gsql folder and run your first query. 
 ```python
    cd tutorial/gsql/   
    gsql 00_schema.gsql  #setup sample schema in catalog
@@ -99,18 +107,40 @@ For the impatient, load the sample data from the tutorial/gsql folder and run yo
    GSQL> select s, e, t from (s:Account)-[e:transfer]->(t:Account) limit 2 #query edge
    GSQL> select count(*) from (s:Account)  #query Account node count
    GSQL> select s, t, sum(e.amount) as transfer_amt  from (s:Account)-[e:transfer]->(t:Account)  # query s->t transfer ammount
+   GSQL> @01_load.gsql #use @filename in GSQL prompt to run a file containing gsql script
    GSQL> exit #quit the gsql shell   
 ```
+As shown above, you have two ways to run gsql script. 
+
+- Copy the gsql script in a file, say test.gsql, and in Bash command line, use `gsql test.gsql` to run
+- Enter GSQL prompt, and use one line gsql script or multiple line enclosed by `Begin` and `End` to run gsql
+```
+  GSQL> Begin
+  GSQL> line1 xxxx
+  GSQL> line2 xxxx
+  GSQL> ....
+  GSQL> End
+```
+You can also access the GraphStudio visual IDE directly through your browser:
+```python
+   http://localhost:14240/
+```
+
+If you are interested in using GUI IDE (which is different from GSQL shell below), here is a step-by-step guide on [GraphStudio](https://github.com/tigergraph/ecosys/blob/master/tutorials/GraphStudio.md)
+
+
 The following command is good for operation.
 
 ```python
 #To stop the server, you can use
  gadmin stop all
-#To clear the database
+#Check `gadmin status` to verify if the gsql service is running, then use the following command to reset (clear) the database.
  gsql 'drop all'
 ```
 
-**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based, with no access to a bash shell. To run the GSQL examples in this tutorial, simply copy the GSQL query into the Savanna GSQL editor and click the RUN button.
+**Note that**, our fully managed service -- [TigerGraph Savanna](https://savanna.tgcloud.io/) is entirely GUI-based and does not provide access to a bash shell. To execute the GSQL examples in this tutorial, simply copy the query into the Savanna GSQL editor and click Run.
+
+Additionally, all GSQL examples referenced in this tutorial can be found in your TigerGraph tutorials/gsql folder.
 
 ---
 [Go back to top](#top)
@@ -124,7 +154,7 @@ Next, run the following in your container's bash command line.
 gsql 00_schema.gsql
 ```
 As seen below, the declarative DDL creates vertex and edge types. Vertex type requires a `PRIMARY KEY`. Edge types requires `FROM` and `TO` vertex types as the key.
-Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction.
+Multiple edges of the same type can share endpoints. In such case, a `DISCRIMINATOR` attribute is needed to differentiate edges sharing the same pair of endpoints. If an edge type has the `REVERSE_EDGE` option, then that type is paired with a companion type so that every edge has a twin edge, sharing the same properties, except it runs in the opposite direction. You can put the following in a file, and invoke it under GSQL prompt `GSQL>@file.gsql`.
 
 ```python
 //install gds functions
@@ -174,9 +204,18 @@ Now that you have a graph schema, you can load data using one of the following m
     ```
        gsql 25_load2.gsql
     ``` 
-    or in GSQL Shell editor, copy the content of [25_load2.gsql](./gsql/25_load2.gsql), and paste in GSQL shell editor to run.
+     
+    You can either use the Query Editor in the Savanna (cloud) by copying the content of [25_load2.gsql](./gsql/25_load2.gsql), and pasting it into the query editor to run it.
+
+    Alternatively, navigate to the gsql folder and open a GSQL Shell in Bash by typing GSQL. Then, use @filename to execute a GSQL script file within the GSQL Shell.
+
+    ```
+     GSQL>@25_load2.gsql
+    ```
 
     The declarative loading script is self-explanatory. You define the filename alias for each data source, and use the LOAD statement to map the data source to the target schema elements-- vertex types, edge types, and vector attributes.
+    Copy the following in a gsql file-- load.gsql, And run it in bash shell `gsql load.gsql`.
+    
     ```python
     USE GRAPH financialGraph
 
@@ -204,7 +243,7 @@ Now that you have a graph schema, you can load data using one of the following m
     ```
 
 - Load from Iceberg table, or alternative Spark data sources, through [Tigergraph Spark Connector](https://docs.tigergraph.com/tigergraph-server/current/data-loading/load-from-spark-dataframe)
-  - Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
+- Please follow the Jupyter Notebook PySpark demo: [26_load_iceberg.ipynb](./gsql/26_load_iceberg.ipynb)
     
 [Go back to top](#top)
 
@@ -499,7 +538,7 @@ GSQL> END
 
 # Stored Procedure Query Examples 
 
-In this section, we explain how to write stored procedures. A stored procedure is a named query made up by a sequence of GSQL query blocks or statements. It is saved in the graph database catalog and can be repeatedly invoked using the "run query" command or a system-generated REST endpoint URL.
+In this section, we explain how to write stored procedures. A stored procedure is a named query consisting of a sequence of GSQL query blocks or statements. It is stored in the graph database catalog, installed once using a code generation technique for optimal performance, and can be invoked repeatedly using the 'run query' command or a system-generated REST endpoint URL.
 
 To create a stored procedure, you can use the following syntax. 
 
@@ -2065,7 +2104,7 @@ To see more how to use this feature, you can refer to [Virtual Edge](https://doc
 [Go back to top](#top)
 
 ---
-## Query Tuning
+## Query Tuning And Debug
 ### Batch Processing to Avoid OOM
 Sometimes, you start with a set of vertices, referred to as the Seed set. Each vertex in the Seed set will traverse the graph, performing the same operation. If this process consumes too much memory, a divide-and-conquer approach can help prevent out-of-memory errors.
 
@@ -2102,6 +2141,87 @@ done
 [Go back to top](#top)
 
 ---
+### Debug Using PRINT Statement
+
+We have shown many examples in this document using PRINT. You can refer to the official document on [PRINT](https://docs.tigergraph.com/gsql-ref/4.2/querying/output-statements-and-file-objects#_print_statement_api_v2).
+
+[Go back to top](#top)
+
+---
+
+
+### Debug Using LOG Statement
+The LOG statement is another method for outputting debug data. It functions as a command that writes information to a log file. The statement first evaluates the boolean condition, and if it is true, it outputs the remaining expressions to the log file. The syntax is as follows:
+
+```python
+logStmt := LOG "(" condition "," expression* ")"
+```
+
+E.g., 
+```python
+LOG(true, "hello world", 1+2); //it will print "hello world" and "3" to the compute engine log.
+```
+The `LOG` statement can appear within any query block or as a standalone statement in the query body. Here is an example:
+
+```python
+USE GRAPH financialGraph
+
+CREATE OR REPLACE QUERY logTest (VERTEX<Account> seed) SYNTAX V3 {
+  //mark if a node has been seen
+  OrAccum @visited;
+  //empty vertex set var
+  reachable_vertices = {};
+  //declare a visited_vertices var, annotated its type
+  //as ANY type so that it can take any vertex
+  visited_vertices  = {seed};
+
+  // Loop terminates when all neighbors are visited
+  WHILE visited_vertices.size() !=0 DO
+       //s is all neighbors of visited_vertices
+       //which have not been visited
+     visited_vertices = SELECT s
+                        FROM (:visited_vertices)-[:transfer]->(s)
+                        WHERE s.@visited == FALSE
+                        POST-ACCUM
+                                s.@visited = TRUE, log(true, "s.@visited",  s, s.@visited);//log statement in the POST-ACCUM clause
+
+    log (true, "while loop", visited_vertices.size()); //a standalone log statement 
+
+    reachable_vertices = reachable_vertices UNION visited_vertices;
+  END;
+
+
+  PRINT reachable_vertices;
+}
+
+
+INSTALL QUERY logTest
+
+RUN QUERY logTest("Scott")
+```
+
+After you add log statement, you can check the log. Under bash command line, find the log location.
+
+```python
+ gadmin log gpe #find the location of the compute engine log
+```
+
+You may see 
+
+```python
+GPE    : /home/tigergraph/tigergraph/log/gpe/GPE_1#1.out
+GPE    : /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+Next, you can use vim or any bash command line editor to open the log to search the log.INFO file. E.g., search "while loop" in our example. 
+
+```python
+vim /home/tigergraph/tigergraph/log/gpe/log.INFO
+```
+
+[Go back to top](#top)
+
+---
+
 ## Explore Catalog
 
 ### Global Scope vs. Graph Scope
@@ -2834,10 +2954,6 @@ If you like the tutorial and want to explore more, join the GSQL developer commu
 
 https://community.tigergraph.com/
 
-Or, study our product document at
-
-https://docs.tigergraph.com/gsql-ref/current/intro/
-
 [Go back to top](#top)
 
 ---
@@ -2847,6 +2963,15 @@ To contact us for commercial support and purchase, please email us at [info@tige
 
 [Go back to top](#top)
 
+# References
+The following academic papers have more technical depth for interested readers. 
+- [Aggregation Support for Modern Graph Analytics in TigerGraph](https://dl.acm.org/doi/pdf/10.1145/3318464.3386144), in [SIGMOD 2020 proceedings](https://sigmod2020.org/).
+- [Graph Pattern Matching in GQL and SQL/PGQ](https://arxiv.org/pdf/2112.06217), in [SIGMOD 2022 proceedings](https://sigmod2022.org/).
+- [The LDBC Social Network Benchmark: Business Intelligence Workload](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf), in [VLDB 2022 proceedings](https://vldb.org/2022/).
+- [PG-Schema: Schemas for Property Graphs](https://arxiv.org/pdf/2211.10962), in [SIGMOD 2023 proceedings](https://2023.sigmod.org/).
+- [Chasing Parallelism in Aggregating Graph Queries](https://drops.dagstuhl.de/storage/01oasics/oasics-vol119-tannens-festschrift/OASIcs.Tannen.5/OASIcs.Tannen.5.pdf), in [Tannen's Festschrift 2024](https://dblp.org/db/conf/birthday/tannen2024.html#Deutsch24).
+- [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/pdf/2501.11216), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
+- [Product Manual](https://docs.tigergraph.com/gsql-ref/current/intro/). 
 
-
+[Go back to top](#top)
 

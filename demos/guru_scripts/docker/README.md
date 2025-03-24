@@ -11,7 +11,7 @@ The latest TigerGraph docker image includes the following content.
 - emac, vim etc. 
 - jq
 - tar
-- tutorial: gsql 101, gsql 102 sub folders.
+- tutorial: GSQL.md, Cypher.md, Vector.md, gsql/,  vector/, cypher/.  
 - latest gsql open source graph algorithm library: gsql-graph-algorithms folder
 
 This video shows the whole setup process. https://www.youtube.com/watch?v=V5VvgJyjLxA
@@ -23,6 +23,8 @@ Install Docker Desktop
 1. Install Docker on your OS (choose one)
    - To install Docker for Mac OS, follow this video
      https://www.youtube.com/watch?v=MU8HUVlJTEY
+    The latest macOS devices with M-series chips use ARM architecture, so you'll need Rosetta to emulate apps built for Intel's x86 architecture. To enable Rosetta in Docker Desktop, open Docker Desktop → Settings → General → Virtual Machine Options, then check 'Use Rosetta for x86_64/amd64 emulation on Apple Silicon'
+     ![Rosetta](./images/Rosetta2.jpg)
 
    - To install Docker for Linux, follow this instructions.
      - Centos https://docs.docker.com/install/linux/docker-ce/centos/
@@ -31,14 +33,15 @@ Install Docker Desktop
    - To install Docker for Windows OS, follow this video
      https://www.youtube.com/watch?v=ymlWt1MqURY
 
-2. Configure Docker Desktop with sufficient resources:
-    Recommended: 4 cores and 16GB memory
-    Minimum: 2 cores and 10GB memory (performance will be degraded)
-
+2. Golden Rules for Configuring Docker on MacBook:
+   - Optimal Configuration: Allocate **8 CPUs and 24GB of memory**.
+   - Alternative Configuration: If your MacBook has fewer CPUs, allocate **4 CPUs and 16GB to 20GB of memory**.
+   
     Click the Docker Desktop icon, click Preferences...>>Advanced menu, drag the CPU and Memory sliders
     to the desired configuration, save and restart Docker Desktop
+      ![Docker Resource](./images/DockerResource.jpg)
 
-3. To understand the Docker *Container* and *Image* concepts, watch this video:
+4. To understand the Docker *Container* and *Image* concepts, watch this video:
   https://www.youtube.com/watch?v=Rv3DAJbDrS0
 
 Prepare a Shared Folder on Host OS shared with Docker Container
