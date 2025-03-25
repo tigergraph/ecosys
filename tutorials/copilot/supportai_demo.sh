@@ -27,3 +27,5 @@ while True; do
   current_stage=$stage
   sleep 5
 done
+
+python ./answer_question.sh

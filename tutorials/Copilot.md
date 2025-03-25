@@ -9,15 +9,45 @@ This document provides instructions on how to use SupportAI.
 
 # Content
 This Copilot tutorial contains 
-- [Setup Environment](#setup-environment)
-  - [](#)
-- [Setup Environment](#setup-standalone-tigergraph-instance)
+- [Setup Docker Environment](#setup-docker-environment)
+- [Download Docker Images](#download-tigergraph-docker-images)
+- [Deploy CoPilot Services](#deploy-copilot-with-docker-compose)
     
 # Setup Environment 
 
-### Deploy with Docker Compose
+### Setup Docker Environment
+
+* Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+* Please follow (Overview of installing Docker Compose)[https://docs.docker.com/compose/install/] to install Docker Compose for your platform accordingly.
+
+### Download Docker Images
+
+#### TigerGraph Docker Image
+
+To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and load to Docker:
+> ```
+> docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
+> docker images
+> ```
+
+You should be able to find `tigergraph/community:4.2.0-alpha` in the image list.
+
+#### CoPilot Docker Images
+
+The following images are also needed for TigerGraph CoPilot. It's not necessary to download them in advance as Docker Compose will download the automatically. But if it's desired, please use command `docker pull <image_name>` to download them:
+
+```
+tigergraphml/copilot:latest
+tigergraphml/ecc:latest
+tigergraphml/chat-history:latest
+tigergraphml/copilot-ui:latest
+nginx:latest
+```
+
+### Deploy Copilot with Docker Compose
+
 * Step 1: Get docker-compose file
-  - Download the [docker-compose.yml](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/docker-compose.yml) file directly
+  - Download the [docker-compose.yml](./copilot/docker-compose.yml) file directly
 
   The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
 
@@ -27,6 +57,7 @@ This Copilot tutorial contains
   * [configs/db_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
   * [configs/llm_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
   * [configs/chat_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
+  * [configs/nginx.config](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/nginx.config)
 
 * Step 3: Adjust configurations
   Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
@@ -39,23 +70,23 @@ This Copilot tutorial contains
 
 [Go back to top](#top)
 
-### Setup Standalone TigerGraph instance (Optional)
-
-Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+### Standalone TigerGraph instance (Optional)
 
 > **_Note:_** Vector feature preview is available in both TigerGraph Community Edition (Alpha) and Enterprise Edition (Preview).
 
-To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and start a TigerGraph instance.
+To start a TigerGraph Community Edition instance without a license key:
 > ```
-> docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
 > docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network copilot_default -t tigergraph/community:4.2.0-alpha
 > ```
-> And access the instance via http://locahost:14240 or obtain a terminal with the following command:
+
+Check the service status with the following commands:
 > ```
 > docker exec -it tigergraph /bin/bash
+> gadmin status
 > gadmin start all
 > ```
-> After using the database, and you want to shutdown it, use the following shell commmand
+
+After using the database, and you want to shutdown it, use the following shell commmand
 >```
 >gadmin stop all
 >```
