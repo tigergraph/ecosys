@@ -77,11 +77,13 @@ Lastly, when a new version of TigerGraph Operator becomes available, consult [Up
 
 For detailed information about the features, improvements, and bug fixes introduced in a specific Operator version, refer to the [release notes](docs/08-release-notes/README.md).
 
-## Raising Issues
+## Reporting Issues
 
-When raising issues, please specify the following:
+When reporting issues, please provide the following details:
 
-- Setup details as specified in the [issue template](docs/06-FAQs/issue_report_template.md)
-- A scenario where the issue occurred (with details on how to reproduce it)
-- Errors and log messages that are displayed by the involved software
-- Any other detail that might be useful
+- **Setup Information**: Include details as specified in the [issue template](../06-FAQs/issue_report_template.md)
+- **Reproduction Steps**: Describe the scenario where the issue occurred, along with clear steps to reproduce it.
+- **Errors and Logs**: Share any relevant error messages or log outputs from the involved software.
+- **Additional Context**: Include any other details that might help in diagnosing the issue.
+
+We also encourage you to report any documentation errors or suggest improvements. Your feedback helps us enhance the project!
