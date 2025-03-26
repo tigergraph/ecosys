@@ -9,10 +9,16 @@ This document provides instructions on how to use SupportAI.
 
 # Content
 This Copilot tutorial contains 
-- [Setup Docker Environment](#setup-docker-environment)
-- [Download Docker Images](#download-tigergraph-docker-images)
-- [Deploy CoPilot Services](#deploy-copilot-with-docker-compose)
-    
+- [Setup Environment](#setup-environment)
+  - [Setup Docker Environment](#setup-docker-environment)
+  - [Download Docker Images](#download-docker-images)
+  - [Deploy CoPilot Services](#deploy-copilot-with-docker-compose)
+- [Detailed Configurations](#detailed-configurations)
+  - [DB Configuration](#db-configuration)
+  - [LLM Provider Configuration](#llm-provider-configuration)
+  - [Chat Configuration](#chat-configuration)
+- [Run Demo](#run-demo)
+      
 # Setup Environment 
 
 ### Setup Docker Environment
@@ -162,3 +168,39 @@ Copy the below code into `configs/chat_config.json`. You shouldn’t need to cha
 ```
 
 [Go back to top](#top)
+
+# Run Demo
+
+### Step 1: Get demo script
+
+  The following scripts are needed to run the demo. Please download and put them in the same directory as the Docker Compose file:
+  * Demo driver: [supportai_demo.sh](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/supportai_demo.sh)
+  * SupportAI initializer: [init_supportai.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/init_supportai.py)
+  * Example: [answer_question.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/answer_question.py)
+
+### Step 2: Download the demo data
+
+  Next, download the following data file and put it in a `data` subdirectory of the directory contains the Docker Compose file:
+  * [data/pytg_current.jsonl](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/data/pytg_current.jsonl)
+
+### Step 3: Run the demo driver script
+
+> Note: Python 3.11+ is needed to run the demo
+>
+> It is recommended to use a virtual env to isolate the runtime environment for the demo
+> ```
+> python3.11 -m venv demo
+> source demo/bin/activate
+> ```
+
+  Now, simply run the demo script to try Copilot.
+```
+  ./supportai_demo.sh
+```
+
+  The script will:
+  1. Check the environment
+  1. Init TigerGraph schema and related queries needed
+  1. Load the sample data
+  1. Init the GraphRAG based on the graph and install required queries
+  1. Ask a question via Python to get answer from Copilot
