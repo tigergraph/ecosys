@@ -2965,13 +2965,13 @@ To contact us for commercial support and purchase, please email us at [info@tige
 
 # References
 The following academic papers have more technical depth for interested readers. 
-- [Aggregation Support for Modern Graph Analytics in TigerGraph](https://dl.acm.org/doi/pdf/10.1145/3318464.3386144), in [SIGMOD 2020 proceedings](https://sigmod2020.org/).
-- [Graph Pattern Matching in GQL and SQL/PGQ](https://arxiv.org/pdf/2112.06217), in [SIGMOD 2022 proceedings](https://sigmod2022.org/).
-- [The LDBC Social Network Benchmark: Business Intelligence Workload](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf), in [VLDB 2022 proceedings](https://vldb.org/2022/).
-- [PG-Schema: Schemas for Property Graphs](https://arxiv.org/pdf/2211.10962), in [SIGMOD 2023 proceedings](https://2023.sigmod.org/).
-- [Chasing Parallelism in Aggregating Graph Queries](https://drops.dagstuhl.de/storage/01oasics/oasics-vol119-tannens-festschrift/OASIcs.Tannen.5/OASIcs.Tannen.5.pdf), in [Tannen's Festschrift 2024](https://dblp.org/db/conf/birthday/tannen2024.html#Deutsch24).
-- [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/pdf/2501.11216), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
-- [Product Manual](https://docs.tigergraph.com/gsql-ref/current/intro/). 
+1. [Aggregation Support for Modern Graph Analytics in TigerGraph](https://dl.acm.org/doi/pdf/10.1145/3318464.3386144), in [SIGMOD 2020 proceedings](https://sigmod2020.org/).
+2. [Graph Pattern Matching in GQL and SQL/PGQ](https://arxiv.org/pdf/2112.06217), in [SIGMOD 2022 proceedings](https://sigmod2022.org/).
+3. [The LDBC Social Network Benchmark: Business Intelligence Workload](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf), in [VLDB 2022 proceedings](https://vldb.org/2022/).
+4. [PG-Schema: Schemas for Property Graphs](https://arxiv.org/pdf/2211.10962), in [SIGMOD 2023 proceedings](https://2023.sigmod.org/).
+5. [Chasing Parallelism in Aggregating Graph Queries](https://drops.dagstuhl.de/storage/01oasics/oasics-vol119-tannens-festschrift/OASIcs.Tannen.5/OASIcs.Tannen.5.pdf), in [Tannen's Festschrift 2024](https://dblp.org/db/conf/birthday/tannen2024.html#Deutsch24).
+6. [TigerVector: Supporting Vector Search in Graph Databases for Advanced RAGs](https://arxiv.org/pdf/2501.11216), in [SIGMOD 2025 proceedings](https://2025.sigmod.org/).
+7. [Product Manual](https://docs.tigergraph.com/gsql-ref/current/intro/). 
 
 [Go back to top](#top)
 
