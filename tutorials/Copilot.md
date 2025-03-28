@@ -17,7 +17,7 @@ This CoPilot tutorial contains:
 - [Run Demo](#run-demo)
   - [Use Preloaded GraphRAG](#use-preloaded-graphrag)
   - [Start From Scratch](#build-graphrag-from-scratch)
-- [Detailed Configurations](#more-detailed-configurations)
+- [More Configurations](#more-detailed-configurations)
   - [DB Configuration](#db-configuration)
   - [LLM Provider Configuration](#llm-provider-configuration)
   - [Chat Configuration](#chat-configuration)
@@ -57,28 +57,28 @@ nginx:latest
 
 ### Deploy Copilot with Docker Compose
 
-* Step 1: Get docker-compose file
+#### Step 1: Get docker-compose file
 - Download the [docker-compose.yml](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/docker-compose.yml) file directly
 
 The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
 
-* Step 2: Set up configurations
+#### Step 2: Set up configurations
 
-Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
+- Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
 * [configs/db_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
 * [configs/llm_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
 * [configs/chat_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
 * [configs/nginx.config](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/nginx.config)
 
-* Step 3: Adjust configurations
+#### Step 3: Adjust configurations
 
-Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
+- Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
  
-If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
+> If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
 
-* Step 4: Start all services
+#### Step 4: Start all services
 
-Now, simply run `docker compose up -d` and wait for all the services to start.
+- Now, simply run `docker compose up -d` and wait for all the services to start.
 
 [Go back to top](#top)
 
@@ -101,9 +101,9 @@ gadmin start all
 ```
 
 After using the database, and you want to shutdown it, use the following shell commmand
->```
->gadmin stop all
->```
+```
+gadmin stop all
+```
 
 [Go back to top](#top)
 
@@ -173,12 +173,12 @@ Next, download the following data file and put it in a `data` subdirectory of th
 #### Step 3: Run the demo driver script
 
 > Note: Python 3.11+ is needed to run the demo
->
-> It is recommended to use a virtual env to isolate the runtime environment for the demo
-> ```
-> python3.11 -m venv demo
-> source demo/bin/activate
-> ```
+
+It is recommended to use a virtual env to isolate the runtime environment for the demo
+```
+python3.11 -m venv demo
+source demo/bin/activate
+```
 
 Now, simply run the demo script to try Copilot.
 ```
@@ -194,7 +194,7 @@ The script will:
 
 [Go back to top](#top)
 
-# Detailed Configurations
+# More Detailed Configurations
 
 ### DB configuration
 Copy the below into `configs/db_config.json` and edit the `hostname` and `getToken` fields to match your database's configuration. If token authentication is enabled in TigerGraph, set `getToken` to `true`. Set the timeout, memory threshold, and thread limit parameters as desired to control how much of the database's resources are consumed when answering a question.
