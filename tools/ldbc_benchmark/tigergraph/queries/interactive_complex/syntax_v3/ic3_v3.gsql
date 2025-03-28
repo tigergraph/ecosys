@@ -1,0 +1,47 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 3 query description is on page 60 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE QUERY ic3_v3(VERTEX<Person> personId, STRING country1, STRING country2, DATETIME startDate, INT duration) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT xCount, INT yCount, INT xyCount> msgStats; 
+  HeapAccum<msgStats>(20, xCount DESC, personId ASC) @@result;
+  SumAccum<UINT> @xCount, @yCount;
+  OrAccum<BOOL> @selected, @selected2;
+  datetime endDate;
+  endDate = datetime_add(startDate, INTERVAL duration DAY);
+
+  S = { personId };
+  P = SELECT p
+    FROM (s:S) -[:KNOWS*1..2]- (p:Person)
+    WHERE p != personId;
+
+  PersonCity = SELECT c
+    FROM (cn:Country) <-[:IS_PART_OF]- (c:City)
+    WHERE cn.name != country1 AND cn.name != country2
+    ACCUM c.@selected += true;
+
+  P = SELECT p FROM (p:P) -[:IS_LOCATED_IN]-> (c:City)
+    WHERE c.@selected;
+
+  M = SELECT m
+    FROM (p:P) <-[:HAS_CREATOR]- (m:Post:Comment)
+    WHERE m.creationDate >= startDate AND m.creationDate < endDate;
+
+  Messages = SELECT m 
+    FROM  (m:M) -[:IS_LOCATED_IN]-> (cn:Country)
+    WHERE (cn.name == country1 OR cn.name == country2) 
+    ACCUM 
+      m.@selected += (cn.name == country1),
+      m.@selected2 += (cn.name == country2)
+    HAVING m.@selected OR m.@selected2;
+
+  P = SELECT p
+    FROM (m:M)-[:HAS_CREATOR]->(p:Person)
+    ACCUM 
+      IF m.@selected THEN p.@xCount += 1 END,
+      IF m.@selected2 THEN p.@yCount += 1 END
+    HAVING p.@xCount > 0 AND p.@yCount > 0;   
+
+  P = SELECT p 
+    FROM (p:P)
+    ACCUM @@result += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
+  PRINT @@result;
+}
