@@ -53,26 +53,26 @@ nginx:latest
 ### Deploy Copilot with Docker Compose
 
 * Step 1: Get docker-compose file
-  - Download the [docker-compose.yml](./copilot/docker-compose.yml) file directly
+- Download the [docker-compose.yml](./copilot/docker-compose.yml) file directly
 
-  The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
+The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
 
 * Step 2: Set up configurations
 
-  Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
-  * [configs/db_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
-  * [configs/llm_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
-  * [configs/chat_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
-  * [configs/nginx.config](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/nginx.config)
+Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
+* [configs/db_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
+* [configs/llm_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
+* [configs/chat_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
+* [configs/nginx.config](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/nginx.config)
 
 * Step 3: Adjust configurations
-  Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
-  
-  If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
+Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
+ 
+If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
 
 * Step 4: Start all services
 
-  Now, simply run `docker compose up -d` and wait for all the services to start.
+Now, simply run `docker compose up -d` and wait for all the services to start.
 
 [Go back to top](#top)
 
@@ -171,19 +171,68 @@ Copy the below code into `configs/chat_config.json`. You shouldn’t need to cha
 
 # Run Demo
 
-### Step 1: Get demo script
+### Use Preloaded GraphRAG
 
-  The following scripts are needed to run the demo. Please download and put them in the same directory as the Docker Compose file:
-  * Demo driver: [supportai_demo.sh](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/supportai_demo.sh)
-  * SupportAI initializer: [init_supportai.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/init_supportai.py)
-  * Example: [answer_question.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/answer_question.py)
+The completed `TigerGraphRAG` is provided for an express access to the Copilot features.
 
-### Step 2: Download the demo data
+#### Step 1: Get data package
 
-  Next, download the following data file and put it in a `data` subdirectory of the directory contains the Docker Compose file:
-  * [data/pytg_current.jsonl](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/data/pytg_current.jsonl)
+Download the following data file and put it under `/home/tigergraph/copilot` in your TigerGraph container:
+* [data/ExportedGraph.zip](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/data/ExportedGraph.zip)
 
-### Step 3: Run the demo driver script
+Use the following commands if the file cannot be downloaded inside the TigerGraph container directly:
+```
+docker cp ExportedGraph.zip tigergraph:/home/tigergraph/copilot
+docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/copilot/ExportedGraph.zip
+```
+
+#### Step 2: Import data package
+Next, log onto the TigerGraph instance and make use of the Database Import feature to recreate the GraphRAG:
+```
+docker exec -it tigergraph
+gsql "import graph all from \"/home/tigergraph/copilot\""
+gsql "install query all"
+```
+
+Wait until the following output is given:
+```
+[======================================================================================================] 100% (26/26)
+Query installation finished.
+```
+
+#### Step 3: Run the demo via chat
+Open your browser to access `http://localhost:<nginx_port>` to access Copilot Chat. For example: http://localhost:80
+
+Enter the username and password of the TigerGraph database to login.
+
+![Chat Login](./copilot/pictures/ChatLogin.jpg)
+
+On the top of the page, select `GraphRAG` as RAG pattern and `TigerGraphRAG` as Graph.
+![RAG Config](./copilot/pictures/RAGConfig.jpg)
+
+In the chat box, input the question `how to load data to tigergraph vector store, give an example in Python` and click the `send` button.
+![Demo Question](./copilot/pictures/DemoQuestion.jpg)
+
+
+
+
+### Build GraphRAG From Scratch
+
+If you want to experience the whole process of Copilot, you can build the GraphRAG from scratch. However, please review the LLM model and service setting carefully because it will cost some money to re-generate embedding and data structure for the raw data.
+
+#### Step 1: Get demo script
+
+The following scripts are needed to run the demo. Please download and put them in the same directory as the Docker Compose file:
+* Demo driver: [supportai_demo.sh](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/supportai_demo.sh)
+* SupportAI initializer: [init_supportai.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/init_supportai.py)
+* Example: [answer_question.py](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/answer_question.py)
+
+#### Step 2: Download the demo data
+
+Next, download the following data file and put it in a `data` subdirectory of the directory contains the Docker Compose file:
+* [data/tg_tutorials.jsonl](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/data/tg_tutorials.jsonl)
+
+#### Step 3: Run the demo driver script
 
 > Note: Python 3.11+ is needed to run the demo
 >
@@ -193,14 +242,14 @@ Copy the below code into `configs/chat_config.json`. You shouldn’t need to cha
 > source demo/bin/activate
 > ```
 
-  Now, simply run the demo script to try Copilot.
+Now, simply run the demo script to try Copilot.
 ```
   ./supportai_demo.sh
 ```
 
-  The script will:
-  1. Check the environment
-  1. Init TigerGraph schema and related queries needed
-  1. Load the sample data
-  1. Init the GraphRAG based on the graph and install required queries
-  1. Ask a question via Python to get answer from Copilot
+The script will:
+1. Check the environment
+1. Init TigerGraph schema and related queries needed
+1. Load the sample data
+1. Init the GraphRAG based on the graph and install required queries
+1. Ask a question via Python to get answer from Copilot

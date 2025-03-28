@@ -14,13 +14,13 @@ conn = TigerGraphConnection(
     restppPort=14240
     )
 
-conn.graphname = "SupportAIDemo"
+conn.graphname = "TigerGraphRAG"
 
 # And then add CoPilot's address to the connection. This address
 # is the host's address where the CoPilot container is running.
 conn.ai.configureCoPilotHost(f"{host}:8000")
 
-query = "How do I get the vertex count from TigerGrpah using Python?"
+query = "how to load data to tigergraph vector store, give an example in Python"
 print(f"""Fetching answer for question: {query}""")
 
 resp = conn.ai.answerQuestion(
