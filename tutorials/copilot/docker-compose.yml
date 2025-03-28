@@ -13,7 +13,6 @@ services:
     environment:
       LLM_CONFIG: "/code/configs/llm_config.json"
       DB_CONFIG: "/code/configs/db_config.json"
-      MILVUS_CONFIG: "/code/configs/milvus_config.json"
       LOGLEVEL: "INFO"
       USE_CYPHER: "true"
     volumes:
@@ -30,7 +29,6 @@ services:
     environment:
       LLM_CONFIG: "/code/configs/llm_config.json"
       DB_CONFIG: "/code/configs/db_config.json"
-      MILVUS_CONFIG: "/code/configs/milvus_config.json"
       LOGLEVEL: "INFO"
       INIT_EMBED_STORE: "false"
     volumes:
@@ -50,21 +48,6 @@ services:
     volumes:
       - ./configs/:/configs
 
-  # report-service:
-  #   image: tigergraphml/report-service:latest
-  #   container_name: report-service
-  #   build:
-  #     context: chat-history/
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 8002:8002
-  #   environment:
-  #     CONFIG: "/configs/config.json"
-  #     LOGLEVEL: "INFO"
-  #   volumes:
-  #     - ./configs/:/code/configs
-  #     - ./common:/code/common
-      
   ui:
     image: tigergraphml/copilot-ui:latest 
     container_name: ui 
@@ -80,7 +63,7 @@ services:
     container_name: nginx
     image: nginx
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./configs/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
     depends_on:
