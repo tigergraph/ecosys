@@ -58,13 +58,13 @@ nginx:latest
 ### Deploy Copilot with Docker Compose
 
 #### Step 1: Get docker-compose file
-- Download the [docker-compose.yml](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/docker-compose.yml) file directly
+Download the [docker-compose.yml](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/docker-compose.yml) file directly
 
 The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
 
 #### Step 2: Set up configurations
 
-- Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
+Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
 * [configs/db_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
 * [configs/llm_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
 * [configs/chat_config.json](https://github.com/tigergraph/ecosys/blob/master/tutorials/copilot/configs/db_config.json)
@@ -72,13 +72,13 @@ The Docker Compose file contains all dependencies for CoPilot including a TigerG
 
 #### Step 3: Adjust configurations
 
-- Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
+Edit `configs/llm_config.json` and replace `<YOUR_OPENAI_API_KEY>` to your own OPENAI_API_KEY. 
  
 > If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
 
 #### Step 4: Start all services
 
-- Now, simply run `docker compose up -d` and wait for all the services to start.
+Now, simply run `docker compose up -d` and wait for all the services to start.
 
 [Go back to top](#top)
 
