@@ -422,6 +422,35 @@ All topologySpreadConstraints are ANDed.
 Refer to <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">Pod Topology Spread Constraints</a></p>
 </td>
 </tr>
+<tr>
+<td>
+<code>kafkaConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaConfig">
+KafkaConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KafkaConfig is used for setting the Kafka configuration of TigerGraph</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusterJobConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.ClusterJobConfig">
+ClusterJobConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClusterJobConfig is used for customizing the configurations of cluster operations job,
+such as MinRetryDuration, MaxRetryDuration and MaxRetryTimes</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -906,6 +935,43 @@ Kubernetes core/v1.Affinity
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.AutoDetectValue">AutoDetectValue</h3>
+<p>
+<p>AutoDetectValue defines values required for building monitoring resources that are not explicitly
+defined in the TigerGraphMonitor CR. Currently, these values include:
+- The release name of the kube-prometheus-stack
+- The list of monitored clusters, defaulting to all TigerGraph clusters in the current namespace</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>ReleaseName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>MonitoredClusters</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.BackoffRetryPolicy">BackoffRetryPolicy</h3>
 <p>
 (<em>Appears on:</em>
@@ -1201,6 +1267,67 @@ int32
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.ClusterJobConfig">ClusterJobConfig</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphSpec">TigerGraphSpec</a>, 
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>minRetryDuration</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The minimum retry interval after first failure.
+The format should be like &ldquo;5s&rdquo;,&ldquo;10m&rdquo;,&ldquo;1h&rdquo;,&ldquo;1h20m5s&rdquo;
+Default value is 1m</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxRetryDuration</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The maximum retry interval.
+The format should be like &ldquo;5s&rdquo;,&ldquo;10m&rdquo;,&ldquo;1h&rdquo;,&ldquo;1h20m5s&rdquo;
+Default value is 60m</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxRetryTimes</code></br>
+<em>
+map[string]int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The maximum number of retries for cluster operation jobs.
+The key is the specific enum name of the cluster operation job.
+The value represents the maximum number of retry attempts for the specified operation job.
+If not set for a specific job, retries will continue up to 10 times based on MaxRetryDuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.Destination">Destination</h3>
 <p>
 (<em>Appears on:</em>
@@ -1297,6 +1424,52 @@ string
 <code>Region</code></br>
 <em>
 string
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.HostListWithPort">HostListWithPort</h3>
+<p>
+</p>
+<h3 id="graphdb.tigergraph.com/v1alpha1.HostListWithPortItem">HostListWithPortItem</h3>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>Hostname</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>ID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>Port</code></br>
+<em>
+int32
 </em>
 </td>
 <td>
@@ -1420,6 +1593,196 @@ int32
 </td>
 <td>
 <p>The number of failed jobs</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.KafkaConfig">KafkaConfig</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphSpec">TigerGraphSpec</a>, 
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>externalListener</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaExternalListener">
+KafkaExternalListener
+</a>
+</em>
+</td>
+<td>
+<p>ExternalListener is used for configurations related to K8s Service</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>security</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaSecurity">
+KafkaSecurity
+</a>
+</em>
+</td>
+<td>
+<p>Security is used for configurations related to security of Kafka</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.KafkaExternalListener">KafkaExternalListener</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaConfig">KafkaConfig</a>, 
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</a>)
+</p>
+<p>
+<p>ExternalListener is used for configurations related to K8s Service</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#servicetype-v1-core">
+Kubernetes core/v1.ServiceType
+</a>
+</em>
+</td>
+<td>
+<p>ServiceType of Kafka external services, support LoadBalancer and Ingress</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>labels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>Labels is customized labels for kafka listener</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<p>Annotations is customized annotations for kafka listener</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>externalTrafficPolicy</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#serviceexternaltrafficpolicytype-v1-core">
+Kubernetes core/v1.ServiceExternalTrafficPolicyType
+</a>
+</em>
+</td>
+<td>
+<p>Service external trafficPolicy type for LoadBalancer</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ingressClassName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Ingress class name, only used when ServiceType is Ingress</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>servicePort</code></br>
+<em>
+int32
+</em>
+</td>
+<td>
+<p>ServicePort is the port that is exposed by LoadBalancer
+default value is 30006</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>baseDomain</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The base domain of kafka brokers which is required when setting listener.type to Ingress.
+The address of kafka brokers will be like broker1.basedomain, broker2.basedomain</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.KafkaSecurity">KafkaSecurity</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaConfig">KafkaConfig</a>)
+</p>
+<p>
+<p>Security is used for configurations related to security of Kafka</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>secretName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The secretName is the name of the secret used to configure TLS for Kafka brokers</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>enableClientAuth</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>If client auth is enabled, clients have to provide client certificate
+when they connect to brokers. And the trusted client certificate must
+be specified in a K8s Secret</p>
 </td>
 </tr>
 </tbody>
@@ -2472,6 +2835,240 @@ BackupInfo
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</h3>
+<p>
+<p>TigerGraphMonitor is the Schema for the tigergraphmonitors API</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorSpec">
+TigerGraphMonitorSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>monitoredClusters</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MonitoredClusters holds the names of TigerGraph clusters to be monitored</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>releaseName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the
+Kubernetes cluster.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorStatus">
+TigerGraphMonitorStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorCondition">TigerGraphMonitorCondition</h3>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>ConditionType</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorConditionType">
+TigerGraphMonitorConditionType
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>ConditionStatus</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#conditionstatus-v1-meta">
+Kubernetes meta/v1.ConditionStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorConditionType">TigerGraphMonitorConditionType</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorCondition">TigerGraphMonitorCondition</a>)
+</p>
+<p>
+</p>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorSpec">TigerGraphMonitorSpec</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</a>)
+</p>
+<p>
+<p>TigerGraphMonitorSpec defines the desired state of TigerGraphMonitor</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>monitoredClusters</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MonitoredClusters holds the names of TigerGraph clusters to be monitored</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>releaseName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the
+Kubernetes cluster.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorStatus">TigerGraphMonitorStatus</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</a>)
+</p>
+<p>
+<p>TigerGraphMonitorStatus defines the observed state of TigerGraphMonitor</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>conditions</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Condition contains details of the current state of TigerGraphMonitor CR instance</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>monitoredClusters</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<p>MonitoredClusters contains the names of TigerGraph clusters that are actively being monitored</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>releaseName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the current
+Kubernetes cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dashboard</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Dashboard is the MD5 hash of the current Grafana dashboard configuration</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphRestoreSpec">TigerGraphRestoreSpec</h3>
 <p>
 (<em>Appears on:</em>
@@ -3011,6 +3608,35 @@ All topologySpreadConstraints are ANDed.
 Refer to <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">Pod Topology Spread Constraints</a></p>
 </td>
 </tr>
+<tr>
+<td>
+<code>kafkaConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaConfig">
+KafkaConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>KafkaConfig is used for setting the Kafka configuration of TigerGraph</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusterJobConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.ClusterJobConfig">
+ClusterJobConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ClusterJobConfig is used for customizing the configurations of cluster operations job,
+such as MinRetryDuration, MaxRetryDuration and MaxRetryTimes</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</h3>
@@ -3226,6 +3852,56 @@ RegionAware
 </td>
 <td>
 <p>Current TopologySpreadConstraints of TigerGraph Pods</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>kafkaExternalListener</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaExternalListener">
+KafkaExternalListener
+</a>
+</em>
+</td>
+<td>
+<p>Current listeners for kafka brokers, represents current K8s services for kafka brokers</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>kafkaConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.KafkaConfig">
+KafkaConfig
+</a>
+</em>
+</td>
+<td>
+<p>Current KafkaConfig of TigerGraph, represents the kafka configuration running in TigerGraph</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>jobBackoffTimes</code></br>
+<em>
+int
+</em>
+</td>
+<td>
+<p>Equals the number of retries for the current cluster operation job after a failure.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clusterJobConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.ClusterJobConfig">
+ClusterJobConfig
+</a>
+</em>
+</td>
+<td>
+<p>Current configurations of cluster operations job</p>
 </td>
 </tr>
 </tbody>

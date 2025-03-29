@@ -17,9 +17,8 @@
 - [Step 4: Connect to a TigerGraph Cluster](#step-4-connect-to-a-tigergraph-cluster)
   - [Connect to a TigerGraph Cluster Pod](#connect-to-a-tigergraph-cluster-pod)
   - [Access TigerGraph Services](#access-tigergraph-services)
-    - [Verify the API service](#verify-the-api-service)
-    - [Verify the RESTPP API service](#verify-the-restpp-api-service)
-    - [Verify the Metrics API service](#verify-the-metrics-api-service)
+    - [Access TigerGraph Services from inside the Kubernetes cluster](#access-tigergraph-services-from-inside-the-kubernetes-cluster)
+    - [Access TigerGraph Services from outside the Kubernetes cluster](#access-tigergraph-services-from-outside-the-kubernetes-cluster)
 - [Step 5: Operate a TigerGraph Cluster](#step-5-operate-a-tigergraph-cluster)
   - [Update the Resources (CPU and Memory) of the TigerGraph Cluster](#update-the-resources-cpu-and-memory-of-the-tigergraph-cluster)
   - [Update system configurations and license of the TigerGraph cluster](#update-system-configurations-and-license-of-the-tigergraph-cluster)
@@ -168,6 +167,15 @@ Before installing the kubectl-tg plugin, make sure you meet the following requir
 - [helm](https://helm.sh/docs/helm/helm_install/): version >= 3.7.0
 - [jq](https://jqlang.github.io/jq/download/): version >= 1.6
 - [yq](https://github.com/mikefarah/yq): version >= 4.18.1
+
+> [!IMPORTANT]
+> The kubectl-tg plugin is only verified on GNU/Linux systems.
+>
+> If you are using MacOS, you may encounter issues due to the differences between GNU and MacOS commands.
+> Please refer to the [troubleshooting document](../05-troubleshoot/kubectl-tg-plugin.md) for more information.
+>
+> If you are using Windows, please run the commands in a WSL environment.
+> Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
 
 Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 0.0.9:
 
@@ -394,13 +402,67 @@ kubectl tg connect --cluster-name ${YOUR_CLUSTER_NAME} --namespace ${YOUR_NAMESP
 
 ### Access TigerGraph Services
 
+TigerGraph Operator provides two methods for accessing TigerGraph services. You can configure the spec.listener option to create an external service, allowing access to TigerGraph services from outside the Kubernetes cluster.
+
+Additionally, during TigerGraph cluster creation, the operator automatically creates a headless service to facilitate communication between internal TigerGraph pods. This service can be leveraged to access TigerGraph services from within the Kubernetes cluster.
+
+#### Access TigerGraph Services from inside the Kubernetes cluster
+
+Query the headless service:
+
+```bash
+kubectl get svc ${YOUR_CLUSTER_NAME}-internal-service --namespace ${YOUR_NAMESPACE}
+```
+
+Output example:
+
+```bash
+NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                        AGE
+test-cluster-internal-service   ClusterIP   None         <none>        9000/TCP,10022/TCP,14240/TCP   6m23s
+```
+
+When using the headless service to access the TigerGraph service, you must log into one of the pods in the Kubernetes cluster. The following example demonstrates how to access it from one of the TigerGraph pods.
+
+- Verify the API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/api/ping
+  {"error":false,"message":"pong","results":null}
+  ```
+
+- Verify the RESTPP API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/restpp/echo
+  {"error":false, "message":"Hello GSQL"}
+  ```
+
+- Verify the Metrics API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/informant/metrics/get/network -d '{"LatestNum":"1"}'
+  {"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"702d134a162542ca8109de3dcbc51dea","TimestampNS":"1738829179030264667","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1738829179023049798","Network":{"IP":"10.20.128.210","TCPConnectionNum":382,"IncomingBytesNum":"49794423","OutgoingBytesNum":"48252486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"dff3d22e6bfd4cf3a2f1d7fb252a4ed6","TimestampNS":"1738829180030864889","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1738829180024734149","Network":{"IP":"10.20.128.74","TCPConnectionNum":284,"IncomingBytesNum":"40035133","OutgoingBytesNum":"38002711"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"e00644e8c3d5414583605e5fccc41e67","TimestampNS":"1738829178029349154","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1738829178022643026","Network":{"IP":"10.20.128.10","TCPConnectionNum":279,"IncomingBytesNum":"36818317","OutgoingBytesNum":"25420121"}}]}
+  ```
+
+> [!NOTE]
+> You can also access the TigerGraph service through a specific TigerGraph pod by prefixing the pod name. For example: 
+> ```bash
+> curl ${YOUR_CLUSTER_NAME}-0.${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/api/ping
+>{"error":false,"message":"pong","results":null}
+> ```
+
+#### Access TigerGraph Services from outside the Kubernetes cluster
+
+> [!IMPORTANT]
+> Please ensure that the external service is configured before proceeding with the following steps. You can configure the external service using the spec.listener field when creating or updating the TigerGraph cluster. Please refer to [External access service](../07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md#external-access-service) for more details.
+
 Query the external service address:
 
   ```bash
   export EXTERNAL_SERVICE_ADDRESS=$(kubectl get svc/${YOUR_CLUSTER_NAME}-nginx-external-service --namespace ${YOUR_NAMESPACE} -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
   ```
 
-#### Verify the API service
+- Verify the API service
 
   ```bash
   curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/api/ping
@@ -410,7 +472,7 @@ Query the external service address:
 
 To access the TigerGraph Suite, open it in your browser using the following URL: http://${EXTERNAL_SERVICE_ADDRESS}:14240, replacing `EXTERNAL_SERVICE_ADDRESS` with the actual service address.
 
-#### Verify the RESTPP API service
+- Verify the RESTPP API service
 
   ```bash
   curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/restpp/echo
@@ -418,12 +480,12 @@ To access the TigerGraph Suite, open it in your browser using the following URL:
   {"error":false, "message":"Hello GSQL"}
   ```
 
-#### Verify the Metrics API service
+- Verify the Metrics API service
 
   ```bash
-curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"LatestNum":"1"}'
+  curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"LatestNum":"1"}'
 
-{"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"1ebeaf2a380f4941b371efaaceb3467b","TimestampNS":"1703666521019463773","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1703666521008230613","Network":{"IP":"10.244.0.79","TCPConnectionNum":89,"IncomingBytesNum":"1654215","OutgoingBytesNum":"1466486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"2c54ed5d6ba14e789db03fd9e023219c","TimestampNS":"1703666521020024563","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1703666521011409133","Network":{"IP":"10.244.0.78","TCPConnectionNum":90,"IncomingBytesNum":"1637413","OutgoingBytesNum":"1726712"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"c3478943ca134530bcd3aa439521c626","TimestampNS":"1703666521019483903","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1703666521009116924","Network":{"IP":"10.244.0.77","TCPConnectionNum":107,"IncomingBytesNum":"1298257","OutgoingBytesNum":"1197920"}}]}
+  {"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"1ebeaf2a380f4941b371efaaceb3467b","TimestampNS":"1703666521019463773","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1703666521008230613","Network":{"IP":"10.244.0.79","TCPConnectionNum":89,"IncomingBytesNum":"1654215","OutgoingBytesNum":"1466486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"2c54ed5d6ba14e789db03fd9e023219c","TimestampNS":"1703666521020024563","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1703666521011409133","Network":{"IP":"10.244.0.78","TCPConnectionNum":90,"IncomingBytesNum":"1637413","OutgoingBytesNum":"1726712"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"c3478943ca134530bcd3aa439521c626","TimestampNS":"1703666521019483903","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1703666521009116924","Network":{"IP":"10.244.0.77","TCPConnectionNum":107,"IncomingBytesNum":"1298257","OutgoingBytesNum":"1197920"}}]}
   ```
 
 ## Step 5: Operate a TigerGraph Cluster
@@ -433,7 +495,7 @@ curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"Late
 Use the following command to update the CPU and memory resources of the TigerGraph cluster:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --cpu 3 --memory 8Gi  --cpu-limit 3--memory-limit 8Gi  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --cpu 3 --memory 8Gi  --cpu-limit 3 --memory-limit 8Gi  --namespace ${YOUR_NAMESPACE}
 ```
 
 ### Update system configurations and license of the TigerGraph cluster

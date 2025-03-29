@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: monitoring-stack
+  name: tigergraph-monitor-service-monitor
+  namespace: tigergraph
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: ""
+    path: /informant/metrics
+    port: nginx
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - tigergraph
+  selector:
+    matchExpressions:
+    - key: tigergraph.com/monitoring
+      operator: In
+      values:
+      - e2e-monitor-test-cluster-itjdhasbahrllmc
+      - test-cluster

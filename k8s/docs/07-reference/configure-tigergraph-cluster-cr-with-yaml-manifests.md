@@ -255,6 +255,7 @@ The minimum configuration recommended for production environments is：
 
 - CPU: 6 cores
 - Memory: 12 Gi
+- ephemeral-storage: "20Gi" (Optional)
 
 By configuring these settings, you can help maintain optimal performance and reliability of your TigerGraph cluster.
 
@@ -269,9 +270,15 @@ spec:
       memory: 12Gi
 ```
 
+> [!WARNING]
+> When configuring the `spec.resources.limits.ephemeral-storage` field, please ensure that its value is not less than 20Gi. This is necessary because the upgrade pre-check will copy extra files into m1, which will require 5Gi of storage. Starting from version 1.5.0, the TigerGraph webhook will verify that this field is set to at least 20Gi if it is configured.
+
 ### External access service
 
 TigerGraph Operator provides three types of external access services, LoadBalancer, NodePort, and Ingress. It can be configured by changing `spec.listener.type` in the `TigerGraph` CR.
+
+> [!NOTE]
+> The field `spec.listener` is an optional configuration option. You can omit this field if you do not need to access the TigerGraph service outside Kubernetes.
 
 - LoadBalancer
 

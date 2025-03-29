@@ -2,7 +2,18 @@
 
 This document provides guidance on troubleshooting common issues encountered during the deployment of a TigerGraph cluster in Kubernetes.
 
-## Troubleshoot Steps
+- [TigerGraph Cluster Deployment Troubleshooting](#tigergraph-cluster-deployment-troubleshooting)
+  - [Troubleshooting Steps](#troubleshooting-steps)
+    - [Check the pods of the TG Cluster](#check-the-pods-of-the-tg-cluster)
+    - [Check the initialize job of TG Cluster](#check-the-initialize-job-of-tg-cluster)
+  - [Troubleshooting Cases](#troubleshooting-cases)
+    - [Conflict port for NodePort Listener type](#conflict-port-for-nodeport-listener-type)
+    - [TigerGraph Status is empty and Pods are not created](#tigergraph-status-is-empty-and-pods-are-not-created)
+    - [The TigerGraph Pod was killed and restarted because its ephemeral local storage usage exceeded the total limit set for the containers](#the-tigergraph-pod-was-killed-and-restarted-because-its-ephemeral-local-storage-usage-exceeded-the-total-limit-set-for-the-containers)
+    - [The TigerGraph CR was created successfully, but the TigerGraph pods and other dependent resources are not created](#the-tigergraph-cr-was-created-successfully-but-the-tigergraph-pods-and-other-dependent-resources-are-not-created)
+    - [Webhook Certificate Verification Failure in TigerGraph Cluster creation](#webhook-certificate-verification-failure-in-tigergraph-cluster-creation)
+
+## Troubleshooting Steps
 
 In the following steps, it is assumed that the operator has already been successfully installed within the `tigergraph` namespace, and that the cluster has been named `test-cluster`. However, please ensure to make appropriate adjustments based on your specific circumstances and environment.
 
@@ -540,6 +551,8 @@ If you've successfully created the StatefulSet and cluster pods for your TigerGr
   +--------------------+-------------------------+-------------------------+-------------------------+
   ```
 
+## Troubleshooting Cases
+
 ### Conflict port for NodePort Listener type
 
 If you encounter conflicts with port allocation when creating or updating a cluster with `LISTENER_TYPE=NodePort` and specified `nginx-node-port` values that conflict with in-use ports, you will receive an error message. To resolve this issue, specify available ports for these services:
@@ -570,7 +583,7 @@ When you create a TigerGraph CR, and run `kubectl get tg -n $NAMESPACE`, you wil
 ```bash
 $ kubectl get tg -n tigergraph -w
 NAME            REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster                                           docker.io/tginternal/tigergraph-k8s:3.9.3   LoadBalancer                                       1m
+test-cluster                                           docker.io/tigergraph/tigergraph-k8s:3.9.3   LoadBalancer                                       1m
 ```
 
 And when you run `kubectl get pods -n $NAMESPACE`, no pod has been created for this CR. The possible reason is that the reconcile is not triggered due to an issue of controller-runtime package. The log of operator will be like:
@@ -635,3 +648,156 @@ I0117 06:53:28.295175       1 leaderelection.go:258] successfully acquired lease
 ```
 
 You can see there are logs output by webhooks, which means webhooks work well. But when webhooks accept creation of TigerGraph CR, the reconcile for TigerGraph CR is not triggered. If you encounter this issue, you can uninstall the running operator by `kubectl tg uninstall --namespace $NAMESPACE`, and install it again. Then the reconcile will be triggered properly.
+
+### The TigerGraph Pod was killed and restarted because its ephemeral local storage usage exceeded the total limit set for the containers
+
+This issue may happen when:
+
+1. Upgrade TigerGraph to version 4.2.0 or above using Operator 1.5.0 or above if the spec.resources.limits.ephemeral-storage field is configured with a value less than 20Gi.
+2. A dedicated Persistent Volume is not configured for the directory path saving TigerGraph logs, and the logs were persisted in ephemeral local storage.
+
+you can check the events when this error occurs. The relevant events are as follows:
+
+```bash
+kubectl get events --sort-by='.metadata.creationTimestamp' -A
+
+tigergraph   85s         Warning   Evicted                       pod/test-cluster-0                                             Pod ephemeral local storage usage exceeds the total limit of containers 6Gi.
+tigergraph   2m5s        Normal    Killing                       pod/test-cluster-0                                             Stopping container tigergraph
+```
+
+When this error occurs, you need to update `spec.resources.limits.ephemeral-storage` to a larger value. The recommended value is 20Gi, which is the required minimum starting from version 1.5.0.
+
+On the other hand, it's best to configure a dedicated Persistent Volume using the following configuration:
+
+```YAML
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: ${STORAGE_CLASS_NAME}
+      volumeMode: Filesystem
+    additionalStorages:
+      - name: tg-log
+        storageClassName: ${STORAGE_CLASS_NAME}
+        storageSize: 10Gi
+```
+
+For details on mounting multiple persistent volumes, please refer to [Multiple persistent volumes mounting](../03-deploy/multiple-persistent-volumes-mounting.md)
+
+### The TigerGraph CR was created successfully, but the TigerGraph pods and other dependent resources are not created
+
+This issue may occur if you install a namespaced-scoped TigerGraph Operator and create a TigerGraph CR in a different namespace than where the Operator is installed.
+
+When you create a TigerGraph CR and run `kubectl get tg -n $NAMESPACE`, you will notice that all cluster statuses are empty.
+
+```bash
+$ kubectl get tg
+NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION   SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE   CONDITION-STATUS   AGE
+test-cluster                                                                                                                                  111s
+```
+
+Check the events of the TigerGraph CR; they will also be empty.
+
+```bash
+$ kubectl describe tg test-cluster
+Name:         test-cluster
+Namespace:    default
+Labels:       <none>
+Annotations:  tigergraph.com/debug-mode: false
+API Version:  graphdb.tigergraph.com/v1alpha1
+Kind:         TigerGraph
+Metadata:
+  Creation Timestamp:  2025-03-03T10:09:03Z
+  Finalizers:
+    tigergraph.com/tg-protection
+  Generation:        1
+  Resource Version:  639744822
+  UID:               7d580c3d-cee8-4dd3-bb83-d39785aef093
+Spec:
+  Ha:                 2
+  Image:              docker.io/tigergraph/tigergraph-k8s:4.1.2
+  Image Pull Policy:  IfNotPresent
+  Image Pull Secrets:
+    Name:   tigergraph-image-pull-secret
+  License:  xxxxxxx
+  Listener:
+    Type:  LoadBalancer
+  Pod Labels:
+    tigergraph.com/customLabel:  custom
+  Private Key Name:              ssh-key-secret
+  Replicas:                      3
+  Resources:
+    Requests:
+      Cpu:     4
+      Memory:  8Gi
+  Security Context:
+    Privileged:    false
+    Run As Group:  1000
+    Run As User:   1000
+  Storage:
+    Type:  persistent-claim
+    Volume Claim Template:
+      Access Modes:
+        ReadWriteOnce
+      Resources:
+        Requests:
+          Storage:         10G
+      Storage Class Name:  standard
+      Volume Mode:         Filesystem
+Events:                    <none>
+```
+
+For this issue, you need to check the scope type of the TierGraph Operator with the following commands:
+
+check the namesapce where the operator insalled:
+
+```bash
+$ helm ls -A
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION                
+tg-operator     tigergraph      1               2025-03-03 10:07:29.901237917 +0000 UTC deployed        tg-operator-1.5.0               1.5.0
+```
+
+Check the clusterScope and watchNameSpaces value in the TigerGraph Operator's values.yaml file.
+
+```bash
+$ helm get values tg-operator -n tigergraph
+USER-SUPPLIED VALUES:
+clusterScope: false
+image: docker.io/tigergraph/tigergraph-k8s-operator:1.5.0
+jobImage: docker.io/tigergraph/tigergraph-k8s-init:1.5.0
+maxConcurrentReconcilesOfBackup: 2
+maxConcurrentReconcilesOfBackupSchedule: 2
+maxConcurrentReconcilesOfRestore: 2
+maxConcurrentReconcilesOfTG: 2
+pullPolicy: IfNotPresent
+replicas: 3
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+watchNameSpaces: tigergraph
+```
+
+The watch namespace is set to tigergraph, and clusterScope is false, indicating that the TigerGraph Operator is installed in the tigergraph namespace with a namespaced scope.
+
+To resolve this, either create a TigerGraph CR in the same namespace as the TigerGraph Operator or reinstall a cluster-scoped operator to monitor TigerGraph CRs across all namespaces.
+
+### Webhook Certificate Verification Failure in TigerGraph Cluster creation
+
+When creating a TigerGraph Custom Resource (CR) immediately after installing the Operator, there is a slight chance of encountering the following errors:
+
+```bash
+Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "mtigergraph.kb.io": failed to call webhook: Post "https://tigergraph-operator-webhook-service.tigergraph.svc:443/mutate-graphdb-tigergraph-com-v1alpha1-tigergraph?timeout=10s": tls: failed to verify certificate: x509: certificate signed by unknown authority
+```
+
+The TigerGraph Operator uses cert-manager to manage webhook certificates. If cert-manager is installed and configured properly, the above error can be resolved by following these steps:
+
+- Restart the TigerGraph Operator to reload the certificate:
+
+```bash
+kubectl rollout restart deployment tigergraph-operator-controller-manager -n ${NAMESPACE_OF_OPERATION}$
+```
+
+If the issue persists, consider reinstalling the TigerGraph Operator.
