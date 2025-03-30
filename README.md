@@ -7,15 +7,12 @@
 [![Subreddit subscribers](https://img.shields.io/reddit/subreddit-subscribers/tigergraph?style=flat)](https://www.reddit.com/r/tigergraph/)
 
 ## Getting Started
-* [**Intro to Graph Fundamentals**](https://tigergraph-academy.teachable.com/courses/intro-to-graph-fundamentals/lectures/17671231)
+* [**Intro to Graph Fundamentals**](https://tigergraph-university.teachable.com/courses)
   * Understanding the Basics
-  * TigerGraph Building Basics
-* [**Intro to TigerGraph Products**](https://tigergraph-academy.teachable.com/courses/intro-to-tigergraph-products/lectures/26625628)
-  * Intro to Cloud
-  * Intro to GraphStudio
-* [**Intro to GSQL**](https://tigergraph-academy.teachable.com/courses/tigergraph-gsql/lectures/26896321)
-  * Graph Structure Query Language (GSQL) Basics
+  * GSQL 101
   * GSQL Writing Best Practices
+* [**Graph Data Science Using Graph Algorithms for Advanced Analytics**](https://tigergraph-university.teachable.com/courses)
+  * Using Graph Algorithms for Advanced Analytics
 
 
 ## TigerGraph's Ecosys
@@ -68,11 +65,11 @@ For a complete list of all TigerGraph's tools, patterns, guides, and much more! 
 
 ![TigerGraph Badges](docs/images/github/badgesSmall.png)
 
-[**Graph Fundamentals**](https://www.tigergraph.com/certification-graph-fundamentals/) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
+[**Graph Fundamentals**](https://tigergraph-university.teachable.com/courses) is a course designed for people who are new to graph database and graph-based analytics. There are four modules that are designed to take you from a graph newbie to being fluent in the concepts, capabilities and use cases of a native parallel graph database.
 
-[**GSQL 101**](https://www.tigergraph.com/certification-gsql-101/) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution.
+[**GSQL 101**](hhttps://tigergraph-university.teachable.com/courses) provides the basics of programming in GSQL, and enables you to create and use TigerGraph’s graph database and analytics solution.
 
-[**Graph Algorithms for Machine Learning**](https://www.tigergraph.com/certification/graph-algorithms-for-machine-learning/), examines five different categories of graph algorithms and how they improve the accuracy of machine learning algorithms.
+[**Graph Algorithms for Machine Learning**](https://tigergraph-university.teachable.com/courses), examines five different categories of graph algorithms and how they improve the accuracy of machine learning algorithms.
 
 ## TigerGraph's Developer Resources
 
