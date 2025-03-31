@@ -1005,7 +1005,7 @@ This query deletes all nodes in the graph.
 
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
-  MATCH (s)
+  MATCH (s:_)
   DELETE s
 }
 
@@ -1015,7 +1015,7 @@ interpret query deleteAllVertex()
 You can use the `SELECT` statement to check if the deletion was successful.
 
 ```python
-GSQL > select count(*) from (s)
+GSQL > select count(*) from (s:_)
 {
   "version": {
     "edition": "enterprise",
