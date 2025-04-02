@@ -60,6 +60,7 @@ To make it clear, we list all possible status of TigerGraph cluster here, and de
 | InitializeRegionAwarePre | Unknown,False,True | TigerGraph Operator is performing the region uniform check  | It is allowed to update cluster configuration if this condition status is False. |
 | InitializePost | Unknown,True,False | Create an init-job to initialize TigerGraph system | The service status of TG is uncertain until initialization is completed. |
 | UpdateRoll | Unknown,True | TigerGraph cluster is in rolling update that indicates you update the CPU, Memory, and other TG pod configurations. | The RESTPP and GUI services are available during UpdateRoll status. |
+| UpgradePre | Unknown,False,True | TigerGraph cluster is in upgrade pre-check process |The upgrade pre-check process will not impact the currently running cluster.|
 | UpgradeRoll | Unknown,True | TigerGraph cluster is in rolling update to pull new version image | The service status of TG is uncertain. |
 | UpgradePost | Unknown,True,False | Create an upgrade-job to upgrade TigerGraph system | The service status of TG is uncertain until upgrade-job is completed. |
 | ExpandRoll | Unknown,True | TigerGraph cluster is in rolling update to create more pods for expansion | The service status of TG is uncertain |
