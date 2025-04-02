@@ -139,10 +139,7 @@ public class RestppRetryer implements Retryer {
 
     if (retryType == TYPE_AUTH && tokenMgr != null) {
       tokenMgr.refreshToken();
-      logger.info(
-          "Successfully refreshed token {} for {} seconds",
-          Utils.maskString(tokenMgr.getToken(), 2),
-          Auth.TOKEN_LIFETIME_SEC);
+      logger.info("Successfully refreshed token {}", Utils.maskString(tokenMgr.getToken(), 2));
     }
   }
 

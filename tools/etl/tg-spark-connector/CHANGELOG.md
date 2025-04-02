@@ -1,3 +1,8 @@
+# v0.2.3
+* Support request and refresh Oauth2 access token with 2 new options:
+  * oauth2.url: The URL to send the Client Credentials grant request to;
+  * oauth2.parameters: JSON string that contains the necessary oauth2 parameters, like `client_id`, `client_secret`.
+
 # v0.2.2
 * Support schema inference for ListAccum, SetAccum, BagAccum, MapAccum and GroupByAccum;
 * Fix: Update shaded pattern of third-party dependencies to avoid conflicts;

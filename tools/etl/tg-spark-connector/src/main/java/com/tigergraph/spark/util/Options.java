@@ -126,6 +126,10 @@ public class Options implements Serializable {
   public static final String LOG_LEVEL = "log.level";
   public static final String LOG_FILE = "log.file";
 
+  // Third-party certification
+  public static final String OAUTH2_PARAMETERS = "oauth2.parameters";
+  public static final String OAUTH2_URL = "oauth2.url";
+
   // Options' group name
   public static final String GROUP_GENERAL = "general";
   public static final String GROUP_AUTH = "auth";
@@ -134,6 +138,7 @@ public class Options implements Serializable {
   public static final String GROUP_SSL = "ssl";
   public static final String GROUP_QUERY = "query";
   public static final String GROUP_LOG = "log";
+  public static final String GROUP_OAUTH2 = "oauth2";
 
   private final HashMap<String, String> originals;
   private final HashMap<String, Serializable> transformed = new HashMap<>();
@@ -215,7 +220,9 @@ public class Options implements Serializable {
                 GROUP_SSL)
             .define(SSL_TRUSTSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL)
             .define(LOG_LEVEL, Type.INT, GROUP_LOG)
-            .define(LOG_FILE, Type.STRING, "", false, null, GROUP_LOG);
+            .define(LOG_FILE, Type.STRING, "", false, null, GROUP_LOG)
+            .define(OAUTH2_PARAMETERS, Type.STRING, GROUP_OAUTH2)
+            .define(OAUTH2_URL, Type.STRING, GROUP_OAUTH2);
 
     if (OptionType.WRITE.equals(this.optionType)) {
       this.definition
