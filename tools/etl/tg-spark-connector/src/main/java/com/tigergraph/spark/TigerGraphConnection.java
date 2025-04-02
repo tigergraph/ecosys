@@ -13,6 +13,8 @@
  */
 package com.tigergraph.spark;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tigergraph.spark.client.Auth;
 import com.tigergraph.spark.client.Auth.AuthResponse;
 import com.tigergraph.spark.client.Builder;
@@ -24,11 +26,19 @@ import com.tigergraph.spark.client.common.RestppTokenManager;
 import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
+
+import feign.form.FormEncoder;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.slf4j.Logger;
+
+import com.tigergraph.spark.client.common.RestppEncoder;
 
 /**
  * Initalize TG connection including: <br>
@@ -43,6 +53,16 @@ import org.slf4j.Logger;
 public class TigerGraphConnection implements Serializable {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphConnection.class);
 
+  // add a new auth type for non refreshable
+  public enum AuthType {
+    USERNAME_PASSWORD,
+    SECRET,
+    OAUTH2,
+    NON_REFRESHABLE // restpp auth disabled or one-time token
+  }
+
+  private AuthType authType = AuthType.NON_REFRESHABLE;
+
   private Options opts;
   // Common connection variables
   private final String graph;
@@ -51,11 +71,15 @@ public class TigerGraphConnection implements Serializable {
   private final String version;
   private transient Misc misc;
   // Authentication variables
+  private static final String GRANT_TYPE_KEY = "grant_type";
+  private static final String GRANT_TYPE_VALUE = "client_credentials";
   private String basicAuth;
   private String secret;
   private String token;
   private boolean restAuthEnabled;
   private boolean restAuthInited;
+  private Map<String, Object> oauth2Parameters = new HashMap<>();
+  private String oauth2Url;
   private transient Auth auth;
   private transient RestppTokenManager tokenMgr;
   // Loading job variables/consts
@@ -115,9 +139,32 @@ public class TigerGraphConnection implements Serializable {
 
   private void initAuth() {
     if (!restAuthInited) {
-      this.secret = opts.getString(Options.SECRET);
+      // 1. init Auth client to check if restpp auth is enabled
+      getAuth();
+      restAuthEnabled = auth.checkAuthEnabled();
+      // 2. init auth variables
       this.token = opts.getString(Options.TOKEN);
-      // 1. encode username:password to basic auth
+      this.secret = opts.getString(Options.SECRET);
+      // parse oauth2 parameters json string
+      try {
+        String oauthParams = opts.getString(Options.OAUTH2_PARAMETERS);
+        if (!Utils.isEmpty(oauthParams)) {
+          this.oauth2Parameters = new ObjectMapper().readValue(oauthParams, Map.class);
+          // enforce the grant_type to be "client_credentials"
+          this.oauth2Parameters.put(GRANT_TYPE_KEY, GRANT_TYPE_VALUE);
+        }
+      } catch (JsonProcessingException e) {
+        logger.error(
+            "Failed to parse "
+                + Options.OAUTH2_PARAMETERS
+                + ", please check if it is a valid json");
+        throw new IllegalArgumentException(
+            "Failed to parse "
+                + Options.OAUTH2_PARAMETERS
+                + ", please check if it is a valid json");
+      }
+      this.oauth2Url = opts.getString(Options.OAUTH2_URL);
+      // encode username:password to basic auth
       if (!Utils.isEmpty(opts.getString(Options.USERNAME))
           && !Utils.isEmpty(opts.getString(Options.PASSWORD))) {
         this.basicAuth =
@@ -127,37 +174,50 @@ public class TigerGraphConnection implements Serializable {
                         (opts.getString(Options.USERNAME) + ":" + opts.getString(Options.PASSWORD))
                             .getBytes()));
       }
-      // 2. init Auth client
-      getAuth();
-      // 3. check if restpp auth is enabled
-      restAuthEnabled = auth.checkAuthEnabled();
-      // 4. request token if username/password or secret is provided but token is empty
+      if (!Utils.isEmpty(basicAuth)) {
+        authType = AuthType.USERNAME_PASSWORD;
+      } else if (!Utils.isEmpty(secret)) {
+        authType = AuthType.SECRET;
+      } else if (!oauth2Parameters.isEmpty() && !Utils.isEmpty(oauth2Url)) {
+        authType = AuthType.OAUTH2;
+        // reinit auth client to distinguish between TG auth and OAuth2
+        auth = null;
+        auth = getAuth();
+      }
+      // 3. request token if username/password or secret or oauth2 is provided but token is empty
       if (restAuthEnabled && Utils.isEmpty(token)) {
         AuthResponse resp;
-        if (!Utils.isEmpty(basicAuth)) {
-          resp = auth.requestTokenWithUserPass(version, graph, basicAuth, Auth.TOKEN_LIFETIME_SEC);
-          resp.panicOnFail();
-          token = resp.getToken();
-        } else if (!Utils.isEmpty(secret)) {
-          resp = auth.requestTokenWithSecret(version, secret, Auth.TOKEN_LIFETIME_SEC);
-          resp.panicOnFail();
-          token = resp.getToken();
-        } else {
-          throw new IllegalArgumentException(
-              "Restpp authentication is enabled, please provide at least one of the 'token',"
-                  + " 'secret' or 'username/password' pair.");
+        switch (authType) {
+          case USERNAME_PASSWORD:
+            resp =
+                auth.requestTokenWithUserPass(version, graph, basicAuth, Auth.TOKEN_LIFETIME_SEC);
+            break;
+          case SECRET:
+            resp = auth.requestTokenWithSecret(version, secret, Auth.TOKEN_LIFETIME_SEC);
+            break;
+          case OAUTH2:
+            resp = auth.refreshOAuth2Token(oauth2Parameters);
+            break;
+          default:
+            throw new IllegalArgumentException(
+                "Restpp authentication is enabled, please provide at least one of the 'token',"
+                    + " 'secret', 'oauth2.parameters/oauth2.url' or 'username/password' pair.");
         }
+        resp.panicOnFail();
+        token = resp.getToken();
         logger.info(
             "Requested new token {} for RESTPP authentication, expiration: {}",
             Utils.maskString(token, 2),
-            resp.expiration);
+            resp.getExpiration());
       }
-      restAuthInited = true;
     }
+    logger.info("Finished initializing authentication, auth type: {}", authType);
+    restAuthInited = true;
   }
 
   /** Get auth client for requesting/refreshing token */
   private Auth getAuth() {
+    String endpoint = AuthType.OAUTH2.equals(authType) ? oauth2Url : url;
     if (auth == null) {
       Builder builder =
           new Builder()
@@ -171,14 +231,22 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS));
-      if (url.trim().toLowerCase().startsWith("https://")) {
-        builder.setSSL(
-            opts.getString(Options.SSL_MODE),
-            opts.getString(Options.SSL_TRUSTSTORE),
-            opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+      if (endpoint.trim().toLowerCase().startsWith("https://")) {
+        if (AuthType.OAUTH2.equals(authType)) {
+          builder.setSSL(Options.SSL_MODE_BASIC, null, null, null);
+        } else {
+          builder.setSSL(
+              opts.getString(Options.SSL_MODE),
+              opts.getString(Options.SSL_TRUSTSTORE),
+              opts.getString(Options.SSL_TRUSTSTORE_TYPE),
+              opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+        }
       }
-      auth = builder.build(Auth.class, url);
+      if (AuthType.OAUTH2.equals(authType)) {
+        // require form urlencoded body
+        builder.setEncoder(new FormEncoder(RestppEncoder.INSTANCE));
+      }
+      auth = builder.build(Auth.class, endpoint);
     }
     return auth;
   }
@@ -190,7 +258,14 @@ public class TigerGraphConnection implements Serializable {
     if (tokenMgr == null) {
       tokenMgr =
           new RestppTokenManager(
-              getAuth(), graph, version, new AtomicReference<String>(token), secret, basicAuth);
+              getAuth(),
+              authType,
+              graph,
+              version,
+              new AtomicReference<String>(token),
+              secret,
+              basicAuth,
+              oauth2Parameters);
     }
     return tokenMgr;
   }
