@@ -82,6 +82,12 @@ public class Builder {
     return this;
   }
 
+  /** Set custom request encoder. */
+  public Builder setEncoder(Encoder encoder) {
+    this.encoder = encoder;
+    return this;
+  }
+
   /** Set custom RESTPP response decoder. */
   public Builder setDecoder(Decoder decoder) {
     this.decoder = decoder;
