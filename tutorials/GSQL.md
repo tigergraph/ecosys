@@ -2961,7 +2961,7 @@ https://community.tigergraph.com/
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
 
-Author: [Mingxi Wu](https://www.linkedin.com/in/mingxi-wu-a1704817/)
+Author: [Mingxi Wu](https://www.linkedin.com/in/mingxi-wu-a1704817/) – Feel free to connect with me on LinkedIn!
 
 [Go back to top](#top)
 
