@@ -1204,7 +1204,8 @@ GSQL > use graph financialGraph
 GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
 
 # String Expression
-GSQL >  MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+GSQL > MATCH (s:Account {name: "Scott"})- [:transfer*1..5]-> (t) RETURN distinct s.name  + "->" + t.name as path
 
 # CASE Expression
 GSQL > BEGIN
