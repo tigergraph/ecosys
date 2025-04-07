@@ -30,6 +30,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
   - [CRUD Statements](#crud-statements)
+- [Quick 1-Block Query Examples](#quick-1-block-query-examples)
  - [Support](#support)
  - [Contact](#contact)
 
@@ -1138,7 +1139,7 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
 
 [Go back to top](#top)
 
-# Quick Execution of 1-Block MATCH Queries
+# Quick 1-Block Query Examples
 
 **NOTE**  This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature.
 
@@ -1162,7 +1163,7 @@ In OpenCypher, there are two ways to run queries:
 
 ## Examples
 
-### SELECT with Filters
+### With Filters
 
 Using `WHERE` clause to filter nodes and relationships:
 
@@ -1174,7 +1175,7 @@ GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
 GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
 ```
 
-### Aggregation Result
+### Aggregation Results
 
 Aggregate functions in a single-block query:
 ```python
