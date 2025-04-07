@@ -1136,6 +1136,98 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
 }
 ```
 
+[Go back to top](#top)
+
+# Quick Execution of 1-Block MATCH Queries
+
+**NOTE**  This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature.
+
+---
+
+In OpenCypher, there are two ways to run queries:
+
+1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
+
+2.  **Ad-Hoc 1-Block Queries**: Run a simple, single-block `MATCH` query directly without creating or storing it.
+
+## Comparison with created query
+
+| Feature                     | 1-Block Quick Query         | CREATE OPENCYPHER QUERY     |
+|----------------------------|-----------------------------|-----------------------------|
+| Requires query name        | No                          | Yes                         |
+| Stored in catalog          | No                          | Yes                         |
+| Execution                  | Direct (ad-hoc)             | Requires creation + (install + run query) or interpret query     |
+| Supports complex logic     | No (single block only)      | Yes (multi-block, control)  |
+| Use cases                  | Debugging, quick checks     | Production, reusable logic  |
+
+## Examples
+
+### SELECT with Filters
+
+Using `WHERE` clause to filter nodes and relationships:
+
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s LIMIT 2
+GSQL > MATCH (s:Account {name: "Scott"}) RETURN s
+GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
+```
+
+### Aggregation Result
+
+Aggregate functions in a single-block query:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s) RETURN COUNT(s)
+GSQL > MATCH (s:Account:City) RETURN COUNT(*)
+GSQL > MATCH (s:Account {name: "Scott"})-[e]->(t) RETURN COUNT(DISTINCT t) as cnt
+GSQL > MATCH (s:Account)-[e:transfer|isLocatedIn]->(t) RETURN COUNT(e), STDEV(e.amount), AVG(e.amount)
+GSQL > MATCH (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) RETURN a, sum(e.amount) as amount1 , sum(e2.amount) as amount2
+```
+
+### Sorting and Limiting
+
+Queries with `ORDER BY`, `SKIP`, and `LIMIT`:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s.name ORDER BY s.name SKIP 1 LIMIT 3
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) RETURN s.name, e.amount as amt, t ORDER BY amt DESC, s.name LIMIT 1
+GSQL > MATCH (s:Account:City) WITH s.name + "_test" as sName ORDER BY sName DESC LIMIT 2 RETURN sName
+```
+
+### Using Expressions
+```python
+# Mathematical Expression
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
+
+# String Expression
+GSQL >  MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+
+# CASE Expression
+GSQL > BEGIN
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > RETURN
+GSQL >   s,
+GSQL >   CASE
+GSQL >    WHEN e.amount*0.01 > 80 THEN true
+GSQL >    ELSE false
+GSQL >   END AS status
+GSQL > END
+```
+
+### Modify data
+
+``` python
+# Create node  
+GSQL > CREATE (p:Account {name: "Abby", isBlocked: false})  
+# Update node  
+GSQL > MATCH (s:Account {name: "Abby"}) SET s.isBlocked = true  
+# Delete node  
+GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
+```
+
 
 [Go back to top](#top)
 
