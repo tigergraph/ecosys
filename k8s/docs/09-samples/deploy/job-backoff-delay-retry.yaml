@@ -1,0 +1,51 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: test-cluster
+  annotations:
+    tigergraph.com/debug-mode: "false"
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: tigergraph-image-pull-secret
+  license: xxxxxx
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  listener:
+    type: LoadBalancer
+  resources:
+    limits:
+      cpu: "6"
+      memory: 12Gi
+    requests:
+      cpu: "6"
+      memory: 12Gi
+  securityContext:
+    privileged: false
+    runAsGroup: 1000
+    runAsUser: 1000
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100G
+      storageClassName: standard
+      volumeMode: Filesystem
+  clusterJobConfig:
+    minRetryDuration: 60s
+    maxRetryDuration: 30m
+    maxRetryTimes:
+      "upgrade-pre-job": 3
+      "upgrade-post-job": 4
+      "initialize-job": 3
+      "expand-job": 5
+      "shrink-pre-job": 5
+      "config-update-job": 3
+      "ha-update-job": 5
+      "pause-pre-job": 2
+      "delete-pre-job": 3

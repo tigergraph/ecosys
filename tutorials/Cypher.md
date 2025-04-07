@@ -153,7 +153,7 @@ You can choose one of the following methods.
     - [locate.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/locate.csv)
     - [transfer.csv](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/data/transfer.csv)
 
-  - Copy [25_load.gsql](./gsql/25_load.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
+  - Copy [25_load2.gsql](./gsql/25_load2.gsql) to your container. Modify the script with your local file path. Next, run the following in your container's bash command line. 
     ```
        gsql 25_load2.gsql
     ``` 
@@ -1005,7 +1005,7 @@ This query deletes all nodes in the graph.
 
 ```python
 CREATE OR REPLACE OPENCYPHER QUERY deleteAllVertex(){
-  MATCH (s)
+  MATCH (s:_)
   DELETE s
 }
 
@@ -1015,7 +1015,7 @@ interpret query deleteAllVertex()
 You can use the `SELECT` statement to check if the deletion was successful.
 
 ```python
-GSQL > select count(*) from (s)
+GSQL > select count(*) from (s:_)
 {
   "version": {
     "edition": "enterprise",
@@ -1136,6 +1136,98 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
 }
 ```
 
+[Go back to top](#top)
+
+# Quick Execution of 1-Block MATCH Queries
+
+**NOTE**  This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature.
+
+---
+
+In OpenCypher, there are two ways to run queries:
+
+1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
+
+2.  **Ad-Hoc 1-Block Queries**: Run a simple, single-block `MATCH` query directly without creating or storing it.
+
+## Comparison with created query
+
+| Feature                     | 1-Block Quick Query         | CREATE OPENCYPHER QUERY     |
+|----------------------------|-----------------------------|-----------------------------|
+| Requires query name        | No                          | Yes                         |
+| Stored in catalog          | No                          | Yes                         |
+| Execution                  | Direct (ad-hoc)             | Requires creation + (install + run query) or interpret query     |
+| Supports complex logic     | No (single block only)      | Yes (multi-block, control)  |
+| Use cases                  | Debugging, quick checks     | Production, reusable logic  |
+
+## Examples
+
+### SELECT with Filters
+
+Using `WHERE` clause to filter nodes and relationships:
+
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s LIMIT 2
+GSQL > MATCH (s:Account {name: "Scott"}) RETURN s
+GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
+```
+
+### Aggregation Result
+
+Aggregate functions in a single-block query:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s) RETURN COUNT(s)
+GSQL > MATCH (s:Account:City) RETURN COUNT(*)
+GSQL > MATCH (s:Account {name: "Scott"})-[e]->(t) RETURN COUNT(DISTINCT t) as cnt
+GSQL > MATCH (s:Account)-[e:transfer|isLocatedIn]->(t) RETURN COUNT(e), STDEV(e.amount), AVG(e.amount)
+GSQL > MATCH (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) RETURN a, sum(e.amount) as amount1 , sum(e2.amount) as amount2
+```
+
+### Sorting and Limiting
+
+Queries with `ORDER BY`, `SKIP`, and `LIMIT`:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s.name ORDER BY s.name SKIP 1 LIMIT 3
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) RETURN s.name, e.amount as amt, t ORDER BY amt DESC, s.name LIMIT 1
+GSQL > MATCH (s:Account:City) WITH s.name + "_test" as sName ORDER BY sName DESC LIMIT 2 RETURN sName
+```
+
+### Using Expressions
+```python
+# Mathematical Expression
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
+
+# String Expression
+GSQL >  MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+
+# CASE Expression
+GSQL > BEGIN
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > RETURN
+GSQL >   s,
+GSQL >   CASE
+GSQL >    WHEN e.amount*0.01 > 80 THEN true
+GSQL >    ELSE false
+GSQL >   END AS status
+GSQL > END
+```
+
+### Modify data
+
+``` python
+# Create node  
+GSQL > CREATE (p:Account {name: "Abby", isBlocked: false})  
+# Update node  
+GSQL > MATCH (s:Account {name: "Abby"}) SET s.isBlocked = true  
+# Delete node  
+GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
+```
+
 
 [Go back to top](#top)
 
@@ -1155,6 +1247,8 @@ https://docs.tigergraph.com/gsql-ref/current/intro/
 
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
+
+Connect with the author on LinkedIn: [Mingxi Wu](https://www.linkedin.com/in/mingxi-wu-a1704817/) 
 
 [Go back to top](#top)
 

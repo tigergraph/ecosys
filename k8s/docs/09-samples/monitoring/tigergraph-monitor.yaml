@@ -1,0 +1,10 @@
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphMonitor
+metadata:
+  name: tigergraph-monitor
+  namespace: tigergraph
+spec:
+  monitoredClusters:
+  - test-cluster
+  - e2e-monitor-test-cluster
+  releaseName: monitoring-stack

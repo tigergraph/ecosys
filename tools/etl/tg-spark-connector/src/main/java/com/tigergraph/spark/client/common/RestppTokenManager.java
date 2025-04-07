@@ -1,8 +1,11 @@
 package com.tigergraph.spark.client.common;
 
+import com.tigergraph.spark.TigerGraphConnection.AuthType;
 import com.tigergraph.spark.client.Auth;
 import com.tigergraph.spark.client.Auth.AuthResponse;
+import com.tigergraph.spark.client.Auth.OAuth2Response;
 import com.tigergraph.spark.util.Utils;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -12,25 +15,31 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RestppTokenManager {
 
   private final Auth auth;
+  private final AuthType authType;
   private final String graph;
   private final String version;
   private final AtomicReference<String> token;
   private final String secret;
   private final String basicAuth;
+  private final Map<String, Object> oauth2Parameters;
 
   public RestppTokenManager(
       Auth auth,
+      AuthType authType,
       String graph,
       String version,
       AtomicReference<String> token,
       String secret,
-      String basicAuth) {
+      String basicAuth,
+      Map<String, Object> oauth2Parameters) {
     this.auth = auth;
+    this.authType = authType;
     this.graph = graph;
     this.version = version;
     this.token = token;
     this.secret = secret;
     this.basicAuth = basicAuth;
+    this.oauth2Parameters = oauth2Parameters;
   }
 
   public String getToken() {
@@ -42,43 +51,55 @@ public class RestppTokenManager {
   }
 
   public void refreshToken() {
-    if (Utils.isEmpty(version) || Utils.versionCmp(version, "4.1.0") >= 0) {
-      refreshJWToken();
-    } else {
-      refreshLegacyToken();
+    try {
+      switch (authType) {
+        case USERNAME_PASSWORD:
+          refreshTokenWithUserPass();
+          break;
+        case SECRET:
+          refreshTokenWithSecret();
+          break;
+        case OAUTH2:
+          refreshOAuth2Token();
+          break;
+        default:
+          // Don't support refresh token, throw it directly
+          throw new RestppErrorException(
+              "Failed to refresh token because none of the username/password, secret or oauth2"
+                  + " config is provided");
+      }
+    } catch (Exception e) {
+      throw new RestppErrorException("Token expired, failed to refresh token", e);
     }
   }
 
-  /**
-   * Prior to 4.1.0, the token's lifetime can be extended in-place(no need to request a new one) by
-   * PUT /requesttoken, which was deprecated in 4.1.0
-   */
-  private void refreshLegacyToken() {
-    if (!Utils.isEmpty(basicAuth)) {
-      auth.refreshTokenWithUserPass(token.get(), basicAuth, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
-    } else if (!Utils.isEmpty(secret)) {
-      auth.refreshTokenWithSecrect(token.get(), secret, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
-    } else {
-      // Don't support refresh token, throw it directly
-      throw new RestppErrorException(
-          "Token expired, failed to refresh token without 'secret' or 'username/password'"
-              + " provided.");
-    }
-  }
-
-  /** For JW token, the only way to refresh it is to **request a new one**.(After 4.1.0) */
-  private void refreshJWToken() {
+  private void refreshTokenWithUserPass() {
     AuthResponse resp;
-    if (!Utils.isEmpty(basicAuth)) {
+    if (Utils.isEmpty(version) || Utils.versionCmp(version, "4.1.0") >= 0) {
       resp = auth.requestTokenWithUserPass(version, graph, basicAuth, Auth.TOKEN_LIFETIME_SEC);
-    } else if (!Utils.isEmpty(secret)) {
-      resp = auth.requestTokenWithSecret(version, secret, Auth.TOKEN_LIFETIME_SEC);
+      resp.panicOnFail();
+      token.set(resp.getToken());
     } else {
-      // Don't support refresh token, throw it directly
-      throw new RestppErrorException(
-          "Token expired, failed to refresh token without 'secret' or 'username/password'"
-              + " provided.");
+      // extend existing token
+      auth.refreshTokenWithUserPass(token.get(), basicAuth, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
     }
+  }
+
+  private void refreshTokenWithSecret() {
+    AuthResponse resp;
+    if (Utils.isEmpty(version) || Utils.versionCmp(version, "4.1.0") >= 0) {
+      resp = auth.requestTokenWithSecret(version, secret, Auth.TOKEN_LIFETIME_SEC);
+      resp.panicOnFail();
+      token.set(resp.getToken());
+    } else {
+      // extend existing token
+      auth.refreshTokenWithSecrect(token.get(), secret, Auth.TOKEN_LIFETIME_SEC).panicOnFail();
+    }
+  }
+
+  /** For OAuth2 token, like azure, aws and gcp ... */
+  private void refreshOAuth2Token() {
+    OAuth2Response resp = auth.refreshOAuth2Token(oauth2Parameters);
     resp.panicOnFail();
     token.set(resp.getToken());
   }

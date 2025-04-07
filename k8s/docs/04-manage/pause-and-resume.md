@@ -83,6 +83,11 @@ NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION           
 test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:3.9.3   LoadBalancer   Paused           True               13m
 ```
 
+> [!WARNING]
+> When the cluster is paused, the binding relationship between the cluster and its PVCs is broken.
+> And the PVCs are not controlled by TigerGraph Operator, which means you are able to delete the PVCs manually.
+> Please **do not delete** the PVCs manually, otherwise the data in the persistent volumes will be lost, which will cause the cluster to be unable to resume.
+
 #### Pause a running cluster along with its backup schedule
 
 You may have created a backup schedule for your cluster. When you pause the cluster, the backup schedule will still try to backup the cluster according to the schedule. So it's better to pause all backup schedule of the cluster. If you want to pause the cluster along with its backup schedule, you can use the `--cascade` option:
@@ -229,6 +234,11 @@ spec:
   # pause the cluster. when set as false, the cluster will be resumed
   pause: true
 ```
+
+> [!WARNING]
+> When the cluster is paused, the binding relationship between the cluster and its PVCs is broken.
+> And the PVCs are not controlled by TigerGraph Operator, which means you are able to delete the PVCs manually.
+> Please **do not delete** the PVCs manually, otherwise the data in the persistent volumes will be lost, which will cause the cluster to be unable to resume.
 
 ## Troubleshooting
 

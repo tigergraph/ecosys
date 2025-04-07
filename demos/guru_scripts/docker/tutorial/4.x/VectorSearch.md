@@ -1169,5 +1169,7 @@ For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergr
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
 
+Connect with the author on LinkedIn: [Mingxi Wu](https://www.linkedin.com/in/mingxi-wu-a1704817/) 
+
 [Go back to top](#top)
 

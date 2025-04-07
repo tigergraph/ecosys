@@ -2,6 +2,12 @@
 
 This document outlines common issues and provides solutions for troubleshooting TigerGraph Operator installation in a Kubernetes environment.
 
+- [TigerGraph Operator Installation Troubleshooting](#tigergraph-operator-installation-troubleshooting)
+  - [Troubleshooting Steps](#troubleshooting-steps)
+  - [Potential failures](#potential-failures)
+    - [TigerGraph Operator Installation Failed: Resource Mapping Not Found for "tigergraph-operator-serving-cert"](#tigergraph-operator-installation-failed-resource-mapping-not-found-for-tigergraph-operator-serving-cert)
+    - [Operator Pods Are Not Ready, and Their Status Remains in ContainerCreating](#operator-pods-are-not-ready-and-their-status-remains-in-containercreating)
+
 ## Troubleshooting Steps
 
 In the following steps, we assume that the TigerGraph Operator has been installed in the `tigergraph` namespace. Please adapt the commands according to your specific setup.
@@ -94,47 +100,185 @@ In the following steps, we assume that the TigerGraph Operator has been installe
 
 ## Potential failures
 
-- Before installing the operator, ensure that cert-manager has been installed. Failure to do so may result in the following error during operator installation:
+### TigerGraph Operator Installation Failed: Resource Mapping Not Found for "tigergraph-operator-serving-cert"
+
+**Issue**:
+
+When installing the TigerGraph Operator, you may encounter the following error if cert-manager is not installed:
 
   ```bash
   Error: INSTALLATION FAILED: unable to build kubernetes objects from release manifest: [resource mapping not found for name: "tigergraph-operator-serving-cert" namespace: "tigergraph" from "": no matches for kind "Certificate" in version "cert-manager.io/v1"
   ```
 
-- To verify that cert-manager is installed and running normally, follow these steps:
+**Solution**:
 
-  - Check cert-manager Deployments:
+- Verify cert-manager Installation
 
-    ```bash
-    kubectl get deployment -n cert-manager cert-manager
-    
-    kNAME           READY   UP-TO-DATE   AVAILABLE   AGE
-    cert-manager   1/1     1            1           5m27s
-    
-    kubectl get deployment -n cert-manager cert-manager-cainjector
-    
-    NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-    cert-manager-cainjector   1/1     1            1           5m27s
-    
-    kubectl get deployment -n cert-manager cert-manager-webhook
-    
-    NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
-    cert-manager-webhook   1/1     1            1           5m28s
+  Check if cert-manager and its components are deployed and running:
 
-    kubectl get deployment -n cert-manager cert-manager
-    kubectl get deployment -n cert-manager cert-manager-cainjector
-    kubectl get deployment -n cert-manager cert-manager-webhook
-    ```
+  ```bash
+  kubectl get deployment -n cert-manager cert-manager
+  kubectl get deployment -n cert-manager cert-manager-cainjector
+  kubectl get deployment -n cert-manager cert-manager-webhook
+  ```
 
-  - If cert-manager is not installed, install it:
+  Expected output (example):
 
-    ```bash
-    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml
-    ```
-  
-  - Ensure cert-manager is running normally:
+  ```text
+  NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+  cert-manager              1/1     1            1           5m
+  cert-manager-cainjector   1/1     1            1           5m
+  cert-manager-webhook      1/1     1            1           5m
 
-    ```bash
-    kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
-    kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
-    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=90s
-    ```
+  ```
+
+- Install cert-manager (If Not Installed)
+
+If cert-manager is missing, install it using the following command:
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.13/cert-manager.yaml
+```
+
+- Wait for cert-manager to Be Ready
+
+Ensure all cert-manager components are running before proceeding:
+
+```bash
+kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
+kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
+kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=90s
+```
+
+Once cert-manager is successfully installed and running, retry the TigerGraph Operator installation.
+
+### Operator Pods Are Not Ready, and Their Status Remains in ContainerCreating
+
+After successfully installing the Operator, you might encounter an issue where the Operator pods are not ready, and their status is stuck in ContainerCreating. You can diagnose and resolve this issue by following these steps:
+
+Step 1: Check the Status of the TigerGraph Operator Pods
+
+Run the following command to check the status of the TigerGraph Operator pod
+
+```bash
+kubectl get pods -l control-plane=controller-manager -n tigergraph
+```
+
+Example output:
+
+```text
+NAME                                                     READY   STATUS              RESTARTS   AGE
+tigergraph-operator-controller-manager-667fcb757-wcz22   0/2     ContainerCreating   0          85m
+```
+
+Next, describe the specific pod to gather more details about its state:
+
+```bash
+kubectl describe pod tigergraph-operator-controller-manager-667fcb757-wcz22 -n tigergraph
+```
+
+Example output (excerpt):
+
+```text
+Status:           Pending
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Events:
+  Type     Reason       Age                   From     Message
+  ----     ------       ----                  ----     -------
+  Warning  FailedMount  3m48s (x48 over 85m)  kubelet  MountVolume.SetUp failed for volume "cert" : secret "webhook-server-cert" not found
+```
+
+The event log suggests that the secret `webhook-server-cert` was not created successfully, causing the pod to remain in ContainerCreating status.
+
+Step 2: Check the Logs of Cert-Manager
+
+To investigate why the secret `webhook-server-cert` is missing, check the `cert-manager` logs.
+
+First, list the `cert-manager` pods:
+
+```bash
+kubectl get pods -n cert-manager
+```
+
+Example output:
+
+```text
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-94c757fdd-dxk7l               1/1     Running   0          79m
+cert-manager-cainjector-7d6c965794-lpmrj   1/1     Running   0          86m
+cert-manager-webhook-66fcdcb69b-prvpm      1/1     Running   0          79m
+```
+
+Next, check the logs of the `cert-manager` pod:
+
+```bash
+kubectl logs cert-manager-94c757fdd-dxk7l -n cert-manager
+```
+
+Example log output (excerpt):
+
+```text
+E0323 23:57:16.359546       1 requestmanager_controller.go:209] "Multiple matching CertificateRequest resources exist, delete one of them. This is likely an error and should be reported on the issue tracker!" logger="cert-manager.certificates-request-manager" key="tigergraph/tigergraph-operator-serving-cert"
+```
+
+The error log indicates that multiple CertificateRequest resources exist for tigergraph-operator-serving-cert, preventing `cert-manager` from issuing a certificate.
+
+Step 3: List Existing CertificateRequests
+
+Check if multiple CertificateRequest resources exist in the TigerGraph namespace:
+
+```bash
+kubectl get certificaterequests -n tigergraph
+```
+
+Example output:
+
+```text
+NAME                                     APPROVED   DENIED   READY   ISSUER                                  REQUESTOR                                         AGE
+tigergraph-operator-serving-cert-6zlmv   True                True    tigergraph-operator-selfsigned-issuer   system:serviceaccount:cert-manager:cert-manager   13h
+tigergraph-operator-serving-cert-m6bk2   True                True    tigergraph-operator-selfsigned-issuer   system:serviceaccount:cert-manager:cert-manager   13h
+tigergraph-operator-serving-cert-tj9w9   True                True    tigergraph-operator-selfsigned-issuer   system:serviceaccount:cert-manager:cert-manager   13h
+tigergraph-operator-serving-cert-vb84z   True                True    tigergraph-operator-selfsigned-issuer   system:serviceaccount:cert-manager:cert-manager   13h
+```
+
+Step 4: Resolve the CertificateRequest Conflict
+
+If multiple CertificateRequest resources exist, delete the old or duplicate requests to allow cert-manager to issue the certificate properly.
+
+Identify the duplicate CertificateRequests:
+
+```bash
+kubectl get certificaterequests -n tigergraph
+```
+
+Delete the unnecessary requests:
+
+```bash
+kubectl delete certificaterequest <certificate-request-name> -n tigergraph
+```
+
+Restart the cert-manager pod to apply the changes:
+
+```bash
+kubectl rollout restart deployment cert-manager -n cert-manager
+```
+
+Restart the TigerGraph Operator pod:
+
+```bash
+kubectl delete pod tigergraph-operator-controller-manager-667fcb757-wcz22 -n tigergraph
+```
+
+After performing these steps, the Operator pod should transition to the Running state. You can verify this by rechecking the pod status:
+
+```bash
+kubectl get pods -l control-plane=controller-manager -n tigergraph
+```
+
+If the issue persists, check the Kubernetes events and logs again for further debugging.

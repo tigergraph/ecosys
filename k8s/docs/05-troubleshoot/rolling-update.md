@@ -2,6 +2,16 @@
 
 This document provides solutions for common issues that may arise during a rolling update of a TigerGraph cluster.
 
+- [TigerGraph Cluster Rolling Update Troubleshoot](#tigergraph-cluster-rolling-update-troubleshoot)
+  - [Prerequisite knowledge](#prerequisite-knowledge)
+    - [Cluster Operations Triggering Rolling Updates](#cluster-operations-triggering-rolling-updates)
+    - [Rolling update strategy of StatefulSet](#rolling-update-strategy-of-statefulset)
+    - [Factors Affecting TigerGraph Pod's Running and Ready State](#factors-affecting-tigergraph-pods-running-and-ready-state)
+  - [How to Recover from Rolling Update Failure](#how-to-recover-from-rolling-update-failure)
+    - [Pod Stuck in Pending State Due to Unmet Resource Needs](#pod-stuck-in-pending-state-due-to-unmet-resource-needs)
+    - [TG container is in PostStartHookError or CrashLoopBackOff](#tg-container-is-in-poststarthookerror-or-crashloopbackoff)
+    - [Readiness or Liveness Check of TigerGraph Container Fails](#readiness-or-liveness-check-of-tigergraph-container-fails)
+
 ## Prerequisite knowledge
 
 ### Cluster Operations Triggering Rolling Updates
