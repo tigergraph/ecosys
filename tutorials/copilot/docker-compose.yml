@@ -72,6 +72,6 @@ services:
 
   tigergraph:
     container_name: tigergraph
-    image: tigergraph/community:4.2.0-alpha
+    image: tigergraph/community:4.2.0
     ports:
       - "14240:14240"
