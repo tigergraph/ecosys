@@ -68,7 +68,7 @@ Next, download the following configuration files and put them in a `configs` sub
 * [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
 * [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
 * [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
-* [configs/nginx.config](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.config)
+* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
 
 #### Step 3: Adjust configurations
 
