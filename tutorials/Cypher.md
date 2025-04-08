@@ -193,12 +193,13 @@ You can choose one of the following methods.
 
 # Cypher Syntax Overview
 
-OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties.
+OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties in a readable and expressive format.
 
-The core syntax of openCypher follows the MATCH-WHERE-RETURN pattern.
+The core syntax of openCypher follows the `MATCH-WHERE-RETURN` pattern.
 
-- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style, such as `()-[]->()-[]->()`. Here, `()` represents nodes, and `-[]->` represents relationships. By alternating nodes and relationships, users can define linear paths or complex patterns within the graph schema.
-- The results of a `MATCH` operation are stored in an implicit working table, where the columns correspond to the aliases of graph elements (nodes or relationships) in the declared pattern. These columns can then be referenced in subsequent clauses, including MATCH, OPTIONAL MATCH, WITH, or RETURN. Each subsequent clause can transform the invisible working table by projecting aways columns, adding new columns, and rows. 
+- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style. For example, a simple path might be written as `(a:Account)-[r:transfer]->(b:Account), where (a:Account) and (b:Account) are nodes (with alias a and b, and label `Account`), and `-[r:transfer]->` is a relationship (with alias r and type `transfer`). Nodes are wrapped in parentheses `()`, and relationships in brackets `[]`, with arrows indicating direction.
+
+- The results of a `MATCH` clause form an implicit working table, with each row representing a match and each column corresponding to an alias in the pattern. These aliases—such as a, b, and r—can then be referenced in subsequent clauses like `WHERE`, `WITH`, or `RETURN`. Each clause can transform the working table by filtering rows, projecting columns, or introducing new derived data.
 
 In the next section, we will explore Cypher syntax in detail through practical examples.
 
