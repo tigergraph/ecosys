@@ -8,7 +8,7 @@ The use case is to analyze which other accounts are connected to 'blocked' accou
 
 After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 ```python
-   docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+   docker load -i ./tigergraph-4.2.0-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
    docker images #find image id
    docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
    docker exec -it mySandbox /bin/bash #start a shell on this container. 
