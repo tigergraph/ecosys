@@ -17,7 +17,8 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
 - [Cypher Syntax Overview](#cypher-syntax-overview)
-- [Query Examples](#query-examples)
+- [1-Block Query Examples](#1-block-query-examples)
+- [Stored Procedure Query Examples](#stored-procedure-query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
@@ -30,8 +31,8 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
   - [CRUD Statements](#crud-statements)
- - [Support](#support)
- - [Contact](#contact)
+- [Support](#support)
+- [Contact](#contact)
 
 ---
 # Sample Graph For Tutorial
@@ -49,7 +50,7 @@ For optimal performance, configure your Docker environment with **8 CPUs and 20+
 
 After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 ```python
-   docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+   docker load -i ./tigergraph-4.2.0-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
    docker images #find image id
    docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
    docker exec -it mySandbox /bin/bash #start a shell on this container. 
@@ -192,20 +193,116 @@ You can choose one of the following methods.
 
 # Cypher Syntax Overview
 
-OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties.
+OpenCypher is a declarative query language designed for interacting with graph databases. It enables the retrieval and manipulation of nodes, relationships, and their properties in a readable and expressive format.
 
-The core syntax of openCypher follows the MATCH-WHERE-RETURN pattern.
+The core syntax of openCypher follows the `MATCH-WHERE-RETURN` pattern.
 
-- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style, such as `()-[]->()-[]->()`. Here, `()` represents nodes, and `-[]->` represents relationships. By alternating nodes and relationships, users can define linear paths or complex patterns within the graph schema.
-- The results of a `MATCH` operation are stored in an implicit working table, where the columns correspond to the aliases of graph elements (nodes or relationships) in the declared pattern. These columns can then be referenced in subsequent clauses, including MATCH, OPTIONAL MATCH, WITH, or RETURN. Each subsequent clause can transform the invisible working table by projecting aways columns, adding new columns, and rows. 
+- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style. For example, a simple path might be written as `(a:Account)-[r:transfer]->(b:Account)`, where `(a:Account)` and `(b:Account)` are nodes (with alias `a` and `b`, and label `Account`), and `-[r:transfer]->` is a relationship (with alias `r` and type `transfer`). Nodes are wrapped in parentheses `()`, and relationships in brackets `[]`, with arrows indicating direction.
+
+- The results of a `MATCH` clause form an implicit working table, with each row representing a match and each column corresponding to an alias in the pattern. These aliases—such as `a`, `b`, and `r`—can then be referenced in subsequent clauses like `WHERE`, `WITH`, or `RETURN`. Each clause can transform the working table by filtering rows, projecting columns, or introducing new derived data.
 
 In the next section, we will explore Cypher syntax in detail through practical examples.
 
-# Query Examples 
+# 1-Block Query Examples
 
-In OpenCypher, the main statement is a pattern match statement in the form of MATCH-WHERE-RETURN. Each MATCH statement will create or update an invisible working table. The working table consists all the alias (vertex/edge) and columns specified in the current and previous MATCH statements. Other statement will also work on the working table to drive the final result.
+**NOTE**  Ad-hoc 1-Block query support is available since version 4.2.0. Older versions do not support this feature.
 
-We will use examples to illustrate Cypher syntax. In TigerGraph, each Cypher query is installed as a stored procedure using a code generation technique for optimal performance, enabling repeated execution by its query name.
+---
+
+In OpenCypher, there are two ways to run queries:
+
+1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
+
+2.  **Ad-Hoc Queries**: Executed directly without creating or storing it.
+
+## Comparison: Ad-Hoc vs. Persisted Queries
+
+| Feature                     | Ad-Hoc Query             | CREATE OPENCYPHER QUERY                            |
+|----------------------------|--------------------------|----------------------------------------------------|
+| Requires query name        | No                       | Yes                                                |
+| Stored in catalog          | No                       | Yes                                                |
+| Execution                  | Direct (ad-hoc)          | Requires creation, then install & run or interpret |
+| Supports complex logic     | No (single block only)   | Yes (multi-block, control flow)                    |
+| Use cases                  | Debugging, quick checks  | Production, reusable logic                         |
+
+## Examples
+
+### With Filters
+
+Using `WHERE` clause to filter nodes and relationships:
+
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s LIMIT 2
+GSQL > MATCH (s:Account {name: "Scott"}) RETURN s
+GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
+```
+
+### Aggregation Results
+
+Aggregate functions in a single-block query:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s) RETURN COUNT(s)
+GSQL > MATCH (s:Account:City) RETURN COUNT(*)
+GSQL > MATCH (s:Account {name: "Scott"})-[e]->(t) RETURN COUNT(DISTINCT t) as cnt
+GSQL > MATCH (s:Account)-[e:transfer|isLocatedIn]->(t) RETURN COUNT(e), STDEV(e.amount), AVG(e.amount)
+GSQL > MATCH (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) RETURN a, sum(e.amount) as amount1 , sum(e2.amount) as amount2
+```
+
+### Sorting and Limiting
+
+Queries with `ORDER BY`, `SKIP`, and `LIMIT`:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s.name ORDER BY s.name SKIP 1 LIMIT 3
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) RETURN s.name, e.amount as amt, t ORDER BY amt DESC, s.name LIMIT 1
+GSQL > MATCH (s:Account:City) WITH s.name + "_test" as sName ORDER BY sName DESC LIMIT 2 RETURN sName
+```
+
+### Using Expressions
+```python
+# Mathematical Expression
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
+
+# String Expression
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+GSQL > MATCH (s:Account {name: "Scott"})- [:transfer*1..5]-> (t) RETURN distinct s.name  + "->" + t.name as path
+
+# CASE Expression
+GSQL > BEGIN
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > RETURN
+GSQL >   s,
+GSQL >   CASE
+GSQL >    WHEN e.amount*0.01 > 80 THEN true
+GSQL >    ELSE false
+GSQL >   END AS status
+GSQL > END
+```
+
+### Modify data
+
+``` python
+# Create node  
+GSQL > CREATE (p:Account {name: "Abby", isBlocked: false})  
+# Update node  
+GSQL > MATCH (s:Account {name: "Abby"}) SET s.isBlocked = true  
+# Delete node  
+GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
+```
+
+[Go back to top](#top)
+
+# Stored Procedure Query Examples
+
+In this section, we explain how to write stored procedures using OpenCypher. A stored procedure is a named query composed of a sequence of `MATCH-WHERE` query blocks or statements. It is stored in the graph database catalog, installed once using a code generation technique for optimal performance, and can be invoked repeatedly via the `RUN QUERY` command or through a system-generated REST endpoint URL.
+
+In OpenCypher, the primary construct is the pattern-matching statement in the form of `MATCH-WHERE-RETURN`. Each `MATCH` statement creates or updates an invisible working table, which holds all aliases (vertices or edges) and columns introduced by the current and previous `MATCH` clauses. Subsequent statements operate on this working table to refine or extend the result set.
+
+We will illustrate the OpenCypher syntax through practical examples in the following sections.
 
 ---
 
@@ -1135,7 +1232,6 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
   ]
 }
 ```
-
 
 [Go back to top](#top)
 
