@@ -197,7 +197,7 @@ OpenCypher is a declarative query language designed for interacting with graph d
 
 The core syntax of openCypher follows the `MATCH-WHERE-RETURN` pattern.
 
-- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style. For example, a simple path might be written as `(a:Account)-[r:transfer]->(b:Account), where (a:Account) and (b:Account) are nodes (with alias a and b, and label `Account`), and `-[r:transfer]->` is a relationship (with alias r and type `transfer`). Nodes are wrapped in parentheses `()`, and relationships in brackets `[]`, with arrows indicating direction.
+- `MATCH` is used to specify graph patterns in an intuitive ASCII-art style. For example, a simple path might be written as `(a:Account)-[r:transfer]->(b:Account)`, where `(a:Account)` and `(b:Account)` are nodes (with alias a and b, and label `Account`), and `-[r:transfer]->` is a relationship (with alias r and type `transfer`). Nodes are wrapped in parentheses `()`, and relationships in brackets `[]`, with arrows indicating direction.
 
 - The results of a `MATCH` clause form an implicit working table, with each row representing a match and each column corresponding to an alias in the pattern. These aliases—such as a, b, and r—can then be referenced in subsequent clauses like `WHERE`, `WITH`, or `RETURN`. Each clause can transform the working table by filtering rows, projecting columns, or introducing new derived data.
 
