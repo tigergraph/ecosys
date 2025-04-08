@@ -18,7 +18,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
 - [Load Data](#load-data)
 - [Cypher Syntax Overview](#cypher-syntax-overview)
 - [1-Block Query Examples](#1-block-query-examples)
-- [Query Examples](#query-examples)
+- [Stored Procedure Query Examples](#stored-procedure-query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
   - [Path Pattern](#path-pattern)
@@ -296,11 +296,13 @@ GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
 
 [Go back to top](#top)
 
-# Query Examples 
+# Stored Procedure Query Examples
 
-In OpenCypher, the main statement is a pattern match statement in the form of MATCH-WHERE-RETURN. Each MATCH statement will create or update an invisible working table. The working table consists all the alias (vertex/edge) and columns specified in the current and previous MATCH statements. Other statement will also work on the working table to drive the final result.
+In this section, we explain how to write stored procedures using OpenCypher. A stored procedure is a named query composed of a sequence of `MATCH-WHERE` query blocks or statements. It is stored in the graph database catalog, installed once using a code generation technique for optimal performance, and can be invoked repeatedly via the `RUN QUERY` command or through a system-generated REST endpoint URL.
 
-We will use examples to illustrate Cypher syntax. In TigerGraph, each Cypher query is installed as a stored procedure using a code generation technique for optimal performance, enabling repeated execution by its query name.
+In OpenCypher, the primary construct is the pattern-matching statement in the form of `MATCH-WHERE-RETURN`. Each `MATCH` statement creates or updates an invisible working table, which holds all aliases (vertices or edges) and columns introduced by the current and previous `MATCH` clauses. Subsequent statements operate on this working table to refine or extend the result set.
+
+We will illustrate the OpenCypher syntax through practical examples in the following sections.
 
 ---
 
