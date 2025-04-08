@@ -30,7 +30,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
   - [CRUD Statements](#crud-statements)
-- [Quick 1-Block Query Examples](#quick-1-block-query-examples)
+- [Quick Ad-Hoc Query Examples](#quick-ad-hoc-query-examples)
  - [Support](#support)
  - [Contact](#contact)
 
@@ -1139,9 +1139,9 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
 
 [Go back to top](#top)
 
-# Quick 1-Block Query Examples
+# Quick Ad-Hoc Query Examples
 
-**NOTE**  This 1-Block feature is available since 4.2.0 version. Prior version does not support this feature.
+**NOTE**  Ad-hoc query support is available since version 4.2.0. Older versions do not support this feature.
 
 ---
 
@@ -1149,17 +1149,17 @@ In OpenCypher, there are two ways to run queries:
 
 1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
 
-2.  **Ad-Hoc 1-Block Queries**: Run a simple, single-block `MATCH` query directly without creating or storing it.
+2.  **Ad-Hoc Queries**: Executed directly without creating or storing it.
 
-## Comparison with created query
+## Comparison: Ad-Hoc vs. Persisted Queries
 
-| Feature                     | 1-Block Quick Query         | CREATE OPENCYPHER QUERY     |
-|----------------------------|-----------------------------|-----------------------------|
-| Requires query name        | No                          | Yes                         |
-| Stored in catalog          | No                          | Yes                         |
-| Execution                  | Direct (ad-hoc)             | Requires creation + (install + run query) or interpret query     |
-| Supports complex logic     | No (single block only)      | Yes (multi-block, control)  |
-| Use cases                  | Debugging, quick checks     | Production, reusable logic  |
+| Feature                     | Ad-Hoc Query             | CREATE OPENCYPHER QUERY                            |
+|----------------------------|--------------------------|----------------------------------------------------|
+| Requires query name        | No                       | Yes                                                |
+| Stored in catalog          | No                       | Yes                                                |
+| Execution                  | Direct (ad-hoc)          | Requires creation, then install & run or interpret |
+| Supports complex logic     | No (single block only)   | Yes (multi-block, control flow)                    |
+| Use cases                  | Debugging, quick checks  | Production, reusable logic                         |
 
 ## Examples
 
