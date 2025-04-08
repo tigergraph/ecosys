@@ -17,6 +17,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
 - [Setup Schema (model)](#setup-schema)
 - [Load Data](#load-data)
 - [Cypher Syntax Overview](#cypher-syntax-overview)
+- [1-Block Query Examples](#1-block-query-examples)
 - [Query Examples](#query-examples)
   - [Node Pattern](#node-pattern)
   - [Edge Pattern](#edge-pattern)
@@ -30,9 +31,8 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Aggregate Functions](#aggregate-functions)
   - [Other Expression Functions](#other-expression-functions)
   - [CRUD Statements](#crud-statements)
-- [Quick Ad-Hoc Query Examples](#quick-ad-hoc-query-examples)
- - [Support](#support)
- - [Contact](#contact)
+- [Support](#support)
+- [Contact](#contact)
 
 ---
 # Sample Graph For Tutorial
@@ -201,6 +201,99 @@ The core syntax of openCypher follows the MATCH-WHERE-RETURN pattern.
 - The results of a `MATCH` operation are stored in an implicit working table, where the columns correspond to the aliases of graph elements (nodes or relationships) in the declared pattern. These columns can then be referenced in subsequent clauses, including MATCH, OPTIONAL MATCH, WITH, or RETURN. Each subsequent clause can transform the invisible working table by projecting aways columns, adding new columns, and rows. 
 
 In the next section, we will explore Cypher syntax in detail through practical examples.
+
+# 1-Block Query Examples
+
+**NOTE**  Ad-hoc 1-Block query support is available since version 4.2.0. Older versions do not support this feature.
+
+---
+
+In OpenCypher, there are two ways to run queries:
+
+1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
+
+2.  **Ad-Hoc Queries**: Executed directly without creating or storing it.
+
+## Comparison: Ad-Hoc vs. Persisted Queries
+
+| Feature                     | Ad-Hoc Query             | CREATE OPENCYPHER QUERY                            |
+|----------------------------|--------------------------|----------------------------------------------------|
+| Requires query name        | No                       | Yes                                                |
+| Stored in catalog          | No                       | Yes                                                |
+| Execution                  | Direct (ad-hoc)          | Requires creation, then install & run or interpret |
+| Supports complex logic     | No (single block only)   | Yes (multi-block, control flow)                    |
+| Use cases                  | Debugging, quick checks  | Production, reusable logic                         |
+
+## Examples
+
+### With Filters
+
+Using `WHERE` clause to filter nodes and relationships:
+
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s LIMIT 2
+GSQL > MATCH (s:Account {name: "Scott"}) RETURN s
+GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
+```
+
+### Aggregation Results
+
+Aggregate functions in a single-block query:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s) RETURN COUNT(s)
+GSQL > MATCH (s:Account:City) RETURN COUNT(*)
+GSQL > MATCH (s:Account {name: "Scott"})-[e]->(t) RETURN COUNT(DISTINCT t) as cnt
+GSQL > MATCH (s:Account)-[e:transfer|isLocatedIn]->(t) RETURN COUNT(e), STDEV(e.amount), AVG(e.amount)
+GSQL > MATCH (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) RETURN a, sum(e.amount) as amount1 , sum(e2.amount) as amount2
+```
+
+### Sorting and Limiting
+
+Queries with `ORDER BY`, `SKIP`, and `LIMIT`:
+```python
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account) RETURN s.name ORDER BY s.name SKIP 1 LIMIT 3
+GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) RETURN s.name, e.amount as amt, t ORDER BY amt DESC, s.name LIMIT 1
+GSQL > MATCH (s:Account:City) WITH s.name + "_test" as sName ORDER BY sName DESC LIMIT 2 RETURN sName
+```
+
+### Using Expressions
+```python
+# Mathematical Expression
+GSQL > use graph financialGraph
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
+
+# String Expression
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
+GSQL > MATCH (s:Account {name: "Scott"})- [:transfer*1..5]-> (t) RETURN distinct s.name  + "->" + t.name as path
+
+# CASE Expression
+GSQL > BEGIN
+GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t)
+GSQL > RETURN
+GSQL >   s,
+GSQL >   CASE
+GSQL >    WHEN e.amount*0.01 > 80 THEN true
+GSQL >    ELSE false
+GSQL >   END AS status
+GSQL > END
+```
+
+### Modify data
+
+``` python
+# Create node  
+GSQL > CREATE (p:Account {name: "Abby", isBlocked: false})  
+# Update node  
+GSQL > MATCH (s:Account {name: "Abby"}) SET s.isBlocked = true  
+# Delete node  
+GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
+```
+
+[Go back to top](#top)
 
 # Query Examples 
 
@@ -1136,100 +1229,6 @@ GSQL > select e from (s:Account {name: "Jenny"}) - [e:transfer]-> (t)
   ]
 }
 ```
-
-[Go back to top](#top)
-
-# Quick Ad-Hoc Query Examples
-
-**NOTE**  Ad-hoc query support is available since version 4.2.0. Older versions do not support this feature.
-
----
-
-In OpenCypher, there are two ways to run queries:
-
-1.  **Persisted Queries**: Use `CREATE OPENCYPHER QUERY` to define and store a named query in the system catalog.
-
-2.  **Ad-Hoc Queries**: Executed directly without creating or storing it.
-
-## Comparison: Ad-Hoc vs. Persisted Queries
-
-| Feature                     | Ad-Hoc Query             | CREATE OPENCYPHER QUERY                            |
-|----------------------------|--------------------------|----------------------------------------------------|
-| Requires query name        | No                       | Yes                                                |
-| Stored in catalog          | No                       | Yes                                                |
-| Execution                  | Direct (ad-hoc)          | Requires creation, then install & run or interpret |
-| Supports complex logic     | No (single block only)   | Yes (multi-block, control flow)                    |
-| Use cases                  | Debugging, quick checks  | Production, reusable logic                         |
-
-## Examples
-
-### With Filters
-
-Using `WHERE` clause to filter nodes and relationships:
-
-```python
-GSQL > use graph financialGraph
-GSQL > MATCH (s:Account) RETURN s LIMIT 2
-GSQL > MATCH (s:Account {name: "Scott"}) RETURN s
-GSQL > MATCH (s:Account) WHERE s.name IN ["Scott", "Steven"] RETURN s
-GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) WHERE s <> t RETURN s, e, t
-```
-
-### Aggregation Results
-
-Aggregate functions in a single-block query:
-```python
-GSQL > use graph financialGraph
-GSQL > MATCH (s) RETURN COUNT(s)
-GSQL > MATCH (s:Account:City) RETURN COUNT(*)
-GSQL > MATCH (s:Account {name: "Scott"})-[e]->(t) RETURN COUNT(DISTINCT t) as cnt
-GSQL > MATCH (s:Account)-[e:transfer|isLocatedIn]->(t) RETURN COUNT(e), STDEV(e.amount), AVG(e.amount)
-GSQL > MATCH (a:Account)-[e:transfer]->(b:Account)-[e2:transfer]->(c:Account) RETURN a, sum(e.amount) as amount1 , sum(e2.amount) as amount2
-```
-
-### Sorting and Limiting
-
-Queries with `ORDER BY`, `SKIP`, and `LIMIT`:
-```python
-GSQL > use graph financialGraph
-GSQL > MATCH (s:Account) RETURN s.name ORDER BY s.name SKIP 1 LIMIT 3
-GSQL > MATCH (s:Account) -[e:transfer]-> (t:Account) RETURN s.name, e.amount as amt, t ORDER BY amt DESC, s.name LIMIT 1
-GSQL > MATCH (s:Account:City) WITH s.name + "_test" as sName ORDER BY sName DESC LIMIT 2 RETURN sName
-```
-
-### Using Expressions
-```python
-# Mathematical Expression
-GSQL > use graph financialGraph
-GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) WITH s, e.amount*0.01 AS amt RETURN s, amt
-
-# String Expression
-GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t) RETURN s.name + "->" + toString(e.amount) + "->" + t.name as path
-GSQL > MATCH (s:Account {name: "Scott"})- [:transfer*1..5]-> (t) RETURN distinct s.name  + "->" + t.name as path
-
-# CASE Expression
-GSQL > BEGIN
-GSQL > MATCH (s:Account {name: "Scott"})- [e:transfer]-> (t)
-GSQL > RETURN
-GSQL >   s,
-GSQL >   CASE
-GSQL >    WHEN e.amount*0.01 > 80 THEN true
-GSQL >    ELSE false
-GSQL >   END AS status
-GSQL > END
-```
-
-### Modify data
-
-``` python
-# Create node  
-GSQL > CREATE (p:Account {name: "Abby", isBlocked: false})  
-# Update node  
-GSQL > MATCH (s:Account {name: "Abby"}) SET s.isBlocked = true  
-# Delete node  
-GSQL > MATCH (s:Account {name: "Abby"}) DELETE s
-```
-
 
 [Go back to top](#top)
 
