@@ -22,9 +22,8 @@ This user manual provides detailed instructions on deploying a TigerGraph cluste
   - [Connect to a TigerGraph Cluster](#connect-to-a-tigergraph-cluster)
     - [Connect to a TigerGraph Cluster Pod](#connect-to-a-tigergraph-cluster-pod)
     - [Access TigerGraph Services](#access-tigergraph-services)
-      - [Verify the API service](#verify-the-api-service)
-      - [Verify the RESTPP API service](#verify-the-restpp-api-service)
-      - [Verify the Metrics API service](#verify-the-metrics-api-service)
+      - [Access TigerGraph Services from inside the Kubernetes cluster](#access-tigergraph-services-from-inside-the-kubernetes-cluster)
+      - [Access TigerGraph Services from outside the Kubernetes cluster](#access-tigergraph-services-from-outside-the-kubernetes-cluster)
   - [Upgrade a TigerGraph Cluster](#upgrade-a-tigergraph-cluster)
   - [Update system configurations and license of the TigerGraph cluster](#update-system-configurations-and-license-of-the-tigergraph-cluster)
   - [Scale a TigerGraph Cluster](#scale-a-tigergraph-cluster)
@@ -89,6 +88,15 @@ The `kubectl-tg` plugin allows you to deploy and manage the Operator and TigerGr
 - [jq](https://jqlang.github.io/jq/download/) with a version equal to or greater than 1.6.
 - [yq](https://github.com/mikefarah/yq) with a version equal to or greater than 4.18.1.
 
+> [!IMPORTANT]
+> The kubectl-tg plugin is only verified on GNU/Linux systems.
+>
+> If you are using MacOS, you may encounter issues due to the differences between GNU and MacOS commands.
+> Please refer to the [troubleshooting document](../05-troubleshoot/kubectl-tg-plugin.md) for more information.
+>
+> If you are using Windows, please run the commands in a WSL environment.
+> Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
+
 Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 0.0.9:
 
 ```bash
@@ -134,6 +142,22 @@ Now, you can install the TigerGraph Operator using the following commands:
 
 A namespace-scoped operator watches and manages resources in a single Namespace, whereas a cluster-scoped operator watches and manages resources cluster-wide.
 
+Choose a namespace-scoped operator when:
+
+- You need to isolate workloads per team, project, or tenant.
+
+- Security and compliance require limited access.
+
+- You want to deploy multiple instances of an operator for different namespaces.
+
+Choose a cluster-scoped operator when:
+
+- The operator needs to manage resources across namespaces.
+
+- The application requires global policies or configurations.
+
+- You want a single instance of the operator to manage the entire cluster.
+
 > [!IMPORTANT]
 > Namespace-scoped operators require the same operator version to be installed for different namespaces.
 
@@ -146,7 +170,7 @@ A namespace-scoped operator watches and manages resources in a single Namespace,
 - For a cluster-scoped Operator (default behavior):
 
     ```bash
-    # This is a defulat behavior if you don't specific the --cluster-scope option.
+    # This is a default behavior if you don't specific the --cluster-scope option.
     kubectl tg init --cluster-scope true --namespace ${YOUR_NAMESPACE}
     ```
 
@@ -163,6 +187,9 @@ A namespace-scoped operator watches and manages resources in a single Namespace,
     --max-restore-concurrent-reconciles 2 \
     --namespace ${YOUR_NAMESPACE}
     ```
+
+> [!IMPORTANT]
+> To ensure high availability of the TigerGraph Operator, set the `--operator-size` option to a value of at least 2.
 
 > [!NOTE]
 > You can set the concurrent reconciliation value to a larger value during installation or update it to a suitable value afterward. The default maximum concurrent reconciliation value of 2 is sufficient for most cases. However, you may need to customize it if you use one operator to manage numerous TigerGraph clusters within a Kubernetes cluster.
@@ -283,36 +310,11 @@ You can customize the configurations for the TigerGraph system by specifying the
 
 ### Create a TigerGraph Cluster with Specific Options
 
-You can create a new TigerGraph cluster with specific options, such as size, high availability, version, license, and resource specifications.
+You can create a new TigerGraph cluster with specific options, such as size, high availability, version, license, and resource specifications. Here's an example:
 
-> [!IMPORTANT]
-> Choosing the right compute resources (CPU and memory) and storage size to host your TigerGraph system is crucial for achieving the right balance between cost and performance. We provide general guidelines for hardware selection based on simple hypothetical assumptions, but your actual hardware requirements will vary depending on your data size, workload, and performance needs.
-
-- Hardware Recommendations
-
-The sizing recommendations below apply to each TigerGraph node. If you have more than several hundred gigabytes of data, you should consider deploying a cluster of multiple nodes, to distribute your data.
-
-| Deployment env | CPU  | Memory | Storage size |
-|----------|----------|----------|----------|
-| Personal Use | 4 cores | 8GB | ≥ 50GB |
-| Development, UAT, or SIT System | 16 cores | 32GB | ≥ 300GB |
-| Production System | 32 cores | 64GB | ≥ 500GB |
-
-- Configuring HA settings
-
-TigerGraph's HA (High Availability) service provides load balancing when all components are operational, and automatic failover in the event of a service disruption. For detailed information, please refer to the [official documents](https://docs.tigergraph.com/tigergraph-server/current/cluster-and-ha-management/ha-cluster).
-
-The minimum value for the replication factor (HA) is 1, meaning high availability is not configured for the cluster. The partitioning factor is not explicitly set by the user; instead, TigerGraph determines it using the following formula:
-
-`partitioning factor = number of pods / replication factor`
-
-If the result is not an integer, some machines will remain unused. For example, in a 7-node cluster with a replication factor of 2, the system will configure 2-way HA with a partitioning factor of 3, leaving one machine unused.
-
-In general, we recommend setting the replication factor (HA) to 2 and using a cluster size that is a power of 2 (e.g., 4, 8, 16)
+You must provide your license key when creating cluster. Contact TigerGraph support for help finding your license key.
 
 - Export license key as an environment variable
-
-  You must provide your license key when creating cluster. Contact TigerGraph support for help finding your license key.
 
   ```bash
   export LICENSE=<LICENSE_KEY>
@@ -320,18 +322,15 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 
 - Create TigerGraph cluster with kubectl-tg plugin
 
-> [!NOTE]
-> Please adjust the TigerGraph Docker image version (e.g., 4.1.0), CPU, memory, and storage size to meet your actual requirements.
-
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.1.0 --license ${LICENSE} \
-  --storage-class gp2 --storage-size 200G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 3.9.3 --license ${LICENSE} \
+  --storage-class gp2 --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
   ```
 
 - Create TigerGraph cluster with CR(Custom Resource) YAML manifest
   
 > [!NOTE]
-> Please adjust the TigerGraph Docker image version (e.g., 4.1.0), CPU, memory, and storage size to meet your actual requirements.
+> Please replace the TigerGraph docker image version (e.g., 3.9.3) with your desired version.
 
   ```bash
   cat <<EOF | kubectl apply -f -
@@ -341,14 +340,14 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
     name: ${YOUR_CLUSTER_NAME}
     namespace: ${YOUR_NAMESPACE}
   spec:
-    image: docker.io/tigergraph/tigergraph-k8s:4.1.0
+    image: docker.io/tigergraph/tigergraph-k8s:3.9.3
     imagePullPolicy: IfNotPresent
     ha: 2
     license: ${LICENSE}
     listener:
       type: LoadBalancer
     privateKeyName: ${YOUR_SSH_KEY_SECRET_NAME}
-    replicas: 4
+    replicas: 3
     resources:
       limits:
         cpu: "6"
@@ -361,7 +360,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
       volumeClaimTemplate:
         resources:
           requests:
-            storage: 200G
+            storage: 100G
         storageClassName: gp2
   EOF
   ```
@@ -390,7 +389,6 @@ kubectl wait --for=condition=complete --timeout=10m  job/${YOUR_CLUSTER_NAME}-in
   test-tg-cluster-0   0/1     Pending   0          5m27s
   test-tg-cluster-1   0/1     Pending   0          5m27s
   test-tg-cluster-2   0/1     Pending   0          5m27s
-  test-tg-cluster-3   0/1     Pending   0          5m27s
   ```
 
 - TigerGraph PVC status
@@ -402,7 +400,6 @@ kubectl wait --for=condition=complete --timeout=10m  job/${YOUR_CLUSTER_NAME}-in
   tg-data-test-tg-cluster-0   Pending                                      gp2            110s
   tg-data-test-tg-cluster-1   Pending                                      gp2            110s
   tg-data-test-tg-cluster-2   Pending                                      gp2            110s
-  tg-data-test-tg-cluster-3   Pending                                      gp2            110s
   ```
 
 - Checking the PVC Events of one Pod
@@ -451,7 +448,6 @@ If you're facing the issues above, please check the following:
   test-tg-cluster-0   0/1     Pending   0          5m27s
   test-tg-cluster-1   0/1     Pending   0          5m27s
   test-tg-cluster-2   0/1     Pending   0          5m27s
-  test-tg-cluster-3   0/1     Pending   0          5m27s
   ```
 
 - TigerGraph PVC status
@@ -463,7 +459,6 @@ If you're facing the issues above, please check the following:
   tg-data-test-tg-cluster-0   Pending                                      gp2            110s
   tg-data-test-tg-cluster-1   Pending                                      gp2            110s
   tg-data-test-tg-cluster-2   Pending                                      gp2            110s
-  tg-data-test-tg-cluster-3   Pending                                      gp2            110s
   ```
 
 - Checking the PVC Events of one Pod
@@ -508,7 +503,7 @@ If you're facing the issues above, please check the following:
 
 ## Connect to a TigerGraph Cluster
 
-This section outlines how to connect to a TigerGraph cluster pod and access the `RESTPP` and `GUI` services.
+This section explains how to log into a TigerGraph cluster pod and access the `RESTPP`,`GUI`, and `Metrics` services.
 
 ### Connect to a TigerGraph Cluster Pod
 
@@ -520,13 +515,67 @@ kubectl tg connect --cluster-name ${YOUR_CLUSTER_NAME} --namespace ${YOUR_NAMESP
 
 ### Access TigerGraph Services
 
+TigerGraph Operator provides two methods for accessing TigerGraph services. You can configure the spec.listener option to create an external service, allowing access to TigerGraph services from outside the Kubernetes cluster.
+
+Additionally, during TigerGraph cluster creation, the operator automatically creates a headless service to facilitate communication between internal TigerGraph pods. This service can be leveraged to access TigerGraph services from within the Kubernetes cluster.
+
+#### Access TigerGraph Services from inside the Kubernetes cluster
+
+Query the headless service:
+
+```bash
+kubectl get svc ${YOUR_CLUSTER_NAME}-internal-service --namespace ${YOUR_NAMESPACE}
+```
+
+Output example:
+
+```bash
+NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                        AGE
+test-cluster-internal-service   ClusterIP   None         <none>        9000/TCP,10022/TCP,14240/TCP   6m23s
+```
+
+When using the headless service to access the TigerGraph service, you must log into one of the pods in the Kubernetes cluster. The following example demonstrates how to access it from one of the TigerGraph pods.
+
+- Verify the API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/api/ping
+  {"error":false,"message":"pong","results":null}
+  ```
+
+- Verify the RESTPP API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/restpp/echo
+  {"error":false, "message":"Hello GSQL"}
+  ```
+
+- Verify the Metrics API service
+
+  ```bash
+  curl ${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/informant/metrics/get/network -d '{"LatestNum":"1"}'
+  {"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"702d134a162542ca8109de3dcbc51dea","TimestampNS":"1738829179030264667","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1738829179023049798","Network":{"IP":"10.20.128.210","TCPConnectionNum":382,"IncomingBytesNum":"49794423","OutgoingBytesNum":"48252486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"dff3d22e6bfd4cf3a2f1d7fb252a4ed6","TimestampNS":"1738829180030864889","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1738829180024734149","Network":{"IP":"10.20.128.74","TCPConnectionNum":284,"IncomingBytesNum":"40035133","OutgoingBytesNum":"38002711"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"e00644e8c3d5414583605e5fccc41e67","TimestampNS":"1738829178029349154","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1738829178022643026","Network":{"IP":"10.20.128.10","TCPConnectionNum":279,"IncomingBytesNum":"36818317","OutgoingBytesNum":"25420121"}}]}
+  ```
+
+> [!NOTE]
+> You can also access the TigerGraph service through a specific TigerGraph pod by prefixing the pod name. For example: 
+> ```bash
+> curl ${YOUR_CLUSTER_NAME}-0.${YOUR_CLUSTER_NAME}-internal-service.${YOUR_NAMESPACE}.svc.cluster.local:14240/api/ping
+>{"error":false,"message":"pong","results":null}
+> ```
+
+#### Access TigerGraph Services from outside the Kubernetes cluster
+
+> [!IMPORTANT]
+> Please ensure that the external service is configured before proceeding with the following steps. You can configure the external service using the `spec.listener` field when creating or updating the TigerGraph cluster. Please refer to [External access service](../07-reference/configure-tigergraph-cluster-cr-with-yaml-manifests.md#external-access-service) for more details.
+
 Query the external service address:
 
   ```bash
   export EXTERNAL_SERVICE_ADDRESS=$(kubectl get svc/${YOUR_CLUSTER_NAME}-nginx-external-service --namespace ${YOUR_NAMESPACE} -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
   ```
 
-#### Verify the API service
+- Verify the API service
 
   ```bash
   curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/api/ping
@@ -536,7 +585,7 @@ Query the external service address:
 
 To access the TigerGraph Suite, open it in your browser using the following URL: http://${EXTERNAL_SERVICE_ADDRESS}:14240, replacing `EXTERNAL_SERVICE_ADDRESS` with the actual service address.
 
-#### Verify the RESTPP API service
+- Verify the RESTPP API service
 
   ```bash
   curl http://${EXTERNAL_SERVICE_ADDRESS}:14240/restpp/echo
@@ -544,12 +593,12 @@ To access the TigerGraph Suite, open it in your browser using the following URL:
   {"error":false, "message":"Hello GSQL"}
   ```
 
-#### Verify the Metrics API service
+- Verify the Metrics API service
 
   ```bash
-curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"LatestNum":"1"}'
+  curl http://${EXTERNAL_SERVICE_ADDRESS}/informant/metrics/get/network -d '{"LatestNum":"1"}'
 
-{"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"1ebeaf2a380f4941b371efaaceb3467b","TimestampNS":"1703666521019463773","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1703666521008230613","Network":{"IP":"10.244.0.79","TCPConnectionNum":89,"IncomingBytesNum":"1654215","OutgoingBytesNum":"1466486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"2c54ed5d6ba14e789db03fd9e023219c","TimestampNS":"1703666521020024563","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1703666521011409133","Network":{"IP":"10.244.0.78","TCPConnectionNum":90,"IncomingBytesNum":"1637413","OutgoingBytesNum":"1726712"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"c3478943ca134530bcd3aa439521c626","TimestampNS":"1703666521019483903","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1703666521009116924","Network":{"IP":"10.244.0.77","TCPConnectionNum":107,"IncomingBytesNum":"1298257","OutgoingBytesNum":"1197920"}}]}
+  {"NetworkMetrics":[{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"1ebeaf2a380f4941b371efaaceb3467b","TimestampNS":"1703666521019463773","Source":{"ServiceName":"EXE","Partition":2}},"HostID":"m2","CollectTimeStamps":"1703666521008230613","Network":{"IP":"10.244.0.79","TCPConnectionNum":89,"IncomingBytesNum":"1654215","OutgoingBytesNum":"1466486"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"2c54ed5d6ba14e789db03fd9e023219c","TimestampNS":"1703666521020024563","Source":{"ServiceName":"EXE","Partition":3}},"HostID":"m3","CollectTimeStamps":"1703666521011409133","Network":{"IP":"10.244.0.78","TCPConnectionNum":90,"IncomingBytesNum":"1637413","OutgoingBytesNum":"1726712"}},{"EventMeta":{"Targets":[{"ServiceName":"IFM"}],"EventId":"c3478943ca134530bcd3aa439521c626","TimestampNS":"1703666521019483903","Source":{"ServiceName":"EXE","Partition":1}},"HostID":"m1","CollectTimeStamps":"1703666521009116924","Network":{"IP":"10.244.0.77","TCPConnectionNum":107,"IncomingBytesNum":"1298257","OutgoingBytesNum":"1197920"}}]}
   ```
 
 ## Upgrade a TigerGraph Cluster
@@ -565,10 +614,10 @@ Upgrading a TigerGraph cluster is supported from a lower version to a higher ver
 > [!WARNING]
 > Operator 0.0.9 has disabled TG downgrades from a higher version (e.g., 3.9.3) to any lower version (e.g., 3.9.2). Therefore, the upgrade job will fail if you attempt to downgrade.
 
-You can upgrade a TigerGraph cluster from a lower version to a higher version. Assuming the current version is 4.1.0 and you want to upgrade to 4.1.1, use the following command:
+You can upgrade a TigerGraph cluster from a lower version to a higher version. Assuming the current version is 3.9.2 and you want to upgrade to 3.9.3, use the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.1.1  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 3.9.3  --namespace ${YOUR_NAMESPACE}
 ```
 
 If you prefer to upgrade the cluster using a CR (Custom Resource) YAML manifest, simply update the `spec.image` field, and then apply it.

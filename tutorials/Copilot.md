@@ -35,11 +35,11 @@ This CoPilot tutorial contains:
 
 To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and load to Docker:
 ```
-docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz
+docker load -i ./tigergraph-4.2.0-community-docker-image.tar.gz
 docker images
 ```
 
-You should be able to find `tigergraph/community:4.2.0-alpha` in the image list.
+You should be able to find `tigergraph/community:4.2.0` in the image list.
 
 #### CoPilot Docker Images
 
@@ -68,7 +68,7 @@ Next, download the following configuration files and put them in a `configs` sub
 * [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
 * [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/llm_config.json)
 * [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/chat_config.json)
-* [configs/nginx.config](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.config)
+* [configs/nginx.config](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
 
 #### Step 3: Adjust configurations
 
@@ -84,13 +84,14 @@ Now, simply run `docker compose up -d` and wait for all the services to start.
 
 ### Standalone TigerGraph instance (Optional)
 
-> **_Note:_** Vector feature preview is available in both TigerGraph Community Edition (Alpha) and Enterprise Edition (Preview).
+> **_Note:_** Vector feature is available in both TigerGraph Community Edition 4.2.0+ and Enterprise Edition 4.2.0+.
 
 If you prefer to start a TigerGraph Community Edition instance without a license key, please make sure the container can be accessed from the Copilot containers by add `--network copilot_default`:
 ```
-docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network copilot_default -t tigergraph/community:4.2.0-alpha
+docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network copilot_default -t tigergraph/community:4.2.0
 ```
 
+> Use **tigergraph/tigergraph:4.2.0** if Enterprise Edition is preferred.
 > Setting up **DNS** or `/etc/hosts` properly is an alternative solution to ensure contains can connect to each other.
 
 Check the service status with the following commands:

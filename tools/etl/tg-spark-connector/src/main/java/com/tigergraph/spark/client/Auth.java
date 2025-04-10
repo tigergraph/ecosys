@@ -13,9 +13,16 @@
  */
 package com.tigergraph.spark.client;
 
-import com.tigergraph.spark.client.common.RestppResponse;
+import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.tigergraph.spark.client.common.RestppErrorException;
 import com.tigergraph.spark.util.Utils;
-import feign.*;
+
+import feign.Body;
+import feign.FeignException;
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
 
 /** APIs for RESTPP authentication */
 public interface Auth {
@@ -26,7 +33,7 @@ public interface Auth {
    * error will be thrown.
    */
   @RequestLine("GET /restpp/version")
-  RestppResponse getVersionWithoutToken();
+  RestppAuthResponse getVersionWithoutToken();
 
   default Boolean checkAuthEnabled() {
     try {
@@ -46,7 +53,7 @@ public interface Auth {
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithUserPassV0(
+  RestppAuthResponse requestTokenWithUserPassV0(
       @Param("graph") String graph,
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
@@ -57,12 +64,12 @@ public interface Auth {
   @RequestLine("POST /gsql/v1/tokens")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithUserPassV1(
+  RestppAuthResponse requestTokenWithUserPassV1(
       @Param("graph") String graph,
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
 
-  default AuthResponse requestTokenWithUserPass(
+  default RestppAuthResponse requestTokenWithUserPass(
       String version, String graph, String basicAuth, long lifetime) {
     if (Utils.versionCmp(version, "4.1.0") >= 0) {
       return requestTokenWithUserPassV1(graph, basicAuth, lifetime);
@@ -77,7 +84,7 @@ public interface Auth {
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithSecretV0(
+  RestppAuthResponse requestTokenWithSecretV0(
       @Param("secret") String secret, @Param("lifetime") long lifetime);
 
   /**
@@ -86,10 +93,10 @@ public interface Auth {
   @RequestLine("POST /gsql/v1/tokens")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse requestTokenWithSecretV1(
+  RestppAuthResponse requestTokenWithSecretV1(
       @Param("secret") String secret, @Param("lifetime") long lifetime);
 
-  default AuthResponse requestTokenWithSecret(String version, String secret, long lifetime) {
+  default RestppAuthResponse requestTokenWithSecret(String version, String secret, long lifetime) {
     if (Utils.versionCmp(version, "4.1.0") >= 0) {
       return requestTokenWithSecretV1(secret, lifetime);
     } else {
@@ -103,7 +110,7 @@ public interface Auth {
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse refreshTokenWithUserPass(
+  RestppAuthResponse refreshTokenWithUserPass(
       @Param("token") String token,
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
@@ -114,19 +121,56 @@ public interface Auth {
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")
-  AuthResponse refreshTokenWithSecrect(
+  RestppAuthResponse refreshTokenWithSecrect(
       @Param("token") String token,
       @Param("secret") String secret,
       @Param("lifetime") long lifetime);
 
-  public class AuthResponse extends RestppResponse {
+  @RequestLine("POST")
+  @Headers("Content-Type: application/x-www-form-urlencoded")
+  OAuth2Response refreshOAuth2Token(Map<String, ?> formParams);
+
+  public class OAuth2Response implements AuthResponse {
+    public String access_token;
+    public int expires_in;
+    public String error;
+    public String error_description;
+
+    @Override
+    public String getToken() {
+      if (!Utils.isEmpty(access_token)) {
+        return access_token;
+      } else {
+        return "";
+      }
+    }
+
+    @Override
+    public String getExpiration() {
+      return String.valueOf(expires_in);
+    }
+
+    @Override
+    public void panicOnFail() {
+      if (!Utils.isEmpty(error)) {
+        throw new RestppErrorException(error, error_description);
+      }
+    }
+  }
+
+  public class RestppAuthResponse implements AuthResponse {
     public String expiration;
     public String token;
+    public String code;
+    public boolean error;
+    public String message;
+    public JsonNode results;
 
     /**
      * RESTPP has different response format in different versions, we need to try to parse token
      * from different places.
      */
+    @Override
     public String getToken() {
       if (!Utils.isEmpty(token)) {
         return token;
@@ -136,5 +180,31 @@ public interface Auth {
         return "";
       }
     }
+
+    @Override
+    public String getExpiration() {
+      if (!Utils.isEmpty(expiration)) {
+        return expiration;
+      } else if (results != null) {
+        return results.path("expiration").asText();
+      } else {
+        return "";
+      }
+    }
+
+    @Override
+    public void panicOnFail() {
+      if (error) {
+        throw new RestppErrorException(code, message);
+      }
+    }
+  }
+
+  public interface AuthResponse {
+    public String getToken();
+
+    public String getExpiration();
+
+    void panicOnFail();
   }
 }

@@ -75,7 +75,7 @@ Quick Start for Community Edition
 3. In Macbook/Linux/Windows command line (# starts a comment) type the following sequence of commands, change the image file name to the one you downloaded. 
 
 ```python
-       docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+       docker load -i ./tigergraph-4.2.0-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
        docker images #find image id
        docker run -d --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
        docker exec -it mySandbox /bin/bash #start a shell on this container. 

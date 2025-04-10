@@ -50,7 +50,7 @@ For optimal performance, configure your Docker environment with **8 CPUs and 20+
 After installing TigerGraph, the `gadmin` command-line tool is automatically included, enabling you to easily start or stop services directly from your bash terminal.
 
 ```python
-  docker load -i ./tigergraph-4.2.0-alpha-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
+  docker load -i ./tigergraph-4.2.0-community-docker-image.tar.gz # the xxx.gz file name are what you have downloaded. Change the gz file name depending on what you have downloaded
   docker images #find image id
   docker run -d -p 14240:14240 --name mySandbox imageId #start a container, name it “mySandbox” using the image id you see from previous command
   docker exec -it mySandbox /bin/bash #start a shell on this container. 
@@ -863,7 +863,7 @@ For more details, please visit [https://docs.tigergraph.com/gsql-ref/4.1/ddl-and
 It is crucial to find the proper data format for embedding loading, mainly to identify the possible values of the primary key, text or binary contents, and the embedding values, in order to define appropriate headers, separator and end-of-line character to have the data parsed by the loading job correctly.
 * Field Separator - If the content contains comma, it's recommended to use `|` instead.
 * Newline Character - If the content contains newline character, it's recommended to escape it or define another end-of-line character.
-* Header line - Headers can make the fields human-friendly, otherwise the fields will be referrd according to their positions.
+* Header line - Headers can make the fields human-friendly, otherwise the fields will be referred according to their positions.
 
 Below is a typical data format for embedding values:
 ```python
@@ -882,7 +882,7 @@ CREATE LOADING JOB load_local_file FOR GRAPH financialGraph {
  DEFINE FILENAME file1="/home/tigergraph/data/account_emb.csv";
 
  //define the mapping from the source file to the target graph element type. The mapping is specified by VALUES clause. 
- LOAD file1 TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator=",";
+ LOAD file1 TO VERTEX Account VALUES ($"name", gsql_to_bool(gsql_trim($"isBlocked"))) USING header="true", separator="|";
  LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT($3, ",")) USING SEPARATOR="|", HEADER="true";
 }
 ```
@@ -1018,6 +1018,7 @@ Once a schema is created in TigerGraph database, a corresponding Loading Job nee
 # Create a loading job for the vector schema in TigerGraph database
 # Ensure to connect to TigerGraph server before any operations.
 result = conn.gsql("""
+    USE GRAPH financialGraph
     CREATE LOADING JOB load_emb {
         DEFINE FILENAME file1;
         LOAD file1 TO VERTEX Account VALUES ($1, $2) USING SEPARATOR="|";
@@ -1036,7 +1037,7 @@ Data:
 
 Loading job:
 ```python
-LOAD file1 TO VECTR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT(gsql_replace(gsql_replace($2,"[",""),"]",""),",")) USING SEPARATOR="|";
+LOAD file1 TO VECTOR ATTRIBUTE emb1 ON VERTEX Account VALUES ($1, SPLIT(gsql_replace(gsql_replace($3,"[",""),"]",""),",")) USING SEPARATOR="|";
 ```
 
 For more details about loading jobs, please refer to [https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs/](https://docs.tigergraph.com/gsql-ref/4.1/ddl-and-loading/loading-jobs/).
@@ -1167,6 +1168,8 @@ For GSQL quick start, please refer to [GSQL Tutorial](https://github.com/tigergr
 
 # Contact
 To contact us for commercial support and purchase, please email us at [info@tigergraph.com](mailto:info@tigergraph.com)
+
+Connect with the author on LinkedIn: [Mingxi Wu](https://www.linkedin.com/in/mingxi-wu-a1704817/) 
 
 [Go back to top](#top)
 
