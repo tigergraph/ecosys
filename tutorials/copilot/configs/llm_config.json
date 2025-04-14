@@ -3,14 +3,14 @@
     "embedding_service": {
         "embedding_model_service": "openai",
         "authentication_configuration": {
-            "OPENAI_API_KEY": "<YOUR_OPENAI_API_KEY>",
+            "OPENAI_API_KEY": "<YOUR_OPENAI_API_KEY>"
         }
     },
     "completion_service": {
         "llm_service": "openai",
         "llm_model": "gpt-4o",
         "authentication_configuration": {
-            "OPENAI_API_KEY": "<YOUR_OPENAI_API_KEY>",
+            "OPENAI_API_KEY": "<YOUR_OPENAI_API_KEY>"
         },
         "model_kwargs": {
             "temperature": 0

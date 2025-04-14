@@ -66,9 +66,9 @@ The Docker Compose file contains all dependencies for CoPilot including a TigerG
 
 Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
 * [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
-* [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
-* [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
-* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
+* [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/llm_config.json)
+* [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/chat_config.json)
+* [configs/nginx.config](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
 
 #### Step 3: Adjust configurations
 
@@ -121,7 +121,8 @@ Download the following data file and put it under `/home/tigergraph/copilot` in 
 
 Use the following commands if the file cannot be downloaded inside the TigerGraph container directly:
 ```
-docker cp ExportedGraph.zip tigergraph:/home/tigergraph/copilot
+docker exec -it tigergraph mkdir -p /home/tigergraph/copilot
+docker cp ExportedGraph.zip tigergraph:/home/tigergraph/copilot/
 docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/copilot/ExportedGraph.zip
 ```
 
