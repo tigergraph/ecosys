@@ -1,0 +1,66 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi4
+
+  Description:
+  Identify the top 100 most popular Forums created after a given date ($date), where popularity is defined as the number of members from a single Country.
+  If a Forum is popular in multiple countries, only the largest country membership is considered.
+  In case of ties in popularity, the Forum with the smaller ID is preferred.
+
+  Then, for each Person who is a member of these top Forums,
+  count how many Messages (Posts or Comments) they created within those Forums.
+  Include members with 0 Messages as well.
+
+  Reference:
+  LDBC SNB Specification, Page 93: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi4 (DATETIME date) syntax v3 {
+  TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
+    DATETIME personCreationDate, UINT messageCount> RESULT;
+  HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
+  MapAccum<VERTEX<Country>, UINT> @memberCount;
+  MaxAccum<UINT> @maxMemberCount;
+  MinAccum<VERTEX<Country>> @country;
+  OrAccum<BOOL> @inForum, @selected;
+  SumAccum<UINT> @messageCount;
+
+  F = {Forum.*};
+  F = SELECT f FROM (f:F) WHERE f.creationDate > date;
+
+  persons = SELECT f FROM (f:F) -[:HAS_MEMBER]-> (p:Person) ACCUM p.@selected += TRUE;
+
+  persons = SELECT p FROM (c:Country) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]- (p:Person)
+    WHERE p.@selected
+    ACCUM p.@country = c;
+
+  popularForums = SELECT f FROM (f:F) -[:HAS_MEMBER]-> (p:Person)
+    ACCUM f.@memberCount += (p.@country -> 1)
+    POST-ACCUM
+      FOREACH (city, num) IN f.@memberCount DO
+        f.@maxMemberCount += num
+      END
+    ORDER BY f.@maxMemberCount DESC, f.id ASC
+    LIMIT 100;
+
+  P = SELECT p FROM (:popularForums) -[:HAS_MEMBER]-> (p:Person) ACCUM p.@inForum += true;
+
+  tmp =
+    SELECT p
+    FROM (:popularForums) -[:CONTAINER_OF]-> (:Post) <-[:REPLY_OF*0..]- (m:Comment) -[:HAS_CREATOR]-> (p:Person)
+    WHERE p.@inForum
+    PER(m, p)
+    ACCUM p.@messageCount += 1
+    POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
+
+  tmp =
+    SELECT p FROM (p:P) WHERE p.@messageCount == 0
+    POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
+
+  PRINT @@result;
+}
+
+install query bi4
+
+run query bi4("2010-06-02")

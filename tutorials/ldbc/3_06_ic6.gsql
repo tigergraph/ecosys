@@ -1,0 +1,32 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic6
+
+  Description:
+  This query identifies the tags used by friends (up to 2 degrees of separation) of a given person on their posts.
+  For each tag (other than the specified one), it calculates how many posts are associated with that tag.
+  The query returns the tags and their associated post counts, ordered by post count in descending order and tag in ascending order.
+
+  Reference:
+  LDBC SNB Specification, page 64: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic6(VERTEX<Person> personId, STRING tag) syntax v3{
+  TYPEDEF tuple<STRING tag, INT postCount> tagStats;
+  HeapAccum<tagStats>(10, postCount DESC, tag ASC) @@result;
+  SumAccum<INT> @postCount;
+  S = { personId };
+  vPost =
+    SELECT m
+    FROM (s:S) -[:KNOWS*1..2]-(p:Person) <-[:HAS_CREATOR]-(m:Post) -[:HAS_TAG]->(t:Tag {name:tag})
+    WHERE s != p;
+
+  vTag =
+    SELECT t
+    FROM (:vPost)-[:HAS_TAG]->(t:Tag where t.name != tag)
+    ACCUM t.@postCount += 1
+    POST-ACCUM @@result += tagStats(t.name, t.@postCount);
+
+  PRINT @@result;
+}

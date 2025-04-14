@@ -1,0 +1,60 @@
+USE GRAPH ldbc_snb
+
+CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3{
+  TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
+  OrAccum @visited, @next, @inCompany;
+  MapAccum<VERTEX<Person>, MinAccum<UINT>> @weight;
+  MinAccum<UINT> @dist;
+  MapAccum<UINT, MinAccum<UINT>> @@paths;
+  UINT threshold;
+  P = {Person.*};
+  threshold = P.size();
+  S1 =
+    SELECT p
+    FROM (c:Company) <-[:WORK_AT]- (p:Person)
+    WHERE c.name == company AND p != person2Id
+    ACCUM p.@inCompany += true;
+
+  S = {person2Id};
+  S = Select s FROM (s:S) ACCUM s.@visited += true, s.@dist += 0;
+  WHILE S.size()>0 DO
+    Sknows = SELECT t FROM (s:S)-[:KNOWS]-(t:Person)
+      WHERE NOT t.@visited
+      ACCUM t.@visited += true;
+    Next = Select t
+      FROM (s:S) -[e1:STUDY_AT]-> (:University) <-[e2:STUDY_AT]- (t:Person)
+      WHERE t.@visited AND s != t
+      ACCUM s.@weight += (t-> abs(e1.classYear-e2.classYear) +1 ),
+      t.@weight += (s-> abs(e1.classYear-e2.classYear) +1 );
+
+    S = SELECT t FROM (s:S)-[:KNOWS]-(t:Person)
+      WHERE s.@weight.get(t)<threshold
+      ACCUM
+        UINT weight = s.@weight.get(t),
+        IF s.@dist + weight < t.@dist AND s.@dist + weight < threshold THEN
+          t.@dist += s.@dist + weight,
+          t.@next += true
+        END
+      HAVING t.@next;
+    S = SELECT s FROM (s:S)
+      ACCUM s.@next = false,
+        IF s.@inCompany THEN @@paths += (s.id -> s.@dist) END;
+      #HAVING NOT s.@inCompany;
+    # Update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p,dist) IN @@paths DO
+        @@result += RESULT(p,dist);
+      END;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END;
+    END;
+
+  END; # WHILE
+  FOREACH (p,dist) IN @@paths DO
+    @@result += RESULT(p,dist);
+  END;
+  PRINT @@result;
+}

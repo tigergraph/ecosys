@@ -1,0 +1,46 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is2
+
+  Description:
+  For a given Person ($personId), return their 10 most recent messages (posts or comments),
+  along with each message's original post and the original post's author.
+
+  Reference:
+  LDBC SNB Specification, page 74: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is2(VERTEX<Person> personId) syntax v3{
+  TYPEDEF TUPLE<INT messageId, STRING messageContent, DATETIME messageCreationDate, INT originalPostId, INT originalPostAuthorId, STRING originalPostAuthorFirstName, STRING originalPostAuthorLastName> ogPostInfo;
+
+  SumAccum<INT> @postId, @authorOgId;
+  SumAccum<STRING> @messageContent, @authorOgFN, @authorOgLN;
+  HeapAccum<ogPostInfo>(10, messageCreationDate DESC, messageId DESC) @@result;
+
+  vPerson = { personId };
+  vMessage =
+    SELECT t
+    FROM (s:vPerson)<-[:HAS_CREATOR]-(t:Comment:Post)
+    ORDER BY t.creationDate DESC, t.id DESC
+    LIMIT 10;
+
+  accMessage =
+    SELECT s
+    FROM (s:vMessage) -[:REPLY_OF*0..]->(t1:Post) -[:HAS_CREATOR]->(t2:Person)
+    PER(s,t1,t2)
+    ACCUM
+      IF s.type == "Comment" OR s.content != "" THEN
+        s.@messageContent = s.content
+      ELSE
+        s.@messageContent = t1.imageFile
+      END,
+      s.@postId = t1.id,
+      s.@authorOgId = t2.id,
+      s.@authorOgFN = t2.firstName,
+      s.@authorOgLN = t2.lastName
+    POST-ACCUM @@result += ogPostInfo(s.id, s.@messageContent,
+            s.creationDate, s.@postId, s.@authorOgId, s.@authorOgFN, s.@authorOgLN);
+
+  PRINT @@result;
+}

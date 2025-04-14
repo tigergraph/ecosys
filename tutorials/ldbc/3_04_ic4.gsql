@@ -1,0 +1,48 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic4
+
+  Description:
+  This query retrieves the tags of posts created by a person's friends within a specified time frame.
+  It counts the number of posts per tag, distinguishing between those created within the time range and before the start date.
+  The tags are then returned with their post counts, ordered by the count (descending) and tag name (ascending).
+
+  Reference:
+  LDBC SNB Specification, page 62: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT duration) syntax v3{
+  TYPEDEF TUPLE<STRING tagName, INT postCount> topic;
+  SumAccum<int> @postCount;
+  SetAccum<VERTEX<Tag>> @@tagsFav, @@tagsExc;
+  HeapAccum<topic>(10, postCount DESC, tagName ASC) @@result;
+
+  DATETIME endDate;
+  endDate = DATETIME_add(startDate, INTERVAL duration DAY);
+
+  S = { personId };
+  // find tags of posts created by the Person's friends in the given timeframe
+  vTag =
+    SELECT t
+    FROM (s:S) -[:KNOWS] - (:Person) <- [:HAS_CREATOR] - (m:Post) - [:HAS_TAG] -> (t:Tag)
+    WHERE m.creationDate < endDate
+    PER(m,t)
+    ACCUM
+      CASE
+        WHEN m.creationDate >= startDate THEN
+          t.@postCount += 1
+        WHEN m.creationDate < startDate THEN
+          @@tagsExc += t
+      END
+    POST-ACCUM CASE WHEN t.@postCount > 0 THEN @@tagsFav += t END;
+
+  @@tagsFav = @@tagsFav MINUS @@tagsExc;
+  vTag = { @@tagsFav };
+
+  // perform ordering on vTag
+  vTag =
+    SELECT t FROM (t:vTag)
+    ACCUM @@result += topic(t.name, t.@postCount);
+  PRINT @@result;
+}

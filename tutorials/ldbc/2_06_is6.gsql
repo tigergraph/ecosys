@@ -1,0 +1,37 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is6
+
+  Description:
+  Given a message ($messageId), return the forum that contains it and the person who moderates that forum.
+  For comments, return the Forum containing the original post in the thread to which the comment is replying.
+
+  Reference:
+  LDBC SNB Specification, page 76: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is6(STRING messageId) syntax v3{
+  SumAccum<INT> @forumId;
+  SumAccum<STRING> @forumTitle;
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
+
+  vModerator =
+    SELECT p
+    FROM (s:vMessage) -[:REPLY_OF*0..]-> (:Post) <-[:CONTAINER_OF]- (f:Forum) -[:HAS_MODERATOR]->(p:Person)
+    PER(p,f)
+    ACCUM p.@forumId = f.id, p.@forumTitle = f.title;
+
+  PRINT vModerator[
+      vModerator.@forumId AS forumId,
+      vModerator.@forumTitle AS forumTitle,
+      vModerator.id AS moderatorId,
+      vModerator.firstName AS moderatorFirstName,
+      vModerator.lastName AS moderatorLastName];
+}

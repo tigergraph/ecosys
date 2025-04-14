@@ -1,0 +1,114 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi19_add_weighted_edges
+
+  Description:
+  Calculates weights for KNOWS edges between Person nodes based on mutual reply interactions,
+  and stores them as new "WEIGHT_DOUBLE" relationships.
+
+  Only KNOWS edges with at least one interaction are considered.
+  Each such edge receives a weight calculated as:
+    weight = max([round(40 - sqrt(numInteractions_person1_to_person2 + numInteractions_person2_to_person1)), 1]
+
+  These weights are later used for weighted shortest path computation in the main query (bi19).
+*/
+
+CREATE OR REPLACE QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v3{
+  OrAccum<BOOL> @source, @target, @selected;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
+  C1 = {city1Id};
+  C2 = {city2Id};
+  vsource = SELECT p FROM (:C1) <-[:IS_LOCATED_IN]- (p:Person) ACCUM p.@source += true;
+  vtarget = SELECT p FROM (:C2) <-[:IS_LOCATED_IN]- (p:Person) ACCUM p.@target += true;
+
+  S = vsource UNION vtarget;
+  mid = SELECT t FROM (s:S) -[:KNOWS]- (t:Person)
+    WHERE NOT (t.@source) AND (NOT t.@target)
+    ACCUM t.@source += s.@source, t.@target += s.@target
+    HAVING t.@source AND t.@target;
+  S = S UNION mid;
+  vMessages = SELECT m FROM (s:S) <-[:HAS_CREATOR]- (m:Comment:Post)
+    ACCUM m.@creator += s, m.@selected += true;
+
+  vMessages = SELECT m2 FROM (m1:vMessages) <-[:REPLY_OF]- (m2:Comment:Post)
+    WHERE m2.@selected
+    ACCUM m2.@replyto += m1.@creator;
+
+  PersonReplied = SELECT p FROM (m:vMessages) -[:HAS_CREATOR]-> (p:Person)
+    ACCUM p.@replyToCount += (m.@replyto -> 1);
+
+  tmp =
+    SELECT p2
+    FROM (p1:PersonReplied) -[:KNOWS]- (p2:Person)
+    WHERE p1.@replyToCount.get(p2)>0 OR p2.@replyToCount.get(p1)>0
+    ACCUM
+      UINT numInteractions = p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1),
+      INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, max([round(40 - sqrt(numInteractions)), 1]));
+}
+
+CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v3{
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
+  GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
+  MapAccum<UINT, MinAccum<DOUBLE>> @dist1;
+  SumAccum<UINT> @creatorId;
+  OrAccum @next1, @isTarget;
+  DOUBLE threshold;
+  P = {Person.*};
+  threshold = P.size();
+
+  city1 = {city1Id};
+  city2 = {city2Id};
+  S = SELECT p FROM (c:city1) <-[:IS_LOCATED_IN]- (p:Person) ACCUM p.@dist1 += (p.id->0);
+  S2 = SELECT p FROM (c:city2) <-[:IS_LOCATED_IN]- (p:Person) ACCUM p.@isTarget += True;
+
+  WHILE S.size()>0 DO
+    # Expand the know map, we also neglect the distances larger than threshold
+    S = SELECT t FROM (s:S)-[e:WEIGHT_DOUBLE]-(t:Person)
+      ACCUM
+        FOREACH (p,dis) IN s.@dist1 DO
+          DOUBLE t_dis = dis + e.weight,
+          IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN
+            t.@dist1 += (p -> t_dis),
+            t.@next1 += true,
+            IF t.@isTarget THEN
+              @@paths += (p, t.id->t_dis)
+            END
+          END
+        END
+      HAVING t.@next1;
+    S = SELECT s FROM (s:S) ACCUM s.@next1 = false;
+
+    # Update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p1,p2,dist) IN @@paths DO
+        @@result += RESULT(p1,p2,dist);
+      END;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END;
+    END;
+  END;
+  FOREACH (p1,p2,dist) IN @@paths DO
+    @@result += RESULT(p1,p2,dist);
+  END;
+  PRINT @@result;
+}
+
+CREATE OR REPLACE QUERY bi19_delete_weighted_edges() syntax v3{
+  tmp =
+    SELECT v2
+    FROM (v1) -[e:WEIGHT_DOUBLE]- (v2)
+    ACCUM DELETE (e);
+}
+
+install query bi19_add_weighted_edges, bi19, bi19_delete_weighted_edges
+
+run query bi19_add_weighted_edges(144, 554)
+
+run query bi19(144, 554)
+
+run query bi19_delete_weighted_edges()

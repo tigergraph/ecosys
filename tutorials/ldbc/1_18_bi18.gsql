@@ -1,0 +1,40 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi18
+
+  Description:
+  For a given tag, this query recommends new friends (person2) for each person1 interested in the tag. The recommended friends meet the following criteria:
+    - They do not yet know person1.
+    - They have at least one mutual friend with person1.
+    - They are also interested in this tag.
+
+  The Persons (person2) are ranked based on the number of mutual friends they have with person1.
+
+  Reference:
+  LDBC SNB Specification, Page 107: https://ldbcouncil.org/ldbc-snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi18(VERTEX<Person> person1Id, STRING tag) syntax v3{
+  TYPEDEF TUPLE <UINT person2Id, UINT mutualFriendCount> RESULT;
+  HeapAccum<RESULT>(20, mutualFriendCount DESC, person2Id ASC) @@result;
+  SumAccum<UINT> @mutualFriendCount;
+  OrAccum<BOOL> @known;
+  person1 = {person1Id};
+  tmp = SELECT t FROM (s:person1) -[:KNOWS]- (t:Person)
+    ACCUM t.@known += true;
+
+  tagWithName = SELECT t FROM (t:Tag {name:tag});
+  person2s =
+    SELECT p
+    FROM (:tagWithName) <-[:HAS_INTEREST]- (p:Person)
+    WHERE p != person1Id AND (p.@known==false);
+
+  person2s =
+    SELECT p
+    FROM (:person1) -[:KNOWS]- (f:Person) -[:KNOWS]- (p:person2s)
+    ACCUM p.@mutualFriendCount += 1
+    POST-ACCUM @@result += RESULT(p.id, p.@mutualFriendCount);
+
+  PRINT @@result;
+}

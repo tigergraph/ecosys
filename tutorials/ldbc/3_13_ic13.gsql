@@ -1,0 +1,67 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic13
+
+  Description:
+  Finds the shortest path between two persons, using only `KNOWS` relationships.
+  The result is the length of the shortest path:
+    - Returns 0 if the two persons are the same.
+    - Returns -1 if no path exists.
+    - Returns the positive length of the path if one exists.
+
+  Reference:
+  LDBC SNB Specification, page 71: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v3{
+  SumAccum<INT> @dist1 = -1, @dist2 = -1;
+  OrAccum @@found, @@next1=True, @@next2=True;
+  MaxAccum<INT> @@result=-1;
+
+  IF person1Id != person2Id THEN
+    S1 = { person1Id };
+    S2 = { person2Id };
+    S1 = SELECT s FROM (s:S1) ACCUM s.@dist1 = 0;
+    S2 = SELECT s FROM (s:S2) ACCUM s.@dist2 = 0;
+
+    WHILE (NOT @@found) AND (@@next1 OR @@next2) DO
+      IF NOT @@found AND @@next1 THEN
+        @@next1 = False;
+        S1 =
+          SELECT t
+          FROM (s:S1)-[:KNOWS]-(t:Person)
+          WHERE t.@dist1 < 0
+          ACCUM
+            IF t.@dist2 > -1 THEN
+              @@found += True,
+              @@result += s.@dist1 + t.@dist2 + 1
+            ELSE
+              @@next1 += True,
+              t.@dist1 = s.@dist1 + 1
+            END;
+      END;
+
+      IF NOT @@found AND @@next2 THEN
+        @@next2 = False;
+        S2 =
+          SELECT t
+          FROM (s:S2)-[:KNOWS]-(t:Person)
+          WHERE t.@dist2 < 0
+          ACCUM
+            IF t.@dist1 > -1 THEN
+                @@found += True,
+                @@result += s.@dist2 + t.@dist1 + 1
+            ELSE
+                @@next2 += True,
+                t.@dist2 = s.@dist2 + 1
+            END;
+        END;
+    END;
+
+  ELSE
+    @@result += 0;
+  END;
+
+  PRINT @@result;
+}

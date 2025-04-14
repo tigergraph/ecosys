@@ -1,0 +1,42 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi7
+
+  Description:
+  Given a specific tag name ($tag), find the related tags attached to direct reply Comments of Messages that have the $tag.
+  Only consider replies that do not have the $tag themselves.
+  For each related tag (other than the original $tag), return the tag name and count how many replies use each related tag.
+
+  Reference:
+  LDBC SNB Specification, Page 96: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi7(STRING tag) syntax v3{
+
+  TYPEDEF TUPLE <STRING relatedTagName, UINT replyCount> RESULT;
+  HeapAccum<RESULT>(100, replyCount DESC, relatedTagName ASC) @@result;
+  SumAccum<UINT> @count;
+
+  tagWithName = SELECT t FROM (t:Tag {name:tag});
+
+  replies = SELECT c FROM (:tagWithName) <-[:HAS_TAG]-()<-[:REPLY_OF]- (c:Comment);
+
+  repliesWithTag =
+    SELECT r
+    FROM (:tagWithName) <-[:HAS_TAG]- (r:replies);
+
+  repliesWithoutTag = replies MINUS repliesWithTag;
+
+  tmp =
+    SELECT t
+    FROM (r:repliesWithoutTag) -[:HAS_TAG]-> (t:Tag)
+    ACCUM t.@count += 1
+    POST-ACCUM @@result += RESULT(t.name, t.@count);
+
+  PRINT @@result;
+}
+
+install query bi7
+
+run query bi7("Johann_Wolfgang_von_Goethe")

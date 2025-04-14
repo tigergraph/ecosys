@@ -1,0 +1,63 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi10
+
+  Description:
+  Given a start Person with ID $personId, this query finds expert candidates—other Persons who:
+    - Live in the specified country ($country).
+    - Are connected to the start Person by a shortest path of length between $minPathDistance and $maxPathDistance using the KNOWS relation.
+
+  For each expert candidate, the query retrieves all Messages (Posts or Comments) they created that contain at least one Tag directly belonging to the specified TagClass ($tagClass). It then extracts all Tags from these Messages.
+  The results are grouped by the expert candidate Person and each Tag, and the query counts how many Messages each candidate has posted with that Tag.
+
+  Reference:
+  LDBC SNB Specification, Page 99: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass, UINT minPathDistance, UINT maxPathDistance) syntax v3{
+  SumAccum<UINT> @@pathLength;
+  OrAccum @visited;
+
+  countryWithName = SELECT c FROM (c:Country {name:country});
+  candidates = SELECT p FROM (:countryWithName) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]- (p:Person);
+
+  sources = {personId};
+  targets (Person) = {};
+  WHILE @@pathLength < minPathDistance DO
+    sources =
+      SELECT t
+      FROM (s:sources) -[:KNOWS]- (t:Person)
+      WHERE NOT t.@visited
+      POST-ACCUM s.@visited = TRUE;
+    @@pathLength += 1;
+  END;
+  WHILE @@pathLength < maxPathDistance DO
+    sources =
+      SELECT t
+      FROM (s:sources) -[:KNOWS]- (t:Person)
+      WHERE NOT t.@visited
+      POST-ACCUM s.@visited = TRUE;
+    @@pathLength += 1;
+
+    targets = targets UNION sources;
+  END;
+
+  expertCandidatePersons = targets INTERSECT candidates;
+  tagClassWithName = SELECT tc FROM (tc:TagClass {name:tagClass});
+  messages =
+    SELECT m
+    FROM (p:expertCandidatePersons) <-[:HAS_CREATOR]- (m:Comment:Post) -[:HAS_TAG]->()-[:HAS_TYPE]-> (:tagClassWithName);
+
+  SELECT p.id AS expertCandidatePersonId, t.name AS tagName, COUNT(m) AS messageCount INTO result
+    FROM (m:messages) -[:HAS_TAG]-> (t:Tag),
+         (m) -[:HAS_CREATOR]-> (p:expertCandidatePersons)
+  ORDER BY messageCount DESC, tagName ASC, expertCandidatePersonId ASC
+  LIMIT 100;
+
+  PRINT result;
+}
+
+install query bi10
+
+run query bi10(6597069766702, "Azerbaijan", "MusicalArtist", 1, 4)
