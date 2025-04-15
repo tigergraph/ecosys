@@ -43,7 +43,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
     - [Update Attribute](#update-attribute)
     - [Insert Edge](#insert-edge)
     - [Delete Element](#delete-element)
- - [Vertex Set Operators](#vertex-set-operators)
+  - [Vertex Set Operators](#vertex-set-operators)
     - [Union](#union)
     - [Intersect](#intersect)
     - [Minus](#minus)
