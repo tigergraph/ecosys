@@ -25,3 +25,7 @@ CREATE OR REPLACE QUERY ic8(VERTEX<Person> personId) syntax v3{
 
   PRINT @@result;
 }
+
+install query ic8
+
+run query ic8(2199023255557)

@@ -39,3 +39,7 @@ CREATE OR REPLACE QUERY ic9(VERTEX<Person> personId, DATETIME date) syntax v3{
 
   PRINT @@result;
 }
+
+install query ic9
+
+run query ic9(28587302322196, "2010-09-19")

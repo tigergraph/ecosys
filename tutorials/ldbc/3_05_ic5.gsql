@@ -36,3 +36,7 @@ CREATE OR REPLACE QUERY ic5(VERTEX<Person> personId, DATETIME startDate) syntax 
 
   PRINT @@result;
 }
+
+install query ic5
+
+run query ic5(26388279066668, "2011-11-25")

@@ -32,3 +32,7 @@ CREATE OR REPLACE QUERY is5(STRING messageId) syntax v3{
       P.firstName AS firstName,
       P.lastName AS lastName];
 }
+
+install query is5
+
+run query is5(1168231108476)

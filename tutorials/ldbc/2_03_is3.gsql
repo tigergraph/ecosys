@@ -26,3 +26,7 @@ CREATE OR REPLACE QUERY is3(VERTEX<Person> personId) syntax v3{
       P.lastName AS lastName,
       epoch_to_datetime(P.@creationDate) AS friendshipCreationDate];
 }
+
+install query is3
+
+run query is3(28587302322223)

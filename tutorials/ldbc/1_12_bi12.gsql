@@ -52,3 +52,7 @@ CREATE OR REPLACE QUERY bi12(DATETIME date, INT lengthThreshold, SET<STRING> lan
 
   PRINT @@result;
 }
+
+install query bi12
+
+run query bi12("2012-11-20", 80, ["es","ta","pt"])

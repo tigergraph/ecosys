@@ -38,3 +38,7 @@ CREATE OR REPLACE QUERY ic7(VERTEX<Person> personId) syntax v3{
       END;
   PRINT @@result;
 }
+
+install query ic7
+
+run query ic7(8796093022237)

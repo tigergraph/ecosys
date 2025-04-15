@@ -63,3 +63,7 @@ CREATE OR REPLACE QUERY ic10(vertex<Person> personId, int month) syntax v3{
     ACCUM @@result += friendInfo(v.id, v.firstName, v.lastName, v.@commonInterestScore, v.gender, v.@city);
   PRINT @@result;
 }
+
+install query ic10
+
+run query ic10(2199023255594, 8)

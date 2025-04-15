@@ -8,14 +8,6 @@ USE GRAPH ldbc_snb
   both of the given countries within the specified date range.
   Only persons whose location is neither of the two given countries are considered, ensuring they are foreign to the specified countries.
 
-  Output:
-  - otherPerson.id
-  - otherPerson.firstName
-  - otherPerson.lastName
-  - xCount (Number of posts in country1)
-  - yCount (Number of posts in country2)
-  - xyCount (Total number of posts across both countries)
-
   Reference:
   LDBC SNB Specification, page 61: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
 */
@@ -63,3 +55,7 @@ CREATE OR REPLACE QUERY ic3(VERTEX<Person> personId, STRING country1, STRING cou
     ACCUM @@result += msgStats(p.id, p.firstName, p.lastName, p.@xCount, p.@yCount, (p.@xCount + p.@yCount));
   PRINT @@result;
 }
+
+install query ic3
+
+run query ic3(35184372088850, "China", "China", "2010-10-12", 28)

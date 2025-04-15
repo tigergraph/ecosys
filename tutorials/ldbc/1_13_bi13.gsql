@@ -69,3 +69,7 @@ CREATE OR REPLACE QUERY bi13(STRING country, DATETIME endDate) syntax v3{
 
   PRINT @@result;
 }
+
+install query bi13
+
+run query bi13("India", "2012-11-11")

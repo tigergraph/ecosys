@@ -82,3 +82,7 @@ CREATE OR REPLACE QUERY ic1(vertex<Person> personId, string firstName) syntax v3
     P.@univ AS friendUniversities,
     P.@comp AS friendCompanies];
 }
+
+install query ic1
+
+run query ic1(26388279066658, "Neil")

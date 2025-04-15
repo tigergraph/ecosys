@@ -39,3 +39,7 @@ CREATE OR REPLACE QUERY is4(STRING messageId) syntax v3{
         vPost.@messageContent AS messageContent] AS result;
   END;
 }
+
+install query is4
+
+run query is4(1168231108476)

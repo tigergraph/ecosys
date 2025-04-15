@@ -126,3 +126,7 @@ CREATE OR REPLACE QUERY ic14(VERTEX<Person> person1Id, VERTEX<Person> person2Id)
   END;
   PRINT @@result;
 }
+
+install query ic14
+
+run query ic14(8796093022237, 10995116277761)

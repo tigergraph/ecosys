@@ -1,5 +1,22 @@
 USE GRAPH ldbc_snb
 
+/*
+  Query Name: bi20
+
+  Description:
+  Given a company name and a person2 (who never worked at the company), this query finds one or more persons (person1) who have worked or currently work at the given company,
+  and are reachable from person2 through a chain of people who attended the same university.
+
+  The paths from person2 to person1 are constrained as follows:
+    - Only indirect "knows" relationships are considered, simulated by studying at the same university.
+    - Between any two persons who studied at one or more universities:
+        weight = MIN(|studyAtA.classYear - studyAtB.classYear| + 1)
+    - The query searches for the shortest total weighted path from person2 to person1.
+
+  Reference:
+  LDBC SNB Specification, Page 109: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
 CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3{
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;
@@ -12,7 +29,7 @@ CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3
   threshold = P.size();
   S1 =
     SELECT p
-    FROM (c:Company) <-[:WORK_AT]- (p:Person)
+    FROM (c:Company {name: company}) <-[:WORK_AT]- (p:Person {p !=})
     WHERE c.name == company AND p != person2Id
     ACCUM p.@inCompany += true;
 
@@ -58,3 +75,7 @@ CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3
   END;
   PRINT @@result;
 }
+
+install query bi20
+
+run query bi20("Okay_Airways", 28587302322191)

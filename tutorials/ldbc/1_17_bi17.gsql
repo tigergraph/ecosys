@@ -12,7 +12,7 @@ USE GRAPH ldbc_snb
   The query returns the top 10 person1 IDs along with the number of interactions their Messages may have caused.
 
   Reference:
-  LDBC SNB Specification, Page 106: https://ldbcouncil.org/ldbc-snb_docs/ldbc-snb-specification.pdf
+  LDBC SNB Specification, Page 106: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
 */
 
 CREATE OR REPLACE QUERY bi17(STRING tag, INT delta) syntax v3{
@@ -99,3 +99,7 @@ CREATE OR REPLACE QUERY bi17(STRING tag, INT delta) syntax v3{
 
   PRINT @@result;
 }
+
+install query bi17
+
+run query bi17("You_Are_Not_Alone", 16)

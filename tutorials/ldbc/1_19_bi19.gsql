@@ -12,6 +12,9 @@ USE GRAPH ldbc_snb
     weight = max([round(40 - sqrt(numInteractions_person1_to_person2 + numInteractions_person2_to_person1)), 1]
 
   These weights are later used for weighted shortest path computation in the main query (bi19).
+
+  Reference:
+  LDBC SNB Specification, Page 108: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
 */
 
 CREATE OR REPLACE QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v3{
@@ -47,6 +50,17 @@ CREATE OR REPLACE QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<Cit
       UINT numInteractions = p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1),
       INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, max([round(40 - sqrt(numInteractions)), 1]));
 }
+
+/*
+  Query Name: bi19
+
+  Description:
+  Calculates the 20 shortest weighted paths between any pair of Person nodes located
+    in two different cities, using WEIGHT_DOUBLE with precomputed weights.
+
+  Reference:
+  LDBC SNB Specification, Page 108: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
 
 CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v3{
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
@@ -97,6 +111,14 @@ CREATE OR REPLACE QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax 
   END;
   PRINT @@result;
 }
+
+/*
+  Query Name: bi19_delete_weighted_edges
+
+  Description:
+  Deletes all WEIGHT_DOUBLE edges between Person nodes.
+  This cleanup query should be called after bi19 computation to remove temporary weighted edges.
+*/
 
 CREATE OR REPLACE QUERY bi19_delete_weighted_edges() syntax v3{
   tmp =

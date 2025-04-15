@@ -5,8 +5,8 @@ USE GRAPH ldbc_snb
 
   Description:
   Given a message ($messageId), retrieve the 1-hop comments that reply to it.
-  For each reply, return a boolean flag `knows` indicating if the reply author knows the original message author.
-  If the authors are the same, `knows` will be False.
+  For each reply, return a boolean flag "knows" indicating if the reply author knows the original message author.
+  If the authors are the same, "knows" will be False.
 
   Reference:
   LDBC SNB Specification, page 77: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
@@ -35,3 +35,7 @@ CREATE OR REPLACE QUERY is7(STRING messageId) syntax v3{
     ACCUM @@result += reply(c.id, c.content, c.creationDate, p.id, p.firstName, p.lastName, p IN @@knows);
   PRINT @@result;
 }
+
+install query is7
+
+run query is7(1168231106628)

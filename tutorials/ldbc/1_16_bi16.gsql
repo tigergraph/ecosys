@@ -69,3 +69,7 @@ CREATE OR REPLACE QUERY bi16(STRING tagA, DATETIME dateA, STRING tagB, DATETIME 
 
   PRINT @@result;
 }
+
+install query bi16
+
+run query bi16("Sammy_Sosa", "2012-11-12", "League_of_Nations", "2012-11-12", 6)

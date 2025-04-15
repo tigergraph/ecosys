@@ -35,3 +35,7 @@ CREATE OR REPLACE QUERY is6(STRING messageId) syntax v3{
       vModerator.firstName AS moderatorFirstName,
       vModerator.lastName AS moderatorLastName];
 }
+
+install query is6
+
+run query is6(1168231106593)

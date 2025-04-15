@@ -28,3 +28,7 @@ CREATE OR REPLACE QUERY is1(VERTEX<Person> personId) syntax v3{
       P.creationDate AS creationDate
   ];
 }
+
+install query is1
+
+run query is1(2199023255557)

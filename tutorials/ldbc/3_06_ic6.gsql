@@ -30,3 +30,7 @@ CREATE OR REPLACE QUERY ic6(VERTEX<Person> personId, STRING tag) syntax v3{
 
   PRINT @@result;
 }
+
+install query ic6
+
+run query ic6(28587302322223, "Wolfgang_Amadeus_Mozart")

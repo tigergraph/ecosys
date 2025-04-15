@@ -36,3 +36,7 @@ CREATE OR REPLACE QUERY ic12(vertex<Person> personId, string tagClass) syntax v3
     P.@tagNames AS tagNames,
     P.@replyCount AS replyCount];
 }
+
+install query ic12
+
+run query ic12(13194139533352, "MusicalArtist")

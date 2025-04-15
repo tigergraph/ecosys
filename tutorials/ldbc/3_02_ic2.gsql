@@ -28,3 +28,7 @@ CREATE OR REPLACE QUERY ic2(VERTEX<Person> personId, DATETIME date) syntax v3{
       END;
   PRINT @@result;
 }
+
+install query ic2
+
+run query ic2(24189255811081, "2012-11-07")

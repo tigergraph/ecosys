@@ -103,3 +103,7 @@ CREATE OR REPLACE QUERY bi14(STRING country1, STRING country2) syntax v3{
     ACCUM @@result += c1.@cityresults.top();
   PRINT @@result;
 }
+
+install query bi14
+
+run query bi14("Argentina", "Cuba")

@@ -5,7 +5,7 @@ USE GRAPH ldbc_snb
 
   Description:
   Given two Persons with IDs $person1Id and $person2Id, this query computes the cost of the weighted shortest
-  path between them, considering only the `KNOWS` relationships. The interaction score for an edge is based on the
+  path between them, considering only the KNOWS relationships. The interaction score for an edge is based on the
   interactions between the two Persons:
     - +1.0 point for every direct reply to the other Person's Post.
     - +0.5 point for every direct reply to the other Person's Comment.
@@ -87,7 +87,6 @@ CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id,
         END;
   END;
 
-
   #Calculate weight for each path
   FOREACH path IN @@shortestPaths DO
     FOREACH p in path DO
@@ -126,3 +125,7 @@ CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id,
   END;
   PRINT @@result;
 }
+
+install query bi15
+
+run query bi15(24189255811109, 26388279066632, "2012-12-09", "2012-12-13")

@@ -65,3 +65,7 @@ CREATE OR REPLACE QUERY ic13(VERTEX<Person> person1Id, VERTEX<Person> person2Id)
 
   PRINT @@result;
 }
+
+install query ic13
+
+run query ic13(26388279066668, 13194139533352)

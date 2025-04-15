@@ -46,3 +46,7 @@ CREATE OR REPLACE QUERY ic4(VERTEX<Person> personId, DATETIME startDate, INT dur
     ACCUM @@result += topic(t.name, t.@postCount);
   PRINT @@result;
 }
+
+install query ic4
+
+run query ic4(26388279066668, "2012-10-01", 30)

@@ -44,3 +44,7 @@ CREATE OR REPLACE QUERY is2(VERTEX<Person> personId) syntax v3{
 
   PRINT @@result;
 }
+
+install query is2
+
+run query is2(28587302322223)
