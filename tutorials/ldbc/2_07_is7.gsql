@@ -1,0 +1,41 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is7
+
+  Description:
+  Given a message ($messageId), retrieve the 1-hop comments that reply to it.
+  For each reply, return a boolean flag "knows" indicating if the reply author knows the original message author.
+  If the authors are the same, "knows" will be False.
+
+  Reference:
+  LDBC SNB Specification, page 77: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is7(STRING messageId) syntax v3{
+  TYPEDEF TUPLE<INT commentId, STRING commentContent, DATETIME commentCreationDate, INT replyAuthorId, STRING replyAuthorFirstName, STRING replyAuthorLastName, BOOL replyAuthorKnowsOriginalMessageAuthor> reply;
+
+  SetAccum<STRING> @@seed;
+  SetAccum<vertex<Person>> @@knows;
+  HeapAccum<reply>(100, commentCreationDate DESC, replyAuthorId ASC) @@result;
+
+  @@seed += messageId;
+  vMessage = to_vertex_set(@@seed, "Comment");
+  IF vMessage.size() == 0 THEN
+    vMessage = to_vertex_set(@@seed, "Post");
+  END;
+  P =
+    SELECT p
+    FROM (s:vMessage) -[:HAS_CREATOR]-> (:Person) -[:KNOWS]- (p:Person)
+    PER(p)
+    ACCUM @@knows += p;
+  P =
+    SELECT p
+    FROM (s:vMessage) <-[:REPLY_OF]- (c:Comment) -[:HAS_CREATOR]-> (p:Person)
+    ACCUM @@result += reply(c.id, c.content, c.creationDate, p.id, p.firstName, p.lastName, p IN @@knows);
+  PRINT @@result;
+}
+
+install query is7
+
+run query is7(1168231106628)

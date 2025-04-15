@@ -1,0 +1,46 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi11
+
+  Description:
+  Given a country ($country) and a start date ($startDate), this query counts the number of distinct triples of Persons that form a friendship triangle.
+  In a valid triple:
+    - Person A is a friend of Person B,
+    - Person B is a friend of Person C,
+    - Person C is a friend of Person A,
+  and all these friendship edges were created after $startDate.
+  "Distinct" here is enforced by comparing Person IDs (e.g., p1.id < p2.id < p3.id) so that each triangle is counted only once.
+
+  Reference:
+  LDBC SNB Specification, Page 100: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi11(STRING country, DATETIME startDate) syntax v3{
+  SumAccum<UINT> @@result;
+  OrAccum<BOOL> @selected;
+  SetAccum<VERTEX<Person>> @oneHopNeighbor;
+
+  countryWithName = SELECT c FROM (c:Country {name:country});
+  persons = SELECT p FROM (:countryWithName) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]- (p:Person)  ACCUM p.@selected += True;
+  P2 = SELECT p2
+    FROM (p1:persons) -[e:KNOWS]- (p2:Person)
+    WHERE p2.@selected AND e.creationDate > startDate AND p1.id < p2.id
+    ACCUM p2.@oneHopNeighbor += p1;
+
+  P3 = SELECT p3
+    FROM (p2:P2) -[e:KNOWS]- (p3:Person)
+    WHERE p3.@selected AND e.creationDate > startDate AND p2.id < p3.id
+    ACCUM
+      FOREACH p1 IN p2.@oneHopNeighbor DO
+        IF p1 IN p3.@oneHopNeighbor THEN
+          @@result += 1
+        END
+      END;
+
+  PRINT @@result;
+}
+
+install query bi11
+
+run query bi11("China", "2012-12-15")

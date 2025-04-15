@@ -1,0 +1,31 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic8
+
+  Description:
+  This query retrieves all replies to a given person's comments or posts. It returns the ID, name,
+  creation date, ID, and content of the replies, sorted by creation date (descending) and comment ID (ascending).
+
+  Reference:
+  LDBC SNB Specification, page 66: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic8(VERTEX<Person> personId) syntax v3{
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName,
+                DATETIME commentCreationDate, INT commentId, STRING commentContent> replier;
+  HeapAccum<replier>(20, commentCreationDate DESC, commentId ASC) @@result;
+
+  S = { personId };
+  M =
+    SELECT m
+    FROM (s:S) <-[:HAS_CREATOR]- (:Comment:Post) <-[:REPLY_OF]- (m:Comment) -[:HAS_CREATOR]-> (p:Person)
+    PER(m,p)
+    ACCUM @@result += replier(p.id, p.firstName, p.lastName, m.creationDate, m.id, m.content);
+
+  PRINT @@result;
+}
+
+install query ic8
+
+run query ic8(2199023255557)

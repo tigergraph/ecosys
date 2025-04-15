@@ -1,0 +1,34 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic11
+
+  Description:
+  This query finds friends of a given person who work at companies located in a specified country and started working at those companies before a given year.
+  The query returns the person's id, firstName, lastName, company name, and the year they started working at the company.
+  Friends are defined as people within 1 to 2 hops of the given person, excluding the person themselves.
+
+  Reference:
+  LDBC SNB Specification, page 69: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic11(vertex<Person> personId, string country, int workFromYear) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
+  HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@result;
+  OrAccum<BOOL> @selected;
+
+  S = { personId };
+  companies = SELECT org FROM (c:Country {name: country}) <-[:IS_LOCATED_IN]-(org:Company)
+    ACCUM org.@selected += TRUE;
+
+  P =
+    SELECT p
+    FROM (s:S) -[:KNOWS*1..2]- (p:Person) -[e:WORK_AT] -> (c:Company)
+    WHERE p != personId AND c.@selected AND e.workFrom < workFromYear
+    ACCUM @@result += friendInfo(p.id, p.firstName, p.lastName, c.name, e.workFrom);
+  PRINT @@result;
+}
+
+install query ic11
+
+run query ic11(10995116277761, "Germany", 2009)

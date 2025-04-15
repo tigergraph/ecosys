@@ -1,0 +1,47 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi3
+
+  Description:
+  Find all forums created in the given country ($country) whose moderator is located in that country.
+  The forum must contain at least one message (post or comment) tagged with a tag directly belonging to the given tagClass ($tagClass).
+    - For each such forum, count how many of those messages it contains.
+    - Return the Forum ID, title, creation date, moderator ID, and the message count.
+
+  Reference:
+  LDBC SNB Specification, page 92: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi3(STRING tagClass, STRING country) syntax v3{
+  TYPEDEF TUPLE <UINT forumId, STRING forumTitle, DATETIME forumCreationDate, UINT personId, UINT messageCount> RESULT;
+  HeapAccum<RESULT>(20, messageCount DESC, forumId ASC) @@result;
+  SumAccum<UINT> @messageCount;
+  MinAccum<UINT> @personId;
+  OrAccum <BOOL> @selected;
+
+  tagClassWithName = SELECT tc FROM (tc:TagClass {name:tagClass});
+  countryWithName = SELECT c FROM (c:Country {name:country});
+
+  forums =
+    SELECT f
+    FROM (:countryWithName) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]- (p:Person) <-[:HAS_MODERATOR]- (f:Forum)
+    ACCUM f.@personId = p.id, f.@selected += true;
+
+  messages =
+    SELECT m
+    FROM (:tagClassWithName) <-[:HAS_TYPE]-()<-[:HAS_TAG]- (m:Comment:Post);
+
+  tmp =
+    SELECT f
+    FROM (m:messages) -[:REPLY_OF*0..]->()<-[:CONTAINER_OF]- (f:Forum)
+    WHERE f.@selected
+    ACCUM f.@messageCount += 1
+    POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
+
+  PRINT @@result;
+}
+
+install query bi3
+
+run query bi3("Philosopher", "China")

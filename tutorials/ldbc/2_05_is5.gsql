@@ -1,0 +1,38 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is5
+
+  Description:
+  Given a message (post or comment) with ID $messageId, retrieve its author.
+
+  Reference:
+  LDBC SNB Specification, page 76: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is5(STRING messageId) syntax v3{
+  SetAccum<STRING> @@seed;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    P =
+      SELECT t
+      FROM (s:vComments)-[:HAS_CREATOR]->(t:Person);
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+    P =
+      SELECT t
+      FROM (s:vPost)-[:HAS_CREATOR]->(t:Person);
+  END;
+
+  PRINT P[
+      P.id AS personId,
+      P.firstName AS firstName,
+      P.lastName AS lastName];
+}
+
+install query is5
+
+run query is5(1168231108476)

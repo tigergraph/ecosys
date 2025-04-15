@@ -1,0 +1,42 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic12
+
+  Description:
+  This query finds the top 20 1-hop friends of a given Person who have created comments replying to posts tagged with the specified tagClass or its subclasses.
+  For each friend, the query counts the number of such replies and collects the distinct tag names involved.
+  The results are sorted by reply count (desc), with ties broken by person ID.
+
+  Reference:
+  LDBC SNB Specification, page 70: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic12(vertex<Person> personId, string tagClass) syntax v3{
+  SetAccum<vertex<Comment>> @replySet;
+  SetAccum<string> @tagNames;
+  SumAccum<int> @replyCount;
+  S = { personId };
+
+  P =
+    SELECT p
+    FROM (s:S) -[:KNOWS]- (p:Person) <-[:HAS_CREATOR]- (c:Comment)
+          -[:REPLY_OF]-> (:Post) -[:HAS_TAG]-> (t:Tag)
+          -[:HAS_TYPE]-> (:TagClass) -[:IS_SUBCLASS_OF*0..]-> (tc:TagClass {name:tagClass})
+    PER(p,c,t)
+    ACCUM p.@replySet += c, p.@tagNames += t.name
+    POST-ACCUM p.@replyCount = p.@replySet.size(), p.@replySet.clear()
+    ORDER BY p.@replyCount DESC, p.id ASC
+    LIMIT 20;
+
+  PRINT P[
+    P.id AS personId,
+    P.firstName AS personFirstName,
+    P.lastName AS personLastName,
+    P.@tagNames AS tagNames,
+    P.@replyCount AS replyCount];
+}
+
+install query ic12
+
+run query ic12(13194139533352, "MusicalArtist")

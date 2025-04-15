@@ -1,0 +1,42 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic5
+
+  Description:
+  This query identifies forums where a given person’s friends (up to two degrees of separation) are members and have posted
+  after a specified start date.
+  It counts the number of posts made by these friends in each forum and returns the forum title, post count, and forum ID.
+
+  Reference:
+  LDBC SNB Specification, page 63: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic5(VERTEX<Person> personId, DATETIME startDate) syntax v3{
+  TYPEDEF TUPLE<STRING forumTitle, INT postCount, INT id> forumInfo;
+	HeapAccum<forumInfo>(20, postCount DESC, id ASC) @@result;
+  SetAccum<VERTEX<Person>> @@friendAll;
+  SetAccum<INT> @memberIds;
+  SumAccum<INT> @postCount;
+
+  S = { personId };
+  vForum =
+    SELECT t
+    FROM (s:S)-[:KNOWS*1..2]-(p:Person)<-[e:HAS_MEMBER]-(t:Forum)
+    WHERE p != s AND e.joinDate > startDate
+    PER(p,t)
+    ACCUM t.@memberIds += p.id, @@friendAll += p;
+
+  vFriend = { @@friendAll };
+  vForum =
+    SELECT t
+    FROM (s:vFriend)<-[:HAS_CREATOR]-(:Post)<-[:CONTAINER_OF]-(t:vForum)
+    ACCUM CASE WHEN s.id IN t.@memberIds THEN t.@postCount += 1 END
+    POST-ACCUM @@result += forumInfo(t.title, t.@postCount, t.id);
+
+  PRINT @@result;
+}
+
+install query ic5
+
+run query ic5(26388279066668, "2011-11-25")

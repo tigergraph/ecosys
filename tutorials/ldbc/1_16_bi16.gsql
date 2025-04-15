@@ -1,0 +1,75 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi16
+
+  Description:
+  Given two tag/date pairs ($tagA/$dateA and $tagB/$dateB) and a maximum friend limit (maxKnowsLimit),
+  find all Persons:
+    1. For $tagA/$dateA, it selects Persons who created a Message (Post or Comment) on that date with the tag $tagA.
+    2. For $tagB/$dateB, it does the same for Messages with tag $tagB on $dateB.
+
+  Then, find the intersection of these Person sets—i.e., Persons who posted with both tag/date pairs and for each such Person,
+  report the count of Messages they created for each tag/date pair and the total Message count.
+
+  Reference:
+  LDBC SNB Specification, Page 105: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi16(STRING tagA, DATETIME dateA, STRING tagB, DATETIME dateB, UINT maxKnowsLimit) syntax v3{
+
+  TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
+
+  HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
+
+  SumAccum<UINT> @knowsCountA, @messageCountA;
+  SumAccum<UINT> @knowsCountB, @messageCountB;
+  INT yearA, monthA, dayA;
+  INT yearB, monthB, dayB;
+  yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
+  yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
+
+  tagWithNameA = SELECT t FROM (t:Tag {name:tagA});
+  personsA =
+    SELECT p
+    FROM (:tagWithNameA) <-[:HAS_TAG]- (m:Comment:Post) -[:HAS_CREATOR]-> (p:Person)
+    WHERE
+      year(m.creationDate) == yearA AND
+      month(m.creationDate) == monthA AND
+      day(m.creationDate) == dayA
+    ACCUM p.@messageCountA += 1;
+  tmp = SELECT p
+    FROM (:personsA) -[:KNOWS]- (p:personsA)
+    ACCUM p.@knowsCountA += 1;
+
+  # need to include person without any friends
+  personsA = SELECT p FROM (p:personsA) WHERE p.@knowsCountA <= maxKnowsLimit;
+
+  tagWithNameB = SELECT t FROM (t:Tag {name:tagB});
+  personsB =
+    SELECT p
+    FROM (:tagWithNameB) <-[:HAS_TAG]- (m:Comment:Post) -[:HAS_CREATOR]-> (p:Person)
+    WHERE
+      year(m.creationDate) == yearB AND
+      month(m.creationDate) == monthB AND
+      day(m.creationDate) == dayB
+    ACCUM p.@messageCountB += 1;
+  tmp = SELECT p
+    FROM (:personsB) -[:KNOWS]- (p:personsB)
+    ACCUM p.@knowsCountB += 1;
+
+  # need to include person without any friends
+  personsB = SELECT p FROM (p:personsB) WHERE p.@knowsCountB <= maxKnowsLimit;
+
+  persons = personsA INTERSECT personsB;
+  persons =
+    SELECT p
+    FROM (p:persons)
+    POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
+
+  PRINT @@result;
+}
+
+install query bi16
+
+run query bi16("Sammy_Sosa", "2012-11-12", "League_of_Nations", "2012-11-12", 6)

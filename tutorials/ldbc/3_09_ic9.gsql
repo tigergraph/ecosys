@@ -1,0 +1,45 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic9
+
+  Description:
+  Given a start Person with ID $personId, find the most recent messages created by that Person’s
+  friends or friends of friends (excluding the start Person). Only consider messages created before
+  the given $maxDate (excluding that day).
+
+  Reference:
+  LDBC SNB Specification, page 67: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic9(VERTEX<Person> personId, DATETIME date) syntax v3{
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName,
+                INT messageId, STRING messageContent, DATETIME messageCreationDate> msgInfo;
+
+  HeapAccum<msgInfo>(20, messageCreationDate DESC, messageId ASC) @@result;
+  SumAccum<INT> @personId;
+  SumAccum<STRING> @personFirstName, @personLastName;
+
+  S = { personId };
+  M =
+    SELECT s
+    FROM (s:S) -[:KNOWS*1..2]- (p:Person) <-[:HAS_CREATOR]- (m:Comment:Post)
+    WHERE s != p AND m.creationDate < date
+    PER(s,p,m)
+    ACCUM
+      m.@personId = p.id,
+      m.@personFirstName = p.firstName,
+      m.@personLastName = p.lastName
+    POST-ACCUM
+      IF m.type == "Comment" OR m.content != "" THEN
+        @@result += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.content, m.creationDate)
+      ELSE
+        @@result += msgInfo(m.@personId, m.@personFirstName, m.@personLastName, m.id, m.imageFile, m.creationDate)
+      END;
+
+  PRINT @@result;
+}
+
+install query ic9
+
+run query ic9(28587302322196, "2010-09-19")

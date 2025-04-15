@@ -1,0 +1,58 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi12
+
+  Description:
+  For each Person, count the number of Messages they created that satisfy the following:
+    - The Message has non-empty content (with Posts having an empty imageFile).
+    - Its creationDate is after the given $date.
+    - Its length is below the specified $lengthThreshold.
+    - The language (for Posts: the "lang" attribute; for Comments: that of the root Post) is in the given $languages.
+
+  Then, group Persons by their message count and return, for each messageCount value,
+  the number of Persons with that count.
+
+  Reference:
+  LDBC SNB Specification, Page 101: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi12(DATETIME date, INT lengthThreshold, SET<STRING> languages) syntax v3{
+
+  TYPEDEF TUPLE <UINT messageCount, UINT personCount> RESULT;
+
+  MapAccum<UINT, UINT> @@personCount;
+  HeapAccum<RESULT>(0, personCount DESC, messageCount DESC) @@result;
+
+  SumAccum<UINT> @messageCount;
+
+  INT diff;
+
+  persons =
+    SELECT person
+    FROM (person:Person) <-[:HAS_CREATOR]- (m:Comment:Post) -[:REPLY_OF*0..]-> (p:Post)
+    WHERE
+      m.content != "" AND
+      m.length < lengthThreshold AND
+      m.creationDate > date AND
+      p.lang IN languages
+    ACCUM person.@messageCount += 1
+    POST-ACCUM @@personCount += (person.@messageCount -> 1);
+
+  allPersons = {Person.*};
+  diff = allPersons.size() - persons.size();
+  IF diff > 0 THEN
+    @@personCount += (0 -> diff);
+  END;
+
+  @@result.resize(@@personCount.size());
+  FOREACH (messageCount, personCount) IN @@personCount DO
+    @@result += RESULT(messageCount, personCount);
+  END;
+
+  PRINT @@result;
+}
+
+install query bi12
+
+run query bi12("2012-11-20", 80, ["es","ta","pt"])

@@ -1,0 +1,44 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic7
+
+  Description:
+  This query identifies likes on a given person’s messages (comments or posts). It returns the liker’s details, the message content,
+  the time difference (in minutes) between the message creation and the like, and whether the liker knows the original creator (isNew).
+    - minutesLatency (Duration between the creation of the message and the creation of the like, in minutes)
+    - isNew (True if the person and the original message creator do not know each other, False otherwise)
+
+  Reference:
+  LDBC SNB Specification, page 65: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic7(VERTEX<Person> personId) syntax v3{
+  TYPEDEF tuple<INT personId, STRING personFirstName, STRING personLastName, DATETIME likeCreationDate,
+                INT commentOrPostId, STRING commentOrPostContent, INT minutesLatency, BOOL isNew> liker;
+  HeapAccum<liker>(20, likeCreationDate DESC, commentOrPostId ASC) @@result;
+  AndAccum<BOOL> @isNew;
+  S = { personId };
+  P =
+    SELECT p
+    FROM (:S)-[:KNOWS]-(p:Person)
+    ACCUM p.@isNew += FALSE;
+
+  P =
+    SELECT p
+    FROM (s:S)<-[:HAS_CREATOR]- (m:Comment:Post) <-[e:LIKES]-(p:Person)
+    PER(m,e,p)
+    ACCUM
+      IF m.type == "Comment" OR m.content != "" THEN
+        @@result += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id,
+                            m.content, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
+      ELSE
+        @@result += liker(p.id, p.firstName, p.lastName, e.creationDate, m.id,
+                            m.imageFile, datetime_diff(e.creationDate, m.creationDate) / 60, p.@isNew)
+      END;
+  PRINT @@result;
+}
+
+install query ic7
+
+run query ic7(8796093022237)

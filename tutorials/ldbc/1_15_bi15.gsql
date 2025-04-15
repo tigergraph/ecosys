@@ -1,0 +1,131 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi15
+
+  Description:
+  Given two Persons with IDs $person1Id and $person2Id, this query computes the cost of the weighted shortest
+  path between them, considering only the KNOWS relationships. The interaction score for an edge is based on the
+  interactions between the two Persons:
+    - +1.0 point for every direct reply to the other Person's Post.
+    - +0.5 point for every direct reply to the other Person's Comment.
+
+  Only Messages created in Forums (with Forum creation dates between $startDate and $endDate) are taken into account.
+  Interactions are counted in both directions.
+  The weight for each edge is defined as 1 / (interaction score + 1). The query returns the total cost of the
+  weighted shortest path. If no path exists, it returns –1.0.
+
+  Reference:
+  LDBC SNB Specification, Page 104: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) syntax v3{
+
+  TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
+  HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
+  OrAccum @@found, @@next=true;
+  ListAccum<ListAccum<VERTEX<Person>>> @paths;
+  ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
+  OrAccum @visited1, @visited2;
+
+  SetAccum<VERTEX<Person>> @@PersonInShortestPath;
+  SumAccum<UINT> @creatorId;
+
+  MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
+  STRING jsonStr;
+  SumAccum<DOUBLE> @@weight;
+
+  S1 = {person1Id};
+  S2 = {person2Id};
+  S1 = Select s FROM (s:S1) ACCUM s.@visited1 = TRUE, s.@paths += [s];
+  S2 = Select s FROM (s:S2) ACCUM s.@visited2 = TRUE, s.@paths += [s];
+
+  WHILE NOT @@found AND @@next DO
+    @@next = false;
+    S1 =
+      SELECT t
+      FROM (s:S1) -[:KNOWS]- (t:Person)
+      WHERE NOT t.@visited1
+      ACCUM
+        IF t.@visited2 THEN #found the shortest path
+          @@found += TRUE,
+          FOREACH p1 IN s.@paths DO
+            FOREACH p2 IN t.@paths DO
+              @@shortestPaths += p1 + p2
+            END
+          END
+        ELSE #not found
+          @@next += true,
+          t.@visited1 += TRUE,
+          FOREACH p IN s.@paths DO
+            t.@paths += p + [t]
+          END
+        END;
+
+    IF @@found OR NOT @@next THEN
+      BREAK;
+    END;
+    @@next = false;
+    S2 =
+      SELECT t
+      FROM (s:S2) -[:KNOWS]- (t:Person)
+      WHERE NOT t.@visited2
+      ACCUM
+        IF t.@visited1 THEN #found the shortest path
+          @@found += TRUE,
+          FOREACH p1 IN s.@paths DO
+            FOREACH p2 IN t.@paths DO
+              @@shortestPaths += p2 + p1
+            END
+          END
+        ELSE #not found
+          @@next += true,
+          t.@visited2 += TRUE,
+          FOREACH p IN s.@paths DO
+            t.@paths += [t] + p
+          END
+        END;
+  END;
+
+  #Calculate weight for each path
+  FOREACH path IN @@shortestPaths DO
+    FOREACH p in path DO
+      @@PersonInShortestPath += p;
+    END;
+  END;
+
+  persons = {@@PersonInShortestPath};
+  comments = SELECT m FROM (p:persons) <-[:HAS_CREATOR]- (m:Comment) ACCUM m.@creatorId = p.id;
+  commentsInForum = SELECT m
+    FROM (m:comments) -[:REPLY_OF*0..]-> (:Post) <-[:CONTAINER_OF]- (f:Forum)
+    WHERE f.creationDate BETWEEN startDate AND endDate;
+  postsInForum = SELECT p
+    FROM (c:persons) <-[:HAS_CREATOR]- (p:Post) <-[:CONTAINER_OF]- (f:Forum)
+    WHERE f.creationDate BETWEEN startDate AND endDate
+    ACCUM p.@creatorId = c.id;
+  tmp = SELECT m2
+    FROM (m1:comments) -[:REPLY_OF]-> (m2:postsInForum)
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0)),
+      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->1.0));
+  tmp = SELECT m2
+    FROM (m1:comments) -[:REPLY_OF]-> (m2:commentsInForum)
+    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5)),
+      @@KnowWeight += (m2.@creatorId-> (m1.@creatorId ->0.5));
+
+  @@result.resize(@@shortestPaths.size());
+  FOREACH path IN @@shortestPaths DO
+    @@weight = 0.0;
+    jsonStr = "[";
+    FOREACH i in range[0,path.size()-2] DO
+       jsonStr = jsonStr + to_string(path.get(i).id) + ",";
+       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id);
+    END;
+    jsonStr = jsonStr + to_string(path.get(path.size()-1).id) + "]";
+    @@result += RESULT(parse_json_array(jsonStr), @@weight);
+  END;
+  PRINT @@result;
+}
+
+install query bi15
+
+run query bi15(24189255811109, 26388279066632, "2012-12-09", "2012-12-13")

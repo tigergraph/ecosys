@@ -1,0 +1,34 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is1
+
+  Description:
+  Given a start Person with ID $personId, retrieve their first name, last name, birthday, IP address, browser, and city of residence.
+
+  Reference:
+  LDBC SNB Specification, page 73: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is1(VERTEX<Person> personId) syntax v3{
+  SumAccum<INT> @cityId;
+  P = { personId };
+  P =
+    SELECT s
+    FROM (s:P)-[:IS_LOCATED_IN]->(t:City)
+    ACCUM s.@cityId = t.id;
+  PRINT P[
+      P.firstName AS firstName,
+      P.lastName AS lastName,
+      P.birthday AS birthday,
+      P.locationIP AS locationIP,
+      P.browserUsed AS browserUsed,
+      P.@cityId AS cityId,
+      P.gender AS gender,
+      P.creationDate AS creationDate
+  ];
+}
+
+install query is1
+
+run query is1(2199023255557)

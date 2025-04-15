@@ -1,0 +1,32 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is3
+
+  Description:
+  Given a start Person with ID $personId, retrieve all of their friends, and the date at which they became friends.
+
+  Reference:
+  LDBC SNB Specification, page 75: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is3(VERTEX<Person> personId) syntax v3{
+  SumAccum<INT> @creationDate;
+
+  S = { personId };
+  P =
+    SELECT t
+    FROM (s:S)-[e:KNOWS]-(t:Person)
+    ACCUM t.@creationDate += datetime_to_epoch(e.creationDate)
+    ORDER BY t.@creationDate DESC, t.id ASC;
+
+  PRINT P[
+      P.id AS personId,
+      P.firstName AS firstName,
+      P.lastName AS lastName,
+      epoch_to_datetime(P.@creationDate) AS friendshipCreationDate];
+}
+
+install query is3
+
+run query is3(28587302322223)

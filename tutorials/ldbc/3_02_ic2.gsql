@@ -1,0 +1,34 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: ic2
+
+  Description:
+  This query retrieves the most recent messages (either comments or posts) from all of a given person’s friends,
+  where the messages were created before a specified date ($maxDate).
+
+  Reference:
+  LDBC SNB Specification, page 60: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY ic2(VERTEX<Person> personId, DATETIME date) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, INT messageId, STRING messageContent, DATETIME messageCreationDate> msg;
+  HeapAccum<msg>(20, messageCreationDate DESC, messageId ASC) @@result;
+  S = { personId };
+  T =
+    SELECT t
+    FROM (s:S) -[:KNOWS] -(p:Person) <- [:HAS_CREATOR] - (t:Comment:Post)
+    WHERE t.creationDate < date
+    PER(p,t)
+    ACCUM
+      IF t.type == "Comment" OR t.content != "" THEN
+        @@result += msg(p.id, p.firstName, p.lastName, t.id, t.content, t.creationDate)
+      ELSE
+        @@result += msg(p.id, p.firstName, p.lastName, t.id, t.imageFile, t.creationDate)
+      END;
+  PRINT @@result;
+}
+
+install query ic2
+
+run query ic2(24189255811081, "2012-11-07")

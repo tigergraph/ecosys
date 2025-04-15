@@ -1,0 +1,45 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: is4
+
+  Description:
+  Given a message with ID $messageId, retrieve its content and creation date.
+
+  Reference:
+  LDBC SNB Specification, page 75: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY is4(STRING messageId) syntax v3{
+  SetAccum<STRING> @@seed;
+  SumAccum<STRING> @messageContent;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    PRINT vComments[
+        vComments.creationDate AS messageCreationDate,
+        vComments.content AS messageContent] AS result;
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+      vPost =
+        SELECT v
+        FROM (v:vPost)
+        ACCUM
+          CASE
+            WHEN v.content != "" THEN
+              v.@messageContent += v.content
+            ELSE
+              v.@messageContent += v.imageFile
+          END;
+
+    PRINT vPost[
+        vPost.creationDate AS messageCreationDate,
+        vPost.@messageContent AS messageContent] AS result;
+  END;
+}
+
+install query is4
+
+run query is4(1168231108476)

@@ -1,0 +1,51 @@
+USE GRAPH ldbc_snb
+
+/*
+  Query Name: bi6
+
+  Description:
+  Given a Tag ($tag), identify all persons (person1) who have created messages with that tag.
+  For each such persons (person1), compute their "authority score" as follows:
+    * person1's "authority score" is the sum of "popularity scores" of persons (person2) who liked any of person1's messages with the tag.
+    * person2's "popularity score" is the total number of likes on any of their own messages (from anyone).
+
+  Reference:
+  LDBC SNB Specification, Page 95: https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf
+*/
+
+CREATE OR REPLACE QUERY bi6(STRING tag) syntax v3{
+  TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
+  HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
+  MapAccum<VERTEX<Person>, UINT> @@popularityScore;
+  SumAccum<UINT> @authorityScore;
+  SumAccum<UINT> @score;
+  SetAccum<VERTEX<Person>> @liked;
+
+  T = {Tag.*};
+  T = SELECT t FROM (t:T {name:tag});
+  message1 = SELECT m FROM (:T) <-[:HAS_TAG]- (m:Comment:Post);
+  person2 = SELECT p2 FROM (:message1) <-[:LIKES]- (p2:Person);
+  person2 = SELECT p2 FROM (p2:person2) <-[:HAS_CREATOR]- (m)
+    ACCUM p2.@score += m.outdegree("LIKES_REVERSE")
+    POST-ACCUM @@popularityScore += (p2 -> p2.@score);
+
+  tmp = SELECT m
+    FROM (m:message1) <-[:LIKES]- (p2:Person)
+    ACCUM m.@liked += p2;
+
+  person1 =
+    SELECT p1
+    FROM (m:message1) -[:HAS_CREATOR]-> (p1:Person)
+    ACCUM p1.@liked += m.@liked
+    POST-ACCUM
+      FOREACH p IN p1.@liked DO
+        p1.@authorityScore += @@popularityScore.get(p)
+      END,
+      @@result += RESULT(p1.id, p1.@authorityScore);
+
+  PRINT @@result;
+}
+
+install query bi6
+
+run query bi6("Cardinal_Richelieu")
