@@ -65,7 +65,8 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
    - [Join Statement](#join-statement)
    - [Union Statement](#union-statement)
    - [Union All Statement](#union-all-statement)
-   - [Unwind Statement](#unwind-statement)    
+   - [Unwind Statement](#unwind-statement)
+ - [LDBC Benchmark Queries](#ldbc-benchmark-queries)
  - [Support](#support)
  - [Contact](#contact)
  - [References](#references)
@@ -2945,6 +2946,16 @@ run query unwindExample2()
 
 -   Instead of creating a separate table first (`T1`), the list column `ratioList` is **expanded per row of `T1`** directly into `T2`.
 -   The columns from `T1` (like `acct` and `totalAmt`) are preserved in `T2`, with additional rows for each `ratio`.
+
+[Go back to top](#top)
+
+---
+# LDBC Benchmark Queries
+
+To further demonstrate GSQL’s capabilities, we have implemented the complete LDBC SNB benchmark suite. The official benchmark specification is available [here](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf).
+
+You can explore the full set of benchmark queries [here](https://github.com/tigergraph/ecosys/tree/master/tutorials/ldbc).
+
 
 [Go back to top](#top)
 
