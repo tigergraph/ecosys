@@ -29,8 +29,8 @@ CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v3
   threshold = P.size();
   S1 =
     SELECT p
-    FROM (c:Company {name: company}) <-[:WORK_AT]- (p:Person {p !=})
-    WHERE c.name == company AND p != person2Id
+    FROM (c:Company {name: company}) <-[:WORK_AT]- (p:Person)
+    WHERE p != person2Id
     ACCUM p.@inCompany += true;
 
   S = {person2Id};

@@ -1,17 +1,17 @@
 USE GLOBAL
 
 # Note: outdegree_by_edgetype is turned on for Comment and Person
-CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE", STATS="outdegree_by_edgetype"
-CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX University (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX City (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Forum (PRIMARY_ID id UINT, title STRING, creationDate DATETIME) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks set<STRING>, email set<STRING>)  WITH primary_id_as_attribute="TRUE", STATS="outdegree_by_edgetype"
-CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Comment (id UINT PRIMARY KEY, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH STATS="outdegree_by_edgetype"
+CREATE VERTEX Post (id UINT PRIMARY KEY, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT)
+CREATE VERTEX Company (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX University (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX City (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Country (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Continent (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Forum (id UINT PRIMARY KEY, title STRING, creationDate DATETIME)
+CREATE VERTEX Person (id UINT PRIMARY KEY, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks set<STRING>, email set<STRING>)  WITH STATS="outdegree_by_edgetype"
+CREATE VERTEX Tag (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX TagClass (id UINT PRIMARY KEY, name STRING, url STRING)
 CREATE DIRECTED EDGE CONTAINER_OF (FROM Forum, TO Post) WITH REVERSE_EDGE="CONTAINER_OF_REVERSE"
 CREATE DIRECTED EDGE HAS_CREATOR (FROM Comment|Post, TO Person) WITH REVERSE_EDGE="HAS_CREATOR_REVERSE"
 CREATE DIRECTED EDGE HAS_INTEREST (FROM Person, TO Tag) WITH REVERSE_EDGE="HAS_INTEREST_REVERSE"
