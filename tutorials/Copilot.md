@@ -68,7 +68,7 @@ Next, download the following configuration files and put them in a `configs` sub
 * [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
 * [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/llm_config.json)
 * [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/chat_config.json)
-* [configs/nginx.config](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
+* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
 
 #### Step 3: Adjust configurations
 
@@ -129,7 +129,7 @@ docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/cop
 #### Step 2: Import data package
 Next, log onto the TigerGraph instance and make use of the Database Import feature to recreate the GraphRAG:
 ```
-docker exec -it tigergraph
+docker exec -it tigergraph /bin/bash
 gsql "import graph all from \"/home/tigergraph/copilot\""
 gsql "install query all"
 ```
@@ -153,7 +153,8 @@ On the top of the page, select `GraphRAG` as RAG pattern and `TigerGraphRAG` as 
 In the chat box, input the question `how to load data to tigergraph vector store, give an example in Python` and click the `send` button.
 ![Demo Question](./copilot/pictures/DemoQuestion.jpg)
 
-
+You can also ask other questions on statistics and data inside the TigerGraph database.
+![Data Inquiry](./copilot/pictures/Inquiry.jpg)
 
 
 ### Build GraphRAG From Scratch
