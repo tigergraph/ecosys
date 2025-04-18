@@ -16,7 +16,10 @@ package com.tigergraph.spark.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppResponse;
 import com.tigergraph.spark.util.Utils;
-import feign.*;
+
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
 
 /**
  * Restpp API delaration used for connectivity check, token request and cluster basic info
@@ -26,15 +29,11 @@ public interface Misc {
   @RequestLine("GET /restpp/version")
   RestppResponse version();
 
-  /**
-   * @deprecated TG v4.1.0
-   */
+  /** Prior to TG v4.1.0 */
   @RequestLine("GET /gsqlserver/gsql/loading-jobs?action=getprogress&graph={graph}&jobId={jobId}")
   RestppResponse loadingProgressV0(@Param("graph") String graph, @Param("jobId") String jobId);
 
-  /**
-   * @since TG v4.1.0
-   */
+  /** Since TG v4.1.0 */
   @RequestLine("GET /gsql/v1/loading-jobs/status?graph={graph}&jobIds={jobId}")
   RestppResponse loadingProgressV1(@Param("graph") String graph, @Param("jobId") String jobId);
 
@@ -46,15 +45,11 @@ public interface Misc {
     }
   }
 
-  /**
-   * @deprecated TG v4.1.0
-   */
+  /** Prior to TG v4.1.0 */
   @RequestLine("GET /gsqlserver/gsql/schema?graph={graph}&type={type}")
   RestppResponse graphSchemaV0(@Param("graph") String graph, @Param("type") String type);
 
-  /**
-   * @since TG v4.1.0
-   */
+  /** Since TG v4.1.0 */
   @RequestLine("GET /gsql/v1/schema/graphs/{graph}?type={type}")
   RestppResponse graphSchemaV1(@Param("graph") String graph, @Param("type") String type);
 
@@ -66,15 +61,11 @@ public interface Misc {
     }
   }
 
-  /**
-   * @deprecated TG v4.1.0
-   */
+  /** Prior to TG v4.1.0 */
   @RequestLine("GET /gsqlserver/gsql/queryinfo?graph={graph}&query={query}")
   QueryMetaResponse queryMetaV0(@Param("graph") String graph, @Param("query") String query);
 
-  /**
-   * @since TG v4.1.0
-   */
+  /** Since TG v4.1.0 */
   @RequestLine("POST /gsql/v1/queries/signature?graph={graph}&queryName={query}")
   @Headers({"Content-Type: text/plain"})
   QueryMetaResponse queryMetaV1(@Param("graph") String graph, @Param("query") String query);

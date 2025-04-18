@@ -13,14 +13,16 @@
  */
 package com.tigergraph.spark.client;
 
+import java.util.Map;
+
 import com.tigergraph.spark.client.common.RestppStreamResponse;
 import com.tigergraph.spark.util.Utils;
+
 import feign.Body;
 import feign.Headers;
 import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
-import java.util.Map;
 
 /** Query endpoint declaration used for Spark Read. */
 public interface Query {
@@ -41,7 +43,7 @@ public interface Query {
    * Run an interpreted query:
    * https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_an_interpreted_query
    *
-   * @deprecated TG 4.1.0
+   * <p>Prior to TG 4.1.0
    */
   @RequestLine("POST /gsqlserver/interpreted_query")
   @Headers({"Content-Type: text/plain"})
@@ -53,7 +55,7 @@ public interface Query {
    * Run an interpreted query thru GSQL REST API v1:
    * https://docs.tigergraph.com/tigergraph-server/current/api/built-in-endpoints#_run_an_interpreted_query
    *
-   * @since TG 4.1.0
+   * <p>Since TG 4.1.0
    */
   @RequestLine("POST /gsql/v1/queries/interpret")
   @Headers({"Content-Type: text/plain"})

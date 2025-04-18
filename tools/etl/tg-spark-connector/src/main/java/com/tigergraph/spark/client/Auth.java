@@ -14,6 +14,7 @@
 package com.tigergraph.spark.client;
 
 import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppErrorException;
 import com.tigergraph.spark.util.Utils;
@@ -47,9 +48,7 @@ public interface Auth {
     return false;
   }
 
-  /**
-   * @deprecated TG 4.1.0
-   */
+  /** Prior to TG 4.1.0 */
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -58,9 +57,7 @@ public interface Auth {
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
 
-  /**
-   * @since TG 4.1.0
-   */
+  /** Since TG 4.1.0 */
   @RequestLine("POST /gsql/v1/tokens")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"graph\": \"{graph}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -78,18 +75,14 @@ public interface Auth {
     }
   }
 
-  /**
-   * @deprecated TG 4.1.0
-   */
+  /** Prior to TG 4.1.0 */
   @RequestLine("POST /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
   RestppAuthResponse requestTokenWithSecretV0(
       @Param("secret") String secret, @Param("lifetime") long lifetime);
 
-  /**
-   * @since TG 4.1.0
-   */
+  /** Since TG 4.1.0 */
   @RequestLine("POST /gsql/v1/tokens")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -104,9 +97,7 @@ public interface Auth {
     }
   }
 
-  /**
-   * @deprecated TG 4.1.0
-   */
+  /** Prior to TG 4.1.0 */
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json", "Authorization: Basic {basicAuth}"})
   @Body("%7B\"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")
@@ -115,9 +106,7 @@ public interface Auth {
       @Param("basicAuth") String basicAuth,
       @Param("lifetime") long lifetime);
 
-  /**
-   * @deprecated TG 4.1.0
-   */
+  /** Prior to TG 4.1.0 */
   @RequestLine("PUT /restpp/requesttoken")
   @Headers({"Content-Type: application/json"})
   @Body("%7B\"secret\": \"{secret}\", \"token\": \"{token}\", \"lifetime\": \"{lifetime}\"%7D")

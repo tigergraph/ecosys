@@ -1,13 +1,15 @@
 package com.tigergraph.spark.util;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UtilsTest {
 
@@ -84,6 +86,7 @@ public class UtilsTest {
     assertEquals("ab*de", Utils.maskString("abcde", 2));
     assertEquals("a***e", Utils.maskString("abcde", 1));
     assertEquals("*****", Utils.maskString("abcde", 0));
+    assertEquals("a********b", Utils.maskString("a12345678987654321b", 1));
   }
 
   @Test

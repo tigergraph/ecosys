@@ -1,3 +1,6 @@
+# v0.2.4
+* Support token refresh when JWKS rotates.
+
 # v0.2.3
 * Support request and refresh Oauth2 access token with 2 new options:
   * oauth2.url: The URL to send the Client Credentials grant request to;

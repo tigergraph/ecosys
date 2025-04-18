@@ -13,7 +13,6 @@
  */
 package com.tigergraph.spark.client.common;
 
-import com.tigergraph.spark.constant.ErrorCode;
 import com.tigergraph.spark.log.LoggerFactory;
 import feign.Response;
 import feign.RetryableException;
@@ -61,22 +60,10 @@ public class RestppErrorDecoder implements ErrorDecoder {
     if (!(e instanceof RetryableException)) {
       boolean shouldRetry = false;
       // Retry on Server Timeout 408, 502, 503 and 504
-      // or token expiration
+      // or 403(token expiration)
       if (response.status() == HttpStatus.SC_FORBIDDEN) {
-        try {
-          // Retrieve the body from exception and decode to get the RESTPP error code.
-          // Can't directly decode the response because the inputstream has been closed.
-          byte[] body = ((feign.FeignException) e).responseBody().get().array();
-          RestppResponse resp =
-              (RestppResponse)
-                  decoder.decode(response.toBuilder().body(body).build(), RestppResponse.class);
-          if (ErrorCode.TOKEN_EXPIRATION.equals(resp.code)) {
-            logger.info("{} token expiration, attempt to refresh and retry.", resp.code);
-            shouldRetry = true;
-          }
-        } catch (Exception ex) {
-          // no-op if failed to decode body of 403 response, let it fail fast.
-        }
+        logger.info("{}, attempt to retry.", e.getMessage());
+        shouldRetry = true;
       } else if (retryableCode.contains(response.status())) {
         shouldRetry = true;
       }

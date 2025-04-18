@@ -33,7 +33,7 @@
 
   <groupId>com.tigergraph</groupId>
   <artifactId>tigergraph-spark-connector</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
