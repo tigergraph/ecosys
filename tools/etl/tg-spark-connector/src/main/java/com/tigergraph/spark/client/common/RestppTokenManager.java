@@ -1,12 +1,13 @@
 package com.tigergraph.spark.client.common;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.tigergraph.spark.TigerGraphConnection.AuthType;
 import com.tigergraph.spark.client.Auth;
 import com.tigergraph.spark.client.Auth.AuthResponse;
 import com.tigergraph.spark.client.Auth.OAuth2Response;
 import com.tigergraph.spark.util.Utils;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Manage the RESTPP token lifetime, specifically, refresh it when it expires: - refresh token by
@@ -69,7 +70,7 @@ public class RestppTokenManager {
                   + " config is provided");
       }
     } catch (Exception e) {
-      throw new RestppErrorException("Token expired, failed to refresh token", e);
+      throw new RestppErrorException("Failed to refresh token", e);
     }
   }
 

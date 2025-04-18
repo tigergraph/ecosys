@@ -13,20 +13,21 @@
  */
 package com.tigergraph.spark.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.StringTokenizer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /** Utilities */
 public class Utils {
   public static final String DEFAULT_VERSION = "999.999.999";
   public static final Pattern VERSION_PARTTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+)");
+  public static final int MASK_LEN_MAX = 8;
 
   /***************** VERSION *****************/
 
@@ -88,7 +89,8 @@ public class Utils {
       return s;
     }
     return s.substring(0, keepHeadTail)
-        + String.join("", Collections.nCopies(s.length() - 2 * keepHeadTail, "*"))
+        + String.join(
+            "", Collections.nCopies(Math.min(MASK_LEN_MAX, s.length() - 2 * keepHeadTail), "*"))
         + s.substring(s.length() - keepHeadTail);
   }
 

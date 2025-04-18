@@ -34,17 +34,7 @@ public class RestppErrorDecoderTest {
         decoder.decode(
                 "GET", Response.builder().request(req).status(HttpStatus.SC_SERVER_ERROR).build())
             instanceof RetryableException);
-    // 403 forbidden, but not due to token expiration
-    assertFalse(
-        decoder.decode(
-                "GET",
-                Response.builder()
-                    .request(req)
-                    .status(HttpStatus.SC_FORBIDDEN)
-                    .body("{\"code\":\"not_expire\"}", Charset.forName("UTF-8"))
-                    .build())
-            instanceof RetryableException);
-    // 403 forbidden, token expiration
+    // 403 forbidden
     assertTrue(
         decoder.decode(
                 "GET",

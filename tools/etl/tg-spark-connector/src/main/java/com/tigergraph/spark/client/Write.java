@@ -13,10 +13,16 @@
  */
 package com.tigergraph.spark.client;
 
-import feign.*;
 import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppResponse;
+
+import feign.Body;
+import feign.Headers;
+import feign.Param;
+import feign.QueryMap;
+import feign.RequestLine;
 
 /** Write endpoint declaration used for data loading. */
 public interface Write {
