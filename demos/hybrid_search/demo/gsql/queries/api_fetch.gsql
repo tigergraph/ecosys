@@ -1,0 +1,6 @@
+CREATE OR REPLACE QUERY api_fetch(
+  SET<VERTEX> input
+) SYNTAX v3 {
+  Nodes = {input};
+  PRINT Nodes WITH VECTOR;
+}

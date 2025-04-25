@@ -1,0 +1,14 @@
+# 1. Use graph
+USE GRAPH KGRec
+
+# 2. Create schema_change job
+CREATE SCHEMA_CHANGE JOB add_vector_attr_for_graph_KGRec FOR GRAPH KGRec {
+  # 2.1 Add vector attributes
+  ALTER VERTEX Song ADD VECTOR ATTRIBUTE emb_1(DIMENSION=1536);
+}
+
+# 3. Run schema_change job
+RUN SCHEMA_CHANGE JOB add_vector_attr_for_graph_KGRec
+
+# 4. Drop schema_change job
+DROP JOB add_vector_attr_for_graph_KGRec

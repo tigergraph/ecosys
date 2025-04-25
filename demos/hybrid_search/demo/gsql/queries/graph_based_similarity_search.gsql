@@ -1,0 +1,24 @@
+USE GRAPH KGRec
+CREATE OR REPLACE QUERY graph_based_similarity_search(
+  VERTEX<User> input,
+  UINT k = 10
+) FOR GRAPH KGRec SYNTAX V3 {
+  OrAccum @visited;
+  SumAccum<DOUBLE> @sum_score;
+  Users = {input};
+  Songs =
+    SELECT t
+    FROM (s:Users) -[e:downloaded]- (t)
+    POST-ACCUM
+      t.@visited = TRUE
+  ;
+  SimilarSongs =
+    SELECT t
+    FROM (s:Songs) -[e:similar_to]- (t)
+    WHERE t.@visited == FALSE
+    ACCUM t.@sum_score += e.score
+    ORDER BY t.@sum_score DESC
+    LIMIT k
+  ;
+  PRINT SimilarSongs;
+}
