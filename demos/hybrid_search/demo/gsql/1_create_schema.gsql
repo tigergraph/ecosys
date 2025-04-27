@@ -1,0 +1,19 @@
+# 1. Create graph
+CREATE GRAPH KGRec ()
+
+# 2. Create schema_change job
+CREATE SCHEMA_CHANGE JOB schema_change_job_for_graph_KGRec FOR GRAPH KGRec {
+  # 2.1 Create vertices
+  ADD VERTEX User(PRIMARY_ID id INT) WITH PRIMARY_ID_AS_ATTRIBUTE="true";
+  ADD VERTEX Song(PRIMARY_ID id INT, description STRING) WITH PRIMARY_ID_AS_ATTRIBUTE="true";
+
+  # 2.2 Create edges
+  ADD UNDIRECTED EDGE downloaded(FROM User, TO Song);
+  ADD UNDIRECTED EDGE similar_to(FROM Song, TO Song, score DOUBLE);
+}
+
+# 3. Run schema_change job
+RUN SCHEMA_CHANGE JOB schema_change_job_for_graph_KGRec
+
+# 4. Drop schema_change job
+DROP JOB schema_change_job_for_graph_KGRec

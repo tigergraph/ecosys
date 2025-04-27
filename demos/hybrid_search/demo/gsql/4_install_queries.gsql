@@ -1,0 +1,6 @@
+USE GRAPH KGRec
+@queries/api_fetch.gsql
+@queries/api_search_Song_emb_1.gsql
+@queries/get_neighbors.gsql
+@queries/graph_based_similarity_search.gsql
+INSTALL QUERY *

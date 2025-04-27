@@ -1,0 +1,27 @@
+CREATE OR REPLACE QUERY api_search_Song_emb_1 (
+  UINT k=10,
+  LIST<float> query_vector,
+  SET<VERTEX> set_candidate
+) SYNTAX v3 {
+  MapAccum<Vertex, Float> @@map_node_distance;
+
+  IF set_candidate.size() > 0 THEN
+    Candidates = {set_candidate};
+    Nodes = vectorSearch(
+      {Song.emb_1},
+      query_vector,
+      k,
+      { distance_map: @@map_node_distance, candidate_set: Candidates}
+    );
+  ELSE
+    Nodes = vectorSearch(
+      {Song.emb_1},
+      query_vector,
+      k,
+      { distance_map: @@map_node_distance}
+    );
+  END;
+
+  PRINT @@map_node_distance AS map_node_distance;
+  PRINT Nodes;
+}
