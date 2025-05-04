@@ -19,7 +19,7 @@ To follow this tutorial, install the TigerGraph Docker image (configured with 8 
   - [Vector Search](#vector-search)
   - [Range Vector Search](#range-vector-search)
   - [Filtered Vector Search](#filtered-vector-search)
-  - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns)
+  - [Vector Search on Graph Patterns](#vector-search-on-graph-patterns) 
   - [Vector Similarity Join on Graph Patterns](#vector-similarity-join-on-graph-patterns)
   - [Vector Search Driven Pattern Match](#vector-search-driven-pattern-match)
 - [Essential Operations and Tools](#Essential-operations-and-tools)
@@ -568,7 +568,7 @@ The result is shown in [q4.out](https://raw.githubusercontent.com/tigergraph/eco
 
 ### Exact vector search on a graph pattern 
 
-Use `ORDER BY ASC` or `ORDER BY DESC` to do exact top-k vector search. This method is exepensive. 
+Use `ORDER BY ASC` or `ORDER BY DESC` to do exact top-k vector search. This method is expensive. 
 
 Locate [10_q4a.gsql](https://raw.githubusercontent.com/tigergraph/ecosys/master/tutorials/vector/10_q4a.gsql) under `/home/tigergraph/tutorial/vector` or copy it to your container.
 Next, run the following in your container's bash command line.
