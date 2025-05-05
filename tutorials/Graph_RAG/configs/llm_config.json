@@ -1,0 +1,20 @@
+{
+"model_name": "text-embedding-3-small",
+"embedding_service": {
+    "embedding_model_service": "openai",
+    "authentication_configuration": {
+        "OPENAI_API_KEY": "your-openai-api-key"
+    }
+},
+"completion_service": {
+    "llm_service": "openai",
+    "llm_model": "gpt-4o",
+    "authentication_configuration": {
+        "OPENAI_API_KEY": "your-openai-api-key"
+    },
+    "model_kwargs": {
+        "temperature": 0
+    },
+    "prompt_path": "./common/prompts/openai_gpt4/"
+}
+}
