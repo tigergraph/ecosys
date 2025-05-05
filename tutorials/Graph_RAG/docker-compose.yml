@@ -1,0 +1,81 @@
+services:
+  copilot:
+    image: tigergraphml/copilot:latest
+    platform: linux/amd64 
+    container_name: copilot
+    build:
+      context: .
+      dockerfile: copilot/Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - eventual-consistency-service
+      - chat-history
+    environment:
+      LLM_CONFIG: "/code/configs/llm_config.json"
+      DB_CONFIG: "/code/configs/db_config.json"
+      LOGLEVEL: "INFO"
+      USE_CYPHER: "true"
+    volumes:
+      - ./configs/:/code/configs
+
+  eventual-consistency-service:
+    image: tigergraphml/ecc:latest
+    platform: linux/amd64
+    container_name: eventual-consistency-service
+    build:
+      context: .
+      dockerfile: eventual-consistency-service/Dockerfile
+    ports:
+      - 8001:8001
+    environment:
+      LLM_CONFIG: "/code/configs/llm_config.json"
+      DB_CONFIG: "/code/configs/db_config.json"
+      LOGLEVEL: "INFO"
+      INIT_EMBED_STORE: "false"
+    volumes:
+      - ./configs/:/code/configs
+
+  chat-history:
+    image: tigergraphml/chat-history:latest
+    platform: linux/amd64
+    container_name: chat-history
+    build:
+      context: chat-history/
+      dockerfile: Dockerfile
+    ports:
+      - 8002:8002
+    environment:
+      CONFIG_FILES: "/configs/chat_config.json,/configs/db_config.json"
+      LOGLEVEL: "INFO"
+    volumes:
+      - ./configs/:/configs
+
+  ui:
+    image: tigergraphml/copilot-ui:latest
+    platform: linux/amd64 
+    container_name: ui 
+    build:
+      context: copilot-ui
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - copilot
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./configs/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - ui
+      - copilot
+
+  tigergraph:
+    container_name: tigergraph
+    image: tigergraph/tigergraph:4.2.0
+    ports:
+      - "14240:14240"
