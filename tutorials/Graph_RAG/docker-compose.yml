@@ -77,5 +77,6 @@ services:
   tigergraph:
     container_name: tigergraph
     image: tigergraph/tigergraph:4.2.0
+    platform: linux/amd64 
     ports:
       - "14240:14240"
