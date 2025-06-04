@@ -1,11 +1,11 @@
 services:
-  copilot:
-    image: tigergraphml/copilot:latest 
+  graphrag:
+    image: tigergraph/graphrag:latest 
     platform: linux/amd64
-    container_name: copilot
+    container_name: graphrag
     build:
       context: .
-      dockerfile: copilot/Dockerfile
+      dockerfile: graphrag/Dockerfile
     ports:
       - 8000:8000
     depends_on:
@@ -20,7 +20,7 @@ services:
       - ./configs/:/code/configs
 
   eventual-consistency-service:
-    image: tigergraphml/ecc:latest
+    image: tigergraph/ecc:latest
     platform: linux/amd64
     container_name: eventual-consistency-service
     build:
@@ -37,7 +37,7 @@ services:
       - ./configs/:/code/configs
 
   chat-history:
-    image: tigergraphml/chat-history:latest
+    image: tigergraph/chat-history:latest
     platform: linux/amd64
     container_name: chat-history
     build:
@@ -51,17 +51,17 @@ services:
     volumes:
       - ./configs/:/configs
 
-  ui:
-    image: tigergraphml/copilot-ui:latest 
+  graphrag-ui:
+    image: tigergraph/graphrag-ui:latest 
     platform: linux/amd64
-    container_name: ui 
+    container_name: graphrag-ui 
     build:
-      context: copilot-ui
+      context: graphrag-ui
       dockerfile: Dockerfile
     ports:
       - 3000:3000
     depends_on:
-      - copilot
+      - graphrag
 
   nginx:
     container_name: nginx
@@ -71,8 +71,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - ui
-      - copilot
+      - graphrag-ui
+      - graphrag
 
   tigergraph:
     container_name: tigergraph

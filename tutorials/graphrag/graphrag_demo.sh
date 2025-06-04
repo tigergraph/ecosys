@@ -10,8 +10,8 @@ if ! pip freeze 2>&1 | grep pyTigerGraph >/dev/null; then
   exit 2
 fi
 
-echo "Initializing SupportAI. It may take 5 to 10 minutes."
-python ./init_supportai.py
+echo "Initializing GraphRAG. It may take 5 to 10 minutes."
+python ./init_graphrag.py
 
 current_stage=
 while True; do
@@ -20,7 +20,7 @@ while True; do
     if [[ "$stage" =~ Processing ]]; then
       echo $stage | cut -d ' ' -f5-7
     elif [[ "$stage" =~ Done ]]; then
-      echo "SupportAI initialization is done."
+      echo "GraphRAG initialization is done."
       break
     fi
   fi

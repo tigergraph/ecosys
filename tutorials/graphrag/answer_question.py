@@ -16,9 +16,9 @@ conn = TigerGraphConnection(
 
 conn.graphname = "TigerGraphRAG"
 
-# And then add CoPilot's address to the connection. This address
-# is the host's address where the CoPilot container is running.
-conn.ai.configureCoPilotHost(f"{host}:8000")
+# And then add GraphRAG's address to the connection. This address
+# is the host's address where the GraphRAG container is running.
+conn.ai.configureGraphRAGHost(f"{host}:8000")
 
 query = "how to load data to tigergraph vector store, give an example in Python"
 print(f"""Fetching answer for question: {query}""")

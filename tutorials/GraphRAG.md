@@ -1,6 +1,6 @@
 # Introduction
 
-**TigerGraph CoPilot** is an AI assistant meticulously designed to combine the powers of graph databases and generative AI. It draws the most value from data and enhances productivity across various business functions, including analytics, development, and administrative tasks. It is one AI assistant with three core component services:
+**TigerGraph GraphRAG** is an AI assistant meticulously designed to combine the powers of graph databases and generative AI. It draws the most value from data and enhances productivity across various business functions, including analytics, development, and administrative tasks. It is one AI assistant with three core component services:
 - **InquiryAI**: A natural language assistant for graph-powered solutions.
 - **SupportAI**: A knowledge Q&A assistant for documents and graphs.
 - **QueryAI**: A GSQL code generator, including query and schema generation, data mapping, and more (*Not available in Beta; coming soon*).
@@ -9,11 +9,11 @@ This document provides instructions on how to use **SupportAI**.
 
 # Content
 
-This CoPilot tutorial contains:
+This GraphRAG tutorial contains:
 - [Setup Environment](#setup-environment)
   - [Setup Docker Environment](#setup-docker-environment)
   - [Download Docker Images](#download-docker-images)
-  - [Deploy CoPilot Services](#deploy-copilot-with-docker-compose)
+  - [Deploy GraphRAG Services](#deploy-graphrag-with-docker-compose)
 - [Run Demo](#run-demo)
   - [Use Preloaded GraphRAG](#use-preloaded-graphrag)
   - [Start From Scratch](#build-graphrag-from-scratch)
@@ -41,34 +41,34 @@ docker images
 
 You should be able to find `tigergraph/community:4.2.0` in the image list.
 
-#### CoPilot Docker Images
+#### GraphRAG Docker Images
 
-The following images are also needed for TigerGraph CoPilot. Docker Compose will automatically download them, but you can download them manually if preferred:
+The following images are also needed for TigerGraph GraphRAG. Docker Compose will automatically download them, but you can download them manually if preferred:
 
 ```
 docker pull <image_name>
 
-tigergraphml/copilot:latest
-tigergraphml/ecc:latest
-tigergraphml/chat-history:latest
-tigergraphml/copilot-ui:latest
+tigergraph/graphrag:latest
+tigergraph/ecc:latest
+tigergraph/chat-history:latest
+tigergraph/graphrag-ui:latest
 nginx:latest
 ```
 
-### Deploy Copilot with Docker Compose
+### Deploy GraphRAG with Docker Compose
 
 #### Step 1: Get docker-compose file
-Download the [docker-compose.yml](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/docker-compose.yml) file directly
+Download the [docker-compose.yml](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/docker-compose.yml) file directly
 
-The Docker Compose file contains all dependencies for CoPilot including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other Copilot containers.
+The Docker Compose file contains all dependencies for GraphRAG including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other GraphRAG containers.
 
 #### Step 2: Set up configurations
 
 Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
-* [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/db_config.json)
-* [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/llm_config.json)
-* [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/chat_config.json)
-* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/configs/nginx.conf)
+* [configs/db_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/db_config.json)
+* [configs/llm_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/llm_config.json)
+* [configs/chat_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/chat_config.json)
+* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/nginx.conf)
 
 #### Step 3: Adjust configurations
 
@@ -86,9 +86,9 @@ Now, simply run `docker compose up -d` and wait for all the services to start.
 
 > **_Note:_** Vector feature is available in both TigerGraph Community Edition 4.2.0+ and Enterprise Edition 4.2.0+.
 
-If you prefer to start a TigerGraph Community Edition instance without a license key, please make sure the container can be accessed from the Copilot containers by add `--network copilot_default`:
+If you prefer to start a TigerGraph Community Edition instance without a license key, please make sure the container can be accessed from the GraphRAG containers by add `--network graphrag_default`:
 ```
-docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network copilot_default -t tigergraph/community:4.2.0
+docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network graphrag_default -t tigergraph/community:4.2.0
 ```
 
 > Use **tigergraph/tigergraph:4.2.0** if Enterprise Edition is preferred.
@@ -112,25 +112,25 @@ gadmin stop all
 
 ### Use Preloaded GraphRAG
 
-The completed `TigerGraphRAG` is provided for an express access to the Copilot features.
+The completed `TigerGraphRAG` is provided for an express access to the GraphRAG features.
 
 #### Step 1: Get data package
 
-Download the following data file and put it under `/home/tigergraph/copilot` in your TigerGraph container:
-* [data/ExportedGraph.zip](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/data/ExportedGraph.zip)
+Download the following data file and put it under `/home/tigergraph/graphrag` in your TigerGraph container:
+* [data/ExportedGraph.zip](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/data/ExportedGraph.zip)
 
 Use the following commands if the file cannot be downloaded inside the TigerGraph container directly:
 ```
-docker exec -it tigergraph mkdir -p /home/tigergraph/copilot
-docker cp ExportedGraph.zip tigergraph:/home/tigergraph/copilot/
-docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/copilot/ExportedGraph.zip
+docker exec -it tigergraph mkdir -p /home/tigergraph/graphrag
+docker cp ExportedGraph.zip tigergraph:/home/tigergraph/graphrag/
+docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/graphrag/ExportedGraph.zip
 ```
 
 #### Step 2: Import data package
 Next, log onto the TigerGraph instance and make use of the Database Import feature to recreate the GraphRAG:
 ```
 docker exec -it tigergraph /bin/bash
-gsql "import graph all from \"/home/tigergraph/copilot\""
+gsql "import graph all from \"/home/tigergraph/graphrag\""
 gsql "install query all"
 ```
 
@@ -141,37 +141,37 @@ Query installation finished.
 ```
 
 #### Step 3: Run the demo via chat
-Open your browser to access `http://localhost:<nginx_port>` to access Copilot Chat. For example: http://localhost:80
+Open your browser to access `http://localhost:<nginx_port>` to access GraphRAG Chat. For example: http://localhost:80
 
 Enter the username and password of the TigerGraph database to login.
 
-![Chat Login](./copilot/pictures/ChatLogin.jpg)
+![Chat Login](./graphrag/pictures/ChatLogin.jpg)
 
 On the top of the page, select `GraphRAG` as RAG pattern and `TigerGraphRAG` as Graph.
-![RAG Config](./copilot/pictures/RAGConfig.jpg)
+![RAG Config](./graphrag/pictures/RAGConfig.jpg)
 
 In the chat box, input the question `how to load data to tigergraph vector store, give an example in Python` and click the `send` button.
-![Demo Question](./copilot/pictures/DemoQuestion.jpg)
+![Demo Question](./graphrag/pictures/DemoQuestion.jpg)
 
 You can also ask other questions on statistics and data inside the TigerGraph database.
-![Data Inquiry](./copilot/pictures/Inquiry.jpg)
+![Data Inquiry](./graphrag/pictures/Inquiry.jpg)
 
 
 ### Build GraphRAG From Scratch
 
-If you want to experience the whole process of Copilot, you can build the GraphRAG from scratch. However, please review the LLM model and service setting carefully because it will cost some money to re-generate embedding and data structure for the raw data.
+If you want to experience the whole process of GraphRAG, you can build the GraphRAG from scratch. However, please review the LLM model and service setting carefully because it will cost some money to re-generate embedding and data structure for the raw data.
 
 #### Step 1: Get demo script
 
 The following scripts are needed to run the demo. Please download and put them in the same directory as the Docker Compose file:
-* Demo driver: [supportai_demo.sh](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/supportai_demo.sh)
-* SupportAI initializer: [init_supportai.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/init_supportai.py)
-* Example: [answer_question.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/answer_question.py)
+* Demo driver: [supportai_demo.sh](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag_demo.sh)
+* GraphRAG initializer: [init_supportai.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/init_graphrag.py)
+* Example: [answer_question.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/answer_question.py)
 
 #### Step 2: Download the demo data
 
 Next, download the following data file and put it in a `data` subdirectory of the directory contains the Docker Compose file:
-* [data/tg_tutorials.jsonl](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/copilot/data/tg_tutorials.jsonl)
+* [data/tg_tutorials.jsonl](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/data/tg_tutorials.jsonl)
 
 #### Step 3: Run the demo driver script
 
@@ -183,9 +183,9 @@ python3.11 -m venv demo
 source demo/bin/activate
 ```
 
-Now, simply run the demo script to try Copilot.
+Now, simply run the demo script to try GraphRAG.
 ```
-  ./supportai_demo.sh
+  ./graphrag_demo.sh
 ```
 
 The script will:
@@ -193,7 +193,7 @@ The script will:
 1. Init TigerGraph schema and related queries needed
 1. Load the sample data
 1. Init the GraphRAG based on the graph and install required queries
-1. Ask a question via Python to get answer from Copilot
+1. Ask a question via Python to get answer from GraphRAG
 
 [Go back to top](#top)
 
@@ -204,7 +204,7 @@ Copy the below into `configs/db_config.json` and edit the `hostname` and `getTok
 
 `embedding_store` selects the vector db to use, currently supports `tigergraph` and `milvus`. Set `reuse_embedding` to `true` will skip re-generating the embedding if it already exists.
 
-`ecc` and `chat_history_api` are the addresses of internal components of CoPilot.If you use the Docker Compose file as is, you don’t need to change them.
+`ecc` and `chat_history_api` are the addresses of internal components of GraphRAG.If you use the Docker Compose file as is, you don’t need to change them.
 
 ```json
 {
@@ -252,7 +252,7 @@ In addition to the `OPENAI_API_KEY`, `llm_model` and `model_name` can be edited 
 }
 ```
 
-> Note: to config other LLM providers, please refer to https://docs.tigergraph.com/tg-copilot/getstarted/self-managed#_llm_provider_configuration
+> Note: to config other LLM providers, please refer to https://docs.tigergraph.com/tg-graphrag/getstarted/self-managed#_llm_provider_configuration
 
 ### Chat configuration
 Copy the below code into `configs/chat_config.json`. You shouldn’t need to change anything unless you change the port of the chat history service in the Docker Compose file.
