@@ -164,8 +164,8 @@ If you want to experience the whole process of GraphRAG, you can build the Graph
 #### Step 1: Get demo script
 
 The following scripts are needed to run the demo. Please download and put them in the same directory as the Docker Compose file:
-* Demo driver: [supportai_demo.sh](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag_demo.sh)
-* GraphRAG initializer: [init_supportai.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/init_graphrag.py)
+* Demo driver: [graphrag_demo.sh](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag_demo.sh)
+* GraphRAG initializer: [init_graphrag.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/init_graphrag.py)
 * Example: [answer_question.py](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/answer_question.py)
 
 #### Step 2: Download the demo data
