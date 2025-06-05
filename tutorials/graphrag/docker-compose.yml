@@ -11,6 +11,7 @@ services:
     depends_on:
       - eventual-consistency-service
       - chat-history
+      - tigergraph
     environment:
       LLM_CONFIG: "/code/configs/llm_config.json"
       DB_CONFIG: "/code/configs/db_config.json"
@@ -20,7 +21,7 @@ services:
       - ./configs/:/code/configs
 
   eventual-consistency-service:
-    image: tigergraph/ecc:latest
+    image: tigergraph/graphrag-ecc:latest
     platform: linux/amd64
     container_name: eventual-consistency-service
     build:
@@ -75,8 +76,8 @@ services:
       - graphrag
 
   tigergraph:
-    container_name: tigergraph
     image: tigergraph/community:4.2.0
+    container_name: tigergraph
     platform: linux/amd64
     ports:
       - "14240:14240"
