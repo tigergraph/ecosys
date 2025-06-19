@@ -5,12 +5,12 @@
     "restppPort": "14240", 
     "gsPort": "14240",
     "getToken": false,
-    "supportai_graphname": "TigerGraphRAG",
     "default_timeout": 300,
     "default_mem_threshold": 5000,
     "default_thread_limit": 8,
     "embedding_store": "tigergraph",
     "reuse_embedding": true,
+    "supportai_graphname": "TigerGraphRAG",
     "ecc": "http://eventual-consistency-service:8001",
     "chat_history_api": "http://chat-history:8002"
 }
