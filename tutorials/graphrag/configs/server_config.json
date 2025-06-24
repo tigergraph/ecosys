@@ -1,0 +1,46 @@
+{
+  "db_config": {
+    "hostname": "http://tigergraph",
+    "restppPort": "9000",
+    "gsPort": "14240",
+    "getToken": false,
+    "default_timeout": 300,
+    "default_mem_threshold": 5000,
+    "default_thread_limit": 8
+  },
+  "graphrag_config": {
+    "reuse_embedding": false,
+    "ecc": "http://graphrag-ecc:8001",
+    "chat_history_api": "http://chat-history:8002"
+  },
+  "llm_config": {
+    "embedding_service": {
+      "model_name": "text-embedding-3-small",
+      "embedding_model_service": "openai",
+      "authentication_configuration": {
+        "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+      }
+    },
+    "completion_service": {
+      "llm_service": "openai",
+      "llm_model": "gpt-4.1-mini",
+      "authentication_configuration": {
+        "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+      },
+      "model_kwargs": {
+        "temperature": 0
+      },
+      "prompt_path": "./common/prompts/openai_gpt4/"
+    }
+  },
+  "chat_config": {
+    "apiPort": "8002",
+    "dbPath": "chats.db",
+    "dbLogPath": "db.log",
+    "logPath": "requestLogs.jsonl",
+    "conversationAccessRoles": [
+      "superuser",
+      "globaldesigner"
+    ]
+  }
+}

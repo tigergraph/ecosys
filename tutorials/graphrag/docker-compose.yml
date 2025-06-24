@@ -9,29 +9,27 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - eventual-consistency-service
+      - graphrag-ecc
       - chat-history
       - tigergraph
     environment:
-      LLM_CONFIG: "/code/configs/llm_config.json"
-      DB_CONFIG: "/code/configs/db_config.json"
+      SERVER_CONFIG: "/code/configs/server_config.json"
       LOGLEVEL: "INFO"
       USE_CYPHER: "true"
     volumes:
       - ./configs/:/code/configs
 
-  eventual-consistency-service:
+  graphrag-ecc:
     image: tigergraph/graphrag-ecc:latest
     platform: linux/amd64
-    container_name: eventual-consistency-service
+    container_name: graphrag-ecc
     build:
       context: .
-      dockerfile: eventual-consistency-service/Dockerfile
+      dockerfile: ecc/Dockerfile
     ports:
       - 8001:8001
     environment:
-      LLM_CONFIG: "/code/configs/llm_config.json"
-      DB_CONFIG: "/code/configs/db_config.json"
+      SERVER_CONFIG: "/code/configs/server_config.json"
       LOGLEVEL: "INFO"
       INIT_EMBED_STORE: "false"
     volumes:
@@ -47,7 +45,7 @@ services:
     ports:
       - 8002:8002
     environment:
-      CONFIG_FILES: "/configs/chat_config.json,/configs/db_config.json"
+      CONFIG_FILES: "/configs/server_config.json"
       LOGLEVEL: "INFO"
     volumes:
       - ./configs/:/configs
@@ -81,3 +79,8 @@ services:
     platform: linux/amd64
     ports:
       - "14240:14240"
+    volumes:
+      - tigergraph_data:/home/tigergraph/tigergraph/data
+
+volumes:
+  tigergraph_data:

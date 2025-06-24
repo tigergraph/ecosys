@@ -1,7 +1,0 @@
-{
-    "apiPort":"8002",
-    "dbPath": "chats.db",
-    "dbLogPath": "db.log",
-    "logPath": "requestLogs.jsonl",
-    "conversationAccessRoles": ["superuser", "globaldesigner"]
-}
