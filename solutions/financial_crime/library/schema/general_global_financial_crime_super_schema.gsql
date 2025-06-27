@@ -1,0 +1,92 @@
+
+  CREATE VERTEX Phone(PRIMARY_ID phone_number STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Email(PRIMARY_ID email STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Community(PRIMARY_ID cid UINT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Address(PRIMARY_ID address STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX IP(PRIMARY_ID id STRING, is_blocked BOOL) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Device(PRIMARY_ID id STRING, is_blocked BOOL) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX City(PRIMARY_ID id STRING, city STRING, population INT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Country(PRIMARY_ID country STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Merchant(PRIMARY_ID id STRING, pagerank FLOAT, c_id INT, c_size INT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX State(PRIMARY_ID id STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Full_Name(PRIMARY_ID name STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Zipcode(PRIMARY_ID id STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX County(PRIMARY_ID id STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Payment_Transaction(PRIMARY_ID id STRING, transaction_time DATETIME, amount DOUBLE, is_fraud INT, unix_time UINT, shortest_path_length INT, max_txn_amt_interval FLOAT, max_txn_cnt_interval INT, cnt_repeated_card INT, com_mer_txn_cnt INT, com_mer_txn_total_amt FLOAT, com_mer_txn_avg_amt FLOAT, com_mer_txn_max_amt FLOAT, com_mer_txn_min_amt FLOAT, com_cd_txn_cnt INT, com_cd_txn_total_amt FLOAT, com_cd_txn_avg_amt FLOAT, com_cd_txn_max_amt FLOAT, com_cd_txn_min_amt FLOAT, indegree INT, outdegree INT, mer_cat STRING, mer_cat_cnt INT, mer_cat_total_amt FLOAT, mer_cat_avg_amt FLOAT, mer_cat_max_amt FLOAT, mer_cat_min_amt FLOAT, mer_pagerank FLOAT, cd_pagerank FLOAT, mer_com_size INT, cd_com_size INT, age INT, city_pop INT, occupation STRING, gender STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Account(PRIMARY_ID id STRING, create_Time DATETIME, is_fraud INT, account_type STRING, account_level STRING, com_size INT, pagerank FLOAT, shortest_path_length INT, ip_collision INT, fraud_ip INT, device_collision INT, fraud_device INT, trans_in_mule_ratio FLOAT, trans_out_mule_ratio FLOAT, mule_cnt INT, com_id INT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Transfer_Transaction(PRIMARY_ID id STRING, amount FLOAT, transfer_time DATETIME) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Note(PRIMARY_ID id STRING, note_text STRING, investigator STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX SAR(PRIMARY_ID id STRING, account_number STRING, reason STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Cases(PRIMARY_ID id STRING, main_subject_name STRING, closed_date DATETIME, priority STRING, suspicious_score FLOAT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Bank(PRIMARY_ID id STRING, bank_name STRING, swift_number STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Card(PRIMARY_ID card_number INT, is_fraud INT, pagerank FLOAT, c_id INT, c_size INT, occupation STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Merchant_Category(PRIMARY_ID category STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX ID(PRIMARY_ID id STRING, id_type STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Party(PRIMARY_ID id STRING, is_fraud INT, gender STRING, dob DATETIME, party_type STRING, name STRING, created_at DATETIME) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Connected_Component(PRIMARY_ID id INT) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX DOB(PRIMARY_ID dob DATETIME) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Concept(PRIMARY_ID id STRING, concept_type STRING, description STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+  CREATE VERTEX Application(PRIMARY_ID id STRING, created_at DATETIME, status STRING, line_of_credit FLOAT, annual_percentage_rate FLOAT, is_fraud BOOL) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+  CREATE VERTEX Product(PRIMARY_ID id STRING, name STRING, description STRING, type_of STRING) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+  CREATE UNDIRECTED EDGE Merchant_Merchant(FROM Merchant, TO Merchant, weight FLOAT)
+  CREATE UNDIRECTED EDGE Merchant_Receive_Transaction(FROM Payment_Transaction, TO Merchant)
+  CREATE DIRECTED EDGE Send_Transfer(FROM Account, TO Transfer_Transaction) WITH REVERSE_EDGE="reverse_Send_Transfer"
+  
+  CREATE DIRECTED EDGE Receive_Transfer(FROM Transfer_Transaction, TO Account) WITH REVERSE_EDGE="reverse_Receive_Transfer"
+  
+  CREATE UNDIRECTED EDGE SAR_Became_Case(FROM SAR, TO Cases)
+  CREATE UNDIRECTED EDGE Belongs_TO_Bank(FROM Account, TO Bank)
+  CREATE UNDIRECTED EDGE Card_Send_Transaction(FROM Payment_Transaction, TO Card)
+  CREATE UNDIRECTED EDGE Card_Card(FROM Card, TO Card, weight INT)
+  CREATE UNDIRECTED EDGE Merchant_Assigned(FROM Merchant, TO Merchant_Category)
+  CREATE DIRECTED EDGE Is_SubCategory(FROM Merchant_Category, TO Merchant_Category) WITH REVERSE_EDGE="reverse_Is_SubCategory"
+  
+  CREATE UNDIRECTED EDGE Part_Of(FROM City, TO County)
+  CREATE UNDIRECTED EDGE Has_Interaction_With_Merchant(FROM Card, TO Merchant)
+  CREATE UNDIRECTED EDGE Has_Address(FROM Address, TO Party)
+  CREATE UNDIRECTED EDGE Is_Merchant(FROM Merchant, TO Party)
+  CREATE UNDIRECTED EDGE Party_Has_Account(FROM Party, TO Account)
+  CREATE UNDIRECTED EDGE Party_Has_SAR(FROM Party, TO SAR)
+  CREATE UNDIRECTED EDGE Party_Has_Case(FROM Party, TO Cases)
+  CREATE UNDIRECTED EDGE Party_Has_Card(FROM Party, TO Card)
+  CREATE UNDIRECTED EDGE Has_Note(FROM Note, TO Account|FROM Note, TO Party|FROM Note, TO Card)
+  CREATE UNDIRECTED EDGE Has_ID(FROM Party, TO ID)
+  CREATE UNDIRECTED EDGE Has_IP(FROM Party, TO IP)
+  CREATE UNDIRECTED EDGE Has_Device(FROM Party, TO Device)
+  CREATE UNDIRECTED EDGE Has_Phone(FROM Party, TO Phone)
+  CREATE UNDIRECTED EDGE Has_Email(FROM Party, TO Email)
+  CREATE UNDIRECTED EDGE Has_Community(FROM Party, TO Community|FROM Merchant, TO Community|FROM Card, TO Community)
+  CREATE UNDIRECTED EDGE Assigned_To(FROM Address, TO Zipcode|FROM Zipcode, TO City)
+  CREATE UNDIRECTED EDGE Located_In(FROM Address, TO City|FROM City, TO State)
+  CREATE UNDIRECTED EDGE Assigned_To_County(FROM Zipcode, TO County)
+  CREATE UNDIRECTED EDGE Located_In_State(FROM County, TO State)
+  CREATE UNDIRECTED EDGE Located_In_Country(FROM State, TO Country)
+  CREATE UNDIRECTED EDGE Same_As(FROM Party, TO Party, score DOUBLE)
+  CREATE UNDIRECTED EDGE Entity_In_Ring(FROM Party, TO Connected_Component)
+  CREATE UNDIRECTED EDGE Has_DOB(FROM Party, TO DOB)
+  CREATE UNDIRECTED EDGE Has_Full_Name(FROM Party, TO Full_Name)
+  CREATE DIRECTED EDGE DESCRIBES(FROM Concept, TO Party|FROM Concept, TO Merchant|FROM Concept, TO Payment_Transaction|FROM Concept, TO Zipcode|FROM Concept, TO City|FROM Concept, TO Card) WITH REVERSE_EDGE="reverse_DESCRIBES"
+  CREATE DIRECTED EDGE IS_CHILD_OF(FROM Concept, TO Concept) WITH REVERSE_EDGE="reverse_IS_CHILD_OF"
+
+  CREATE UNDIRECTED EDGE Application_Has_Full_Name(FROM Application, TO Full_Name)
+  CREATE UNDIRECTED EDGE Application_Has_Phone(FROM Application, TO Phone)
+  CREATE UNDIRECTED EDGE Application_Has_Email(FROM Application, TO Email)
+  CREATE UNDIRECTED EDGE Application_Has_DOB(FROM Application, TO DOB)
+  CREATE UNDIRECTED EDGE Application_Has_ID(FROM Application, TO ID)
+  CREATE UNDIRECTED EDGE Application_Has_Device(FROM Application, TO Device)
+  CREATE UNDIRECTED EDGE Application_Has_IP(FROM Application, TO IP)
+  CREATE UNDIRECTED EDGE Same_Application(FROM Application, TO Application, score DOUBLE)
+  CREATE UNDIRECTED EDGE Application_Has_Address(FROM Application, TO Address)
+  CREATE UNDIRECTED EDGE Application_In_Ring(FROM Application, TO Connected_Component)
+  CREATE UNDIRECTED EDGE Account_In_Ring(FROM Account, TO Connected_Component)
+  CREATE UNDIRECTED EDGE Account_Account(FROM Account, TO Account, weight FLOAT)
+  CREATE UNDIRECTED EDGE Application_Has_Product(FROM Application, TO Product)
+  CREATE UNDIRECTED EDGE Account_Has_Product(FROM Account, TO Product)
+  CREATE UNDIRECTED EDGE Transfer_Transaction_Has_Product(FROM Transfer_Transaction, TO Product)
+  CREATE UNDIRECTED EDGE Application_Has_Account(FROM Application, TO Account)
+  CREATE UNDIRECTED EDGE Application_Has_Party(FROM Party, TO Application)
+  CREATE UNDIRECTED EDGE Application_Has_Card(FROM Application, TO Card)
+
+  //CREATE GRAPH Financial_Crime (*)

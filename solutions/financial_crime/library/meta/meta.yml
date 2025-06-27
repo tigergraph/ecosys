@@ -1,0 +1,4 @@
+metadata:
+  name: financial crime library
+  description: super schema for financial crime
+  is_library: true
