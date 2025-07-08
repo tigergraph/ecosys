@@ -1,0 +1,307 @@
+#!/bin/bash
+
+get_os(){
+  if [ -f "/etc/apt/sources.list" ]; then
+    if [ -f "/etc/linx-release" ]; then
+      os_version=$(cat /etc/linx-release | grep -o '[0-9]\.[0-9]\.[0-9]\{1,3\}' )
+      echo "ROCKY $os_version"
+    elif [ -f "/etc/lsb-release" ]; then
+      os_version=$(cat /etc/lsb-release | grep  "DISTRIB_RELEASE" | cut -d= -f2)
+      echo "UBUNTU $os_version"
+    elif [ -f "/etc/os-release" ]; then
+      os_version=$(cat /etc/os-release | grep  "VERSION_ID" | cut -d= -f2)
+      os_version=${os_version//\"}  # remove all double quotes
+      echo "DEBIAN $os_version"
+    fi
+  elif [ -d "/etc/yum.repos.d" ]; then
+    # Centos and RedHat are treated equally
+    if grep "Amazon Linux" /etc/system-release &>/dev/null; then
+      os_version=" 7.0"
+    else
+      variant="$(cat /etc/system-release | cut -d ' ' -f2)"
+      if [ "$variant" = "Stream" ]; then
+          os_version=" $(cat /etc/os-release | grep 'VERSION_ID=' | cut -d'"' -f 2)"
+      else
+          os_version="$(cat /etc/system-release | grep -o ' [0-9]\.[0-9]\{1,3\}')"
+      fi
+    fi
+    echo "RHEL$os_version"
+  elif [ -d "/etc/zypp/repos.d" ]; then
+    os_version=$(cat /etc/os-release | grep  "VERSION_ID" | cut -d= -f2)
+    os_version=${os_version//\"}  # remove all double quotes
+    echo "SUSE $os_version"
+  else
+    echo "UNKOWN OS"
+  fi
+}
+
+check_os(){
+  OS=$1
+  version=$2
+  note "OS obtained: $OS $version"
+  local error_msg="Unsupported OS. Current support CentOS 6.5 to 8.0; RedHat 6.5 to 9.0;"
+  if [ -z "$version" ]; then
+    error "Unknown OS version. $error_msg"
+    exit 1
+  fi
+
+  if [ "$OS" = "RHEL" ]; then
+   # the following one will end with one item array on docker centos 7.3, i.e. "${ver_arr[0]}" is "7 3"
+   # local ver_arr=(${version//./ })
+    IFS='.' read -r -a ver_arr <<< "$version"
+    if [[ "${ver_arr[0]}" -lt "6" || "${ver_arr[0]}" -eq "6" && "${ver_arr[1]}" -lt "5" ]]; then
+      error "$error_msg"
+      exit 1
+    else
+      note "OS check passed [OK]"
+    fi
+  else
+    error "$error_msg"
+    exit 1
+  fi
+}
+
+check_root(){
+  if [[ $EUID -ne 0 ]]; then
+    error "Sudo or root rights are required."
+    exit 1
+  fi
+}
+
+install_openJDK() {
+  if [[ "${SETUP_JDK}" == "true" ]]; then
+    if ! which java > /dev/null 2>&1; then
+      prog "start install openjdk-1.8.0."
+      yum install -y java-1.8.0-openjdk > /dev/null 2>&1
+    else
+      java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+      if [[ ("$(echo "$java_version" | cut -d'.' -f1)" -ge 1 && "$(echo "$java_version" | cut -d'.' -f2)" -ge 8) || "$(echo "$java_version" | cut -d'.' -f1)" -ge 11 ]]; then
+        prog "The installed Java version is greater than 1.8.0. No update necessary."
+      else
+        prog "start update to openjdk-1.8.0."
+        rpm -qa | grep java | xargs rpm -e --nodeps
+        yum install -y java-1.8.0-openjdk > /dev/null 2>&1
+      fi
+    fi
+    # check install
+    if command -v java &> /dev/null; then
+      prog "JDK Install Success..."
+    else
+      error "JDK Install Fail..." && exit 1
+    fi
+  else
+    if ! which java > /dev/null 2>&1; then
+      error "Java environment not detected. You can choose option \"-i\" to install openjdk-1.8.0."
+      exit 1
+    else
+      java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+      if [[ ("$(echo "$java_version" | cut -d'.' -f1)" -ge 1 && "$(echo "$java_version" | cut -d'.' -f2)" -ge 8) || "$(echo "$java_version" | cut -d'.' -f1)" -ge 11 ]]; then
+        prog "The java version is openjdk-1.8.0 or later now."
+      else
+        error "This script currently only supports openjdk-1.8.0 or later."
+        exit 1
+      fi
+    fi
+  fi
+}
+
+install_openssl(){
+  if [[ "${SETUP_OPENSSL}" == "true" ]]; then
+    if ! openssl version > /dev/null 2>&1;then
+      prog "start install openssl..."
+      yum -y install openssl > /dev/null 2>&1
+    else
+      prog "Openssl is installed, skip installation."
+    fi
+
+    if [ $? != 0 ]; then
+      error "Failed to install openssl."
+      exit 1
+    fi
+  else
+    if ! openssl version > /dev/null 2>&1;then
+      error "Openssl is not installed. You can choose option \"-i\" to install openssl."
+      exit 1
+    else
+      prog "Openssl is installed."
+    fi
+  fi
+}
+
+path_conver(){
+  local rel_path="$1"
+  local abs_path
+
+  # If the path is already absolute, return it as-is
+  if [[ "$rel_path" == /* ]]; then
+    abs_path="$rel_path"
+  else
+    abs_path="$(pwd)/$rel_path"
+  fi
+
+  # Check if the path exists before calling realpath
+  if [[ ! -e "$abs_path" ]]; then
+    echo "Path $abs_path does not exist"
+    return 1
+  fi
+
+  # Canonicalize the path to remove any redundant elements
+  abs_path="$(realpath "$abs_path")"
+
+  echo "$abs_path"
+}
+
+check_file(){
+  file=$1
+  type=$2
+  if [ -f "$file" ];then
+    if [[ "${type}" == "0" ]]; then
+      error "$file already exists, exit."
+      exit 1
+    fi
+  elif [[ "${type}" == "1" || "${type}" == "" ]]; then
+    error "$file not exist, exit."
+    exit 1
+  fi
+}
+
+generate_help(){
+    echo
+    echo "Commands:"
+    echo "  -h,-help               --  Show the help"
+    echo "  -gen_CARoot            --  Generate root-CA and root-CA private_key"
+    echo "  -gen_keystore          --  Generate keystore"
+    echo "  -gen_truststore        --  Generate an empty truststore"
+    echo "  -gen_subCA             --  Generate subordinate CA through superior certificate"
+    echo
+    warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
+  Please note that if the local machine does not have a java environment, some operations will fail."
+    echo
+    warn "If the command is empty, '--gen_CARoot', '--gen_keystore', and '--gen_truststore' are executed by default."
+    echo
+    note "Use './`basename $0` -command_name -help' for usage of command_name"
+    echo
+    exit 0
+}
+
+import_help(){
+    echo
+    echo "Commands:"
+    echo "  -h,-help               --  Show the help"
+    echo "  -import_to_keystore    --  Import certificate and certificate_private_key pair to keystore"
+    echo "  -import_to_truststore  --  Import certificate to truststore"
+    echo
+    warn "Using option '-i' will install openjdk-1.8.0 and openssl, otherwise openjdk-1.8.0 and openssl will not be installed.
+  Please note that if the local machine does not have a java environment, some operations will fail."
+    echo
+    note "Use './`basename $0` -command_name -help' for usage of command_name"
+    echo
+    exit 0
+}
+
+general_usage(){
+  usage_flag=$1
+  case $usage_flag in
+  gen_CARoot)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_CARoot] [-o <file_output_path>] [-c <subject_DN>] [-p <passphrase>]"
+    echo "Example:"
+    mesg_blue "./`basename $0` --gen_CARoot -o ./SSL_OUTPUT -c kafka-0.tigergraph.com -p tiger123"
+    mesg_blue "./`basename $0` --gen_CARoot -c kafka-0.tigergraph.com"
+    echo
+    echo "Options:"
+    echo "  -o,-output      --  Certificate file output Path [default: ./SSL_OUTPUT]"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo "  -p,-passphrase  --  PASSPHRASE of CA private key (optional) [default: tiger123]"
+    echo
+    exit 0
+    ;;
+  gen_keystore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_keystore] [-o <keystore_output_path>] [-s <storetype>] [-storepass <keystore_pass>] [-c <CN>] [-n <keystore_name>]"
+    echo "Example:"
+    mesg_blue "./`basename $0` --gen_keystore -o ./SSL_OUTPUT -s pkcs12 -storepass tiger123 -c kafka-0.tigergraph.com -n server.keystore.pk12"
+    mesg_blue "./`basename $0` --gen_keystore -storepass tiger123 -c kafka-0.tigergraph.com"
+    mesg_blue "./`basename $0` --gen_keystore -s jks -n server.keystore.jks"
+    mesg_blue "./`basename $0` --gen_keystore"
+    echo
+    echo "Options:"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
+    echo "  -s,-storetype   --  Keystore storetype, e.g. jks, pkcs12 [default: jks]"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo "  -storepass      --  Keystore password [default: tiger123]"
+    echo "  -n,-name        --  Keystore file name, e.g. server.keystore.jks [default: server.keystore]"
+    echo
+    note "'storepass' is the password used to secure the keystore as a whole. "
+    echo
+    exit 0
+    ;;
+  gen_subCA)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_subCA] [-o <subCA_output_path>] [-cer <SuperiorCA_file_path>] [-cerKey <SuperiorCA_privateKey_file_path>] [-p <passphrase>] [-c <subject_DN>]"
+    echo "Example:"
+    mesg_blue "./`basename $0` --gen_subCA -o ./SSL_OUTPUT -cer ./SSL_OUTPUT/tigergraph.com.crt -cerKey ./SSL_OUTPUT/tigergraph.com.key -p tiger123 -c kafka-0.tigergraph.com"
+    mesg_blue "./`basename $0` --gen_subCA -cer ./SSL_OUTPUT/tigergraph.com.crt -cerKey ./SSL_OUTPUT/tigergraph.com.key -c kafka-0.tigergraph.com"
+    echo
+    echo "Options:"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
+    echo "  -cer,--cer      --  Superior certificate used to sign subordinate certificate"
+    echo "  -cerKey         --  Superior certificate private key file"
+    echo "  -p,-passphrase  --  Passphrase of superior certificate private key [default: tiger123]"
+    echo "  -c,-CN          --  Subject CN, accept wildcard domain name [default: kafka-0.tigergraph.com]"
+    echo
+    exit 0
+    ;;
+  gen_truststore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--gen_truststore] [-o <truststore_output_path>] [-storepass <storepass>] [-s <storetype>] [-n <truststore_name>]"
+    echo "Example:"
+    mesg_blue "./`basename $0` --gen_truststore -o ./SSL_OUTPUT -storepass tiger123 -s pkcs12 -n server.truststore.pk12"
+    mesg_blue "./`basename $0` --gen_truststore -storepass tiger123"
+    mesg_blue "./`basename $0` --gen_truststore"
+    echo
+    echo "Options:"
+    echo "  -o,-output      --  Output directory [default: ./SSL_OUTPUT]"
+    echo "  -storepass      --  Truststore password [default: tiger123]"
+    echo "  -s,-storetype   --  Truststore storetype, e.g. jks, pkcs12 [default: jks]"
+    echo "  -n,-name        --  Truststore file name, e.g. server.truststore.jks [default: server.truststore]"
+    echo
+    exit 0
+    ;;
+  import_to_keystore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--import_to_keystore] [-keystore <keystore_path>] [-cer <import_CA_path>] [-cerKey <import_CA_privateKey_path>] [-storepass <keystore_pass>] [-p <privateKey_passphrase>]"
+    echo "Example:"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_OUTPUT/server.keystore -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -storepass 123456 -p tiger123"
+    mesg_blue  "./`basename $0` --import_to_keystore -keystore ./SSL_OUTPUT/server.keystore -cer ./SSL_OUTPUT/ca-root.crt -cerKey ./SSL_OUTPUT/ca-root.key -storepass 123456"
+    echo
+    echo "Options:"
+    echo "  -keystore          --  Keystore path"
+    echo "  -cer,--cer         --  Certificate file path"
+    echo "  -cerKey            --  Certificate private key file path"
+    echo "  -storepass         --  Keystore password [default: tiger123]"
+    echo "  -p,-passphrase     --  Passphrase for the certificate private key [default: tiger123]"
+    echo
+    exit 0
+    ;;
+  import_to_truststore)
+    echo
+    echo "Usage:"
+    mesg_green "./`basename $0` [--import_to_truststore] [-truststore <truststore_path>] [-cer <import_CA_path>] [-storepass <storepass>]"
+    echo "Example:"
+    mesg_blue  "./`basename $0` --import_to_truststore -truststore ./SSL_OUTPUT/server.truststore -cer ./SSL_OUTPUT/ca-root.crt -storepass tiger123"
+    echo
+    echo "Options:"
+    echo "  -truststore        --  Truststore path"
+    echo "  -cer               --  Certificate file path"
+    echo "  -storepass         --  Truststore password [default: tiger123]"
+    echo
+    exit 0
+    ;;
+  esac
+}
