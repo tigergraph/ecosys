@@ -1,0 +1,31 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IS 4 query description is on page 74 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE QUERY is4_v3(STRING messageId) syntax v3{
+  SetAccum<STRING> @@seed;
+  SumAccum<STRING> @messageContent;
+
+  @@seed += messageId;
+  vComments = to_vertex_set(@@seed, "Comment");
+
+  IF vComments.size() > 0 THEN
+    PRINT vComments[
+        vComments.creationDate AS messageCreationDate,
+        vComments.content AS messageContent] AS result;
+  ELSE
+    vPost = to_vertex_set(@@seed, "Post");
+      vPost =
+        SELECT v
+        FROM (v:vPost)
+        ACCUM
+          CASE
+            WHEN v.content != "" THEN
+              v.@messageContent += v.content
+            ELSE
+              v.@messageContent += v.imageFile
+          END;
+
+    PRINT vPost[
+        vPost.creationDate AS messageCreationDate,
+        vPost.@messageContent AS messageContent] AS result;
+  END;
+}

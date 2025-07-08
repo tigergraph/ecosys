@@ -1,0 +1,20 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 11 query description is on page 68 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE QUERY ic11_v3(vertex<Person> personId, string country, int workFromYear) syntax v3{
+  TYPEDEF TUPLE<INT personId, STRING personFirstName, STRING personLastName, STRING organizationName, INT organizationWorkFromYear> friendInfo;
+  HeapAccum<friendInfo>(10, organizationWorkFromYear ASC, personId ASC, organizationName DESC) @@result;
+  OrAccum<BOOL> @selected;
+  
+  C = {Country.*};
+  S = { personId };
+  companies = SELECT org FROM (c:Country) <-[:IS_LOCATED_IN]-(org:Company)
+    WHERE c.name == country
+    ACCUM org.@selected += TRUE;
+  
+  P =
+    SELECT p
+    FROM (s:S) -[:KNOWS*1..2]- (p:Person) -[e:WORK_AT] -> (c:Company)
+    WHERE p != personId AND c.@selected AND e.workFrom < workFromYear 
+    ACCUM @@result += friendInfo(p.id, p.firstName, p.lastName, c.name, e.workFrom);
+  PRINT @@result;
+}

@@ -1,0 +1,68 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//IC 1 query description is on page 58 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE QUERY ic1_v3(vertex<Person> personId, string firstName) syntax v3{
+  typedef tuple<string orgName, int orgYear, string orgPlace> org;
+  SumAccum<uint> @distance;
+  SumAccum<string> @friendCityName;
+  MapAccum<INT, INT> @personInfo;
+  MapAccum<INT, SetAccum<org>> @@compInfo, @@univInfo;
+  SetAccum<org> @comp, @univ;
+  
+  S = { personId };
+
+  P1 = SELECT p
+    FROM (s:S) -[:KNOWS]- (p:Person)
+    WHERE p != personId AND p.firstName == firstName
+    ACCUM p.@distance = 1;
+
+  P2 = 
+    SELECT p
+    FROM (:P1) -[:KNOWS]- (p:Person)
+    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
+    ACCUM p.@distance = 2;
+
+  P3 = 
+    SELECT p
+    FROM (:P2) -[:KNOWS]- (p:Person)
+    WHERE p != personId AND p.firstName == firstName AND p.@distance == 0
+    ACCUM p.@distance = 3;
+  
+  P = P1 UNION P2 UNION P3;
+  tmp = 
+    SELECT ct
+    FROM (p:P) -[:IS_LOCATED_IN]-> (ct:City)
+    ACCUM p.@friendCityName = ct.name;
+      
+  tmp = 
+    SELECT cn
+    FROM (p:P) -[ew:WORK_AT]-> (co:Company) -[:IS_LOCATED_IN]-> (cn:Country)
+    PER MATCH
+    ACCUM p.@comp += org(co.name, ew.workFrom, cn.name);
+  
+  tmp = 
+    SELECT ct
+    FROM (p:P) -[es:STUDY_AT]->(u:University) -[:IS_LOCATED_IN]-> (ct:City)
+    PER MATCH
+    ACCUM p.@univ += org(u.name, es.classYear, ct.name);
+            
+  P =
+    SELECT p
+    FROM (p:P)
+    ORDER BY p.@distance ASC, p.lastName ASC, p.id ASC
+    LIMIT 20;
+  
+  print P[
+    P.id AS friendId,
+    P.lastName AS friendLastName,
+    P.@distance AS distanceFromPerson,
+    P.birthday AS friendBirthday,
+    P.creationDate AS friendCreationDate,
+    P.gender AS friendGender,
+    P.browserUsed AS friendBrowserUsed,
+    P.locationIP AS friendLocationIp,
+    P.email AS friendEmails,
+    P.speaks AS friendSpeaks,
+    P.@friendCityName AS friendCityName,
+    P.@univ AS friendUniversities,
+    P.@comp AS friendCompanies];
+}
