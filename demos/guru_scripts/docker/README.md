@@ -33,9 +33,8 @@ If you want to customize your own docker image, the last section of this README 
 - [Documents and Forum](#documents-and-forum)
 - [Build your own Docker Image](#build-your-own-docker-image)
 
-
-# Install Docker Desktop
 ----
+# Install Docker Desktop
 
 1. Install Docker on your OS (choose one)
    - To install Docker for Mac OS, follow this video
@@ -62,7 +61,6 @@ If you want to customize your own docker image, the last section of this README 
   https://www.youtube.com/watch?v=Rv3DAJbDrS0
 
 # Prepare a Shared Folder on Host OS shared with Docker Container
-----
 
 Open a shell on your host machine and create or select a directory for sharing data between your host machine and docker container. Grant read/write/execute permission to the folder. For example, to create a folder called data in Linux:
 
@@ -77,15 +75,14 @@ Suppose we mount the host OS ~/data folder to a docker folder /home/tigergraph/m
 Since our dev edition does not support backup/restore data, you can persist your data (raw file, gsql script etc.) 
 on the data volume. After upgrading Dev version, you can start a new container using the same data volume. 
 
-# Start TigerGraph Instance
 ----
+# Start TigerGraph Instance
 
 The following TigerGraph editions are availble for you to choose:
 * Community Edition
 * Enterprise Edition
 
 ## Quick Start for Community Edition
-----
 
 ### Download and Import Pre-built TigerGraph Community Edition Image
 
@@ -129,7 +126,6 @@ Visit http://localhost:14240 to access the Apps
 
 
 ## Quick Start for Enterprise Edition
-----
 
 ### Getting a License Key (No Need If Using Community Edition)
 
@@ -210,8 +206,8 @@ After pulling the image and launch the container in the background, you can try 
 
         http://localhost:14240
 
-# Operation Commands Cheat Sheet
 ----
+# Operation Commands Cheat Sheet
 
 - After you start Docker Desktop, use the below command to start/stop the container created 
     
@@ -249,7 +245,6 @@ After pulling the image and launch the container in the background, you can try 
         gsql version
 
 # Documents and Forum
-----
 
 - Tutorial
 
