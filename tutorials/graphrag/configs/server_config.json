@@ -8,14 +8,6 @@
     "default_mem_threshold": 5000,
     "default_thread_limit": 8
   },
-  "client_config": {
-    "hostname": "http://localhost",
-    "username": "tigergraph",
-    "password": "tigergraph",
-    "graphname": "TigerGraphRAG",
-    "restppPort": "14240",
-    "gsPort": "14240"
-  },
   "graphrag_config": {
     "reuse_embedding": false,
     "ecc": "http://graphrag-ecc:8001",
