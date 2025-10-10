@@ -1,7 +1,7 @@
 {
   "db_config": {
     "hostname": "http://tigergraph",
-    "restppPort": "9000",
+    "restppPort": "14240",
     "gsPort": "14240",
     "getToken": false,
     "default_timeout": 300,
