@@ -1,12 +1,20 @@
 {
   "db_config": {
     "hostname": "http://tigergraph",
-    "restppPort": "14240",
+    "restppPort": "9000",
     "gsPort": "14240",
     "getToken": false,
     "default_timeout": 300,
     "default_mem_threshold": 5000,
     "default_thread_limit": 8
+  },
+  "client_config": {
+    "hostname": "http://localhost",
+    "username": "tigergraph",
+    "password": "tigergraph",
+    "graphname": "TigerGraphRAG",
+    "restppPort": "14240",
+    "gsPort": "14240"
   },
   "graphrag_config": {
     "reuse_embedding": false,
