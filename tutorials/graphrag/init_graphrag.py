@@ -25,7 +25,7 @@ if __name__ == "__main__":
         host="http://localhost",
         username="tigergraph",
         password="tigergraph",
-        restppPort=14240,
+        restppPort="14240",
     )
     conn.graphname = "TigerGraphRAG"
 
