@@ -10,28 +10,36 @@ This document provides instructions on how to use **SupportAI**.
 # Content
 
 This GraphRAG tutorial contains:
-- [Getting Started](#getting-started)
+- [Prerequisites](#prerequisites)
   - [Setup Docker Environment](#setup-docker-environment)
-  - [Prepare Docker Images](#prepare-docker-images)
-  - [Deploy GraphRAG with Docker Compose](#deploy-graphrag-with-docker-compose)
-  - [Deploy GraphRAG with Kubernetes](#deploy-graphrag-with-kubernetes)
-  - [Access ChatBot UI](#access-chatbot-ui)
+  - [Install Docker Compose Plugin](#install-docker-compose-plugin)
+  - [Download TigerGraph Docker Image](#download-tigergraph-docker-image)
+- [Setup GraphRAG Services](#setup-graphrag-services)
+    - [Quick Start](#quick-start)
+    - [Deploy GraphRAG Manually](#deploy-graphrag-manually)
+        - [Deploy GraphRAG with Docker Compose](#manual-deploy-of-graphrag-with-docker-compose)
+        - [Deploy GraphRAG with Kubernetes](#manual-deploy-of-graphrag-with-kubernetes)
 - [Run GraphRAG Demo](#run-graphrag-demo)
   - [Use Preloaded GraphRAG](#use-preloaded-graphrag)
-  - [Start From Scratch](#build-graphrag-from-scratch)
+  - [Start From Scratch](#manually-build-graphrag-from-scratch)
 - [More Configurations](#more-detailed-configurations)
   - [DB Configuration](#db-configuration)
   - [GraphRAG Configuration](#graphrag-configuration)
   - [LLM Provider Configuration](#llm-provider-configuration)
   - [Chat Configuration](#chat-configuration)
       
-# Getting Started
+# Prereqisites
 
-## Setup Docker Environment
+### Setup Docker Environment
 
-Please follow [Docker setup](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+* Follow [Docker setup ](https://github.com/tigergraph/ecosys/blob/master/demos/guru_scripts/docker/README.md) to set up your docker Environment.
+* Please follow (Overview of installing Docker Compose)[https://docs.docker.com/compose/install/] to install Docker Compose for your platform accordingly.
 
-## Prepare Docker Images
+### Install Docker Compose Plugin
+
+This is not needed if you're using Docker Desktop. For linux environments, please follow the instruction at https://docs.docker.com/compose/install/linux/ to install Docker Compose Plugin.
+
+> Note: the standalone (legacy) [docker-compose](https://docs.docker.com/compose/install/standalone/) tool is not supported by GraphRAG
 
 ### Download TigerGraph Docker Image
 
@@ -43,47 +51,39 @@ docker images
 
 You should be able to find `tigergraph/community:4.2.1` in the image list.
 
-### Download GraphRAG Docker Images
+[Go back to top](#top)
 
-The following images are also needed for TigerGraph GraphRAG. Docker Compose will automatically download them, but you can download them manually if preferred:
+# Setup GraphRAG Services
 
+## Quick Start
+
+Using the following command for a one-step quick deployment with TigerGraph Community Edition and default configurations:
 ```
-docker pull tigergraph/graphrag:latest
-docker pull tigergraph/graphrag-ecc:latest
-docker pull tigergraph/graphrag-ui:latest
-docker pull tigergraph/chat-history:latest
-docker pull nginx:latest
+curl -k https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/setup_graphrag.sh | sh
 ```
+[Go back to top](#top)
 
-## Deploy GraphRAG Services
+## Deploy GraphRAG Manually
 
-### Deploy GraphRAG with Docker Compose
+### Manual Deploy of GraphRAG with Docker Compose
 
-#### Step 1: Install Docker Compose Plugin (Optional)
-Please install the latest Docker Compose Plugin according to the [Official Document](https://docs.docker.com/compose/install/linux/). 
-
->**_Note:_**: Standalone `docker-compose` is not supported.
+#### Step 1: Get docker-compose file
+Download the [docker-compose.yml](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/docker-compose.yml) file directly
 
 The Docker Compose file contains all dependencies for GraphRAG including a TigerGraph database. If you want to use a separate TigerGraph instance, you can comment out the `tigergraph` section from the docker compose file and restart all services. However, please follow the instructions below to make sure your standalone TigerGraph server is accessible from other GraphRAG containers.
 
-#### Step 2: Download and extract demo file
+#### Step 2: Set up configurations
 
-Next, download the following tarball demo file and extract it to the desired `graphrag` directory:
-* [graphrag_demo.tgz](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag_demo.tgz)
+Next, download the following configuration files and put them in a `configs` subdirectory of the directory contains the Docker Compose file:
+* [configs/server_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/server_config.json)
+* [configs/nginx.conf](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/nginx.conf)
 
 Here’s what the folder structure looks like:
 ```
     graphrag
-    ├── data
-    │   └── tg_tutorials.jsonl
-    ├── scripts
-    │   ├── answer_question.py
-    │   ├── init_graphrag.py
-    │   └── graphrag_demo.sh
     ├── configs
     │   ├── nginx.conf
     │   └── server_config.json
-    ├── graphrag-k8s.yml
     └── docker-compose.yml
 ```
 
@@ -93,9 +93,7 @@ Edit `llm_config` section of `configs/server_config.json` and replace `<YOUR_OPE
  
 > If desired, you can also change the model to be used for the embedding service and completion service to your preferred models to adjust the output from the LLM service.
 
-Update other configs if needed. Please refer to [More Configurations](#more-detailed-configurations).
-
-#### Step 4 (Optional): Configure Logging Level in Dockerfile
+#### Step 4(Optional): Configure Logging Level in Dockerfile
 
 To configure the logging level of the service, edit the Docker Compose file.
 
@@ -123,34 +121,22 @@ This line can be changed to support different logging levels.
 
 Now, simply run `docker compose up -d` and wait for all the services to start.
 
-> Note: `graphrag` container will be down if TigerGraph service is not ready. Log into the `tigergraph` container, bring up tigergraph services by `gadmin start all` and rerun `docker compose up -d` should resolve the issue.
-
-#### Step 6: Stop all services (when needed)
-Run command `docker compose down` and wait for all the service containers to stopped and removed.
+> Note: `graphrag` container will be down if TigerGraph service is not ready. Log into the `tigergraph` container, bring up tigergraph services and rerun `docker compose up -d` should resolve the issue.
 
 [Go back to top](#top)
 
 ### Use Standalone TigerGraph instance (Optional)
 
-> **_Note:_** Vector feature is available in both TigerGraph Community Edition 4.2.0+ and Enterprise Edition 4.2.0+. Use **tigergraph/tigergraph:4.2.1** if Enterprise Edition is preferred.
+> **_Note:_** Vector feature is available in both TigerGraph Community Edition 4.2.0+ and Enterprise Edition 4.2.0+.
 
 If you prefer to start a TigerGraph Community Edition instance without a license key, please make sure the container can be accessed from the GraphRAG containers by add `--network graphrag_default`:
 ```
 docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network graphrag_default -t tigergraph/community:4.2.1
 ```
 
-> **_Important Note:_**:
-> **Comment out** `tigergraph` service section of `docker-compose.yml` and `depends_on` section of `graphrag` service config.
-> Also setting up **DNS** or `/etc/hosts` properly is an alternative solution to ensure contains can connect to each other.
-> Or modify`hostname` in `db_config` section of `configs/server_config.json` and replace `http://tigergraph` to your tigergraph container IP address:
-```
-  "db_config": {
-    "hostname": "http://172.19.0.2",
-    "restppPort": "14240",
-    "gsPort": "14240",    
-    ...
-  }
-```
+> Use **tigergraph/tigergraph:4.2.1** if Enterprise Edition is preferred.
+> Setting up **DNS** or `/etc/hosts` properly is an alternative solution to ensure contains can connect to each other.
+> Or modify`hostname` in `db_config` section of `configs/server_config.json` and replace `http://tigergraph` to your tigergraph container IP address, e.g., `http://172.19.0.2`. 
 
 Check the service status with the following commands:
 ```
@@ -166,57 +152,29 @@ gadmin stop all
 
 [Go back to top](#top)
 
-### Deploy GraphRAG with Kubernetes
+### Manual Deploy of GraphRAG with Kubernetes
+* Step 1: Get kubernetes deployment file
+  Download the [graphrag-k8s.yml](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag-k8s.yml) file directly
 
-#### Step 1: Install Kubernetes and Nginx Ingress (Optional)
-Setup Kubernetes environment. If you're using Docker Desktop, follow the [Official Document](https://docs.docker.com/desktop/features/kubernetes/)
+* Step 2: Modify `graphrag-k8s.yml` (optional)
+  Remove the sections for tigergraph instance if you're using a standalone TigerGraph instance instead
 
-Install Nginx Ingress using `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml` if it's not installed yet.
+* Step 3: Set up server configurations
+  Next, in the same directory as the Kubernetes deployment file is in, create a `configs` directory and download the following configuration files:
+  * [configs/server_config.json](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/server_config.json)
 
-#### Step 2: Download and extract demo file
+  Update the TigerGraph database information, LLM API keys and other configs accordingly.
 
-Next, download the following tarball demo file and extract it to the desired `graphrag` directory:
-* [graphrag_demo.tgz](https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/graphrag_demo.tgz)
+* Step 4 Install Nginx Ingress (Optional)
+  If Nginx Ingress is not installed yet, it can be installed using `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml`
 
-Here’s what the folder structure looks like:
-```
-    graphrag
-    ├── data
-    │   └── tg_tutorials.jsonl
-    ├── scripts
-    │   ├── answer_question.py
-    │   ├── init_graphrag.py
-    │   └── graphrag_demo.sh
-    ├── configs
-    │   ├── nginx.conf
-    │   └── server_config.json
-    ├── graphrag-k8s.yml
-    └── docker-compose.yml
-```
+* Step 5: Start all services
+  Replace `/path/to/graphrag/configs` with the absolute path of the `configs` folder inside `graphrag-k8s.yml`, and update the TigerGraph database information and other configs accordingly.
 
-Update the TigerGraph database information, LLM API keys and other configs accordingly.
+  Now, simply run `kubectl apply -f graphrag-k8s.yml` and wait for all the services to start.
 
-#### Step 3: Start all services
-Replace `/path/to/graphrag/configs` with the absolute path of the `configs` folder inside `graphrag-k8s.yml`, and update the TigerGraph database information and other configs accordingly.
-
-Now, simply run `kubectl apply -f graphrag-k8s.yml` and wait for all the services to start.
-
-#### Step 4: Check service status
-
-Use `kubectl get all -n graphrag` to check the status of full deployment.
-
-#### Step 5: Stop all services (when needed)
-  Run `kubectl delete -f graphrag-k8s.yml` and wait for all the services in the deployment to be deleted.
-
-> Note: Nginx Ingress can be deleted using `kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml` if port 80 needs to be released
 
 [Go back to top](#top)
-
-## Access Chatbot UI
-The chatbot UI will be available at `http://localhost` by default after services are up.
-
-To change the service port, update the listen port of nginx accordingly.
-
 
 # Run GraphRAG Demo
 
@@ -236,6 +194,8 @@ docker cp ExportedGraph.zip tigergraph:/home/tigergraph/graphrag/
 docker exec -u 0 -it tigergraph chown tigergraph:tigergraph /home/tigergraph/graphrag/ExportedGraph.zip
 ```
 
+> Note: command should be changed to equivalent formats if standalone TigerGraph instance is used
+
 #### Step 2: Import data package
 Next, log onto the TigerGraph instance and make use of the Database Import feature to recreate the GraphRAG:
 ```
@@ -250,9 +210,7 @@ Wait until the following output is given:
 Query installation finished.
 ```
 
-> Note: if using standalone Tigergraph the data file can be downloaded and imported directly using the gsql command provided.
-
-#### Step 3: Run the demo via chat
+#### Step 3: Run the demo via chatbot
 Open your browser to access `http://localhost:<nginx_port>` to access GraphRAG Chat. For example: http://localhost:80
 
 Enter the username and password of the TigerGraph database to login.
@@ -269,7 +227,7 @@ You can also ask other questions on statistics and data inside the TigerGraph da
 ![Data Inquiry](./graphrag/pictures/Inquiry.jpg)
 
 
-### Build GraphRAG From Scratch
+### Manually Build GraphRAG From Scratch
 
 If you want to experience the whole process of GraphRAG, you can build the GraphRAG from scratch. However, please review the LLM model and service setting carefully because it will cost some money to re-generate embedding and data structure for the raw data.
 
@@ -297,8 +255,7 @@ source demo/bin/activate
 
 Now, simply run the demo script to try GraphRAG.
 ```
-  cd ./scripts
-  bash ./graphrag_demo.sh
+  ./graphrag_demo.sh
 ```
 
 The script will:

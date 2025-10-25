@@ -15,7 +15,7 @@ python ./init_graphrag.py
 
 current_stage=
 while True; do
-  stage=$(docker logs eventual-consistency-service 2>&1 | grep "Processing Start\|DONE. graphrag.run" | tail -1)
+  stage=$(docker logs graphrag-ecc 2>&1 | grep "Processing Start\|DONE. graphrag.run" | tail -1)
   if [[ -n "$stage" && ! "$stage" == "$current_stage" ]]; then
     if [[ "$stage" =~ Processing ]]; then
       echo $stage | cut -d ' ' -f5-7
@@ -28,4 +28,4 @@ while True; do
   sleep 5
 done
 
-python ./answer_question.sh
+python ./answer_question.py
