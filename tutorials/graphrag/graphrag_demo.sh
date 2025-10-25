@@ -14,7 +14,7 @@ echo "Initializing GraphRAG. It may take 5 to 10 minutes."
 python ./init_graphrag.py
 
 current_stage=
-while True; do
+while :; do
   stage=$(docker logs graphrag-ecc 2>&1 | grep "Processing Start\|DONE. graphrag.run" | tail -1)
   if [[ -n "$stage" && ! "$stage" == "$current_stage" ]]; then
     if [[ "$stage" =~ Processing ]]; then
