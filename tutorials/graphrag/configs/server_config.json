@@ -11,7 +11,8 @@
   "graphrag_config": {
     "reuse_embedding": false,
     "ecc": "http://graphrag-ecc:8001",
-    "chat_history_api": "http://chat-history:8002"
+    "chat_history_api": "http://chat-history:8002",
+    "chunker_config": {}
   },
   "llm_config": {
     "embedding_service": {

@@ -9,7 +9,7 @@ def create_graph(conn: TigerGraphConnection):
 def load_data(conn: TigerGraphConnection):
     res = conn.ai.createDocumentIngest(
         data_source="local",
-        data_source_config={"data_path": "./data/tg_tutorials.jsonl"},
+        data_source_config={"data_path": "../data/tg_tutorials.jsonl"},
         loader_config={"doc_id_field": "doc_id", "content_field": "content", "doc_type": "markdown"},
         file_format="json",
     )
@@ -19,7 +19,7 @@ def update_graphrag(conn: TigerGraphConnection):
     conn.ai.forceConsistencyUpdate("graphrag")
 
 if __name__ == "__main__":
-    
+
     # We first create a connection to the database
     conn = TigerGraphConnection(
         host="http://localhost",
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     # And then add GraphRAG's address to the connection. This address
     # is the host's address where the GraphRAG container is running.
-    conn.ai.configureGraphRAGHost(f"{conn.host}:8000")
+    conn.ai.configureGraphRAGHost("http://localhost:8000")
 
     create_graph(conn)
     load_data(conn)
