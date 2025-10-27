@@ -45,13 +45,13 @@ docker compose up -d
 sleep 5
 
 echo "Checking service status..."
-if ! curl -s http://localhost:14240/restpp/version; then
+if ! curl -s http://localhost:14240/restpp/version >/dev/null; then
   docker exec -it tigergraph /home/tigergraph/tigergraph/app/cmd/gadmin start all >/dev/null
   docker compose up -d >/dev/null
   sleep 5
 fi
 
-if ! docker ps | grep "tigergraph/graphrag:latest" >dev/null; then
+if ! docker ps | grep "tigergraph/graphrag:latest" >/dev/null; then
   echo "Failed to start GraphRAG service."
   echo 'Please double check tigergraph username and password in configs/server_config.json, and re-run `docker compose up -d`'
   echo 'Or check log via `docker logs graphrag` for detailed failure.'
