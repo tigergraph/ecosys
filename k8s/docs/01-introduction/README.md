@@ -76,6 +76,8 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Configure SSL Certificate for Ingress Service](../03-deploy/configure-ssl-certificate-for-ingress-service.md)
 - [Running Custom Bash Scripts in a TigerGraph Cluster via Kubernetes Jobs](../04-manage/running-custom-bash-scripts-via-kubernetes-jobs.md)
 - [Configure Nginx TLS](../03-deploy/configure-nginx-tls.md)
+- [Scale Up and Scale Down](../04-manage/scale-up-and-down.md)
+- [Scale In and Scale Out](../04-manage/scale-in-and-out.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 

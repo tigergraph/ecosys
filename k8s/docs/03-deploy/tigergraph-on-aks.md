@@ -520,6 +520,8 @@ kubectl rollout status --watch --timeout=900s statefulset/${YOUR_CLUSTER_NAME} -
 kubectl wait --for=condition=complete --timeout=15m  job/${YOUR_CLUSTER_NAME}-upgrade-job --namespace ${YOUR_NAMESPACE}
 ```
 
+For detailed information about upgrading TigerGraph clusters, refer to [Upgrading a TigerGraph cluster](../04-manage/tigergraph-upgrade.md).
+
 ## Scale a TigerGraph cluster
 
 > [!WARNING]
@@ -541,6 +543,8 @@ From Operator version 1.0.0, you can change the HA factor of the TigerGraph clus
 kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --ha ${NEW_HA} --namespace ${YOUR_NAMESPACE}
 ```
 
+For detailed information about scaling TigerGraph clusters (scale in/out), refer to [Scale In and Scale Out](../04-manage/scale-in-and-out.md).
+
 ## Update the resources(CPU and Memory) of the TigerGraph cluster
 
 Modify the CPU and memory resources of your TigerGraph cluster using the following command:
@@ -550,6 +554,8 @@ kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --cpu 8 --memory 16Gi  --c
 ```
 
 For CR YAML manifests, update the `spec.resources.requests` and `spec.resources.limits` fields and apply the changes.
+
+For detailed information about updating CPU and memory resources, refer to [Scale Up and Scale Down](../04-manage/scale-up-and-down.md).
 
 ## Update system configurations and license of the TigerGraph cluster
 
