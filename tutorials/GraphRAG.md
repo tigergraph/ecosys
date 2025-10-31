@@ -57,10 +57,26 @@ You should be able to find `tigergraph/community:4.2.1` in the image list.
 
 ## Quick Start
 
+### Use TigerGraph Docker-Based Instance
 Using the following command for a one-step quick deployment with TigerGraph Community Edition and default configurations:
 ```
 curl -k https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/setup_graphrag.sh | sh
 ```
+
+The GraphRAG instances will be deployed at `./graphrag` folder and TigerGraph instance will be available at `http://localhost:14240`.
+To change installation folder, use `sh -s -- <graphrag_folder>` instead of `sh` at the end of the above command.
+
+### Use Pre-Installed TigerGraph Instance
+
+Using the following command for a one-step quick deployment with TigerGraph Community Edition and default configurations:
+```
+curl -k https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/setup_graphrag_tg.sh | sh
+```
+
+The GraphRAG instances will be deployed at `./graphrag` folder and connect to TigerGraph instance at `http://localhost:14240` by default.
+To change installation folder, TigerGraph instance location or username/password, use `sh -s -- <graphrag_loc> <tg_host> <tg_port> <tg_username> <tg_password>` instead of `sh` at the end of the above command.
+
+
 [Go back to top](#top)
 
 ## Deploy GraphRAG Manually
