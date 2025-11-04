@@ -359,7 +359,7 @@ This step is optional. You can skip it if you have privileged permissions in you
 CustomResourceDefinitions (CRDs) are non-namespaced entities accessible across all namespaces. Installing CRDs requires privileged permissions from the Kubernetes cluster. You may prefer to install CRDs independently from the Operator installation:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl apply --server-side -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator

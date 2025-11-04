@@ -100,7 +100,7 @@ kubectl tg help
 This step is optional and can be skipped if you have privileged permissions in your Kubernetes environment. The required components will be automatically installed during the Operator installation process. However, if you prefer to install CustomResourceDefinitions (CRDs) independently, you can use the following command:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl apply --server-side -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
