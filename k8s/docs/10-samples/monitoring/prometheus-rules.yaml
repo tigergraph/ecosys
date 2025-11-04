@@ -1,0 +1,346 @@
+prometheusRule:
+  groups:
+    - name: tigergraph.cpu.alerts
+      rules:
+        - alert: TigerGraphHighCPUUsage
+          expr: max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 80
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High CPU Usage Detected"
+            description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }}%)"
+
+        - alert: TigerGraphCriticalCPUUsage
+          expr: max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 90
+          for: 3m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "Critical CPU Usage Detected"
+            description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is critically high ({{ $value }}%)"
+
+        - alert: TigerGraphServiceHighCPUUsage
+          expr: max(tigergraph_cpu_usage{service_name!=""}) by (cluster_name, namespace, service_name, host_id) > 70
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High CPU Usage for {{ $labels.service_name }} Service"
+            description: "CPU usage for {{ $labels.service_name }} service on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }}%)"
+
+    - name: tigergraph.memory.alerts
+      rules:
+        - alert: TigerGraphHighMemoryUsage
+          expr: (max(tigergraph_memory_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) / max(tigergraph_memory_total{service_name=""}) by (cluster_name, namespace, service_name, host_id)) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Memory Usage Detected"
+            description: "Memory usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value | humanizePercentage }})"
+
+        - alert: TigerGraphCriticalMemoryUsage
+          expr: (max(tigergraph_memory_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) / max(tigergraph_memory_total{service_name=""}) by (cluster_name, namespace, service_name, host_id)) * 100 > 90
+          for: 3m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "Critical Memory Usage Detected"
+            description: "Memory usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is critically high ({{ $value | humanizePercentage }})"
+
+        - alert: TigerGraphLowMemoryAvailable
+          expr: max(tigergraph_memory_available{}) by (cluster_name, namespace, host_id) < 1000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "Low Memory Available"
+            description: "Available memory on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is low ({{ $value }} MB)"
+
+    - name: tigergraph.disk.alerts
+      rules:
+        - alert: TigerGraphHighDiskUsage
+          expr: (max by(host_id, mount_point, path)(tigergraph_diskspace_usage) / (max by(host_id, mount_point, path)(tigergraph_diskspace_usage) + max by(host_id, mount_point, path) (tigergraph_diskspace_free))) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Disk Usage Detected"
+            description: "Disk usage for {{ $labels.path_name }}: {{ $labels.path }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value | humanizePercentage }})"
+
+        - alert: TigerGraphCriticalDiskUsage
+          expr: (max by(host_id, mount_point, path)(tigergraph_diskspace_usage) / (max by(host_id, mount_point, path)(tigergraph_diskspace_usage) + max by(host_id, mount_point, path) (tigergraph_diskspace_free))) * 100 > 90
+          for: 3m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "Critical Disk Usage Detected"
+            description: "Disk usage for {{ $labels.path_name }}: {{ $labels.path }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is critically high ({{ $value | humanizePercentage }})"
+
+        - alert: TigerGraphLowDiskSpace
+          expr: max(tigergraph_diskspace_free) by (cluster_name, namespace, path_name, host_id, path) < 1000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "Low Disk Space"
+            description: "Free disk space for {{ $labels.path_name }}: {{ $labels.path }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is low ({{ $value }} MB)"
+
+        - alert: TigerGraphLowDiskInodes
+          expr: max(tigergraph_disk_inode_free) by (cluster_name, namespace, host_id, path_name, path) < 100000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "Low Disk Inodes"
+            description: "Free disk inodes for {{ $labels.path_name }}: {{ $labels.path }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is low ({{ $value }})"
+
+    - name: tigergraph.network.alerts
+      rules:
+        - alert: TigerGraphHighNetworkConnections
+          expr: max(tigergraph_network_connections) by (cluster_name, namespace, host_id) > 2000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Network Connections"
+            description: "Number of open TCP connections on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }})"
+
+    - name: tigergraph.service.alerts
+      rules:
+        - alert: TigerGraphServiceDown
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 27
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Down"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is down"
+
+        - alert: TigerGraphServiceOffline
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 24
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Offline"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is offline"
+
+        - alert: TigerGraphServiceStopping
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 21
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Stopping"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is stopping"
+
+        - alert: TigerGraphServicePaused
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 18
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Paused"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is paused"
+
+        - alert: TigerGraphServiceStarting
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 15
+          for: 2m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Starting"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is starting"
+
+        - alert: TigerGraphServiceReadonly
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 12
+          for: 1m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Readonly"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is in readonly mode"
+
+        - alert: TigerGraphServiceWarmup
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 9
+          for: 2m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Warmup"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is in warmup state"
+
+        - alert: TigerGraphServiceUnknown
+          expr: max(tigergraph_service_status) by (cluster_name, namespace, service_name, host_id) == 3
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph Service Unknown Status"
+            description: "Service {{ $labels.service_name }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} has unknown status"
+
+    - name: tigergraph.performance.alerts
+      rules:
+        - alert: TigerGraphHighEndpointLatency
+          expr: max(tigergraph_endpoint_latency{statistic="average_latency"}) by (namespace,cluster_name, endpoint, exported_endpoint, service_name)> 5000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Endpoint Latency"
+            description: "Average latency for exported_endpoint {{ $labels.exported_endpoint }} of endpoint {{ $labels.endpoint }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }}ms)"
+
+        - alert: TigerGraphCriticalEndpointLatency
+          expr: max(tigergraph_endpoint_latency{statistic="average_latency"}) by (namespace,cluster_name, endpoint, exported_endpoint, service_name) > 10000
+          for: 3m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "Critical Endpoint Latency"
+            description: "Average latency for exported_endpoint {{ $labels.exported_endpoint }} of endpoint {{ $labels.endpoint }} on host {{ $labels.host_id }} is critically high ({{ $value }}ms)"
+
+        - alert: TigerGraphHighQPS
+          expr: max(tigergraph_qps) by (namespace,cluster_name, endpoint, exported_endpoint, service_name, host_id) > 100
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High QPS Detected"
+            description: "High QPS for exported_endpoint {{ $labels.exported_endpoint }} of endpoint {{ $labels.endpoint }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} ({{ $value }})"
+
+        - alert: TigerGraphEndpointTimeout
+          expr: max(tigergraph_endpoint_timeout) by (namespace,cluster_name, endpoint, exported_endpoint, service_name, host_id) > 0
+          for: 1m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "Endpoint Timeout"
+            description: "Timeout occurred for exported_endpoint {{ $labels.exported_endpoint }} of endpoint {{ $labels.endpoint }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} ({{ $value }} timeouts)"
+
+    - name: tigergraph.system.alerts
+      rules:
+        - alert: TigerGraphLowCPUAvailable
+          expr: max(tigergraph_cpu_available) by (namespace,cluster_name, host_id) < 10
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "Low CPU Available"
+            description: "Available CPU on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is low ({{ $value }}%)"
+
+        - alert: TigerGraphHighDiskIO
+          expr: max(tigergraph_disk_iops) by (namespace,cluster_name, path_name, host_id, path, mount_point) > 1000
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Disk I/O"
+            description: "High disk I/O for {{ $labels.path_name }} of mount point {{ $labels.mount_point }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} ({{ $value }} IOPS)"
+
+        - alert: TigerGraphHighDiskIOTime
+          expr: max(tigergraph_disk_io_time) by (namespace,cluster_name, path_name, host_id, path,mount_point) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High Disk I/O Time"
+            description: "High disk I/O time for {{ $labels.path_name }} of mount point {{ $labels.mount_point }} on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} ({{ $value }} hours)"
+
+    - name: tigergraph.license.alerts
+      rules:
+        - alert: TigerGraphLicenseExpiringSoon
+          expr: min(tigergraph_license_days_left) by (cluster_name, namespace) <= 30 and min(tigergraph_license_days_left) by (cluster_name, namespace) > 7
+          for: 1m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph License Expiring Soon"
+            description: "TigerGraph license for cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} will expire in {{ $value }} days. Please renew the license."
+
+        - alert: TigerGraphLicenseExpiringCritical
+          expr: min(tigergraph_license_days_left) by (cluster_name, namespace) <= 7 and min(tigergraph_license_days_left) by (cluster_name, namespace) > 0
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph License Expiring Critical"
+            description: "TigerGraph license for cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} will expire in {{ $value }} days. URGENT: License renewal required immediately."
+
+        - alert: TigerGraphLicenseExpired
+          expr: min(tigergraph_license_days_left) by (cluster_name, namespace) == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph License Expired"
+            description: "TigerGraph license for cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} has expired. Service may be affected."
+
+        - alert: TigerGraphLicenseInvalid
+          expr: min(tigergraph_license_days_left) by (cluster_name, namespace) == -1
+          for: 1m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "TigerGraph License Invalid"
+            description: "TigerGraph license for cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is invalid or corrupted. Please check license configuration."
+
+    - name: tigergraph.recording.rules
+      rules:
+        - record: tigergraph:cpu_usage_percentage
+          expr: max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id)
+
+        - record: tigergraph:memory_usage_percentage
+          expr: ((max(tigergraph_memory_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id)) / max(tigergraph_memory_total{service_name=""}) by (cluster_name, namespace, service_name, host_id)) * 100
+
+        - record: tigergraph:disk_usage_percentage
+          expr: (max(tigergraph_diskspace_usage) by(namespace,cluster_name,mount_point,path, path_name, host_id) / (max(tigergraph_diskspace_usage) by(namespace,cluster_name,mount_point,path, path_name, host_id) + max(tigergraph_diskspace_free) by(namespace,cluster_name,mount_point,path, path_name, host_id))) * 100
+
+        - record: tigergraph:endpoint_latency_avg
+          expr: max(tigergraph_endpoint_latency{statistic="average_latency"}) by (namespace,cluster_name, endpoint, exported_endpoint, service_name)
+
+        - record: tigergraph:endpoint_latency_max
+          expr: max(tigergraph_endpoint_latency{statistic="max_latency"}) by (namespace,cluster_name, endpoint, exported_endpoint, service_name)
+
+        - record: tigergraph:qps_total
+          expr: sum(tigergraph_qps) by (namespace,cluster_name, endpoint, exported_endpoint, service_name, host_id)
+
+        - record: tigergraph:service_online_count
+          expr: count(tigergraph_service_status == 6) by (namespace,cluster_name, service_name, host_id)
+
+        - record: tigergraph:service_offline_count
+          expr: count(tigergraph_service_status != 6) by (namespace,cluster_name, service_name, host_id)
+
+        - record: tigergraph:license_days_remaining
+          expr: min(tigergraph_license_days_left) by (cluster_name, namespace)

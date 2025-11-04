@@ -3,7 +3,10 @@
 This document provides step-by-step instructions for upgrading the TigerGraph Kubernetes Operator using the kubectl-tg plugin.
 
 - [How to upgrade TigerGraph Kubernetes Operator](#how-to-upgrade-tigergraph-kubernetes-operator)
-  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.3.0](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-130)
+  - [Before You begin](#before-you-begin)
+    - [Release Number Definition](#release-number-definition)
+    - [Check whether high availability is enabled on the TigerGraph Operator](#check-whether-high-availability-is-enabled-on-the-tigergraph-operator)
+  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.0](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-170)
     - [Upgrading kubectl-tg plugin](#upgrading-kubectl-tg-plugin)
       - [Upgrading TigerGraph Operator](#upgrading-tigergraph-operator)
   - [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above)
@@ -27,14 +30,55 @@ This document provides step-by-step instructions for upgrading the TigerGraph Ku
     - [Successfully upgraded the operator from version 0.0.9 to version 1.2.0 and earlier, but still encountered some errors when creating a TigerGraph cluster](#successfully-upgraded-the-operator-from-version-009-to-version-120-and-earlier-but-still-encountered-some-errors-when-creating-a-tigergraph-cluster)
     - [Failed to upgrade the operator from version 0.0.9 to version 1.3.0 and above](#failed-to-upgrade-the-operator-from-version-009-to-version-130-and-above)
 
-## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.3.0
+## Before You begin
+
+### Release Number Definition
+
+Similar to the TigerGraph release number, the operator's release number consists of three parts, represented as X.Y.Z:
+
+- **X (MAJOR version)**: Indicates incompatible CRD (Custom Resource Definition) changes.
+
+- **Y (MINOR version)**: Indicates the addition of functionality in a backward-compatible manner, without breaking changes.
+
+- **Z (PATCH version)**: Indicates backward-compatible bug fixes, with no changes to MAJOR and MINOR versions.
+
+Therefore, there are no breaking changes when upgrading the Operator within a MINOR or PATCH version.
+
+> [!NOTE]
+> A backward-compatible Operator upgrade may still introduce changes to the StatefulSet used to manage TigerGraph.
+> However, these changes will not take effect until you update the TigerGraph CR, at which point a rolling upgrade will be triggered.
+
+### Check whether high availability is enabled on the TigerGraph Operator
+
+In production environments, high availability should always be enabled on the TigerGraph Operator to ensure seamless upgrades.
+
+You can check the replicas of Operator by the following command:
+
+```bash
+kubectl get deployment tigergraph-operator-controller-manager -o jsonpath='{.spec.replicas}' -n ${YOUR_NAMESPACE_OF_OPERATOR}
+```
+
+Example output:
+
+```bash
+$ kubectl get deployment tigergraph-operator-controller-manager -o jsonpath='{.spec.replicas}' -n tigergraph
+1
+```
+
+If the output above is 1, scale out the Operator with the following command:
+
+```bash
+kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-size 3
+```
+
+## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.0
 
 ### Upgrading kubectl-tg plugin
 
-To upgrade the kubectl-tg plugin for TigerGraph Operator 1.3.0, execute the following command:
+To upgrade the kubectl-tg plugin for TigerGraph Operator 1.7.0, execute the following command:
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.3.0/kubectl-tg  -o kubectl-tg
+curl https://dl.tigergraph.com/k8s/latest/kubectl-tg  -o kubectl-tg
 sudo install kubectl-tg /usr/local/bin/
 ```
 
@@ -43,8 +87,8 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.3.0
-Default version of TigerGraph cluster: 4.1.1
+Version: 1.7.0
+Default version of TigerGraph cluster: 4.3.0
 ```
 
 > [!WARNING]
@@ -52,10 +96,10 @@ Default version of TigerGraph cluster: 4.1.1
 
 #### Upgrading TigerGraph Operator
 
-There are no breaking changes in the TigerGraph CRDs for version 1.3.0 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if you have an older version (1.0.0 or above) installed.
+There are no breaking changes in the TigerGraph CRDs for version 1.7.0 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if you have an older version (1.0.0 or above) installed.
 
 > [!IMPORTANT]
-> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, for operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
+> There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, starting from operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
 
 - Upgrade the TigerGraph CRDs to the latest version(It's required for the operator version prior to 1.3.0)
 
@@ -75,7 +119,7 @@ There are no breaking changes in the TigerGraph CRDs for version 1.3.0 compared 
   helm list -n ${YOUR_NAMESPACE_OF_OPERATOR}
   
   NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
-  tg-operator     tigergraph      2               2024-06-24 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.2.0                1.2.0
+  tg-operator     tigergraph      2               2025-09-28 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.0                1.7.0
   ```
 
 ## Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above
@@ -142,7 +186,7 @@ tg-data-test-cluster-2   Bound    pvc-73d58df7-206e-4c58-aa91-702df9761fac   10G
 ### Install the latest or target version of `kubectl-tg`
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.3.0/kubectl-tg  -o kubectl-tg
+curl https://dl.tigergraph.com/k8s/latest/kubectl-tg  -o kubectl-tg
 sudo install kubectl-tg /usr/local/bin/
 ```
 
@@ -151,8 +195,8 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.3.0
-Default version of TigerGraph cluster: 4.1.1
+Version: 1.7.0
+Default version of TigerGraph cluster: 4.3.0
 ```
 
 ### Uninstall the old version of TigerGraph Operator and TigerGraph CRDs
@@ -193,7 +237,7 @@ Ensure TigerGraph Operator has been installed successfully:
 helm list -n tigergraph
 
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
-tg-operator     tigergraph      1               2024-09-10 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.3.0                1.3.0
+tg-operator     tigergraph      1               2025-09-10 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.0                1.7.0
 ```
 
 ```bash
@@ -326,10 +370,10 @@ Best practice for upgrading TigerGraph <=3.9.3 with a single PVC and TigerGraph 
 
   [Backup & Restore cluster kubectl-tg plugin](../04-manage/backup-and-restore/backup-restore-by-kubectl-tg.md)
 
-- After completing the restore process, upgrade the TigerGraph cluster to version 4.2.1 using the appropriate command.
+- After completing the restore process, upgrade the TigerGraph cluster to version 4.1.0 using the appropriate command.
   
   ```bash
-  kubectl tg update --cluster-name $YOUR_CLUSTER_NAME --version 4.2.1 --namespace $YOUR_NAMESPACE
+  kubectl tg update --cluster-name $YOUR_CLUSTER_NAME --version 4.1.0 --namespace $YOUR_NAMESPACE
   ```
 
 ## Troubleshooting

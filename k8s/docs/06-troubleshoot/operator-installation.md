@@ -17,17 +17,17 @@ In the following steps, we assume that the TigerGraph Operator has been installe
   ```bash
   kubectl get deployment tigergraph-operator-controller-manager -o wide -n tigergraph
 
-  NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS                IMAGES                                                                                         SELECTOR
-  tigergraph-operator-controller-manager   1/1     1            1           22m   manager,kube-rbac-proxy   docker.io/tigergrah/tigergraph-k8s-operator:0.0.3,gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0   control-plane=controller-manager
+  NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                               SELECTOR
+  tigergraph-operator-controller-manager   1/1     1            1           19d   manager      docker.io/tginternal/tigergraph-k8s-operator:1.7.0   control-plane=controller-manager
   ```
 
-  From the output of the above command, you can figure out that the operator version is 0.0.3, docker.io/tigergrah/tigergraph-k8s-operator:0.0.3, you can also use the following helm command to get the current version of Operator:
+  From the output of the above command, you can figure out that the operator version is 1.7.0, docker.io/tigergrah/tigergraph-k8s-operator:1.7.3, you can also use the following helm command to get the current version of Operator:
 
   ```bash
   helm list -n tigergraph
   
   NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
-  tg-operator     tigergraph      1               2023-02-26 13:16:15.701059001 +0000 UTC deployed        tg-operator-0.0.3
+  tg-operator     tigergraph      1               2025-09-10 13:16:15.701059001 +0000 UTC deployed        tg-operator-1.7.0         1.7.0
 
   ```
 

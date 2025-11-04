@@ -1,0 +1,51 @@
+# Certificate for TigerGraph metrics endpoint TLS
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tigergraph-metrics-server-cert
+spec:
+  # Secret names are often required, so we will create one
+  secretName: tigergraph-metrics-server-cert
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days
+  subject:
+    organizations:
+      - tigergraph
+  commonName: tigergraph-metrics-server
+  # The dnsNames field specifies the DNS names for which the certificate should be valid.
+  # Modify the dnsNames field to match the DNS names of your TigerGraph cluster.
+  # For the tigergraph metrics endpoint, the dnsNames should include:
+  # 1. The internal service name of the TigerGraph cluster. $CLUSTER_NAME-internal-service.$NAMESPACE.svc
+  dnsNames:
+    - test-cluster-internal-service 
+    - test-cluster-internal-service.tigergraph
+    - test-cluster-internal-service.tigergraph.svc
+    - test-cluster-internal-service.tigergraph.svc.cluster.local
+    - test-cluste1-internal-service 
+    - test-cluster1-internal-service.tigergraph
+    - test-cluster1-internal-service.tigergraph.svc
+    - test-cluster1-internal-service.tigergraph.svc.cluster.local
+  # The use of the common name field has been deprecated since 2000 and is from
+  # 2014 explicitly disallowed by CABF. It should not be used unless you have a
+  # specific need to support a legacy client which requires it.
+  # commonName: example.com
+  # The issuerRef field specifies which cert-manager Issuer should be used to
+  # create the Certificate. If the Issuer is namespace-scoped, this field must
+  # only reference a NamespaceScoped Issuer. If the Issuer is cluster-scoped,
+  # this field can reference a ClusterIssuer.
+  issuerRef:
+    # The name of the Issuer resource
+    name: selfsigned-issuer
+    # We can reference ClusterIssuers by changing the kind here.
+    # The default value is Issuer (i.e. a locally namespaced Issuer)
+    kind: Issuer
+    # This is optional since cert-manager will default to this value however
+    # if you are using an external issuer, change this to that issuer group.
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}

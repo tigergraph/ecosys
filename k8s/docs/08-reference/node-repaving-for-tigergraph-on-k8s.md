@@ -32,9 +32,6 @@ TigerGraph generally maintains high availability under both conditions, provided
 
 Note that some critical TigerGraph components—such as GSE, GSQL, and Kafka—may perform a leader switch during node repaving. In rare cases, this can cause brief service disruption. Therefore, upstream applications should implement retry logic with a minimum retry interval of 5 seconds.
 
-> [!WARNING]
-> When using TigerGraph 4.2.1, you may encounter rare cases where node repaving causes downtime longer than 5 seconds. If your workload requires strict high availability, we suggest trying these features in a test environment first. We plan to address these issues in the next release.
-
 ## Prerequisites
 
 Ensure you have the following before proceeding:
@@ -136,67 +133,67 @@ In this section, we demonstrate how to repave a node in Amazon EKS using a manag
 - Deploy a TigerGraph Cluster with HA and Topology Spread Constraints
     Here we skip the TigerGraph Operator installation process, you can refer to the document [Deploy TigerGraph on AWS EKS](../03-deploy/tigergraph-on-eks.md) for the details.
 
-    ```bash
-    export CLUSTER_NAME=<YOUR_CLUSTER_NAME>
-    export LICENSE=<YOUR_LICENSE>
-    export NAMESPACE=<YOUR_NAMESPACE>
-    export STORAGE_CLASS=<YOUR_STORAGE_CLASS>
+```bash
+export CLUSTER_NAME=<YOUR_CLUSTER_NAME>
+export LICENSE=<YOUR_LICENSE>
+export NAMESPACE=<YOUR_NAMESPACE>
+export STORAGE_CLASS=<YOUR_STORAGE_CLASS>
 
-    cat <<EOF | kubectl apply -f -
-    apiVersion: graphdb.tigergraph.com/v1alpha1
-    kind: TigerGraph
-    metadata:
-    name: ${CLUSTER_NAME}
-    namespace: ${NAMESPACE}
-    spec:
-    ha: 2
-    image: docker.io/tigergraph/tigergraph-k8s:4.2.1
-    imagePullPolicy: IfNotPresent
-    imagePullSecrets:
+cat <<EOF | kubectl apply -f -
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
     - name: tigergraph-image-pull-secret
-    license: ${LICENSE}
-    listener:
-        type: LoadBalancer
-    privateKeyName: ssh-key-secret
-    replicas: 4
-    resources:
-        limits:
-        cpu: 6
-        memory: 12
-        requests:
-        cpu: 6
-        memory: 12
-    securityContext:
-        privileged: false
-        runAsGroup: 1000
-        runAsUser: 1000
-    storage:
-        type: persistent-claim
-        volumeClaimTemplate:
-        accessModes:
+  license: ${LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    limits:
+      cpu: "6"
+      memory: "12Gi"
+    requests:
+      cpu: "6"
+      memory: "12Gi"
+  securityContext:
+    privileged: false
+    runAsGroup: 1000
+    runAsUser: 1000
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
         - ReadWriteOnce
-        resources:
-            requests:
-            storage: 100G
-        storageClassName: ${STORAGE_CLASS}
-        volumeMode: Filesystem
-    topologySpreadConstraints:
-        - maxSkew: 1
-            topologyKey: topology.kubernetes.io/zone
-            whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
-            labelSelector:
-            matchLabels:
-                tigergraph.com/cluster-pod: ${CLUSTER_NAME}
-            matchLabelKeys:
-            - pod-template-hash
-        - maxSkew: 1
-            topologyKey: "kubernetes.io/hostname"
-            whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
-            labelSelector:
-            matchLabels:
-                tigergraph.com/cluster-pod: ${CLUSTER_NAME}
-    EOF
-    ```
+      resources:
+        requests:
+          storage: 100Gi
+      storageClassName: ${STORAGE_CLASS}
+      volumeMode: Filesystem
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          tigergraph.com/cluster-pod: ${CLUSTER_NAME}
+      matchLabelKeys:
+        - pod-template-hash
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          tigergraph.com/cluster-pod: ${CLUSTER_NAME}
+EOF
+```
 
 - Ensure Cluster is in Normal Status
     Before performing node repaving, ensure that the TigerGraph cluster is in the Normal status.
@@ -314,67 +311,67 @@ In the following example, we'll conduct node repaving test for TigerGraph with a
 
     Here we skip the TigerGraph Operator installation process, you can refer to the document [Deploy TigerGraph on Google Cloud GKE](../03-deploy/tigergraph-on-gke.md) for the details.
 
-    ```bash
-    export CLUSTER_NAME=<YOUR_CLUSTER_NAME>
-    export LICENSE=<YOUR_LICENSE>
-    export NAMESPACE=<YOUR_NAMESPACE>
-    export STORAGE_CLASS=<YOUR_STORAGE_CLASS>
+```bash
+export CLUSTER_NAME=<YOUR_CLUSTER_NAME>
+export LICENSE=<YOUR_LICENSE>
+export NAMESPACE=<YOUR_NAMESPACE>
+export STORAGE_CLASS=<YOUR_STORAGE_CLASS>
 
-    cat <<EOF | kubectl apply -f -
-    apiVersion: graphdb.tigergraph.com/v1alpha1
-    kind: TigerGraph
-    metadata:
-    name: ${CLUSTER_NAME}
-    namespace: ${NAMESPACE}
-    spec:
-    ha: 2
-    image: docker.io/tigergraph/tigergraph-k8s:4.2.1
-    imagePullPolicy: IfNotPresent
-    imagePullSecrets:
+cat <<EOF | kubectl apply -f -
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraph
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  ha: 2
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
     - name: tigergraph-image-pull-secret
-    license: ${LICENSE}
-    listener:
-        type: LoadBalancer
-    privateKeyName: ssh-key-secret
-    replicas: 4
-    resources:
-        limits:
-        cpu: 6
-        memory: 12
-        requests:
-        cpu: 6
-        memory: 12
-    securityContext:
-        privileged: false
-        runAsGroup: 1000
-        runAsUser: 1000
-    storage:
-        type: persistent-claim
-        volumeClaimTemplate:
-        accessModes:
+  license: ${LICENSE}
+  listener:
+    type: LoadBalancer
+  privateKeyName: ssh-key-secret
+  replicas: 4
+  resources:
+    limits:
+      cpu: "6"
+      memory: "12Gi"
+    requests:
+      cpu: "6"
+      memory: "12Gi"
+  securityContext:
+    privileged: false
+    runAsGroup: 1000
+    runAsUser: 1000
+  storage:
+    type: persistent-claim
+    volumeClaimTemplate:
+      accessModes:
         - ReadWriteOnce
-        resources:
-            requests:
-            storage: 100G
-        storageClassName: ${STORAGE_CLASS}
-        volumeMode: Filesystem
-    topologySpreadConstraints:
-        - maxSkew: 1
-            topologyKey: topology.kubernetes.io/zone
-            whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
-            labelSelector:
-            matchLabels:
-                tigergraph.com/cluster-pod: ${CLUSTER_NAME}
-            matchLabelKeys:
-            - pod-template-hash
-        - maxSkew: 1
-            topologyKey: "kubernetes.io/hostname"
-            whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
-            labelSelector:
-            matchLabels:
-                tigergraph.com/cluster-pod: ${CLUSTER_NAME}
-    EOF
-    ```
+      resources:
+        requests:
+          storage: 100Gi
+      storageClassName: ${STORAGE_CLASS}
+      volumeMode: Filesystem
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          tigergraph.com/cluster-pod: ${CLUSTER_NAME}
+      matchLabelKeys:
+        - pod-template-hash
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          tigergraph.com/cluster-pod: ${CLUSTER_NAME}
+EOF
+```
 
 - Verify Cluster Status
     Before performing node repaving, ensure that the TigerGraph cluster is in the Normal status.

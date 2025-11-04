@@ -1,79 +1,73 @@
-# Enable TigerGraph Operator monitoring with Prometheus and Grafana
+# TigerGraph Operator Monitoring Guide
 
-Since version 1.5.0, the TigerGraph Operator includes support for monitoring. This guide demonstrates how to deploy Prometheus and Grafana for observability, as well as how to enable the default TigerGraph Monitor CR to automatically set up the default Grafana dashboard for enhanced visualization.
+Since version 1.5.0, the TigerGraph Operator includes support for monitoring. This guide will help you deploy Prometheus and Grafana for observability monitoring, and configure the TigerGraph Monitor CR to automatically set up Grafana dashboards.
 
-- [Enable TigerGraph Operator monitoring with Prometheus and Grafana](#enable-tigergraph-operator-monitoring-with-prometheus-and-grafana)
-  - [Install Prometheus and Grafana](#install-prometheus-and-grafana)
+Starting from version 1.7.0, TigerGraph Operator supports automatically exposing Operator metrics to Prometheus when the monitoring option is enabled during installation. Additionally, it supports customizing PrometheusRules and AlertManagerConfig through the TigerGraph Monitor CR, ServiceMonitor, PrometheusRule, and AlertManagerConfig selectors.
+
+## Table of Contents
+
+- [TigerGraph Operator Monitoring Guide](#tigergraph-operator-monitoring-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Install Monitoring Components](#install-monitoring-components)
+    - [Install Prometheus, Grafana and AlertManager](#install-prometheus-grafana-and-alertmanager)
+      - [Basic Installation](#basic-installation)
+      - [Custom Configuration Installation](#custom-configuration-installation)
+    - [Verify Installation](#verify-installation)
+  - [Expose TigerGraph Operator Metrics to Prometheus](#expose-tigergraph-operator-metrics-to-prometheus)
+    - [Enable Operator Metrics During Installation](#enable-operator-metrics-during-installation)
+    - [Enable Operator Metrics During Upgrade](#enable-operator-metrics-during-upgrade)
+    - [Verify Operator Metrics Exposure](#verify-operator-metrics-exposure)
+    - [Grafana Dashboard and Prometheus Alert Rules for TigerGraph Operator​](#grafana-dashboard-and-prometheus-alert-rules-for-tigergraph-operator)
   - [Manage TigerGraph Monitor](#manage-tigergraph-monitor)
+    - [Key Configuration Fields](#key-configuration-fields)
     - [Manage TigerGraph Monitor using kubectl-tg plugin](#manage-tigergraph-monitor-using-kubectl-tg-plugin)
-      - [Create a TigerGraph monitor](#create-a-tigergraph-monitor)
-      - [Update a TigerGraph monitor](#update-a-tigergraph-monitor)
-      - [Delete a TigerGraph monitor](#delete-a-tigergraph-monitor)
+      - [Basic Monitoring Configuration](#basic-monitoring-configuration)
+      - [Advanced Monitoring Configuration](#advanced-monitoring-configuration)
     - [Manage TigerGraph Monitor using CR](#manage-tigergraph-monitor-using-cr)
-  - [Access Grafana dashboard](#access-grafana-dashboard)
-  - [Uninstall Prometheus and Grafana](#uninstall-prometheus-and-grafana)
+      - [Basic Configuration](#basic-configuration)
+      - [Complete Configuration Example](#complete-configuration-example)
+  - [Advanced Configuration](#advanced-configuration)
+    - [Service Monitor Labels](#service-monitor-labels)
+    - [Prometheus Rules Selector](#prometheus-rules-selector)
+    - [Prometheus Rules](#prometheus-rules)
+    - [AlertManager Config Selector](#alertmanager-config-selector)
+    - [AlertManager Configuration](#alertmanager-configuration)
+    - [TLS Configuration](#tls-configuration)
+  - [Access Monitoring Interface](#access-monitoring-interface)
   - [Troubleshooting](#troubleshooting)
     - [Create TigerGraph monitor CR successfully but with warning events in TigerGraph monitor CR status](#create-tigergraph-monitor-cr-successfully-but-with-warning-events-in-tigergraph-monitor-cr-status)
+    - [Check the serviceMonitorSelector, ruleSelector, and alertmanagerConfigSelector](#check-the-servicemonitorselector-ruleselector-and-alertmanagerconfigselector)
+  - [TigerGraph Metrics Reference](#tigergraph-metrics-reference)
+  - [Uninstall Monitoring Components](#uninstall-monitoring-components)
+    - [Uninstall Prometheus and Grafana](#uninstall-prometheus-and-grafana)
+    - [Clean Up CRDs](#clean-up-crds)
+    - [Clean Up Persistent Storage](#clean-up-persistent-storage)
 
-## Install Prometheus and Grafana
+## Install Monitoring Components
 
-It is recommended to install Prometheus and Grafana using the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack). You can achieve this by using the sub command `kubectl tg monitoring-stack` of kubectl-tg plugin. Alternatively, you can install the kube-prometheus-stack using Helm by following the [official documentation](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#kube-prometheus-stack).
+### Install Prometheus, Grafana and AlertManager
 
-> [!IMPORTANT]
-> Currently, it is not possible to install the kube-prometheus-stack Helm chart on OpenShift. As a result, the kubectl-tg plugin cannot be used to install it.
-> If your OpenShift cluster does not yet have the kube-prometheus-stack installed, please refer to the [OpenShift official documentation](https://docs.openshift.com/container-platform/4.8/monitoring/configuring-the-monitoring-stack.html) for detailed instructions on configuring the monitoring stack.
-
-The following example steps will install kube-prometheus-stack using the kubectl-tg plugin:
-
-```bash
-kubectl tg monitoring-stack --help
-Manage kube-prometheus-stack deployment
-
-Examples:
-  # create a kube-prometheus-stack deployment with name and namespace
-  kubectl tg monitoring-stack create -r monitoring-stack -n monitoring-stack
-  # create a kube-prometheus-stack deployment with customized values.yaml
-  kubectl tg monitoring-stack create -r monitoring-stack -f values.yaml -n monitoring-stack
-  # update a kube-prometheus-stack deployment with values.yaml
-  kubectl tg monitoring-stack update -r monitoring-stack -f values.yaml -n monitoring-stack
-  # delete a kube-prometheus-stack deployment with name and namespace
-  kubectl tg monitoring-stack delete -r monitoring-stack -n monitoring-stack
-
-Usage:
-  kubectl tg monitoring-stack [create|update|delete] [OPTIONS]
-
-Options:
-  -n|--namespace :    set namespace, if not set, use the default namespace in context
-  -r|--kube-prometheus-stack-release-name : 
-                      specify release name of kube-prometheus-stack deployment
-  -f|--kube-prometheus-stack-values : 
-                      specify values.yaml of kube-prometheus-stack deployment. If not set, use the default values.yaml
-```
-
-> [!NOTE]
-> For TigerGraph Operator 1.5.0, the kubectl-tg plugin installs kube-prometheus-stack version 68.2.1 by default. The minimum supported version of kube-prometheus-stack is 45.25.0.
-> If you prefer to install a specific version of kube-prometheus-stack between 45.25.0 and 68.2.1, use the Helm command to install it manually by following the [official documentation](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#kube-prometheus-stack).
-
-Using the following command to create a kube-prometheus-stack deployment with release name, namespace and customize configuration of kube-prometheus-stack.
+#### Basic Installation
 
 ```bash
-export PATH_TO_VALUES_YAML="values.yaml"
-export RELEASE_NAME="monitoring-stack"
+# Set variables
 export MONITORING_NAMESPACE="monitoring-stack"
+export RELEASE_NAME="monitoring-stack"
 
-kubectl tg monitoring-stack create -f ${PATH_TO_VALUES_YAML} -r ${RELEASE_NAME} -n ${MONITORING_NAMESPACE}
+# Create namespace
+kubectl create namespace $MONITORING_NAMESPACE
+
+# Install using default configuration
+kubectl tg monitoring-stack create \
+  --kube-prometheus-stack-release-name $RELEASE_NAME \
+  --namespace $MONITORING_NAMESPACE
 ```
 
-> [!NOTE]
-> It is recommended to install Prometheus and Grafana in a separate namespace from the TigerGraph clusters to ensure cleaner and more organized management.
+#### Custom Configuration Installation
 
-The customized configuration of kube-prometheus-stack YAML resource example is following as:
-
-```YAML
-# The values.yaml file for kube-prometheus-stack configures a comprehensive suite of monitoring services 
-# to deliver observability insights. 
-# It enables both Prometheus and Grafana, exposing them externally via LoadBalancers.
-
+```bash
+# Create custom values file
+cat > monitoring-values.yaml << EOF
 prometheus:
   enabled: true
   service:
@@ -83,13 +77,20 @@ prometheus:
     portName: prometheus-service
   prometheusSpec:    
     storageSpec: 
-     volumeClaimTemplate:
-       spec:
-         accessModes:
-          - "ReadWriteOnce"
-         resources:
-           requests:
-             storage: 50Gi
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - "ReadWriteOnce"
+          resources:
+            requests:
+              storage: 50Gi
+    serviceMonitorSelector:
+      ## Example which selects ServiceMonitors with label "prometheus" set to "somelabel"
+      matchLabels:
+        prometheus.io/monitor: "true"
+    ruleSelector:
+      matchLabels:
+        prometheus.io/rule: "true"
 
 grafana:
   enabled: true
@@ -107,42 +108,134 @@ grafana:
     size: 5Gi
 
 alertmanager:
-  enabled: false
+  enabled: true
+  service:
+    type: LoadBalancer
+    port: 9093
+    targetPort: 9093
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - "ReadWriteOnce"
+          resources:
+            requests:
+              storage: 5Gi
+    alertmanagerConfigSelector:
+      matchLabels:
+        prometheus.io/alertmanager-config: "true"
+EOF
+
+# Install with custom configuration
+kubectl tg monitoring-stack create \
+  --kube-prometheus-stack-release-name $RELEASE_NAME \
+  --kube-prometheus-stack-values monitoring-values.yaml \
+  --namespace $MONITORING_NAMESPACE
 ```
 
-> [!NOTE]
-> For the external services of Prometheus and Grafana, please configure them according to your specific requirements. Additionally, ensure that you allocate an appropriate storage size to accommodate your monitoring data effectively.
-
-After successfully installing the kube-prometheus-stack, you can check its status by running the following command:
+### Verify Installation
 
 ```bash
-kubectl --namespace ${MONITORING_NAMESPACE} get pods -l "release=${RELEASE_NAME}"
+# Check if all pods are running
+kubectl get pods -n $MONITORING_NAMESPACE
 
-NAME                                                   READY   STATUS    RESTARTS   AGE
-monitoring-stack-kube-prom-operator-bcf69c8c9-tx4lw    1/1     Running   0          2m23s
-monitoring-stack-kube-state-metrics-6cf9d56576-ckmf5   1/1     Running   0          2m23s
-monitoring-stack-prometheus-node-exporter-xhn4p        1/1     Running   0          2m23s
-monitoring-stack-prometheus-node-exporter-zc92p        1/1     Running   0          2m23s
-monitoring-stack-prometheus-node-exporter-zhfg5        1/1     Running   0          2m23s
+# Check services
+kubectl get svc -n $MONITORING_NAMESPACE
+
+# Verify CRDs are installed
+kubectl get crd | grep monitoring.coreos.com
 ```
 
-You can also use the command `kubectl tg monitoring-stack update` or `kubectl tg monitoring-stack delete` to update or delete the kube-prometheus-stack. For detailed usage instructions, please refer to the command's help documentation.
+## Expose TigerGraph Operator Metrics to Prometheus
+
+Starting from version 1.7.0, you can enable TigerGraph Operator metrics exposure to Prometheus during Operator installation. This allows you to monitor the Operator itself alongside your TigerGraph clusters.
+
+> [!IMPORTANT]
+> When enabling monitoring during Operator installation, you must specify the ServiceMonitor selector; otherwise, Prometheus will not detect the ServiceMonitor resources created by the Operator. For guidance on checking Prometheus’ ServiceMonitor selector, see the [Troubleshooting section](#check-the-servicemonitorselector-ruleselector-and-alertmanagerconfigselector).
+
+### Enable Operator Metrics During Installation
+
+```bash
+# Install Operator with monitoring enabled
+kubectl tg init \
+  --namespace tigergraph \
+  --monitoring-enabled true \
+  --monitoring-service-monitor-selector "prometheus.io/monitor=true"
+```
+
+### Enable Operator Metrics During Upgrade
+
+```bash
+# Upgrade existing Operator with monitoring enabled
+kubectl tg upgrade \
+  --namespace tigergraph \
+  --monitoring-enabled true \
+  --monitoring-service-monitor-selector "prometheus.io/monitor=true"
+```
+
+### Verify Operator Metrics Exposure
+
+After enabling Operator metrics, verify that the Service Monitor is created:
+
+```bash
+# Check if Service Monitor is created
+kubectl get servicemonitor -n tigergraph
+
+# Check Service Monitor details
+kubectl describe servicemonitor tigergraph-operator-controller-manager-metrics-monitor -n tigergraph
+
+# Verify metrics endpoint status in Prometheus
+# query the service address of Prometheus
+kubectl get svc -n $MONITORING_NAMESPACE
+# Then visit http://${PROMETHEUS_LBS_ADDRESS}:9090/targets
+```
+
+### Grafana Dashboard and Prometheus Alert Rules for TigerGraph Operator​
+
+When you enable monitoring during installation, the TigerGraph Operator automatically deploys a default Grafana dashboard named `​TigerGraph Operator Metrics Dashboard`.
+
+While Prometheus alert rules are not applied automatically during installation, we provide a default set of rules for reference. You can customize the following example configuration to suit your requirements:
+
+[TigerGraph-Operator-alert-rules](../10-samples/monitoring/tigergraph-operator-alert-rules.yaml)
 
 ## Manage TigerGraph Monitor
 
-To support monitoring in the TigerGraph Operator, a new controller, called the TigerGraph Monitoring Controller, has been introduced. This controller manages the lifecycle of all monitoring-related CRs, including `ServiceMonitor`, `ConfigMap`, and others.
+### Key Configuration Fields
+
+- monitoredClusters: Specify the clusters you want to monitor. If left empty, all clusters created in the current namespace will be monitored.
+
+- serviceMonitorLabels: Define the selector labels for the ServiceMonitor. If not specified, the TigerGraph Operator will attempt to detect them automatically.
+
+- tlsConfig: TLS configuration to use when scraping the target.
+
+- ruleSelectorLabels: Define the selector labels for the PrometheusRule. If not specified, the TigerGraph Operator will attempt to detect them automatically.
+
+- alertmanagerConfigLabels: Define the selector labels for the AlertmanagerConfig. If not specified, the TigerGraph Operator will attempt to detect them automatically.
+
+- releaseName: Deprecated as of version 1.7.0. Use serviceMonitorLabels instead.
+
+- prometheusRule: PrometheusRule contains specification parameters for a Rule.
+
+- alertmanagerConfig: AlertmanagerConfig is a specification of the desired behavior of the Alertmanager configuration.
+
+For detailed configuration of these sub-fields, please see the [API Reference](../08-reference/api-reference.md).
 
 ### Manage TigerGraph Monitor using kubectl-tg plugin
 
-You can manage a TigerGraph Monitor CR by subcommand `kubectl tg monitor` of kubectl-tg plugin.
+You can manage a TigerGraph Monitor CR by subcommand kubectl tg monitor of kubectl-tg plugin.
 
 ```bash
-kubectl tg monitor --help
+$ kubectl tg monitor --help
 Manage TigerGraph monitor
  
 Examples:
   # create a TigerGraph monitor with name and namespace
   kubectl tg monitor create --name tigergraph-monitor -n tigergraph
+  # create a TigerGraph monitor with name and namespace and service monitor labels
+  kubectl tg monitor create --name tigergraph-monitor -n tigergraph --service-monitor-labels prometheus.io/monitor=true,prometheus.io/scrape=true
+  # create a TigerGraph monitor with TLS configuration
+  kubectl tg monitor create --name tigergraph-monitor -n tigergraph --tls-config tls-config.yaml
   # update a TigerGraph monitor
   kubectl tg monitor update --name tigergraph-monitor -r new-release-name -n tigergraph
   # delete a TigerGraph monitor with name and namespace
@@ -157,30 +250,188 @@ Options:
   --monitored-clusters: 
                       specify the clusters to be monitored, if not set, monitor all clusters. Separate multiple clusters with commas, e.g. cluster1,cluster2. Set it to null if you want to remove it.
   -r|--kube-prometheus-stack-release-name : 
-                      specify release name of kube-prometheus-stack deployment
+                      specify release name of kube-prometheus-stack deployment. Deprecated, please use --service-monitor-labels instead.
+  --service-monitor-labels :
+                      specify the labels of service monitor, your input should be like 'prometheus.io/monitor=true,prometheus.io/scrape=true'.
+                      Set it to null if you want to empty the labels.
+  --prometheus-rule-labels :
+                      specify the labels of prometheus rule, your input should be like 'prometheus.io/monitor=true,prometheus.io/scrape=true'.
+                      Set it to null if you want to empty the labels.
+  --prometheus-rule:
+                      give a YAML file to specify the prometheus rules.
+  --alertmanager-config-labels :
+                      specify the labels of alertmanager config, your input should be like 'prometheus.io/monitor=true,prometheus.io/scrape=true'.
+                      Set it to null if you want to empty the labels.
+  --alertmanager-config:
+                      give a YAML file to specify the alertmanager configs.
+  --tls-config:
+                      give a YAML file to specify the TLS configuration for ServiceMonitor endpoints.
 ```
 
-#### Create a TigerGraph monitor
+#### Basic Monitoring Configuration
 
 ```bash
-kubectl tg monitor create --name ${TG_MONITOR_NAME} -n ${NAMESPACE}
+export TG_MONITOR_NAME=tigergraph-monitor
+export namespace=tigergraph
+# Create basic monitoring
+kubectl tg monitor create \
+  --name ${TG_MONITOR_NAME} \
+  --namespace ${NAMESPACE} \
+  --service-monitor-labels "prometheus.io/monitor=true"
+```
+
+#### Advanced Monitoring Configuration
+
+Prepare a YAML file that includes the definitions for your `prometheusRule`, `alertmanagerConfig` and `tlsConfig`. Those YAML files will be passed to the `--prometheus-rule`, `--alertmanager-config` and `--tls-config` options.
+
+Below is an illustrative example of a prometheusRule, alertmanagerConfig and tlsConfig YAML files:
+
+[prometheus-rules.yaml](../10-samples/monitoring/prometheus-rules.yaml)
+
+```yaml
+prometheusRule:
+  groups:
+  - name: tigergraph.cpu.alerts
+    rules:
+      - alert: TigerGraphHighCPUUsage
+        expr:  max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: tigergraph
+        annotations:
+          summary: "High CPU Usage Detected"
+          description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }}%)"
+
+      - alert: TigerGraphCriticalCPUUsage
+        expr: max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 90
+        for: 3m
+        labels:
+          severity: critical
+          service: tigergraph
+        annotations:
+          summary: "Critical CPU Usage Detected"
+          description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is critically high ({{ $value }}%)"
+```
+
+alertmanager-configs.yaml
+
+```yaml
+alertmanagerConfig:
+  route:
+    groupBy: ["job", "alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1m
+    receiver: "slack-receiver"
+    routes:
+      - receiver: "slack-receiver"
+        continue: true
+  receivers:
+    - name: "slack-receiver"
+      slackConfigs:
+        - sendResolved: true
+          apiURL:
+            name: slack-webhook-url
+            key: webhook-url
+          channel: "#operator-monitoring-test"
+          color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+          text: |-
+            {{ range .Alerts }}
+              *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+              *Description:* {{ .Annotations.description }}
+              *Details:*
+              {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+              {{ end }}
+            {{ end }}
+```
+
+tls-config.yaml
+
+```yaml
+tlsConfig:
+  ca:
+    secret:
+      name: tigergraph-metrics-server-cert
+      key: ca.crt
+  cert:
+    secret:
+      name: tigergraph-metrics-server-cert
+      key: tls.crt
+  keySecret:
+    name: tigergraph-metrics-server-cert
+    key: tls.key
+  insecureSkipVerify: false
+```
+
+> [!IMPORTANT]
+> When configuring alertmanagerConfig, you must also ​manually create a Kubernetes Secret​ to enable authentication for external notification services such as ​Email​ or ​Slack.
+> 
+> This Secret typically contains sensitive credentials (e.g., API tokens, SMTP credentials) required for Alertmanager to send notifications to these services. Without the Secret, Alertmanager won't be able to establish connections to external providers.
+
+Secret for Email:
+
+```YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-auth-secret  # Name of the Secret
+type: Opaque
+data:
+  password: YOUR_PASSWORD_BASE64_ENCODED
+```
+
+Secret for Slack:
+
+```YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-webhook-url
+type: Opaque
+stringData:
+  webhook-url: https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL
+```
+
+Create TigerGraph monitor CR using kubectl tg plugin:
+
+```bash
+kubectl tg monitor create \
+  --name ${TG_MONITOR_NAME} \
+  --namespace ${NAMESPACE} \
+  --monitored-clusters "cluster1,cluster2" \
+  --service-monitor-labels "prometheus.io/monitor=true" \
+  --prometheus-rule-labels "prometheus.io/rules=true" \
+  --prometheus-rule prometheus-rules.yaml \
+  --alertmanager-config-labels "alertmanager.io/config=true" \
+  --alertmanager-config alertmanager-config.yaml \
+  --tls-config tls-config.yaml
 ```
 
 When the TigerGraph Monitor CR is successfully created, it automatically configures Prometheus to scrape the TigerGraph metrics endpoints specified in the `ServiceMonitor` CR. Additionally, it sets up a default Grafana dashboard based on the configuration defined in a `ConfigMap`.
 
 > [!NOTE]
-> By default, the TigerGraph Monitor CR monitors all TigerGraph clusters in the current namespace. To monitor specific TigerGraph clusters, specify them by the option `--monitored-clusters`
+> By default, the TigerGraph Monitor CR monitors all TigerGraph clusters in the current namespace. To monitor specific TigerGraph clusters, specify them by the option `--monitored-clusters`.
 
 > [!WARNING]
-> If the TigerGraph Operator is namespace-scoped, you must manually specify the release name of the kube-prometheus-stack by the option `-r|--kube-prometheus-stack-release-name`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
+> If the TigerGraph Operator is namespace-scoped, you must manually specify the options `--service-monitor-labels`, `--prometheus-rule-labels` and `--alertmanager-config`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
 
-#### Update a TigerGraph monitor
+Update TigerGraph monitor CR using kubectl tg plugin:
 
 ```bash
-kubectl tg monitor update --name ${TG_MONITOR_NAME} --monitored-clusters ${MONITORED_CLUSTERS} -r ${RELEASE_NAME} -n ${NAMESPACE}
+kubectl tg monitor update \
+  --name ${TG_MONITOR_NAME} \
+  --namespace ${NAMESPACE} \
+  --monitored-clusters "cluster1,cluster2" \
+  --service-monitor-labels "prometheus.io/monitor=true" \
+  --prometheus-rule-labels "prometheus.io/rules=true" \
+  --prometheus-rule prometheus-rules.yaml \
+  --alertmanager-config-labels "alertmanager.io/config=true" \
+  --alertmanager-config alertmanager-config.yaml \
+  --tls-config tls-config.yaml
 ```
 
-#### Delete a TigerGraph monitor
+Delete a TigerGraph monitor:
 
 ```bash
 kubectl tg monitor delete --name ${TG_MONITOR_NAME} -n ${NAMESPACE}
@@ -188,29 +439,315 @@ kubectl tg monitor delete --name ${TG_MONITOR_NAME} -n ${NAMESPACE}
 
 ### Manage TigerGraph Monitor using CR
 
-You can use the following example TigerGraph Monitor CR YAML resource to manage the TigerGraph Monitor:
+#### Basic Configuration
 
-```YAML
+```yaml
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraphMonitor
 metadata:
-  name: ${TG_MONITOR_NAME}
-  namespace: ${NAMESPACE}
+  name: tigergraph-monitor
+  namespace: tigergraph
 spec:
   monitoredClusters:
   - test-cluster1
   - test-cluster2
-  releaseName: ${RELEASE_NAME}
-
+  serviceMonitorLabels:
+    prometheus.io/monitor: "true"
 ```
 
 > [!NOTE]
-> If you don't specify `spec.monitoredClusters`, the TigerGraph Monitor CR monitors all TigerGraph clusters in the current namespace.
+> By default, the TigerGraph Monitor CR monitors all TigerGraph clusters in the current namespace. To monitor specific TigerGraph clusters, specify them by the option `--monitored-clusters`.
 
 > [!WARNING]
-> If the TigerGraph Operator is namespace-scoped, you must manually specify the release name of the kube-prometheus-stack in the field `spec.releaseName`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
+> If the TigerGraph Operator is namespace-scoped, you must manually specify the option `--service-monitor-labels`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
 
-## Access Grafana dashboard
+#### Complete Configuration Example
+
+```yaml
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphMonitor
+metadata:
+  name: tigergraph-monitor
+  namespace: tigergraph
+spec:
+  # Specify clusters to monitor (optional, monitors all if not specified)
+  monitoredClusters:
+  - test-cluster1
+  - test-cluster2
+  
+  # Service Monitor labels for Prometheus discovery
+  serviceMonitorLabels:
+    prometheus.io/monitor: "true"
+    prometheus.io/scrape: "true"
+    app.kubernetes.io/component: "monitoring"
+  
+  # Prometheus Rule labels
+  ruleSelectorLabels:
+    prometheus.io/rules: "true"
+    app.kubernetes.io/component: "monitoring"
+  
+  # Prometheus Rules configuration
+  prometheusRule:
+    groups:
+    - name: tigergraph.cpu.alerts
+      rules:
+        - alert: TigerGraphHighCPUUsage
+          expr:  max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 80
+          for: 5m
+          labels:
+            severity: warning
+            service: tigergraph
+          annotations:
+            summary: "High CPU Usage Detected"
+            description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is high ({{ $value }}%)"
+
+        - alert: TigerGraphCriticalCPUUsage
+          expr: max(tigergraph_cpu_usage{service_name=""}) by (cluster_name, namespace, service_name, host_id) > 90
+          for: 3m
+          labels:
+            severity: critical
+            service: tigergraph
+          annotations:
+            summary: "Critical CPU Usage Detected"
+            description: "CPU usage on host {{ $labels.host_id }} of cluster {{ $labels.cluster_name }} in namespace {{ $labels.namespace }} is critically high ({{ $value }}%)"
+
+  
+  # Alertmanager Configuration labels
+  alertmanagerConfigLabels:
+    alertmanager.io/config: "true"
+    app.kubernetes.io/component: "monitoring"
+  
+  # Alertmanager Configuration
+  alertmanagerConfig:
+    route:
+      groupBy: ["job", "alertname"]
+      groupWait: 30s
+      groupInterval: 5m
+      repeatInterval: 1m
+      receiver: "slack-receiver"
+      routes:
+        - receiver: "slack-receiver"
+          continue: true
+    receivers:
+      - name: "slack-receiver"
+        slackConfigs:
+          - sendResolved: true
+            apiURL:
+              name: slack-webhook-url
+              key: webhook-url
+            channel: "#operator-monitoring-test"
+            color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+            text: |-
+              {{ range .Alerts }}
+                *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+                *Description:* {{ .Annotations.description }}
+                *Details:*
+                {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+                {{ end }}
+              {{ end }}
+  
+  # TLS Configuration for ServiceMonitor endpoints
+  tlsConfig:
+    ca:
+      secret:
+        name: tigergraph-metrics-server-cert
+        key: ca.crt
+    cert:
+      secret:
+        name: tigergraph-metrics-server-cert
+        key: tls.crt
+    keySecret:
+      name: tigergraph-metrics-server-cert
+      key: tls.key
+    insecureSkipVerify: false
+```
+
+## Advanced Configuration
+
+### Service Monitor Labels
+
+Service Monitor labels are used by Prometheus to discover and scrape metrics from TigerGraph clusters.
+
+```yaml
+serviceMonitorLabels:
+  prometheus.io/monitor: "true"
+  prometheus.io/scrape: "true"
+  app.kubernetes.io/component: "monitoring"
+```
+
+> [!WARNING]
+> If the TigerGraph Operator is namespace-scoped, you must manually specify the field `serviceMonitorLabels`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
+
+### Prometheus Rules Selector
+
+Prometheus Rules Selector Labels: Define the selector labels for the PrometheusRule. If not specified, the TigerGraph Operator will attempt to detect them automatically.
+
+```yaml
+ruleSelectorLabels:
+  prometheus.io/rules: "true"
+  app.kubernetes.io/component: "monitoring"
+```
+
+> [!WARNING]
+> If the TigerGraph Operator is namespace-scoped, you must manually specify the field `ruleSelectorLabels`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
+
+### Prometheus Rules
+
+Prometheus rules define alerting and recording rules for monitoring TigerGraph clusters.
+
+```yaml
+prometheusRule:
+  groups:
+  - name: tigergraph.rules
+    rules:
+    # CPU usage alert
+    - alert: TigerGraphHighCPUUsage
+      expr: tigergraph_cpu_usage > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage detected"
+        description: "TigerGraph cluster {{ $labels.cluster }} has high CPU usage"
+    
+    # Memory usage alert
+    - alert: TigerGraphHighMemoryUsage
+      expr: tigergraph_memory_usage > 85
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage detected"
+        description: "TigerGraph cluster {{ $labels.cluster }} has high memory usage"
+    
+    # Query latency alert
+    - alert: TigerGraphHighQueryLatency
+      expr: tigergraph_query_latency_seconds > 10
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High query latency detected"
+        description: "TigerGraph cluster {{ $labels.cluster }} has high query latency"
+```
+
+A default set of Prometheus alerting rules is provided based on key TigerGraph metrics. You can customize this configuration to meet your specific requirements.
+
+[TigerGraph-Prometheus-alert-rules-example](../10-samples/monitoring/tigergraph-alert-rules.yaml)
+
+### AlertManager Config Selector
+
+AlertManager Config Selector Labels: Define the selector labels for the AlertManager Config. If not specified, the TigerGraph Operator will attempt to detect them automatically.
+
+```yaml
+alertmanagerConfigLabels:
+  alertmanager.io/config: "true"
+  app.kubernetes.io/component: "monitoring"
+```
+
+> [!WARNING]
+> If the TigerGraph Operator is namespace-scoped, you must manually specify the field `alertmanagerConfigLabels`. This ensures the monitoring controller can correctly identify it, especially when the kube-prometheus-stack is deployed in a different namespace from the TigerGraph clusters.
+
+### AlertManager Configuration
+
+AlertManager configuration defines how alerts are routed and sent.
+
+```yaml
+alertmanagerConfig:
+  route:
+    groupBy: ["job", "alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1m
+    receiver: "slack-receiver"
+    routes:
+      - receiver: "slack-receiver"
+        continue: true
+  receivers:
+    - name: "slack-receiver"
+      slackConfigs:
+        - sendResolved: true
+          apiURL:
+            name: slack-webhook-url
+            key: webhook-url
+          channel: "#operator-monitoring-test"
+          color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+          text: |-
+            {{ range .Alerts }}
+              *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+              *Description:* {{ .Annotations.description }}
+              *Details:*
+              {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+              {{ end }}
+            {{ end }}
+```
+
+> [!IMPORTANT]
+> When configuring alertmanagerConfig, you must also ​manually create a Kubernetes Secret​ to enable authentication for external notification services such as ​Email​ or ​Slack.
+>
+> This Secret typically contains sensitive credentials (e.g., API tokens, SMTP credentials) required for Alertmanager to send notifications to these services. Without the Secret, Alertmanager won't be able to establish connections to external providers.
+
+Secret for Email:
+
+```YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-auth-secret  # Name of the Secret
+type: Opaque
+data:
+  password: YOUR_PASSWORD_BASE64_ENCODED
+```
+
+Secret for Slack:
+
+```YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-webhook-url
+type: Opaque
+stringData:
+  webhook-url: https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL
+```
+
+You can use the following example YAML configurations to set up AlertmanagerConfig for Email or Slack alert delivery:
+
+- [Alertmanager-config-Email](../10-samples/monitoring/alertmanager-config-email.yaml)
+- [Alertmanager-config-Slack](../10-samples/monitoring/alertmanager-config-slack.yaml)
+
+### TLS Configuration
+
+TLS configuration enables secure communication between Prometheus and TigerGraph clusters.
+
+```yaml
+tlsConfig:
+  ca:
+    secret:
+      name: tigergraph-metrics-server-cert
+      key: ca.crt
+  cert:
+    secret:
+      name: tigergraph-metrics-server-cert
+      key: tls.crt
+  keySecret:
+    name: tigergraph-metrics-server-cert
+    key: tls.key
+  insecureSkipVerify: false
+```
+
+You can easily manage your SSL certificate files with a Kubernetes Secret using cert-manager, the YAML configuration example is below:
+
+[Generate-SSL-Certificate-with-cert-manager](../10-samples/monitoring/tigergraph-certificate-with-certmanager.yaml)
+
+To skip SSL verification in test environments, you can apply the following configuration:
+
+```yaml
+tlsConfig:
+  insecureSkipVerify: true
+```
+
+## Access Monitoring Interface
 
 By default, Prometheus and Grafana provisioned by kube-prometheus-stack are exposed via a LoadBalancer. To find the external IPs for Prometheus and Grafana, run the following command:
 
@@ -224,68 +761,27 @@ Look for the external IP and port number of Prometheus and Grafana in the output
 kubectl get services -n ${MONITORING_NAMESPACE}
 
 NAME                                        TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
-monitoring-stack-grafana                    LoadBalancer   34.118.225.63    104.198.48.129   8081:32767/TCP   10m
-monitoring-stack-kube-prom-operator         ClusterIP      34.118.231.29    <none>           443/TCP          10m
-monitoring-stack-kube-prom-prometheus       LoadBalancer   34.118.226.87    34.28.30.58      9090:31174/TCP   10m
-monitoring-stack-kube-state-metrics         ClusterIP      34.118.231.76    <none>           8080/TCP         10m
-monitoring-stack-prometheus-node-exporter   ClusterIP      34.118.231.219   <none>           9100/TCP         10m
-prometheus-operated                         ClusterIP      None             <none>           9090/TCP         10m
+NAME                                        TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                         AGE
+alertmanager-operated                       ClusterIP      None             <none>           9093/TCP,9094/TCP,9094/UDP      78m
+prometheus-operated                         ClusterIP      None             <none>           9090/TCP                        78m
+prometheus-stack-grafana                    LoadBalancer   34.118.226.123   104.197.160.82   8081:32555/TCP                  78m
+prometheus-stack-kube-prom-alertmanager     LoadBalancer   34.118.234.203   34.136.148.38    9093:32590/TCP,8080:31369/TCP   78m
+prometheus-stack-kube-prom-operator         ClusterIP      34.118.228.250   <none>           443/TCP                         78m
+prometheus-stack-kube-prom-prometheus       LoadBalancer   34.118.239.17    34.10.96.171     9090:32425/TCP,8080:30638/TCP   78m
+prometheus-stack-kube-state-metrics         ClusterIP      34.118.228.145   <none>           8080/TCP                        78m
+prometheus-stack-prometheus-node-exporter   ClusterIP      34.118.227.115   <none>           9100/TCP                        78m
 ```
 
-Take the above output as an example: you can access the Grafana dashboard by visiting https://104.198.48.129:8081 and the Prometheus web UI by visiting http://34.28.30.58:9090 in a web browser.
+Take the above output as an example, to access the monitoring tools, open a web browser and navigate to the following endpoints:
 
-The default Grafana dashboard is named `TigerGraph Dashboard` under `General` folder.
+- ​Grafana Dashboard: http://104.197.160.82:8081
+- Prometheus Web UI: http://34.10.96.171:9090
+- AlertManager UI: http://34.136.148.38:9093
+
+The default Grafana dashboard for TigerGraph cluster and TigerGraph Operator is named `TigerGraph Dashboard` and `TigerGraph Kubernetes Controller Runtime Metrics` under `General` folder.
 
 > [!NOTE]
 > You can edit the existing dashboard or create your own directly through the Grafana UI. Any changes made via the UI will be persisted by the Grafana service.
-
-## Uninstall Prometheus and Grafana
-
-To uninstall Prometheus and Grafana, run the following command:
-
-```bash
-kubectl tg monitoring-stack delete -r ${RELEASE_NAME} -n ${MONITORING_NAMESPACE}
-```
-
-This removes all the Kubernetes components associated with the chart and deletes the release.
-
-CRDs created by this chart are not removed by default and should be manually cleaned up:
-
-```bash
-kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
-kubectl delete crd alertmanagers.monitoring.coreos.com
-kubectl delete crd podmonitors.monitoring.coreos.com
-kubectl delete crd probes.monitoring.coreos.com
-kubectl delete crd prometheusagents.monitoring.coreos.com
-kubectl delete crd prometheuses.monitoring.coreos.com
-kubectl delete crd prometheusrules.monitoring.coreos.com
-kubectl delete crd scrapeconfigs.monitoring.coreos.com
-kubectl delete crd servicemonitors.monitoring.coreos.com
-kubectl delete crd thanosrulers.monitoring.coreos.com
-```
-
-Additional, if you specify the persistent volume claim for the Prometheus and Grafana, you also need to delete the persistent volume manually. You can use the following command to figure out the persistent volume claim name:
-
-```bash
-kubectl get pvc --namespace ${MONITORING_NAMESPACE}
-```
-
-Example output:
-
-```bash
-NAME                                                                                                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-monitoring-stack-grafana                                                                                 Bound    pvc-80abe8dc-8925-4e58-80fc-104f1c31f6f9   5Gi        RWO            standard-rwo   <unset>                 3h31m
-prometheus-monitoring-stack-kube-prom-prometheus-db-prometheus-monitoring-stack-kube-prom-prometheus-0   Bound    pvc-c60a27e5-b524-494d-b2a5-917bd433147c   50Gi       RWO            standard-rwo   <unset>                 3h31m
-```
-
-Delete the persistent volume claim of the Prometheus and Grafana with the following command:
-
-> [!IMPORTANT]
-> Please ensure that you no longer need the data from Prometheus and Grafana before deleting the persistent volume claims.
-
-```bash
-kubectl delete pvc ${PVC_NAME} --namespace ${MONITORING_NAMESPACE}
-```
 
 ## Troubleshooting
 
@@ -416,3 +912,94 @@ Events:
   Normal   EnsuringMonitorResources  2s                    TigerGraphMonitor  Start ensuring monitoring resources
   Normal   ReconcileSucceeded        2s                    TigerGraphMonitor  Reconciliation succeeded
 ```
+
+### Check the serviceMonitorSelector, ruleSelector, and alertmanagerConfigSelector
+
+You may encounter issues where the following Prometheus Custom Resources are created successfully but are not loaded into Prometheus or AlertManager:
+
+- **ServiceMonitor**: Defines which services to scrape for metrics
+- **PrometheusRule**: Defines alerting and recording rules
+- **AlertmanagerConfig**: Defines alert routing and notification settings
+
+To troubleshoot this issue, you can check the selectors of these resources and verify if they are configured correctly:
+
+```bash
+# Check ServiceMonitor selector in Prometheus
+kubectl get prometheus ${prometheus-instance-name} -n ${prometheus-installed-namespace} -o yaml | yq .spec.serviceMonitorSelector
+
+# Check PrometheusRule selector in Prometheus
+kubectl get prometheus ${prometheus-instance-name} -n ${prometheus-installed-namespace} -o yaml | yq .spec.ruleSelector
+
+# Check AlertmanagerConfig selector in Alertmanager
+kubectl get alertmanager ${alertmanager-instance-name} -n ${prometheus-installed-namespace} -o yaml | yq .spec.alertmanagerConfigSelector
+```
+
+**Common Issues and Solutions:**
+
+1. **Selector Mismatch**: Ensure the labels on your ServiceMonitor, PrometheusRule, or AlertmanagerConfig match the selectors configured in Prometheus/Alertmanager.
+
+2. **Namespace Issues**: Verify that the resources are in the correct namespace that Prometheus/Alertmanager is configured to watch.
+
+**Example Verification:**
+
+```bash
+# Check what ServiceMonitors exist
+kubectl get servicemonitor --all-namespaces
+
+# Check the labels on a specific ServiceMonitor
+kubectl get servicemonitor my-servicemonitor -n my-namespace -o yaml | yq .metadata.labels
+
+# check the labels on a specific PrometheusRule
+
+# check the labels on a specific AlertmanagerConfig
+
+# Verify Prometheus is watching the correct namespace
+kubectl get prometheus my-prometheus -n my-namespace -o yaml | yq .spec.serviceMonitorNamespaceSelector
+```
+
+## Uninstall Monitoring Components
+
+### Uninstall Prometheus and Grafana
+
+```bash
+# Uninstall monitoring stack
+kubectl tg monitoring-stack delete \
+  --kube-prometheus-stack-release-name monitoring-stack \
+  --namespace monitoring-stack
+```
+
+### Clean Up CRDs
+
+```bash
+# Delete monitoring CRDs (optional, affects other monitoring setups)
+kubectl get crd -o name | grep monitoring.coreos.com | xargs kubectl delete
+```
+
+### Clean Up Persistent Storage
+
+```bash
+# Delete PVCs (be careful, this will delete all monitoring data)
+kubectl delete pvc -n monitoring-stack --all
+
+# Delete namespace
+kubectl delete namespace monitoring-stack
+```
+
+> [!WARNING]
+> Uninstalling monitoring components will delete all monitoring data and configurations. Make sure to backup any important data before proceeding.
+
+## TigerGraph Metrics Reference
+
+For a comprehensive reference of all TigerGraph metrics, including detailed descriptions, labels, and usage examples, see the [TigerGraph Metrics Reference](tigergraph-metrics-reference.md) document.
+
+This reference covers:
+
+- **CPU Metrics**: CPU usage, availability, and core counts
+- **Memory Metrics**: Memory usage, availability, and utilization percentages
+- **Disk Metrics**: Disk usage, I/O operations, and filesystem statistics
+- **Network Metrics**: Connection counts and traffic patterns
+- **Service Metrics**: Service health and status indicators
+- **License Metrics**: License expiration tracking
+- **Query Performance Metrics**: Latency, throughput, and completion rates
+
+The metrics reference also includes Prometheus query examples and alerting recommendations to help you build effective monitoring dashboards and alert rules.

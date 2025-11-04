@@ -1,0 +1,57 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus-stack
+  name: tigergraph-operator-controller-manager-metrics-monitor
+  namespace: tigergraph
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    path: /metrics
+    port: https
+    scheme: https
+    tlsConfig:
+      ca:
+        secret:
+          key: ca.crt
+          name: metrics-server-cert
+      cert:
+        secret:
+          key: tls.crt
+          name: metrics-server-cert
+      insecureSkipVerify: false
+      keySecret:
+        key: tls.key
+        name: metrics-server-cert
+      serverName: tigergraph-operator-controller-manager-metrics-service.tigergraph.svc
+    relabelings:
+    - action: replace
+      replacement: tigergraph
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      targetLabel: operator
+    - action: replace
+      replacement: operator
+      sourceLabels:
+      - __meta_kubernetes_service_name
+      targetLabel: component
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_namespace
+      targetLabel: namespace
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_pod_name
+      targetLabel: pod
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_app_kubernetes_io_name
+      targetLabel: app_name
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_service_label_control_plane
+      targetLabel: control_plane

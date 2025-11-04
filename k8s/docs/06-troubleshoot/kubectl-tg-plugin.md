@@ -13,7 +13,7 @@ The builtin commands in the MacOS terminal are not GNU commands, and they often 
 
 ```bash
 > kubectl tg create --cluster-name test-cluster --private-key-secret ssh-key-secret \
-  --version 4.1.0 --storage-class standard --storage-size 10G -n tigergraph \
+  --version 4.2.1 --storage-class standard --storage-size 10G -n tigergraph \
   --tigergraph-config "System.Backup.TimeoutSec=900,Controller.BasicConfig.LogConfig.LogFileMaxSizeMB=40"
 
 grep: invalid option -- P

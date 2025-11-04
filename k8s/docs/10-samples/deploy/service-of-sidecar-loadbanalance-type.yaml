@@ -4,7 +4,7 @@ metadata:
   name: loadbalancer-type-service-of-sidecar
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret
@@ -32,15 +32,16 @@ spec:
     annotations:
       key2: value2
     listenerPorts:
-      - name: httpd80
-        port: 80
+    - name: httpd80
+      port: 80
   sidecarContainers:
-    - image: httpd:2.4
-      name: httpd80
-      resources:
-        requests:
-          cpu: 500m
-          memory: 512Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
+      - image: httpd:2.4
+        name: httpd80
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits: 
+            cpu: 500m
+            memory: 512Mi
+

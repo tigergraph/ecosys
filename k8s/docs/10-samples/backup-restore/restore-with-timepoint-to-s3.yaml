@@ -1,19 +1,24 @@
 apiVersion: graphdb.tigergraph.com/v1alpha1
 kind: TigerGraphRestore
 metadata:
-  name: restore-from-local
+  name: restore-with-timepoint-from-s3
 spec:
   restoreConfig:
-    # We can use tag to restore from backup in the same cluster
-    tag: daily-2021-11-04T120000
-    # Optional
+    # Optional: Set the tag of the backup package that you want to restore
+    # Note: Only one of tag, meta, or timePoint can be specified
+    tag: ''
+    # Optional: Set the time point with time format (e.g., 2025-01-15T14:30:00Z)
+    # Note: requires TigerGraph >= 4.2.0 and TigerGraph Operator >= v1.7.0
+    timePoint: '2025-01-15T14:30:00Z'
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
     # Optional: (TigerGraph Operator>=v0.0.9 and TigerGraph>=v3.9.3) should be >=0
     decompressProcessNumber: 2
   source:
-    storage: local
-    local:
-      path: /home/tigergraph/backup
+    storage: s3Bucket 
+    s3Bucket:
+      # specify the bucket you want to use
+      bucketName: operator-backup
+      secretKeyName: s3-secret
   # Specify the name of cluster
   clusterName: test-cluster
 

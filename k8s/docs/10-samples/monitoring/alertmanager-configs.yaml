@@ -1,0 +1,27 @@
+alertmanagerConfig:
+  route:
+    groupBy: ["job", "alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1m
+    receiver: "slack-receiver"
+    routes:
+      - receiver: "slack-receiver"
+        continue: true
+  receivers:
+    - name: "slack-receiver"
+      slackConfigs:
+        - sendResolved: true
+          apiURL:
+            name: slack-webhook-url
+            key: webhook-url
+          channel: "#operator-monitoring-test"
+          color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+          text: |-
+            {{ range .Alerts }}
+              *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+              *Description:* {{ .Annotations.description }}
+              *Details:*
+              {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+              {{ end }}
+            {{ end }}

@@ -49,6 +49,7 @@ If you have experience with Custom Resources in Kubernetes (K8S), you can levera
       - [Use backup in s3 bucket with RoleARN (Supported from operator 1.2.0 and TigerGraph 4.1.0)](#use-backup-in-s3-bucket-with-rolearn-supported-from-operator-120-and-tigergraph-410)
       - [Use backup in GCS bucket (Supported from TigerGraph Operator 1.6.0 and TigerGraph 4.2.1)](#use-backup-in-gcs-bucket-supported-from-tigergraph-operator-160-and-tigergraph-421)
       - [Use backup in ABS container (Supported from TigerGraph Operator 1.6.0 and TigerGraph 4.2.1)](#use-backup-in-abs-container-supported-from-tigergraph-operator-160-and-tigergraph-421)
+      - [Point-in-Time Restore (Supported from TigerGraph 4.2.0)](#point-in-time-restore-supported-from-tigergraph-420)
     - [Cross-Cluster Restore from Backup](#cross-cluster-restore-from-backup)
     - [Clone Cluster from Backup](#clone-cluster-from-backup)
     - [Cross-Cluster Restore and Cluster Clone (Cluster Version \< 3.9.2)](#cross-cluster-restore-and-cluster-clone-cluster-version--392)
@@ -89,6 +90,7 @@ Options:
   --compress-level :            Choose from options: BestSpeed, DefaultCompression, and 
                                 BestCompression. Only supported for TG clusters >=3.9.3.
   --incremental :               Perform incremental backup.
+  --base :                      specify the base backup tag for an incremental backup and must be used together with the --incremental flag.
   --full :                      Perform a full backup (full backup is the default behavior).
   --destination :               Specify the destination for storing backup files. Currently 
                                 supports local and S3 storage.
@@ -327,6 +329,14 @@ To initiate an incremental backup, incorporate the `--incremental` option into t
 kubectl tg backup create --cluster-name test-cluster -n tigergraph --name incremental-backup \
   --incremental --tag testlocal \
   --destination local \
+  --local-path /home/tigergraph/mybackup
+```
+
+To initiate an incremental backup with specified base backup, incorporate the `--base` option into the following command:
+```bash
+kubectl tg backup create --cluster-name test-cluster -n tigergraph --name incremental-backup \
+  --incremental --base specified_base_backup_tag \
+  --tag testlocal --destination local \
   --local-path /home/tigergraph/mybackup
 ```
 
@@ -914,6 +924,7 @@ Options:
   --name:                       specify name of restore
   --tag :                       specify the tag of backup files. you can use kubectl tg backup list to get all existing backups
   --metadata :                  specify the metadata file of backup. you should this if you want a cross-cluster restore
+  --time-point :                specify the time point for point-in-time restore in RFC3339 format (e.g., 2025-06-01T14:24:31Z)
   --cluster-template :          configure the cluster you want to create from exported CR
   --staging-path :              specify where to store the temporary files
   --source :                    set the source to get backup files, support local and s3 now
@@ -1072,6 +1083,20 @@ kubectl tg restore --name restore-from-abs \
 ```
 
 Make sure to replace testabs-2025-04-22T091106 with the desired backup tag and adjust tg-backup to your ABS container name. This command will trigger the restore process, bringing your cluster back to the chosen backup's state.
+
+#### Point-in-Time Restore (Supported from TigerGraph 4.2.0)
+> [!IMPORTANT]
+> Point-in-time restore is supported from TigerGraph version 4.2.0.
+To perform a point-in-time restore, you can specify a specific timestamp in RFC3339 format. This allows you to restore your cluster to a specific point in time rather than to a specific backup. Execute the following command to initiate a restore from the S3 bucket. The backup will be automatically selected based on the specified time point.
+```bash
+kubectl tg restore --name restore-timepoint \
+  --namespace tigergraph --cluster-name test-cluster \
+  --time-point 2025-01-15T14:30:00Z \
+  --source s3Bucket --s3-bucket tg-backup \
+  --aws-secret aws-secret
+```
+> [!NOTE]
+> The timepoint must be within the coverage range of your available backups. The operator will validate the timepoint format but will not verify coverage - this is handled by the TigerGraph engine during restore.
 
 ### Cross-Cluster Restore from Backup
 

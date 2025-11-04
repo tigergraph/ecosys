@@ -6,6 +6,20 @@ metadata:
   name: tigergraph-monitor
   namespace: tigergraph
 spec:
+  tlsConfig:
+    ca:
+      secret:
+        name: tigergraph-metrics-server-cert
+        key: ca.crt
+    cert:
+      secret:
+        name: tigergraph-metrics-server-cert
+        key: tls.crt
+    keySecret:
+      name: tigergraph-metrics-server-cert
+      key: tls.key
+    insecureSkipVerify: false
+    serverName: "tigergraph-cluster-0.tigergraph-cluster-headless.default.svc"
   ruleSelectorLabels:
     release: prometheus-stack
   serviceMonitorLabels:
@@ -388,7 +402,6 @@ spec:
 
           - record: tigergraph:license_days_remaining
             expr: min(tigergraph_license_days_left) by (cluster_name, namespace)
-
 ---
 apiVersion: v1
 kind: Secret

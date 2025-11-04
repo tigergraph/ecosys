@@ -5,10 +5,10 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-    - name: tigergraph-image-pull-secret
+  - name: tigergraph-image-pull-secret
   license: ${YOUR_LICENSE}
   listener:
     type: LoadBalancer
@@ -22,7 +22,7 @@ spec:
     type: persistent-claim
     volumeClaimTemplate:
       accessModes:
-        - ReadWriteOnce
+      - ReadWriteOnce
       resources:
         requests:
           storage: 100G
@@ -35,34 +35,34 @@ spec:
         accessMode: ReadWriteMany
         volumeMode: Filesystem
   sidecarContainers:
-    - args: # sidecar will execute this
-        - /bin/sh
-        - -c
-        - |
-          while true; do
-            echo "$(date) INFO hello from main-container" >> /tg-sidecar/myapp.log ;
-            sleep 1;
-          done
-      image: alpine:3.17.2
-      name: sidecar-container # name of sidecar
-      readinessProbe: # check if the sidecar is ready
-        exec:
-          command:
-            - sh
-            - -c
-            - if [[ -f /tg-sidecar/myapp.log ]];then exit 0; else exit 1;fi
-        initialDelaySeconds: 10
-        periodSeconds: 5
-      resources:
-        requests: # request resouces for sidecar
-          cpu: 500m
-          memory: 512Mi
-        limits: # limit resources
-          cpu: 500m
-          memory: 512Mi
-      env: # inject the environment you need
-        - name: CLUSTER_NAME
-          value: test-cluster
-      volumeMounts:
-        - mountPath: /tg-sidecar
-          name: tg-sidecar
+      - args: # sidecar will execute this 
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              echo "$(date) INFO hello from main-container" >> /tg-sidecar/myapp.log ;
+              sleep 1;
+            done
+        image: alpine:3.17.2
+        name: sidecar-container # name of sidecar
+        readinessProbe: # check if the sidecar is ready
+          exec:
+            command:
+              - sh
+              - -c
+              - if [[ -f /tg-sidecar/myapp.log ]];then exit 0; else exit 1;fi
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests: # request resouces for sidecar
+            cpu: 500m
+            memory: 512Mi
+          limits: # limit resources
+            cpu: 500m
+            memory: 512Mi
+        env: # inject the environment you need
+          - name: CLUSTER_NAME
+            value: test-cluster
+        volumeMounts:
+          - mountPath: /tg-sidecar
+            name: tg-sidecar

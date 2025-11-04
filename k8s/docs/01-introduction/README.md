@@ -15,6 +15,7 @@ Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes version |
 |----------|----------|----------|
+| 1.7.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.27, 1.28, 1.29, 1.30, 1.31|
 | 1.6.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.1|1.27, 1.28, 1.29, 1.30, 1.31|
 | 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|1.26, 1.27, 1.28, 1.29, 1.30|
 | 1.4.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.2|1.25, 1.26, 1.27, 1.28, 1.29|
@@ -69,9 +70,14 @@ Once your deployment is complete, refer to the following documents for guidance 
 - [Configure Cross-Region Replication on Kubernetes](../03-deploy/configure-crr-on-k8s.md)
 - [Upgrade the TigerGraph Cluster Using the TigerGraph Operator](../04-manage/tigergraph-upgrade.md)
 - [Enable TigerGraph Operator monitoring with Prometheus and Grafana](../05-monitor/tigergraph-monitor-with-prometheus-grafana.md)
+- [TigerGraph Metrics Reference](../05-monitor/tigergraph-metrics-reference.md)
 - [Customize the backoff retries for cluster job operations](../04-manage/backoff-retries-for-cluster-job-operations.md)
 - [Node Repaving for TigerGraph on Kubernetes](../08-reference/node-repaving-for-tigergraph-on-k8s.md)
 - [Configure SSL Certificate for Ingress Service](../03-deploy/configure-ssl-certificate-for-ingress-service.md)
+- [Running Custom Bash Scripts in a TigerGraph Cluster via Kubernetes Jobs](../04-manage/running-custom-bash-scripts-via-kubernetes-jobs.md)
+- [Configure Nginx TLS](../03-deploy/configure-nginx-tls.md)
+- [Scale Up and Scale Down](../04-manage/scale-up-and-down.md)
+- [Scale In and Scale Out](../04-manage/scale-in-and-out.md)
 
 In case issues arise and your cluster requires diagnosis, you have two valuable resources:
 
@@ -87,7 +93,7 @@ For detailed information about the features, improvements, and bug fixes introdu
 
 When reporting issues, please provide the following details:
 
-- **Setup Information**: Include details as specified in the [issue template](../06-FAQs/issue_report_template.md)
+- **Setup Information**: Include details as specified in the [issue template](../07-FAQs/issue_report_template.md)
 - **Reproduction Steps**: Describe the scenario where the issue occurred, along with clear steps to reproduce it.
 - **Errors and Logs**: Share any relevant error messages or log outputs from the involved software.
 - **Additional Context**: Include any other details that might help in diagnosing the issue.

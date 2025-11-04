@@ -31,6 +31,7 @@
       - [Use RoleARN instead of access key to access S3 Bucket in TigerGraphRestore](#use-rolearn-instead-of-access-key-to-access-s3-bucket-in-tigergraphrestore)
     - [Restore from backup in GCS bucket](#restore-from-backup-in-gcs-bucket)
     - [Restore from backup in ABS container](#restore-from-backup-in-abs-container)
+    - [Point-in-Time Restore (Supported from TigerGraph 4.2.0)](#point-in-time-restore-supported-from-tigergraph-420)
     - [Cross-cluster restore in existing cluster](#cross-cluster-restore-in-existing-cluster)
       - [Cluster version \>=3.9.2](#cluster-version-392)
     - [Clone a cluster(Create a new cluster and do cross-cluster restore)](#clone-a-clustercreate-a-new-cluster-and-do-cross-cluster-restore)
@@ -139,6 +140,8 @@ spec:
     # Optional: Set the tag of the backup, if not set, the tag will be the name of this CR
     # Note: this field is Required for TigerGraph Operator < 1.1.0
     tag: local
+    # Optional: Specify the base backup tag for incremental backup (only used when incremental is true)
+    base: ""
     # Optional: Set the path for temporary staging files
     stagingPath: /home/tigergraph/tigergraph/data
     # Optional: If 'incremental' is set to true, incremental backup will be performed
@@ -758,6 +761,9 @@ spec:
   restoreConfig:
     # We can use tag to restore from backup in the same cluster
     tag: daily-2021-11-04T120000
+    # Optional: Specify timepoint for point-in-time restore in time format (e.g., 2025-01-15T14:30:00Z), requires TigerGraph >= 4.2.0
+    # Note: Only one of tag, meta, or timePoint can be specified
+    timePoint: ""
     # Optional
     stagingPath: /home/tigergraph/tigergraph/data/restore-staging
     # Optional: (TigerGraph Operator>=0.0.9 and TigerGraph>=3.9.3) should be >=0
@@ -906,6 +912,42 @@ spec:
     # the format is like "5s","10m","1h","1h20m5s"
     maxRetryDuration: 10s
 ```
+### Point-in-Time Restore (Supported from TigerGraph 4.2.0)
+
+> [!IMPORTANT]
+> Point-in-time restore is supported from TigerGraph version 4.2.0 and requires backups with time coverage information.
+
+Point-in-time restore allows you to restore your cluster to a specific timestamp rather than to a specific backup. This is useful when you need to recover data to a precise moment in time.
+
+```yaml
+apiVersion: graphdb.tigergraph.com/v1alpha1
+kind: TigerGraphRestore
+metadata:
+  name: restore-timepoint
+spec:
+  restoreConfig:
+    # Specify the time point for restore in RFC3339 format, the selected time point must be valid.
+    timePoint: "2025-01-15T14:30:00Z"
+    # Optional
+    stagingPath: /home/tigergraph/tigergraph/data/restore-staging
+    decompressProcessNumber: 2
+  source:
+    storage: s3Bucket
+    s3Bucket:
+      bucketName: operator-backup
+      secretKeyName: s3-secret
+  # Specify the name of cluster
+  clusterName: test-cluster
+  # Optional: Set the retry policy for restore CR
+  backoffRetryPolicy:
+    maxRetryTimes: 3
+    minRetryDuration: 5s
+    maxRetryDuration: 10s
+```
+
+> [!NOTE]
+> The timepoint must be within the coverage range of your available backups. The operator will validate the timepoint format but will not verify coverage - this is handled by the TigerGraph engine during restore.
+
 
 ### Cross-cluster restore in existing cluster
 

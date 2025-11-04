@@ -178,7 +178,7 @@ Before installing the kubectl-tg plugin, make sure you meet the following requir
 > If you are using Windows, please run the commands in a WSL environment.
 > Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
 
-Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.6.0:
+Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 0.0.9:
 
 ```bash
 wget https://dl.tigergraph.com/k8s/latest/kubectl-tg -O kubectl-tg
@@ -204,7 +204,7 @@ This step is optional and can be skipped if you have privileged permissions in y
 CustomResourceDefinitions (CRDs) are non-namespaced entities accessible across all namespaces. Installing CRDs requires privileged permissions from the Kubernetes cluster. If you prefer to install CRDs independently from the Operator installation, use the following commands:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl apply --server-side -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
@@ -245,7 +245,7 @@ Examples:
   # install the operator in the specified namespace, with specified helm repo and image pull secret
   kubectl tg init --namespace tg-tenant1 --helm-repo https://yourhelmrepo.com --image-pull-secret yoursecret
   # install the operator in the specified namespace, with specified operator version, watch name namespace, cpu and memory
-  kubectl tg init --version OPERATOR_VERSION --operator-size 3 --operator-watch-namespace tigergraph --operator-cpu 1000m  --operator-memory 1024Mi --namespace tg-tenant1
+  kubectl tg init --operator-version OPERATOR_VERSION --operator-size 3 --operator-watch-namespace tigergraph --operator-cpu 1000m  --operator-memory 1024Mi --namespace tg-tenant1
 
 Usage:
   kubectl tg init [options]

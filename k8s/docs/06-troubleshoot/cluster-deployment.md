@@ -162,7 +162,7 @@ kubectl describe pod test-cluster-0 -n tigergraph
   Containers:
     tg:
       Container ID:   
-      Image:          docker.io/tigergrah/tigergraph-k8s:4.2.11
+      Image:          docker.io/tigergrah/tigergraph-k8s:4.2.1
       Image ID:       
       Ports:          9000/TCP, 14240/TCP, 22/TCP
       Host Ports:     0/TCP, 0/TCP, 0/TCP
@@ -221,11 +221,11 @@ kubectl describe pod test-cluster-0 -n tigergraph
     Normal   Scheduled               2m38s                default-scheduler        Successfully assigned tigergraph/test-cluster-0 to tg-k8s-openshift-777-rdj74-worker-d-pvrm2
     Normal   SuccessfulAttachVolume  2m34s                attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-96c90faf-3019-416a-ace9-200502f67b65"
     Normal   AddedInterface          2m30s                multus                   Add eth0 [10.130.0.33/23] from openshift-sdn
-    Normal   Pulling                 71s (x4 over 2m29s)  kubelet                  Pulling image "docker.io/tigergrah/tigergraph-k8s:4.2.11"
-    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Failed to pull image "docker.io/tigergrah/tigergraph-k8s:4.2.11": rpc error: code = Unknown desc = reading manifest 3.8.5 in docker.io/tigergrah/tigergraph-k8s: manifest unknown: manifest unknown
+    Normal   Pulling                 71s (x4 over 2m29s)  kubelet                  Pulling image "docker.io/tigergrah/tigergraph-k8s:4.2.1"
+    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Failed to pull image "docker.io/tigergrah/tigergraph-k8s:4.2.1": rpc error: code = Unknown desc = reading manifest 3.8.5 in docker.io/tigergrah/tigergraph-k8s: manifest unknown: manifest unknown
     Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Error: ErrImagePull
     Warning  Failed                  59s (x6 over 2m29s)  kubelet                  Error: ImagePullBackOff
-    Normal   BackOff                 44s (x7 over 2m29s)  kubelet                  Back-off pulling image "docker.io/tigergrah/tigergraph-k8s:4.2.11"
+    Normal   BackOff                 44s (x7 over 2m29s)  kubelet                  Back-off pulling image "docker.io/tigergrah/tigergraph-k8s:4.2.1"
   ```
 
   Look for messages indicating issues with the image, such as `Error: ErrImagePull` You should correct the image version using the following command:
@@ -267,7 +267,7 @@ kubectl describe pod test-cluster-0 -n tigergraph
   Controlled By:  StatefulSet/test-cluster
   Containers:
     tg:
-      Image:       docker.io/tigergrah/tigergraph-k8s:4.2.11
+      Image:       docker.io/tigergrah/tigergraph-k8s:4.2.1
       Ports:       9000/TCP, 14240/TCP, 22/TCP
       Host Ports:  0/TCP, 0/TCP, 0/TCP
       Requests:

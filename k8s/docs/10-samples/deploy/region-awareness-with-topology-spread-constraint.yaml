@@ -5,10 +5,10 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-    - name: tigergraph-image-pull-secret
+  - name: tigergraph-image-pull-secret
   license: ${YOUR_LICENSE}
   listener:
     type: LoadBalancer
@@ -29,11 +29,11 @@ spec:
     enable: true
     topologyKey: topology.kubernetes.io/zone
   topologySpreadConstraints:
-    - maxSkew: 1
-      topologyKey: topology.kubernetes.io/zone
-      whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
-      labelSelector:
-        matchLabels:
-          tigergraph.com/cluster-pod: tg-test-cluster
-      matchLabelKeys:
-        - pod-template-hash
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            tigergraph.com/cluster-pod: tg-test-cluster
+        matchLabelKeys:
+          - pod-template-hash

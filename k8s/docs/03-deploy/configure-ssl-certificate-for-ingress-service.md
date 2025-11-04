@@ -16,7 +16,6 @@
     - [Ingress Issues](#ingress-issues)
       - [How to View Ingress Controller Logs](#how-to-view-ingress-controller-logs)
       - [Common Ingress controller error logs and solutions](#common-ingress-controller-error-logs-and-solutions)
-        - [Error 1: Invalid TLS Secret (Domain Mismatch)](#error-1-invalid-tls-secret-domain-mismatch)
   - [See also](#see-also)
 
 ## Overview
@@ -281,7 +280,7 @@ kubectl logs -n ingress-nginx deployment/ingress-nginx-controller | grep "test-c
 
 #### Common Ingress controller error logs and solutions
 
-##### Error 1: Invalid TLS Secret (Domain Mismatch)
+   **Error 1: Invalid TLS Secret (Domain Mismatch)**
    ```
    W0805 09:17:39.123456       1 controller.go:1234] Error getting SSL certificate "tigergraph/ingress-secret": local SSL certificate "tigergraph/ingress-secret" is invalid: x509: certificate is not valid for any names, but wanted to match "test-nginx.helm.tigergraph.dev"
    ```

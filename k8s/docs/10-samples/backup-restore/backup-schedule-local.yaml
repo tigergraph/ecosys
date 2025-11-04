@@ -23,7 +23,7 @@ spec:
       storage: local
       # Use this field if type is local
       local:
-        path: /home/tigergraph/tigergraph/data/backup
+        path: /home/tigergraph/backup
     
     # Configure the name of backup files and the path storing temporary files
     backupConfig:
@@ -31,7 +31,7 @@ spec:
       # Note: this field is Required for TigerGraph Operator < v1.1.0
       tag: daily
       # Optional
-      stagingPath: /home/tigergraph/tigergraph/data
+      stagingPath: /home/tigergraph/backup-staging
       # Optional :if incremental is true, incremental backup will be performed
       incremental: false
       # Optional

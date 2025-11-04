@@ -3,12 +3,53 @@
 This guide will walk you through upgrading the TigerGraph Cluster using the TigerGraph Operator.
 
 - [Upgrade the TigerGraph Cluster Using the TigerGraph Operator](#upgrade-the-tigergraph-cluster-using-the-tigergraph-operator)
+  - [Before you begin](#before-you-begin)
+    - [Check the compatibility between TigerGraph and TigerGraph Operator](#check-the-compatibility-between-tigergraph-and-tigergraph-operator)
   - [Upgrade the TigerGraph Cluster](#upgrade-the-tigergraph-cluster)
   - [Upgrade pre-check for TigerGraph upgrading](#upgrade-pre-check-for-tigergraph-upgrading)
   - [Maintenance Release Upgrade support](#maintenance-release-upgrade-support)
   - [Troubleshooting](#troubleshooting)
     - [How to proceed with the upgrade process if the upgrade pre-check job fails due to incorrect image or downgrade error](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-job-fails-due-to-incorrect-image-or-downgrade-error)
     - [How to proceed with the upgrade process if the upgrade pre-check fails Due to insufficient ephemeral local storage](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-fails-due-to-insufficient-ephemeral-local-storage)
+
+## Before you begin
+
+### Check the compatibility between TigerGraph and TigerGraph Operator
+
+> [!IMPORTANT]
+> Each Operator version defines a maximum supported TG version. If the target TG version is outside the supported range of the current Operator,
+> you must first upgrade the Operator to a version that supports it, or simply upgrade to the latest Operator version.
+
+The synergy and compatibility between TigerGraph and TigerGraph Operator:
+
+| TigerGraph Operator version | TigerGraph version  |
+|----------|----------|
+| 1.7.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
+| 1.6.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.1|
+| 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|
+| 1.4.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.2|
+| 1.3.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.1|
+| 1.2.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.0|
+| 1.1.1 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.2|
+| 1.1.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.1|
+| 1.0.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.0|
+
+For example, Operator version 1.5.0 supports up to TigerGraph 4.2.0. To install or upgrade a cluster to TigerGraph 4.2.1,
+you must first upgrade the Operator to version 1.6.0 or above.
+For detailed steps of Operator upgrading, see the [Operator upgrade guide](../04-manage/operator-upgrade.md).
+
+You can check the Operator version by the following command:
+
+```bash
+helm ls -A|grep tg-operator
+```
+
+Example output:
+
+```bash
+$ helm ls -A|grep tg-operator
+tg-operator             tigergraph      1               2025-09-26 04:53:01.952172143 +0000 UTC deployed      tg-operator-1.7.0               1.7.0      
+```
 
 ## Upgrade the TigerGraph Cluster
 

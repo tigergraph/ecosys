@@ -4,10 +4,10 @@ metadata:
   name: test-cluster
   namespace: tigergraph
 spec:
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-    - name: tigergraph-image-pull-secret
+  - name: tigergraph-image-pull-secret
   ha: 2
   license: ${YOUR_LICENSE}
   listener:
@@ -25,7 +25,7 @@ spec:
     type: persistent-claim
     volumeClaimTemplate:
       accessModes:
-        - ReadWriteOnce
+      - ReadWriteOnce
       resources:
         requests:
           storage: 100G

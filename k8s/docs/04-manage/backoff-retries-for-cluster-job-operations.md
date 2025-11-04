@@ -77,7 +77,7 @@ Add three new options in kubectl-tg plugin to support configuring those configur
 To customize the backoff retries during cluster initialization, run the following command:
 
 ```bash
-kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 --license ${LICENSE} \
+kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.1.2 --license ${LICENSE} \
 --storage-class standard --storage-size 10G --cpu 6000m --memory 12Gi --listener-type LoadBalancer \
 --min-job-retry-duration '1m' --max-job-retry-duration '30m' --max-job-retry-times 'expand-job=6,shrink-pre-job=6,initialize-job=3'  --namespace ${YOUR_NAMESPACE}
 ```
@@ -224,7 +224,7 @@ Status:
     Reason:                ClusterInitializePostFalse
     Status:                False
     Type:                  InitializePost
-  Image:                   docker.io/tigergraph/tigergraph-k8s:4.2.1
+  Image:                   docker.io/tigergraph/tigergraph-k8s:4.2.1-ubuntu22
   Pod Init Labels:
     tigergraph.com/cluster-name:  test-cluster
     tigergraph.com/cluster-pod:   test-cluster
@@ -254,7 +254,7 @@ Once the job retry attempts reach the maximum number of retries, the TigerGraph 
     Reason:                ClusterInitializePostFalse
     Status:                False
     Type:                  InitializePost
-  Image:                   docker.io/tigergraph/tigergraph-k8s:4.2.1
+  Image:                   docker.io/tigergraph/tigergraph-k8s:4.2.1-ubuntu22
   Job Backoff Times:       3
   Pod Init Labels:
     tigergraph.com/cluster-name:  test-cluster

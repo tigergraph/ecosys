@@ -17,8 +17,8 @@ The output will be like this:
 ```bash
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                                      SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
 test-cluster0   3          3              2           docker.io/tigergraph/tigergraph-k8s:4.2.1           LoadBalancer   Normal           True               4d1h
-test-cluster1   3          3              1           docker.io/tigergraph/tigergraph-k8s:4.1.3            Ingress        InitializePost   False              15m
-test-cluster2   4          3              1           docker.io/tigergraph/tigergraph-k8s:4.1.3            NodePort       ExpandPost       Unknown            12h
+test-cluster1   3          3              1           docker.io/tigergraph/tigergraph-k8s:4.2.1            Ingress        InitializePost   False              15m
+test-cluster2   4          3              1           docker.io/tigergraph/tigergraph-k8s:4.2.1            NodePort       ExpandPost       Unknown            12h
 ```
 
 You can also get the status of a specific cluster by running the following command:

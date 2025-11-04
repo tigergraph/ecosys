@@ -77,8 +77,8 @@ Install the Operator in a dedicated namespace. You can customize the configurati
 ```yaml
 # values.yaml example
 replicas: 3
-image: docker.io/tigergraph/tigergraph-k8s-operator:1.6.0
-jobImage: docker.io/tigergraph/tigergraph-k8s-init:1.6.0
+image: docker.io/tigergraph/tigergraph-k8s-operator:1.7.0
+jobImage: docker.io/tigergraph/tigergraph-k8s-init:1.7.0
 pullPolicy: IfNotPresent
 imagePullSecret: tigergraph-image-pull-secret
 watchNameSpaces: ""
