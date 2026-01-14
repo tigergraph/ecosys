@@ -25,7 +25,7 @@ public class TigerGraphWriterCommitMessage implements WriterCommitMessage {
   private final int partitionId;
   private final long taskId;
 
-  TigerGraphWriterCommitMessage(long loadedRows, int partitionId, long taskId) {
+  public TigerGraphWriterCommitMessage(long loadedRows, int partitionId, long taskId) {
     this.loadedRows = loadedRows;
     this.partitionId = partitionId;
     this.taskId = taskId;

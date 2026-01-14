@@ -16,13 +16,18 @@ package com.tigergraph.spark.write;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
+import com.tigergraph.spark.write.loading.TigerGraphLoadingDataWriter;
+import com.tigergraph.spark.write.upsert.TigerGraphUpsertDataWriter;
+import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.write.DataWriter;
 import org.apache.spark.sql.connector.write.streaming.StreamingDataWriterFactory;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 
 /**
- * A factory of {@link TigerGraphDataWriter} for streaming write, which is responsible for creating
- * and initializing the actual data writer at executor side.
+ * A factory of {@link TigerGraphLoadingDataWriter} or {@link TigerGraphUpsertDataWriter} for
+ * streaming write, which is responsible for creating and initializing the actual data writer at
+ * executor side.
  */
 public class TigerGraphStreamWriterFactory implements StreamingDataWriterFactory {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphStreamWriterFactory.class);
@@ -30,24 +35,36 @@ public class TigerGraphStreamWriterFactory implements StreamingDataWriterFactory
   private final StructType schema;
   private final TigerGraphConnection conn;
 
-  TigerGraphStreamWriterFactory(StructType schema, TigerGraphConnection conn) {
+  public TigerGraphStreamWriterFactory(StructType schema, TigerGraphConnection conn) {
     this.schema = schema;
     this.conn = conn;
-    logger.info("Created {} for executor", TigerGraphBatchWriterFactory.class);
   }
 
   @Override
-  public TigerGraphDataWriter createWriter(int partitionId, long taskId, long epochId) {
+  public DataWriter<InternalRow> createWriter(int partitionId, long taskId, long epochId) {
     // re-init logger for spark executors
     Options opts = conn.getOpts();
     if (opts.containsOption(Options.LOG_LEVEL)) {
       LoggerFactory.initJULLogger(opts.getInt(Options.LOG_LEVEL), opts.getString(Options.LOG_FILE));
     }
-    logger.info(
-        "Create TigerGraph streaming writer for partitionId {}, taskId {}, epochId {}.",
-        partitionId,
-        taskId,
-        epochId);
-    return new TigerGraphDataWriter(schema, conn, partitionId, taskId, epochId);
+
+    if (Options.OptionType.LOADING.equals(conn.getOpts().getOptionType())) {
+      logger.info(
+          "Creating TigerGraph loading streaming writer for partitionId {}, taskId {}, epochId {}.",
+          partitionId,
+          taskId,
+          epochId);
+      return new TigerGraphLoadingDataWriter(schema, conn, partitionId, taskId, epochId);
+    } else if (Options.OptionType.UPSERT.equals(conn.getOpts().getOptionType())) {
+      logger.info(
+          "Creating TigerGraph upsert streaming writer for partitionId {}, taskId {}, epochId {}.",
+          partitionId,
+          taskId,
+          epochId);
+      return new TigerGraphUpsertDataWriter(schema, conn, partitionId, taskId, epochId);
+    } else {
+      throw new UnsupportedOperationException(
+          "Unsupported option type: " + conn.getOpts().getOptionType());
+    }
   }
 }

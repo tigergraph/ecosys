@@ -16,6 +16,7 @@ package com.tigergraph.spark.write;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.common.RestppResponse;
 import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
 import org.apache.spark.sql.connector.write.DataWriter;
 import org.apache.spark.sql.connector.write.PhysicalWriteInfo;
@@ -44,6 +45,12 @@ import org.slf4j.Logger;
 public class TigerGraphStreamingWrite extends TigerGraphWriteBase implements StreamingWrite {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphStreamingWrite.class);
 
+  // Constants for log messages
+  private static final String LOG_TOTAL_PROCESSED_ROWS_UPDATE =
+      "Total processed rows by this update: {}";
+  private static final String LOG_PROCESSED_ROWS_BY_TASK_UPDATE =
+      "Processed rows of each task by this update:\n{}";
+
   TigerGraphStreamingWrite(StructType schema, TigerGraphConnection conn) {
     super(schema, conn);
   }
@@ -55,31 +62,45 @@ public class TigerGraphStreamingWrite extends TigerGraphWriteBase implements Str
 
   @Override
   public void commit(long epochId, WriterCommitMessage[] messages) {
-    logger.info(
-        "Finished writing streaming updates({}) to TigerGraph {}",
-        epochId,
-        conn.getLoadingJobId() == null ? "" : ", Job ID: " + conn.getLoadingJobId());
-    logger.info("Total processed rows by this update: {}", getTotalProcessedRows(messages));
-    logger.info("Processed rows of each task by this update:\n{}", getTaskSummury(messages));
-    RestppResponse resp = getLoadingStatistics();
-    if (resp != null) {
-      Utils.removeUserData(resp.results);
-      logger.info("The up-to-date overall loading statistics: {}", resp.results.toPrettyString());
+    Options.OptionType optionType = conn.getOpts().getOptionType();
+    if (Options.OptionType.LOADING.equals(optionType)) {
+      logger.info(
+          "Finished writing streaming updates({}) to TigerGraph {}",
+          epochId,
+          conn.getLoadingJobId() == null ? "" : ", Job ID: " + conn.getLoadingJobId());
+      logger.info(LOG_TOTAL_PROCESSED_ROWS_UPDATE, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK_UPDATE, getTaskSummury(messages));
+      RestppResponse resp = getLoadingStatistics();
+      if (resp != null) {
+        Utils.removeUserData(resp.results);
+        logger.info("The up-to-date overall loading statistics: {}", resp.results.toPrettyString());
+      }
+    } else if (Options.OptionType.UPSERT.equals(optionType)) {
+      logger.info("Finished writing streaming upsert updates({}) to TigerGraph", epochId);
+      logger.info(LOG_TOTAL_PROCESSED_ROWS_UPDATE, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK_UPDATE, getTaskSummury(messages));
     }
   }
 
   @Override
   public void abort(long epochId, WriterCommitMessage[] messages) {
-    logger.error(
-        "Aborted when writing streaming updates({}) to TigerGraph {}",
-        epochId,
-        conn.getLoadingJobId() == null ? "" : ", Job ID: " + conn.getLoadingJobId());
-    logger.info("Total processed rows by this update: {}", getTotalProcessedRows(messages));
-    logger.info("Processed rows of each task by this update:\n{}", getTaskSummury(messages));
-    RestppResponse resp = getLoadingStatistics();
-    if (resp != null) {
-      Utils.removeUserData(resp.results);
-      logger.info("The overall loading statistics: {}", resp.results.toPrettyString());
+    Options.OptionType optionType = conn.getOpts().getOptionType();
+    if (Options.OptionType.LOADING.equals(optionType)) {
+      logger.error(
+          "Aborted when writing streaming updates({}) to TigerGraph {}",
+          epochId,
+          conn.getLoadingJobId() == null ? "" : ", Job ID: " + conn.getLoadingJobId());
+      logger.info(LOG_TOTAL_PROCESSED_ROWS_UPDATE, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK_UPDATE, getTaskSummury(messages));
+      RestppResponse resp = getLoadingStatistics();
+      if (resp != null) {
+        Utils.removeUserData(resp.results);
+        logger.info("The overall loading statistics: {}", resp.results.toPrettyString());
+      }
+    } else if (Options.OptionType.UPSERT.equals(optionType)) {
+      logger.error("Aborted when writing streaming upsert updates({}) to TigerGraph", epochId);
+      logger.info(LOG_TOTAL_PROCESSED_ROWS_UPDATE, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK_UPDATE, getTaskSummury(messages));
     }
   }
 }

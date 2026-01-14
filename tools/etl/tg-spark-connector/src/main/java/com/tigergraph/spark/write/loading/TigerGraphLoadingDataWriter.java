@@ -11,14 +11,15 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tigergraph.spark.write;
+package com.tigergraph.spark.write.loading;
 
 import com.tigergraph.spark.TigerGraphConnection;
-import com.tigergraph.spark.client.Write;
-import com.tigergraph.spark.client.Write.LoadingResponse;
+import com.tigergraph.spark.client.Loading;
+import com.tigergraph.spark.client.Loading.LoadingResponse;
 import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
+import com.tigergraph.spark.write.TigerGraphWriterCommitMessage;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -50,16 +51,20 @@ import org.apache.spark.sql.types.TimestampNTZType;
 import org.apache.spark.sql.types.TimestampType;
 import org.slf4j.Logger;
 
-/** The data writer of an executor responsible for writing data for an input RDD partition. */
-public class TigerGraphDataWriter implements DataWriter<InternalRow> {
-  private static final Logger logger = LoggerFactory.getLogger(TigerGraphDataWriter.class);
+/**
+ * The data writer of an executor responsible for writing data for an input RDD partition using
+ * loading job.
+ */
+public class TigerGraphLoadingDataWriter implements DataWriter<InternalRow> {
+  private static final Logger logger = LoggerFactory.getLogger(TigerGraphLoadingDataWriter.class);
 
+  // Schema is used indirectly via the converters which are generated from it
   private final StructType schema;
   private final int partitionId;
   private final long taskId;
   private final long epochId;
 
-  private final Write write;
+  private final Loading loading;
   private final String version;
   private final String jobId;
   private final String graph;
@@ -75,13 +80,13 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   private long totalLines = 0;
 
   /** For Streaming write */
-  TigerGraphDataWriter(
+  public TigerGraphLoadingDataWriter(
       StructType schema, TigerGraphConnection conn, int partitionId, long taskId, long epochId) {
     this.schema = schema;
     this.partitionId = partitionId;
     this.taskId = taskId;
     this.epochId = epochId;
-    this.write = conn.getWrite();
+    this.loading = conn.getLoading();
     this.version = conn.getVersion();
     this.jobId = conn.getLoadingJobId();
 
@@ -114,7 +119,8 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   }
 
   /** For Batch write */
-  TigerGraphDataWriter(StructType schema, TigerGraphConnection conn, int partitionId, long taskId) {
+  public TigerGraphLoadingDataWriter(
+      StructType schema, TigerGraphConnection conn, int partitionId, long taskId) {
     this(schema, conn, partitionId, taskId, (long) -1);
   }
 
@@ -137,8 +143,8 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   }
 
   private void postToDDL() {
-    LoadingResponse resp = write.ddl(graph, sb.toString(), queryMap);
-    logger.info("Upsert {} rows to TigerGraph graph {}", sbOffset, graph);
+    LoadingResponse resp = loading.ddl(graph, sb.toString(), queryMap);
+    logger.info("Loaded {} rows to TigerGraph graph {}", sbOffset, graph);
     resp.panicOnFail();
     Utils.removeUserData(resp.results);
     // process stats
@@ -178,7 +184,7 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
   }
 
   /** Pre-generate the converter for each field of the source dataframe's schema */
-  protected static List<BiFunction<InternalRow, Integer, String>> getConverters(StructType schema) {
+  public static List<BiFunction<InternalRow, Integer, String>> getConverters(StructType schema) {
     return Stream.of(schema.fields())
         .map((f) -> getConverter(f.dataType()))
         .collect(Collectors.toList());
@@ -216,7 +222,8 @@ public class TigerGraphDataWriter implements DataWriter<InternalRow> {
       // TG DATETIME is essentially a timestamp_ntz, need to format the time in UTC
       dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
       // Spark date is stored as the number of days counting from 1970-01-01
-      return (row, idx) -> dateFormat.format(new Date(row.getInt(idx) * 24 * 60 * 60 * 1000L));
+      return (row, idx) ->
+          dateFormat.format(new Date((long) row.getInt(idx) * 24 * 60 * 60 * 1000L));
     } else if (dt instanceof DecimalType) {
       return (row, idx) ->
           row.getDecimal(idx, ((DecimalType) dt).precision(), ((DecimalType) dt).scale())

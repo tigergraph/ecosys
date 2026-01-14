@@ -27,8 +27,9 @@ import java.util.Map;
 public class Options implements Serializable {
 
   public static enum OptionType {
-    WRITE,
-    READ
+    LOADING,
+    READ,
+    UPSERT
   }
 
   /** Refer to {@link com.tigergraph.spark.client.Query} */
@@ -76,6 +77,44 @@ public class Options implements Serializable {
   public static final int LOADING_RETRY_INTERVAL_MS_DEFAULT = 5 * 1000; // 5s
   public static final int LOADING_MAX_RETRY_INTERVAL_MS_DEFAULT = 5 * 60 * 1000; // 5min
   public static final int LOADING_MAX_RETRY_ATTEMPTS_DEFAULT = 10;
+
+  // upsert
+  public static final String UPSERT_VERTEX_TYPE = "upsert.vertex.type";
+  public static final String UPSERT_VERTEX_ID_FIELD = "upsert.vertex.id.field";
+  public static final String UPSERT_VERTEX_NEW_ONLY = "upsert.vertex.new_only";
+  public static final String UPSERT_VERTEX_UPDATE_ONLY = "upsert.vertex.update_only";
+  public static final String UPSERT_EDGE_TYPE = "upsert.edge.type";
+  public static final String UPSERT_EDGE_SOURCE_TYPE = "upsert.edge.source.type";
+  public static final String UPSERT_EDGE_SOURCE_ID_FIELD = "upsert.edge.source.id.field";
+  public static final String UPSERT_EDGE_TARGET_TYPE = "upsert.edge.target.type";
+  public static final String UPSERT_EDGE_TARGET_ID_FIELD = "upsert.edge.target.id.field";
+  public static final String UPSERT_EDGE_VERTEX_MUST_EXIST = "upsert.edge.vertex_must_exist";
+  public static final String UPSERT_EDGE_SOURCE_VERTEX_MUST_EXIST =
+      "upsert.edge.source_vertex_must_exist";
+  public static final String UPSERT_EDGE_TARGET_VERTEX_MUST_EXIST =
+      "upsert.edge.target_vertex_must_exist";
+  public static final String UPSERT_ATTRIBUTE_MAPPING = "upsert.attribute.mapping";
+  public static final String UPSERT_ATTRIBUTE_OP = "upsert.attribute.op";
+  public static final String UPSERT_ACK = "upsert.ack";
+  public static final String UPSERT_ATOMIC = "upsert.atomic";
+  public static final String UPSERT_BATCH_SIZE_ROWS = "upsert.batch.size.in.rows";
+  public static final String UPSERT_TIMEOUT_MS = "upsert.timeout.ms";
+  public static final String UPSERT_RETRY_INTERVAL_MS = "upsert.retry.interval.ms";
+  public static final String UPSERT_MAX_RETRY_INTERVAL_MS = "upsert.max.retry.interval.ms";
+  public static final String UPSERT_MAX_RETRY_ATTEMPTS = "upsert.max.retry.attempts";
+  // upsert - default
+  public static final boolean UPSERT_VERTEX_NEW_ONLY_DEFAULT = false;
+  public static final boolean UPSERT_VERTEX_UPDATE_ONLY_DEFAULT = false;
+  public static final boolean UPSERT_EDGE_VERTEX_MUST_EXIST_DEFAULT = false;
+  public static final boolean UPSERT_EDGE_SOURCE_VERTEX_MUST_EXIST_DEFAULT = false;
+  public static final boolean UPSERT_EDGE_TARGET_VERTEX_MUST_EXIST_DEFAULT = false;
+  public static final String UPSERT_ACK_DEFAULT = LOADING_ACK_NONE;
+  public static final boolean UPSERT_ATOMIC_DEFAULT = false;
+  public static final int UPSERT_BATCH_SIZE_ROWS_DEFAULT = 1000;
+  public static final int UPSERT_TIMEOUT_MS_DEFAULT = 0; // gsql default
+  public static final int UPSERT_RETRY_INTERVAL_MS_DEFAULT = 5 * 1000; // 5s
+  public static final int UPSERT_MAX_RETRY_INTERVAL_MS_DEFAULT = 5 * 60 * 1000; // 5min
+  public static final int UPSERT_MAX_RETRY_ATTEMPTS_DEFAULT = 10;
   // http transport
   public static final String IO_CONNECT_TIMEOUT_MS = "io.connect.timeout.ms";
   public static final String IO_READ_TIMEOUT_MS = "io.read.timeout.ms";
@@ -139,6 +178,7 @@ public class Options implements Serializable {
   public static final String GROUP_QUERY = "query";
   public static final String GROUP_LOG = "log";
   public static final String GROUP_OAUTH2 = "oauth2";
+  public static final String GROUP_UPSERT = "upsert";
 
   private final HashMap<String, String> originals;
   private final HashMap<String, Serializable> transformed = new HashMap<>();
@@ -147,7 +187,10 @@ public class Options implements Serializable {
   public Options(Map<String, String> originals, boolean skipValidate) {
     if (originals == null) throw new IllegalArgumentException("Original option map can't be null.");
     if (originals.containsKey(LOADING_JOB)) {
-      this.optionType = OptionType.WRITE;
+      this.optionType = OptionType.LOADING;
+    } else if (originals.containsKey(UPSERT_VERTEX_TYPE)
+        || originals.containsKey(UPSERT_EDGE_TYPE)) {
+      this.optionType = OptionType.UPSERT;
     } else {
       this.optionType = OptionType.READ;
     }
@@ -224,7 +267,7 @@ public class Options implements Serializable {
             .define(OAUTH2_PARAMETERS, Type.STRING, GROUP_OAUTH2)
             .define(OAUTH2_URL, Type.STRING, GROUP_OAUTH2);
 
-    if (OptionType.WRITE.equals(this.optionType)) {
+    if (OptionType.LOADING.equals(this.optionType)) {
       this.definition
           .define(LOADING_JOB, Type.STRING, true, GROUP_LOADING_JOB)
           .define(LOADING_FILENAME, Type.STRING, true, GROUP_LOADING_JOB)
@@ -250,13 +293,7 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB)
-          .define(
-              LOADING_ACK,
-              Type.STRING,
-              LOADING_ACK_ALL,
-              true,
-              OptionDef.ValidString.in(LOADING_ACK_ALL, LOADING_ACK_NONE),
-              GROUP_LOADING_JOB)
+          .define(LOADING_ACK, Type.STRING, LOADING_ACK_ALL, true, null, GROUP_LOADING_JOB)
           .define(LOADING_MAX_PERCENT_ERROR, Type.DOUBLE, GROUP_LOADING_JOB)
           .define(LOADING_MAX_NUM_ERROR, Type.INT, GROUP_LOADING_JOB)
           .define(
@@ -280,6 +317,86 @@ public class Options implements Serializable {
               true,
               null,
               GROUP_LOADING_JOB);
+    } else if (OptionType.UPSERT.equals(this.optionType)) {
+      // Vertex upsert options
+      this.definition
+          .define(UPSERT_VERTEX_TYPE, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_VERTEX_ID_FIELD, Type.STRING, GROUP_UPSERT)
+          .define(
+              UPSERT_VERTEX_NEW_ONLY,
+              Type.BOOLEAN,
+              UPSERT_VERTEX_NEW_ONLY_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(
+              UPSERT_VERTEX_UPDATE_ONLY,
+              Type.BOOLEAN,
+              UPSERT_VERTEX_UPDATE_ONLY_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          // Edge upsert options
+          .define(UPSERT_EDGE_TYPE, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_EDGE_SOURCE_TYPE, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_EDGE_SOURCE_ID_FIELD, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_EDGE_TARGET_TYPE, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_EDGE_TARGET_ID_FIELD, Type.STRING, GROUP_UPSERT)
+          .define(
+              UPSERT_EDGE_VERTEX_MUST_EXIST,
+              Type.BOOLEAN,
+              UPSERT_EDGE_VERTEX_MUST_EXIST_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(
+              UPSERT_EDGE_SOURCE_VERTEX_MUST_EXIST,
+              Type.BOOLEAN,
+              UPSERT_EDGE_SOURCE_VERTEX_MUST_EXIST_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(
+              UPSERT_EDGE_TARGET_VERTEX_MUST_EXIST,
+              Type.BOOLEAN,
+              UPSERT_EDGE_TARGET_VERTEX_MUST_EXIST_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          // Common upsert options
+          .define(UPSERT_ATTRIBUTE_MAPPING, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_ATTRIBUTE_OP, Type.STRING, GROUP_UPSERT)
+          .define(UPSERT_ACK, Type.STRING, UPSERT_ACK_DEFAULT, true, null, GROUP_UPSERT)
+          .define(UPSERT_ATOMIC, Type.BOOLEAN, UPSERT_ATOMIC_DEFAULT, true, null, GROUP_UPSERT)
+          .define(
+              UPSERT_BATCH_SIZE_ROWS,
+              Type.INT,
+              UPSERT_BATCH_SIZE_ROWS_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(UPSERT_TIMEOUT_MS, Type.INT, UPSERT_TIMEOUT_MS_DEFAULT, true, null, GROUP_UPSERT)
+          .define(
+              UPSERT_RETRY_INTERVAL_MS,
+              Type.INT,
+              UPSERT_RETRY_INTERVAL_MS_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(
+              UPSERT_MAX_RETRY_INTERVAL_MS,
+              Type.INT,
+              UPSERT_MAX_RETRY_INTERVAL_MS_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT)
+          .define(
+              UPSERT_MAX_RETRY_ATTEMPTS,
+              Type.INT,
+              UPSERT_MAX_RETRY_ATTEMPTS_DEFAULT,
+              true,
+              null,
+              GROUP_UPSERT);
     } else if (OptionType.READ.equals(this.optionType)) {
       this.definition
           .define(QUERY_VERTEX, Type.STRING, false, GROUP_QUERY)
@@ -382,6 +499,92 @@ public class Options implements Serializable {
   private void sanityCheck() {
     if (OptionType.READ.equals(optionType)) {
       sanityCheckPartitionQueryOpts();
+    } else if (OptionType.UPSERT.equals(optionType)) {
+      sanityCheckUpsertOpts();
+    }
+  }
+
+  /**
+   * Validates that upsert operations have the required configuration options. Either vertex or edge
+   * upsert must be configured, but not both.
+   */
+  private void sanityCheckUpsertOpts() {
+    validateVertexUpsertOptions();
+    validateEdgeUpsertOptions();
+  }
+
+  /**
+   * Validates vertex upsert configuration. If vertex type is specified, vertex ID field is
+   * required.
+   */
+  private void validateVertexUpsertOptions() {
+    boolean hasVertexType = containsOption(UPSERT_VERTEX_TYPE);
+    boolean hasVertexIdField = containsOption(UPSERT_VERTEX_ID_FIELD);
+    boolean hasEdgeType = containsOption(UPSERT_EDGE_TYPE);
+
+    if (hasVertexType && !hasVertexIdField) {
+      throw new IllegalArgumentException(
+          "When "
+              + UPSERT_VERTEX_TYPE
+              + " is specified, "
+              + UPSERT_VERTEX_ID_FIELD
+              + " is required");
+    }
+
+    if (hasVertexType && hasEdgeType) {
+      throw new IllegalArgumentException(
+          "Cannot specify both vertex and edge upsert options. Choose either vertex upsert ("
+              + UPSERT_VERTEX_TYPE
+              + ") or edge upsert ("
+              + UPSERT_EDGE_TYPE
+              + ")");
+    }
+  }
+
+  /**
+   * Validates edge upsert configuration. If edge type is specified, source/target types and ID
+   * fields are required.
+   */
+  private void validateEdgeUpsertOptions() {
+    boolean hasEdgeType = containsOption(UPSERT_EDGE_TYPE);
+    boolean hasSourceType = containsOption(UPSERT_EDGE_SOURCE_TYPE);
+    boolean hasSourceIdField = containsOption(UPSERT_EDGE_SOURCE_ID_FIELD);
+    boolean hasTargetType = containsOption(UPSERT_EDGE_TARGET_TYPE);
+    boolean hasTargetIdField = containsOption(UPSERT_EDGE_TARGET_ID_FIELD);
+
+    if (hasEdgeType) {
+      if (!hasSourceType) {
+        throw new IllegalArgumentException(
+            "When "
+                + UPSERT_EDGE_TYPE
+                + " is specified, "
+                + UPSERT_EDGE_SOURCE_TYPE
+                + " is required");
+      }
+      if (!hasSourceIdField) {
+        throw new IllegalArgumentException(
+            "When "
+                + UPSERT_EDGE_TYPE
+                + " is specified, "
+                + UPSERT_EDGE_SOURCE_ID_FIELD
+                + " is required");
+      }
+      if (!hasTargetType) {
+        throw new IllegalArgumentException(
+            "When "
+                + UPSERT_EDGE_TYPE
+                + " is specified, "
+                + UPSERT_EDGE_TARGET_TYPE
+                + " is required");
+      }
+      if (!hasTargetIdField) {
+        throw new IllegalArgumentException(
+            "When "
+                + UPSERT_EDGE_TYPE
+                + " is specified, "
+                + UPSERT_EDGE_TARGET_ID_FIELD
+                + " is required");
+      }
     }
   }
 

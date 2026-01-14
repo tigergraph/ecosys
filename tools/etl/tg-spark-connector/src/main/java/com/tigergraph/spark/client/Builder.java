@@ -13,11 +13,9 @@
  */
 package com.tigergraph.spark.client;
 
-import com.tigergraph.spark.client.common.RestppAuthInterceptor;
 import com.tigergraph.spark.client.common.RestppDecoder;
 import com.tigergraph.spark.client.common.RestppEncoder;
 import com.tigergraph.spark.client.common.RestppErrorDecoder;
-import com.tigergraph.spark.client.common.RestppQueryInterceptor;
 import com.tigergraph.spark.client.common.RestppRetryer;
 import com.tigergraph.spark.client.common.RestppTokenManager;
 import com.tigergraph.spark.log.LoggerFactory;
@@ -35,11 +33,12 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
 import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -65,8 +64,7 @@ public class Builder {
   private Decoder decoder = RestppDecoder.INSTANCE;
   private ErrorDecoder errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE);
   private Retryer retryer = new Retryer.Default();
-  private RequestInterceptor authInterceptor;
-  private RequestInterceptor queryInterceptor;
+  private List<RequestInterceptor> customInterceptors = new ArrayList<>();
   private Request.Options reqOpts = new Request.Options();
 
   public Builder setRequestOptions(int connectTimeoutMs, int readTimeoutMs) {
@@ -78,7 +76,26 @@ public class Builder {
 
   /** Set response error decoder with the HTTP error codes that will be retried. */
   public Builder setRetryableCode(Integer... code) {
-    this.errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE, code);
+    this.errDecoder = new RestppErrorDecoder(this.decoder, code);
+    return this;
+  }
+
+  /**
+   * Disable auth-related retries (e.g. 401/403) and keep default server-related retryable codes.
+   *
+   * <p>This is the recommended setting for Auth client used by initial auth probe.
+   */
+  public Builder disableAuthRetry() {
+    if (this.errDecoder instanceof RestppErrorDecoder) {
+      this.errDecoder = ((RestppErrorDecoder) this.errDecoder).withoutAuthRetry();
+    } else {
+      // fallback: keep default server retryable codes and disable auth retry
+      this.errDecoder =
+          new RestppErrorDecoder(
+              this.decoder,
+              RestppErrorDecoder.DEFAULT_SERVER_RETRYABLE_CODE,
+              Collections.emptyList());
+    }
     return this;
   }
 
@@ -129,20 +146,11 @@ public class Builder {
     return this;
   }
 
-  /** Set request interceptor for adding authorization header */
-  public Builder setAuthInterceptor(
-      String basicAuth, AtomicReference<String> token, boolean restAuthEnabled) {
-    this.authInterceptor = new RestppAuthInterceptor(basicAuth, token, restAuthEnabled);
-    return this;
-  }
-
-  /** Set request interceptor for adding GSQL query headers */
-  public Builder setQueryInterceptor(Integer queryTimeoutMs, Long queryMaxRespByte) {
-    logger.debug(
-        "Query timeout: {}ms, query response size limit: {}bytes. (default value: 0)",
-        queryTimeoutMs,
-        queryMaxRespByte);
-    this.queryInterceptor = new RestppQueryInterceptor(queryTimeoutMs, queryMaxRespByte);
+  /** Add a custom request interceptor */
+  public Builder addInterceptor(RequestInterceptor interceptor) {
+    if (interceptor != null) {
+      this.customInterceptors.add(interceptor);
+    }
     return this;
   }
 
@@ -197,8 +205,7 @@ public class Builder {
             new ApacheHttp5Client(hc5builder.setConnectionManager(connMgrBuilder.build()).build()));
     List<RequestInterceptor> interceptorChain = new ArrayList<>();
     interceptorChain.add(new UAInterceptor());
-    if (authInterceptor != null) interceptorChain.add(authInterceptor);
-    if (queryInterceptor != null) interceptorChain.add(queryInterceptor);
+    interceptorChain.addAll(customInterceptors);
     builder.requestInterceptors(interceptorChain);
 
     // Required to fetch the iterator after the response is processed, need to be close

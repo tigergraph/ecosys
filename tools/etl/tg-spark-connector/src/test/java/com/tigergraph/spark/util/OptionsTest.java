@@ -119,4 +119,81 @@ public class OptionsTest {
         };
     assertDoesNotThrow(() -> new Options(originals_4, false));
   }
+
+  @Test
+  public void testMissingVertexIdFieldThrowsException() {
+    Map<String, String> opts = new HashMap<>();
+    opts.put(Options.GRAPH, "test_graph");
+    opts.put(Options.URL, "http://localhost:8080");
+    opts.put(Options.VERSION, "4.1.0");
+    opts.put(Options.UPSERT_VERTEX_TYPE, "Person");
+    // Missing UPSERT_VERTEX_ID_FIELD
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Options(opts, false);
+            });
+    assertTrue(exception.getMessage().contains("upsert.vertex.id.field is required"));
+  }
+
+  @Test
+  public void testMissingEdgeSourceTypeThrowsException() {
+    Map<String, String> opts = new HashMap<>();
+    opts.put(Options.GRAPH, "test_graph");
+    opts.put(Options.URL, "http://localhost:8080");
+    opts.put(Options.VERSION, "4.1.0");
+    opts.put(Options.UPSERT_EDGE_TYPE, "KNOWS");
+    // Missing required edge fields
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Options(opts, false);
+            });
+    assertTrue(exception.getMessage().contains("upsert.edge.source.type is required"));
+  }
+
+  @Test
+  public void testMissingEdgeTargetIdFieldThrowsException() {
+    Map<String, String> opts = new HashMap<>();
+    opts.put(Options.GRAPH, "test_graph");
+    opts.put(Options.URL, "http://localhost:8080");
+    opts.put(Options.VERSION, "4.1.0");
+    opts.put(Options.UPSERT_EDGE_TYPE, "KNOWS");
+    opts.put(Options.UPSERT_EDGE_SOURCE_TYPE, "Person");
+    opts.put(Options.UPSERT_EDGE_SOURCE_ID_FIELD, "source_id");
+    opts.put(Options.UPSERT_EDGE_TARGET_TYPE, "Person");
+    // Missing UPSERT_EDGE_TARGET_ID_FIELD
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Options(opts, false);
+            });
+    assertTrue(exception.getMessage().contains("upsert.edge.target.id.field is required"));
+  }
+
+  @Test
+  public void testBothVertexAndEdgeUpsertThrowsException() {
+    Map<String, String> opts = new HashMap<>();
+    opts.put(Options.GRAPH, "test_graph");
+    opts.put(Options.URL, "http://localhost:8080");
+    opts.put(Options.VERSION, "4.1.0");
+    opts.put(Options.UPSERT_VERTEX_TYPE, "Person");
+    opts.put(Options.UPSERT_VERTEX_ID_FIELD, "id");
+    opts.put(Options.UPSERT_EDGE_TYPE, "KNOWS");
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              new Options(opts, false);
+            });
+    assertTrue(
+        exception.getMessage().contains("Cannot specify both vertex and edge upsert options"));
+  }
 }

@@ -20,9 +20,13 @@ import com.tigergraph.spark.client.Auth.AuthResponse;
 import com.tigergraph.spark.client.Builder;
 import com.tigergraph.spark.client.Misc;
 import com.tigergraph.spark.client.Query;
-import com.tigergraph.spark.client.Write;
+import com.tigergraph.spark.client.Upsert;
+import com.tigergraph.spark.client.Loading;
+import com.tigergraph.spark.client.common.RestppAuthInterceptor;
+import com.tigergraph.spark.client.common.RestppQueryInterceptor;
 import com.tigergraph.spark.client.common.RestppStreamDecoder;
 import com.tigergraph.spark.client.common.RestppTokenManager;
+import com.tigergraph.spark.client.common.RestppUpsertInterceptor;
 import com.tigergraph.spark.log.LoggerFactory;
 import com.tigergraph.spark.util.Options;
 import com.tigergraph.spark.util.Utils;
@@ -87,7 +91,8 @@ public class TigerGraphConnection implements Serializable {
   static final String JOB_IDENTIFIER = "spark";
   static final String JOB_MACHINE = "all";
   private String loadingJobId = null;
-  private transient Write write;
+  private transient Loading loading;
+  private transient Upsert upsert;
   // Query variables
   private transient Query query;
   private static final int DEFAULT_QUERY_READ_TIMEOUT_MS = 1800000; // 30 min
@@ -127,7 +132,7 @@ public class TigerGraphConnection implements Serializable {
       // no-op
     }
 
-    if (Options.OptionType.WRITE.equals(opts.getOptionType())
+    if (Options.OptionType.LOADING.equals(opts.getOptionType())
         && Utils.versionCmp(version, "3.9.4") >= 0) {
       loadingJobId = generateJobId(graph, opts.getString(Options.LOADING_JOB), creationTime);
     }
@@ -230,7 +235,10 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
-                  opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS));
+                  opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
+              // Auth client is used for initial auth probe and token ops; it should not retry
+              // on auth-related HTTP codes (e.g. 403 token expiration)
+              .disableAuthRetry();
       if (endpoint.trim().toLowerCase().startsWith("https://")) {
         if (AuthType.OAUTH2.equals(authType)) {
           builder.setSSL(Options.SSL_MODE_BASIC, null, null, null);
@@ -289,7 +297,9 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled);
+              .addInterceptor(
+                  new RestppAuthInterceptor(
+                      basicAuth, getTokenManager().getSharedToken(), restAuthEnabled));
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -302,18 +312,18 @@ public class TigerGraphConnection implements Serializable {
     return misc;
   }
 
-  /** Get write client (/restpp/ddl) */
-  public Write getWrite() {
-    if (!Options.OptionType.WRITE.equals(opts.getOptionType())) {
+  /** Get loading client (/restpp/ddl) */
+  public Loading getLoading() {
+    if (!Options.OptionType.LOADING.equals(opts.getOptionType())) {
       throw new UnsupportedOperationException(
-          "Can't build write client for OptionType " + opts.getOptionType());
+          "Can't build loading client for OptionType " + opts.getOptionType());
     }
 
     if (!restAuthInited) {
       initAuth();
     }
 
-    if (write == null) {
+    if (loading == null) {
       Builder builder =
           new Builder()
               .setRequestOptions(
@@ -327,7 +337,9 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.LOADING_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.LOADING_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled);
+              .addInterceptor(
+                  new RestppAuthInterceptor(
+                      basicAuth, getTokenManager().getSharedToken(), restAuthEnabled));
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),
@@ -335,9 +347,55 @@ public class TigerGraphConnection implements Serializable {
             opts.getString(Options.SSL_TRUSTSTORE_TYPE),
             opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
       }
-      write = builder.build(Write.class, url);
+      loading = builder.build(Loading.class, url);
     }
-    return write;
+    return loading;
+  }
+
+  /** Get upsert client (POST /graph/{graph_name}) */
+  public Upsert getUpsert() {
+    if (!Options.OptionType.UPSERT.equals(opts.getOptionType())) {
+      throw new UnsupportedOperationException(
+          "Can't build upsert client for OptionType " + opts.getOptionType());
+    }
+
+    if (!restAuthInited) {
+      initAuth();
+    }
+
+    if (upsert == null) {
+      // Get upsert options for headers
+      boolean atomic = opts.getBoolean(Options.UPSERT_ATOMIC);
+      int timeoutMs = opts.getInt(Options.UPSERT_TIMEOUT_MS);
+
+      Builder builder =
+          new Builder()
+              .setRequestOptions(
+                  opts.getInt(Options.IO_CONNECT_TIMEOUT_MS),
+                  opts.getInt(Options.IO_READ_TIMEOUT_MS))
+              .setRetryer(
+                  getTokenManager(),
+                  opts.getInt(Options.IO_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS),
+                  opts.getInt(Options.UPSERT_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.UPSERT_MAX_RETRY_INTERVAL_MS),
+                  opts.getInt(Options.UPSERT_MAX_RETRY_ATTEMPTS))
+              .addInterceptor(
+                  new RestppAuthInterceptor(
+                      basicAuth, getTokenManager().getSharedToken(), restAuthEnabled))
+              // Add upsert interceptor for HTTP headers
+              .addInterceptor(new RestppUpsertInterceptor(atomic, timeoutMs));
+      if (url.trim().toLowerCase().startsWith("https://")) {
+        builder.setSSL(
+            opts.getString(Options.SSL_MODE),
+            opts.getString(Options.SSL_TRUSTSTORE),
+            opts.getString(Options.SSL_TRUSTSTORE_TYPE),
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+      }
+      upsert = builder.build(Upsert.class, url);
+    }
+    return upsert;
   }
 
   /** Get query client (restpp built-in queries) */
@@ -370,11 +428,14 @@ public class TigerGraphConnection implements Serializable {
                   opts.getInt(Options.IO_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_INTERVAL_MS),
                   opts.getInt(Options.IO_MAX_RETRY_ATTEMPTS))
-              .setAuthInterceptor(basicAuth, getTokenManager().getSharedToken(), restAuthEnabled)
+              .addInterceptor(
+                  new RestppAuthInterceptor(
+                      basicAuth, getTokenManager().getSharedToken(), restAuthEnabled))
               .setRetryableCode(502, 503, 504)
-              .setQueryInterceptor(
-                  opts.getInt(Options.QUERY_TIMEOUT_MS),
-                  opts.getLong(Options.QUERY_MAX_RESPONSE_BYTES));
+              .addInterceptor(
+                  new RestppQueryInterceptor(
+                      opts.getInt(Options.QUERY_TIMEOUT_MS),
+                      opts.getLong(Options.QUERY_MAX_RESPONSE_BYTES)));
       if (url.trim().toLowerCase().startsWith("https://")) {
         builder.setSSL(
             opts.getString(Options.SSL_MODE),

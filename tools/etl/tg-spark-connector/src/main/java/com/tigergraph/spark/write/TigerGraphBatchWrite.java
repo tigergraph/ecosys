@@ -16,6 +16,7 @@ package com.tigergraph.spark.write;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.common.RestppResponse;
 import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options.OptionType;
 import com.tigergraph.spark.util.Utils;
 import org.apache.spark.sql.connector.write.BatchWrite;
 import org.apache.spark.sql.connector.write.DataWriter;
@@ -45,6 +46,10 @@ import org.slf4j.Logger;
 public class TigerGraphBatchWrite extends TigerGraphWriteBase implements BatchWrite {
   private static final Logger logger = LoggerFactory.getLogger(TigerGraphBatchWrite.class);
 
+  // Constants for log messages
+  private static final String LOG_TOTAL_PROCESSED_ROWS = "Total processed rows: {}";
+  private static final String LOG_PROCESSED_ROWS_BY_TASK = "Processed rows of each task:\n{}";
+
   TigerGraphBatchWrite(StructType schema, TigerGraphConnection conn) {
     super(schema, conn);
   }
@@ -56,29 +61,42 @@ public class TigerGraphBatchWrite extends TigerGraphWriteBase implements BatchWr
 
   @Override
   public void commit(WriterCommitMessage[] messages) {
-    logger.info(
-        "Finished batch loading job {}",
-        conn.getLoadingJobId() == null ? "" : conn.getLoadingJobId());
-    logger.info("Total processed rows: {}", getTotalProcessedRows(messages));
-    logger.info("Processed rows of each task:\n{}", getTaskSummury(messages));
-    RestppResponse resp = getLoadingStatistics();
-    if (resp != null) {
-      Utils.removeUserData(resp.results);
-      logger.info("Overall loading statistics: {}", resp.results.toPrettyString());
+    if (OptionType.LOADING.equals(optionType)) {
+      logger.info(
+          "Finished batch loading job {}",
+          conn.getLoadingJobId() == null ? "" : conn.getLoadingJobId());
+      logger.info(LOG_TOTAL_PROCESSED_ROWS, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK, getTaskSummury(messages));
+      RestppResponse resp = getLoadingStatistics();
+      if (resp != null) {
+        Utils.removeUserData(resp.results);
+        logger.info("Overall loading statistics: {}", resp.results.toPrettyString());
+      }
+    } else if (OptionType.UPSERT.equals(optionType)) {
+      logger.info("Finished batch upsert operation");
+      logger.info(LOG_TOTAL_PROCESSED_ROWS, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK, getTaskSummury(messages));
     }
   }
 
   @Override
   public void abort(WriterCommitMessage[] messages) {
-    logger.error(
-        "Aborted batch loading job {}",
-        conn.getLoadingJobId() == null ? "" : conn.getLoadingJobId());
-    logger.info("Total processed rows: {}", getTotalProcessedRows(messages));
-    logger.info("Processed rows of each task:\n{}", getTaskSummury(messages));
-    RestppResponse resp = getLoadingStatistics();
-    if (resp != null) {
-      Utils.removeUserData(resp.results);
-      logger.info("Overall loading statistics: {}", resp.results.toPrettyString());
+
+    if (OptionType.LOADING.equals(optionType)) {
+      logger.error(
+          "Aborted batch loading job {}",
+          conn.getLoadingJobId() == null ? "" : conn.getLoadingJobId());
+      logger.info(LOG_TOTAL_PROCESSED_ROWS, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK, getTaskSummury(messages));
+      RestppResponse resp = getLoadingStatistics();
+      if (resp != null) {
+        Utils.removeUserData(resp.results);
+        logger.info("Overall loading statistics: {}", resp.results.toPrettyString());
+      }
+    } else if (OptionType.UPSERT.equals(optionType)) {
+      logger.error("Aborted batch upsert operation");
+      logger.info(LOG_TOTAL_PROCESSED_ROWS, getTotalProcessedRows(messages));
+      logger.info(LOG_PROCESSED_ROWS_BY_TASK, getTaskSummury(messages));
     }
   }
 }
