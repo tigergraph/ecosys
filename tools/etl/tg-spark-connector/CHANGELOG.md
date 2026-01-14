@@ -1,3 +1,16 @@
+# v0.2.7
+* Fix: Avoid retrying during initial RESTPP auth probe;
+
+# v0.2.6
+* Fix the issue of date type conversion;
+
+# v0.2.5
+* Support dual Scala version builds: 2.12 and 2.13
+  * Artifacts are now published with Scala version in the name: `tigergraph-spark-connector_2.12` and `tigergraph-spark-connector_2.13`
+  * Maven profiles added: `-Pscala-2.12` and `-Pscala-2.13` (default)
+  * Both versions are published independently to Maven Central
+* Updated test cases to explicitly use Scala 2.13 artifacts
+
 # v0.2.4
 * Support token refresh when JWKS rotates.
 

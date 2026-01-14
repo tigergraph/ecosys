@@ -1,15 +1,20 @@
 package com.tigergraph.spark.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class UtilsTest {
 
@@ -134,6 +139,153 @@ public class UtilsTest {
     for (int i = 0; i < inputs.size(); i++) {
       assertEquals(
           expected.get(i), Utils.extractQueryFields(inputs.get(i), seps.get(i)).toString());
+    }
+  }
+
+  private static Stream<Arguments> keyValueParserTestCases() {
+    return Stream.of(
+        Arguments.of(
+            "Should handle quoted keys and values",
+            "`key, with comma`: `value: with colon`, id: 123",
+            Map.of("key, with comma", "value: with colon", "id", "123"),
+            null,
+            null),
+        Arguments.of(
+            "Should handle whitespace and mixed quotes",
+            "  ` a ` : ` b `  , c:d ",
+            Map.of("a", "b", "c", "d"),
+            null,
+            null),
+        Arguments.of(
+            "Should parse a single pair",
+            "singleKey:`singleValue with spaces`",
+            Map.of("singleKey", "singleValue with spaces"),
+            null,
+            null),
+        Arguments.of(
+            "Should parse complex mixed input",
+            "path: /api/v1/data, `query:param`: `filter=id,name`",
+            Map.of("path", "/api/v1/data", "query:param", "filter=id,name"),
+            null,
+            null),
+        Arguments.of(
+            "Should handle escaped backticks in key and value",
+            "`key``1`: `value``1`, key2: value2",
+            Map.of("key`1", "value`1", "key2", "value2"),
+            null,
+            null),
+        Arguments.of("Should parse pair with empty value", "key:", Map.of("key", ""), null, null),
+        Arguments.of(
+            "Should parse pair with explicit empty quoted value",
+            "key:``",
+            Map.of("key", ""),
+            null,
+            null),
+        Arguments.of("Should handle null input", null, Map.of(), null, null),
+        Arguments.of("Should handle empty input", "", Map.of(), null, null),
+        Arguments.of("Should handle whitespace-only input", "   ", Map.of(), null, null),
+
+        // Invalid Cases
+        Arguments.of(
+            "Should throw for unclosed quote",
+            "key: `unclosed quote",
+            null,
+            IllegalArgumentException.class,
+            "Malformed input: Unclosed quote at end of string. Input: \"key: `unclosed quote\""),
+        Arguments.of(
+            "Should throw for trailing comma",
+            "key: value,",
+            null,
+            IllegalArgumentException.class,
+            "Malformed input: Trailing comma at end of string. Input: \"key: value,\""),
+        Arguments.of(
+            "Should throw for dangling key",
+            "key: value, dangling",
+            null,
+            IllegalArgumentException.class,
+            "Malformed input: Dangling key without a value. Input: \"key: value, dangling\""));
+  }
+
+  @ParameterizedTest(name = "[{index}] {0}")
+  @MethodSource("keyValueParserTestCases")
+  void testParseKeyValueString(
+      String testCase,
+      String input,
+      Map<String, String> expected,
+      Class<Throwable> exception,
+      String error) {
+    if (exception != null) {
+      Throwable e = assertThrows(exception, () -> Utils.parseKeyValueString(input));
+      assertEquals(error, e.getMessage());
+    } else {
+      assertEquals(expected, Utils.parseKeyValueString(input));
+    }
+  }
+
+  private static Stream<Arguments> commaDelimitedKeysTestCases() {
+    return Stream.of(
+        Arguments.of(
+            "Should parse simple field names",
+            "id,name,value",
+            List.of("id", "name", "value"),
+            null,
+            null),
+        Arguments.of(
+            "Should parse backquoted field names",
+            "`field one`,field_two,`field three`",
+            List.of("field one", "field_two", "field three"),
+            null,
+            null),
+        Arguments.of(
+            "Should parse mixed quoted and unquoted fields",
+            "normal_field,`quoted field`,field3",
+            List.of("normal_field", "quoted field", "field3"),
+            null,
+            null),
+        Arguments.of(
+            "Should handle quoted field with comma",
+            "`field,with,commas`,normal_field",
+            List.of("field,with,commas", "normal_field"),
+            null,
+            null),
+        Arguments.of(
+            "Should handle escaped backticks",
+            "`a``b`,c,`d``e``f`",
+            List.of("a`b", "c", "d`e`f"),
+            null,
+            null),
+        Arguments.of("Should handle null input", null, List.of(), null, null),
+        Arguments.of("Should handle empty input", "", List.of(), null, null),
+        Arguments.of("Should handle whitespace-only input", "   ", List.of(), null, null),
+
+        // Invalid Cases
+        Arguments.of(
+            "Should throw for empty field name",
+            "id1,,id2",
+            null,
+            IllegalArgumentException.class,
+            "Malformed input: Empty field name at position 1. Input: \"id1,,id2\""),
+        Arguments.of(
+            "Should throw for unclosed quote",
+            "field1,`unclosed quote",
+            null,
+            IllegalArgumentException.class,
+            "Malformed input: Unclosed quote at end of string. Input: \"field1,`unclosed quote\""));
+  }
+
+  @ParameterizedTest(name = "[{index}] {0}")
+  @MethodSource("commaDelimitedKeysTestCases")
+  void testParseCommaDelimitedKeys(
+      String testCase,
+      String input,
+      List<String> expected,
+      Class<Throwable> exception,
+      String error) {
+    if (exception != null) {
+      Throwable e = assertThrows(exception, () -> Utils.parseCommaDelimitedKeys(input));
+      assertEquals(error, e.getMessage());
+    } else {
+      assertEquals(expected, Utils.parseCommaDelimitedKeys(input));
     }
   }
 }

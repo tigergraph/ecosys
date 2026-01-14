@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tigergraph.spark.client.Loading.LoadingResponse;
 
-public class WriteTest {
+public class LoadingTest {
   @Test
   public void testCheckInvalidData() throws Exception {
     ObjectMapper mapper = new ObjectMapper();
@@ -36,7 +37,7 @@ public class WriteTest {
             + "}\n"
             + "}\n"
             + "]}";
-    assertFalse(Write.LoadingResponse.hasInvalidRecord(mapper.readTree(jsonString)));
+    assertFalse(LoadingResponse.hasInvalidRecord(mapper.readTree(jsonString)));
     // have invalid data
     jsonString =
         "{\"results\": [\n"
@@ -64,6 +65,6 @@ public class WriteTest {
             + "}\n"
             + "}\n"
             + "]}";
-    assertTrue(Write.LoadingResponse.hasInvalidRecord(mapper.readTree(jsonString)));
+    assertTrue(LoadingResponse.hasInvalidRecord(mapper.readTree(jsonString)));
   }
 }

@@ -1,6 +1,7 @@
 package com.tigergraph.spark.client.common;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 
 import feign.RetryableException;
@@ -34,8 +35,54 @@ public class RestppErrorDecoderTest {
         decoder.decode(
                 "GET", Response.builder().request(req).status(HttpStatus.SC_SERVER_ERROR).build())
             instanceof RetryableException);
-    // 403 forbidden
+    // 403 forbidden (auth-related)
     assertTrue(
+        decoder.decode(
+                "GET",
+                Response.builder()
+                    .request(req)
+                    .status(HttpStatus.SC_FORBIDDEN)
+                    .body(
+                        "{\"code\":\"" + ErrorCode.TOKEN_EXPIRATION + "\"}",
+                        Charset.forName("UTF-8"))
+                    .build())
+            instanceof RetryableException);
+    // 401 unauthorized (auth-related)
+    assertTrue(
+        decoder.decode(
+                "GET",
+                Response.builder()
+                    .request(req)
+                    .status(HttpStatus.SC_UNAUTHORIZED)
+                    .body(
+                        "{\"code\":\"" + ErrorCode.TOKEN_EXPIRATION + "\"}",
+                        Charset.forName("UTF-8"))
+                    .build())
+            instanceof RetryableException);
+  }
+
+  @Test
+  public void testDecodeWithoutAuthRetryCode() {
+    RestppErrorDecoder decoder =
+        new RestppErrorDecoder(
+            RestppDecoder.INSTANCE,
+            RestppErrorDecoder.DEFAULT_SERVER_RETRYABLE_CODE,
+            Collections.emptyList());
+    Request req =
+        Request.create(HttpMethod.GET, "", new HashMap<>(), null, Charset.defaultCharset(), null);
+    // Auth-related codes should not be retryable when auth retry codes are empty
+    assertFalse(
+        decoder.decode(
+                "GET",
+                Response.builder()
+                    .request(req)
+                    .status(HttpStatus.SC_UNAUTHORIZED)
+                    .body(
+                        "{\"code\":\"" + ErrorCode.TOKEN_EXPIRATION + "\"}",
+                        Charset.forName("UTF-8"))
+                    .build())
+            instanceof RetryableException);
+    assertFalse(
         decoder.decode(
                 "GET",
                 Response.builder()
