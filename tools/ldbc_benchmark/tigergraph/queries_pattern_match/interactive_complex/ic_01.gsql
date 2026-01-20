@@ -30,7 +30,7 @@ CREATE QUERY ic_1(VERTEX<Person> personId, STRING firstName) FOR GRAPH ldbc_snb 
       ACCUM 
         s.@visited += True,
         t.@visited += True,
-        t.@distance += (i+1)
+        t.@distance = (i+1)
       POST-ACCUM
         CASE WHEN t.firstName == firstName THEN 
           @@friendInfoTop += friendInfo(t, t.@distance, t.lastName, t.id)
