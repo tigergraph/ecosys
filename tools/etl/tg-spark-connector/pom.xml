@@ -33,13 +33,14 @@
 
   <groupId>com.tigergraph</groupId>
   <artifactId>tigergraph-spark-connector_${scala.binary.version}</artifactId>
-  <version>0.2.7</version>
+  <version>0.2.8</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <spark.version>3.2.0</spark.version>
+    <!-- To publish tigergraph-spark-connector_2.12, change the scala.binary.version to 2.12 -->
     <scala.binary.version>2.13</scala.binary.version>
     <feign.version>12.5</feign.version>
     <feign-form.version>3.8.0</feign-form.version>
@@ -185,23 +186,6 @@
   </build>
 
   <profiles>
-    <!-- Scala version profiles -->
-    <profile>
-      <id>scala-2.12</id>
-      <properties>
-        <scala.binary.version>2.12</scala.binary.version>
-      </properties>
-    </profile>
-    <profile>
-      <id>scala-2.13</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <scala.binary.version>2.13</scala.binary.version>
-      </properties>
-    </profile>
-    
     <!-- profile for publish the artifact to maven central -->
     <!-- Usage: mvn clean deploy -Ppublish -->
     <profile>

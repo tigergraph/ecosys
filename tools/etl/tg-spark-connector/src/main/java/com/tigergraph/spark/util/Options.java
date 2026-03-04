@@ -136,6 +136,10 @@ public class Options implements Serializable {
   public static final String SSL_TRUSTSTORE_TYPE = "ssl.truststore.type";
   public static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
   public static final String SSL_TRUSTSTORE_TYPE_DEFAULT = "JKS";
+  public static final String SSL_KEYSTORE = "ssl.keystore";
+  public static final String SSL_KEYSTORE_TYPE = "ssl.keystore.type";
+  public static final String SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
+  public static final String SSL_KEYSTORE_TYPE_DEFAULT = "JKS";
 
   // Query
   public static final String QUERY_VERTEX = "query.vertex";
@@ -262,6 +266,10 @@ public class Options implements Serializable {
                 null,
                 GROUP_SSL)
             .define(SSL_TRUSTSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL)
+            .define(SSL_KEYSTORE, Type.STRING, null, false, null, GROUP_SSL)
+            .define(
+                SSL_KEYSTORE_TYPE, Type.STRING, SSL_KEYSTORE_TYPE_DEFAULT, false, null, GROUP_SSL)
+            .define(SSL_KEYSTORE_PASSWORD, Type.STRING, null, false, null, GROUP_SSL)
             .define(LOG_LEVEL, Type.INT, GROUP_LOG)
             .define(LOG_FILE, Type.STRING, "", false, null, GROUP_LOG)
             .define(OAUTH2_PARAMETERS, Type.STRING, GROUP_OAUTH2)
@@ -497,10 +505,25 @@ public class Options implements Serializable {
   }
 
   private void sanityCheck() {
+    sanityCheckSSLOpts();
     if (OptionType.READ.equals(optionType)) {
       sanityCheckPartitionQueryOpts();
     } else if (OptionType.UPSERT.equals(optionType)) {
       sanityCheckUpsertOpts();
+    }
+  }
+
+  private void sanityCheckSSLOpts() {
+    if ((originals.containsKey(SSL_KEYSTORE_TYPE) || originals.containsKey(SSL_KEYSTORE_PASSWORD))
+        && !originals.containsKey(SSL_KEYSTORE)) {
+      throw new IllegalArgumentException(
+          "When "
+              + SSL_KEYSTORE_TYPE
+              + " or "
+              + SSL_KEYSTORE_PASSWORD
+              + " is specified, "
+              + SSL_KEYSTORE
+              + " is required");
     }
   }
 
