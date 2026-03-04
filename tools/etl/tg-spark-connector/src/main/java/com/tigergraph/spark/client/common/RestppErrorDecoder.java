@@ -30,6 +30,7 @@ import org.slf4j.Logger;
  */
 public class RestppErrorDecoder implements ErrorDecoder {
   private static final Logger logger = LoggerFactory.getLogger(RestppErrorDecoder.class);
+  static final String CLIENT_CERT_VERIFY_FAILED_MSG = "Client certificate verification failed";
 
   /** Retryable codes for transient service/network issues. */
   public static final List<Integer> DEFAULT_SERVER_RETRYABLE_CODE =
@@ -85,6 +86,9 @@ public class RestppErrorDecoder implements ErrorDecoder {
   public Exception decode(String methodKey, Response response) {
     Exception e = errDecoder.decode(methodKey, response);
     if (!(e instanceof RetryableException)) {
+      if (e.getMessage() != null && e.getMessage().contains(CLIENT_CERT_VERIFY_FAILED_MSG)) {
+        return e;
+      }
       int status = response.status();
       boolean shouldRetry =
           serverRetryableCode.contains(status) || authRetryableCode.contains(status);

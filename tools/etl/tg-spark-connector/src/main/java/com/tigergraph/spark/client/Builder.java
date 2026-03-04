@@ -156,7 +156,13 @@ public class Builder {
 
   /** Set SSL context for the client */
   public Builder setSSL(
-      String mode, String trustStoreFile, String trustStoreType, String password) {
+      String mode,
+      String trustStoreFile,
+      String trustStoreType,
+      String trustStorePassword,
+      String keyStoreFile,
+      String keyStoreType,
+      String keyStorePassword) {
     HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
     SSLContextBuilder sslContextBuilder = SSLContexts.custom();
     try {
@@ -172,18 +178,27 @@ public class Builder {
           if (Utils.isEmpty(trustStoreFile)) {
             throw new IllegalArgumentException("\"ssl.truststore\" is required for mode " + mode);
           }
-          String path = SparkFiles.get(trustStoreFile);
-          final InputStream in = new FileInputStream(new File(path));
+          String trustStorePath = SparkFiles.get(trustStoreFile);
+          final InputStream in = new FileInputStream(new File(trustStorePath));
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
-          if (Utils.isEmpty(password)) {
+          if (Utils.isEmpty(trustStorePassword)) {
             truststore.load(in, new char[0]);
           } else {
-            truststore.load(in, password.toCharArray());
+            truststore.load(in, trustStorePassword.toCharArray());
           }
           sslContextBuilder.loadTrustMaterial(truststore, null);
           break;
         default:
           throw new IllegalArgumentException("Invalid SSL mode: " + mode);
+      }
+      if (!Utils.isEmpty(keyStoreFile)) {
+        String keyStorePath = SparkFiles.get(keyStoreFile);
+        final InputStream in = new FileInputStream(new File(keyStorePath));
+        final KeyStore keystore = KeyStore.getInstance(keyStoreType);
+        char[] passwordChars =
+            Utils.isEmpty(keyStorePassword) ? new char[0] : keyStorePassword.toCharArray();
+        keystore.load(in, passwordChars);
+        sslContextBuilder.loadKeyMaterial(keystore, passwordChars);
       }
       connMgrBuilder.setSSLSocketFactory(
           new SSLConnectionSocketFactory(sslContextBuilder.build(), hostnameVerifier));

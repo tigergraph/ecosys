@@ -241,13 +241,16 @@ public class TigerGraphConnection implements Serializable {
               .disableAuthRetry();
       if (endpoint.trim().toLowerCase().startsWith("https://")) {
         if (AuthType.OAUTH2.equals(authType)) {
-          builder.setSSL(Options.SSL_MODE_BASIC, null, null, null);
+          builder.setSSL(Options.SSL_MODE_BASIC, null, null, null, null, null, null);
         } else {
           builder.setSSL(
               opts.getString(Options.SSL_MODE),
               opts.getString(Options.SSL_TRUSTSTORE),
               opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-              opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+              opts.getString(Options.SSL_TRUSTSTORE_PASSWORD),
+              opts.getString(Options.SSL_KEYSTORE),
+              opts.getString(Options.SSL_KEYSTORE_TYPE),
+              opts.getString(Options.SSL_KEYSTORE_PASSWORD));
         }
       }
       if (AuthType.OAUTH2.equals(authType)) {
@@ -305,7 +308,10 @@ public class TigerGraphConnection implements Serializable {
             opts.getString(Options.SSL_MODE),
             opts.getString(Options.SSL_TRUSTSTORE),
             opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD),
+            opts.getString(Options.SSL_KEYSTORE),
+            opts.getString(Options.SSL_KEYSTORE_TYPE),
+            opts.getString(Options.SSL_KEYSTORE_PASSWORD));
       }
       misc = builder.build(Misc.class, url);
     }
@@ -345,7 +351,10 @@ public class TigerGraphConnection implements Serializable {
             opts.getString(Options.SSL_MODE),
             opts.getString(Options.SSL_TRUSTSTORE),
             opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD),
+            opts.getString(Options.SSL_KEYSTORE),
+            opts.getString(Options.SSL_KEYSTORE_TYPE),
+            opts.getString(Options.SSL_KEYSTORE_PASSWORD));
       }
       loading = builder.build(Loading.class, url);
     }
@@ -391,7 +400,10 @@ public class TigerGraphConnection implements Serializable {
             opts.getString(Options.SSL_MODE),
             opts.getString(Options.SSL_TRUSTSTORE),
             opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD),
+            opts.getString(Options.SSL_KEYSTORE),
+            opts.getString(Options.SSL_KEYSTORE_TYPE),
+            opts.getString(Options.SSL_KEYSTORE_PASSWORD));
       }
       upsert = builder.build(Upsert.class, url);
     }
@@ -441,7 +453,10 @@ public class TigerGraphConnection implements Serializable {
             opts.getString(Options.SSL_MODE),
             opts.getString(Options.SSL_TRUSTSTORE),
             opts.getString(Options.SSL_TRUSTSTORE_TYPE),
-            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD));
+            opts.getString(Options.SSL_TRUSTSTORE_PASSWORD),
+            opts.getString(Options.SSL_KEYSTORE),
+            opts.getString(Options.SSL_KEYSTORE_TYPE),
+            opts.getString(Options.SSL_KEYSTORE_PASSWORD));
       }
       query = builder.build(Query.class, url);
     }

@@ -47,6 +47,20 @@ public class RestppErrorDecoderTest {
                         Charset.forName("UTF-8"))
                     .build())
             instanceof RetryableException);
+    // 403 with mTLS cert verification failure should not be retryable
+    assertFalse(
+        decoder.decode(
+                "GET",
+                Response.builder()
+                    .request(req)
+                    .status(HttpStatus.SC_FORBIDDEN)
+                    .body(
+                        "{\"message\":\""
+                            + RestppErrorDecoder.CLIENT_CERT_VERIFY_FAILED_MSG
+                            + "\"}",
+                        Charset.forName("UTF-8"))
+                    .build())
+            instanceof RetryableException);
     // 401 unauthorized (auth-related)
     assertTrue(
         decoder.decode(

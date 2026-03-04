@@ -196,4 +196,14 @@ public class OptionsTest {
     assertTrue(
         exception.getMessage().contains("Cannot specify both vertex and edge upsert options"));
   }
+
+  @Test
+  public void testSslKeystoreTypeRequiresKeystorePath() {
+    Map<String, String> originals = new HashMap<>(defaultOptions);
+    originals.put(Options.SSL_KEYSTORE_TYPE, "PKCS12");
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> new Options(originals, false));
+    assertTrue(exception.getMessage().contains("ssl.keystore is required"));
+  }
 }

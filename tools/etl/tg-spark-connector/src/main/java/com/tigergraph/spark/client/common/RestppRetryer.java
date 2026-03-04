@@ -15,6 +15,7 @@ package com.tigergraph.spark.client.common;
 
 import java.io.IOException;
 import java.util.Random;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.slf4j.Logger;
 
@@ -80,6 +81,10 @@ public class RestppRetryer implements Retryer {
   }
 
   public void continueOrPropagate(RetryableException e) {
+    if (e != null && e.getCause() instanceof SSLHandshakeException) {
+      throw e;
+    }
+
     RetryCounter retryCounter;
     String reason;
 

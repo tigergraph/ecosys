@@ -1,3 +1,9 @@
+# v0.2.8
+* Feature: Add mTLS client certificate support with new SSL options:
+  * `ssl.keystore`
+  * `ssl.keystore.type` (default: `JKS`)
+  * `ssl.keystore.password`
+
 # v0.2.7
 * Fix: Avoid retrying during initial RESTPP auth probe;
 
