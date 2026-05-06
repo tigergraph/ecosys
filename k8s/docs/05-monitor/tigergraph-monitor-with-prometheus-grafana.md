@@ -37,11 +37,11 @@ Starting from version 1.7.0, TigerGraph Operator supports automatically exposing
   - [Troubleshooting](#troubleshooting)
     - [Create TigerGraph monitor CR successfully but with warning events in TigerGraph monitor CR status](#create-tigergraph-monitor-cr-successfully-but-with-warning-events-in-tigergraph-monitor-cr-status)
     - [Check the serviceMonitorSelector, ruleSelector, and alertmanagerConfigSelector](#check-the-servicemonitorselector-ruleselector-and-alertmanagerconfigselector)
-  - [TigerGraph Metrics Reference](#tigergraph-metrics-reference)
   - [Uninstall Monitoring Components](#uninstall-monitoring-components)
     - [Uninstall Prometheus and Grafana](#uninstall-prometheus-and-grafana)
     - [Clean Up CRDs](#clean-up-crds)
     - [Clean Up Persistent Storage](#clean-up-persistent-storage)
+  - [TigerGraph Metrics Reference](#tigergraph-metrics-reference)
 
 ## Install Monitoring Components
 

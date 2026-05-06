@@ -27,8 +27,8 @@ For further details, see the sections below.
 To install the kubectl plugin for TigerGraph Operator 1.7.0, execute the following command:
 
 ```bash
-curl https://dl.tigergraph.com/k8s/1.7.0/kubectl-TigerGraph  -o kubectl-TigerGraph
-sudo install kubectl-TigerGraph /usr/local/bin/
+curl https://dl.tigergraph.com/k8s/1.7.0/kubectl-tg -o kubectl-TigerGraph
+sudo install kubectl-tg/usr/local/bin/
 ```
 
 ### TigerGraph Operator upgrading
@@ -52,7 +52,7 @@ Version: 1.7.0
 Default version of TigerGraph cluster: 4.3.0
 ```
 
-Upgrade TigerGraph Operator using kubectl-TigerGraph plugin:
+Upgrade TigerGraph Operator using kubectl-tgplugin:
 
 ```bash
 kubectl TigerGraph upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-version 1.7.0

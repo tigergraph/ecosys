@@ -13,8 +13,9 @@ TigerGraph Operator stands as an automated operations system meticulously design
 
 Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and Kubernetes versions is pivotal. This relationship is as follows:
 
-| TigerGraph Operator version | TigerGraph version  | Kubernetes version |
+| TigerGraph Operator version | TigerGraph version  | Kubernetes Validated version |
 |----------|----------|----------|
+| 1.7.1 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.30, 1.31, 1.32, 1.33, 1.34|
 | 1.7.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.27, 1.28, 1.29, 1.30, 1.31|
 | 1.6.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.2|1.27, 1.28, 1.29, 1.30, 1.31|
 | 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|1.26, 1.27, 1.28, 1.29, 1.30|
