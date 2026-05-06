@@ -11,6 +11,8 @@ This guide will walk you through upgrading the TigerGraph Cluster using the Tige
   - [Troubleshooting](#troubleshooting)
     - [How to proceed with the upgrade process if the upgrade pre-check job fails due to incorrect image or downgrade error](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-job-fails-due-to-incorrect-image-or-downgrade-error)
     - [How to proceed with the upgrade process if the upgrade pre-check fails Due to insufficient ephemeral local storage](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-fails-due-to-insufficient-ephemeral-local-storage)
+  - [Known Issues](#known-issues)
+    - [Upgrade pre-check fails when crossing Ubuntu base-image versions](#upgrade-pre-check-fails-when-crossing-ubuntu-base-image-versions)
 
 ## Before you begin
 
@@ -24,7 +26,7 @@ The synergy and compatibility between TigerGraph and TigerGraph Operator:
 
 | TigerGraph Operator version | TigerGraph version  |
 |----------|----------|
-| 1.7.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
+| 1.7.x | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
 | 1.6.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.1|
 | 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|
 | 1.4.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.2|
@@ -247,3 +249,45 @@ resources:
   limits:
     ephemeral-storage: "20Gi"
 ```
+
+## Known Issues
+
+### Upgrade pre-check fails when crossing Ubuntu base-image versions
+
+Starting from the 4.1.4 release, TigerGraph Kubernetes images are built on **Ubuntu 24.04**. The currently published images on Ubuntu 24.04 are:
+
+- 4.1.4
+
+All earlier 4.1.x and 4.2.x patch images (e.g. **4.2.0**, **4.2.2**) were built on **Ubuntu 22.04** and will not be rebuilt.
+
+Going forward, all new TigerGraph releases will be published on Ubuntu 24.04. Upgrading from an Ubuntu 24.04 image (e.g. 4.1.4) to an Ubuntu 22.04 image (e.g. 4.2.0 or 4.2.2) crosses an OS-level base-image downgrade and will fail on the upgrade pre-check.
+
+| From                 | To                   | Result                  |
+| -------------------- | -------------------- | ----------------------- |
+| 4.1.4 (Ubuntu 24.04) | 4.2.0 (Ubuntu 22.04) | upgrade pre-check fails |
+| 4.1.4 (Ubuntu 24.04) | 4.2.2 (Ubuntu 22.04) | upgrade pre-check fails |
+
+When upgrading from 4.1.4, the recommended target versions are **4.2.2+** or **4.3.x**.
+
+**Symptom**
+
+The TigerGraph cluster status is stuck at `UpgradePre`. The upgrade does not proceed and the cluster does not roll back automatically.
+
+**Recovery**
+
+Revert `spec.image` on the TigerGraph CR back to the image that was running **before** the upgrade was triggered (i.e. the original 4.1.4 / Ubuntu 24.04 image). Once the operator reconciles the CR with the previous image, the cluster returns to a normal state.
+
+```bash
+kubectl edit tigergraph <cr-name> -n <namespace>
+# revert spec.image to the previously running 4.1.4 image, then save
+```
+
+Or apply with a patch:
+
+```bash
+kubectl patch tigergraph <cr-name> -n <namespace> \
+  --type merge \
+  -p '{"spec":{"image":"docker.io/tigergraph/tigergraph-k8s:4.1.4"}}'
+```
+
+After the cluster is healthy again, choose a supported upgrade target and re-apply.
