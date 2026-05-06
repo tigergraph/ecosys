@@ -15,6 +15,7 @@ package com.tigergraph.spark.write;
 
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options;
 import org.apache.spark.sql.connector.write.LogicalWriteInfo;
 import org.apache.spark.sql.connector.write.WriteBuilder;
 import org.apache.spark.sql.types.StructType;
@@ -30,8 +31,17 @@ public class TigerGraphWriteBuilder implements WriteBuilder {
     logger.info("Start to build TigerGraph data writer with queryId {}", info.queryId());
     this.schema = info.schema();
     this.conn = conn;
-    if (conn.getLoadingJobId() != null) {
-      logger.info("Loading job ID: {}", conn.getLoadingJobId());
+
+    if (Options.OptionType.LOADING.equals(conn.getOpts().getOptionType())) {
+      if (conn.getLoadingJobId() != null) {
+        logger.info("Loading job ID: {}", conn.getLoadingJobId());
+      }
+    } else if (Options.OptionType.UPSERT.equals(conn.getOpts().getOptionType())) {
+      String type = conn.getOpts().getString(Options.UPSERT_VERTEX_TYPE);
+      if (type == null) {
+        type = conn.getOpts().getString(Options.UPSERT_EDGE_TYPE);
+      }
+      logger.info("Upserting {}", type != null ? type : "unknown type");
     }
   }
 

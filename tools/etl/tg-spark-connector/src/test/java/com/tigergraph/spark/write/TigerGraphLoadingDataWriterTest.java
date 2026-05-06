@@ -12,8 +12,9 @@ import org.apache.spark.sql.types.Decimal;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.unsafe.types.UTF8String;
 import org.junit.jupiter.api.Test;
+import com.tigergraph.spark.write.loading.TigerGraphLoadingDataWriter;
 
-public class TigerGraphDataWriterTest {
+public class TigerGraphLoadingDataWriterTest {
   @Test
   public void testSupportedDataTypesConversion() {
     StructType schema =
@@ -53,7 +54,7 @@ public class TigerGraphDataWriterTest {
 
     // Convert the GenericInternalRow to delimited Strings by the converter
     List<BiFunction<InternalRow, Integer, String>> converters =
-        TigerGraphDataWriter.getConverters(schema);
+        TigerGraphLoadingDataWriter.getConverters(schema);
 
     String actual =
         IntStream.range(0, row.numFields())

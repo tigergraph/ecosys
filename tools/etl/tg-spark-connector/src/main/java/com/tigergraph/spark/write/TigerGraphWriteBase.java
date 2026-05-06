@@ -16,6 +16,7 @@ package com.tigergraph.spark.write;
 import com.tigergraph.spark.TigerGraphConnection;
 import com.tigergraph.spark.client.common.RestppResponse;
 import com.tigergraph.spark.log.LoggerFactory;
+import com.tigergraph.spark.util.Options.OptionType;
 import com.tigergraph.spark.util.Utils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -29,10 +30,12 @@ public class TigerGraphWriteBase {
 
   protected final StructType schema;
   protected final TigerGraphConnection conn;
+  protected final OptionType optionType;
 
   public TigerGraphWriteBase(StructType schema, TigerGraphConnection conn) {
     this.schema = schema;
     this.conn = conn;
+    this.optionType = conn.getOpts().getOptionType();
   }
 
   protected RestppResponse getLoadingStatistics() {

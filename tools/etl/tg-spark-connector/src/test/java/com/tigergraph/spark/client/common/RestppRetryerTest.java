@@ -9,6 +9,7 @@ import feign.RetryableException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import javax.net.ssl.SSLHandshakeException;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 
@@ -69,5 +70,21 @@ public class RestppRetryerTest {
       long next = RestppRetryer.jitter(10000);
       assertTrue(next >= 7500 && next <= 12500, () -> String.valueOf(next));
     }
+  }
+
+  @Test
+  public void testNoRetryOnSSLHandshakeException() {
+    RestppRetryer retryer = new RestppRetryer(7000, 7000, 2, 12000, 12000, 2);
+    Request req =
+        Request.create(HttpMethod.GET, "", new HashMap<>(), null, Charset.defaultCharset(), null);
+    RetryableException sslEx =
+        new RetryableException(
+            HttpStatus.SC_FORBIDDEN,
+            "ssl handshake failed",
+            HttpMethod.GET,
+            new SSLHandshakeException("PKIX path building failed"),
+            null,
+            req);
+    assertThrows(RetryableException.class, () -> retryer.continueOrPropagate(sslEx));
   }
 }

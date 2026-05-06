@@ -13,11 +13,9 @@
  */
 package com.tigergraph.spark.client;
 
-import com.tigergraph.spark.client.common.RestppAuthInterceptor;
 import com.tigergraph.spark.client.common.RestppDecoder;
 import com.tigergraph.spark.client.common.RestppEncoder;
 import com.tigergraph.spark.client.common.RestppErrorDecoder;
-import com.tigergraph.spark.client.common.RestppQueryInterceptor;
 import com.tigergraph.spark.client.common.RestppRetryer;
 import com.tigergraph.spark.client.common.RestppTokenManager;
 import com.tigergraph.spark.log.LoggerFactory;
@@ -35,11 +33,12 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
 import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -65,8 +64,7 @@ public class Builder {
   private Decoder decoder = RestppDecoder.INSTANCE;
   private ErrorDecoder errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE);
   private Retryer retryer = new Retryer.Default();
-  private RequestInterceptor authInterceptor;
-  private RequestInterceptor queryInterceptor;
+  private List<RequestInterceptor> customInterceptors = new ArrayList<>();
   private Request.Options reqOpts = new Request.Options();
 
   public Builder setRequestOptions(int connectTimeoutMs, int readTimeoutMs) {
@@ -78,7 +76,26 @@ public class Builder {
 
   /** Set response error decoder with the HTTP error codes that will be retried. */
   public Builder setRetryableCode(Integer... code) {
-    this.errDecoder = new RestppErrorDecoder(RestppDecoder.INSTANCE, code);
+    this.errDecoder = new RestppErrorDecoder(this.decoder, code);
+    return this;
+  }
+
+  /**
+   * Disable auth-related retries (e.g. 401/403) and keep default server-related retryable codes.
+   *
+   * <p>This is the recommended setting for Auth client used by initial auth probe.
+   */
+  public Builder disableAuthRetry() {
+    if (this.errDecoder instanceof RestppErrorDecoder) {
+      this.errDecoder = ((RestppErrorDecoder) this.errDecoder).withoutAuthRetry();
+    } else {
+      // fallback: keep default server retryable codes and disable auth retry
+      this.errDecoder =
+          new RestppErrorDecoder(
+              this.decoder,
+              RestppErrorDecoder.DEFAULT_SERVER_RETRYABLE_CODE,
+              Collections.emptyList());
+    }
     return this;
   }
 
@@ -129,26 +146,23 @@ public class Builder {
     return this;
   }
 
-  /** Set request interceptor for adding authorization header */
-  public Builder setAuthInterceptor(
-      String basicAuth, AtomicReference<String> token, boolean restAuthEnabled) {
-    this.authInterceptor = new RestppAuthInterceptor(basicAuth, token, restAuthEnabled);
-    return this;
-  }
-
-  /** Set request interceptor for adding GSQL query headers */
-  public Builder setQueryInterceptor(Integer queryTimeoutMs, Long queryMaxRespByte) {
-    logger.debug(
-        "Query timeout: {}ms, query response size limit: {}bytes. (default value: 0)",
-        queryTimeoutMs,
-        queryMaxRespByte);
-    this.queryInterceptor = new RestppQueryInterceptor(queryTimeoutMs, queryMaxRespByte);
+  /** Add a custom request interceptor */
+  public Builder addInterceptor(RequestInterceptor interceptor) {
+    if (interceptor != null) {
+      this.customInterceptors.add(interceptor);
+    }
     return this;
   }
 
   /** Set SSL context for the client */
   public Builder setSSL(
-      String mode, String trustStoreFile, String trustStoreType, String password) {
+      String mode,
+      String trustStoreFile,
+      String trustStoreType,
+      String trustStorePassword,
+      String keyStoreFile,
+      String keyStoreType,
+      String keyStorePassword) {
     HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
     SSLContextBuilder sslContextBuilder = SSLContexts.custom();
     try {
@@ -164,18 +178,27 @@ public class Builder {
           if (Utils.isEmpty(trustStoreFile)) {
             throw new IllegalArgumentException("\"ssl.truststore\" is required for mode " + mode);
           }
-          String path = SparkFiles.get(trustStoreFile);
-          final InputStream in = new FileInputStream(new File(path));
+          String trustStorePath = SparkFiles.get(trustStoreFile);
+          final InputStream in = new FileInputStream(new File(trustStorePath));
           final KeyStore truststore = KeyStore.getInstance(trustStoreType);
-          if (Utils.isEmpty(password)) {
+          if (Utils.isEmpty(trustStorePassword)) {
             truststore.load(in, new char[0]);
           } else {
-            truststore.load(in, password.toCharArray());
+            truststore.load(in, trustStorePassword.toCharArray());
           }
           sslContextBuilder.loadTrustMaterial(truststore, null);
           break;
         default:
           throw new IllegalArgumentException("Invalid SSL mode: " + mode);
+      }
+      if (!Utils.isEmpty(keyStoreFile)) {
+        String keyStorePath = SparkFiles.get(keyStoreFile);
+        final InputStream in = new FileInputStream(new File(keyStorePath));
+        final KeyStore keystore = KeyStore.getInstance(keyStoreType);
+        char[] passwordChars =
+            Utils.isEmpty(keyStorePassword) ? new char[0] : keyStorePassword.toCharArray();
+        keystore.load(in, passwordChars);
+        sslContextBuilder.loadKeyMaterial(keystore, passwordChars);
       }
       connMgrBuilder.setSSLSocketFactory(
           new SSLConnectionSocketFactory(sslContextBuilder.build(), hostnameVerifier));
@@ -197,8 +220,7 @@ public class Builder {
             new ApacheHttp5Client(hc5builder.setConnectionManager(connMgrBuilder.build()).build()));
     List<RequestInterceptor> interceptorChain = new ArrayList<>();
     interceptorChain.add(new UAInterceptor());
-    if (authInterceptor != null) interceptorChain.add(authInterceptor);
-    if (queryInterceptor != null) interceptorChain.add(queryInterceptor);
+    interceptorChain.addAll(customInterceptors);
     builder.requestInterceptors(interceptorChain);
 
     // Required to fetch the iterator after the response is processed, need to be close

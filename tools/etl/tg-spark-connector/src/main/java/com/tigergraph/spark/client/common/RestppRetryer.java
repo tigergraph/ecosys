@@ -15,8 +15,8 @@ package com.tigergraph.spark.client.common;
 
 import java.io.IOException;
 import java.util.Random;
+import javax.net.ssl.SSLHandshakeException;
 
-import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 
 import com.tigergraph.spark.log.LoggerFactory;
@@ -81,13 +81,17 @@ public class RestppRetryer implements Retryer {
   }
 
   public void continueOrPropagate(RetryableException e) {
+    if (e != null && e.getCause() instanceof SSLHandshakeException) {
+      throw e;
+    }
+
     RetryCounter retryCounter;
     String reason;
 
     if (e.getCause() instanceof IOException) {
       retryCounter = ioRetryCounter;
       reason = e.getCause().toString();
-    } else if (e.status() == HttpStatus.SC_FORBIDDEN) {
+    } else if (RestppErrorDecoder.DEFAULT_AUTH_RETRYABLE_CODE.contains(e.status())) {
       retryCounter = authRetryCounter;
       reason =
           String.format(

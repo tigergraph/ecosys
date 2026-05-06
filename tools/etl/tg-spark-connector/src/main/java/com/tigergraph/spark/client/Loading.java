@@ -24,8 +24,8 @@ import feign.Param;
 import feign.QueryMap;
 import feign.RequestLine;
 
-/** Write endpoint declaration used for data loading. */
-public interface Write {
+/** Loading endpoint declaration used for data loading. */
+public interface Loading {
   @RequestLine("POST /restpp/ddl/{graph}")
   @Headers({"Content-Type: text/plain"})
   @Body("{data}")

@@ -18,7 +18,8 @@ public class BuilderTest {
             new ArrayList<>(Arrays.asList("a")),
             new ArrayList<>(Arrays.asList("a a", "a")));
     for (int i = 0; i < urlList.size(); i++) {
-      LoadBalanceTarget<Write> target = new LoadBalanceTarget<Write>(Write.class, urlList.get(i));
+      LoadBalanceTarget<Loading> target =
+          new LoadBalanceTarget<Loading>(Loading.class, urlList.get(i));
       // Iterate 100 times, then it should meet all the elements(very high probability)
       for (int j = 0; j < 100; j++) {
         String randUrl = target.url();

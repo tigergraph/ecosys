@@ -17,6 +17,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tigergraph.spark.client.common.RestppErrorException;
+import com.tigergraph.spark.client.common.RestppErrorDecoder;
 import com.tigergraph.spark.util.Utils;
 
 import feign.Body;
@@ -41,7 +42,7 @@ public interface Auth {
       getVersionWithoutToken();
     } catch (FeignException e) {
       // The code is different in different RESTPP versions
-      if (e.status() == 401 || e.status() == 403) {
+      if (RestppErrorDecoder.DEFAULT_AUTH_RETRYABLE_CODE.contains(e.status())) {
         return true;
       }
     }

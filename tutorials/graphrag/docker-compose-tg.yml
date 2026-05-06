@@ -11,7 +11,6 @@ services:
     depends_on:
       - graphrag-ecc
       - chat-history
-      - tigergraph
     environment:
       SERVER_CONFIG: "/code/configs/server_config.json"
       LOGLEVEL: "INFO"
@@ -73,14 +72,3 @@ services:
       - graphrag-ui
       - graphrag
 
-  tigergraph:
-    image: tigergraph/community:4.2.1
-    container_name: tigergraph
-    platform: linux/amd64
-    ports:
-      - "14240:14240"
-    volumes:
-      - tigergraph_data:/home/tigergraph/tigergraph/data
-
-volumes:
-  tigergraph_data:

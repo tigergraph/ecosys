@@ -25,7 +25,7 @@ print(f"""Fetching answer for question: {query}""")
 
 resp = conn.ai.answerQuestion(
     query,
-    method="hnswoverlap",
+    method="hybrid",
     method_parameters = {
         "indices": ["Document", "DocumentChunk", "Entity", "Relationship"],
         "top_k": 2,
@@ -34,11 +34,11 @@ resp = conn.ai.answerQuestion(
         "verbose": True
     })
 
-print(f"""\nAnswer using HNSW_Overlap:\n{resp["response"]}""")
+print(f"""\nAnswer using Hybrid Search:\n{resp["response"]}""")
 
 resp = conn.ai.answerQuestion(
     query,
-    method="graphrag",
+    method="community",
     method_parameters={
         "community_level": 2,
         "combine": False,
@@ -46,4 +46,4 @@ resp = conn.ai.answerQuestion(
         "verbose": True
     })
 
-print(f"""\nAnswer using GraphRAG:\n{resp["response"]}""")
+print(f"""\nAnswer using Community Search:\n{resp["response"]}""")

@@ -4,6 +4,59 @@ metadata:
   name: graphrag
 
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tigergraph-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tigergraph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tigergraph
+  template:
+    metadata:
+      labels:
+        app: tigergraph
+    spec:
+      containers:
+        - name: tigergraph
+          image: tigergraph/community:4.2.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 14240
+          volumeMounts:
+            - mountPath: /home/tigergraph/tigergraph/data
+              name: tigergraph-storage
+      volumes:
+        - name: tigergraph-storage
+          persistentVolumeClaim:
+            claimName: tigergraph-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tigergraph
+spec:
+  selector:
+    app: tigergraph
+  ports:
+    - protocol: TCP
+      port: 14240
+      targetPort: 14240
+  type: ClusterIP
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
