@@ -62,7 +62,7 @@ This document provides solutions for common issues that may arise during the man
     Generation:          2
     ......
   Spec:
-    Image:              docker.io/tigergraph/tigergraph-k8s:4.2.1
+    Image:              docker.io/tigergraph/tigergraph-k8s:4.2.2
     Image Pull Policy:  IfNotPresent
     Image Pull Secrets:
       Name:  tigergraph-image-pull-secret
@@ -126,7 +126,7 @@ This document provides solutions for common issues that may arise during the man
       Message:          Get "<http://test-cluster-2.test-cluster-internal-service.tigergraph.svc.cluster.local:9000/echo>": dial tcp 10.131.0.15:9000: connect: connection refused
       Status:           Unknown
       Type:             test-cluster-2-rest-Available
-    Image:              docker.io/tigergraph/tigergraph-k8s:4.2.1
+    Image:              docker.io/tigergraph/tigergraph-k8s:4.2.2
     Listener:
       Type:    LoadBalancer
     Replicas:  3
@@ -165,7 +165,7 @@ This document provides solutions for common issues that may arise during the man
   ```bash
   kubectl get tg test-cluster -o json -n tigergraph|jq .spec.image
   
-  "docker.io/tigergraph/tigergraph-k8s:4.2.1"
+  "docker.io/tigergraph/tigergraph-k8s:4.2.2"
   ```
 
 - Ensure the Docker image of the cluster's StatefulSet has been updated:
@@ -173,7 +173,7 @@ This document provides solutions for common issues that may arise during the man
   ```bash
   kubectl get statefulset test-cluster -o json  -n tigergraph|jq .spec.template.spec.containers[0].image
 
-  "docker.io/tigergraph/tigergraph-k8s:4.2.1"
+  "docker.io/tigergraph/tigergraph-k8s:4.2.2"
   ```
 
   If the images haven't been updated, the cluster might be in another process, such as resource updating or scaling. Check the cluster's status to determine the ongoing process. If the cluster upgrade is not initiated, you may need to wait for the last operation to complete:

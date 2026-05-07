@@ -56,7 +56,7 @@ The output should be similar to the following:
 
 ```bash
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   Normal           True               12m
+test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   Normal           True               12m
 ```
 
 Use the following command to pause a running cluster:
@@ -71,7 +71,7 @@ Check the status of the cluster:
 kubectl tg list -n tigergraph
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   PauseRoll        Unknown            13m
+test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   PauseRoll        Unknown            13m
 ```
 
 Wait for several minutes until the cluster is paused. You can check the status of the cluster:
@@ -80,7 +80,7 @@ Wait for several minutes until the cluster is paused. You can check the status o
 kubectl tg list -n tigergraph
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   Paused           True               13m
+test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   Paused           True               13m
 ```
 
 > [!WARNING]
@@ -142,7 +142,7 @@ The output should be similar to the following:
 
 ```bash
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster              3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   Paused           True               27m
+test-cluster              3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   Paused           True               27m
 ```
 
 Use the following command to resume a paused cluster:
@@ -157,7 +157,7 @@ Check the status of the cluster:
 kubectl tg list -n tigergraph -w
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   ResumeRoll       Unknown            29m
+test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   ResumeRoll       Unknown            29m
 ```
 
 Wait for several minutes until the cluster is resumed. You can check the status of the cluster:
@@ -166,7 +166,7 @@ Wait for several minutes until the cluster is resumed. You can check the status 
 kubectl tg list -n tigergraph
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   Normal           True               30m
+test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   Normal           True               30m
 ```
 
 And you can check that all pods of the cluster are running:
@@ -208,7 +208,7 @@ metadata:
   name: test-cluster
 spec:
   ha: 1
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret

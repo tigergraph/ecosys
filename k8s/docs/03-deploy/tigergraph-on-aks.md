@@ -81,7 +81,7 @@ The `kubectl-tg` plugin simplifies deploying and managing the Operator and Tiger
 > If you are using Windows, please run the commands in a WSL environment.
 > Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
 
-Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.2.0:
+Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.7.1:
 
 ```bash
 wget https://dl.tigergraph.com/k8s/latest/kubectl-tg -O kubectl-tg
@@ -322,7 +322,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 - Create TigerGraph cluster with kubectl-tg plugin
 
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 --license ${LICENSE} \
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 --license ${LICENSE} \
   --storage-class default --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
   ```
 > [!NOTE]
@@ -336,7 +336,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 > ```
 > Then, when creating the TigerGraph cluster, use the `--license-secret` option to set the license:
 > ```bash
-> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 \
+> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 \
 > --license-secret ${YOUR_CLUSTER_NAME}-license --storage-class default --storage-size 10G --cpu 2000m --memory 6Gi --namespace ${YOUR_NAMESPACE}
 > ```
 
@@ -347,7 +347,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 - Alternatively, create a TigerGraph cluster with a CR YAML manifest:
 
 > [!NOTE]
-> Please replace the TigerGraph docker image version (e.g., 4.2.1) with your desired version.
+> Please replace the TigerGraph docker image version (e.g., 4.2.2) with your desired version.
 > If you want to use license secret instead of license, please replace the `license` field with `licenseSecretName` in the following CR YAML manifest.
 
   ```bash
@@ -358,7 +358,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
     name: ${YOUR_CLUSTER_NAME}
     namespace: ${YOUR_NAMESPACE}
   spec:
-    image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+    image: docker.io/tigergraph/tigergraph-k8s:4.2.2
     imagePullPolicy: IfNotPresent
     ha: 2
     license: ${LICENSE}
@@ -504,10 +504,10 @@ Upgrading a TigerGraph cluster is supported from a lower version to a higher ver
 > [!WARNING]
 > Operator 0.0.9 has disabled TG downgrades from a higher version (e.g., 3.9.3) to any lower version (e.g., 3.9.2). Therefore, the upgrade job will fail if you attempt to downgrade.
 
-Assuming the current version of the cluster is 4.1.3, you can upgrade it to version 4.2.1 with the following command:
+Assuming the current version of the cluster is 4.1.3, you can upgrade it to version 4.2.2 with the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.1  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.2  --namespace ${YOUR_NAMESPACE}
 ```
 
 If you prefer using a CR YAML manifest, update the `spec.image` field, and then apply it.

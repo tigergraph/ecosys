@@ -195,7 +195,7 @@ There are two methods to associate the created PV with the corresponding PVC of 
 - Create TG cluster with storage class name tg-pv
 
   ```bash
-  kubectl tg create --namespace tigergraph --cluster-name test-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 3 --ha 2 --version 4.2.1 --storage-class tg-pv --cpu 2000m --memory 8G --storage-size 10G
+  kubectl tg create --namespace tigergraph --cluster-name test-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 3 --ha 2 --version 4.2.2 --storage-class tg-pv --cpu 2000m --memory 8G --storage-size 10G
   ```
 
 ### Dynamically persistent volume storage on GKE
@@ -258,7 +258,7 @@ A little explanation about the parameters.
 - Deploy TG with the specific Storage class name
 
   ```bash
-  kubectl tg create --namespace tigergraph --cluster-name dynamic-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 1 --ha 1 --version 4.2.1 --storage-class gold --cpu 4000m --memory 8G --storage-size 10G
+  kubectl tg create --namespace tigergraph --cluster-name dynamic-pv-tg-cluster -k ssh-key-secret --license xxxxxx --size 1 --ha 1 --version 4.2.2 --storage-class gold --cpu 4000m --memory 8G --storage-size 10G
   ```
 
 ## EKS
@@ -504,7 +504,7 @@ There are two methods to associate the created PVs with the corresponding PVCs o
   ```
 
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 4.2.1 --license ${LICENSE} --service-account-name ${SERVICE_ACCOUNT_NAME} \
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 3 --ha 2 --version 4.2.2 --license ${LICENSE} --service-account-name ${SERVICE_ACCOUNT_NAME} \
   --storage-class pv-local --storage-size 10G --cpu 4000m --memory 8Gi --namespace ${YOUR_NAMESPACE} --affinity tg-affinity.yaml
   ```
 
@@ -584,5 +584,5 @@ spec:
 ### Create TG cluster with storage class name pv-local
 
 ```bash
-kubectl tg create --namespace tigergraph --cluster-name local-pv-tg-cluster -k ssh-key-secret --size 1 --ha 1 --version 4.2.1 --image-pull-policy IfNotPresent --storage-class pv-local --cpu 4000m --memory 8G --storage-size 10G --license ${LICENSE}
+kubectl tg create --namespace tigergraph --cluster-name local-pv-tg-cluster -k ssh-key-secret --size 1 --ha 1 --version 4.2.2 --image-pull-policy IfNotPresent --storage-class pv-local --cpu 4000m --memory 8G --storage-size 10G --license ${LICENSE}
 ```

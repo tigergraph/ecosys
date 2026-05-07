@@ -279,10 +279,10 @@ If you want to use the TigerGraph CR YAML file to deploy the cluster, you need t
   test-cluster   3          3              2            docker.io/tigergraph/tigergraph-k8s:4.1.3                   LoadBalancer                      Normal           True               15m
   ```
 
-  Then, you can upgrade the TigerGraph cluster to a new version, here we upgrade the cluster version to 4.2.1
+  Then, you can upgrade the TigerGraph cluster to a new version, here we upgrade the cluster version to 4.2.2
 
   ```bash
-  kubectl tg update  --cluster-name test-cluster --version 4.2.1 --namespace tigergraph
+  kubectl tg update  --cluster-name test-cluster --version 4.2.2 --namespace tigergraph
   ```
 
 ## How to upgrade for optional change
@@ -300,7 +300,7 @@ In order to optimize the user experience of the TigerGraph Operator, such as imp
 - The new TigerGraph cluster CRD is applicable starting from TigerGraph 3.9.2. In TigerGraph clusters before 3.9.2, after the CRD is updated, the image must be upgraded to 3.9.2 or above.
 
   ```bash
-    kubectl tg update --cluster-name ${cluster_name} --version 4.2.1 -n ${NAMESPACE_OF_YOUR_CLUSTER}
+    kubectl tg update --cluster-name ${cluster_name} --version 4.2.2 -n ${NAMESPACE_OF_YOUR_CLUSTER}
   ```
 
 - If using the new TigerGraph cluster CRD (1.0.0 and above) with an older version of the TigerGraph image, the NGINX service cannot serve correctly on the Tools, RESTPP, and Informant services.

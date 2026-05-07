@@ -74,7 +74,7 @@ services:
       - graphrag
 
   tigergraph:
-    image: tigergraph/community:4.2.1
+    image: tigergraph/community:4.2.2
     container_name: tigergraph
     platform: linux/amd64
     ports:

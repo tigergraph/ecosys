@@ -116,7 +116,7 @@ spec:
     spec:
       containers:
       - name: script-runner
-        image: docker.io/tigergraph/tigergraph-k8s-init:1.6.0
+        image: docker.io/tigergraph/tigergraph-k8s-init:1.7.1
         imagePullPolicy: IfNotPresent
         command:
         - /bin/bash
@@ -381,7 +381,7 @@ spec:
         spec:
           containers:
           - name: maintenance-runner
-            image: docker.io/tigergraph/tigergraph-k8s-init:1.6.0
+            image: docker.io/tigergraph/tigergraph-k8s-init:1.7.1
             imagePullPolicy: IfNotPresent
             command:
             - /bin/bash

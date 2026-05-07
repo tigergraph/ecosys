@@ -42,7 +42,7 @@ cd $root_dir || (echo "Cannot switch to $root_dir!" && exit 6)
 
 echo "Downloading GraphRAG sevice config..."
 mkdir -p configs || true
-curl -s https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/docker-compose-tg.yml | sed "s/community:4.2.1/community:${tg_version}/g" > docker-compose.yml
+curl -s https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/docker-compose-tg.yml | sed "s/community:4.2.2/community:${tg_version}/g" > docker-compose.yml
 curl -s https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/nginx.conf -o configs/nginx.conf
 curl -s https://raw.githubusercontent.com/tigergraph/ecosys/refs/heads/master/tutorials/graphrag/configs/server_config.json | sed '/"gsPort": "14240"/a\
     "username": "'${tg_username}'",\

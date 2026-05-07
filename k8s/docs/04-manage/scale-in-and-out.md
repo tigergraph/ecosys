@@ -69,7 +69,7 @@ kind: TigerGraph
 metadata:
   name: test-cluster
 spec:
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   ha: 3                    # Increased from 2 to 3 for better fault tolerance
   license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -116,7 +116,7 @@ kind: TigerGraph
 metadata:
   name: test-cluster
 spec:
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   ha: 2                    # Decreased from 3 to 2 for cost optimization
   license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

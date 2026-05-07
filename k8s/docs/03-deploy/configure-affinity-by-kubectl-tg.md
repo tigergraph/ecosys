@@ -71,7 +71,7 @@ Then we can use following command to create a TG cluster with the rules we write
 
 ```bash
 kubectl tg create --cluster-name test-cluster --size 4 --ha 2 --namespace NAMESPACE \
-  --version 4.2.1 --storage-class standard --storage-size 10G  \
+  --version 4.2.2 --storage-class standard --storage-size 10G  \
   --private-key-secret ssh-key-secret \
   --affinity tg-affinity.yaml
 ```

@@ -73,7 +73,7 @@ kubectl describe pod test-cluster-0 -n tigergraph
   Controlled By:  StatefulSet/test-cluster
   Containers:
     tg:
-      Image:       docker.io/tigergraph/tigergraph-k8s:4.2.1
+      Image:       docker.io/tigergraph/tigergraph-k8s:4.2.2
       Ports:       9000/TCP, 14240/TCP, 22/TCP
       Host Ports:  0/TCP, 0/TCP, 0/TCP
       Requests:
@@ -162,7 +162,7 @@ kubectl describe pod test-cluster-0 -n tigergraph
   Containers:
     tg:
       Container ID:   
-      Image:          docker.io/tigergraph/tigergraph-k8s:4.2.1
+      Image:          docker.io/tigergraph/tigergraph-k8s:4.2.2
       Image ID:       
       Ports:          9000/TCP, 14240/TCP, 22/TCP
       Host Ports:     0/TCP, 0/TCP, 0/TCP
@@ -221,17 +221,17 @@ kubectl describe pod test-cluster-0 -n tigergraph
     Normal   Scheduled               2m38s                default-scheduler        Successfully assigned tigergraph/test-cluster-0 to tg-k8s-openshift-777-rdj74-worker-d-pvrm2
     Normal   SuccessfulAttachVolume  2m34s                attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-96c90faf-3019-416a-ace9-200502f67b65"
     Normal   AddedInterface          2m30s                multus                   Add eth0 [10.130.0.33/23] from openshift-sdn
-    Normal   Pulling                 71s (x4 over 2m29s)  kubelet                  Pulling image "docker.io/tigergraph/tigergraph-k8s:4.2.1"
-    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Failed to pull image "docker.io/tigergraph/tigergraph-k8s:4.2.1": rpc error: code = Unknown desc = reading manifest 3.8.5 in docker.io/tigergraph/tigergraph-k8s: manifest unknown: manifest unknown
+    Normal   Pulling                 71s (x4 over 2m29s)  kubelet                  Pulling image "docker.io/tigergraph/tigergraph-k8s:4.2.2"
+    Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Failed to pull image "docker.io/tigergraph/tigergraph-k8s:4.2.2": rpc error: code = Unknown desc = reading manifest 3.8.5 in docker.io/tigergraph/tigergraph-k8s: manifest unknown: manifest unknown
     Warning  Failed                  71s (x4 over 2m29s)  kubelet                  Error: ErrImagePull
     Warning  Failed                  59s (x6 over 2m29s)  kubelet                  Error: ImagePullBackOff
-    Normal   BackOff                 44s (x7 over 2m29s)  kubelet                  Back-off pulling image "docker.io/tigergraph/tigergraph-k8s:4.2.1"
+    Normal   BackOff                 44s (x7 over 2m29s)  kubelet                  Back-off pulling image "docker.io/tigergraph/tigergraph-k8s:4.2.2"
   ```
 
   Look for messages indicating issues with the image, such as `Error: ErrImagePull` You should correct the image version using the following command:
 
   ```bash
-  kubectl tg update --cluster-name test-cluster --version 4.2.1 -n tigergraph
+  kubectl tg update --cluster-name test-cluster --version 4.2.2 -n tigergraph
   ```
 
 - Incorrect PVC with non-existent StorageClass
@@ -267,7 +267,7 @@ kubectl describe pod test-cluster-0 -n tigergraph
   Controlled By:  StatefulSet/test-cluster
   Containers:
     tg:
-      Image:       docker.io/tigergraph/tigergraph-k8s:4.2.1
+      Image:       docker.io/tigergraph/tigergraph-k8s:4.2.2
       Ports:       9000/TCP, 14240/TCP, 22/TCP
       Host Ports:  0/TCP, 0/TCP, 0/TCP
       Requests:
@@ -587,7 +587,7 @@ When you create a TigerGraph CR, and run `kubectl get tg -n $NAMESPACE`, you wil
 ```bash
 $ kubectl get tg -n tigergraph -w
 NAME            REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster                                           docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                                       1m
+test-cluster                                           docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                                       1m
 ```
 
 And when you run `kubectl get pods -n $NAMESPACE`, no pod has been created for this CR. The possible reason is that the reconcile is not triggered due to an issue of controller-runtime package. The log of operator will be like:

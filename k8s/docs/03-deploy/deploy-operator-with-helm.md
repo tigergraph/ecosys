@@ -30,11 +30,14 @@ The TigerGraph Operator uses Admission Webhooks and relies on [cert-manager](htt
 
 > [!NOTE]  
 > Please check if cert-manager is already installed before running the following command.
+> For [GKE Autopilot](https://cert-manager.io/docs/installation/compatibility/#gke-autopilot), it does not allow modifications to the kube-system-namespace, 
+> we may need to add flag as `--set global.leaderElection.namespace=cert-manager`.
 
 Install cert-manager:
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.17/cert-manager.yaml 
+export CERT_MANAGER_VERSION=1.20.2
+helm install cert-manager oci://quay.io/jetstack/charts/cert-manager --namespace cert-manager --create-namespace --version ${CERT_MANAGER_VERSION}
 ```
 
 Verify the cert-manager installation:
@@ -67,7 +70,7 @@ Expected output:
 
 ```bash
 NAME                            CHART VERSION   APP VERSION     DESCRIPTION                                    
-tigergraph-repo/tg-operator     1.6.0           1.6.0           A Helm chart for TigerGraph Kubernetes Operator
+tigergraph-repo/tg-operator     1.7.1           1.7.1           A Helm chart for TigerGraph Kubernetes Operator
 ```
 
 ### Install the TigerGraph Operator
@@ -77,8 +80,8 @@ Install the Operator in a dedicated namespace. You can customize the configurati
 ```yaml
 # values.yaml example
 replicas: 3
-image: docker.io/tigergraph/tigergraph-k8s-operator:1.7.0
-jobImage: docker.io/tigergraph/tigergraph-k8s-init:1.7.0
+image: docker.io/tigergraph/tigergraph-k8s-operator:1.7.1
+jobImage: docker.io/tigergraph/tigergraph-k8s-init:1.7.1
 pullPolicy: IfNotPresent
 imagePullSecret: tigergraph-image-pull-secret
 watchNameSpaces: ""
@@ -143,7 +146,7 @@ To upgrade the Operator or update its configuration, use:
 
 ```bash
 export NAMESPACE=${YOUR_NAMESPACE}
-export CHART_VERSION="1.6.0"
+export CHART_VERSION="1.7.1"
 
 helm upgrade tg-operator tigergraph-repo/tg-operator -f ./values.yaml --namespace "${NAMESPACE}" --version ${CHART_VERSION}
 ```
