@@ -1,0 +1,161 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: custom-script-job
+  namespace: tigergraph
+spec:
+  template:
+    metadata: {}
+    spec:
+      containers:
+      - name: script-runner
+        image: docker.io/tigergraph/tigergraph-k8s-init:1.6.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -eo pipefail
+          PRIVATE_KEY_FILE=/etc/private-key-volume/tigergraph_rsa
+          SERVICE_NAME=${CLUSTER_NAME}-internal-service
+          
+          echo "Copying script to cluster..."
+          scp -i $PRIVATE_KEY_FILE -o StrictHostKeyChecking=no -P ${SSH_PORT} \
+            /tmp/custom-script/custom-script.sh \
+            tigergraph@${CLUSTER_NAME}-0.${SERVICE_NAME}.${NAMESPACE}:/home/tigergraph/custom-script.sh > /dev/null
+          
+          echo "Making script executable..."
+          ssh -i $PRIVATE_KEY_FILE -o StrictHostKeyChecking=no \
+            -p ${SSH_PORT} tigergraph@${CLUSTER_NAME}-0.${SERVICE_NAME}.${NAMESPACE} \
+            "chmod +x /home/tigergraph/custom-script.sh"
+          
+          echo "Running script in cluster..."
+          ssh -i $PRIVATE_KEY_FILE -o StrictHostKeyChecking=no \
+            -p ${SSH_PORT} tigergraph@${CLUSTER_NAME}-0.${SERVICE_NAME}.${NAMESPACE} <<EOF
+          /home/tigergraph/custom-script.sh
+          EOF
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CLUSTER_NAME
+          value: "test-cluster"  # Replace with your actual cluster name
+        - name: SSH_PORT
+          value: "10022"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          privileged: false
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - mountPath: /tmp/custom-script
+          name: custom-script-cm
+          readOnly: true
+        - mountPath: /etc/private-key-volume
+          name: private-key-volume
+          readOnly: true
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: tigergraph-image-pull-secret
+      securityContext:
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: custom-script-cm
+        configMap:
+          name: custom-gsql-script-cm
+          defaultMode: 0555
+      - name: private-key-volume
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0420
+          items:
+          - key: private-ssh-key
+            path: tigergraph_rsa
+          - key: public-ssh-key
+            path: tigergraph_rsa.pub
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-gsql-script-cm
+  namespace: tigergraph
+data:
+  custom-script.sh: |
+    #!/bin/bash
+    set -eo pipefail
+    export PATH=/home/tigergraph/tigergraph/app/cmd:$PATH
+    
+    echo "Running custom GSQL queries..."
+
+    cat << EOF > person.csv
+    name,gender,age,state
+    Tom,male,40,ca
+    Dan,male,34,ny
+    Jenny,female,25,tx
+    Kevin,male,28,az
+    Amily,female,22,ca
+    Nancy,female,20,ky
+    Jack,male,26,fl
+    EOF
+
+    cat << EOF > friendship.csv
+    person1,person2,date
+    Tom,Dan,2017-06-03
+    Tom,Jenny,2015-01-01
+    Dan,Jenny,2016-08-03
+    Jenny,Amily,2015-06-08
+    Dan,Nancy,2016-01-03
+    Nancy,Jack,2017-03-02
+    Dan,Kevin,2015-12-30
+    EOF
+
+    cat << EOF > gsql101.gsql
+    BEGIN
+    CREATE VERTEX person (
+        PRIMARY_ID name STRING,
+        name STRING,
+        age INT,
+        gender STRING,
+        state STRING
+    )
+    END
+
+    CREATE UNDIRECTED EDGE friendship (FROM person, TO person, connect_day DATETIME)
+
+    CREATE GRAPH social (person, friendship)
+
+    USE GRAPH social
+    BEGIN
+    CREATE LOADING JOB load_social FOR GRAPH social {
+      DEFINE FILENAME file1="/home/tigergraph/person.csv";
+      DEFINE FILENAME file2="/home/tigergraph/friendship.csv";
+
+      LOAD file1 TO VERTEX person VALUES ($"name", $"name", $"age", $"gender", $"state") USING header="true", separator=",";
+      LOAD file2 TO EDGE friendship VALUES (\$0, \$1, \$2) USING header="true", separator=",";
+    }
+    END
+    RUN LOADING JOB load_social
+
+    CREATE QUERY hello(VERTEX<person> p) {
+      Start = {p};
+      Result = SELECT tgt
+              FROM Start:s-(friendship:e) ->person:tgt;
+      PRINT Result;
+    }
+
+    INSTALL QUERY hello
+
+    RUN QUERY hello("Tom")
+    EOF
+
+    gsql /home/tigergraph/gsql101.gsql
+
+    echo "Custom GSQL operations completed successfully"

@@ -10,6 +10,8 @@ Resource Types:
 </li><li>
 <a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphBackupSchedule">TigerGraphBackupSchedule</a>
 </li><li>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</a>
+</li><li>
 <a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphRestore">TigerGraphRestore</a>
 </li></ul>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraph">TigerGraph</h3>
@@ -464,6 +466,20 @@ ClusterJobConfig
 such as MinRetryDuration, MaxRetryDuration and MaxRetryTimes</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>nginxConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.NginxConfig">
+NginxConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>NginxConfig is used for customizing the configurations of Nginx</p>
+</td>
+</tr>
 </table>
 </td>
 </tr>
@@ -752,6 +768,182 @@ TigerGraphBackupScheduleStatus
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</h3>
+<p>
+<p>TigerGraphMonitor is the Schema for the tigergraphmonitors API</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>apiVersion</code></br>
+string</td>
+<td>
+<code>graphdb.tigergraph.com/v1alpha1</code>
+</td>
+</tr>
+<tr>
+<td>
+<code>kind</code></br>
+string
+</td>
+<td><code>TigerGraphMonitor</code></td>
+</tr>
+<tr>
+<td>
+<code>metadata</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorSpec">
+TigerGraphMonitorSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>monitoredClusters</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MonitoredClusters holds the names of TigerGraph clusters to be monitored</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>releaseName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the
+Kubernetes cluster.
+Deprecated: please use ServiceMonitorSelector instead.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tlsConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#TLSConfig">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.TLSConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TLS configuration to use when scraping the target.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceMonitorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ServiceMonitorLabels select ServiceMonitors to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>prometheusRule</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#PrometheusRuleSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.PrometheusRuleSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PrometheusRule contains specification parameters for a Rule.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ruleSelectorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RuleSelectorLabels select PrometheusRules to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1#AlertmanagerConfigSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1.AlertmanagerConfigSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AlertmanagerConfig is a specification of the desired behavior of the
+Alertmanager configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfigLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AlertmanagerConfigLabels select AlertmanagerConfigs to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorStatus">
+TigerGraphMonitorStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphRestore">TigerGraphRestore</h3>
 <p>
 <p>TigerGraphRestore is the Schema for the tigergraphrestores API</p>
@@ -1020,9 +1212,29 @@ defined in the TigerGraphMonitor CR. Currently, these values include:
 <tbody>
 <tr>
 <td>
-<code>ReleaseName</code></br>
+<code>ServiceMonitorSelectorLabels</code></br>
 <em>
-string
+map[string]string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>RuleSelectorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>AlertmanagerConfigSelectorLabels</code></br>
+<em>
+map[string]string
 </em>
 </td>
 <td>
@@ -1161,7 +1373,7 @@ bool
 </td>
 <td>
 <em>(Optional)</em>
-<p>[Preview] Enable incremental backup</p>
+<p>Enable incremental backup</p>
 </td>
 </tr>
 <tr>
@@ -1199,6 +1411,18 @@ string
 <em>(Optional)</em>
 <p>If CompressLevel is empty, means we don&rsquo;t set it explicitly
 Available values are BestSpeed, DefaultCompression, BestCompression</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>baseBackup</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Set the base backup tag for incremental backup</p>
 </td>
 </tr>
 </tbody>
@@ -1274,6 +1498,28 @@ string
 </td>
 <td>
 <p>The version of the cluster where the backup package is created</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>baseBackup</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The base backup tag of the incremental backup</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pointInTimeRestoreStartTime</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The point in time restore start time of the incremental backup</p>
 </td>
 </tr>
 </tbody>
@@ -2222,6 +2468,52 @@ string
 </tr>
 </tbody>
 </table>
+<h3 id="graphdb.tigergraph.com/v1alpha1.NginxConfig">NginxConfig</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphSpec">TigerGraphSpec</a>, 
+<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>secretName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The secretName is the name of the secret used to configure TLS for Nginx
+If not set, the SSL will be disabled.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>clientCertSecretName</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The secretName is the name of the secret used to configure client certificate for Nginx
+If this field is set, mTLS will be enabled.
+And Nginx will verify the client certificate of the request.
+If this field is not set, the mTLS will be disabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.RegionAware">RegionAware</h3>
 <p>
 (<em>Appears on:</em>
@@ -2291,7 +2583,7 @@ string
 <td>
 <p>Meta should be read from a file get by gadmin backup list &ndash;meta
 Meta contains the information of the backup package that you want to restore
-One of Meta and tag should be specified</p>
+One of Meta, tag and timePoint should be specified</p>
 </td>
 </tr>
 <tr>
@@ -2303,7 +2595,21 @@ string
 </td>
 <td>
 <p>Tag is the actual tag of the backup package that you want to restore
-One of Meta and tag should be specified</p>
+One of Meta, tag and timePoint should be specified</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>timePoint</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TimePoint is the time point of the backup package that you want to restore,
+it is represented in RFC3339 format.
+One of Meta, tag and timePoint should be specified</p>
 </td>
 </tr>
 <tr>
@@ -2517,7 +2823,9 @@ string
 <td>
 <code>tgDataSize</code></br>
 <em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity">
 k8s.io/apimachinery/pkg/api/resource.Quantity
+</a>
 </em>
 </td>
 <td>
@@ -2528,7 +2836,9 @@ k8s.io/apimachinery/pkg/api/resource.Quantity
 <td>
 <code>additionalStorageSize</code></br>
 <em>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity">
 map[string]k8s.io/apimachinery/pkg/api/resource.Quantity
+</a>
 </em>
 </td>
 <td>
@@ -2986,87 +3296,6 @@ BackupInfo
 </tr>
 </tbody>
 </table>
-<h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitor">TigerGraphMonitor</h3>
-<p>
-<p>TigerGraphMonitor is the Schema for the tigergraphmonitors API</p>
-</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code></br>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code></br>
-<em>
-<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorSpec">
-TigerGraphMonitorSpec
-</a>
-</em>
-</td>
-<td>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>monitoredClusters</code></br>
-<em>
-[]string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>MonitoredClusters holds the names of TigerGraph clusters to be monitored</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>releaseName</code></br>
-<em>
-string
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the
-Kubernetes cluster.</p>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code></br>
-<em>
-<a href="#graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorStatus">
-TigerGraphMonitorStatus
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</tbody>
-</table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphMonitorCondition">TigerGraphMonitorCondition</h3>
 <p>
 </p>
@@ -3149,7 +3378,87 @@ string
 <td>
 <em>(Optional)</em>
 <p>ReleaseName represents the release name of the kube-prometheus-stack deployed in the
-Kubernetes cluster.</p>
+Kubernetes cluster.
+Deprecated: please use ServiceMonitorSelector instead.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tlsConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#TLSConfig">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.TLSConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TLS configuration to use when scraping the target.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceMonitorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ServiceMonitorLabels select ServiceMonitors to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>prometheusRule</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#PrometheusRuleSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.PrometheusRuleSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PrometheusRule contains specification parameters for a Rule.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ruleSelectorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RuleSelectorLabels select PrometheusRules to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1#AlertmanagerConfigSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1.AlertmanagerConfigSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AlertmanagerConfig is a specification of the desired behavior of the
+Alertmanager configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfigLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AlertmanagerConfigLabels select AlertmanagerConfigs to be selected for target discovery by Prometheus.</p>
 </td>
 </tr>
 </tbody>
@@ -3216,6 +3525,88 @@ string
 <td>
 <em>(Optional)</em>
 <p>Dashboard is the MD5 hash of the current Grafana dashboard configuration</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceMonitorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ServiceMonitorLabels represents the labels of selecting ServiceMonitors
+to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tlsConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#TLSConfig">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.TLSConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>TLS configuration to use when scraping the target.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>prometheusRule</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1#PrometheusRuleSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1.PrometheusRuleSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PrometheusRule contains specification parameters for a Rule that is actively added.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ruleSelectorLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>RuleSelectorLabels represents the labels of selecting PrometheusRules
+to be selected for target discovery by Prometheus.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfig</code></br>
+<em>
+<a href="https://pkg.go.dev/github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1#AlertmanagerConfigSpec">
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1.AlertmanagerConfigSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AltermanagerConfig is a specification of the actual behavior of the
+Altermanager configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>alertmanagerConfigLabels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AlertmanagerConfigLabels represents the labels of selecting AlertmanagerConfigs
+to be selected for target discovery by Prometheus.</p>
 </td>
 </tr>
 </tbody>
@@ -3801,6 +4192,20 @@ ClusterJobConfig
 such as MinRetryDuration, MaxRetryDuration and MaxRetryTimes</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>nginxConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.NginxConfig">
+NginxConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>NginxConfig is used for customizing the configurations of Nginx</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="graphdb.tigergraph.com/v1alpha1.TigerGraphStatus">TigerGraphStatus</h3>
@@ -4066,6 +4471,30 @@ ClusterJobConfig
 </td>
 <td>
 <p>Current configurations of cluster operations job</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nginxConfig</code></br>
+<em>
+<a href="#graphdb.tigergraph.com/v1alpha1.NginxConfig">
+NginxConfig
+</a>
+</em>
+</td>
+<td>
+<p>Current configurations of Nginx</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>nginxSecretHash</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>MD5 of current NginxConfig secret content used by TigerGraph</p>
 </td>
 </tr>
 </tbody>

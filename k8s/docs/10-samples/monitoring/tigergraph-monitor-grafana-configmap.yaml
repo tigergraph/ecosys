@@ -1,10 +1,4 @@
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  labels:
-    grafana_dashboard: "1"
-  name: tigergraph-monitor-grafana-configmap
-  namespace: tigergraph
 data:
   tigergraph-dashboard.json: |-
     {
@@ -214,7 +208,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "clamp_max(avg(count_over_time((sum by (pod) (tigergraph_service_status{cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}))[600s:])/on(pod) (count_over_time(kube_pod_container_info{pod=~\"${ClusterName}-.*\",container=\"tigergraph\"}[600s:])) * 100),100)",
+              "expr": "clamp_max(avg(count_over_time((sum by (pod) (tigergraph_service_status{cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}))[600s:])/on(pod) (count_over_time((sum by (pod) (kube_pod_container_info{pod=~\"${ClusterName}-[0-9]+\",container=\"tigergraph\"})[600s:]))) * 100),100)",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -413,12 +407,82 @@ data:
           "type": "timeseries"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 30
+                  },
+                  {
+                    "color": "green",
+                    "value": 60
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 18
+          },
+          "id": 41,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "min by(cluster_name) (tigergraph_license_days_left{cluster_name=\"$ClusterName\",namespace=\"$Namespace\"})",
+              "legendFormat": "License Days Remaining (days)",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "License Days Remaining",
+          "type": "gauge"
+        },
+        {
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 26
+            "y": 34
           },
           "id": 7,
           "panels": [],
@@ -491,7 +555,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 27
+            "y": 35
           },
           "id": 1,
           "options": {
@@ -588,7 +652,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 35
+            "y": 59
           },
           "id": 8,
           "options": {
@@ -612,13 +676,112 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum(tigergraph_cpu_usage{service_name=~\"$ServiceName\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\", pod=~\"$pod\"}) by (host_id, service_name)",
+              "expr": "max(tigergraph_cpu_usage{service_name=~\"$ServiceName\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\", pod=~\"$pod\"}) by (host_id, service_name)",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "CPU Usage",
+          "title": "CPU Usage Percentage of Service",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 59
+          },
+          "id": 35,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(tigergraph_cpu_usage{service_name=\"\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}) by (host_id)",
+              "legendFormat": "{{host_id}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "CPU Usage Percentage of Container",
           "type": "timeseries"
         },
         {
@@ -704,7 +867,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 43
+            "y": 59
           },
           "id": 32,
           "options": {
@@ -804,7 +967,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 50
+            "y": 98
           },
           "id": 33,
           "options": {
@@ -828,13 +991,108 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum(tigergraph_memory_usage{service_name=~\"$ServiceName\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\", pod=~\"$pod\"}) by (host_id, service_name)",
+              "expr": "max(tigergraph_memory_usage{service_name=~\"$ServiceName\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\", pod=~\"$pod\"}) by (host_id, service_name)",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Memory Usage",
+          "title": "Memory Usage of Service",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "mbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 106
+          },
+          "id": 36,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(tigergraph_memory_usage{service_name=\"\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\", pod=~\"$pod\"}) by (host_id, service_name)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Memory Usage of Container",
           "type": "timeseries"
         },
         {
@@ -899,7 +1157,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 58
+            "y": 114
           },
           "id": 34,
           "options": {
@@ -923,7 +1181,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "sum(tigergraph_diskspace_usage{pod=~\"$pod\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}) by (host_id, path)",
+              "expr": "max(tigergraph_diskspace_usage{pod=~\"$pod\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}) by (host_id, mount_point, path)",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -931,6 +1189,367 @@ data:
           ],
           "title": "Diskspace Usage",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decmbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 122
+          },
+          "id": 37,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max(tigergraph_diskspace_free{pod=~\"$pod\",cluster_name=\"$ClusterName\",namespace=\"$Namespace\"}) by (host_id, mount_point, path)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Diskspace Free",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 130
+          },
+          "id": 38,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max by (persistentvolumeclaim) (\n  kubelet_volume_stats_capacity_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n)\n-\nmax by (persistentvolumeclaim) (\n  kubelet_volume_stats_available_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n)",
+              "legendFormat": "{{persistentvolumeclaim}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Data Volume Used Space",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 130
+          },
+          "id": 39,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "max by (persistentvolumeclaim) (\n  kubelet_volume_stats_available_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n)",
+              "legendFormat": "{{persistentvolumeclaim}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Data Volume Free Space",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 138
+          },
+          "id": 40,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "(\n  max by (persistentvolumeclaim) (\n    kubelet_volume_stats_capacity_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n  )\n  -\n  max by (persistentvolumeclaim) (\n    kubelet_volume_stats_available_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n  )\n)\n/\nmax by (persistentvolumeclaim) (\n  kubelet_volume_stats_capacity_bytes{cluster=\"\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$Namespace\", persistentvolumeclaim=~\"tg-data-$ClusterName-.*\"}\n)\n* 100",
+              "legendFormat": "{{persistentvolumeclaim}}",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Data Volume Usage Percentage",
+          "type": "gauge"
         },
         {
           "datasource": {
@@ -994,7 +1613,7 @@ data:
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 66
+            "y": 146
           },
           "id": 9,
           "options": {
@@ -1084,7 +1703,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 74
+            "y": 154
           },
           "id": 28,
           "options": {
@@ -1193,7 +1812,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 74
+            "y": 154
           },
           "id": 30,
           "options": {
@@ -1371,5 +1990,9 @@ data:
       "version": 1,
       "weekStart": ""
     }
-
-
+kind: ConfigMap
+metadata:
+  labels:
+    grafana_dashboard: "1"
+  name: tigergraph-monitor-grafana-configmap
+  namespace: tigergraph

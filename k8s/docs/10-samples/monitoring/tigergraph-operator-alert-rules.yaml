@@ -1,0 +1,303 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tigergraph-operator-alert-rules
+  namespace: tigergraph
+  labels:
+    app: tigergraph
+    release: prometheus-stack
+spec:
+  groups:
+    - name: tigergraph-operator-controller
+      rules:
+        # Controller Status Alerts
+        - alert: TigerGraphOperatorNoLeader
+          expr: sum by (namespace) (leader_election_master_status{operator="tigergraph",component="operator"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator no leader elected"
+            description: "No TigerGraph Operator instance is elected as leader in namespace {{ $labels.namespace }} for more than 2 minutes"
+
+        - alert: TigerGraphOperatorMultipleLeaders
+          expr: sum by (namespace) (leader_election_master_status{operator="tigergraph",component="operator"}) > 1
+          for: 1m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator multiple leaders detected"
+            description: "Multiple TigerGraph Operator instances are elected as leader in namespace {{ $labels.namespace }} - this indicates a split-brain condition"
+
+        - alert: TigerGraphOperatorLeaderElectionUnhealthy
+          expr: (sum by (namespace) (leader_election_master_status{operator="tigergraph",component="operator"}) == 0) and (count by (namespace) (up{operator="tigergraph",component="operator"}) > 0)
+          for: 3m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator leader election unhealthy"
+            description: "TigerGraph Operator instances are running but no leader is elected in namespace {{ $labels.namespace }} for more than 3 minutes"
+
+
+        - alert: TigerGraphOperatorMaxConcurrentReconcilesExceeded
+          expr: controller_runtime_max_concurrent_reconciles{operator="tigergraph",component="operator"} > 10
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator max concurrent reconciles exceeded"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has max concurrent reconciles > 10 for more than 5 minutes"
+
+    - name: tigergraph-operator-reconciliation
+      rules:
+        # Reconciliation Performance Alerts
+        - alert: TigerGraphOperatorHighReconciliationErrors
+          expr: rate(controller_runtime_reconcile_errors_total{operator="tigergraph",component="operator"}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high reconciliation error rate"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has reconciliation error rate > 0.1 errors/sec for more than 5 minutes"
+
+        - alert: TigerGraphOperatorReconciliationPanics
+          expr: rate(controller_runtime_reconcile_panics_total{operator="tigergraph",component="operator"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator reconciliation panics detected"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} is experiencing reconciliation panics"
+
+        - alert: TigerGraphOperatorHighTerminalErrors
+          expr: rate(controller_runtime_terminal_reconcile_errors_total{operator="tigergraph",component="operator"}[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high terminal reconciliation errors"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has terminal reconciliation error rate > 0.05 errors/sec for more than 5 minutes"
+
+    - name: tigergraph-operator-workqueue
+      rules:
+        # Workqueue Metrics Alerts
+        - alert: TigerGraphOperatorHighWorkqueueDepth
+          expr: workqueue_depth{operator="tigergraph",component="operator"} > 100
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high workqueue depth"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has workqueue depth > 100 for more than 5 minutes"
+
+        - alert: TigerGraphOperatorCriticalWorkqueueDepth
+          expr: workqueue_depth{operator="tigergraph",component="operator"} > 1000
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator critical workqueue depth"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has critical workqueue depth > 1000 for more than 2 minutes"
+
+        - alert: TigerGraphOperatorLongRunningProcessor
+          expr: workqueue_longest_running_processor_seconds{operator="tigergraph",component="operator"} > 300
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator long running processor"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has processor running > 5 minutes for more than 5 minutes"
+
+        - alert: TigerGraphOperatorStuckWorkqueue
+          expr: workqueue_unfinished_work_seconds{operator="tigergraph",component="operator"} > 600
+          for: 5m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator stuck workqueue"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has unfinished work > 10 minutes for more than 5 minutes"
+
+        - alert: TigerGraphOperatorHighWorkqueueRetryRate
+          expr: rate(workqueue_retries_total{operator="tigergraph",component="operator"}[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high workqueue retry rate"
+            description: "Controller {{ $labels.controller }} in namespace {{ $labels.namespace }} has retry rate > 1 retries/sec for more than 5 minutes"
+
+    - name: tigergraph-operator-system-resources
+      rules:
+        # System Resources Alerts
+        - alert: TigerGraphOperatorHighGoroutines
+          expr: go_goroutines{operator="tigergraph",component="operator"} > 1000
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high goroutine count"
+            description: "TigerGraph Operator in namespace {{ $labels.namespace }} has > 1000 goroutines for more than 5 minutes"
+
+        - alert: TigerGraphOperatorCriticalGoroutines
+          expr: go_goroutines{operator="tigergraph",component="operator"} > 5000
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator critical goroutine count"
+            description: "TigerGraph Operator in namespace {{ $labels.namespace }} has > 5000 goroutines for more than 2 minutes"
+
+        - alert: TigerGraphOperatorHighMemoryUsage
+          expr: container_memory_working_set_bytes{container="manager", pod=~"tigergraph-operator.*"} / container_spec_memory_limit_bytes{container="manager", pod=~"tigergraph-operator.*"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high memory usage"
+            description: "TigerGraph Operator container {{ $labels.pod }} is using > 80% of memory limit for more than 5 minutes"
+
+        - alert: TigerGraphOperatorCriticalMemoryUsage
+          expr: container_memory_working_set_bytes{container="manager", pod=~"tigergraph-operator.*"} / container_spec_memory_limit_bytes{container="manager", pod=~"tigergraph-operator.*"} > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator critical memory usage"
+            description: "TigerGraph Operator container {{ $labels.pod }} is using > 95% of memory limit for more than 2 minutes"
+
+        - alert: TigerGraphOperatorHighCPUUsage
+          expr: rate(container_cpu_usage_seconds_total{container="manager", pod=~"tigergraph-operator.*"}[5m]) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high CPU usage"
+            description: "TigerGraph Operator container {{ $labels.pod }} is using > 0.8 CPU cores for more than 5 minutes"
+
+        - alert: TigerGraphOperatorHighFileDescriptors
+          expr: process_open_fds{operator="tigergraph",component="operator"} / process_max_fds{operator="tigergraph",component="operator"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator high file descriptor usage"
+            description: "TigerGraph Operator in namespace {{ $labels.namespace }} is using > 80% of available file descriptors for more than 5 minutes"
+
+        - alert: TigerGraphOperatorCriticalFileDescriptors
+          expr: process_open_fds{operator="tigergraph",component="operator"} / process_max_fds{operator="tigergraph",component="operator"} > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator critical file descriptor usage"
+            description: "TigerGraph Operator in namespace {{ $labels.namespace }} is using > 95% of available file descriptors for more than 2 minutes"
+
+    - name: tigergraph-operator-webhook
+      rules:
+        # Webhook & HTTP Alerts
+        - alert: TigerGraphOperatorWebhookHighErrorRate
+          expr: rate(controller_runtime_webhook_requests_total{operator="tigergraph",component="operator",code=~"5.."}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator webhook high error rate"
+            description: "Webhook {{ $labels.webhook }} in namespace {{ $labels.namespace }} has 5xx error rate > 0.1 errors/sec for more than 5 minutes"
+
+        - alert: TigerGraphOperatorWebhookHighLatency
+          expr: histogram_quantile(0.95, rate(controller_runtime_webhook_latency_seconds_bucket{operator="tigergraph",component="operator"}[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator webhook high latency"
+            description: "Webhook {{ $labels.webhook }} in namespace {{ $labels.namespace }} has 95th percentile latency > 1 second for more than 5 minutes"
+
+        - alert: TigerGraphOperatorRESTClientHighErrorRate
+          expr: rate(rest_client_requests_total{operator="tigergraph",component="operator",code=~"5.."}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator REST client high error rate"
+            description: "REST client requests in namespace {{ $labels.namespace }} have 5xx error rate > 0.1 errors/sec for more than 5 minutes"
+
+    - name: tigergraph-operator-availability
+      rules:
+        # Availability and Health Alerts
+        - alert: TigerGraphOperatorDown
+          expr: up{operator="tigergraph",component="operator"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator is down"
+            description: "TigerGraph Operator in namespace {{ $labels.namespace }} has been down for more than 1 minute"
+
+        - alert: TigerGraphOperatorNoMetrics
+          expr: absent(controller_runtime_active_workers{operator="tigergraph",component="operator"})
+          for: 5m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator no metrics available"
+            description: "No TigerGraph Operator metrics are available in namespace {{ $labels.namespace }} for more than 5 minutes"
+
+        - alert: TigerGraphOperatorNamespaceDown
+          expr: sum by (namespace) (up{operator="tigergraph",component="operator"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+            operator: tigergraph
+            component: operator
+          annotations:
+            summary: "TigerGraph Operator namespace completely down"
+            description: "All TigerGraph Operator instances in namespace {{ $labels.namespace }} are down for more than 2 minutes"

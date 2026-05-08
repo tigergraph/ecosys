@@ -5,10 +5,10 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.0
+  image: docker.io/tigergraph/tigergraph-k8s:4.1.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-    - name: tigergraph-image-pull-secret
+  - name: tigergraph-image-pull-secret
   license: ${YOUR_LICENSE}
   listener:
     type: LoadBalancer
@@ -22,7 +22,7 @@ spec:
     type: persistent-claim
     volumeClaimTemplate:
       accessModes:
-        - ReadWriteOnce
+      - ReadWriteOnce
       resources:
         requests:
           storage: 100G

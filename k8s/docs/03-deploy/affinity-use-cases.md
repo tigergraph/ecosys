@@ -121,7 +121,7 @@ metadata:
   name: test-cluster
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -167,7 +167,7 @@ metadata:
   name: test-nodeselector
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -235,7 +235,7 @@ metadata:
   name: test-nodeaffinity
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -319,7 +319,7 @@ metadata:
   name: test-nodeaffinity
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -504,7 +504,7 @@ metadata:
   name: test-cluster
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -563,7 +563,7 @@ metadata:
   name: test-cluster
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -638,7 +638,7 @@ metadata:
   name: test-cluster
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -720,7 +720,7 @@ metadata:
   name: test-cluster
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:
@@ -758,7 +758,7 @@ metadata:
   name: test-toleration
 spec:
   replicas: 3
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   privateKeyName: ssh-key-secret
   listener:

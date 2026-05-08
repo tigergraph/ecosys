@@ -80,7 +80,7 @@ metadata:
     tigergraph.com/debug-mode: "false"
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret

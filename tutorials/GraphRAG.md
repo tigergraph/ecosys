@@ -10,23 +10,39 @@ This document provides instructions on how to use **SupportAI**.
 # Content
 
 This GraphRAG tutorial contains:
-- [Prerequisites](#prerequisites)
-  - [Setup Docker Environment](#setup-docker-environment)
-  - [Install Docker Compose Plugin](#install-docker-compose-plugin)
-  - [Download TigerGraph Docker Image](#download-tigergraph-docker-image)
+- [Introduction](#introduction)
+- [Content](#content)
+- [Prereqisites](#prereqisites)
+    - [Setup Docker Environment](#setup-docker-environment)
+    - [Install Docker Compose Plugin](#install-docker-compose-plugin)
+    - [Download TigerGraph Docker Image](#download-tigergraph-docker-image)
 - [Setup GraphRAG Services](#setup-graphrag-services)
-    - [Quick Start](#quick-start)
-    - [Deploy GraphRAG Manually](#deploy-graphrag-manually)
-        - [Deploy GraphRAG with Docker Compose](#manual-deploy-of-graphrag-with-docker-compose)
-        - [Deploy GraphRAG with Kubernetes](#manual-deploy-of-graphrag-with-kubernetes)
+  - [Quick Start](#quick-start)
+    - [Use TigerGraph Docker-Based Instance](#use-tigergraph-docker-based-instance)
+    - [Use Pre-Installed TigerGraph Instance](#use-pre-installed-tigergraph-instance)
+  - [Deploy GraphRAG Manually](#deploy-graphrag-manually)
+    - [Manual Deploy of GraphRAG with Docker Compose](#manual-deploy-of-graphrag-with-docker-compose)
+      - [Step 1: Get docker-compose file](#step-1-get-docker-compose-file)
+      - [Step 2: Set up configurations](#step-2-set-up-configurations)
+      - [Step 3: Adjust configurations](#step-3-adjust-configurations)
+      - [Step 4(Optional): Configure Logging Level in Dockerfile](#step-4optional-configure-logging-level-in-dockerfile)
+      - [Step 5: Start all services](#step-5-start-all-services)
+    - [Use Standalone TigerGraph instance (Optional)](#use-standalone-tigergraph-instance-optional)
+    - [Manual Deploy of GraphRAG with Kubernetes](#manual-deploy-of-graphrag-with-kubernetes)
 - [Run GraphRAG Demo](#run-graphrag-demo)
-  - [Use Preloaded GraphRAG](#use-preloaded-graphrag)
-  - [Start From Scratch](#manually-build-graphrag-from-scratch)
-- [More Configurations](#more-detailed-configurations)
-  - [DB Configuration](#db-configuration)
-  - [GraphRAG Configuration](#graphrag-configuration)
-  - [LLM Provider Configuration](#llm-provider-configuration)
-  - [Chat Configuration](#chat-configuration)
+    - [Use Preloaded GraphRAG](#use-preloaded-graphrag)
+      - [Step 1: Get data package](#step-1-get-data-package)
+      - [Step 2: Import data package](#step-2-import-data-package)
+      - [Step 3: Run the demo via chatbot](#step-3-run-the-demo-via-chatbot)
+    - [Manually Build GraphRAG From Scratch](#manually-build-graphrag-from-scratch)
+      - [Step 1: Get demo script](#step-1-get-demo-script)
+      - [Step 2: Download the demo data](#step-2-download-the-demo-data)
+      - [Step 3: Run the demo driver script](#step-3-run-the-demo-driver-script)
+- [More Detailed Configurations](#more-detailed-configurations)
+    - [DB configuration](#db-configuration)
+    - [GraphRAG configuration](#graphrag-configuration)
+    - [LLM provider configuration](#llm-provider-configuration)
+    - [Chat configuration](#chat-configuration)
       
 # Prereqisites
 
@@ -45,11 +61,11 @@ This is not needed if you're using Docker Desktop. For linux environments, pleas
 
 To use TigerGraph Community Edition without a license key, download the corresponding docker image from https://dl.tigergraph.com/ and load to Docker:
 ```
-docker load -i ./tigergraph-4.2.1-community-docker-image.tar.gz
+docker load -i ./tigergraph-4.2.2-community-docker-image.tar.gz
 docker images
 ```
 
-You should be able to find `tigergraph/community:4.2.1` in the image list.
+You should be able to find `tigergraph/community:4.2.2` in the image list.
 
 [Go back to top](#top)
 
@@ -147,10 +163,10 @@ Now, simply run `docker compose up -d` and wait for all the services to start.
 
 If you prefer to start a TigerGraph Community Edition instance without a license key, please make sure the container can be accessed from the GraphRAG containers by add `--network graphrag_default`:
 ```
-docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network graphrag_default -t tigergraph/community:4.2.1
+docker run -d -p 14240:14240 --name tigergraph --ulimit nofile=1000000:1000000 --init --network graphrag_default -t tigergraph/community:4.2.2
 ```
 
-> Use **tigergraph/tigergraph:4.2.1** if Enterprise Edition is preferred.
+> Use **tigergraph/tigergraph:4.2.2** if Enterprise Edition is preferred.
 > Setting up **DNS** or `/etc/hosts` properly is an alternative solution to ensure contains can connect to each other.
 > Or modify`hostname` in `db_config` section of `configs/server_config.json` and replace `http://tigergraph` to your tigergraph container IP address, e.g., `http://172.19.0.2`. 
 

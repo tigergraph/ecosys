@@ -3,12 +3,55 @@
 This guide will walk you through upgrading the TigerGraph Cluster using the TigerGraph Operator.
 
 - [Upgrade the TigerGraph Cluster Using the TigerGraph Operator](#upgrade-the-tigergraph-cluster-using-the-tigergraph-operator)
+  - [Before you begin](#before-you-begin)
+    - [Check the compatibility between TigerGraph and TigerGraph Operator](#check-the-compatibility-between-tigergraph-and-tigergraph-operator)
   - [Upgrade the TigerGraph Cluster](#upgrade-the-tigergraph-cluster)
   - [Upgrade pre-check for TigerGraph upgrading](#upgrade-pre-check-for-tigergraph-upgrading)
   - [Maintenance Release Upgrade support](#maintenance-release-upgrade-support)
   - [Troubleshooting](#troubleshooting)
     - [How to proceed with the upgrade process if the upgrade pre-check job fails due to incorrect image or downgrade error](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-job-fails-due-to-incorrect-image-or-downgrade-error)
     - [How to proceed with the upgrade process if the upgrade pre-check fails Due to insufficient ephemeral local storage](#how-to-proceed-with-the-upgrade-process-if-the-upgrade-pre-check-fails-due-to-insufficient-ephemeral-local-storage)
+  - [Known Issues](#known-issues)
+    - [Upgrade pre-check fails when crossing Ubuntu base-image versions](#upgrade-pre-check-fails-when-crossing-ubuntu-base-image-versions)
+
+## Before you begin
+
+### Check the compatibility between TigerGraph and TigerGraph Operator
+
+> [!IMPORTANT]
+> Each Operator version defines a maximum supported TG version. If the target TG version is outside the supported range of the current Operator,
+> you must first upgrade the Operator to a version that supports it, or simply upgrade to the latest Operator version.
+
+The synergy and compatibility between TigerGraph and TigerGraph Operator:
+
+| TigerGraph Operator version | TigerGraph version  |
+|----------|----------|
+| 1.7.1 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
+| 1.6.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.1|
+| 1.5.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.2.0|
+| 1.4.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.2|
+| 1.3.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.1|
+| 1.2.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.1.0|
+| 1.1.1 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.2|
+| 1.1.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.1|
+| 1.0.0 | TigerGraph >= 3.6.0 && TigerGraph <= 3.10.0|
+
+For example, Operator version 1.5.0 supports up to TigerGraph 4.2.0. To install or upgrade a cluster to TigerGraph 4.2.1,
+you must first upgrade the Operator to version 1.6.0 or above.
+For detailed steps of Operator upgrading, see the [Operator upgrade guide](../04-manage/operator-upgrade.md).
+
+You can check the Operator version by the following command:
+
+```bash
+helm ls -A|grep tg-operator
+```
+
+Example output:
+
+```bash
+$ helm ls -A|grep tg-operator
+tg-operator             tigergraph      1               2026-05-05 04:53:01.952172143 +0000 UTC deployed      tg-operator-1.7.1               1.7.1      
+```
 
 ## Upgrade the TigerGraph Cluster
 
@@ -28,7 +71,7 @@ kind: TigerGraph
 metadata:
   name: test-cluster
 spec:
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   ha: 2
   license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -92,7 +135,7 @@ During the upgrade process, the cluster status will be updated to "Upgrade: Fals
 kubectl get tg -n tigergraph
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                            SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   4          4              2            tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      UpgradePre       False              33m
+test-cluster   4          4              2            tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      UpgradePre       False              33m
 ```
 
 You can check the pod status of the upgrade pre-check job by running the following command:
@@ -206,3 +249,45 @@ resources:
   limits:
     ephemeral-storage: "20Gi"
 ```
+
+## Known Issues
+
+### Upgrade pre-check fails when crossing Ubuntu base-image versions
+
+Starting from the 4.1.4 release, TigerGraph Kubernetes images are built on **Ubuntu 24.04**. The currently published images on Ubuntu 24.04 are:
+
+- 4.1.4
+
+All earlier 4.1.x and 4.2.x patch images (e.g. **4.2.0**, **4.2.2**) were built on **Ubuntu 22.04** and will not be rebuilt.
+
+Going forward, all new TigerGraph releases will be published on Ubuntu 24.04. Upgrading from an Ubuntu 24.04 image (e.g. 4.1.4) to an Ubuntu 22.04 image (e.g. 4.2.0 or 4.2.2) crosses an OS-level base-image downgrade and will fail on the upgrade pre-check.
+
+| From                 | To                   | Result                  |
+| -------------------- | -------------------- | ----------------------- |
+| 4.1.4 (Ubuntu 24.04) | 4.2.0 (Ubuntu 22.04) | upgrade pre-check fails |
+| 4.1.4 (Ubuntu 24.04) | 4.2.2 (Ubuntu 22.04) | upgrade pre-check fails |
+
+When upgrading from 4.1.4, the recommended target versions are **4.2.2+** or **4.3.x**.
+
+**Symptom**
+
+The TigerGraph cluster status is stuck at `UpgradePre`. The upgrade does not proceed and the cluster does not roll back automatically.
+
+**Recovery**
+
+Revert `spec.image` on the TigerGraph CR back to the image that was running **before** the upgrade was triggered (i.e. the original 4.1.4 / Ubuntu 24.04 image). Once the operator reconciles the CR with the previous image, the cluster returns to a normal state.
+
+```bash
+kubectl edit tigergraph <cr-name> -n <namespace>
+# revert spec.image to the previously running 4.1.4 image, then save
+```
+
+Or apply with a patch:
+
+```bash
+kubectl patch tigergraph <cr-name> -n <namespace> \
+  --type merge \
+  -p '{"spec":{"image":"docker.io/tigergraph/tigergraph-k8s:4.1.4"}}'
+```
+
+After the cluster is healthy again, choose a supported upgrade target and re-apply.

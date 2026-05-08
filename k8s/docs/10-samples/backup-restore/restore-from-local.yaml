@@ -13,7 +13,7 @@ spec:
   source:
     storage: local
     local:
-      path: /home/tigergraph/tigergraph/data/backup
+      path: /home/tigergraph/backup
   # Specify the name of cluster
   clusterName: test-cluster
 

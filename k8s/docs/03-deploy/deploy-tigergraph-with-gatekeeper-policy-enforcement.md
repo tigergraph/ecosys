@@ -194,7 +194,7 @@ metadata:
   name: test-cluster
 spec:
   ha: 2
-  image: tigergraph/tigergraph-k8s:4.2.1
+  image: tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: Always
   imagePullSecrets:
     - name: tigergraph-image-pull-secret

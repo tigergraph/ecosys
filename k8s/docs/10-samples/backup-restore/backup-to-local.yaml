@@ -10,7 +10,7 @@ spec:
     storage: local
     # Use this field if type is local
     local:
-      path: /home/tigergraph/tigergraph/data/backup
+      path: /home/tigergraph/backup
   
   # Configure the name of backup files and the path storing temporary files
   backupConfig:

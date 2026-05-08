@@ -23,30 +23,30 @@
 
 Ensure your environment has internet access before downloading the required Docker images and Helm chart packages.
 
-For illustration, this guide uses TigerGraph cluster version `4.2.1` and TG K8s Operator version `1.6.0`. Adjust the versions as needed for your deployment.
+For illustration, this guide uses TigerGraph cluster version `4.2.2` and TG K8s Operator version `1.7.1`. Adjust the versions as needed for your deployment.
 
 #### TigerGraph Operator
 
 **Required Docker Images:**
 
-1. `tigergraph/tigergraph-k8s:4.2.1`
-2. `tigergraph/tigergraph-k8s-operator:1.6.0`
-3. `tigergraph/tigergraph-k8s-init:1.6.0`
+1. `tigergraph/tigergraph-k8s:4.2.2`
+2. `tigergraph/tigergraph-k8s-operator:1.7.1`
+3. `tigergraph/tigergraph-k8s-init:1.7.1`
 
 **Steps:**
 
 1. **Pull the images:**
 
     ```bash
-    docker pull tigergraph/tigergraph-k8s:4.2.1
-    docker pull tigergraph/tigergraph-k8s-operator:1.6.0
-    docker pull tigergraph/tigergraph-k8s-init:1.6.0
+    docker pull tigergraph/tigergraph-k8s:4.2.2
+    docker pull tigergraph/tigergraph-k8s-operator:1.7.1
+    docker pull tigergraph/tigergraph-k8s-init:1.7.1
     ```
 
 2. **Export the images as a tar package:**
 
     ```bash
-    docker save tigergraph/tigergraph-k8s:4.2.1 tigergraph/tigergraph-k8s-operator:1.6.0 tigergraph/tigergraph-k8s-init:1.6.0 > tigergraph-operator-images.tar
+    docker save tigergraph/tigergraph-k8s:4.2.2 tigergraph/tigergraph-k8s-operator:1.7.1 tigergraph/tigergraph-k8s-init:1.7.1 > tigergraph-operator-images.tar
     ```
 
 3. **Copy the tar file to your target machine and load the images:**
@@ -59,17 +59,17 @@ For illustration, this guide uses TigerGraph cluster version `4.2.1` and TG K8s 
 
     ```bash
     export DOCKER_REPO=${YOUR_PRIVATE_DOCKER_REPO}
-    docker tag tigergraph/tigergraph-k8s:4.2.1 ${DOCKER_REPO}/tigergraph-k8s:4.2.1
-    docker tag tigergraph/tigergraph-k8s-operator:1.6.0 ${DOCKER_REPO}/tigergraph-k8s-operator:1.6.0
-    docker tag tigergraph/tigergraph-k8s-init:1.6.0 ${DOCKER_REPO}/tigergraph/tigergraph-k8s-init:1.6.0
+    docker tag tigergraph/tigergraph-k8s:4.2.2 ${DOCKER_REPO}/tigergraph-k8s:4.2.2
+    docker tag tigergraph/tigergraph-k8s-operator:1.7.1 ${DOCKER_REPO}/tigergraph-k8s-operator:1.7.1
+    docker tag tigergraph/tigergraph-k8s-init:1.7.1 ${DOCKER_REPO}/tigergraph/tigergraph-k8s-init:1.7.1
     ```
 
 5. **Push the images to your private Docker registry:**
 
     ```bash
-    docker push ${DOCKER_REPO}/tigergraph-k8s:4.2.1
-    docker push ${DOCKER_REPO}/tigergraph-k8s-operator:1.6.0
-    docker push ${DOCKER_REPO}/tigergraph-k8s-init:1.6.0
+    docker push ${DOCKER_REPO}/tigergraph-k8s:4.2.2
+    docker push ${DOCKER_REPO}/tigergraph-k8s-operator:1.7.1
+    docker push ${DOCKER_REPO}/tigergraph-k8s-init:1.7.1
     ```
 
 **Helm Chart Package (Private Helm Repo Required):**
@@ -79,14 +79,14 @@ If you plan to install the operator using `kubectl-tg`, a private Helm repositor
 1. **Download the Helm chart:**
 
     ```bash
-    curl https://dl.tigergraph.com/charts/tg-operator-1.6.0.tgz -o tg-operator-1.6.0.tgz
+    curl https://dl.tigergraph.com/charts/tg-operator-1.7.1.tgz -o tg-operator-1.7.1.tgz
     ```
 
 2. **Upload the Helm chart to your private Helm repository:**
 
     ```bash
     export HELM_REPO=${YOUR_PRIVATE_HELM_REPO}
-    export VERSION=1.6.0
+    export VERSION=1.7.1
     curl --request DELETE ${HELM_REPO}/api/charts/tg-operator/${VERSION}
     curl --data-binary "@charts/tg-operator-${VERSION}.tgz" ${HELM_REPO}/api/charts
     ```
@@ -188,13 +188,13 @@ kubectl tg init --namespace tigergraph --helm-repo ${HELM_REPO} --image-pull-sec
 1. Download the Helm chart:
 
     ```bash
-    curl https://dl.tigergraph.com/charts/tg-operator-1.6.0.tgz -o tg-operator-1.6.0.tgz
+    curl https://dl.tigergraph.com/charts/tg-operator-1.7.1.tgz -o tg-operator-1.7.1.tgz
     ```
 
 2. Extract the chart:
 
     ```bash
-    tar xvf tg-operator-1.6.0.tgz
+    tar xvf tg-operator-1.7.1.tgz
     ```
 
 3. Navigate to the chart directory:
@@ -313,7 +313,7 @@ kind: TigerGraph
 metadata:
   name: test-cluster
 spec:
-  image: ${YOUR_DOCKER_REGISTRY}/tigergraph-k8s:4.2.1
+  image: ${YOUR_DOCKER_REGISTRY}/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret

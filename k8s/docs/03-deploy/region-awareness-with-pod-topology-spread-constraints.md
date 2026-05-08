@@ -49,7 +49,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -107,7 +107,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -231,7 +231,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -360,7 +360,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -419,7 +419,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -480,7 +480,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -557,7 +557,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -609,7 +609,7 @@ metadata:
   namespace: tigergraph
 spec:
   ha: 2
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
   - name: tigergraph-image-pull-secret
@@ -692,10 +692,10 @@ If the cluster HA is less than 2, it will fail and transition the cluster status
 ```bash
 $ kubectl get tg test-cluster  -n tigergraph -w
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                                             SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE   CONDITION-STATUS   AGE
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                                      InitializeRoll   Unknown            2s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                                      InitializeRoll   True               29s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                            InitializeRegionAwarePre   Unknown            29s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                            InitializeRegionAwarePre   False              29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                                      InitializeRoll   Unknown            2s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                                      InitializeRoll   True               29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                            InitializeRegionAwarePre   Unknown            29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                            InitializeRegionAwarePre   False              29s
 ```
 
 You can also check the root cause by running the following command:
@@ -711,7 +711,7 @@ conditions:
     reason: ClusterInitializeRegionAwarePreFalse
     status: "False"
     type: InitializeRegionAwarePre
-image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+image: docker.io/tigergraph/tigergraph-k8s:4.2.2
 listener:
   type: LoadBalancer
 replicas: 4
@@ -742,22 +742,22 @@ Then we can continue the cluster installation by updating cluster HA to 2:
 $ kubectl get tg test-cluster  -n tigergraph -w
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE            CONDITION-STATUS   AGE
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRoll             Unknown            2s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRoll             True               29s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   Unknown            29s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              29s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              30s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              32s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              35s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              45s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              47s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              48s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              86s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              7m39s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   True               7m39s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializePost             Unknown            7m40s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializePost             True               9m30s
-test-cluster   4          4              2            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer   true               Normal                     True               9m30s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRoll             Unknown            2s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRoll             True               29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   Unknown            29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              29s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              30s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              32s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              35s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              45s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              47s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              48s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              86s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              7m39s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   True               7m39s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializePost             Unknown            7m40s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializePost             True               9m30s
+test-cluster   4          4              2            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer   true               Normal                     True               9m30s
 ```
 
 #### Minimum 3 regions are needed to handle region awareness failures
@@ -768,15 +768,15 @@ If the number of unique regions of TigerGraph Pods is less than 3, it will also 
 $ kubectl get tg test-cluster  -n tigergraph -w
 
 NAME           REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                             SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE             CONDITION-STATUS   AGE
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRoll             Unknown            9s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRoll             True               2m7s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   Unknown            2m7s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m7s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m8s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m9s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m10s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m11s
-test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      InitializeRegionAwarePre   False              2m21s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRoll             Unknown            9s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRoll             True               2m7s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   Unknown            2m7s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m7s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m8s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m9s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m10s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m11s
+test-cluster   4                                      docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      InitializeRegionAwarePre   False              2m21s
 ```
 
 You can also check the root cause by running the following command:
@@ -793,7 +793,7 @@ conditions:
     reason: ClusterInitializeRegionAwarePreFalse
     status: "False"
     type: InitializeRegionAwarePre
-image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+image: docker.io/tigergraph/tigergraph-k8s:4.2.2
 listener:
   type: LoadBalancer
 replicas: 4

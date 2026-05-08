@@ -178,7 +178,7 @@ Before installing the kubectl-tg plugin, make sure you meet the following requir
 > If you are using Windows, please run the commands in a WSL environment.
 > Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
 
-Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.6.0:
+Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.7.1:
 
 ```bash
 wget https://dl.tigergraph.com/k8s/latest/kubectl-tg -O kubectl-tg
@@ -204,7 +204,7 @@ This step is optional and can be skipped if you have privileged permissions in y
 CustomResourceDefinitions (CRDs) are non-namespaced entities accessible across all namespaces. Installing CRDs requires privileged permissions from the Kubernetes cluster. If you prefer to install CRDs independently from the Operator installation, use the following commands:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl apply --server-side -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
@@ -245,7 +245,7 @@ Examples:
   # install the operator in the specified namespace, with specified helm repo and image pull secret
   kubectl tg init --namespace tg-tenant1 --helm-repo https://yourhelmrepo.com --image-pull-secret yoursecret
   # install the operator in the specified namespace, with specified operator version, watch name namespace, cpu and memory
-  kubectl tg init --version OPERATOR_VERSION --operator-size 3 --operator-watch-namespace tigergraph --operator-cpu 1000m  --operator-memory 1024Mi --namespace tg-tenant1
+  kubectl tg init --operator-version OPERATOR_VERSION --operator-size 3 --operator-watch-namespace tigergraph --operator-cpu 1000m  --operator-memory 1024Mi --namespace tg-tenant1
 
 Usage:
   kubectl tg init [options]
@@ -377,7 +377,7 @@ You must also provide your license key with the `--license` command. Contact Tig
 - Create TigerGraph cluster with kubectl-tg plugin
 
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 --license ${LICENSE} \
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 --license ${LICENSE} \
   --storage-class standard --storage-size 10G --cpu 2000m --memory 6Gi --namespace ${YOUR_NAMESPACE}
   ```
 
@@ -399,7 +399,7 @@ You must also provide your license key with the `--license` command. Contact Tig
 > ```
 > Then, when creating the TigerGraph cluster, use the `--license-secret` option to set the license:
 > ```bash
-> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 \
+> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 \
 > --license-secret ${YOUR_CLUSTER_NAME}-license --storage-class standard --storage-size 10G --cpu 2000m --memory 6Gi --namespace ${YOUR_NAMESPACE}
 > ```
 
@@ -567,10 +567,10 @@ kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --ha ${NEW_HA} --namespace
 
 Upgrading a TigerGraph cluster is supported from a lower version to a higher version.
 
-Assuming the current version of the cluster is 4.1.3, you can upgrade it to version 4.2.1 with the following command:
+Assuming the current version of the cluster is 4.1.3, you can upgrade it to version 4.2.2 with the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.1  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.2  --namespace ${YOUR_NAMESPACE}
 ```
 
 To ensure the successful upgrade of the TigerGraph cluster, use these commands:

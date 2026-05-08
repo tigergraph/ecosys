@@ -97,7 +97,7 @@ The `kubectl-tg` plugin allows you to deploy and manage the Operator and TigerGr
 > If you are using Windows, please run the commands in a WSL environment.
 > Please refer to [Windows Subsystem for Linux Documentation](https://learn.microsoft.com/en-us/windows/wsl/) for more information.
 
-Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.6.0:
+Here's an example of installing the latest kubectl-tg, you can change the latest to your desired version, such as 1.7.1:
 
 ```bash
 wget https://dl.tigergraph.com/k8s/latest/kubectl-tg -O kubectl-tg
@@ -121,7 +121,7 @@ kubectl tg help
 This step is optional and can be skipped if you have privileged permissions in your Kubernetes environment. The necessary CustomResourceDefinitions (CRDs) are automatically installed during the Operator installation. If you prefer to install CRDs independently, use the following command:
 
 ```bash
-kubectl apply -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
+kubectl apply --server-side -f https://dl.tigergraph.com/k8s/latest/tg-operator-crd.yaml
 ```
 
 ### Install TigerGraph Operator
@@ -348,7 +348,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 - Create TigerGraph cluster with kubectl-tg plugin
 
   ```bash
-  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 --license ${LICENSE} \
+  kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 --license ${LICENSE} \
   --storage-class gp2 --storage-size 100G --cpu 6000m --memory 16Gi --namespace ${YOUR_NAMESPACE}
   ```
 > [!NOTE]
@@ -362,8 +362,8 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 > ```
 > Then, when creating the TigerGraph cluster, use the `--license-secret` option to set the license:
 > ```bash
-> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.1 \
-> --license-secret ${YOUR_CLUSTER_NAME}-license --storage-class standard --storage-size 10G --cpu 2000m --memory 6Gi --namespace ${YOUR_NAMESPACE}
+> kubectl tg create --cluster-name ${YOUR_CLUSTER_NAME} --private-key-secret ${YOUR_SSH_KEY_SECRET_NAME} --size 4 --ha 2 --version 4.2.2 \
+> --license-secret ${YOUR_CLUSTER_NAME}-license --storage-class gp2 --storage-size 10G --cpu 2000m --memory 6Gi --namespace ${YOUR_NAMESPACE}
 > ```
 
 > [!IMPORTANT]
@@ -373,7 +373,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
 - Create TigerGraph cluster with CR(Custom Resource) YAML manifest
   
 > [!NOTE]
-> Please replace the TigerGraph docker image version (e.g., 4.2.1) with your desired version.
+> Please replace the TigerGraph docker image version (e.g., 4.2.2) with your desired version.
 > If you want to use license secret instead of license, please replace the `license` field with `licenseSecretName` in the following CR YAML manifest
 
   ```bash
@@ -384,7 +384,7 @@ In general, we recommend setting the replication factor (HA) to 2 and using a cl
     name: ${YOUR_CLUSTER_NAME}
     namespace: ${YOUR_NAMESPACE}
   spec:
-    image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+    image: docker.io/tigergraph/tigergraph-k8s:4.2.2
     imagePullPolicy: IfNotPresent
     ha: 2
     license: ${LICENSE}
@@ -658,10 +658,10 @@ Upgrading a TigerGraph cluster is supported from a lower version to a higher ver
 > [!WARNING]
 > Operator 0.0.9 has disabled TG downgrades from a higher version (e.g., 3.9.3) to any lower version (e.g., 3.9.2). Therefore, the upgrade job will fail if you attempt to downgrade.
 
-You can upgrade a TigerGraph cluster from a lower version to a higher version. Assuming the current version is 4.1.3 and you want to upgrade to 4.2.1, use the following command:
+You can upgrade a TigerGraph cluster from a lower version to a higher version. Assuming the current version is 4.1.3 and you want to upgrade to 4.2.2, use the following command:
 
 ```bash
-kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.1  --namespace ${YOUR_NAMESPACE}
+kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --version 4.2.2  --namespace ${YOUR_NAMESPACE}
 ```
 
 If you prefer to upgrade the cluster using a CR (Custom Resource) YAML manifest, simply update the `spec.image` field, and then apply it.
@@ -673,6 +673,8 @@ kubectl rollout status --watch --timeout=900s statefulset/${YOUR_CLUSTER_NAME} -
 
 kubectl wait --for=condition=complete --timeout=15m  job/${YOUR_CLUSTER_NAME}-upgrade-job --namespace ${YOUR_NAMESPACE}
 ```
+
+For detailed information about upgrading TigerGraph clusters, refer to [Upgrading a TigerGraph cluster](../04-manage/tigergraph-upgrade.md).
 
 ## Update system configurations and license of the TigerGraph cluster
 
@@ -715,6 +717,8 @@ From Operator version 1.0.0, you can change the HA factor of the TigerGraph clus
 kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --ha ${NEW_HA} --namespace ${YOUR_NAMESPACE}
 ```
 
+For detailed information about scaling TigerGraph clusters (scale in/out), refer to [Scale In and Scale Out](../04-manage/scale-in-and-out.md).
+
 ## Update Resources (CPU and Memory) of the TigerGraph Cluster
 
 To update the CPU and memory resources of the TigerGraph cluster, use the following command:
@@ -724,6 +728,8 @@ kubectl tg update --cluster-name ${YOUR_CLUSTER_NAME} --cpu 8 --memory 16Gi  --c
 ```
 
 Alternatively, if you want to update the cluster using a CR (Custom Resource) YAML manifest, update the spec.resources.requests and spec.resources.limits fields accordingly.
+
+For detailed information about updating CPU and memory resources, refer to [Scale Up and Scale Down](../04-manage/scale-up-and-down.md).
 
 ## Destroy the TigerGraph Cluster and the Kubernetes Operator
 

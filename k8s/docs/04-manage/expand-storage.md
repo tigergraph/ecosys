@@ -69,7 +69,7 @@ metadata:
   name: test-cluster
   namespace: tigergraph
 spec:
-  image: docker.io/tigergraph/tigergraph-k8s:4.2.1
+  image: docker.io/tigergraph/tigergraph-k8s:4.2.2
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: tigergraph-image-pull-secret
@@ -121,7 +121,7 @@ After you apply the modified TigerGraph CR, TigerGraph Operator will expand the 
 You can use `kubectl tg` command to expand the storage of TigerGraph cluster. Assume that you have created a TigerGraph cluster by the following command:
 
 ```bash
-kubectl tg create -n tigergraph -c test-cluster -k ssh-key-secret -l $YOUR_LICENSE --version 4.2.1 --size 3 \
+kubectl tg create -n tigergraph -c test-cluster -k ssh-key-secret -l $YOUR_LICENSE --version 4.2.2 --size 3 \
   --storage-class standard --storage-size 20Gi --additional-storages additional-storage.yaml
 ```
 
@@ -173,7 +173,7 @@ The output is like:
 
 ```bash
 NAME              REPLICAS   CLUSTER-SIZE   CLUSTER-HA   CLUSTER-VERSION                              SERVICE-TYPE   REGION-AWARENESS   CONDITION-TYPE      CONDITION-STATUS   AGE
-example-cluster   3          3              1            docker.io/tigergraph/tigergraph-k8s:4.2.1   LoadBalancer                      StorageExpandCheck  False              6h41m
+example-cluster   3          3              1            docker.io/tigergraph/tigergraph-k8s:4.2.2   LoadBalancer                      StorageExpandCheck  False              6h41m
 ```
 
 ### TigerGraph CR is in status `StorageExpandCheck, False`

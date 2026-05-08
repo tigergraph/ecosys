@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus-stack
+  name: tigergraph-monitor-service-monitor
+  namespace: tigergraph
+spec:
+  endpoints:
+  - path: /informant/metrics
+    port: nginx
+    scheme: https
+    tlsConfig:
+      ca:
+        secret:
+          key: ca.crt
+          name: tigergraph-metrics-server-cert
+      cert:
+        secret:
+          key: tls.crt
+          name: tigergraph-metrics-server-cert
+      insecureSkipVerify: false
+      keySecret:
+        key: tls.key
+        name: tigergraph-metrics-server-cert
+      serverName: test-cluster-internal-service.tigergraph.svc
+  namespaceSelector:
+    matchNames:
+    - tigergraph
+  selector:
+    matchExpressions:
+    - key: tigergraph.com/monitoring
+      operator: In
+      values:
+      - test-cluster

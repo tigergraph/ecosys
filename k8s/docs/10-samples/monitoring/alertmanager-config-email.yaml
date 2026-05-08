@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: prometheus-alertmanager-config
+spec:
+  route:
+    receiver: alert-email-pagerduty-config
+    groupBy: ['alertname', 'job','severity']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 15m
+    continue: true
+  receivers: 
+  - name: alert-email-pagerduty-config
+    emailConfigs:
+    - to: your-email@gmail.com
+      sendResolved: true
+      from: your-email@gmail.com
+      smarthost:  smtp.gmail.com:465
+      authUsername: your-email@gmail.com
+      authPassword:
+        name: alertmanager-auth-secret 
+        key: password
+      requireTLS: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-auth-secret  # Name of the Secret
+type: Opaque
+data:
+  password: YOUR_PASSWORD_BASE64_ENCODED
