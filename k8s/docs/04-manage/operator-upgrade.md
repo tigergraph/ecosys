@@ -6,7 +6,7 @@ This document provides step-by-step instructions for upgrading the TigerGraph Ku
   - [Before You begin](#before-you-begin)
     - [Release Number Definition](#release-number-definition)
     - [Check whether high availability is enabled on the TigerGraph Operator](#check-whether-high-availability-is-enabled-on-the-tigergraph-operator)
-  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.1](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-171)
+  - [Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.2](#upgrading-from-tigergraph-operator-100-and-later-versions-to-version-172)
     - [Upgrading kubectl-tg plugin](#upgrading-kubectl-tg-plugin)
       - [Upgrading TigerGraph Operator](#upgrading-tigergraph-operator)
   - [Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above](#upgrading-from-tigergraph-operator-versions-prior-to-100-to-version-100-and-above)
@@ -71,11 +71,11 @@ If the output above is 1, scale out the Operator with the following command:
 kubectl tg upgrade --namespace ${YOUR_NAMESPACE_OF_OPERATOR} --operator-size 3
 ```
 
-## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.1
+## Upgrading from TigerGraph Operator 1.0.0 and later versions to version 1.7.2
 
 ### Upgrading kubectl-tg plugin
 
-To upgrade the kubectl-tg plugin for TigerGraph Operator 1.7.1, execute the following command:
+To upgrade the kubectl-tg plugin for TigerGraph Operator 1.7.2, execute the following command:
 
 ```bash
 curl https://dl.tigergraph.com/k8s/latest/kubectl-tg  -o kubectl-tg
@@ -87,7 +87,7 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.7.1
+Version: 1.7.2
 Default version of TigerGraph cluster: 4.3.0
 ```
 
@@ -96,7 +96,7 @@ Default version of TigerGraph cluster: 4.3.0
 
 #### Upgrading TigerGraph Operator
 
-There are no breaking changes in the TigerGraph CRDs for version 1.7.1 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if you have an older version (1.0.0 or above) installed.
+There are no breaking changes in the TigerGraph CRDs for version 1.7.2 compared to versions 1.0.0 and above. You can upgrade the TigerGraph Operator by following these steps if you have an older version (1.0.0 or above) installed.
 
 > [!IMPORTANT]
 > There is currently no support for upgrading or deleting CRDs when upgrading or uninstalling the TigerGraph Operator due to the risk of unintentional data loss. It is necessary to upgrade TigerGraph CRDs manually for the operator version prior to 1.3.0. However, starting from operator version 1.3.0, we use [Helm chart’s pre-upgrade hook](https://helm.sh/docs/topics/charts_hooks/) to upgrade the CRDs automatically. You can ignore the first step if you upgrade the operator to version 1.3.0 or above.
@@ -119,7 +119,7 @@ There are no breaking changes in the TigerGraph CRDs for version 1.7.1 compared 
   helm list -n ${YOUR_NAMESPACE_OF_OPERATOR}
   
   NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
-  tg-operator     tigergraph      2               2025-09-28 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.1                1.7.1
+  tg-operator     tigergraph      2               2025-09-28 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.2                1.7.2
   ```
 
 ## Upgrading from TigerGraph Operator versions prior to 1.0.0 to version 1.0.0 and above
@@ -195,7 +195,7 @@ Ensure you have installed the correct version of kubectl-tg:
 ```bash
 kubectl tg version
 
-Version: 1.7.1
+Version: 1.7.2
 Default version of TigerGraph cluster: 4.3.0
 ```
 
@@ -237,7 +237,7 @@ Ensure TigerGraph Operator has been installed successfully:
 helm list -n tigergraph
 
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION      
-tg-operator     tigergraph      1               2025-09-10 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.1                1.7.1
+tg-operator     tigergraph      1               2025-09-10 10:34:23.185036124 +0000 UTC deployed        tg-operator-1.7.2                1.7.2
 ```
 
 ```bash
