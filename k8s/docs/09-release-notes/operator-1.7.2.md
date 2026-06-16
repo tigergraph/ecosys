@@ -60,5 +60,6 @@ Refer to the documentation [How to upgrade TigerGraph Kubernetes Operator](../04
 
 ## Bug Fixes
 
+- Fixed a LoadBalancer provisioning race condition by serializing external LB teardown — the operator now waits for the service to be fully removed before recreating it, preventing conflicts during pause, listener removal, and service type changes;
 - Improved pod startup reliability during cluster operations such as restarts and recreations;
 - Improved cluster startup stability;
