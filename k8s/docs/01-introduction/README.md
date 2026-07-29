@@ -15,6 +15,7 @@ Understanding the intricate synergy between TigerGraph, TigerGraph Operator, and
 
 | TigerGraph Operator version | TigerGraph version  | Kubernetes Validated version |
 |----------|----------|----------|
+| 1.7.3 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.30, 1.31, 1.32, 1.33, 1.34|
 | 1.7.2 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.30, 1.31, 1.32, 1.33, 1.34|
 | 1.7.1 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.30, 1.31, 1.32, 1.33, 1.34|
 | 1.7.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|1.27, 1.28, 1.29, 1.30, 1.31|
