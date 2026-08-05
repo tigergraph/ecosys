@@ -117,7 +117,7 @@ try {
 
 ## Quick Start
 ### Prerequisite
-Please [download the example graphs](https://docs.tigergraph.com/gsql-ref/current/appendix/_attachments/example_graphs.tar.gz), go into the folder `social_net` and run the following command: 
+Please [download the example graphs](https://docs.tigergraph.com/gsql-ref/current/appendix/_attachments/example_graphs_v3.zip), go into the folder `social_net` and run the following command: 
 ```
 gsql graph_create.gsql
 ```
