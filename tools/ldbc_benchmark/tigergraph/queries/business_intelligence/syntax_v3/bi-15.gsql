@@ -1,0 +1,51 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 15 query description is on page 103 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) syntax v3 {
+  MinAccum<DOUBLE> @@result, @dis;
+  OrAccum @next;
+  SetAccum<VERTEX<Person>> @creator;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
+  OrAccum @visited;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
+  F = SELECT f FROM (f:Forum) WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
+  P = SELECT p FROM (:F) -[:CONTAINER_OF]-> (p:Post);
+  M = SELECT m FROM (:P) <-[:ROOT_POST]- (m:Comment) ACCUM m.@visited += true;
+  M = M UNION P;
+  tmp = SELECT p FROM (m:M) -[:HAS_CREATOR]-> (p:Person) ACCUM m.@creator += p;
+  M1 = SELECT m1 FROM (m1:M) <-[:REPLY_OF]- (m2:Comment)
+    WHERE m2.@visited
+    ACCUM 
+      UINT w = 1,
+      IF m1.type == "Post" THEN w = 2 END,
+      FOREACH p1 IN m1.@creator DO 
+        FOREACH p2 IN m2.@creator DO
+          p1.@replyCount += (p2 -> w)
+        END
+      END;
+  P = {Person.*};
+  @@result = P.size();
+  S = {person1Id};
+  S = SELECT s FROM (s:S) ACCUM s.@dis = 0;
+  WHILE S.size()>0 DO
+    S = SELECT t FROM (s:S)-[e:KNOWS]-(t:Person)
+      ACCUM
+        DOUBLE t_dis = s.@dis + 2.0/(2 + s.@replyCount.get(t) + t.@replyCount.get(s)),
+        IF t_dis < @@result AND t_dis < t.@dis THEN
+          t.@dis += t_dis,
+          t.@next += true,
+          IF t == person2Id THEN
+            @@result += t_dis
+          END
+        END
+      HAVING t.@next;
+    S = SELECT s FROM (s:S) ACCUM s.@next = false;
+  END;
+
+  IF ABS(@@result - P.size()) < 1 THEN
+    PRINT -1 as result;
+  ELSE
+    PRINT @@result as result;
+  END;
+}

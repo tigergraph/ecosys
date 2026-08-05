@@ -1,0 +1,82 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 14 query description is on page 102 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTAX v3 {
+  TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
+  TYPEDEF TUPLE <UINT pid, UINT score> ps;
+
+  HeapAccum<ps>(1, score DESC, pid ASC) @pScore;
+  MapAccum<VERTEX<Person>, UINT> @score;
+  MinAccum<VERTEX<Person>> @person2;
+  SetAccum<VERTEX<Person>> @knows, @p2s1, @p2s2, @p2s3, @p2s4;
+  OrAccum @valid, @selected;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults;
+  HeapAccum<pairScore>(100, score DESC, person1Id ASC, person2Id ASC) @@result;
+  MinAccum<UINT> @min_pid2;
+  
+  P1candidate = SELECT p 
+    FROM (cn:Country {name:country1}) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]-(p:Person);
+
+  P2candidate = 
+    SELECT p2
+    FROM (cn:Country {name:country2}) <-[:IS_PART_OF]-()<-[:IS_LOCATED_IN]-(p2:Person)
+    ACCUM p2.@selected += true;
+  
+  P2 = 
+    SELECT p2 FROM (p1:P1candidate) -[:KNOWS]- (p2:Person)
+    WHERE p2.@selected
+    ACCUM p1.@valid += True, 
+      p1.@knows += p2,
+      p1.@min_pid2 += p2.id;
+
+  P1 = SELECT p FROM (p:Person) WHERE p.@valid;
+  # Case 1
+  tmp = SELECT p1 FROM (p1:P1) -[e:REPLY_COUNT]-> (p2:Person)
+    WHERE p2.@selected AND e.cnt > 0
+    ACCUM p1.@score += (p2 -> 4);
+
+  # Case 2
+  tmp = SELECT p1 FROM (p1:P1) <-[e:REPLY_COUNT]- (p2:Person)
+    WHERE p2.@selected AND e.cnt > 0
+    ACCUM p1.@score += (p2 -> 1);
+
+  # Case 3
+  M2 = SELECT m2 FROM (p:P2) <-[:HAS_CREATOR]- (m2)
+    ACCUM m2.@p2s3 += p;
+  tmp = SELECT p1 FROM (m2:M2) <-[:LIKES]- (p1:Person)
+    WHERE p1.@valid
+    ACCUM p1.@p2s3 += m2.@p2s3
+    POST-ACCUM (p1) p1.@p2s3 = (p1.@p2s3 INTERSECT p1.@knows);
+
+  # Case 4
+  M2 = SELECT m2 FROM (p2:P2) -[:LIKES]-> (m2)
+    ACCUM m2.@p2s4 += p2;
+  tmp = SELECT p1 FROM (m2:M2) -[:HAS_CREATOR]-> (p1:Person)
+    WHERE p1.@valid
+    ACCUM p1.@p2s4 += m2.@p2s4
+    POST-ACCUM (p1) p1.@p2s4 = (p1.@p2s4 INTERSECT p1.@knows);
+  
+  P1 = SELECT p1 FROM (p1:P1)
+    ACCUM
+      FOREACH p2 IN p1.@p2s3 DO
+        p1.@score += (p2 -> 10)
+      END,
+      FOREACH p2 IN p1.@p2s4 DO
+        p1.@score += (p2 -> 1)
+      END
+    POST-ACCUM (p1)
+      FOREACH (p2,score) IN p1.@score DO
+        p1.@pScore += ps(p2.id,score)
+      END;
+
+  City1 = SELECT c1 FROM (p1:P1) -[:IS_LOCATED_IN]-> (c1:City)
+    ACCUM 
+      IF p1.@pScore.size() > 0 THEN
+        c1.@cityresults += pairScore(p1.id, p1.@pScore.top().pid, c1.name, p1.@pScore.top().score)
+      ELSE
+        c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0)
+      END; 
+  
+  City1 = SELECT c1 FROM (c1:City1)
+    ACCUM @@result += c1.@cityresults.top();
+  PRINT @@result as result;
+}

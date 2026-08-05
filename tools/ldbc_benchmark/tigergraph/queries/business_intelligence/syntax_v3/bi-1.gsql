@@ -1,0 +1,42 @@
+//graph schema is on page 19 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+//BI 1 query description is on page 89 https://ldbc.github.io/ldbc_snb_docs/ldbc-snb-specification.pdf
+CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v3{
+
+  TYPEDEF TUPLE <INT year, BOOL isComment, INT lengthCategory, INT messageCount,
+    DOUBLE averageMessageLength, INT sumMessageLength, DOUBLE percentageOfMessages> RESULT;
+
+  HeapAccum<RESULT>(0, year DESC, isComment ASC, lengthCategory ASC) @@result;
+  GroupByAccum<INT year, BOOL isComment, INT lengthCategory,
+    SumAccum<INT> messageCount, SumAccum<INT> sumMessageLength> @@midResult;
+
+  OrAccum @isComment;
+  SumAccum<INT> @lengthCategory;
+
+  UINT total;
+  INT epoch = datetime_to_epoch(date) * 1000;
+  messages = SELECT m FROM (m:Comment:Post) WHERE m.creationDate < epoch;
+  total = messages.size();
+  messages =
+     SELECT m FROM (m:messages)
+     WHERE m.length > 0
+    ACCUM
+      m.@isComment = (m.type == "Comment"),
+      IF m.length < 40 THEN
+        m.@lengthCategory = 0
+      ELSE IF m.length < 80 THEN
+        m.@lengthCategory = 1
+      ELSE IF m.length < 160 THEN
+        m.@lengthCategory = 2
+      ELSE
+        m.@lengthCategory = 3
+      END
+    POST-ACCUM (m) @@midResult += (year(epoch_to_datetime(m.creationDate/1000)), m.@isComment, m.@lengthCategory -> 1, m.length);
+
+  @@result.resize(@@midResult.size());
+  FOREACH m IN @@midResult DO
+    @@result += RESULT(m.year, m.isComment, m.lengthCategory, m.messageCount,
+      (m.sumMessageLength * 1.0 / m.messageCount), m.sumMessageLength, (m.messageCount * 1.0 / total));
+  END;
+
+  PRINT @@result as result;
+}
