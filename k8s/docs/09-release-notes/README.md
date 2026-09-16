@@ -6,7 +6,7 @@ Those document describes the new features, improvements, bugfixes for all of Tig
 > TigerGraph Operator has had a breaking change since version 1.0.0. If you are still using a version older than 1.0.0, it is strongly recommended that you upgrade to version 1.2.0. Versions older than 1.0.0 have been deprecated.
 
 Please see the detailed documentation of each TigerGraph Operator version release notes as follows:
-
+- [TigerGraph Operator 1.7.5](./operator-1.7.5.md)
 - [TigerGraph Operator 1.7.4](./operator-1.7.4.md)
 - [TigerGraph Operator 1.7.3](./operator-1.7.3.md)
 - [TigerGraph Operator 1.7.2](./operator-1.7.2.md)
