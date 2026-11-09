@@ -26,6 +26,7 @@ The synergy and compatibility between TigerGraph and TigerGraph Operator:
 
 | TigerGraph Operator version | TigerGraph version  |
 |----------|----------|
+| 1.8.0 | TigerGraph >= 3.6.0 && TigerGraph <= 4.4.0|
 | 1.7.5 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
 | 1.7.4 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
 | 1.7.3 | TigerGraph >= 3.6.0 && TigerGraph <= 4.3.0|
@@ -54,7 +55,7 @@ Example output:
 
 ```bash
 $ helm ls -A|grep tg-operator
-tg-operator             tigergraph      1               2026-05-05 04:53:01.952172143 +0000 UTC deployed      tg-operator-1.7.5               1.7.5      
+tg-operator             tigergraph      1               2026-05-05 04:53:01.952172143 +0000 UTC deployed      tg-operator-${OPERATOR_VERSION} ${OPERATOR_VERSION}      
 ```
 
 ## Upgrade the TigerGraph Cluster

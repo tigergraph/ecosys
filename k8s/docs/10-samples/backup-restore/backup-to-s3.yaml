@@ -14,6 +14,12 @@ spec:
       secretKeyName: s3-secret
       # Optional: use roleARN instead of secretKeyName
       # roleARN: arn:aws:iam::123456789012:role/role-name
+      # Optional: (Requires TigerGraph Operator >= v1.8.0 and TigerGraph >= v4.3.0)
+      # On EKS, use IRSA via the AWS SDK default credential chain.
+      # When iamAuth is true, secretKeyName and roleARN are ignored.
+      # iamAuth: true
+      # Optional: AWS region of the bucket. Set explicitly for multi-region DR.
+      # region: us-west-2
 
   # Configure the name of backup files and the path storing temporary files
   backupConfig:

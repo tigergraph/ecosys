@@ -15,6 +15,7 @@
     - [Backup to local storage](#backup-to-local-storage)
     - [Backup to S3 bucket](#backup-to-s3-bucket)
       - [Use RoleARN instead of access key to access S3 Bucket](#use-rolearn-instead-of-access-key-to-access-s3-bucket)
+      - [Use IAMAuth (EKS IRSA) to access S3 Bucket](#use-iamauth-eks-irsa-to-access-s3-bucket)
     - [Backup to GCS bucket](#backup-to-gcs-bucket)
     - [Backup to ABS container](#backup-to-abs-container)
     - [About cleanPolicy](#about-cleanpolicy)
@@ -23,12 +24,14 @@
     - [Schedule backup to local storage](#schedule-backup-to-local-storage)
     - [Schedule backup to S3 bucket](#schedule-backup-to-s3-bucket)
       - [Use RoleARN instead of access key to access S3 Bucket in TigerGraphBackupSchedule](#use-rolearn-instead-of-access-key-to-access-s3-bucket-in-tigergraphbackupschedule)
+      - [Use IAMAuth to access S3 Bucket in TigerGraphBackupSchedule](#use-iamauth-to-access-s3-bucket-in-tigergraphbackupschedule)
     - [Schedule backup to GCS bucket](#schedule-backup-to-gcs-bucket)
     - [Schedule backup to ABS container](#schedule-backup-to-abs-container)
   - [TigerGraphRestore](#tigergraphrestore)
     - [Restore from local backup](#restore-from-local-backup)
     - [Restore from backup in S3 bucket](#restore-from-backup-in-s3-bucket)
       - [Use RoleARN instead of access key to access S3 Bucket in TigerGraphRestore](#use-rolearn-instead-of-access-key-to-access-s3-bucket-in-tigergraphrestore)
+      - [Use IAMAuth to access S3 Bucket in TigerGraphRestore](#use-iamauth-to-access-s3-bucket-in-tigergraphrestore)
     - [Restore from backup in GCS bucket](#restore-from-backup-in-gcs-bucket)
     - [Restore from backup in ABS container](#restore-from-backup-in-abs-container)
     - [Point-in-Time Restore (Supported from TigerGraph 4.2.0)](#point-in-time-restore-supported-from-tigergraph-420)
@@ -198,6 +201,11 @@ spec:
 
 ### Backup to S3 bucket
 
+> [!NOTE]
+> The S3 bucket must already exist. The operator does not create it — if the
+> bucket is missing or inaccessible, the backup job fails with an S3 connection
+> error.
+
 Assume that you have already created an S3 Secret named `s3-secret` containing your AWS access credentials following the instructions in the previous section [Use Cloud Storage Access Key and Secret Access Key](#use-cloud-storage-access-key-and-secret-access-key).
 
 Certainly, here's the YAML file for performing a backup to an S3 bucket using a previously created Secret named `s3-secret`. You can save this content to a file (e.g., `backup-s3.yaml`), and then run `kubectl apply -f backup-s3.yaml -n YOUR_NAMESPACE` to create the backup.
@@ -280,6 +288,34 @@ spec:
 > In TigerGraph Operator 1.2.0, you are allowed to set `roleARN` and `secretKeyName` at the same time.
 > If you set both of them, TigerGraph will only use `roleARN` and ignore the `secretKeyName`.
 > So we highly recommend you to use just one of them.
+
+#### Use IAMAuth (EKS IRSA) to access S3 Bucket
+
+Starting with TigerGraph Operator 1.8.0 and TigerGraph 4.3.0, on EKS you
+can set `iamAuth: true` to tell TigerGraph to authenticate to S3 via the
+AWS SDK default credential chain, which resolves the IRSA web-identity
+token attached to the cluster pod's ServiceAccount. No K8s `Secret`,
+no `roleARN`, and no mounted `~/.aws/config` ConfigMap are required.
+
+Prerequisites: an IAM role with S3 read/write on the target bucket, an
+IRSA-annotated `ServiceAccount`, and the TigerGraph CR's
+`spec.serviceAccountName` pointing at that ServiceAccount.
+See [Backup and restore with EKS IRSA](./backup-restore-with-eks-irsa.md).
+
+```yaml
+spec:
+  destination:
+    storage: s3Bucket
+    s3Bucket:
+      bucketName: operator-backup
+      iamAuth: true
+      # Optional: set the bucket's region explicitly. Required when the
+      # bucket lives in a different AWS region than the cluster (multi-region DR).
+      region: us-west-2
+```
+
+> [!NOTE]
+> When `iamAuth: true`, `secretKeyName` and `roleARN` are ignored.
 
 ### Backup to GCS bucket
 
@@ -604,6 +640,29 @@ spec:
 > If you set both of them, TigerGraph will only use `roleARN` and ignore the `secretKeyName`.
 > So we highly recommend you to use just one of them.
 
+#### Use IAMAuth to access S3 Bucket in TigerGraphBackupSchedule
+
+Same prerequisites as the [single-backup IAMAuth section](#use-iamauth-eks-irsa-to-access-s3-bucket):
+an IRSA-annotated `ServiceAccount` bound to the TigerGraph cluster,
+and TigerGraph Operator 1.8.0 / TigerGraph 4.3.0+.
+
+Replace the `.spec.backupTemplate.destination` field with:
+
+```yaml
+spec:
+  backupTemplate:
+    destination:
+      storage: s3Bucket
+      s3Bucket:
+        bucketName: operator-backup
+        iamAuth: true
+        # Optional, but recommended for multi-region DR.
+        region: us-west-2
+```
+
+> [!NOTE]
+> When `iamAuth: true`, `secretKeyName` and `roleARN` are ignored.
+
 ### Schedule backup to GCS bucket
 
 Assume that you have already created an GCS Secret named `gcs-secret` containing your GCS access credentials following the instructions in the previous section [Use Cloud Storage Access Key and Secret Access Key](#use-cloud-storage-access-key-and-secret-access-key).
@@ -838,6 +897,30 @@ spec:
       bucketName: operator-backup
       roleARN: arn:aws:iam::123456789012:role/role-name
 ```
+
+#### Use IAMAuth to access S3 Bucket in TigerGraphRestore
+
+Same prerequisites as the [single-backup IAMAuth section](#use-iamauth-eks-irsa-to-access-s3-bucket):
+an IRSA-annotated `ServiceAccount` bound to the TigerGraph cluster,
+and TigerGraph Operator 1.8.0 / TigerGraph 4.3.0+.
+
+The `region` field is especially useful for restore — set it to the bucket's
+region when the DR cluster runs in a different AWS region than where the
+backup was written.
+
+```yaml
+spec:
+  source:
+    storage: s3Bucket
+    s3Bucket:
+      bucketName: operator-backup
+      iamAuth: true
+      # The region the bucket lives in; required for cross-region restore.
+      region: us-west-2
+```
+
+> [!NOTE]
+> When `iamAuth: true`, `secretKeyName` and `roleARN` are ignored.
 
 ### Restore from backup in GCS bucket
 
