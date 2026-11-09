@@ -67,7 +67,7 @@ This document provides solutions for common issues that may arise during the man
     Image Pull Secrets:
       Name:  tigergraph-image-pull-secret
     Init Job:
-      Image:              docker.io/tigergraph/tigergraph-k8s-init:1.7.5
+      Image:              docker.io/tigergraph/tigergraph-k8s-init:${OPERATOR_VERSION}
       Image Pull Policy:  IfNotPresent
       Image Pull Secrets:
         Name:  tigergraph-image-pull-secret

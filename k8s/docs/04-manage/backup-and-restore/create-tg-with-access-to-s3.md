@@ -6,6 +6,11 @@ with the RoleARN specified in TigerGraphBackup/TigerGraphBackupSchedule/TigerGra
 
 There are many different ways to achieve this, in this document, we will show two simple ways to achieve this.
 
+> Starting with TigerGraph Operator `1.8.0` and TigerGraph `4.3.0`, the recommended
+> approach on EKS is **EKS IRSA** — no `RoleARN` field, no ConfigMap, no static
+> credentials. See [Backup and restore with EKS IRSA](./backup-restore-with-eks-irsa.md).
+> The instructions below remain valid for older versions or for non-EKS environments.
+
 ## Use AWS Service Account(Only work on EKS)
 
 ### Step1: Create a service account and give it proper role
